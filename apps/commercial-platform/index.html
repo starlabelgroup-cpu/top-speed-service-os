@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Top Speed Commercial — Appliance Repair &amp; Property Services Platform</title>
+<meta name="description" content="A separate business platform by Top Speed Appliance LLC: commercial appliance repair (Appliance Pro Commercial Accounts) and property management services on the Top Speed Service OS — service agreements, priority dispatch, equipment registry, and consolidated monthly invoicing." />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#0A265C" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#060F24; --panel:#0B1E42; --panel2:#0E2A5C; --line:#1D3A73;
+    --ink:#F2F6FF; --soft:#A9BEE6; --blue:#1E6FF2; --blue-bright:#3D8BFF;
+    --red:#E8332A; --ok:#2FBF71;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Barlow',sans-serif;line-height:1.55}
+  a{color:var(--blue-bright);text-decoration:none}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:20;background:rgba(6,15,36,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0}
+  .brand{font-family:'Barlow Condensed';font-weight:800;font-size:24px;letter-spacing:.5px;color:var(--ink)}
+  .brand span{color:var(--red)}
+  .brand small{display:block;font-family:'Barlow';font-weight:600;font-size:11px;letter-spacing:2.2px;color:var(--soft)}
+  .call{background:var(--red);color:#fff;font-weight:700;padding:10px 18px;border-radius:10px;font-size:15px;white-space:nowrap}
+  .hero{padding:64px 0 30px;text-align:left}
+  .kicker{color:var(--blue-bright);font-weight:700;letter-spacing:2.4px;font-size:13px;text-transform:uppercase}
+  h1{font-family:'Barlow Condensed';font-weight:800;font-size:clamp(38px,6vw,62px);line-height:1.02;margin:12px 0 14px}
+  h1 em{font-style:normal;color:var(--blue-bright)}
+  .sub{color:var(--soft);font-size:18px;max-width:62ch}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .stat{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 16px;font-weight:600;font-size:14.5px}
+  .stat b{color:#fff}
+  .paths{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:38px 0 8px}
+  @media(max-width:820px){.paths{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:30px 28px;display:flex;flex-direction:column}
+  .card .tag{align-self:flex-start;background:rgba(30,111,242,.16);border:1px solid var(--blue);color:#CFE4FF;font-weight:700;font-size:12.5px;letter-spacing:1.6px;padding:5px 12px;border-radius:999px;text-transform:uppercase}
+  .card h2{font-family:'Barlow Condensed';font-weight:800;font-size:34px;margin:16px 0 6px;line-height:1.05}
+  .card .who{color:var(--soft);font-weight:600;margin-bottom:14px}
+  .card ul{list-style:none;margin:0 0 22px}
+  .card li{padding:7px 0 7px 26px;position:relative;color:#DCE8FF;font-size:15.5px}
+  .card li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+  .cta{margin-top:auto;display:inline-block;background:var(--blue);color:#fff;font-weight:700;text-align:center;padding:14px 20px;border-radius:12px;font-size:16.5px}
+  .cta.red{background:var(--red)}
+  .engine{margin:44px 0 0;border:1px solid var(--line);border-radius:20px;padding:28px;background:var(--panel)}
+  .engine h3{font-family:'Barlow Condensed';font-size:26px;font-weight:800;margin-bottom:6px}
+  .engine p{color:var(--soft);max-width:75ch}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+  .chip{border:1px solid var(--line);border-radius:999px;padding:7px 14px;font-weight:600;font-size:14px;background:#0A2450}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:30px 0 54px}
+  @media(max-width:820px){.steps{grid-template-columns:1fr 1fr}}
+  .step{border:1px solid var(--line);border-radius:16px;padding:18px;background:var(--panel)}
+  .step b{font-family:'Barlow Condensed';font-size:19px;display:block;margin-bottom:4px}
+  .step b i{color:var(--red);font-style:normal;margin-right:8px}
+  .step p{color:var(--soft);font-size:14.5px}
+  .band{background:linear-gradient(90deg,#0E2A5C,#123A80);border:1px solid var(--line);border-radius:20px;padding:30px;text-align:center;margin-bottom:54px}
+  .band h3{font-family:'Barlow Condensed';font-size:32px;font-weight:800}
+  .band p{color:var(--soft);margin:6px 0 16px}
+  footer{border-top:1px solid var(--line);padding:26px 0 40px;color:var(--soft);font-size:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="brand" href="./">TOP SPEED <span>APPLIANCE</span><small>COMMERCIAL &amp; PROPERTY PLATFORM</small></a>
+    <a class="call" href="tel:+19549317997">📞 954-931-7997</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="kicker">Top Speed Service OS — Business Platform</div>
+    <h1>Commercial appliance repair &amp; property services. <em>One platform.</em></h1>
+    <p class="sub">A separate platform for the businesses and portfolios that run on appliances — restaurants, hotels, laundromats, healthcare, offices, and rental communities across Broward County. Service agreements, priority dispatch, a full equipment registry, and one consolidated monthly invoice, all run by the Service Setters team on the Top Speed Service OS.</p>
+    <div class="stats">
+      <div class="stat">📍 <b>12</b> Broward County service areas</div>
+      <div class="stat">🚨 Critical-equipment <b>priority dispatch</b></div>
+      <div class="stat">🧾 <b>One</b> consolidated monthly invoice</div>
+      <div class="stat">🏷️ Every unit tagged &amp; tracked — <b>TS-EQ</b> registry</div>
+    </div>
+  </section>
+
+  <section class="paths">
+    <article class="card">
+      <span class="tag">Appliance Pro Commercial Accounts</span>
+      <h2>Commercial Appliance Repair</h2>
+      <p class="who">For restaurants, hotels, laundromats, healthcare, offices, retail &amp; facilities</p>
+      <ul>
+        <li>Service agreements — Essential, Priority, and Total Care, custom-quoted per facility</li>
+        <li>When a cooler, oven, or washer goes down, your work order jumps the queue</li>
+        <li>Facilities &amp; equipment registry with asset tags, serials, and warranty tracking</li>
+        <li>Work orders flow through the same Service Setters dispatch as the whole network</li>
+        <li>No residential diagnostic fee — commercial pricing is quoted per facility</li>
+      </ul>
+      <a class="cta" href="commercial/">Explore Commercial Accounts →</a>
+    </article>
+
+    <article class="card">
+      <span class="tag">Property Management Services</span>
+      <h2>Property Managers</h2>
+      <p class="who">For landlords, HOAs, and property management companies</p>
+      <ul>
+        <li>One portal for every property and every unit you manage</li>
+        <li>Submit a work order in under a minute — we coordinate with your resident</li>
+        <li>Live status on every job, from request to completion</li>
+        <li>Per-unit appliance history, so repeat issues get spotted early</li>
+        <li>Predictable per-visit pricing with consolidated billing</li>
+      </ul>
+      <a class="cta red" href="property-managers/">Open the Property Portal →</a>
+    </article>
+  </section>
+
+  <section class="engine">
+    <h3>Powered by the Top Speed Service OS</h3>
+    <p>This platform runs on the same engine as the Top Speed network — Service Setters dispatch every job, Book OS schedules across five daily windows in all 12 areas, and every facility, unit, and appliance carries its own record. Business clients get their own accounts, their own terms, and priority handling — without a separate phone maze.</p>
+    <div class="chips">
+      <span class="chip">🎧 Service Setters dispatch</span>
+      <span class="chip">📅 Book OS scheduling</span>
+      <span class="chip">🏭 Facilities registry</span>
+      <span class="chip">🏷️ TS-EQ equipment tags</span>
+      <span class="chip">🧾 Monthly consolidated invoicing</span>
+      <span class="chip">🔧 Vetted provider network</span>
+    </div>
+  </section>
+
+  <section class="steps">
+    <div class="step"><b><i>1</i>Open your account</b><p>Commercial account (TS-C) or property portfolio — set up once, by phone or online.</p></div>
+    <div class="step"><b><i>2</i>Register your equipment</b><p>Facilities, units, and appliances are tagged into the registry with serials and warranty dates.</p></div>
+    <div class="step"><b><i>3</i>Request service anytime</b><p>Work orders land in the Service Setters queue — critical equipment is prioritized automatically.</p></div>
+    <div class="step"><b><i>4</i>Track &amp; settle monthly</b><p>Follow every job to completion, then settle everything on one monthly invoice.</p></div>
+  </section>
+
+  <section class="band">
+    <h3>Put your properties on the platform</h3>
+    <p>Talk to the Service Setters team — we'll map your facilities and units and quote your agreement.</p>
+    <a class="cta" href="tel:+19549317997" style="max-width:320px;margin:0 auto;display:block">📞 Call 954-931-7997</a>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b style="color:#fff">Top Speed Appliance LLC</b> — Commercial &amp; Property Platform, part of the Top Speed Service OS. Business platform preview: accounts and work orders are confirmed by the Service Setters team at 954-931-7997.</p>
+    <p style="margin-top:8px">Looking for home service? Visit the customer platform at topspeedappliance.net · Providers: topspeedapplianceservice.com</p>
+  </div>
+</footer>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function (err) {
+        console.warn('Commercial platform service worker registration failed:', err);
+      });
+    });
+  }
+</script>
+</body>
+</html>
