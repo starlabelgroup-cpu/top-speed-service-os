@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Get the Top Speed App — Top Speed Appliance</title>
+<meta name="description" content="Install the Top Speed web app: book appliance repair in minutes, track your technician, and manage service across Broward County. App Store and Google Play versions coming soon.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Top Speed">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:14px 26px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn:disabled{opacity:.55;cursor:default}
+.phone{font-weight:800;color:#fff}
+.hero{background:var(--navy2);color:#fff;text-align:center;padding:52px 24px 40px}
+.hero h1{font-size:36px;margin-bottom:12px}
+.hero p{color:#b9cdf0;font-size:18px;max-width:640px;margin:0 auto}
+.detected{max-width:760px;margin:-22px auto 0;background:#fff;border:1px solid #dbe6f3;border-radius:14px;box-shadow:0 10px 30px rgba(7,31,79,.12);padding:20px 26px;text-align:center;position:relative}
+.detected strong{color:var(--navy)}
+.detected .pill{display:inline-block;background:var(--light);border:1px solid #dbe6f3;border-radius:999px;padding:6px 14px;font-weight:700;color:var(--navy);margin-top:8px}
+section{max-width:980px;margin:0 auto;padding:44px 24px}
+h2{font-size:28px;color:var(--navy);margin-bottom:10px}
+.sub{color:var(--muted);margin-bottom:24px;font-size:16px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:var(--light);border-radius:14px;padding:26px}
+.card h3{color:var(--navy);margin-bottom:12px;font-size:20px}
+.card ol{margin-left:20px;color:var(--ink);line-height:1.75;font-size:15px}
+.card p{color:var(--muted);font-size:15px;line-height:1.55}
+.card.hidden-card{display:none}
+.qrwrap{text-align:center}
+.qrbox{display:inline-block;background:#fff;border:1px solid #dbe6f3;border-radius:14px;padding:18px}
+.qrbox img,.qrbox canvas,.qrbox table{margin:0 auto}
+.qrurl{font-weight:700;color:var(--navy);margin-top:12px;word-break:break-all}
+.copyrow{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.copyrow .btn{padding:10px 18px;font-size:14px}
+#copyMsg{color:var(--green);font-weight:600;margin-top:10px;min-height:20px}
+.storegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.store{border:2px dashed #c9d8ec;border-radius:14px;padding:24px;text-align:center}
+.store h3{color:var(--navy);margin-bottom:6px}
+.store .soon{display:inline-block;background:#fff3cd;color:#7a5b00;border-radius:999px;padding:5px 12px;font-weight:700;font-size:13px;margin-top:8px}
+#trackMsg{color:var(--green);font-weight:600;text-align:center;min-height:22px}
+footer{background:#04122e;color:#9db6d8;padding:36px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <img class="flag" src="/assets/flag.jpg" alt="Top Speed checkered flag">
+  <div class="brand">TOP <span>SPEED</span> APPLIANCE</div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/#services">Services</a>
+    <a href="/#book">Book Service</a>
+    <a class="phone" href="tel:+19549317997">954-931-7997</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Get the Top Speed App</h1>
+  <p>Book a repair in minutes, follow your technician, and keep every job in one place — right from your home screen. Free, no app-store account needed today.</p>
+</div>
+
+<div class="detected">
+  <div>We detected: <strong id="detectedText">your device…</strong></div>
+  <span class="pill" id="detectedPill">Checking your device</span>
+  <div id="installRow" style="margin-top:16px;display:none">
+    <button class="btn" id="installBtn" type="button">Install the Top Speed App</button>
+  </div>
+  <p id="trackMsg" role="status"></p>
+</div>
+
+<section>
+  <h2>Install in under a minute</h2>
+  <p class="sub">The Top Speed app is a web app — it installs straight from your browser and takes almost no space on your phone. Pick your device below; we highlighted the one we detected.</p>
+  <div class="grid">
+    <div class="card" id="iosCard">
+      <h3>🍎 iPhone &amp; iPad (Safari)</h3>
+      <ol>
+        <li>Open this page in <strong>Safari</strong>.</li>
+        <li>Tap the <strong>Share</strong> button (square with an arrow pointing up).</li>
+        <li>Scroll down and tap <strong>Add to Home Screen</strong>.</li>
+        <li>Tap <strong>Add</strong> — the Top Speed icon lands on your home screen.</li>
+        <li>Open it any time to book, track, and manage your service.</li>
+      </ol>
+    </div>
+    <div class="card" id="androidCard">
+      <h3>🤖 Android (Chrome)</h3>
+      <ol>
+        <li>Open this page in <strong>Chrome</strong>.</li>
+        <li>Tap <strong>Install the Top Speed App</strong> above when it appears — or tap the <strong>⋮ menu</strong>.</li>
+        <li>Choose <strong>Install app</strong> (or <strong>Add to Home screen</strong>).</li>
+        <li>Confirm <strong>Install</strong>.</li>
+        <li>Find Top Speed in your app drawer and on your home screen.</li>
+      </ol>
+    </div>
+    <div class="card" id="desktopCard">
+      <h3>💻 On a computer?</h3>
+      <p>Scan the QR code in the next section with your phone camera — it opens this page on your phone, ready to install. You can also install from Chrome or Edge on desktop using the install icon in the address bar.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <h2>Scan to install on your phone</h2>
+  <p class="sub">Point your phone camera at the code. It opens this download page on your phone — any campaign tag on this page (for example from a flyer) carries over automatically.</p>
+  <div class="qrwrap">
+    <div class="qrbox">
+      <div id="qrTarget" aria-label="QR code for the Top Speed download page"></div>
+      <noscript><img src="/download/qr-download.png" width="240" height="240" alt="QR code for topspeedappliance.net/download"></noscript>
+      <div class="qrurl" id="qrUrlText">topspeedappliance.net/download</div>
+    </div>
+    <div class="copyrow">
+      <button class="btn blue" id="copyBtn" type="button">Copy download link</button>
+    </div>
+    <p id="copyMsg" role="status"></p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <h2>App stores</h2>
+  <p class="sub">Native store listings are on the roadmap. Until they publish, the web app above is the full Top Speed app — same booking, same tracking, installed in seconds.</p>
+  <div class="storegrid">
+    <div class="store">
+      <h3>Apple App Store</h3>
+      <p style="color:var(--muted)">Top Speed for iPhone &amp; iPad</p>
+      <span class="soon">Coming soon — install the web app today</span>
+    </div>
+    <div class="store">
+      <h3>Google Play</h3>
+      <p style="color:var(--muted)">Top Speed for Android</p>
+      <span class="soon">Coming soon — install the web app today</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <strong>TOP SPEED APPLIANCE LLC</strong> · The Faster, The Better.<br>
+  954-931-7997 · service@topspeedappliance.net · TopSpeedAppliance.net · Broward County, Florida<br>
+  © 2026 Top Speed Appliance LLC. All rights reserved.
+</footer>
+
+<!-- Vendored QR generator: qrcode-generator by Kazuhiko Arase (MIT), see qrcode.js header. -->
+<script src="/download/qrcode.js"></script>
+<script src="/install.js"></script>
+<script>
+(function () {
+  var params = new URLSearchParams(window.location.search);
+  var src = params.get('src') || undefined;
+
+  function detect() {
+    var ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) return { platform: 'android', label: 'Android phone or tablet', card: 'androidCard' };
+    if (/iphone/i.test(ua)) return { platform: 'ios', label: 'iPhone', card: 'iosCard' };
+    if (/ipad/i.test(ua)) return { platform: 'ios', label: 'iPad', card: 'iosCard' };
+    if (/macintosh/i.test(ua) && 'ontouchend' in document) return { platform: 'ios', label: 'iPad', card: 'iosCard' };
+    if (/windows|macintosh|linux/i.test(ua)) return { platform: 'web', label: 'Desktop computer', card: 'desktopCard' };
+    return { platform: 'web', label: 'Web browser', card: 'desktopCard' };
+  }
+
+  var detected = detect();
+  document.getElementById('detectedText').textContent = detected.label;
+  var pill = document.getElementById('detectedPill');
+  pill.textContent =
+    detected.platform === 'ios' ? 'Follow the iPhone & iPad steps below'
+    : detected.platform === 'android' ? 'Follow the Android steps below'
+    : 'Use the QR code below to install on your phone';
+  var card = document.getElementById(detected.card);
+  if (card) card.style.outline = '3px solid var(--blue)';
+
+  // --- Install prompt handling (Android / desktop Chrome & Edge) ---
+  var installRow = document.getElementById('installRow');
+  var installBtn = document.getElementById('installBtn');
+  function refreshInstallButton() {
+    if (window.TopSpeedInstall && window.TopSpeedInstall.canPrompt()) {
+      installRow.style.display = 'block';
+    }
+  }
+  document.addEventListener('topspeed:install-available', refreshInstallButton);
+  refreshInstallButton();
+  installBtn.addEventListener('click', function () {
+    if (!window.TopSpeedInstall) return;
+    window.TopSpeedInstall.promptInstall().then(function (outcome) {
+      if (outcome === 'unavailable') {
+        document.getElementById('trackMsg').textContent =
+          'Your browser installs from its menu — follow the steps for your device below.';
+      }
+      installRow.style.display = 'none';
+    });
+  });
+  document.addEventListener('topspeed:installed', function () {
+    document.getElementById('trackMsg').textContent =
+      'Top Speed is installed — find it on your home screen. Thanks!';
+  });
+
+  // --- QR code: encodes THIS page's URL, including any ?src= tag ---
+  var pageUrl = window.location.href;
+  var qrTarget = document.getElementById('qrTarget');
+  try {
+    var qr = qrcode(0, 'M'); // type 0 = auto version
+    qr.addData(pageUrl);
+    qr.make();
+    qrTarget.innerHTML = qr.createImgTag(6, 12, 'QR code for the Top Speed download page');
+  } catch (e) {
+    // Fallback: static QR for the canonical download URL + the link itself.
+    var img = document.createElement('img');
+    img.src = '/download/qr-download.png';
+    img.width = 240; img.height = 240;
+    img.alt = 'QR code for topspeedappliance.net/download';
+    qrTarget.appendChild(img);
+  }
+  document.getElementById('qrUrlText').textContent = pageUrl.replace(/^https?:\/\//, '');
+
+  // --- Copy link ---
+  document.getElementById('copyBtn').addEventListener('click', function () {
+    var msg = document.getElementById('copyMsg');
+    function done() { msg.textContent = 'Link copied — paste it anywhere.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(pageUrl).then(done, function () { msg.textContent = pageUrl; });
+    } else {
+      msg.textContent = pageUrl;
+    }
+  });
+
+  // --- Attribution: record the download-page view with its ?src= tag ---
+  // (The install itself is reported by install.js on `appinstalled`.)
+  if (window.TopSpeedInstall) {
+    window.TopSpeedInstall.trackInstall({ event: 'download_page_view' });
+  }
+
+  // --- Service worker (same registration as the main site) ---
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+    });
+  }
+})();
+</script>
+</body>
+</html>

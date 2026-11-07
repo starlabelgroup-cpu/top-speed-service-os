@@ -1,0 +1,222 @@
+// Top Speed Service OS — canonical Phase 1 Prisma schema.
+// Company is the tenant boundary (companyId). IDs are UUIDs and money uses Decimal(10, 2).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PLATFORM_ADMIN
+  COMPANY_OWNER
+  COMPANY_ADMIN
+  DISPATCHER
+  CUSTOMER
+  PROVIDER_OWNER
+  PROVIDER_TECH
+  TECHNICIAN
+}
+
+enum CompanyType {
+  PLATFORM_OWNER
+  NETWORK_BUSINESS
+  INDEPENDENT_PROVIDER
+  CUSTOMER_COMPANY
+}
+
+enum BookingStatus {
+  PENDING_DISPATCH
+  MATCH_PENDING_APPROVAL
+  CONFIRMED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FeeStatus {
+  COLLECTED_AT_BOOKING
+  NOT_COLLECTED
+  REFUNDED
+}
+
+enum DispatchMode {
+  HYBRID
+  MANUAL
+  AUTOMATIC
+}
+
+enum AssignmentStatus {
+  PROPOSED
+  APPROVED
+  NOT_SELECTED
+  DECLINED
+  COMPLETED
+  CANCELLED
+}
+
+enum ProviderType {
+  NETWORK_BUSINESS
+  INDEPENDENT_PROVIDER
+  INTERNAL_TEAM
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  VOID
+}
+
+model Company {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String      @unique
+  type      CompanyType
+  isPlatformOwner Boolean @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  users               User[]
+  customers           Customer[]
+  serviceRequests     ServiceRequest[]
+  dispatchAssignments DispatchAssignment[]
+  providers           Provider[]
+  invoices            Invoice[]
+
+  @@index([type])
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @db.Uuid
+  email        String
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  phone        String?
+  roles        Role[]
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model Customer {
+  id        String   @id @default(uuid()) @db.Uuid
+  companyId String   @db.Uuid
+  name      String
+  phone     String
+  email     String?
+  address   String?
+  city      String
+  zip       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequests ServiceRequest[]
+  invoices        Invoice[]
+
+  @@index([companyId])
+  @@index([companyId, phone])
+}
+
+// The booking record exposed by the API as /bookings.
+model ServiceRequest {
+  id                              String        @id @default(uuid()) @db.Uuid
+  companyId                       String        @db.Uuid
+  customerId                      String        @db.Uuid
+  city                            String
+  zip                             String
+  appliance                       String
+  issue                           String
+  preferredWindow                 String?
+  status                          BookingStatus @default(PENDING_DISPATCH)
+  diagnosticFee                   Decimal       @default(99.00) @db.Decimal(10, 2)
+  diagnosticFeeCreditedTowardRepair Boolean     @default(true)
+  feeStatus                       FeeStatus     @default(COLLECTED_AT_BOOKING)
+  createdAt                       DateTime      @default(now())
+  updatedAt                       DateTime      @updatedAt
+
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  dispatchAssignments DispatchAssignment[]
+  invoices            Invoice[]
+
+  @@index([companyId, status])
+  @@index([companyId, zip])
+}
+
+model Provider {
+  id            String       @id @default(uuid()) @db.Uuid
+  companyId     String       @db.Uuid
+  businessName  String
+  type          ProviderType
+  specialties   String[]
+  serviceCities String[]
+  rating        Decimal?     @db.Decimal(3, 2)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dispatchAssignments DispatchAssignment[]
+
+  @@index([companyId])
+  @@index([active])
+}
+
+model DispatchAssignment {
+  id              String           @id @default(uuid()) @db.Uuid
+  companyId       String           @db.Uuid
+  serviceRequestId String           @db.Uuid
+  providerId      String           @db.Uuid
+  status          AssignmentStatus @default(PROPOSED)
+  dispatchMode    DispatchMode     @default(HYBRID)
+  approvalRequired Boolean         @default(true)
+  matchScore      Int?
+  approvedById    String?          @db.Uuid
+  approvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  provider       Provider       @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+  @@index([providerId])
+}
+
+model Invoice {
+  id               String        @id @default(uuid()) @db.Uuid
+  companyId        String        @db.Uuid
+  serviceRequestId String        @db.Uuid
+  customerId       String        @db.Uuid
+  status           InvoiceStatus @default(DRAFT)
+  subtotal         Decimal       @default(0.00) @db.Decimal(10, 2)
+  diagnosticFee    Decimal       @default(99.00) @db.Decimal(10, 2)
+  diagnosticCredit Decimal       @default(99.00) @db.Decimal(10, 2)
+  total            Decimal       @default(0.00) @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Restrict)
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+}
