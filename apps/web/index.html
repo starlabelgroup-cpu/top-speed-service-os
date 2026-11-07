@@ -480,42 +480,15 @@ footer a{color:#D7E6FF}
 <section id="book" style="background:var(--navy-2);">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Smart Booking <span class="preview-dot"></span> Preview</span>
+      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Smart Booking — Now Live</span>
       <h2 style="color:#fff">Booked in about <em style="color:var(--electric)">60 seconds.</em></h2>
       <p style="color:#B9CFF2">Pick a real window, tell us what's broken, and you're on the board. Service Setters dispatch reviews every request, and we confirm your appointment by phone.</p>
     </div>
     <div class="book-grid">
-      <form class="card book-form reveal" id="bookForm" novalidate>
-        <div class="frow">
-          <div><label class="flabel" for="bkAppliance">Appliance</label>
-            <select id="bkAppliance"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven &amp; Range</option><option>Dishwasher</option><option>Freezer &amp; Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option><option>Commercial / Multiple</option></select></div>
-          <div><label class="flabel" for="bkBrand">Brand</label>
-            <select id="bkBrand"><option>Samsung</option><option>LG</option><option>Whirlpool</option><option>GE</option><option>Frigidaire</option><option>Maytag</option><option>Bosch</option><option>KitchenAid</option><option>Other / Not sure</option></select></div>
-        </div>
-        <div style="margin-bottom:14px"><label class="flabel" for="bkIssue">What's happening?</label>
-          <input id="bkIssue" type="text" placeholder="e.g. Fridge warm, freezer fine — started yesterday"></div>
-        <div style="margin-bottom:14px"><label class="flabel">Choose a day</label><div class="chips" id="dayChips"></div></div>
-        <div style="margin-bottom:14px"><label class="flabel">Choose a window</label>
-          <div class="chips" id="winChips">
-            <button type="button" class="chip" data-win="8–11 AM">8–11 AM<small>Morning</small></button>
-            <button type="button" class="chip" data-win="11 AM–2 PM">11 AM–2 PM<small>Midday</small></button>
-            <button type="button" class="chip" data-win="2–5 PM">2–5 PM<small>Afternoon</small></button>
-            <button type="button" class="chip" data-win="5–8 PM">5–8 PM<small>Evening</small></button>
-          </div></div>
-        <div class="frow">
-          <div><label class="flabel" for="bkName">Your name</label><input id="bkName" type="text" autocomplete="name" placeholder="Full name"></div>
-          <div><label class="flabel" for="bkPhone">Mobile phone (for text updates)</label><input id="bkPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123"></div>
-        </div>
-        <div class="frow">
-          <div><label class="flabel" for="bkCity">City</label>
-            <select id="bkCity"><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Other Broward</option></select></div>
-          <div><label class="flabel" for="bkZip">ZIP</label><input id="bkZip" type="text" inputmode="numeric" placeholder="33313"></div>
-        </div>
-        <p class="fine" id="bkError" style="color:var(--red);font-weight:600" role="alert"></p>
-        <button class="btn btn-red" type="submit" style="width:100%">✓ Request this appointment — $99 diagnostic at booking</button>
-        <p class="fine" style="margin-top:10px;text-align:center">Preview form — in this demo your request is confirmed on screen only. On the live platform, dispatch confirms every booking by phone. Prefer to talk? <a href="tel:+19549317997"><b>Call 954-931-7997</b></a>.</p>
-        <div class="confirm" id="bkConfirm" role="status"></div>
-      </form>
+      <div class="card book-form reveal" style="padding:12px">
+        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScUUHyHxvmecyYgIpA9TXaSaTjguUepAeKsLzeVp33eiXBlFA/viewform?embedded=true" style="display:block;width:100%;height:1280px;border:0;border-radius:10px;background:#fff" loading="lazy" title="Top Speed Appliance — Book a Repair">Loading the booking form…</iframe>
+        <p style="margin:10px 4px 2px;font-size:13.5px;color:#5A6E94">Form not loading? <a href="https://docs.google.com/forms/d/e/1FAIpQLScUUHyHxvmecyYgIpA9TXaSaTjguUepAeKsLzeVp33eiXBlFA/viewform" target="_blank" rel="noopener"><b>Open the booking form</b></a> — or call <a href="tel:+19549317997"><b>954-931-7997</b></a>. Every booking goes straight to our dispatch log, and a Service Setter confirms your appointment by phone.</p>
+      </div>
       <aside class="card fee-card reveal" id="pricing">
         <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Pricing &amp; Warranty</span>
         <h3 style="margin-top:14px">The $99 diagnostic, explained</h3>
@@ -1017,6 +990,7 @@ var chosenDay='', chosenWin='';
   for(var i=2;i<5;i++){var d=new Date(now.getTime()+i*86400000);days.push(d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}));}
   if(now.getHours()>=15)days[0]='Tomorrow';
   var box=document.getElementById('dayChips');
+  if(!box)return;
   box.innerHTML=days.map(function(d,i){return '<button type="button" class="chip" data-day="'+d+'" aria-pressed="'+(i===0?'true':'false')+'">'+d+'<small>'+(i===0?'Earliest':'')+'</small></button>';}).join('');
   chosenDay=days[0];
   box.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;box.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenDay=b.getAttribute('data-day');});
@@ -1024,7 +998,7 @@ var chosenDay='', chosenWin='';
   wins.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;wins.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenWin=b.getAttribute('data-win');});
   var first=wins.querySelector('.chip'); first.setAttribute('aria-pressed','true'); chosenWin=first.getAttribute('data-win');
 })();
-document.getElementById('bookForm').addEventListener('submit',function(e){
+var _bf=document.getElementById('bookForm'); if(_bf) _bf.addEventListener('submit',function(e){
   e.preventDefault();
   var name=document.getElementById('bkName').value.trim();
   var phone=document.getElementById('bkPhone').value.replace(/\D/g,'');
