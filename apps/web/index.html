@@ -1,768 +1,1104 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
-    <meta name="description" content="Top Speed Appliance Repair — fast, professional appliance repair across Broward County, FL. $99 diagnostic fee, collected at booking and credited toward your repair. Call 954-931-7997." />
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#0A265C" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
-    <title>Top Speed Appliance Repair — Broward County, FL | The Faster, The Better.</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,500;0,600;0,700;1,600;1,700;1,800&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet" />
-    <style>
-      :root {
-        --navy: #0a265c;
-        --navy-deep: #061a42;
-        --navy-ink: #04122f;
-        --blue: #1b7fe0;
-        --blue-bright: #38a2ff;
-        --red: #e01e26;
-        --red-dark: #b8121a;
-        --bg: #f3f6fb;
-        --surface: #ffffff;
-        --surface-2: #e9eff8;
-        --text: #12233f;
-        --muted: #51637e;
-        --line: #d5deec;
-        --gold: #f5a800;
-        --ok: #12805c;
-        --header-bg: #ffffff;
-        --shadow: 0 10px 30px rgba(6, 26, 66, 0.12);
-        color-scheme: light;
-      }
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #050f24;
-          --surface: #0a1f45;
-          --surface-2: #0d2652;
-          --text: #eef3fc;
-          --muted: #a7b8d4;
-          --line: #24406f;
-          --header-bg: #071633;
-          --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-          color-scheme: dark;
-        }
-      }
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
-      body {
-        margin: 0;
-        font-family: "Barlow", system-ui, -apple-system, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.55;
-        font-size: 17px;
-      }
-      img { max-width: 100%; display: block; }
-      a { color: var(--blue); }
-      .wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
-      .display {
-        font-family: "Barlow Condensed", "Barlow", sans-serif;
-        text-transform: uppercase;
-        letter-spacing: 0.01em;
-        line-height: 1.02;
-      }
+<title>Top Speed Appliance — Advanced V2 | topspeedappliance.net Preview</title>
+<meta name="description" content="Next-generation preview of topspeedappliance.net: AI diagnosis, live tech tracking, smart booking and My Appliances — Top Speed Appliance LLC, Broward County. $99 diagnostic credited toward repair. Call 954-931-7997.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,700;0,800;0,900;1,800;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A265C; --navy-2:#071A40; --navy-3:#0E3276;
+  --blue:#0B7CFF; --electric:#19A7FF; --sky:#EAF3FF;
+  --red:#E31E24; --red-dark:#B90F14;
+  --ink:#0C1B33; --body:#33445E; --muted:#71809A;
+  --bg:#F3F6FB; --surface:#FFFFFF; --surface-2:#EDF2FA; --line:#D9E3F2;
+  --green:#0E9F6E; --amber:#D97706;
+  --radius:18px; --shadow:0 18px 44px rgba(10,38,92,.14);
+  --checker: repeating-conic-gradient(#0A265C 0% 25%, #fff 0% 50%) 0 0/22px 22px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#EDF3FF; --body:#B9C7DE; --muted:#8494B0;
+    --bg:#050F24; --surface:#0A1D42; --surface-2:#0D2653; --line:#1D3A6E;
+    --sky:#0D2653; --shadow:0 18px 44px rgba(0,0,0,.5);
+    --checker: repeating-conic-gradient(#EDF3FF 0% 25%, #0A265C 0% 50%) 0 0/22px 22px;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Barlow",system-ui,sans-serif;background:var(--bg);color:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:"Archivo",sans-serif;color:var(--ink);margin:0;line-height:1.08}
+img{max-width:100%;display:block}
+a{color:var(--blue)}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1220px;margin:0 auto;padding:0 20px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 11px;border-radius:999px;background:var(--sky);color:var(--navy);border:1px solid var(--line)}
+@media (prefers-color-scheme: dark){.tag{color:#BFD8FF}}
+.tag.red{background:#FDECEC;color:var(--red-dark);border-color:#F6C9CB}
+.tag.live{background:#E4F7EF;color:#067452;border-color:#BEEBD7}
+.preview-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:none;border-radius:12px;padding:14px 24px;font-weight:700;font-size:16.5px;text-decoration:none;transition:transform .15s, box-shadow .15s}
+.btn:active{transform:scale(.98)}
+.btn-red{background:var(--red);color:#fff;box-shadow:0 10px 24px rgba(227,30,36,.32)}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 10px 24px rgba(11,124,255,.3)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1.5px solid var(--line)}
+.btn-navy{background:var(--navy);color:#fff}
+.checker{height:14px;background:var(--checker);border-top:2px solid var(--navy);border-bottom:2px solid var(--navy);opacity:.9}
+section{padding:72px 0}
+.sec-head{max-width:760px;margin-bottom:34px}
+.sec-head h2{font-size:clamp(28px,4.2vw,42px);font-weight:900;letter-spacing:-.01em;margin:12px 0 10px}
+.sec-head h2 em{font-style:italic;color:var(--blue)}
+.sec-head p{font-size:18px;margin:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 4px 18px rgba(10,38,92,.05)}
+input,select,textarea{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:11px;background:var(--surface);color:var(--ink);font:inherit;font-size:16px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+label.flabel{display:block;font-weight:700;font-size:13.5px;color:var(--ink);margin:0 0 6px;letter-spacing:.02em}
+:focus-visible{outline:3px solid var(--electric);outline-offset:2px}
 
-      /* ---------- checkered flag strip ---------- */
-      .checker {
-        height: 14px;
-        background-image:
-          linear-gradient(45deg, #0b0b0d 25%, transparent 25%, transparent 75%, #0b0b0d 75%),
-          linear-gradient(45deg, #0b0b0d 25%, #f4f6f9 25%, #f4f6f9 75%, #0b0b0d 75%);
-        background-color: #f4f6f9;
-        background-size: 28px 28px;
-        background-position: 0 0, 14px 14px;
-      }
-      .checker.thin { height: 9px; background-size: 18px 18px; background-position: 0 0, 9px 9px; }
+/* preview ribbon + header */
+.ribbon{background:var(--navy-2);color:#C9D9F5;font-size:13.5px;text-align:center;padding:8px 14px}
+.ribbon b{color:#fff}
+header.site{position:sticky;top:0;z-index:60;background:color-mix(in srgb, var(--surface) 92%, transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:22px;padding:12px 0}
+.logo{font-family:"Archivo";font-weight:900;font-style:italic;font-size:21px;color:var(--navy);text-decoration:none;line-height:1;white-space:nowrap;padding-left:5px}
+@media (prefers-color-scheme: dark){.logo{color:#fff}}
+.logo span{color:var(--red)}
+.logo small{display:block;font-style:normal;font-weight:700;font-size:10px;letter-spacing:.28em;color:var(--muted);margin-top:3px}
+.nav nav{display:flex;gap:20px;margin-left:auto}
+.nav nav a{color:var(--ink);text-decoration:none;font-weight:600;font-size:15.5px}
+.nav nav a:hover{color:var(--blue)}
+.nav .call{margin-left:6px}
+@media(max-width:900px){.nav nav{display:none}}
+@media(max-width:560px){
+  .nav{gap:10px;padding:10px 0}
+  .logo{font-size:16.5px}
+  .logo small{display:none}
+  .nav .call{padding:10px 12px;font-size:14px;white-space:nowrap;margin-left:auto}
+  .ribbon{font-size:12px}
+}
 
-      /* ---------- utility bar ---------- */
-      .utility {
-        background: var(--navy-ink);
-        color: #dbe7fa;
-        font-size: 0.92rem;
-      }
-      .utility .wrap {
-        display: flex; flex-wrap: wrap; gap: 6px 26px;
-        align-items: center; justify-content: space-between;
-        padding-top: 7px; padding-bottom: 7px;
-      }
-      .utility a { color: #fff; font-weight: 600; text-decoration: none; }
-      .utility a:hover { text-decoration: underline; }
-      .utility .u-items { display: flex; flex-wrap: wrap; gap: 6px 26px; }
+/* hero */
+.hero{background:linear-gradient(160deg,var(--navy-2) 0%,var(--navy) 55%,var(--navy-3) 100%);color:#D7E4FA;padding:56px 0 0;overflow:hidden;position:relative}
+.hero h1{color:#fff;font-size:clamp(36px,6vw,62px);font-weight:900;font-style:italic;letter-spacing:-.015em}
+.hero h1 .hl{color:var(--electric)}
+.hero h1 .rd{color:#FF4D52}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:38px;align-items:center}
+@media(max-width:920px){.hero-grid{grid-template-columns:1fr}}
+.hero p.lede{font-size:19.5px;color:#C4D6F6;max-width:54ch}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0 18px}
+.rating-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:15.5px}
+.stars{color:#FFB800;font-size:19px;letter-spacing:2px}
+.hero-badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.hbadge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.22);border-radius:12px;padding:10px 14px;font-size:14.5px;font-weight:600;color:#EAF2FF}
+.hbadge b{color:#fff}
+.hero-img{border-radius:20px 20px 0 0;overflow:hidden;box-shadow:0 -8px 50px rgba(0,0,0,.4);border:3px solid rgba(255,255,255,.25);border-bottom:none}
+.hero-img img{width:100%;height:100%;object-fit:cover}
+.diag-chip{background:#fff;color:var(--navy);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow);margin-top:18px}
+.diag-chip b{font-family:"Archivo";font-size:30px;color:var(--red)}
+.diag-chip p{margin:2px 0 0;font-size:14.5px;color:#41516E}
+.stats{background:var(--navy-2);border-top:1px solid rgba(255,255,255,.14)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding-top:20px;padding-bottom:20px}
+@media(max-width:760px){.stats .wrap{grid-template-columns:repeat(2,1fr)}}
+.stat b{display:block;font-family:"Archivo";font-size:26px;color:#fff}
+.stat span{font-size:13.5px;color:#9DB6DE;letter-spacing:.04em;text-transform:uppercase;font-weight:600}
 
-      /* ---------- header ---------- */
-      header.site {
-        position: sticky; top: 0; z-index: 50;
-        background: var(--header-bg);
-        border-bottom: 3px solid var(--navy);
-        box-shadow: 0 2px 14px rgba(6, 26, 66, 0.10);
-      }
-      header.site .wrap {
-        display: flex; align-items: center; gap: 18px;
-        padding-top: 10px; padding-bottom: 10px;
-      }
-      .logo-chip {
-        background: #000; border-radius: 8px; padding: 6px 12px;
-        display: inline-flex; align-items: center; flex: none;
-      }
-      .logo-chip img { height: 44px; width: auto; }
-      nav.main { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
-      nav.main a {
-        color: var(--text); text-decoration: none; font-weight: 600;
-        font-size: 0.98rem; padding: 8px 12px; border-radius: 6px;
-      }
-      nav.main a:hover { background: var(--surface-2); color: var(--navy); }
-      @media (prefers-color-scheme: dark) { nav.main a:hover { color: #fff; } }
-      .call-btn {
-        flex: none; display: inline-flex; align-items: center; gap: 8px;
-        background: var(--red); color: #fff; text-decoration: none;
-        font-family: "Barlow Condensed", sans-serif; font-weight: 700;
-        font-size: 1.25rem; letter-spacing: 0.03em;
-        padding: 9px 18px; border-radius: 8px;
-      }
-      .call-btn:hover { background: var(--red-dark); }
-      @media (max-width: 860px) { nav.main { display: none; } .call-btn { margin-left: auto; } }
+/* services */
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:920px){.svc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.svc-grid{grid-template-columns:1fr}}
+.svc{padding:22px;text-align:left;width:100%;transition:transform .15s,border-color .15s}
+.svc:hover{transform:translateY(-3px);border-color:var(--blue)}
+.svc .ic{font-size:34px;line-height:1}
+.svc h3{font-size:19px;margin:12px 0 6px}
+.svc p{margin:0;font-size:15px}
+.svc .go{margin-top:12px;font-weight:700;color:var(--blue);font-size:14.5px}
 
-      /* ---------- hero ---------- */
-      .hero-banner { background: var(--navy-deep); }
-      .hero-banner img { width: 100%; height: auto; }
-      .hero {
-        background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 62%, var(--navy-ink) 100%);
-        color: #fff;
-      }
-      .hero .wrap {
-        display: grid; grid-template-columns: 1.5fr 1fr; gap: 34px;
-        padding-top: 44px; padding-bottom: 48px; align-items: center;
-      }
-      .hero h1 {
-        font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 800;
-        font-size: clamp(2.6rem, 6vw, 4.3rem); line-height: 0.98;
-        text-transform: uppercase; margin: 0 0 14px;
-      }
-      .hero h1 .accent { color: var(--blue-bright); }
-      .hero p.lede { font-size: 1.16rem; color: #cfdef6; margin: 0 0 22px; max-width: 34em; }
-      .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
-      .btn {
-        display: inline-flex; align-items: center; gap: 9px;
-        font-family: "Barlow Condensed", sans-serif; font-weight: 700;
-        font-size: 1.3rem; letter-spacing: 0.03em; text-transform: uppercase;
-        text-decoration: none; padding: 13px 24px; border-radius: 8px;
-        border: 0; cursor: pointer;
-      }
-      .btn-red { background: var(--red); color: #fff; }
-      .btn-red:hover { background: var(--red-dark); }
-      .btn-ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 2px #7fa8dd; }
-      .btn-ghost:hover { box-shadow: inset 0 0 0 2px #fff; }
-      .fee-card {
-        background: #fff; color: var(--navy-ink); border-radius: 14px;
-        padding: 24px 24px 20px; box-shadow: var(--shadow);
-        border-top: 8px solid var(--red);
-      }
-      .fee-card .fee-kicker {
-        font-family: "Barlow Condensed", sans-serif; font-weight: 700;
-        text-transform: uppercase; letter-spacing: 0.08em; color: var(--blue);
-        font-size: 1rem; margin: 0;
-      }
-      .fee-card .fee-amount {
-        font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-style: italic;
-        font-size: 4rem; line-height: 1; color: var(--navy); margin: 2px 0 4px;
-      }
-      .fee-card p { margin: 0 0 12px; color: #33465f; }
-      .fee-card ul { margin: 0; padding: 0; list-style: none; }
-      .fee-card li { padding: 5px 0 5px 26px; position: relative; font-weight: 500; color: #22354f; }
-      .fee-card li::before {
-        content: ""; position: absolute; left: 2px; top: 11px;
-        width: 9px; height: 9px; border-radius: 50%; background: var(--red);
-      }
-      @media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; } }
+/* lab tabs */
+.lab{background:var(--surface);border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+.lab-tabs{display:flex;gap:0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.lab-tab{flex:1;min-width:200px;padding:17px;border:none;background:var(--surface-2);font-weight:800;font-size:16.5px;color:var(--muted);font-family:"Archivo"}
+.lab-tab[aria-selected="true"]{background:var(--surface);color:var(--navy);box-shadow:inset 0 -3px 0 var(--red)}
+@media (prefers-color-scheme: dark){.lab-tab[aria-selected="true"]{color:#fff}}
+.lab-body{padding:26px}
+@media(max-width:640px){.lab-body{padding:18px}}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:22px;text-align:center;background:var(--surface-2)}
+.drop img{max-height:190px;margin:10px auto;border-radius:10px}
+.sample-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.sample-row button{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px;font-weight:600;font-size:14px;color:var(--ink)}
+.result{border:1.5px solid var(--line);border-left:6px solid var(--blue);border-radius:14px;padding:20px;background:var(--surface-2)}
+.result h3{font-size:20px;margin-bottom:6px}
+.conf{height:9px;border-radius:99px;background:var(--line);overflow:hidden;margin:8px 0 4px}
+.conf i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--electric));width:0;transition:width .7s}
+.price-big{font-family:"Archivo";font-size:30px;font-weight:900;color:var(--navy)}
+@media (prefers-color-scheme: dark){.price-big{color:#fff}}
+.fine{font-size:13.5px;color:var(--muted)}
 
-      /* ---------- trust strip ---------- */
-      .trust { background: var(--surface); border-bottom: 1px solid var(--line); }
-      .trust .wrap {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-        padding-top: 18px; padding-bottom: 18px;
-      }
-      .trust-item { display: flex; gap: 12px; align-items: flex-start; padding: 4px 6px; }
-      .trust-item svg { flex: none; margin-top: 3px; }
-      .trust-item strong { display: block; font-family: "Barlow Condensed", sans-serif; font-size: 1.22rem; text-transform: uppercase; letter-spacing: 0.02em; color: var(--navy); }
-      @media (prefers-color-scheme: dark) { .trust-item strong { color: var(--blue-bright); } }
-      .trust-item span { font-size: 0.94rem; color: var(--muted); }
-      @media (max-width: 900px) { .trust .wrap { grid-template-columns: repeat(2, 1fr); } }
-      @media (max-width: 520px) { .trust .wrap { grid-template-columns: 1fr; } }
+/* tracking */
+.track-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:stretch}
+@media(max-width:900px){.track-grid{grid-template-columns:1fr}}
+.mapbox{position:relative;border-radius:18px;overflow:hidden;border:1px solid var(--line);min-height:340px;background:#DCE9F7}
+@media (prefers-color-scheme: dark){.mapbox{background:#0D2653}}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+#vanMark{position:absolute;width:44px;height:44px;margin:-22px 0 0 -22px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;border:3px solid #fff;box-shadow:0 8px 20px rgba(10,38,92,.4);transition:left 1.1s ease, top 1.1s ease;z-index:3}
+.homeMark{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:3px solid #fff;z-index:2}
+.eta-pill{position:absolute;left:14px;bottom:14px;background:#fff;color:var(--navy);border-radius:12px;padding:10px 14px;font-weight:700;box-shadow:var(--shadow);z-index:4;font-size:15px}
+@media (prefers-color-scheme: dark){.eta-pill{background:#0A1D42;color:#fff}}
+.stages{display:flex;flex-direction:column;gap:0}
+.stage{display:flex;gap:14px;padding:13px 14px;border-radius:12px;border:1.5px solid transparent;text-align:left;background:transparent;width:100%;align-items:flex-start}
+.stage .dot{width:30px;height:30px;flex:none;border-radius:50%;background:var(--surface-2);border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:var(--muted)}
+.stage.done .dot{background:var(--green);border-color:var(--green);color:#fff}
+.stage.now{border-color:var(--blue);background:var(--sky)}
+.stage.now .dot{background:var(--blue);border-color:var(--blue);color:#fff}
+.stage b{color:var(--ink);display:block;font-size:16.5px}
+.stage span{font-size:14.5px}
+.sms-feed{margin-top:16px;display:flex;flex-direction:column;gap:8px;max-height:190px;overflow:auto}
+.sms{background:var(--surface-2);border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:9px 13px;font-size:14.5px;color:var(--ink)}
+.sms small{display:block;color:var(--muted);font-size:12px}
 
-      /* ---------- sections ---------- */
-      section.block { padding: 62px 0; }
-      section.block.alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-      .sec-head { max-width: 760px; margin-bottom: 34px; }
-      .sec-head h2 {
-        font-family: "Barlow Condensed", sans-serif; font-weight: 700; font-style: italic;
-        text-transform: uppercase; font-size: clamp(2rem, 4.4vw, 2.9rem);
-        line-height: 1; margin: 0 0 10px; color: var(--navy);
-      }
-      @media (prefers-color-scheme: dark) { .sec-head h2 { color: #fff; } }
-      .sec-head h2 .accent { color: var(--red); }
-      .sec-head p { margin: 0; color: var(--muted); font-size: 1.08rem; }
-      .rule { width: 74px; height: 5px; background: var(--red); border-radius: 3px; margin-bottom: 16px; }
+/* booking */
+.book-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:start}
+@media(max-width:900px){.book-grid{grid-template-columns:1fr}}
+.book-form{padding:26px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:560px){.frow{grid-template-columns:1fr}}
+.frow>div{margin-bottom:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:11px;padding:10px 13px;font-weight:600;font-size:14.5px;text-align:center}
+.chip small{display:block;font-weight:500;color:var(--muted);font-size:12px}
+.chip[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip[aria-pressed="true"] small{color:#BFD2F2}
+.fee-card{padding:24px;background:linear-gradient(150deg,var(--navy),var(--navy-3));color:#D7E4FA;border:none}
+.fee-card h3{color:#fff;font-size:22px}
+.fee-card .big{font-family:"Archivo";font-size:52px;font-weight:900;color:#fff;line-height:1}
+.fee-card ul{margin:14px 0;padding-left:20px}
+.fee-card li{margin-bottom:8px}
+.confirm{display:none;padding:22px;border:1.5px solid var(--green);background:#EAFaf3;border-radius:14px;margin-top:18px;color:#0B3D2A}
+@media (prefers-color-scheme: dark){.confirm{background:#0B2E22;color:#C9F2DF}}
+.confirm.show{display:block}
+.confirm b.code{font-family:"Archivo";font-size:20px}
 
-      /* ---------- services ---------- */
-      .services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-      @media (max-width: 900px) { .services { grid-template-columns: repeat(2, 1fr); } }
-      @media (max-width: 560px) { .services { grid-template-columns: 1fr; } }
-      .svc {
-        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-        padding: 22px 20px 18px; box-shadow: 0 3px 12px rgba(6, 26, 66, 0.05);
-      }
-      .svc .icon {
-        width: 52px; height: 52px; border-radius: 10px;
-        background: var(--navy); display: flex; align-items: center; justify-content: center;
-        margin-bottom: 14px;
-      }
-      .svc h3 { font-family: "Barlow Condensed", sans-serif; font-size: 1.45rem; font-weight: 700; text-transform: uppercase; margin: 0 0 6px; color: var(--navy); letter-spacing: 0.02em; }
-      @media (prefers-color-scheme: dark) { .svc h3 { color: #fff; } }
-      .svc p { margin: 0; color: var(--muted); font-size: 0.99rem; }
-      .svc a.book-link { display: inline-block; margin-top: 12px; font-weight: 700; text-decoration: none; }
-      .svc a.book-link:hover { text-decoration: underline; }
+/* garage */
+.garage-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:820px){.garage-grid{grid-template-columns:1fr}}
+.appl{padding:20px;display:flex;gap:16px;align-items:flex-start}
+.appl .ic{font-size:38px;background:var(--sky);border-radius:14px;width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center}
+.appl h3{font-size:18px}
+.appl p{margin:3px 0;font-size:14.5px}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.03em}
+.pill.ok{background:#E4F7EF;color:#067452}
+.pill.warn{background:#FEF3E0;color:#9A5B00}
+.pill.info{background:var(--sky);color:var(--navy)}
+@media (prefers-color-scheme: dark){.pill.info{color:#BFD8FF}}
+.appl .btn{padding:9px 15px;font-size:14.5px;margin-top:8px}
+.history{margin-top:16px;padding:22px}
+.history li{margin-bottom:10px}
 
-      /* ---------- fee band ---------- */
-      .fee-band { background: var(--navy); color: #fff; }
-      .fee-band .wrap { padding-top: 54px; padding-bottom: 54px; }
-      .fee-band h2 { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; text-transform: uppercase; font-size: clamp(1.9rem, 4vw, 2.7rem); margin: 0 0 8px; line-height: 1; }
-      .fee-band h2 .price { color: var(--blue-bright); }
-      .fee-band p.sub { color: #cfdef6; margin: 0 0 30px; max-width: 46em; }
-      .fee-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-      @media (max-width: 800px) { .fee-steps { grid-template-columns: 1fr; } }
-      .fee-step { background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; padding: 20px; }
-      .fee-step .n {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 34px; height: 34px; border-radius: 50%; background: var(--red);
-        font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-size: 1.25rem;
-        margin-bottom: 10px;
-      }
-      .fee-step h3 { margin: 0 0 5px; font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; font-size: 1.3rem; letter-spacing: 0.02em; }
-      .fee-step p { margin: 0; color: #cfdef6; font-size: 0.98rem; }
+/* plans */
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.plan-grid{grid-template-columns:1fr}}
+.plan{padding:26px}
+.plan.hot{border:2px solid var(--blue);position:relative}
+.plan h3{font-size:21px;margin-bottom:4px}
+.plan ul{padding-left:19px;margin:14px 0}
+.plan li{margin-bottom:8px;font-size:15.5px}
 
-      /* ---------- journey ---------- */
-      .journey { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
-      @media (max-width: 980px) { .journey { grid-template-columns: repeat(2, 1fr); } }
-      @media (max-width: 520px) { .journey { grid-template-columns: 1fr; } }
-      .step {
-        background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-        padding: 20px 18px 16px; position: relative;
-      }
-      .step .num {
-        font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-style: italic;
-        font-size: 2rem; color: #fff; background: var(--navy);
-        width: 46px; height: 46px; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; margin-bottom: 12px;
-      }
-      .step:nth-child(even) .num { background: var(--blue); }
-      .step h3 { margin: 0 0 5px; font-family: "Barlow Condensed", sans-serif; font-size: 1.32rem; text-transform: uppercase; letter-spacing: 0.02em; color: var(--navy); }
-      @media (prefers-color-scheme: dark) { .step h3 { color: #fff; } }
-      .step p { margin: 0; color: var(--muted); font-size: 0.97rem; }
-      .journey-banner { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); }
+/* brands / areas / blog */
+.brand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:820px){.brand-grid{grid-template-columns:repeat(2,1fr)}}
+.brand{padding:18px;text-align:center;font-family:"Archivo";font-weight:800;font-size:18px;color:var(--ink)}
+.city-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:820px){.city-grid{grid-template-columns:repeat(2,1fr)}}
+.city{padding:16px;font-weight:700;color:var(--ink);display:flex;gap:9px;align-items:center}
+.blog-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.blog-grid{grid-template-columns:1fr}}
+.post{padding:24px}
+.post .ic{font-size:30px}
+.post h3{font-size:19px;margin:10px 0 8px}
+.post p{font-size:15.5px;margin:0 0 12px}
 
-      /* ---------- booking ---------- */
-      .booking-grid { display: grid; grid-template-columns: 1.45fr 1fr; gap: 26px; align-items: start; }
-      @media (max-width: 900px) { .booking-grid { grid-template-columns: 1fr; } }
-      form.book {
-        background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
-        padding: 26px; box-shadow: var(--shadow);
-      }
-      form.book .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-      @media (max-width: 560px) { form.book .row { grid-template-columns: 1fr; } }
-      .field { margin-bottom: 16px; }
-      .field label { display: block; font-weight: 700; margin-bottom: 6px; font-size: 0.98rem; }
-      .field input, .field select, .field textarea {
-        width: 100%; padding: 12px 13px; font: inherit; font-size: 1rem;
-        border: 1.5px solid var(--line); border-radius: 8px;
-        background: var(--bg); color: var(--text);
-      }
-      .field input:focus, .field select:focus, .field textarea:focus {
-        outline: 3px solid rgba(56, 162, 255, 0.45); border-color: var(--blue);
-      }
-      .field .hint { font-size: 0.88rem; color: var(--muted); margin-top: 4px; }
-      .fee-note {
-        display: flex; gap: 12px; align-items: flex-start;
-        background: var(--surface-2); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;
-      }
-      .fee-note strong { color: var(--navy); }
-      @media (prefers-color-scheme: dark) { .fee-note strong { color: var(--blue-bright); } }
-      .fee-note p { margin: 0; font-size: 0.98rem; }
-      form.book .btn { width: 100%; justify-content: center; font-size: 1.45rem; padding: 15px; }
-      .confirm {
-        display: none; background: var(--surface); border: 2px solid var(--ok);
-        border-radius: 14px; padding: 30px 26px; box-shadow: var(--shadow); text-align: left;
-      }
-      .confirm.show { display: block; }
-      .confirm h3 { font-family: "Barlow Condensed", sans-serif; font-size: 1.9rem; text-transform: uppercase; margin: 0 0 8px; color: var(--ok); }
-      .confirm p { margin: 0 0 14px; }
-      .confirm .btn { margin-top: 6px; }
-      .side-card {
-        background: var(--navy); color: #fff; border-radius: 14px; padding: 26px;
-      }
-      .side-card h3 { font-family: "Barlow Condensed", sans-serif; font-size: 1.6rem; text-transform: uppercase; margin: 0 0 12px; }
-      .side-card p { color: #cfdef6; margin: 0 0 14px; }
-      .side-card .big-phone {
-        font-family: "Barlow Condensed", sans-serif; font-weight: 800; font-style: italic;
-        font-size: 2.1rem; color: #fff; text-decoration: none; display: inline-block; margin-bottom: 14px;
-      }
-      .side-card ul { list-style: none; margin: 0 0 6px; padding: 0; }
-      .side-card li { padding: 7px 0; border-top: 1px solid rgba(255,255,255,0.15); color: #e4edfb; }
-      .side-card li:first-child { border-top: 0; }
-      .side-card li strong { color: #fff; }
+/* reviews */
+.review-hero{display:grid;grid-template-columns:.8fr 1.2fr;gap:22px;align-items:stretch}
+@media(max-width:860px){.review-hero{grid-template-columns:1fr}}
+.score-card{padding:30px;text-align:center;background:var(--navy);border:none;color:#C9D9F5}
+.score-card .num{font-family:"Archivo";font-size:76px;font-weight:900;color:#fff;line-height:1}
+.score-card .stars{font-size:26px}
+.theme-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:700px){.theme-grid{grid-template-columns:1fr}}
+.theme{padding:18px}
+.theme b{color:var(--ink);display:block;margin-bottom:4px}
+.theme p{margin:0;font-size:14.5px}
 
-      /* ---------- areas ---------- */
-      .areas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-      @media (max-width: 900px) { .areas { grid-template-columns: repeat(3, 1fr); } }
-      @media (max-width: 600px) { .areas { grid-template-columns: repeat(2, 1fr); } }
-      .area {
-        background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-        padding: 14px 16px; font-weight: 600; display: flex; align-items: center; gap: 10px;
-      }
-      .area svg { flex: none; }
+/* faq */
+details.faq{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:10px}
+details.faq summary{font-weight:700;color:var(--ink);cursor:pointer;font-size:17px}
+details.faq p{margin:10px 0 0}
 
-      /* ---------- provider teaser ---------- */
-      .provider {
-        background: linear-gradient(150deg, var(--navy-deep), var(--navy) 70%);
-        color: #fff; border-radius: 16px; padding: 38px 34px;
-        display: grid; grid-template-columns: auto 1fr auto; gap: 26px; align-items: center;
-      }
-      @media (max-width: 860px) { .provider { grid-template-columns: 1fr; text-align: left; } }
-      .provider img.flag { width: 92px; height: auto; border-radius: 10px; }
-      .provider h2 { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; text-transform: uppercase; font-size: clamp(1.8rem, 3.6vw, 2.5rem); margin: 0 0 8px; line-height: 1; }
-      .provider p { margin: 0; color: #cfdef6; max-width: 44em; }
-      .btn-blue { background: var(--blue); color: #fff; }
-      .btn-blue:hover { background: #0f66bb; }
+footer{background:var(--navy-2);color:#AFC6EA;padding:54px 0 110px}
+footer h3{color:#fff}
+footer a{color:#D7E6FF}
+.foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:28px}
+@media(max-width:820px){.foot-grid{grid-template-columns:1fr}}
 
-      /* ---------- footer ---------- */
-      footer.site { background: var(--navy-ink); color: #c9d9f2; }
-      footer.site .wrap { padding-top: 44px; padding-bottom: 30px; }
-      .foot-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; margin-bottom: 30px; }
-      @media (max-width: 820px) { .foot-grid { grid-template-columns: 1fr; } }
-      footer.site h3 { font-family: "Barlow Condensed", sans-serif; color: #fff; text-transform: uppercase; font-size: 1.3rem; margin: 0 0 12px; letter-spacing: 0.03em; }
-      footer.site a { color: #c9d9f2; text-decoration: none; }
-      footer.site a:hover { color: #fff; text-decoration: underline; }
-      footer.site ul { list-style: none; margin: 0; padding: 0; }
-      footer.site li { padding: 4px 0; }
-      .foot-logo { background: #000; border-radius: 8px; padding: 8px 14px; display: inline-block; margin-bottom: 14px; }
-      .foot-logo img { height: 52px; width: auto; }
-      .slogan { font-family: "Barlow Condensed", sans-serif; font-style: italic; font-weight: 700; text-transform: uppercase; font-size: 1.35rem; color: #fff; margin: 0 0 6px; }
-      .foot-bottom { border-top: 1px solid rgba(255,255,255,0.14); padding-top: 18px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 0.93rem; }
+/* sticky bar + speedy */
+.stickybar{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:color-mix(in srgb, var(--surface) 94%, transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.stickybar .btn{flex:1;padding:13px}
+@media(max-width:760px){.stickybar{display:flex} footer{padding-bottom:130px}}
+#speedyBtn{position:fixed;right:16px;bottom:22px;z-index:80;background:var(--red);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:800;font-size:16px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center}
+@media(max-width:760px){#speedyBtn{bottom:84px;padding:12px 16px;font-size:15px}}
+#speedyPanel{position:fixed;right:16px;bottom:86px;z-index:81;width:min(380px,calc(100vw - 24px));background:var(--surface);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:none;overflow:hidden}
+@media(max-width:760px){#speedyPanel{bottom:142px}}
+#speedyPanel.open{display:block}
+.sp-head{background:var(--navy);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:11px}
+.sp-head .av{width:38px;height:38px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:19px}
+.sp-head b{font-family:"Archivo";font-size:17px}
+.sp-head small{display:block;color:#B9CFF2;font-size:12.5px}
+.sp-head button{margin-left:auto;background:none;border:none;color:#fff;font-size:22px;line-height:1}
+.sp-body{height:320px;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px;background:var(--bg)}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:15px;line-height:1.45}
+.msg.bot{background:var(--surface);border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.me{background:var(--blue);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.sp-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px 0}
+.sp-quick button{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:13.5px;font-weight:600}
+.sp-input{display:flex;gap:8px;padding:12px}
+.sp-input input{flex:1}
+.sp-input button{background:var(--red);color:#fff;border:none;border-radius:11px;padding:0 18px;font-weight:700}
+.reveal{opacity:1}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} #vanMark{transition:none}}
+</style>
+</head>
+<body>
 
-      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-      @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
-    </style>
-  </head>
-  <body>
-    <!-- Utility bar -->
-    <div class="utility">
-      <div class="wrap">
-        <div class="u-items">
-          <span>Call: <a href="tel:+19549317997">954-931-7997</a></span>
-          <span>Email: <a href="mailto:service@topspeedappliance.net">service@topspeedappliance.net</a></span>
+<div class="ribbon">🏁 <b>NEXT-GENERATION PREVIEW</b> — the future of topspeedappliance.net, in development. The live site keeps running. Features marked <span class="preview-dot"></span> <b>Preview</b> are interactive demos.</div>
+
+<header class="site">
+  <div class="wrap nav">
+    <a class="logo" href="#top">TOP SPEED <span>APPLIANCE</span><small>REPAIR • SERVICE • INSTALLATION</small></a>
+    <nav aria-label="Main">
+      <a href="#services">Services</a>
+      <a href="#diagnose">Diagnose</a>
+      <a href="#track">Track My Tech</a>
+      <a href="#garage">My Appliances</a>
+      <a href="#plans">Plans</a>
+      <a href="#areas">Areas</a>
+      <a href="#tips">Tips</a>
+      <a href="/download">Get the App</a>
+    </nav>
+    <a class="btn btn-red call" href="tel:+19549317997">📞 954-931-7997</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<div class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Broward County • Same-Day Service</span>
+        <h1 style="margin:16px 0 14px">Appliance broken?<br>Get it fixed at <span class="hl">TOP</span> <span class="rd">SPEED.</span></h1>
+        <p class="lede">Snap a photo, get a likely diagnosis in seconds, book in about a minute, and watch your technician drive to your door — live. That's the new Top Speed Appliance experience, powered by Top Speed Service OS.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-red" href="#book">📅 Book a Repair</a>
+          <a class="btn" style="background:#fff;color:var(--navy)" href="#diagnose">📸 Diagnose by Photo</a>
+          <a class="btn" style="background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)" href="tel:+19549317997">Call 954-931-7997</a>
         </div>
-        <span>Broward County, Florida &middot; Same-day service available</span>
+        <div class="rating-row">
+          <span class="stars" aria-hidden="true">★★★★★</span>
+          <span><b style="color:#fff">4.8</b> from <b style="color:#fff">2,500 reviews</b> • Top Speed Appliance LLC</span>
+        </div>
+        <div class="hero-badges">
+          <div class="hbadge">💲 <b>$99 diagnostic</b> — credited toward repair</div>
+          <div class="hbadge">⚡ <b>Same-day</b> windows across 12 cities</div>
+          <div class="hbadge">🛡️ <b>Warranty-backed</b> repairs</div>
+        </div>
+      </div>
+      <div>
+        <div class="hero-img"><img src="banner-hero-web.jpg" alt="Get Top Speed — Top Speed Appliance banner showing a refrigerator, washer, dryer, oven and microwave with checkered flag"></div>
+        <div class="diag-chip" style="border-radius:0 0 16px 16px;margin-top:0">
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <b>$99</b>
+            <p style="flex:1;min-width:200px"><strong style="color:var(--navy)">Diagnostic, done right.</strong> Collected at booking, credited in full toward your repair when you approve the work. No surprises — the tech confirms the total before starting.</p>
+            <a class="btn btn-blue" style="padding:11px 18px;font-size:15px" href="#pricing">How pricing works</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="height:26px"></div>
+  <div class="stats">
+    <div class="wrap">
+      <div class="stat"><b>4.8 ★</b><span>2,500 reviews</span></div>
+      <div class="stat"><b>9</b><span>Appliance services</span></div>
+      <div class="stat"><b>12</b><span>Broward cities served</span></div>
+      <div class="stat"><b>Same-Day</b><span>Service windows</span></div>
+    </div>
+  </div>
+</div>
+<div class="checker" aria-hidden="true"></div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">What we fix</span>
+      <h2>Nine services. <em>One fast call.</em></h2>
+      <p>Tap any service to pre-fill your booking and get an instant estimate range. Residential and commercial — every major brand.</p>
+    </div>
+    <div class="svc-grid" id="svcGrid"></div>
+    <div class="card reveal" style="margin-top:16px;padding:22px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+      <div style="max-width:640px">
+        <h3 style="font-size:20px">🏢 Commercial appliance service</h3>
+        <p style="margin:6px 0 0">Restaurants, laundromats, landlords and property managers: priority windows, multi-unit scheduling and one invoice. Ask about the manager portal when you call.</p>
+      </div>
+      <a class="btn btn-navy" href="tel:+19549317997">Talk to dispatch — 954-931-7997</a>
+    </div>
+  </div>
+</section>
+
+<!-- DIAGNOSE LAB -->
+<section id="diagnose" style="background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag red"><span class="preview-dot"></span> Preview — AI Diagnose Lab</span>
+      <h2>Snap. Send. <em>Diagnosed.</em></h2>
+      <p>Two new tools launching with the platform. Try them: the photo diagnosis reads your appliance and symptom, and the estimator gives a planning range before anyone rolls a truck.</p>
+    </div>
+    <div class="lab reveal">
+      <div class="lab-tabs" role="tablist" aria-label="Diagnosis tools">
+        <button class="lab-tab" role="tab" aria-selected="true" id="tabPhoto" onclick="switchLab('photo')">📸 AI Photo / Video Diagnosis</button>
+        <button class="lab-tab" role="tab" aria-selected="false" id="tabEst" onclick="switchLab('est')">🧮 Instant Price Estimator</button>
+      </div>
+
+      <div class="lab-body" id="panelPhoto" role="tabpanel">
+        <div class="two">
+          <div>
+            <div class="drop" id="dropZone">
+              <div style="font-size:38px">📷</div>
+              <p style="margin:6px 0"><b style="color:var(--ink)">Add a photo or short video</b> of the appliance, error code, leak or strange noise.</p>
+              <label class="btn btn-blue" style="padding:11px 20px;font-size:15px" for="fileUp">Choose photo / video</label>
+              <input type="file" id="fileUp" accept="image/*,video/*" style="display:none">
+              <img id="upPreview" alt="Your uploaded appliance photo preview" style="display:none">
+              <p class="fine" id="upName">No file yet — or try a sample below. Your file stays on this device in the preview.</p>
+              <div class="sample-row" role="group" aria-label="Sample cases">
+                <button type="button" onclick="sampleCase('fridge')">🧊 Fridge not cooling</button>
+                <button type="button" onclick="sampleCase('washer')">🌀 Washer won't drain</button>
+                <button type="button" onclick="sampleCase('dryer')">🔥 Dryer no heat</button>
+                <button type="button" onclick="sampleCase('oven')">♨️ Oven error code</button>
+              </div>
+            </div>
+            <div style="margin-top:16px" class="frow">
+              <div><label class="flabel" for="dgAppliance">Appliance</label>
+                <select id="dgAppliance"><option value="fridge">Refrigerator</option><option value="washer">Washer</option><option value="dryer">Dryer</option><option value="oven">Oven &amp; Range</option><option value="dish">Dishwasher</option><option value="freezer">Freezer &amp; Ice Maker</option><option value="micro">Microwave</option><option value="disposal">Garbage Disposal</option></select></div>
+              <div><label class="flabel" for="dgSymptom">What is it doing?</label>
+                <select id="dgSymptom"></select></div>
+            </div>
+            <button class="btn btn-red" style="width:100%" onclick="runDiagnosis()">🔍 Run AI Diagnosis — Preview</button>
+          </div>
+          <div>
+            <div class="result" id="dgResult">
+              <span class="tag live">How it will work</span>
+              <h3 style="margin-top:10px">A head start before the visit</h3>
+              <p>At launch, Speedy's diagnosis reviews your photo/video, the model and the symptom, then returns the <b>most likely issue</b>, what the repair usually involves, and a <b>planning price range</b> — so the tech can arrive with the right part on the truck.</p>
+              <p class="fine">Preview results here use the same sample logic. A technician always confirms the diagnosis in person; your $99 diagnostic is credited toward the repair.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lab-body" id="panelEst" role="tabpanel" hidden>
+        <div class="two">
+          <div>
+            <div class="frow">
+              <div><label class="flabel" for="estAppliance">Appliance</label>
+                <select id="estAppliance"><option value="fridge">Refrigerator</option><option value="washer">Washer</option><option value="dryer">Dryer</option><option value="oven">Oven &amp; Range</option><option value="dish">Dishwasher</option><option value="freezer">Freezer &amp; Ice Maker</option><option value="micro">Microwave</option><option value="disposal">Garbage Disposal</option><option value="install">Installation</option></select></div>
+              <div><label class="flabel" for="estIssue">Issue</label><select id="estIssue"></select></div>
+            </div>
+            <div style="margin-bottom:14px"><label class="flabel" for="estBrand">Brand (optional)</label>
+              <select id="estBrand"><option>Any brand</option><option>Samsung</option><option>LG</option><option>Whirlpool</option><option>GE</option><option>Frigidaire</option><option>Maytag</option><option>Bosch</option><option>KitchenAid</option><option>Other</option></select></div>
+            <button class="btn btn-blue" style="width:100%" onclick="runEstimate()">Get my estimate range</button>
+            <p class="fine" style="margin-top:10px">Estimates are planning ranges based on typical Broward County repairs for the selected issue. Your exact total is confirmed by the technician after the $99 diagnostic — and that $99 is credited toward the repair.</p>
+          </div>
+          <div>
+            <div class="result" id="estResult">
+              <span class="tag">Estimate</span>
+              <h3 style="margin-top:10px">Your range appears here</h3>
+              <p>Pick an appliance and issue, then tap <b>Get my estimate range</b>. Like what you see? Book the $99 diagnostic and lock the visit in — the fee comes off your repair total.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRACKING -->
+<section id="track">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag red"><span class="preview-dot"></span> Preview — Live Tracking</span>
+      <h2>Know exactly when <em>help arrives.</em></h2>
+      <p>No more four-hour guessing games. Press play and watch a Top Speed visit move from booked to your door — with the text updates you'd receive at every step.</p>
+    </div>
+    <div class="track-grid reveal">
+      <div class="mapbox" aria-label="Demo map showing technician route to a home in Sunrise">
+        <svg viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true">
+          <rect width="600" height="380" fill="transparent"/>
+          <g stroke="#B9CFEA" stroke-width="14"><path d="M0 90 H600"/><path d="M0 210 H600"/><path d="M0 320 H600"/><path d="M110 0 V380"/><path d="M290 0 V380"/><path d="M470 0 V380"/></g>
+          <g stroke="#9FB9DC" stroke-width="5"><path d="M0 150 H600"/><path d="M0 265 H600"/><path d="M200 0 V380"/><path d="M385 0 V380"/></g>
+          <rect x="330" y="225" width="120" height="80" rx="10" fill="#BFE6CF"/>
+          <rect x="30" y="230" width="90" height="60" rx="10" fill="#FFE1A8"/>
+          <path id="routePath" d="M70 320 L70 210 L290 210 L290 110 L505 110" fill="none" stroke="#0B7CFF" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8"/>
+        </svg>
+        <div class="homeMark" id="homeMark" style="left:84%;top:29%">⌂</div>
+        <div id="vanMark" style="left:12%;top:84%">🚐</div>
+        <div class="eta-pill" id="etaPill">Status: Booked — tap ▶ Play demo</div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <button class="btn btn-red" id="playBtn" style="padding:11px 20px;font-size:15px" onclick="playTrack()">▶ Play demo</button>
+          <button class="btn btn-ghost" style="padding:11px 18px;font-size:15px" onclick="resetTrack()">↺ Reset</button>
+        </div>
+        <div class="stages" id="stageList" role="group" aria-label="Tracking stages"></div>
+        <div class="sms-feed" id="smsFeed" aria-live="polite"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOOKING -->
+<section id="book" style="background:var(--navy-2);">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Smart Booking <span class="preview-dot"></span> Preview</span>
+      <h2 style="color:#fff">Booked in about <em style="color:var(--electric)">60 seconds.</em></h2>
+      <p style="color:#B9CFF2">Pick a real window, tell us what's broken, and you're on the board. Service Setters dispatch reviews every request, and we confirm your appointment by phone.</p>
+    </div>
+    <div class="book-grid">
+      <form class="card book-form reveal" id="bookForm" novalidate>
+        <div class="frow">
+          <div><label class="flabel" for="bkAppliance">Appliance</label>
+            <select id="bkAppliance"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven &amp; Range</option><option>Dishwasher</option><option>Freezer &amp; Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option><option>Commercial / Multiple</option></select></div>
+          <div><label class="flabel" for="bkBrand">Brand</label>
+            <select id="bkBrand"><option>Samsung</option><option>LG</option><option>Whirlpool</option><option>GE</option><option>Frigidaire</option><option>Maytag</option><option>Bosch</option><option>KitchenAid</option><option>Other / Not sure</option></select></div>
+        </div>
+        <div style="margin-bottom:14px"><label class="flabel" for="bkIssue">What's happening?</label>
+          <input id="bkIssue" type="text" placeholder="e.g. Fridge warm, freezer fine — started yesterday"></div>
+        <div style="margin-bottom:14px"><label class="flabel">Choose a day</label><div class="chips" id="dayChips"></div></div>
+        <div style="margin-bottom:14px"><label class="flabel">Choose a window</label>
+          <div class="chips" id="winChips">
+            <button type="button" class="chip" data-win="8–11 AM">8–11 AM<small>Morning</small></button>
+            <button type="button" class="chip" data-win="11 AM–2 PM">11 AM–2 PM<small>Midday</small></button>
+            <button type="button" class="chip" data-win="2–5 PM">2–5 PM<small>Afternoon</small></button>
+            <button type="button" class="chip" data-win="5–8 PM">5–8 PM<small>Evening</small></button>
+          </div></div>
+        <div class="frow">
+          <div><label class="flabel" for="bkName">Your name</label><input id="bkName" type="text" autocomplete="name" placeholder="Full name"></div>
+          <div><label class="flabel" for="bkPhone">Mobile phone (for text updates)</label><input id="bkPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123"></div>
+        </div>
+        <div class="frow">
+          <div><label class="flabel" for="bkCity">City</label>
+            <select id="bkCity"><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Other Broward</option></select></div>
+          <div><label class="flabel" for="bkZip">ZIP</label><input id="bkZip" type="text" inputmode="numeric" placeholder="33313"></div>
+        </div>
+        <p class="fine" id="bkError" style="color:var(--red);font-weight:600" role="alert"></p>
+        <button class="btn btn-red" type="submit" style="width:100%">✓ Request this appointment — $99 diagnostic at booking</button>
+        <p class="fine" style="margin-top:10px;text-align:center">Preview form — in this demo your request is confirmed on screen only. On the live platform, dispatch confirms every booking by phone. Prefer to talk? <a href="tel:+19549317997"><b>Call 954-931-7997</b></a>.</p>
+        <div class="confirm" id="bkConfirm" role="status"></div>
+      </form>
+      <aside class="card fee-card reveal" id="pricing">
+        <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Pricing &amp; Warranty</span>
+        <h3 style="margin-top:14px">The $99 diagnostic, explained</h3>
+        <div class="big">$99</div>
+        <ul>
+          <li><b>Collected at booking</b> — reserves your window and a qualified tech.</li>
+          <li><b>Credited toward repair</b> — approve the fix and the full $99 comes off your total.</li>
+          <li><b>Flat quote before work</b> — you approve the exact repair price first. No hourly meters, no surprises.</li>
+          <li><b>Warranty in writing</b> — parts and labor warranty terms are provided before work begins, and your invoice and history live in My Appliances.</li>
+          <li><b>Not worth fixing?</b> The tech will tell you straight — and your diagnosis notes stay in your account for the replacement decision.</li>
+        </ul>
+        <a class="btn" style="background:#fff;color:var(--navy);width:100%" href="tel:+19549317997">📞 Questions? 954-931-7997</a>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- MY APPLIANCES -->
+<section id="garage">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag red"><span class="preview-dot"></span> Preview — Customer Account</span>
+      <h2>My Appliances: <em>your home's garage.</em></h2>
+      <p>Every appliance you own, its service history and warranty status — and one-tap rebooking when something acts up again. Sample household shown.</p>
+    </div>
+    <div class="garage-grid reveal" id="garageGrid"></div>
+    <div class="card history reveal">
+      <h3 style="font-size:19px;margin-bottom:10px">🗂️ Service history — sample account</h3>
+      <ul style="margin:0;padding-left:20px">
+        <li><b>Refrigerator — drain line cleared &amp; fan checked.</b> Invoice, parts and payment receipt saved to the account.</li>
+        <li><b>Washer — drain pump replaced.</b> Warranty status tracked automatically; photo report from the tech attached.</li>
+        <li><b>Dryer — annual vent &amp; lint service</b> under the Smart Maintenance Plan, with a reminder before the next one is due.</li>
+      </ul>
+      <p class="fine" style="margin:12px 0 0">At launch, your real history builds itself: every booking, diagnosis, photo report, invoice and warranty in one place — no paper folders, no guessing when you bought what.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PLANS -->
+<section id="plans" style="background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">Smart Maintenance Plan</span>
+      <h2>Stop breakdowns <em>before they start.</em></h2>
+      <p>The Service OS remembers every appliance in your home and nudges you before small issues become weekend emergencies. Plan pricing is shown at signup — every tier starts with the same $99 diagnostic model when something does break.</p>
+    </div>
+    <div class="plan-grid reveal">
+      <div class="card plan">
+        <h3>Essential</h3>
+        <p>For apartments &amp; smaller homes</p>
+        <ul>
+          <li>Appliance profiles in My Appliances</li>
+          <li>Filter &amp; maintenance reminders</li>
+          <li>Annual check on 2 key appliances</li>
+          <li>Priority booking windows</li>
+        </ul>
+        <p class="fine">Pricing shown at signup.</p>
+        <a class="btn btn-ghost" style="width:100%" href="#book">Start with a booking</a>
+      </div>
+      <div class="card plan hot">
+        <span class="tag red" style="position:absolute;top:-13px;left:20px">Most popular direction</span>
+        <h3>Whole Home</h3>
+        <p>For busy family homes</p>
+        <ul>
+          <li>Everything in Essential</li>
+          <li>Annual checks across kitchen &amp; laundry</li>
+          <li>Dryer vent &amp; coil care included in visits</li>
+          <li>Faster same-day priority + text updates</li>
+          <li>Service history &amp; warranty tracking</li>
+        </ul>
+        <p class="fine">Pricing shown at signup.</p>
+        <a class="btn btn-blue" style="width:100%" href="#book">Start with a booking</a>
+      </div>
+      <div class="card plan">
+        <h3>Property &amp; Commercial</h3>
+        <p>For landlords &amp; managers</p>
+        <ul>
+          <li>Every unit's appliances in one portal</li>
+          <li>Tenant requests routed automatically</li>
+          <li>Photo reports after every visit</li>
+          <li>One consolidated monthly invoice</li>
+        </ul>
+        <p class="fine">Pricing shown at signup.</p>
+        <a class="btn btn-ghost" style="width:100%" href="tel:+19549317997">Talk to us — 954-931-7997</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BRANDS -->
+<section id="brands">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">Brand specialists</span>
+      <h2>Brand-specific repair, <em>done right.</em></h2>
+      <p>Error codes, sealed systems, smart features — we service the brands Broward homes actually run, including smart and Wi-Fi models.</p>
+    </div>
+    <div class="brand-grid reveal" id="brandGrid"></div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" style="background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">Reviews</span>
+      <h2>Broward keeps <em>rating us fast.</em></h2>
+    </div>
+    <div class="review-hero reveal">
+      <div class="card score-card">
+        <div class="num">4.8</div>
+        <div class="stars">★★★★★</div>
+        <p style="margin:10px 0 0"><b style="color:#fff">2,500 reviews</b><br>Top Speed Appliance LLC<br>Broward County, Florida</p>
+        <a class="btn" style="background:#fff;color:var(--navy);margin-top:18px;padding:11px 20px;font-size:15px" href="tel:+19549317997">Become the next happy call</a>
+      </div>
+      <div>
+        <div class="theme-grid">
+          <div class="card theme"><b>⚡ Speed</b><p>The theme that comes up again and again: same-day windows and techs who arrive when the text says they will.</p></div>
+          <div class="card theme"><b>💬 Communication</b><p>Customers praise the updates — booked, dispatched, en route — so nobody waits in the dark.</p></div>
+          <div class="card theme"><b>🎯 Fixed first visit</b><p>Photo diagnosis before the visit means the right part is often already on the truck.</p></div>
+          <div class="card theme"><b>💲 Straight pricing</b><p>The $99-credited diagnostic and a flat quote before work starts — no surprise totals.</p></div>
+          <div class="card theme"><b>🧰 Professional techs</b><p>Clean, prepared, and happy to explain what failed and how to prevent it next time.</p></div>
+          <div class="card theme"><b>🔁 They call us back</b><p>Repeat customers and neighbor referrals are the engine of the 2,500-review count.</p></div>
+        </div>
+        <p class="fine" style="margin-top:12px">Review themes summarized from the store's public review profile. At platform launch this wall streams the live Google review feed. After every completed job, the Service OS sends a review invitation — that's steps 6–7 of the journey below.</p>
+      </div>
+    </div>
+    <div class="card reveal" style="margin-top:22px;padding:14px">
+      <img src="banner-journey-web.jpg" alt="Top Speed Appliance Seamless Service journey: appointment details, technician notification, arrival updates, job completion, job summary, customer satisfaction, Google review invitation and customer retention" style="border-radius:12px;width:100%">
+      <p class="fine" style="margin:10px 4px 2px">The Seamless Service journey — the 8-step experience this V2 site is built around, from booking confirmation to follow-up.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AREAS -->
+<section id="areas">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">Service areas</span>
+      <h2>12 Broward cities. <em>Same-day fast.</em></h2>
+      <p>Our core coverage across Broward County — plus surrounding neighborhoods. Don't see your city? Call — if a tech is nearby, we're coming.</p>
+    </div>
+    <div class="city-grid reveal" id="cityGrid"></div>
+  </div>
+</section>
+
+<!-- TIPS / BLOG -->
+<section id="tips" style="background:var(--surface-2);border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">From the blog — Tips &amp; care</span>
+      <h2>Know it <em>before it breaks.</em></h2>
+    </div>
+    <div class="blog-grid reveal">
+      <article class="card post"><div class="ic">🧊</div><h3>Fridge running warm? Check these 3 things first</h3><p>Blocked vents, dirty coils and a door seal that fails the dollar-bill test cause most "warm fridge" calls. What to check in 10 minutes — and when it's the fan or compressor instead.</p><span class="tag">Refrigerator care</span></article>
+      <article class="card post"><div class="ic">🔥</div><h3>The dryer vent rule that prevents fires</h3><p>Lint beyond the trap is the #1 dryer problem we see in Broward homes. How often to clear the full vent run, the signs airflow is choked, and why dry times creep up first.</p><span class="tag">Dryer safety</span></article>
+      <article class="card post"><div class="ic">🌀</div><h3>Washer smells? It's the gasket — here's the fix</h3><p>Front-load odor comes from moisture trapped in the door gasket folds. The monthly wipe-down routine, the leave-it-ajar habit, and when the smell means a drain problem.</p><span class="tag">Laundry care</span></article>
+    </div>
+
+    <div class="card reveal" style="margin-top:22px;padding:26px;background:linear-gradient(140deg,var(--navy),var(--navy-3));border:none;color:#D7E4FA">
+      <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+        <div style="max-width:660px">
+          <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">One platform • Two doors</span>
+          <h3 style="color:#fff;font-size:24px;margin:12px 0 8px">Are you a technician or a repair company?</h3>
+          <p style="margin:0">Customers book here on <b style="color:#fff">topspeedappliance.net</b>. Providers get matched, pre-qualified jobs — diagnostic already collected — through the network at <b style="color:#fff">topspeedapplianceservice.com</b>. Both run on Top Speed Service OS, with Service Setters dispatch in the middle.</p>
+        </div>
+        <a class="btn btn-red" href="/service/" target="_blank" rel="noopener">Join the Provider Network →</a>
       </div>
     </div>
 
-    <!-- Header -->
-    <header class="site">
-      <div class="wrap">
-        <a class="logo-chip" href="#top" aria-label="Top Speed Appliance Repair — home">
-          <img src="logo.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." />
-        </a>
-        <nav class="main" aria-label="Main">
-          <a href="#services">Services</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#book">Book Repair</a>
-          <a href="#areas">Service Areas</a>
-          <a href="#providers">For Providers</a>
-          <a href="/download">Get the App</a>
-        </nav>
-        <a class="call-btn" href="tel:+19549317997">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z" fill="#fff"/></svg>
-          954-931-7997
-        </a>
-      </div>
-    </header>
-    <div class="checker" aria-hidden="true"></div>
+    <div style="margin-top:34px" class="reveal">
+      <h3 style="font-size:22px;margin-bottom:14px">Quick answers</h3>
+      <details class="faq"><summary>How does the $99 diagnostic work?</summary><p>It's collected at booking to reserve your window, the tech diagnoses the appliance in person, and if you approve the repair, the full $99 is credited toward the total. You approve a flat quote before any repair work starts.</p></details>
+      <details class="faq"><summary>How fast can you come?</summary><p>Same-day windows are offered across our 12 core Broward cities when the board allows — pick a window in Smart Booking or call 954-931-7997 and dispatch will tell you the earliest real opening.</p></details>
+      <details class="faq"><summary>Do you service my brand?</summary><p>Yes — Samsung, LG, Whirlpool, GE, Frigidaire, Maytag, Bosch, KitchenAid and more, including smart/Wi-Fi models and commercial units.</p></details>
+      <details class="faq"><summary>Is this the live website?</summary><p>This is the next-generation preview in development. The current live site at topspeedappliance.net keeps running untouched; demos marked Preview show how the new platform will work at launch. To book today, use the phone — 954-931-7997 — and we'll take it from there.</p></details>
+    </div>
+  </div>
+</section>
 
-    <main id="top">
-      <!-- Hero banner (brand artwork) -->
-      <div class="hero-banner">
-        <img src="banner-hero-web.jpg" alt="Get Top Speed — your appliance repair starts here. Professional repair for refrigerators, washers, dryers, ovens and more, Top Speed Appliance LLC, Broward County." />
-      </div>
-
-      <!-- Hero -->
-      <section class="hero">
-        <div class="wrap">
-          <div>
-            <h1>Get Top Speed.<br /><span class="accent">Your appliance repair starts here.</span></h1>
-            <p class="lede">Professional repair for refrigerators, washers, dryers, ovens, microwaves and more — booked in minutes, confirmed fast, and tracked every step of the way across Broward County.</p>
-            <div class="hero-ctas">
-              <a class="btn btn-red" href="#book">Book a Repair</a>
-              <a class="btn btn-ghost" href="tel:+19549317997">Call 954-931-7997</a>
-            </div>
-          </div>
-          <aside class="fee-card" aria-label="Diagnostic fee">
-            <p class="fee-kicker">Diagnostic Fee</p>
-            <p class="fee-amount">$99</p>
-            <p>One flat fee for a full in-home diagnosis by a Top Speed technician.</p>
-            <ul>
-              <li>Collected at booking — no surprises</li>
-              <li><strong>Credited toward your repair</strong> when you approve the work</li>
-              <li>Clear written quote before any repair begins</li>
-            </ul>
-          </aside>
+<!-- PROVIDER SIDE — topspeedapplianceservice.com V2 -->
+<section id="providers" style="background:var(--navy-2)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)"><span class="preview-dot"></span> Preview — The Other Door</span>
+      <h2 style="color:#fff;overflow-wrap:anywhere;font-size:clamp(24px,5.4vw,42px)">topspeedapplianceservice.com <em style="color:var(--electric)">V2 — for providers.</em></h2>
+      <p style="color:#B9CFF2">The provider-network half of the same platform. Customers book on .net; qualified techs and repair companies receive matched, pre-qualified jobs here — with the $99 diagnostic already collected, so no-shows and tire-kickers are rare.</p>
+    </div>
+    <div class="two reveal" style="align-items:start">
+      <div class="card" style="padding:24px">
+        <span class="tag live">● Live job offer — demo</span>
+        <h3 style="font-size:21px;margin:12px 0 6px">🧊 Refrigerator — not cooling</h3>
+        <p style="margin:0 0 6px">📍 Sunrise, 33322 • Window: Today, 2–5 PM<br>📸 Customer photo + AI pre-diagnosis attached: likely condenser fan / coils<br>💲 $99 diagnostic <b>already collected</b> • Customer confirmed by Service Setters</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+          <button type="button" class="btn btn-red" id="offerBtn" style="padding:12px 22px" onclick="acceptOffer()">✓ Accept this job</button>
+          <a class="btn btn-ghost" style="padding:12px 20px" href="/service/" target="_blank" rel="noopener">Visit the live provider site</a>
         </div>
-      </section>
-      <div class="checker thin" aria-hidden="true"></div>
-
-      <!-- Trust strip -->
-      <div class="trust">
-        <div class="wrap">
-          <div class="trust-item">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="#e01e26" stroke-width="2"/><path d="M12 7v5l3.5 2" stroke="#0a265c" stroke-width="2" stroke-linecap="round"/></svg>
-            <div><strong>Fast Response</strong><span>Same-day appointments available across Broward County.</span></div>
-          </div>
-          <div class="trust-item">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2" stroke="#0a265c" stroke-width="2"/><path d="M3 10h18" stroke="#e01e26" stroke-width="2"/><path d="M7 15h4" stroke="#0a265c" stroke-width="2" stroke-linecap="round"/></svg>
-            <div><strong>$99 Diagnostic, Credited</strong><span>The fee you pay at booking comes off your repair total.</span></div>
-          </div>
-          <div class="trust-item">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3z" stroke="#0a265c" stroke-width="2" fill="none"/><path d="M9 12l2 2 4-4" stroke="#e01e26" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div><strong>Warranty &amp; Support</strong><span>Repairs backed by warranty, with support after the visit.</span></div>
-          </div>
-          <div class="trust-item">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#12805c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <div><strong>Seamless Updates</strong><span>Confirmations, tech tracking and job summaries by text.</span></div>
-          </div>
+        <p class="fine" id="offerMsg" style="margin-top:12px">Demo offer with sample job details. Tap Accept to see how the provider app responds.</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;text-align:center">
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">🗺️ Route</b><span style="font-size:13px">Day route, optimized</span></div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">🧾 Invoice</b><span style="font-size:13px">In-app estimates &amp; pay</span></div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">⭐ Ratings</b><span style="font-size:13px">Build your profile</span></div>
         </div>
       </div>
-
-      <!-- Services -->
-      <section class="block" id="services">
-        <div class="wrap">
-          <div class="sec-head">
-            <div class="rule"></div>
-            <h2>Appliance Repair <span class="accent">Services</span></h2>
-            <p>From a fridge that won't cool to a washer that won't spin — Top Speed technicians repair all major home and commercial appliances.</p>
-          </div>
-          <div class="services">
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M6 9.5h12" stroke="#38a2ff" stroke-width="1.8"/><path d="M9 6v1.6M9 12v3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-              <h3>Refrigerator Repair</h3>
-              <p>Cooling problems, ice makers, compressors, leaks and noisy operation — French door, side-by-side, and built-in units.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="3" width="7.5" height="18" rx="1.5" stroke="#fff" stroke-width="1.8"/><circle cx="7.75" cy="13.5" r="3" stroke="#38a2ff" stroke-width="1.8"/><rect x="13.5" y="3" width="7.5" height="18" rx="1.5" stroke="#fff" stroke-width="1.8"/><rect x="15.5" y="7" width="3.5" height="6" rx="1" stroke="#38a2ff" stroke-width="1.6"/></svg></div>
-              <h3>Washer &amp; Dryer Repair</h3>
-              <p>Won't spin, drain, heat or start — front-load, top-load and stacked laundry pairs from all major brands.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="4" y="4" width="16" height="17" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M4 9h16" stroke="#38a2ff" stroke-width="1.8"/><rect x="7.5" y="12.5" width="9" height="6" rx="1" stroke="#fff" stroke-width="1.6"/><path d="M7 6.5h.01M11 6.5h.01M15 6.5h.01" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-              <h3>Oven &amp; Stove Repair</h3>
-              <p>Burners, igniters, heating elements and temperature control for gas and electric ranges, ovens and cooktops.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M3.5 8h17" stroke="#38a2ff" stroke-width="1.8"/><path d="M7 12.5c1.5 1.6 3.5 1.6 5 0s3.5-1.6 5 0" stroke="#fff" stroke-width="1.6" stroke-linecap="round" fill="none"/><path d="M8 6h.01M12 6h.01" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg></div>
-              <h3>Dishwasher Repair</h3>
-              <p>Leaks, draining issues, poor cleaning and control failures — we get your dishwasher back to a spotless finish.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" stroke="#fff" stroke-width="1.8"/><rect x="6" y="9" width="8" height="6" rx="1" stroke="#38a2ff" stroke-width="1.6"/><path d="M17.5 9.5h.01M17.5 12.5h.01M17.5 15.5h.01" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></div>
-              <h3>Microwave Repair</h3>
-              <p>Not heating, sparking, turntable and door-switch problems for countertop and over-the-range microwaves.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="8.5" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="#38a2ff" stroke-width="1.8"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-              <h3>Garbage Disposal</h3>
-              <p>Jammed, humming, leaking or dead disposals — repaired or replaced with proper, safe installation.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2" stroke="#fff" stroke-width="1.8"/><path d="M7 8h10" stroke="#38a2ff" stroke-width="1.8"/><path d="M10 12h4M10 15.5h4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="5.2" r="0.6" fill="#fff"/></svg></div>
-              <h3>Wine Cooler Repair</h3>
-              <p>Temperature drift, compressor and thermostat faults on wine coolers and beverage centers — protect your collection.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 21V8l5 3.5V8l5 3.5V5h6v16H4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none"/><path d="M8 17.5h2M13 17.5h2M17.5 17.5h.5" stroke="#38a2ff" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-              <h3>Commercial Refrigeration</h3>
-              <p>Walk-ins, reach-ins, prep coolers and ice machines for restaurants and businesses — priority service to protect your inventory.</p>
-              <a class="book-link" href="#book">Book this repair &rarr;</a>
-            </article>
-            <article class="svc">
-              <div class="icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20.6 8.3a5.2 5.2 0 0 1-6.7 6.1L7 21.3a2.05 2.05 0 0 1-2.9 0l-1-1a2.05 2.05 0 0 1 0-2.9l6.9-6.9A5.2 5.2 0 0 1 16.1 3.4l-2.7 2.7 1 2.9 2.9 1 2.7-2.7c.4.9.6 1.9.6 1z" stroke="#fff" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
-              <h3>Installation</h3>
-              <p>Professional installation of new appliances — dishwashers, ranges, microwaves, disposals and laundry, leveled, connected and tested.</p>
-              <a class="book-link" href="#book">Book this service &rarr;</a>
-            </article>
-          </div>
+      <div>
+        <div class="card" style="padding:24px;margin-bottom:16px">
+          <h3 style="font-size:20px;margin-bottom:10px">How the network works</h3>
+          <ol style="margin:0;padding-left:20px">
+            <li style="margin-bottom:8px"><b>Apply free</b> — tell us your trades and areas (all 12 Broward cities).</li>
+            <li style="margin-bottom:8px"><b>Get verified</b> — license/insurance and quality standards checked.</li>
+            <li style="margin-bottom:8px"><b>Service Setters dispatch</b> — a human team quality-checks every job before it reaches you. No buying leads, no bidding wars.</li>
+            <li style="margin-bottom:8px"><b>Run the job in the app</b> — customer photos, route, in-app invoice, ratings.</li>
+            <li><b>Get paid on clear terms</b> — payout terms are stated plainly before launch; no invented numbers here.</li>
+          </ol>
         </div>
-      </section>
-
-      <!-- $99 fee band -->
-      <section class="fee-band" aria-label="How the diagnostic fee works">
-        <div class="wrap">
-          <h2>The <span class="price">$99 Diagnostic</span> — Simple &amp; Fair</h2>
-          <p class="sub">No hourly meters, no vague estimates. One flat diagnostic fee, collected when you book, and every dollar of it comes off your repair when you approve the work.</p>
-          <div class="fee-steps">
-            <div class="fee-step">
-              <span class="n">1</span>
-              <h3>Pay $99 at Booking</h3>
-              <p>Your diagnostic fee is collected when your appointment is booked, locking in your time slot.</p>
-            </div>
-            <div class="fee-step">
-              <span class="n">2</span>
-              <h3>Get a Full Diagnosis</h3>
-              <p>A Top Speed technician inspects your appliance and gives you a clear, written repair quote.</p>
-            </div>
-            <div class="fee-step">
-              <span class="n">3</span>
-              <h3>$99 Comes Off the Repair</h3>
-              <p>Approve the repair and the full $99 is credited toward it — you only pay the remaining balance.</p>
-            </div>
+        <form class="card" style="padding:24px" id="provForm" novalidate>
+          <h3 style="font-size:20px;margin-bottom:6px">Apply to the network — preview</h3>
+          <p style="margin:0 0 14px;font-size:15px">Two minutes. We reply by phone to finish verification.</p>
+          <div class="frow">
+            <div><label class="flabel" for="pvName">Your / company name</label><input id="pvName" type="text" placeholder="Name"></div>
+            <div><label class="flabel" for="pvPhone">Mobile phone</label><input id="pvPhone" type="tel" placeholder="(954) 555-0123"></div>
           </div>
-        </div>
-      </section>
-
-      <!-- Journey -->
-      <section class="block alt" id="how-it-works">
-        <div class="wrap">
-          <div class="sec-head">
-            <div class="rule"></div>
-            <h2>Seamless Service. <span class="accent">Every Step of the Way.</span></h2>
-            <p>From booking to follow-up — we keep you informed. Here's exactly what happens after you book with Top Speed.</p>
-          </div>
-          <div class="journey">
-            <div class="step"><div class="num">1</div><h3>Book in Minutes</h3><p>Send your service request online or by phone and pay the $99 diagnostic fee to lock in your slot.</p></div>
-            <div class="step"><div class="num">2</div><h3>We Confirm Fast</h3><p>You get your appointment confirmation right away, with the date, time window and technician info.</p></div>
-            <div class="step"><div class="num">3</div><h3>Technician Notification</h3><p>You're notified when your technician is assigned and on the way — no waiting around wondering.</p></div>
-            <div class="step"><div class="num">4</div><h3>Track Your Tech</h3><p>Follow arrival updates in real time by text, with an ETA so you can plan your day.</p></div>
-            <div class="step"><div class="num">5</div><h3>Expert Repair</h3><p>Your technician diagnoses the problem, quotes it clearly, and completes the repair with quality parts.</p></div>
-            <div class="step"><div class="num">6</div><h3>Pay and Relax</h3><p>Diagnosis, work performed, parts and payment are documented in your job summary — with your $99 credited.</p></div>
-            <div class="step"><div class="num">7</div><h3>Warranty &amp; Support</h3><p>Your repair is backed by warranty, and we follow up to make sure the service met your expectations.</p></div>
-            <div class="step"><div class="num">8</div><h3>Stay Connected</h3><p>Service history access, maintenance reminders and special offers — your trusted partner for appliance care.</p></div>
-          </div>
-          <div class="journey-banner">
-            <img src="banner-journey-web.jpg" alt="The Top Speed Seamless Service journey: appointment details, technician notification, arrival updates, job completion, documented diagnosis and payment, customer satisfaction follow-up, Google review invitation, and customer retention." loading="lazy" />
-          </div>
-        </div>
-      </section>
-
-      <!-- Booking -->
-      <section class="block" id="book">
-        <div class="wrap">
-          <div class="sec-head">
-            <div class="rule"></div>
-            <h2>Book Your <span class="accent">Repair</span></h2>
-            <p>Tell us what's broken and we'll get you on the schedule. The $99 diagnostic fee is collected at booking and credited toward your repair.</p>
-          </div>
-          <div class="booking-grid">
-            <div>
-              <form class="book" id="bookForm" novalidate>
-                <div class="fee-note">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="flex:none;margin-top:2px"><circle cx="12" cy="12" r="9.5" stroke="#e01e26" stroke-width="2"/><path d="M12 8v5M12 16.2v.01" stroke="#0a265c" stroke-width="2.2" stroke-linecap="round"/></svg>
-                  <p><strong>$99 diagnostic fee applies.</strong> It's collected when your booking is confirmed and credited in full toward your repair when you approve the work.</p>
-                </div>
-                <div class="row">
-                  <div class="field">
-                    <label for="fName">Full name</label>
-                    <input id="fName" name="name" type="text" autocomplete="name" required placeholder="Your name" />
-                  </div>
-                  <div class="field">
-                    <label for="fPhone">Phone number</label>
-                    <input id="fPhone" name="phone" type="tel" autocomplete="tel" required placeholder="(954) 555-0123" />
-                  </div>
-                </div>
-                <div class="row">
-                  <div class="field">
-                    <label for="fAppliance">Appliance</label>
-                    <select id="fAppliance" name="appliance" required>
-                      <option value="">Select an appliance…</option>
-                      <option>Refrigerator</option>
-                      <option>Washer</option>
-                      <option>Dryer</option>
-                      <option>Oven / Stove</option>
-                      <option>Dishwasher</option>
-                      <option>Microwave</option>
-                      <option>Garbage Disposal</option>
-                      <option>Wine Cooler</option>
-                      <option>Commercial Refrigeration</option>
-                      <option>Installation (new appliance)</option>
-                      <option>Other</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="fZip">ZIP code</label>
-                    <input id="fZip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" required placeholder="33311" maxlength="10" />
-                  </div>
-                </div>
-                <div class="field">
-                  <label for="fIssue">What's the issue?</label>
-                  <textarea id="fIssue" name="issue" rows="4" required placeholder="e.g. Fridge is warm and the ice maker stopped working two days ago."></textarea>
-                  <p class="hint">Brand and model help too, if you have them handy.</p>
-                </div>
-                <p class="sr-only" id="formError" role="alert"></p>
-                <button class="btn btn-red" type="submit">Request My Appointment</button>
-              </form>
-              <div class="confirm" id="bookConfirm" role="status">
-                <h3>Request Received</h3>
-                <p id="confirmText">Thanks — we've noted your service request.</p>
-                <p><strong>To complete your booking</strong> — including your appointment time and the $99 diagnostic fee — call us now and mention the details you just entered:</p>
-                <a class="btn btn-red" href="tel:+19549317997">Call 954-931-7997 to Finish Booking</a>
-                <p style="margin-top:14px">Prefer email? Reach us at <a href="mailto:service@topspeedappliance.net">service@topspeedappliance.net</a>.</p>
-              </div>
-            </div>
-            <aside class="side-card">
-              <h3>Booking at Top Speed</h3>
-              <a class="big-phone" href="tel:+19549317997">954-931-7997</a>
-              <p>Fastest way to book: call and we'll confirm your appointment and diagnostic fee on the spot.</p>
-              <ul>
-                <li><strong>Diagnostic fee:</strong> $99 — credited toward your repair</li>
-                <li><strong>Service area:</strong> 12 cities across Broward County</li>
-                <li><strong>Updates:</strong> Confirmation, tech tracking &amp; job summary by text</li>
-                <li><strong>After the visit:</strong> Warranty support &amp; service history</li>
-              </ul>
-            </aside>
-          </div>
-        </div>
-      </section>
-
-      <!-- Service areas -->
-      <section class="block alt" id="areas">
-        <div class="wrap">
-          <div class="sec-head">
-            <div class="rule"></div>
-            <h2>Proudly Serving <span class="accent">Broward County</span></h2>
-            <p>Twelve local service areas, one standard: fast, seamless appliance care.</p>
-          </div>
-          <div class="areas">
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Fort Lauderdale</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Lauderhill</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Plantation</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Sunrise</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Tamarac</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Lauderdale Lakes</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>North Lauderdale</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Davie</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Coral Springs</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Pompano Beach</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Oakland Park</div>
-            <div class="area"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-5.4-6.5-10.5A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.5C18.5 15.6 12 21 12 21z" stroke="#e01e26" stroke-width="1.8"/><circle cx="12" cy="10.5" r="2.3" fill="#0a265c"/></svg>Margate</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Provider network -->
-      <section class="block" id="providers" style="padding-top:10px">
-        <div class="wrap">
-          <div class="provider">
-            <img class="flag" src="flag.jpg" alt="Top Speed checkered flag" />
-            <div>
-              <h2>Run a Repair Business? Join the Top Speed Network.</h2>
-              <p>Top Speed Appliance LLC powers a growing provider network — network businesses and independent technicians get routed jobs, dispatch support from our Service Setters team, and seamless customer updates handled for them.</p>
-            </div>
-            <a class="btn btn-blue" href="https://topspeedapplianceservice.com" target="_blank" rel="noopener">Visit the Provider Network</a>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Footer -->
-    <div class="checker" aria-hidden="true"></div>
-    <footer class="site">
-      <div class="wrap">
-        <div class="foot-grid">
-          <div>
-            <span class="foot-logo"><img src="logo.jpg" alt="Top Speed Appliance Repair" /></span>
-            <p class="slogan">The Faster, The Better.</p>
-            <p style="margin:0">Seamless Service. Every Step of the Way.<br />Top Speed Appliance LLC — your trusted partner for appliance care in Broward County.</p>
-          </div>
-          <div>
-            <h3>Contact</h3>
-            <ul>
-              <li>Phone: <a href="tel:+19549317997"><strong>954-931-7997</strong></a></li>
-              <li>Email: <a href="mailto:service@topspeedappliance.net">service@topspeedappliance.net</a></li>
-              <li>Web: <a href="https://topspeedappliance.net">TopSpeedAppliance.net</a></li>
-              <li>Service area: Broward County, Florida</li>
-            </ul>
-          </div>
-          <div>
-            <h3>Quick Links</h3>
-            <ul>
-              <li><a href="#services">Repair Services</a></li>
-              <li><a href="#how-it-works">How It Works</a></li>
-              <li><a href="#book">Book a Repair — $99 Diagnostic</a></li>
-              <li><a href="#areas">Service Areas</a></li>
-              <li><a href="https://topspeedapplianceservice.com" target="_blank" rel="noopener">Provider Network</a></li>
-              <li><a href="/download">Get the App</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="foot-bottom">
-          <span>&copy; <span id="year">2026</span> Top Speed Appliance LLC. All rights reserved.</span>
-          <span>Repair &middot; Service &middot; Installation</span>
-        </div>
+          <div style="margin-bottom:14px"><label class="flabel" for="pvTrade">Main trade</label>
+            <select id="pvTrade"><option>Refrigeration</option><option>Laundry (washer/dryer)</option><option>Cooking (oven/range)</option><option>All appliances</option><option>Installation</option><option>Commercial</option></select></div>
+          <p class="fine" id="pvError" style="color:var(--red);font-weight:600" role="alert"></p>
+          <button class="btn btn-blue" type="submit" style="width:100%">Submit application preview</button>
+          <div class="confirm" id="pvConfirm" role="status"></div>
+        </form>
       </div>
-    </footer>
+    </div>
+  </div>
+</section>
 
-    <script>
-      (function () {
-        document.getElementById('year').textContent = new Date().getFullYear();
+<div class="checker" aria-hidden="true"></div>
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <h3 style="font-family:'Archivo';font-style:italic;font-size:22px">TOP SPEED <span style="color:#FF4D52">APPLIANCE</span></h3>
+        <p style="max-width:42ch">Top Speed Appliance LLC — appliance repair, service and installation across Broward County, Florida. <i>"The Faster, The Better."</i></p>
+        <p>⭐ 4.8 from 2,500 reviews • $99 diagnostic credited toward repair</p>
+      </div>
+      <div>
+        <h3 style="font-size:17px;margin-bottom:12px">Book service</h3>
+        <p>📞 <a href="tel:+19549317997"><b>954-931-7997</b></a><br>
+        🌐 <a href="https://topspeedappliance.net" target="_blank" rel="noopener">topspeedappliance.net</a> (current live site)<br>
+        📅 <a href="#book">Smart Booking preview</a><br>
+        📸 <a href="#diagnose">AI Diagnosis preview</a></p>
+      </div>
+      <div>
+        <h3 style="font-size:17px;margin-bottom:12px">The network</h3>
+        <p>🔧 Providers: <a href="/service/" target="_blank" rel="noopener">topspeedapplianceservice.com</a><br>
+        🏢 Property managers: call <a href="tel:+19549317997">954-931-7997</a><br>
+        ⚙️ Platform: Top Speed Service OS</p>
+      </div>
+    </div>
+    <p style="margin-top:30px;font-size:13.5px;color:#7E96C4">Advanced V2 development preview — not the live production site. Interactive features are working demos; bookings in this preview are confirmed by phone at 954-931-7997.</p>
+  </div>
+</footer>
 
-        var form = document.getElementById('bookForm');
-        var confirmBox = document.getElementById('bookConfirm');
-        var confirmText = document.getElementById('confirmText');
-        var errorBox = document.getElementById('formError');
+<!-- STICKY BAR -->
+<div class="stickybar">
+  <a class="btn btn-ghost" href="tel:+19549317997">📞 Call</a>
+  <a class="btn btn-red" href="#book">📅 Book — $99 Diagnostic</a>
+</div>
 
-        form.addEventListener('submit', function (e) {
-          e.preventDefault();
-          var name = document.getElementById('fName').value.trim();
-          var phone = document.getElementById('fPhone').value.trim();
-          var appliance = document.getElementById('fAppliance').value;
-          var zip = document.getElementById('fZip').value.trim();
-          var issue = document.getElementById('fIssue').value.trim();
+<!-- SPEEDY -->
+<button id="speedyBtn" onclick="toggleSpeedy()" aria-haspopup="dialog">💬 Ask Speedy</button>
+<div id="speedyPanel" role="dialog" aria-label="Ask Speedy chat assistant">
+  <div class="sp-head">
+    <div class="av">🏎️</div>
+    <div><b>Speedy</b><small>Top Speed AI assistant • Preview</small></div>
+    <button onclick="toggleSpeedy()" aria-label="Close chat">×</button>
+  </div>
+  <div class="sp-quick">
+    <button onclick="quickAsk('How much is the diagnostic?')">💲 Diagnostic cost</button>
+    <button onclick="quickAsk('Do you come to Sunrise?')">📍 My city?</button>
+    <button onclick="quickAsk('My fridge is not cooling')">🧊 Fridge help</button>
+    <button onclick="quickAsk('I want to book')">📅 Book me</button>
+  </div>
+  <div class="sp-body" id="spBody"></div>
+  <form class="sp-input" id="spForm">
+    <input id="spText" type="text" placeholder="Ask about repairs, pricing, areas…" autocomplete="off" aria-label="Message Speedy">
+    <button type="submit">Send</button>
+  </form>
+</div>
 
-          var missing = [];
-          if (!name) missing.push('your name');
-          if (!phone) missing.push('your phone number');
-          if (!appliance) missing.push('the appliance');
-          if (!zip) missing.push('your ZIP code');
-          if (!issue) missing.push('a short description of the issue');
+<script>
+/* ---------- data ---------- */
+var SERVICES=[
+ {id:'fridge',icon:'🧊',name:'Refrigerator Repair',desc:'Warm fridge, noisy compressor, ice buildup, leaks — cooling experts on every brand.'},
+ {id:'washer',icon:'🌀',name:'Washer Repair',desc:'Won\u2019t drain, spin or start? Banging, leaking or error codes — we fix all makes.'},
+ {id:'dryer',icon:'🔥',name:'Dryer Repair',desc:'No heat, long dry times, drum not turning. Vent checks included for safety.'},
+ {id:'oven',icon:'♨️',name:'Oven & Range Repair',desc:'Uneven baking, igniter failures, error codes, gas & electric ranges and cooktops.'},
+ {id:'dish',icon:'🍽️',name:'Dishwasher Repair',desc:'Cloudy dishes, standing water, leaks and pumps — quiet, clean results again.'},
+ {id:'freezer',icon:'❄️',name:'Freezer & Ice Maker',desc:'Ice makers, freezers and water lines: no ice, bad taste, frost takeover.'},
+ {id:'micro',icon:'📡',name:'Microwave Repair',desc:'No heat, sparking, turntable and door-switch faults, built-in and over-range.'},
+ {id:'disposal',icon:'🗑️',name:'Garbage Disposal',desc:'Jammed, humming or leaking disposals — repaired or replaced same visit.'},
+ {id:'install',icon:'🔧',name:'Installation',desc:'New appliance install & hookup: leveling, water lines, venting done right.'}
+];
+var DIAG={
+ fridge:{symptoms:['Not cooling / warm','Making loud noises','Leaking water','Ice buildup everywhere','Error code showing'],results:[
+   {issue:'Failed condenser fan or blocked coils',detail:'Warm temps with a running compressor usually trace to airflow: a failed fan motor or matted coils. Tech cleans/tests airflow first — often a same-visit fix.',range:'$185 – $385',conf:82},
+   {issue:'Defrost system failure',detail:'Heavy frost points to a defrost heater, thermostat or control issue. The tech tests the defrost circuit and replaces the failed component.',range:'$210 – $420',conf:76}]},
+ washer:{symptoms:['Won\u2019t drain','Won\u2019t spin or agitate','Leaking','Error code showing','Loud banging'],results:[
+   {issue:'Drain pump failure or clog',detail:'Standing water is most often a pump clog (coins, socks, lint) or a failed pump. Tech clears the trap and tests the pump before quoting parts.',range:'$165 – $340',conf:84},
+   {issue:'Suspension / bearing wear',detail:'Banging on spin usually means worn suspension rods or tub bearings. The tech inspects and quotes the exact kit for your model.',range:'$240 – $480',conf:71}]},
+ dryer:{symptoms:['No heat','Takes forever to dry','Drum won\u2019t turn','Squealing / thumping','Shuts off quickly'],results:[
+   {issue:'Thermal fuse or heating element failure',detail:'No-heat dryers most often blew a thermal fuse (usually from a clogged vent) or burned out the element. Tech tests both and checks your vent run.',range:'$155 – $330',conf:85},
+   {issue:'Belt or roller wear',detail:'Thumping and a still drum point to a snapped belt or worn rollers/idler. A standard kit repair, typically same visit.',range:'$170 – $310',conf:78}]},
+ oven:{symptoms:['Not heating','Uneven baking','Error code showing','Burner won\u2019t light','Door won\u2019t close'],results:[
+   {issue:'Igniter or bake element failure',detail:'The classic no-heat cause: a weak igniter (gas) or burned element (electric). Tested in minutes, commonly stocked on the truck.',range:'$175 – $360',conf:83},
+   {issue:'Control board / sensor fault',detail:'Error codes and wild temperatures usually mean a failed oven sensor or control board. Tech verifies with meter readings before quoting.',range:'$260 – $520',conf:68}]},
+ dish:{symptoms:['Not draining','Dishes still dirty','Leaking','Won\u2019t start','Loud grinding'],results:[
+   {issue:'Drain pump or filter blockage',detail:'Standing water and dirty dishes usually trace to a clogged filter/pump or a failing drain pump. Tech clears and flow-tests the full drain path.',range:'$150 – $320',conf:80},
+   {issue:'Wash pump / spray arm issue',detail:'Weak cleaning with normal fill points to wash-pump pressure or split spray arms. Quoted after a pressure test.',range:'$210 – $430',conf:70}]},
+ freezer:{symptoms:['No ice','Ice tastes bad','Too much frost','Not freezing','Leaking'],results:[
+   {issue:'Ice maker module or inlet valve failure',detail:'No ice is most often the maker module or a starved water inlet valve. Tech tests water pressure and the module cycle.',range:'$165 – $360',conf:79},
+   {issue:'Defrost / seal problem',detail:'Frost takeover usually means a defrost fault or a door gasket leaking warm air. The dollar-bill seal test tells us a lot on arrival.',range:'$180 – $390',conf:74}]},
+ micro:{symptoms:['No heat','Sparking','Turntable stuck','Door issues','Dead / no power'],results:[
+   {issue:'Door switch or magnetron fault',detail:'Microwaves are high-voltage: no-heat faults are tested safely by the tech and quoted before any parts are ordered.',range:'$150 – $340',conf:72},
+   {issue:'Control / touchpad failure',detail:'Dead panels and phantom beeps usually trace to the control board or membrane. Model-specific parts may need ordering.',range:'$190 – $380',conf:66}]},
+ disposal:{symptoms:['Humming but stuck','Leaking','Won\u2019t turn on','Bad smell','Slow drain'],results:[
+   {issue:'Jam or failed motor',detail:'A hum usually means a jam at the flywheel (often clearable) — silence or leaks can mean the unit is done. Replacements are a standard same-visit job.',range:'$120 – $295',conf:86},
+   {issue:'Seal failure / leak',detail:'Leaks from the body mean internal seals have failed; replacement is typically the honest fix and is quoted flat.',range:'$210 – $340',conf:81}]}
+};
+var EST={
+ fridge:{issues:DIAG.fridge.symptoms},washer:{issues:DIAG.washer.symptoms},dryer:{issues:DIAG.dryer.symptoms},
+ oven:{issues:DIAG.oven.symptoms},dish:{issues:DIAG.dish.symptoms},freezer:{issues:DIAG.freezer.symptoms},
+ micro:{issues:DIAG.micro.symptoms},disposal:{issues:DIAG.disposal.symptoms},
+ install:{issues:['Single appliance install','Kitchen package install','Laundry pair install','Hookup + haul-away']}
+};
+var EST_RANGES={'Single appliance install':'$120 – $220','Kitchen package install':'$290 – $540','Laundry pair install':'$180 – $320','Hookup + haul-away':'$150 – $260'};
+var BRANDS=['Samsung','LG','Whirlpool','GE','Frigidaire','Maytag','Bosch','KitchenAid'];
+var CITIES=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
+var GARAGE=[
+ {icon:'🧊',name:'Samsung French-Door Refrigerator',meta:'Kitchen • Installed 2021',pill:'ok',pillText:'Warranty tracked',last:'Last service: fan check & coil clean',svc:'Refrigerator'},
+ {icon:'🌀',name:'LG Front-Load Washer',meta:'Laundry • Installed 2020',pill:'ok',pillText:'Plan: Whole Home',last:'Last service: drain pump replaced',svc:'Washer'},
+ {icon:'🔥',name:'Whirlpool Electric Dryer',meta:'Laundry • Installed 2020',pill:'warn',pillText:'Vent service due soon',last:'Reminder set: annual vent & lint service',svc:'Dryer'},
+ {icon:'♨️',name:'GE Gas Range',meta:'Kitchen • Installed 2019',pill:'info',pillText:'History saved',last:'Last service: igniter tested — OK',svc:'Oven & Range'}
+];
 
-          if (missing.length) {
-            errorBox.textContent = 'Please add ' + missing.join(', ') + ' so we can note your request.';
-            errorBox.classList.remove('sr-only');
-            errorBox.style.color = '#b8121a';
-            errorBox.style.fontWeight = '600';
-            errorBox.style.margin = '0 0 12px';
-            return;
-          }
+/* ---------- render grids ---------- */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s){
+ return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Book + get estimate →</div></button>';
+}).join('');
+document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<div class="card brand reveal">'+b+'<div style="font-family:Barlow;font-weight:600;font-size:13px;color:var(--muted);margin-top:4px">Repair • Parts • Smart models</div></div>';}).join('');
+document.getElementById('cityGrid').innerHTML=CITIES.map(function(c){return '<div class="card city reveal">📍 '+c+'</div>';}).join('');
+document.getElementById('garageGrid').innerHTML=GARAGE.map(function(g){
+ return '<div class="card appl"><div class="ic">'+g.icon+'</div><div><h3>'+g.name+'</h3><p>'+g.meta+' • <span class="pill '+g.pill+'">'+g.pillText+'</span></p><p>'+g.last+'</p><button type="button" class="btn btn-blue" onclick="rebook(\''+g.svc+'\')">↻ Book service for this one</button></div></div>';
+}).join('');
 
-          confirmText.textContent =
-            'Thanks, ' + name.split(' ')[0] + ' — we\'ve noted your ' + appliance.toLowerCase() +
-            ' request for ZIP ' + zip + '.';
-          form.style.display = 'none';
-          confirmBox.classList.add('show');
-          confirmBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        });
-      })();
-    </script>
-  <script src="/install.js"></script>
+function pickService(name,id){
+  var bk=document.getElementById('bkAppliance');
+  for(var i=0;i<bk.options.length;i++){if(bk.options[i].text.replace(/\s+/g,' ').trim()===name||bk.options[i].text.indexOf(name.split(' ')[0])===0){bk.selectedIndex=i;break;}}
+  if(DIAG[id]){document.getElementById('estAppliance').value=id;syncEstIssues();switchLab('est');}
+  document.getElementById('diagnose').scrollIntoView({behavior:'smooth'});
+  setTimeout(function(){document.getElementById('book').scrollIntoView({behavior:'smooth'});},900);
+}
+function rebook(svc){
+  var bk=document.getElementById('bkAppliance');
+  for(var i=0;i<bk.options.length;i++){if(bk.options[i].text.indexOf(svc.split(' ')[0])===0){bk.selectedIndex=i;break;}}
+  document.getElementById('bkIssue').value='Rebook from My Appliances — same issue / checkup for my '+svc+'.';
+  document.getElementById('book').scrollIntoView({behavior:'smooth'});
+}
+
+/* ---------- diagnose lab ---------- */
+function switchLab(which){
+  document.getElementById('tabPhoto').setAttribute('aria-selected',which==='photo'?'true':'false');
+  document.getElementById('tabEst').setAttribute('aria-selected',which==='est'?'true':'false');
+  document.getElementById('panelPhoto').hidden=which!=='photo';
+  document.getElementById('panelEst').hidden=which!=='est';
+}
+function syncSymptoms(){
+  var a=document.getElementById('dgAppliance').value;
+  document.getElementById('dgSymptom').innerHTML=DIAG[a].symptoms.map(function(s){return '<option>'+s+'</option>';}).join('');
+}
+function syncEstIssues(){
+  var a=document.getElementById('estAppliance').value;
+  document.getElementById('estIssue').innerHTML=EST[a].issues.map(function(s){return '<option>'+s+'</option>';}).join('');
+}
+document.getElementById('dgAppliance').addEventListener('change',syncSymptoms);
+document.getElementById('estAppliance').addEventListener('change',syncEstIssues);
+syncSymptoms(); syncEstIssues();
+
+var curSample=null;
+function sampleCase(k){
+  curSample=k;
+  document.getElementById('dgAppliance').value=k; syncSymptoms();
+  document.getElementById('upName').textContent='Sample case loaded: '+k+' — run the diagnosis to see the preview result.';
+  document.getElementById('upPreview').style.display='none';
+  runDiagnosis();
+}
+document.getElementById('fileUp').addEventListener('change',function(e){
+  var f=e.target.files[0]; if(!f)return;
+  curSample=null;
+  document.getElementById('upName').textContent='Loaded: '+f.name+' ('+Math.round(f.size/1024)+' KB) — now run the diagnosis.';
+  if(f.type.indexOf('image/')===0){
+    var r=new FileReader();
+    r.onload=function(ev){var img=document.getElementById('upPreview');img.src=ev.target.result;img.style.display='block';};
+    r.readAsDataURL(f);
+  } else { document.getElementById('upPreview').style.display='none'; }
+});
+function resultFor(appliance){
+  var d=DIAG[appliance]; var idx=Math.floor(Math.random()*d.results.length); return d.results[idx];
+}
+function runDiagnosis(){
+  var a=document.getElementById('dgAppliance').value;
+  var sym=document.getElementById('dgSymptom').value;
+  var r=resultFor(a);
+  var name=document.querySelector('#dgAppliance option:checked').textContent;
+  document.getElementById('dgResult').innerHTML=
+    '<span class="tag live">● AI Diagnosis — Preview result</span>'+
+    '<h3 style="margin-top:10px">'+esc(name)+': '+esc(r.issue)+'</h3>'+
+    '<p style="margin:4px 0">Symptom: <b>'+esc(sym)+'</b></p>'+
+    '<p>'+esc(r.detail)+'</p>'+
+    '<div class="fine">Match confidence</div><div class="conf"><i id="confBar"></i></div><div class="fine" style="margin-bottom:10px">'+r.conf+'% likely — technician confirms in person</div>'+
+    '<div class="fine">Typical repair range (incl. $99 diagnostic credit)</div><div class="price-big">'+r.range+'</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+19549317997">Call 954-931-7997</a></div>';
+  requestAnimationFrame(function(){var b=document.getElementById('confBar'); if(b)b.style.width=r.conf+'%';});
+}
+function runEstimate(){
+  var a=document.getElementById('estAppliance').value;
+  var issue=document.getElementById('estIssue').value;
+  var brand=document.getElementById('estBrand').value;
+  var range,detail;
+  if(EST_RANGES[issue]){range=EST_RANGES[issue];detail='Flat installation pricing confirmed at booking — includes leveling, hookup and a full function test.';}
+  else{
+    var d=DIAG[a]; var idx=d.symptoms.indexOf(issue); var r=d.results[idx>=0?idx%d.results.length:0];
+    range=r.range; detail='Most likely: '+r.issue+'. '+r.detail;
+  }
+  var name=document.querySelector('#estAppliance option:checked').textContent;
+  document.getElementById('estResult').innerHTML=
+    '<span class="tag">Estimate — '+esc(name)+(brand&&brand!=='Any brand'?' • '+esc(brand):'')+'</span>'+
+    '<h3 style="margin-top:10px">'+esc(issue)+'</h3><p>'+esc(detail)+'</p>'+
+    '<div class="fine">Estimated total range</div><div class="price-big">'+range+'</div>'+
+    '<p class="fine">Estimate only — not a quote. Your flat price is confirmed after the in-person $99 diagnostic, which is credited toward the repair.</p>'+
+    '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Lock it in — book now</a>';
+}
+
+/* ---------- tracking demo ---------- */
+var STAGES=[
+ {t:'Booked',d:'Request received & confirmed by phone. Window held for you.',sms:'Top Speed: You\u2019re booked for {day}{win}. We\u2019ll text your tech\u2019s details before the visit. — TopSpeedAppliance.net',pos:[12,84],eta:'Status: Booked ✓'},
+ {t:'Dispatched',d:'Service Setters matched your job to a qualified nearby tech.',sms:'Top Speed: Your job is dispatched for {day}{win}. Your technician is being assigned now.',pos:[12,55],eta:'Status: Dispatched — tech assigned'},
+ {t:'En Route',d:'Your tech is on the way with live ETA and photo ID by text.',sms:'Top Speed: Your tech is en route 🚐 ETA ~25 min. Track live: TopSpeedAppliance.net/track',pos:[48,55],eta:'Tech en route — ETA ~25 min'},
+ {t:'Arrived',d:'Tech at your door. Diagnosis begins — $99 credited if you approve the repair.',sms:'Top Speed: Your technician has arrived and started the $99 diagnostic. We\u2019ll text your flat quote for approval.',pos:[84,29],eta:'Arrived — diagnosis in progress ✓'}
+];
+var stageIdx=0, trackTimer=null;
+function renderStages(){
+  document.getElementById('stageList').innerHTML=STAGES.map(function(s,i){
+    var cls=i<stageIdx?'done':(i===stageIdx?'now':'');
+    var mark=i<stageIdx?'✓':(i+1);
+    return '<button type="button" class="stage '+cls+'" onclick="goStage('+i+')"><span class="dot">'+mark+'</span><span><b>'+s.t+'</b><span>'+s.d+'</span></span></button>';
+  }).join('');
+}
+function goStage(i){
+  stageIdx=i; renderStages();
+  var s=STAGES[i];
+  document.getElementById('vanMark').style.left=s.pos[0]+'%';
+  document.getElementById('vanMark').style.top=s.pos[1]+'%';
+  document.getElementById('etaPill').textContent=s.eta;
+  var feed=document.getElementById('smsFeed');
+  feed.innerHTML='';
+  for(var k=0;k<=i;k++){
+    var d=document.createElement('div'); d.className='sms';
+    d.innerHTML='💬 '+esc(STAGES[k].sms.replace('{day}',chosenDay||'your chosen day').replace('{win}',chosenWin?', '+chosenWin:''))+'<small>Text update • Stage '+(k+1)+' of 4</small>';
+    feed.appendChild(d);
+  }
+  feed.scrollTop=feed.scrollHeight;
+}
+function playTrack(){
+  if(trackTimer){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play demo';return;}
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  if(stageIdx>=STAGES.length-1)goStage(0);
+  trackTimer=setInterval(function(){
+    if(stageIdx>=STAGES.length-1){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play again';return;}
+    goStage(stageIdx+1);
+  },2200);
+}
+function resetTrack(){if(trackTimer){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play demo';}goStage(0);}
+renderStages(); goStage(0);
+
+/* ---------- booking ---------- */
+var chosenDay='', chosenWin='';
+(function(){
+  var days=['Today','Tomorrow'];
+  var now=new Date();
+  for(var i=2;i<5;i++){var d=new Date(now.getTime()+i*86400000);days.push(d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}));}
+  if(now.getHours()>=15)days[0]='Tomorrow';
+  var box=document.getElementById('dayChips');
+  box.innerHTML=days.map(function(d,i){return '<button type="button" class="chip" data-day="'+d+'" aria-pressed="'+(i===0?'true':'false')+'">'+d+'<small>'+(i===0?'Earliest':'')+'</small></button>';}).join('');
+  chosenDay=days[0];
+  box.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;box.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenDay=b.getAttribute('data-day');});
+  var wins=document.getElementById('winChips');
+  wins.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;wins.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenWin=b.getAttribute('data-win');});
+  var first=wins.querySelector('.chip'); first.setAttribute('aria-pressed','true'); chosenWin=first.getAttribute('data-win');
+})();
+document.getElementById('bookForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var name=document.getElementById('bkName').value.trim();
+  var phone=document.getElementById('bkPhone').value.replace(/\D/g,'');
+  var zip=document.getElementById('bkZip').value.trim();
+  var err=document.getElementById('bkError');
+  if(name.length<2){err.textContent='Please add your name so dispatch can confirm with you.';return;}
+  if(phone.length<10){err.textContent='Please add a valid mobile number — your tracking texts go there.';return;}
+  if(zip.length<5){err.textContent='Please add your ZIP so we route the nearest tech.';return;}
+  err.textContent='';
+  var ref='TS-'+Math.random().toString(36).slice(2,7).toUpperCase();
+  var appl=document.getElementById('bkAppliance').value;
+  var city=document.getElementById('bkCity').value;
+  var c=document.getElementById('bkConfirm');
+  c.innerHTML='<b>✓ Request received — preview</b><br>Reference <b class="code">'+ref+'</b> • '+esc(appl)+' in '+esc(city)+'<br><b>'+esc(chosenDay)+', '+esc(chosenWin)+'</b> — $99 diagnostic collected at booking &amp; credited toward repair.<br>On the live platform, Service Setters dispatch confirms this appointment by phone at the number you gave. Need it faster? <a href="tel:+19549317997"><b>Call 954-931-7997</b></a>.';
+  c.classList.add('show');
+  c.scrollIntoView({behavior:'smooth',block:'center'});
+});
+
+/* ---------- Speedy chat ---------- */
+var spOpen=false, spGreeted=false;
+function toggleSpeedy(){
+  spOpen=!spOpen;
+  document.getElementById('speedyPanel').classList.toggle('open',spOpen);
+  if(spOpen&&!spGreeted){spGreeted=true;botSay('Hey, I\u2019m Speedy 🏎️ — Top Speed\u2019s assistant. Ask me about the $99 diagnostic, your city, a broken appliance, or type "book" and I\u2019ll walk you to an appointment.');}
+  if(spOpen)setTimeout(function(){document.getElementById('spText').focus();},80);
+}
+function addMsg(text,me){
+  var d=document.createElement('div'); d.className='msg '+(me?'me':'bot'); d.textContent=text;
+  var body=document.getElementById('spBody'); body.appendChild(d); body.scrollTop=body.scrollHeight;
+}
+function botSay(t){ setTimeout(function(){addMsg(t,false);},260); }
+function speedyAnswer(qraw){
+  var q=qraw.toLowerCase();
+  if(/book|appointment|schedule|visit/.test(q)) return 'Easy — tap "Book a Repair" and pick a day + window; it takes about 60 seconds. The $99 diagnostic is collected at booking and credited toward your repair, and dispatch confirms by phone. Want me to open it? Just scroll to Smart Booking, or call 954-931-7997.';
+  if(/99|diagnostic|cost|price|charge|fee|estimate|much/.test(q)) return 'The diagnostic is $99, collected at booking — and credited in full toward your repair when you approve the work. You always approve a flat quote before repairs start. Try the Instant Price Estimator in the Diagnose Lab for a planning range.';
+  if(/fridge|refrigerator|cool/.test(q)) return 'Warm fridge? Check the vents aren\u2019t blocked and the coils are clean first. Still warm after a few hours — likely a fan, defrost or sealed-system issue. The Photo Diagnosis in the Diagnose Lab can give you a head start, then book the $99 diagnostic.';
+  if(/washer|drain|spin/.test(q)) return 'Washer won\u2019t drain is usually the pump or a clog in the trap — very fixable. Dryer with no heat is often a thermal fuse or element. I can estimate either in the Diagnose Lab, or book a visit and we\u2019ll confirm in person.';
+  if(/dryer|heat/.test(q)) return 'No-heat dryers: thermal fuse and element are the usual suspects — and a clogged vent is often the root cause, so we check that too. Want a range? Try the Estimator, or book the $99 diagnostic (credited toward repair).';
+  if(/oven|stove|range/.test(q)) return 'Oven not heating is commonly the igniter (gas) or bake element (electric) — both are standard same-visit repairs when parts are on the truck. Book a window and we\u2019ll confirm the flat price after diagnosis.';
+  if(/city|area|serve|come to|location|zip|near/.test(q)){
+    var hit=CITIES.find(function(c){return q.indexOf(c.toLowerCase())>=0;});
+    if(hit) return 'Yes! '+hit+' is one of our 12 core Broward cities — same-day windows are offered there. Book online or call 954-931-7997.';
+    return 'We cover 12 core Broward cities: '+CITIES.join(', ')+'. If you\u2019re just outside, call 954-931-7997 — if a tech is nearby, we\u2019re coming.';
+  }
+  if(/track|where.*tech|eta|arrive/.test(q)) return 'Live tracking is a headline V2 feature: booked → dispatched → en route → arrived, with a text at every stage. Try the playable demo in the "Track My Tech" section on this page.';
+  if(/warranty|guarantee/.test(q)) return 'Every repair is backed by a parts & labor warranty, with the terms provided in writing before work begins. Your invoice and warranty status live in My Appliances after the visit.';
+  if(/brand|samsung|lg|whirlpool|ge |bosch|maytag|frigidaire|kitchenaid/.test(q)) return 'We service Samsung, LG, Whirlpool, GE, Frigidaire, Maytag, Bosch and KitchenAid — including smart/Wi-Fi models — plus commercial units.';
+  if(/plan|maintenance|member/.test(q)) return 'The Smart Maintenance Plan keeps profiles of all your appliances, sends filter/vent reminders, and includes annual checks. Three directions: Essential, Whole Home, and Property & Commercial — pricing is shown at signup.';
+  if(/commercial|restaurant|landlord|property|manager/.test(q)) return 'For restaurants, landlords and property managers we offer priority windows, multi-unit scheduling, photo reports and one consolidated invoice. Call 954-931-7997 and ask about the manager portal.';
+  if(/hour|open|when/.test(q)) return 'Booking online runs 24/7, and dispatch confirms by phone. For the fastest answer on today\u2019s windows, call 954-931-7997.';
+  if(/human|person|call|phone/.test(q)) return 'Of course — a human is one tap away: 954-931-7997. That\u2019s Top Speed Appliance dispatch in Broward County.';
+  if(/hi|hello|hey/.test(q)) return 'Hey there! 👋 Tell me what appliance is acting up, ask about the $99 diagnostic, or type "book" to grab a window.';
+  if(/thank/.test(q)) return 'Anytime! That\u2019s what I\u2019m here for. If anything else acts up, you know the number: 954-931-7997. 🏁';
+  return 'I can help with repairs, the $99 diagnostic, estimates, service areas, tracking and booking. Try: "my fridge is warm", "do you serve Davie?", or "book me". For anything else, dispatch is at 954-931-7997.';
+}
+function quickAsk(t){ if(!spOpen)toggleSpeedy(); addMsg(t,true); botSay(speedyAnswer(t)); }
+document.getElementById('spForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var inp=document.getElementById('spText'); var v=inp.value.trim(); if(!v)return;
+  addMsg(v,true); inp.value=''; botSay(speedyAnswer(v));
+});
+
+/* ---------- provider demo ---------- */
+function acceptOffer(){
+  var b=document.getElementById('offerBtn'); b.textContent='✓ Job accepted — see you 2–5 PM'; b.disabled=true; b.style.opacity='.75';
+  document.getElementById('offerMsg').innerHTML='<b style="color:var(--green)">Accepted (demo).</b> In the live app, the customer gets your name, photo and live tracking automatically, and the job lands on your route with the diagnosis photos attached.';
+}
+document.getElementById('provForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var n=document.getElementById('pvName').value.trim();
+  var p=document.getElementById('pvPhone').value.replace(/\D/g,'');
+  var err=document.getElementById('pvError');
+  if(n.length<2){err.textContent='Please add your name or company.';return;}
+  if(p.length<10){err.textContent='Please add a valid mobile number — verification is by phone.';return;}
+  err.textContent='';
+  var ref='PV-'+Math.random().toString(36).slice(2,7).toUpperCase();
+  var c=document.getElementById('pvConfirm');
+  c.innerHTML='<b>✓ Application received — preview</b><br>Reference <b class="code">'+ref+'</b> • '+esc(document.getElementById('pvTrade').value)+'<br>On the live network we call to verify license/insurance and set your areas. Questions: <a href="tel:+19549317997"><b>954-931-7997</b></a>.';
+  c.classList.add('show');
+});
+
+/* ---------- sticky bar present on mobile ---------- */
+</script>
+<script src="/install.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {

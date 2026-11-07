@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>TopSpeedApplianceService.com — Advanced V2 | Service OS Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A265C; --navy2:#06173A; --navy3:#0E357F;
+  --blue:#0B84FF; --electric:#19B5FF; --sky:#EAF4FF;
+  --red:#E30613; --red-dark:#B90510;
+  --ink:#0F1D33; --muted:#5B6B82; --line:#DCE6F2;
+  --bg:#F5F7FB; --card:#FFFFFF; --card2:#EEF3FA;
+  --green:#0E9F6E; --amber:#D97706; --radius:18px;
+  --shadow:0 18px 40px rgba(10,38,92,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#07122B; --card:#0D214E; --card2:#0A265C; --ink:#EDF3FF; --muted:#A9BCD9; --line:#1E3A6B; --sky:#0E2E63; --shadow:0 18px 40px rgba(0,0,0,.35);}
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:"Barlow",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+a{color:inherit} img{max-width:100%;display:block}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.02em;text-transform:uppercase;line-height:.95}
+.checker{height:14px;background:repeating-conic-gradient(#111 0% 25%, #fff 0% 50%);background-size:22px 22px;border-top:2px solid #111;border-bottom:2px solid #111}
+.checker-blue{height:10px;background:repeating-conic-gradient(var(--navy) 0% 25%, #fff 0% 50%);background-size:18px 18px;opacity:.95}
+.topbar{background:var(--navy2);color:#fff;font-size:13px}
+.topbar .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;padding:8px 20px;max-width:1240px;margin:auto}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--navy);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.badge.red{background:var(--red);color:#fff}.badge.blue{background:var(--electric);color:#04203F}.badge.outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+header.main{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+@media(prefers-color-scheme:dark){header.main{background:rgba(7,18,43,.96)}}
+.nav{max-width:1240px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{width:46px;height:46px;background:var(--navy);color:#fff;display:grid;place-items:center;border-radius:10px;font-family:"Barlow Condensed";font-weight:800;font-size:22px;line-height:1;position:relative;overflow:hidden}
+.logo-mark:after{content:"";position:absolute;bottom:0;left:0;right:0;height:7px;background:repeating-conic-gradient(#111 0% 25%, #fff 0% 50%);background-size:10px 10px}
+.logo b{font-family:"Barlow Condensed";font-size:26px;letter-spacing:.03em;line-height:1;color:var(--navy)}
+@media(prefers-color-scheme:dark){.logo b{color:#fff}}
+.logo span{display:block;font-family:"Barlow";font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.navlinks{display:flex;gap:18px;flex-wrap:wrap;font-weight:700;font-size:14px}
+.navlinks a{text-decoration:none}
+.navlinks a:hover{color:var(--blue)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:999px;font-weight:800;text-decoration:none;border:1px solid transparent;cursor:pointer;font-size:15px}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark)}
+.btn-navy{background:var(--navy);color:#fff}.btn-blue{background:var(--blue);color:#fff}
+.btn-white{background:#fff;color:var(--navy)}.btn-outline{background:transparent;border-color:var(--line);color:var(--ink)}.btn-ghostw{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn-sm{padding:9px 14px;font-size:13px}
+.wrap{max-width:1240px;margin:auto;padding:0 20px}
+.hero{background:radial-gradient(900px 500px at 85% -10%, rgba(25,181,255,.45), transparent 60%), radial-gradient(700px 400px at 0% 0%, rgba(227,6,19,.28), transparent 55%), linear-gradient(180deg, var(--navy) 0%, var(--navy2) 100%);color:#fff;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;padding:44px 0 0;align-items:start}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr} .navlinks{display:none}}
+.hero h1{font-size:clamp(52px,7vw,88px);margin:14px 0 10px}
+.hero h1 em{font-style:normal;color:var(--electric)}
+.hero h1 .red{color:#FF3B47}
+.hero p.lead{font-size:19px;color:#D6E6FF;max-width:620px;margin:0}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+@media(max-width:640px){.hero-stats{grid-template-columns:1fr 1fr}}
+.stat{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px}
+.stat b{font-size:24px;display:block;line-height:1}.stat span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#BFD6F5;font-weight:700}
+.hero-img{border-radius:20px 20px 0 0;overflow:hidden;border:1px solid rgba(255,255,255,.2);border-bottom:none;box-shadow:var(--shadow)}
+.hero-img img{height:340px;width:100%;object-fit:cover}
+.mini-card{background:#fff;color:var(--ink);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.hero-form{background:#fff;color:var(--ink);border-radius:20px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.hero-form h3{font-size:28px;margin:0;color:var(--navy)}
+@media(prefers-color-scheme:dark){.hero-form,.mini-card{background:#0D214E;color:#EDF3FF} .hero-form h3{color:#fff}}
+label{font-size:13px;font-weight:700;display:block;margin:0 0 6px}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:15px}
+textarea{resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:12px}
+.toggle{display:flex;background:var(--card2);border-radius:999px;padding:4px;gap:4px}
+.toggle button{flex:1;border:0;padding:10px;border-radius:999px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted)}
+.toggle button.active{background:var(--navy);color:#fff}
+.section{padding:64px 0}
+.section.alt{background:var(--card)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--red)}
+.eyebrow.blue{color:var(--blue)}
+h2.title{font-size:clamp(36px,4.5vw,54px);margin:8px 0 10px;color:var(--navy)}
+@media(prefers-color-scheme:dark){h2.title{color:#fff}}
+.sub{color:var(--muted);max-width:760px;font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr}} @media(max-width:560px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{font-size:24px;margin:6px 0 6px;color:var(--navy)} @media(prefers-color-scheme:dark){.card h3{color:#fff}}
+.icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--sky);font-size:22px}
+.triage{background:linear-gradient(135deg, var(--navy), var(--navy3));color:#fff;border-radius:20px;padding:22px}
+.triage h3{color:#fff;font-size:30px;margin:0 0 8px}
+.pill{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em}
+.pill.green{background:#DCFCE7;color:#065F46}.pill.amber{background:#FEF3C7;color:#92400E}.pill.redp{background:#FEE2E2;color:#991B1B}.pill.bluep{background:#DBEAFE;color:#1E40AF}
+.upload{border:2px dashed var(--line);border-radius:14px;padding:16px;text-align:center;background:var(--card2)}
+.upload img{max-height:180px;margin:10px auto;border-radius:12px;object-fit:cover;width:100%}
+/* Dispatch */
+.dispatch{background:#071A42;color:#fff;border-radius:24px;padding:22px;overflow:hidden}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+@media(max-width:1000px){.board{grid-template-columns:1fr 1fr}} @media(max-width:560px){.board{grid-template-columns:1fr}}
+.col{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;min-height:220px}
+.col h4{margin:0 0 10px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#9CC6FF;display:flex;justify-content:space-between}
+.job{background:#fff;color:#0F1D33;border-radius:12px;padding:12px;margin-bottom:10px;font-size:14px}
+.job b{display:block}.job small{color:#5B6B82}
+.job .row{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px}
+/* Provider phone */
+.phone{max-width:380px;margin:auto;background:#0B1220;border-radius:36px;padding:12px;box-shadow:var(--shadow)}
+.phone-screen{background:#F6F8FC;border-radius:28px;overflow:hidden;color:#0F1D33;min-height:560px}
+.phone-head{background:var(--navy);color:#fff;padding:18px}
+.tabs{display:flex;gap:6px;padding:10px;background:#fff;border-bottom:1px solid #E2E8F0;overflow:auto}
+.tabs button{border:0;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer;background:#EEF3FA;white-space:nowrap}
+.tabs button.active{background:var(--navy);color:#fff}
+.tabpane{padding:14px;display:none}.tabpane.active{display:block}
+.offer{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px;margin-bottom:10px}
+/* Coverage */
+.city-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.city-chip{border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer}
+.city-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.city-chip.miami{border-color:var(--red);color:var(--red)} .city-chip.miami.active{background:var(--red);color:#fff}
+.mapbox{background:radial-gradient(circle at 30% 30%, rgba(25,181,255,.25), transparent 40%), linear-gradient(180deg,#0A265C,#06173A);color:#fff;border-radius:22px;padding:22px;position:relative;overflow:hidden;min-height:320px}
+.pin{position:absolute;background:#fff;color:var(--navy);font-weight:800;font-size:12px;padding:6px 9px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.25);transform:translate(-50%,-50%)}
+.pin:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid #fff}
+table{width:100%;border-collapse:collapse;font-size:15px} th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top} th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.brands{display:flex;flex-wrap:wrap;gap:8px}.brand{padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-weight:700;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:700;font-size:14px}.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+details{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card)} details+details{margin-top:10px} summary{font-weight:800;cursor:pointer}
+footer{background:var(--navy2);color:#CBDDF7;padding:44px 0 28px} footer a{color:#fff}
+.notice{background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;border-radius:12px;padding:12px 14px;font-size:14px}
+@media(prefers-color-scheme:dark){.notice{background:#2A1600;color:#FED7AA}}
+.success{display:none;background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46;border-radius:14px;padding:16px;margin-top:14px}
+@media(prefers-color-scheme:dark){.success{background:#052E22;color:#A7F3D0}}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:800px){.kpi{grid-template-columns:1fr 1fr}}
+.floatcall{position:fixed;left:16px;bottom:16px;z-index:60;display:flex;gap:8px}
+@media(max-width:700px){.floatcall{left:12px;right:12px}.floatcall .btn{flex:1;font-size:14px;padding:12px 8px}
+header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width:100%} .nav .header-actions .btn{flex:1}
+.logo b{font-size:22px} .logo span{font-size:10px}
+.tabs{flex-wrap:wrap;overflow:visible} .tabs button{font-size:13px;padding:7px 10px}
+}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:900px){.steps{grid-template-columns:1fr 1fr}}@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.stepnum{width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap" style="padding-left:0;padding-right:0">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge red">Advanced V2 — Development Preview</span><span class="badge outline">Powered by Top Speed Service OS</span><span style="opacity:.85">Not replacing the live site — built for future development</span></div>
+  <div><strong>954-931-7997</strong> &nbsp;•&nbsp; Same-Day Service &nbsp;•&nbsp; Broward + Miami</div>
+</div></div>
+
+<header class="main"><div class="nav">
+  <a class="logo" href="#top"><div class="logo-mark">TS</div><div><b>TOP SPEED</b><span>ApplianceService.com • Service OS</span></div></a>
+  <nav class="navlinks"><a href="#request">Request</a><a href="#dispatch">Dispatch Live</a><a href="#providers">Providers</a><a href="#commercial">Commercial</a><a href="#coverage">Coverage</a><a href="#pricing">Pricing</a><a href="#ops">Ops</a></nav>
+  <div class="header-actions" style="display:flex;gap:8px"><a class="btn btn-outline btn-sm" href="/" target="_blank" rel="noopener">Customer Site ↗</a><a class="btn btn-outline btn-sm" href="/download">Get the App</a><a class="btn btn-red btn-sm" href="tel:+19549317997">Call 954-931-7997</a></div>
+</div><div class="checker-blue"></div></header>
+
+<!-- HERO -->
+<section class="hero" id="top"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <span class="badge blue">● Service OS Online — Hybrid Dispatch</span>
+      <h1>Appliance Broken?<br><em>Top Speed</em> <span class="red">Ready.</span></h1>
+      <p class="lead">The next-generation service-request + provider-network home of <strong style="color:#fff">topspeedapplianceservice.com</strong> — 60-second requests with photo triage, Service Setters hybrid dispatch, and qualified local providers. One platform behind both doors, owned by Top Speed Appliance LLC.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+        <a href="#request" class="btn btn-red">Start 60-Second Request →</a>
+        <a href="#providers" class="btn btn-white">Join Provider Network</a>
+        <a href="#commercial" class="btn btn-ghostw">Commercial Work Order</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>4.8 ★</b><span>Customer rating</span></div>
+        <div class="stat"><b>2,500</b><span>Reviews (customer side)</span></div>
+        <div class="stat"><b>$99</b><span>Diagnostic • Credited</span></div>
+        <div class="stat"><b>90-Day</b><span>Parts + Labor Warranty</span></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
+        <span class="badge outline">✓ Same-Day Windows</span><span class="badge outline">✓ Photo Diagnosis Preview</span><span class="badge outline">✓ Live Status Texts</span><span class="badge outline">✓ Jobs — Not Leads</span>
+      </div>
+      <div class="hero-img" style="margin-top:22px"><img src="hero-tech.webp" alt="Top Speed technician with tablet repairing a refrigerator in a South Florida home"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 12 Broward areas + Miami</span></div></div>
+    </div>
+
+    <!-- QUICK REQUEST MINI -->
+    <div class="hero-form" id="quick">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3>Request Service in 60 Seconds</h3><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Residential or commercial — add a photo and get an instant AI triage preview.</p></div><span class="pill bluep">PREVIEW</span></div>
+      <div class="toggle" style="margin:16px 0" role="tablist"><button class="active" id="tgRes" onclick="setTrack('res')">🏠 Residential</button><button id="tgCom" onclick="setTrack('com')">🏢 Commercial</button></div>
+      <form id="quickForm" onsubmit="submitQuick(event)">
+        <div class="grid2"><div class="field"><label>Your name</label><input id="qName" placeholder="Full name" required></div><div class="field"><label>Phone *</label><input id="qPhone" placeholder="(954) 000-0000" required></div></div>
+        <div class="field" id="bizField" style="display:none"><label>Business / Property name</label><input id="qBiz" placeholder="e.g. Sunrise Plaza — Building B"></div>
+        <div class="grid2"><div class="field"><label>Appliance</label><select id="qAppliance" onchange="runTriage()"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Microwave</option><option>Freezer</option><option>Ice Maker</option><option>Cooktop</option></select></div><div class="field"><label>City / ZIP</label><select id="qCity"><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Miami</option></select></div></div>
+        <div class="field"><label>What's happening?</label><textarea id="qIssue" rows="2" placeholder="e.g. Fridge not cooling, ice maker stopped, error code F8E1…" oninput="runTriage()"></textarea></div>
+        <div class="upload"><strong>📸 Add a photo — appliance or error code</strong><p style="margin:4px 0 10px;color:var(--muted);font-size:13px">Helps triage pre-load the right parts. Preview only — nothing is uploaded to a server in this demo.</p><input type="file" id="qPhoto" accept="image/*" onchange="previewPhoto(event)"><div id="photoPreview"></div></div>
+        <button class="btn btn-red" style="width:100%;margin-top:14px">Get My Triage + Request Callback →</button>
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0">Preview form — in production every request is confirmed by phone by the Service Setters team. $99 diagnostic collected at booking, credited toward repair.</p>
+      </form>
+      <div class="success" id="quickSuccess"></div>
+      <div class="triage" style="margin-top:16px" id="triageBox">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>🤖 AI Triage Preview</h3><span class="pill amber" id="triageUrgency">Urgency: Standard</span></div>
+        <p id="triageIssue" style="margin:0;color:#D6E6FF">Pick an appliance and describe the issue — triage will estimate the likely cause, urgency, and parts to bring.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px"><small style="letter-spacing:.08em;text-transform:uppercase;opacity:.8">Likely parts to bring</small><div id="triageParts" style="font-weight:700;margin-top:4px">—</div></div>
+          <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px"><small style="letter-spacing:.08em;text-transform:uppercase;opacity:.8">Next step</small><div style="font-weight:700;margin-top:4px">Service Setters review → provider match → text updates</div></div>
+        </div>
+        <p style="font-size:12px;opacity:.75;margin:10px 0 0">Preview only — a technician confirms diagnosis on site. No price is final until inspected.</p>
+      </div>
+    </div>
+  </div>
+</div><div class="checker" style="margin-top:0"></div></section>
+
+<!-- TRUST BAND -->
+<div style="background:#fff;border-bottom:1px solid var(--line)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px">
+  <b>⭐ 4.8 / 5 — 2,500 reviews</b><span>⚡ Same-Day Service</span><span>🛡️ 90-Day Warranty</span><span>💲 $99 Diagnostic Credited Toward Repair</span><span>📍 12 Broward Areas + Miami</span><a href="/" target="_blank" rel="noopener" style="font-weight:800;color:var(--blue)">Customer site: topspeedappliance.net ↗</a>
+</div></div>
+
+<!-- SERVICES -->
+<section class="section" id="request" style="padding-bottom:20px"><div class="wrap">
+  <div class="eyebrow">What we fix • Tap a service to pre-fill your request</div><h2 class="title">9 Services. One Dispatch System.</h2><p class="sub">Every request — home or business — flows through the same Service OS: triage, Service Setters approval, provider match, live tracking, invoice + warranty.</p>
+  <div class="cards" style="margin-top:22px" id="serviceCards"></div>
+</div></section>
+
+<!-- HOW SERVICE OS WORKS -->
+<section class="section" style="padding-top:20px"><div class="wrap">
+  <div class="eyebrow blue">Top Speed Service OS • The engine behind both domains</div><h2 class="title">From Request to Repaired — In 8 Steps</h2>
+  <div class="steps" style="margin-top:20px">
+    <div class="card"><div class="stepnum">1</div><h3>60-Sec Request</h3><p style="color:var(--muted);margin:0">Photo + issue + ZIP on .net or .com. No long forms.</p></div>
+    <div class="card"><div class="stepnum">2</div><h3>AI Triage</h3><p style="color:var(--muted);margin:0">Likely cause, urgency &amp; parts shortlist generated instantly.</p></div>
+    <div class="card"><div class="stepnum">3</div><h3>Service Setters Review</h3><p style="color:var(--muted);margin:0">A human confirms details &amp; the $99 diagnostic before dispatch.</p></div>
+    <div class="card"><div class="stepnum">4</div><h3>Provider Match</h3><p style="color:var(--muted);margin:0">Matched by appliance, area, rating &amp; availability — not sold as a lead.</p></div>
+    <div class="card"><div class="stepnum">5</div><h3>Live Tracking</h3><p style="color:var(--muted);margin:0">Booked → Dispatched → En Route → Arrived texts at every step.</p></div>
+    <div class="card"><div class="stepnum">6</div><h3>Repair On Site</h3><p style="color:var(--muted);margin:0">Tech confirms diagnosis, quotes before work, repairs with parts on hand.</p></div>
+    <div class="card"><div class="stepnum">7</div><h3>Invoice + Warranty</h3><p style="color:var(--muted);margin:0">$99 credited toward repair. 90-day parts + labor warranty on invoice.</p></div>
+    <div class="card"><div class="stepnum">8</div><h3>Review Engine</h3><p style="color:var(--muted);margin:0">Completed jobs trigger a review request at the happiest moment.</p></div>
+  </div>
+  <div style="margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid var(--line)"><img src="van-banner.png" alt="Top Speed Appliance service van banner — Get Top Speed" style="width:100%;height:180px;object-fit:cover"></div>
+</div></section>
+
+<!-- DISPATCH BOARD -->
+<section class="section alt" id="dispatch"><div class="wrap">
+  <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:end"><div><div class="eyebrow">Live Preview • Service Setters Hybrid Dispatch</div><h2 class="title">Dispatch Board — Watch Jobs Move</h2><p class="sub">Auto-match does the speed work. Humans do the judgment work. Every job needs Service Setters approval before a provider rolls — that's the Top Speed difference.</p></div><div style="display:flex;gap:8px"><button class="btn btn-navy btn-sm" id="dispatchToggle" onclick="toggleDispatch()">⏸ Pause Simulation</button><button class="btn btn-outline btn-sm" onclick="addDispatchJob()">+ Simulate New Request</button></div></div>
+
+  <div class="dispatch" style="margin-top:20px">
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge">SERVICE OS • DISPATCH</span><span class="badge blue" id="dispatchClock">Live Preview</span></div><div style="font-size:13px;color:#BFD6F5">Auto-match → <b style="color:#fff">Human Approval</b> → Provider Notified → En Route</div></div>
+    <div class="board" id="board">
+      <div class="col"><h4>🆕 New Requests <span id="c0">0</span></h4><div id="col0"></div></div>
+      <div class="col"><h4>🤖 AI Matched <span id="c1">0</span></h4><div id="col1"></div></div>
+      <div class="col"><h4>👩‍💼 Awaiting Approval <span id="c2">0</span></h4><div id="col2"></div></div>
+      <div class="col"><h4>🚐 Dispatched / En Route <span id="c3">0</span></h4><div id="col3"></div></div>
+    </div>
+    <p style="font-size:12px;color:#8FB0DD;margin:12px 0 0">Preview data only — simulated jobs to show the flow. In production this board is the Service Setters team's live operations view. Use “Approve &amp; Dispatch” on any awaiting card to move it yourself.</p>
+  </div>
+
+  <div class="kpi" style="margin-top:16px">
+    <div class="card" style="text-align:center"><b style="font-size:30px;color:var(--navy)">Hybrid</b><p style="margin:2px;color:var(--muted)">AI speed + human approval on every job</p></div>
+    <div class="card" style="text-align:center"><b style="font-size:30px;color:var(--navy)">$99 Collected</b><p style="margin:2px;color:var(--muted)">Diagnostic secured at booking — serious requests</p></div>
+    <div class="card" style="text-align:center"><b style="font-size:30px;color:var(--navy)">Photo-First</b><p style="margin:2px;color:var(--muted)">Providers see the issue before they arrive</p></div>
+    <div class="card" style="text-align:center"><b style="font-size:30px;color:var(--navy)">Text Updates</b><p style="margin:2px;color:var(--muted)">Customer + provider stay in sync automatically</p></div>
+  </div>
+</div></section>
+
+<!-- PROVIDERS -->
+<section class="section" id="providers"><div class="wrap">
+  <div class="grid2" style="grid-template-columns:1.05fr .95fr;gap:28px" id="providerGrid">
+    <div>
+      <div class="eyebrow">For Technicians &amp; Local Shops • topspeedapplianceservice.com</div>
+      <h2 class="title">Get Jobs.<br>Not Leads.</h2>
+      <p class="sub">Lead marketplaces sell the same lead to five techs. Top Speed works differently: Service Setters qualify the request, collect the $99 diagnostic at booking, and match <b>one</b> provider to the job. You show up to a real customer who already paid to be serious.</p>
+      <div class="cards" style="grid-template-columns:1fr 1fr;margin-top:18px">
+        <div class="card"><div class="icon">💲</div><h3>$99 Already Collected</h3><p style="color:var(--muted);margin:0">Diagnostic secured before dispatch — far fewer no-shows and tire-kickers.</p></div>
+        <div class="card"><div class="icon">📸</div><h3>See It Before You Roll</h3><p style="color:var(--muted);margin:0">Customer photo, error code, brand + triage notes in every offer.</p></div>
+        <div class="card"><div class="icon">🗺️</div><h3>Your Areas, Your Skills</h3><p style="color:var(--muted);margin:0">Only jobs in the cities and appliances you choose — across 12 Broward areas + Miami.</p></div>
+        <div class="card"><div class="icon">📱</div><h3>One App For The Day</h3><p style="color:var(--muted);margin:0">Offers, route, customer chat, invoicing and ratings — no paperwork chase.</p></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin-top:0">Network vs. Lead Marketplaces</h3>
+        <div style="overflow:auto"><table><tr><th></th><th>Top Speed Network</th><th>Per-Lead Marketplaces</th></tr>
+        <tr><td><b>What you get</b></td><td>Matched, qualified job</td><td>A lead shared with competitors</td></tr>
+        <tr><td><b>Diagnostic</b></td><td>$99 collected at booking, credited to repair</td><td>Usually uncollected</td></tr>
+        <tr><td><b>Dispatch</b></td><td>Service Setters human approval</td><td>Automated, unreviewed</td></tr>
+        <tr><td><b>Customer info</b></td><td>Photo, issue, brand + triage</td><td>Name + phone only</td></tr>
+        <tr><td><b>Terms</b></td><td>Clear terms shared before launch — no invented % here</td><td>Pay per lead, win or lose</td></tr></table></div>
+      </div>
+      <!-- Join form -->
+      <form class="card" style="margin-top:16px" onsubmit="submitProvider(event)">
+        <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0">Apply to Join the Network</h3><span class="pill bluep">Reviewed by Service Setters</span></div>
+        <p style="color:var(--muted);font-size:14px">Preview application — in production, applications are reviewed by the Service Setters team and confirmed by phone before activation.</p>
+        <div class="grid2"><div class="field"><label>Your name *</label><input id="pName" required placeholder="Full name"></div><div class="field"><label>Phone *</label><input id="pPhone" required placeholder="(954) 000-0000"></div></div>
+        <div class="grid2"><div class="field"><label>Business name</label><input id="pBiz" placeholder="Your shop / LLC"></div><div class="field"><label>Years experience</label><select id="pExp"><option>1–3 years</option><option>3–5 years</option><option>5–10 years</option><option>10+ years</option></select></div></div>
+        <label>Areas you cover (tap to select)</label><div class="chips" id="areaChips"></div>
+        <label style="margin-top:14px">Appliances you service</label><div class="chips" id="appChips"></div>
+        <button class="btn btn-navy" style="width:100%;margin-top:16px">Submit Application →</button>
+        <div class="success" id="providerSuccess"></div>
+      </form>
+    </div>
+    <div>
+      <div class="phone"><div class="phone-screen">
+        <div class="phone-head"><div style="display:flex;justify-content:space-between"><b>TOP SPEED • Provider</b><span>● Online</span></div><div style="font-size:28px;font-family:'Barlow Condensed';margin-top:6px">Good morning — your day is ready</div><div style="opacity:.85;font-size:13px">2 offers • 3 jobs on route • Broward</div></div>
+        <div class="tabs"><button class="active" onclick="switchTab(this,'tabOffers')">Offers</button><button onclick="switchTab(this,'tabRoute')">Route</button><button onclick="switchTab(this,'tabInvoice')">Invoice</button><button onclick="switchTab(this,'tabRatings')">Ratings</button><button onclick="switchTab(this,'tabChat')">Chat</button></div>
+        <div class="tabpane active" id="tabOffers">
+          <div class="offer"><div style="display:flex;justify-content:space-between"><b>🧊 Refrigerator — Not Cooling</b><span class="pill green">98% Match</span></div><p style="margin:6px 0;color:#5B6B82;font-size:14px">Sunrise • Samsung • Photo + error code attached<br>Triage: likely condenser fan / coils. Parts shortlist loaded.</p><div style="display:flex;gap:8px"><button class="btn btn-red btn-sm" onclick="acceptOffer(this)">Accept Job</button><button class="btn btn-outline btn-sm" onclick="this.closest('.offer').style.opacity=.45">Pass</button></div></div>
+          <div class="offer"><div style="display:flex;justify-content:space-between"><b>🌀 Dryer — No Heat</b><span class="pill bluep">94% Match</span></div><p style="margin:6px 0;color:#5B6B82;font-size:14px">Plantation • LG • $99 diagnostic collected ✓<br>Triage: heating element / thermal fuse likely.</p><div style="display:flex;gap:8px"><button class="btn btn-red btn-sm" onclick="acceptOffer(this)">Accept Job</button><button class="btn btn-outline btn-sm" onclick="this.closest('.offer').style.opacity=.45">Pass</button></div></div>
+          <p style="font-size:12px;color:#64748B">Provider app preview — offers, amounts and matches are illustrative.</p>
+        </div>
+        <div class="tabpane" id="tabRoute"><div class="offer"><b>09:00 — Sunrise</b><p style="margin:4px 0;color:#5B6B82">Refrigerator • Diagnostic + repair window</p><span class="pill green">En Route Enabled</span></div><div class="offer"><b>11:30 — Plantation</b><p style="margin:4px 0;color:#5B6B82">Dryer • No heat</p></div><div class="offer"><b>14:00 — Lauderhill</b><p style="margin:4px 0;color:#5B6B82">Washer • Not draining</p></div><p style="font-size:13px;color:#64748B">Route is auto-ordered by area to cut drive time between jobs.</p></div>
+        <div class="tabpane" id="tabInvoice"><div class="offer"><b>Invoice #TS-Preview</b><table style="font-size:14px"><tr><td>Diagnostic (prepaid)</td><td style="text-align:right">$99.00</td></tr><tr><td>Credit toward repair</td><td style="text-align:right">−$99.00</td></tr><tr><td>Labor + parts</td><td style="text-align:right">Quoted on site</td></tr><tr><td><b>Warranty</b></td><td style="text-align:right"><b>90 days</b></td></tr></table><p style="font-size:12px;color:#64748B;margin:8px 0 0">Final repair total is quoted and approved by the customer before work begins.</p></div></div>
+        <div class="tabpane" id="tabRatings"><div style="text-align:center;padding:10px"><div style="font-size:44px;font-weight:800">4.8 ★</div><p style="color:#5B6B82;margin:0">Network quality is tracked per job — on-time arrival, first-visit fix, and customer rating feed future matching.</p></div><div class="offer"><b>How matching uses ratings</b><p style="margin:4px 0;color:#5B6B82;font-size:14px">Higher reliability + first-visit-fix rate = earlier access to matched offers in your areas. No named testimonials are shown in this preview.</p></div></div>
+        <div class="tabpane" id="tabChat"><div class="offer"><b>💬 Customer — Sunrise</b><p style="margin:4px 0;color:#5B6B82;font-size:14px">“Photo of the error code sent — fridge is at 58°.”</p></div><div class="offer" style="background:#EEF3FA"><b>You</b><p style="margin:4px 0;color:#334155;font-size:14px">“Got it — bringing a fan motor + coils brush. ETA text coming when I tap En Route.”</p></div></div>
+      </div></div>
+      <div class="notice" style="margin-top:14px">Provider preview: payout terms, onboarding requirements (license/insurance verification), and launch timing are confirmed directly with applicants — nothing is promised on this page beyond the model described.</div>
+      <img src="commercial.webp" alt="Technician servicing commercial kitchen equipment" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
+    </div>
+  </div>
+</div></section>
+
+<!-- COMMERCIAL -->
+<section class="section alt" id="commercial"><div class="wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px" id="commGrid">
+    <div>
+      <div class="eyebrow">Commercial Track • Facilities &amp; Property</div><h2 class="title">Work Orders Without The Phone Tag</h2><p class="sub">Restaurants, laundromats, property managers, hotels, offices and multi-unit buildings — submit once, track everything, get one consolidated invoice.</p>
+      <div class="cards" style="grid-template-columns:1fr 1fr;margin-top:18px">
+        <div class="card"><div class="icon">⚡</div><h3>Priority Response</h3><p style="color:var(--muted);margin:0">Commercial requests are flagged for priority review by Service Setters — downtime costs you money, we treat it that way.</p></div>
+        <div class="card"><div class="icon">🧾</div><h3>Consolidated Invoicing</h3><p style="color:var(--muted);margin:0">Multiple units, multiple visits — one clear monthly statement instead of a pile of tickets.</p></div>
+        <div class="card"><div class="icon">🏢</div><h3>Multi-Location Intake</h3><p style="color:var(--muted);margin:0">Building, unit, tenant contact and access notes captured up front so techs arrive ready.</p></div>
+        <div class="card"><div class="icon">📋</div><h3>Photo Reports</h3><p style="color:var(--muted);margin:0">Before/after photos and completion notes on every work order for your records.</p></div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3 style="margin-top:0">Who this is for</h3><div class="brands"><span class="brand">🍽️ Restaurants &amp; Cafés</span><span class="brand">🧺 Laundromats</span><span class="brand">🏘️ Property Managers</span><span class="brand">🏨 Hotels &amp; Rentals</span><span class="brand">🏢 Offices &amp; Retail</span><span class="brand">🏠 HOAs &amp; Multi-Unit</span></div><p style="color:var(--muted);font-size:14px;margin:12px 0 0">Property managers: pair this with the customer-side portal on <a href="/" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">topspeedappliance.net</a> for tenant intake across all your units.</p></div>
+    </div>
+    <form class="card" onsubmit="submitCommercial(event)" style="align-self:start">
+      <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0;font-size:28px">Commercial Work Order — Preview</h3><span class="pill redp">PRIORITY</span></div>
+      <p style="color:var(--muted);font-size:14px">Preview intake — commercial requests are confirmed by phone and scoped before dispatch. Separate written terms may apply for commercial equipment.</p>
+      <div class="grid2"><div class="field"><label>Business / Property *</label><input id="cBiz" required placeholder="Business name"></div><div class="field"><label>Contact + Phone *</label><input id="cContact" required placeholder="Name — (954) 000-0000"></div></div>
+      <div class="grid2"><div class="field"><label>Property type</label><select id="cType"><option>Restaurant / Food Service</option><option>Laundromat</option><option>Property Management</option><option>Hotel / Short-Term Rental</option><option>Office / Retail</option><option>Multi-Unit Residential</option><option>Other Commercial</option></select></div><div class="field"><label>City</label><select id="cCity"><option>Fort Lauderdale</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Miami</option><option>Other Broward</option></select></div></div>
+      <div class="grid2"><div class="field"><label>Equipment</label><select id="cEquip"><option>Commercial Refrigeration</option><option>Commercial Oven / Range</option><option>Commercial Washer / Dryer</option><option>Dishwasher / Sanitation</option><option>Ice Machine</option><option>Residential Appliance (in unit)</option><option>Multiple / Not Sure</option></select></div><div class="field"><label>Urgency</label><select id="cUrg"><option>Down — losing business now</option><option>Urgent — today if possible</option><option>Standard — this week</option><option>Planned / Preventive</option></select></div></div>
+      <div class="field"><label>Unit / Access notes</label><textarea id="cNotes" rows="2" placeholder="Building, unit #, gate code instructions, tenant contact, parking…"></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px"><label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" style="width:auto" id="cConsol"> I want consolidated monthly invoicing</label><label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" style="width:auto" id="cRecur"> Recurring / preventive visits</label></div>
+      <button class="btn btn-red" style="width:100%">Submit Work Order →</button>
+      <p style="font-size:12px;color:var(--muted);text-align:center">Or call the commercial line: <a href="tel:+19549317997" style="font-weight:800;color:var(--navy)">954-931-7997</a></p>
+      <div class="success" id="commSuccess"></div>
+      <div style="margin-top:14px;background:var(--card2);border-radius:12px;padding:12px"><b style="font-size:13px;letter-spacing:.06em;text-transform:uppercase">Recent work-order flow (preview)</b><div style="font-size:14px;margin-top:8px;display:grid;gap:8px"><div>🟢 <b>WO — Refrigeration</b> • Fort Lauderdale • Received → Triaged → Approved</div><div>🟡 <b>WO — Laundry</b> • Lauderhill • Awaiting site contact confirmation</div><div>🔵 <b>WO — Oven / Range</b> • Miami • Provider en route</div></div></div>
+    </form>
+  </div>
+</div></section>
+
+<!-- COVERAGE -->
+<section class="section" id="coverage"><div class="wrap">
+  <div class="eyebrow blue">Network Coverage</div><h2 class="title">12 Broward Areas + Miami Reach</h2><p class="sub">Tap any area to see its coverage detail. The core network is Broward — Miami is extended coverage from the current live site's reach.</p>
+  <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:20px" id="covGrid">
+    <div class="mapbox" id="mapBox">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b style="letter-spacing:.1em">BROWARD COUNTY • SERVICE OS MAP — STYLE PREVIEW</b><span class="badge">Not a live map — illustrative layout</span></div>
+      <p style="color:#BFD6F5;font-size:14px;max-width:520px">Pins show relative coverage zones, not exact boundaries. Dispatch matches by ZIP, drive time, and provider skills in production.</p>
+      <!-- pins positioned approximately NW->SE -->
+      <span class="pin" style="left:22%;top:32%">Coral Springs</span><span class="pin" style="left:38%;top:28%">Margate</span><span class="pin" style="left:58%;top:24%">Pompano Beach</span>
+      <span class="pin" style="left:30%;top:50%">Tamarac</span><span class="pin" style="left:48%;top:46%">N. Lauderdale</span><span class="pin" style="left:70%;top:44%">Oakland Park</span>
+      <span class="pin" style="left:24%;top:68%">Sunrise</span><span class="pin" style="left:44%;top:66%">Lauderhill</span><span class="pin" style="left:64%;top:64%">Lauderdale Lakes</span><span class="pin" style="left:82%;top:62%">Fort Lauderdale</span>
+      <span class="pin" style="left:36%;top:86%">Plantation</span><span class="pin" style="left:56%;top:88%">Davie</span>
+      <span class="pin" style="left:84%;top:88%;background:var(--red);color:#fff">Miami ↓ Extended</span>
+    </div>
+    <div>
+      <div class="card" id="cityDetail"><h3 id="cityName" style="margin-top:0">Fort Lauderdale</h3><p id="cityDesc" style="color:var(--muted)">Core Broward coverage — residential + commercial dispatch, same-day windows, full 9-service catalog and provider matching.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill green">Same-Day Windows</span><span class="pill bluep">Residential + Commercial</span><span class="pill bluep" id="cityTag">Core Network</span></div><a href="#request" class="btn btn-navy btn-sm" style="margin-top:14px">Request Service Here →</a></div>
+      <div class="city-grid" id="cityGrid"></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- PRICING + BRANDS -->
+<section class="section alt" id="pricing"><div class="wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px" id="priceGrid">
+    <div>
+      <div class="eyebrow">Pricing &amp; Warranty • Carried from the live site</div><h2 class="title">$99 Diagnostic.<br>Credited. Warranted.</h2>
+      <div class="card" style="margin-top:14px"><div style="display:flex;gap:16px;align-items:center"><div style="background:var(--red);color:#fff;border-radius:16px;padding:16px;text-align:center;min-width:110px"><div style="font-family:'Barlow Condensed';font-size:42px;line-height:1">$99</div><small style="font-weight:800;letter-spacing:.06em">DIAGNOSTIC</small></div><div><b>Collected at booking. Credited toward your repair.</b><p style="color:var(--muted);margin:6px 0 0">Applies to refrigerator, washer, dryer, oven, dishwasher, microwave and the full catalog — home and commercial. Repair estimate + parts pricing are quoted separately before work begins.</p></div></div></div>
+      <div class="card" style="margin-top:12px"><h3 style="margin-top:0">🛡️ 90-Day Warranty — Parts + Labor</h3><ul style="color:var(--muted);margin:0;padding-left:18px"><li>Covers the parts we install + labor for the specific repair on your invoice, for 90 days from service date.</li><li>If the same failure returns in warranty, we return and repair it at no additional labor charge.</li><li>Does not cover misuse, power surges, water/pest damage, improper installation, normal wear, or work by others.</li><li>Commercial equipment may have additional written terms agreed before work begins.</li></ul><p style="font-size:13px;color:var(--muted)">Full warranty terms are listed on your invoice and on the live pricing &amp; warranty page.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px"><div class="card" style="text-align:center"><b>1 — Book</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">$99 secured at booking</p></div><div class="card" style="text-align:center"><b>2 — Diagnose</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">Quote before any repair</p></div><div class="card" style="text-align:center"><b>3 — Repair</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">$99 credited to total</p></div></div>
+    </div>
+    <div>
+      <div class="eyebrow blue">Brand Repair Coverage</div><h2 class="title" style="font-size:42px">40 Brands Serviced</h2><p class="sub" style="font-size:15px">From everyday workhorses to premium and commercial lines — if it heats, cools, washes or spins, the network likely covers it.</p>
+      <div class="brands" id="brandGrid" style="margin-top:14px"></div>
+      <div class="card" style="margin-top:16px"><h3 style="margin-top:0">Common problems we triage daily</h3><div style="display:grid;gap:10px"><div><b>🧊 Fridge Not Cooling</b> <span style="color:var(--muted)">— coils, fans, sealed-system signals</span></div><div><b>🔥 Dryer Not Heating</b> <span style="color:var(--muted)">— element, thermal fuse, airflow</span></div><div><b>💧 Washer Not Draining</b> <span style="color:var(--muted)">— pump, hose, control board</span></div><div><b>🌡️ Oven Overheating</b> <span style="color:var(--muted)">— sensor, relay, thermostat</span></div><div><b>🧊 Ice Maker Down</b> <span style="color:var(--muted)">— fill tube, inlet valve, sensor</span></div></div><a href="#request" class="btn btn-red btn-sm" style="margin-top:12px">Describe Your Issue →</a></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- OPS / ADMIN -->
+<section class="section" id="ops"><div class="wrap">
+  <div class="eyebrow">Behind The Scenes • Admin / Leads Operations — Concept Preview</div><h2 class="title">The Ops View That Runs It All</h2><p class="sub">This is what the Service OS gives Top Speed Appliance LLC as platform owner: every lead, every job, every provider — one pipeline, no lost bookings.</p>
+  <div class="kpi" style="margin:18px 0"><div class="card"><small style="letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800">Pipeline Stages</small><b style="display:block;font-size:26px;margin-top:4px">Request → Triage → Dispatch → Done</b></div><div class="card"><small style="letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800">Sources Tracked</small><b style="display:block;font-size:26px;margin-top:4px">.net • .com • Phone • QR</b></div><div class="card"><small style="letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800">Booking Safety</small><b style="display:block;font-size:26px;margin-top:4px">Log + Follow-Up Task</b></div><div class="card"><small style="letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:800">Review Loop</small><b style="display:block;font-size:26px;margin-top:4px">Auto-Ask After Completion</b></div></div>
+  <div class="card" style="padding:0;overflow:hidden"><table class="ops-table"><tr><th>Lead (Preview)</th><th>Source</th><th>Appliance / City</th><th>Triage</th><th>Status</th></tr>
+  <tr><td><b>Residential Request</b><br><small style="color:var(--muted)">Phone on file — confirmed by call</small></td><td>topspeedappliance.net</td><td>Refrigerator • Sunrise</td><td><span class="pill amber">Priority</span></td><td>Awaiting Approval</td></tr>
+  <tr><td><b>Commercial Work Order</b><br><small style="color:var(--muted)">Property — multi-unit</small></td><td>.com / Commercial</td><td>Laundry • Lauderhill</td><td><span class="pill bluep">Standard</span></td><td>Provider Matched</td></tr>
+  <tr><td><b>Residential Request</b><br><small style="color:var(--muted)">Photo + error code attached</small></td><td>QR — Flyer / Door Hanger</td><td>Dryer • Plantation</td><td><span class="pill green">Routed</span></td><td>Dispatched</td></tr>
+  <tr><td><b>Provider Application</b><br><small style="color:var(--muted)">Areas + appliances declared</small></td><td>.com / Join Network</td><td>— • Broward</td><td><span class="pill bluep">Review</span></td><td>Service Setters Review</td></tr></table></div>
+  <p style="font-size:13px;color:var(--muted)">Ops table is a concept preview with generic rows — no real customer data is shown. In production, leads land in the booking log with follow-up tasks so nothing is dropped.</p>
+
+  <div style="margin-top:28px"><h2 class="title" style="font-size:38px">Questions</h2>
+  <details><summary>Is this V2 replacing the live sites today?</summary><p style="color:var(--muted)">No. This is a development preview for future build-out. Your live sites keep running until a planned cutover. When ready, both domains point to the one Service OS platform — .net opening on the customer experience, .com on the service-request / provider experience.</p></details>
+  <details><summary>How does the $99 diagnostic work?</summary><p style="color:var(--muted)">It's collected at booking and credited toward your repair total. The on-site diagnosis confirms the issue, you approve a repair quote before work starts, and the $99 comes off that total. Repairs are backed by a 90-day parts + labor warranty on the specific repair.</p></details>
+  <details><summary>What does “hybrid dispatch” actually mean?</summary><p style="color:var(--muted)">Software auto-matches requests to providers by appliance, area, availability and ratings — then a Service Setters team member reviews and approves before dispatch. Speed from the system, judgment from a human.</p></details>
+  <details><summary>I'm a technician — do I pay for leads?</summary><p style="color:var(--muted)">The network model is matched jobs, not sold leads. Full commercial terms are shared with applicants directly before launch — this preview doesn't invent percentages or fees.</p></details>
+  <details><summary>Do you cover Miami?</summary><p style="color:var(--muted)">The core network is the 12 Broward areas listed above. The current live site also reaches Miami, so Miami is shown as extended coverage — availability is confirmed when your request is reviewed.</p></details></div>
+</div></section>
+
+<!-- FINAL CTA -->
+<section style="background:linear-gradient(135deg,var(--navy),#123A7A);color:#fff;padding:52px 0"><div class="wrap" style="text-align:center">
+  <h2 style="font-size:clamp(38px,5vw,60px);margin:0">THE FASTER, THE BETTER.</h2><p style="color:#CBDDF7;max-width:620px;margin:10px auto 20px">One Service OS. Two doors. Customers book in 60 seconds, providers get real jobs, and Service Setters keep every repair on track.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a href="#request" class="btn btn-red">Request Service</a><a href="tel:+19549317997" class="btn btn-white">Call 954-931-7997</a><a href="#providers" class="btn btn-ghostw">Join The Network</a></div>
+</div></section>
+<div class="checker"></div>
+<footer><div class="wrap">
+  <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:22px" id="footGrid">
+    <div><div style="font-family:'Barlow Condensed';font-size:30px;color:#fff">TOP SPEED APPLIANCE</div><p style="font-size:14px;max-width:340px">Top Speed Appliance LLC — platform owner of Top Speed Service OS. Advanced V2 development preview for topspeedapplianceservice.com.</p><p><b style="color:#fff">954-931-7997</b><br>Same-day service • Broward County + Miami reach</p></div>
+    <div><b style="color:#fff">This Site (.com)</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li><a href="#request">Service Request</a></li><li><a href="#dispatch">Dispatch Preview</a></li><li><a href="#providers">Provider Network</a></li><li><a href="#commercial">Commercial</a></li></ul></div>
+    <div><b style="color:#fff">Customer Site</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li><a href="/" target="_blank" rel="noopener">topspeedappliance.net ↗</a></li><li><a href="#pricing">Pricing &amp; Warranty</a></li><li><a href="#coverage">Service Areas</a></li><li><a href="#ops">How Service OS Works</a></li></ul></div>
+    <div><b style="color:#fff">Trust</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li>⭐ 4.8 — 2,500 reviews</li><li>$99 diagnostic credited to repair</li><li>90-day parts + labor warranty</li><li>“The Faster, The Better.”</li></ul></div>
+  </div>
+  <div style="border-top:1px solid rgba(255,255,255,.15);margin-top:22px;padding-top:16px;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px"><span>© Top Speed Appliance LLC • Advanced V2 Preview — not the live production site.</span><span>Forms on this preview are confirmed by phone / reviewed by Service Setters in production.</span></div>
+</div></footer>
+
+<div class="floatcall" id="floatCall"><a class="btn btn-red" href="tel:+19549317997">📞 954-931-7997</a><a class="btn btn-navy" href="#request">Book in 60s</a></div>
+
+<style>@media(max-width:900px){#providerGrid,#commGrid,#covGrid,#priceGrid,#footGrid{grid-template-columns:1fr !important}}
+@media(max-width:700px){.ops-table{font-size:13px}.ops-table th,.ops-table td{padding:8px 6px;word-break:break-word}.ops-table th:nth-child(2),.ops-table td:nth-child(2){display:none}}
+body{padding-bottom:72px}</style>
+<script>
+// DATA
+var SERVICES=[
+ {n:"Refrigerator",e:"🧊",d:"Not cooling, leaks, ice maker, noisy compressor.",issues:["Not cooling","Ice maker failed","Leak"]},
+ {n:"Washer",e:"🌀",d:"Won't drain/spin, leaks, shaking, error codes.",issues:["Won't drain","Won't spin","Leaks"]},
+ {n:"Dryer",e:"🔥",d:"No heat, long dry times, drum won't turn, vent issues.",issues:["No heat","Long dry times","Won't tumble"]},
+ {n:"Oven / Range",e:"🍳",d:"Won't heat, burners, igniters, temp control.",issues:["Won't heat","Burner out","Temp off"]},
+ {n:"Dishwasher",e:"🍽️",d:"Poor cleaning, draining, leaks, control faults.",issues:["Not cleaning","Not draining","Leaking"]},
+ {n:"Microwave",e:"📡",d:"Won't heat, sparking, turntable, door switch.",issues:["Won't heat","Sparking","No power"]},
+ {n:"Freezer",e:"❄️",d:"Not freezing, frost build-up, temp swings.",issues:["Not freezing","Frost build-up"]},
+ {n:"Ice Maker",e:"🧊",d:"No ice, small cubes, frozen fill tube, valve.",issues:["No ice","Leaking","Slow"]},
+ {n:"Cooktop",e:"🔥",d:"Burner failures, cracked glass, ignition issues.",issues:["Burner out","Won't ignite"]}
+];
+var BRANDS=["AGA","Amana","ASKO","Avanti","Azure","Blomberg","Bosch","Broan","Café","Coyote","Danby","Electrolux","Elica","Forté","Franke","Friedrich","Frigidaire","Fulgor Milano","GE Appliances","Haier","Hotpoint","InSinkErator","KitchenAid","LG","Marvel","Maytag","Monogram","Premier","Samsung","Sharp","Silhouette","Sirius","Smeg","Speed Queen","Summit Appliance","Thor Kitchen","Verona","Weber","Whirlpool","Whirlpool Commercial Laundry"];
+var CITIES=[
+ {n:"Lauderhill",t:"Core Network",d:"Home base coverage — residential + commercial dispatch, same-day windows, full catalog."},
+ {n:"Plantation",t:"Core Network",d:"Core Broward coverage — same-day windows, residential + commercial, provider matching by appliance."},
+ {n:"Sunrise",t:"Core Network",d:"Core Broward coverage — strong same-day availability and photo-triage routing."},
+ {n:"Tamarac",t:"Core Network",d:"Core Broward coverage — residential dispatch plus multi-unit / property work orders."},
+ {n:"Fort Lauderdale",t:"Core Network",d:"Core Broward coverage — residential + commercial dispatch, same-day windows, full 9-service catalog."},
+ {n:"Lauderdale Lakes",t:"Core Network",d:"Core Broward coverage — fast central-Broward routing for homes and businesses."},
+ {n:"North Lauderdale",t:"Core Network",d:"Core Broward coverage — same-day windows and provider matching across all appliances."},
+ {n:"Davie",t:"Core Network",d:"Core Broward coverage — residential + commercial, including larger homes and multi-appliance jobs."},
+ {n:"Coral Springs",t:"Core Network",d:"Northwest Broward coverage — planned routes + same-day windows when available."},
+ {n:"Pompano Beach",t:"Core Network",d:"Northeast Broward coverage — coastal homes, rentals and commercial accounts."},
+ {n:"Oakland Park",t:"Core Network",d:"Central-east Broward coverage — quick routing into Fort Lauderdale jobs."},
+ {n:"Margate",t:"Core Network",d:"Northwest Broward coverage — residential dispatch and property work orders."},
+ {n:"Miami",t:"Extended Coverage",d:"Extended coverage from the live site's reach — availability confirmed on review. Miami-Dade requests are triaged and routed based on provider availability."}
+];
+// Service cards
+document.getElementById('serviceCards').innerHTML=SERVICES.map(function(s){return '<div class="card" style="cursor:pointer" onclick="prefillService(\''+s.n+'\')"><div class="icon">'+s.e+'</div><h3>'+s.n+' Repair</h3><p style="color:var(--muted);margin:0 0 10px">'+s.d+'</p><div style="display:flex;gap:6px;flex-wrap:wrap">'+s.issues.map(function(i){return '<span class="pill bluep">'+i+'</span>'}).join('')+'</div><div style="margin-top:12px;font-weight:800;color:var(--blue)">Request this repair →</div></div>'}).join('');
+document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<span class="brand">'+b+'</span>'}).join('');
+// City chips
+document.getElementById('cityGrid').innerHTML=CITIES.map(function(c,i){return '<button class="city-chip '+(c.n==='Miami'?'miami ':'')+(i===4?'active':'')+'" onclick="selectCity('+i+',this)">'+c.n+(c.n==='Miami'?' • Extended':'')+'</button>'}).join('');
+function selectCity(i,el){document.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active')});el.classList.add('active');var c=CITIES[i];document.getElementById('cityName').textContent=c.n;document.getElementById('cityDesc').textContent=c.d;document.getElementById('cityTag').textContent=c.t;document.getElementById('qCity').value=c.n;}
+function prefillService(name){document.getElementById('qAppliance').value=name==='Oven / Range'?'Oven / Range':name;runTriage();document.getElementById('quick').scrollIntoView({behavior:'smooth',block:'center'});}
+// Track toggle
+var track='res';
+function setTrack(t){track=t;document.getElementById('tgRes').classList.toggle('active',t==='res');document.getElementById('tgCom').classList.toggle('active',t==='com');document.getElementById('bizField').style.display=t==='com'?'block':'none';}
+// Photo preview
+function previewPhoto(e){var f=e.target.files&&e.target.files[0];if(!f)return;var url=URL.createObjectURL(f);document.getElementById('photoPreview').innerHTML='<img src="'+url+'" alt="Your uploaded appliance photo preview"><div style="font-size:12px;color:var(--muted)">Photo attached for triage preview: '+f.name+'</div>';runTriage(true);}
+// Triage logic
+function runTriage(hasPhoto){
+ var app=document.getElementById('qAppliance').value; var txt=(document.getElementById('qIssue').value||'').toLowerCase();
+ var issue='General diagnostic needed — tech will inspect on site, confirm the fault, and quote before repair.', parts='Diagnostic kit + common wear parts for '+app, urg='Standard', pill='amber';
+ var map=[
+  {k:['not cool','warm','not freez','58','temperature'],i:'Likely cooling-system fault — condenser fan, dirty coils, or evaporator issue are top causes when a fridge runs warm.',p:'Condenser fan motor, coil brush, temp sensor',u:'Priority — food spoilage risk',cls:'redp'},
+  {k:['ice'],i:'Likely ice-maker fault — frozen fill tube, inlet valve, or ice-maker module failure.',p:'Inlet valve, fill tube, ice-maker module',u:'Standard',cls:'amber'},
+  {k:['leak','water'],i:'Likely leak source — drain line, inlet valve, hose or seal depending on location of water.',p:'Hoses, clamps, inlet valve, drain kit',u:'Priority — water damage risk',cls:'redp'},
+  {k:['no heat','not heat','cold'],i:'Likely heating fault — heating element or thermal fuse failure is the most common pattern.',p:'Heating element, thermal fuse, thermostat',u:'Standard',cls:'amber'},
+  {k:['not drain','drain','standing water'],i:'Likely drain fault — clogged pump, jammed hose, or control issue trapping water.',p:'Drain pump, hose kit, clamps',u:'Priority',cls:'amber'},
+  {k:['spin','shak','noise','loud'],i:'Likely mechanical fault — belt, bearing, suspension or motor coupling depending on noise/spin pattern.',p:'Belt, suspension kit, motor parts',u:'Standard',cls:'amber'},
+  {k:['spark'],i:'Possible microwave safety fault — stop using it until inspected. Likely waveguide, diode or magnetron issue.',p:'Tech inspection first — safety parts on confirmation',u:'Urgent — do not use',cls:'redp'},
+  {k:['error','code','f8','e1'],i:'Error-code pattern noted — triage flags board/sensor faults first. Photo of the code helps the tech pre-load parts.',p:'Sensor kit + board diagnostic tools',u:'Priority',cls:'amber'},
+  {k:['not clean','dirty'],i:'Likely cleaning-performance fault — spray arm, filter, pump or inlet issue reducing wash pressure.',p:'Spray arm, filter, inlet valve',u:'Standard',cls:'amber'}
+ ];
+ for(var i=0;i<map.length;i++){var hit=map[i].k.some(function(k){return txt.indexOf(k)>-1});if(hit){issue=map[i].i;parts=map[i].p;urg=map[i].u;pill=map[i].cls;break;}}
+ if(hasPhoto){issue+=' Photo received — provider can review it before arrival.';}
+ document.getElementById('triageIssue').textContent=app+': '+issue;
+ document.getElementById('triageParts').textContent=parts;
+ var uEl=document.getElementById('triageUrgency');uEl.textContent='Urgency: '+urg;uEl.className='pill '+pill;
+}
+runTriage();
+// Forms
+function refCode(){return 'TS-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+function submitQuick(e){e.preventDefault();var code=refCode();var box=document.getElementById('quickSuccess');box.style.display='block';box.innerHTML='<b>✓ Request received — Ref '+code+'</b><br>Preview confirmation: Service Setters will call <b>'+(document.getElementById('qPhone').value||'your phone')+'</b> to confirm details and collect the $99 diagnostic (credited toward repair). Keep your photo handy — your matched provider reviews it before arrival.<br><span style="font-size:13px">Need it faster? Call <a href="tel:+19549317997"><b>954-931-7997</b></a></span>';addDispatchJob(document.getElementById('qAppliance').value, document.getElementById('qCity').value);box.scrollIntoView({behavior:'smooth',block:'center'});}
+function submitProvider(e){e.preventDefault();var code=refCode();var box=document.getElementById('providerSuccess');box.style.display='block';box.innerHTML='<b>✓ Application received — Ref '+code+'</b><br>Preview confirmation: the Service Setters team reviews every application and will call <b>'+document.getElementById('pPhone').value+'</b> to verify details, areas, and onboarding requirements before activation.';}
+function submitCommercial(e){e.preventDefault();var code=refCode();var box=document.getElementById('commSuccess');box.style.display='block';box.innerHTML='<b>✓ Work order received — Ref '+code+'</b><br>Preview confirmation: commercial requests get priority review. Service Setters will call to confirm scope, access, and '+(document.getElementById('cConsol').checked?'consolidated invoicing setup':'per-visit invoicing')+' before dispatch.';}
+// Chips
+var areas=CITIES.map(function(c){return c.n});
+document.getElementById('areaChips').innerHTML=areas.map(function(a){return '<button type="button" class="chip" onclick="this.classList.toggle(\'on\')">'+a+'</button>'}).join('');
+document.getElementById('appChips').innerHTML=SERVICES.map(function(s){return '<button type="button" class="chip" onclick="this.classList.toggle(\'on\')">'+s.n+'</button>'}).join('');
+// Provider tabs
+function switchTab(btn,id){var panes=btn.closest('.phone-screen').querySelectorAll('.tabpane');panes.forEach(function(p){p.classList.remove('active')});btn.parentElement.querySelectorAll('button').forEach(function(b){b.classList.remove('active')});btn.classList.add('active');document.getElementById(id).classList.add('active');}
+function acceptOffer(btn){btn.textContent='✓ Accepted — On Route';btn.classList.remove('btn-red');btn.classList.add('btn-navy');}
+// DISPATCH SIMULATION
+var dispatchJobs=[
+ {id:'TS-A1',app:'Refrigerator',city:'Sunrise',stage:0,match:'—'},
+ {id:'TS-A2',app:'Dryer',city:'Plantation',stage:1,match:'94%'},
+ {id:'TS-A3',app:'Washer',city:'Lauderhill',stage:2,match:'96%'},
+ {id:'TS-A4',app:'Oven / Range',city:'Fort Lauderdale',stage:3,match:'97%'},
+ {id:'TS-A5',app:'Dishwasher',city:'Davie',stage:1,match:'91%'}
+];
+var pool=[['Refrigerator','Tamarac'],['Dryer','Margate'],['Washer','Coral Springs'],['Microwave','Oakland Park'],['Refrigerator','Pompano Beach'],['Oven / Range','Miami'],['Freezer','Lauderhill'],['Dishwasher','Sunrise']];
+var poolIdx=0, dispatchOn=true;
+function renderBoard(){
+ for(var s=0;s<4;s++){var col=document.getElementById('col'+s);var jobs=dispatchJobs.filter(function(j){return j.stage===s});document.getElementById('c'+s).textContent=jobs.length;
+  col.innerHTML=jobs.map(function(j){var btn=j.stage===2?'<button class="btn btn-red btn-sm" onclick="approveJob(\''+j.id+'\')">Approve & Dispatch</button>':'';var meta=j.stage===0?'Awaiting triage':j.stage===1?'Match '+j.match+' • Finding provider':j.stage===2?'Match '+j.match+' • Needs human OK':'Provider notified • En route';return '<div class="job"><b>'+j.app+'</b><small>'+j.city+' • '+j.id+' • $99 '+(j.stage>=2?'collected ✓':'pending')+'</small><div class="row"><span style="font-size:12px;color:#64748B">'+meta+'</span>'+btn+'</div></div>'}).join('')||'<div style="color:#8FB0DD;font-size:13px;padding:8px">No jobs in this stage</div>';}
+}
+function approveJob(id){dispatchJobs.forEach(function(j){if(j.id===id)j.stage=3});renderBoard();}
+function addDispatchJob(app,city){var p=pool[poolIdx%pool.length];poolIdx++;dispatchJobs.push({id:'TS-'+Math.random().toString(36).slice(2,5).toUpperCase(),app:app||p[0],city:city||p[1],stage:0,match:'—'});if(dispatchJobs.length>12)dispatchJobs=dispatchJobs.slice(-12);renderBoard();}
+function toggleDispatch(){dispatchOn=!dispatchOn;document.getElementById('dispatchToggle').textContent=dispatchOn?'⏸ Pause Simulation':'▶ Resume Simulation';}
+setInterval(function(){if(!dispatchOn)return;
+ // advance one job
+ var candidates=dispatchJobs.filter(function(j){return j.stage<2}); // stage 2 waits for human
+ if(candidates.length){var j=candidates[Math.floor(Math.random()*candidates.length)];j.stage++;if(j.stage===1)j.match=(90+Math.floor(Math.random()*9))+'%';if(j.stage===2)j.match=(92+Math.floor(Math.random()*7))+'%';}
+ if(Math.random()<0.35)addDispatchJob();
+ renderBoard();
+ document.getElementById('dispatchClock').textContent='Live Preview • Updated '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit',second:'2-digit'});
+},3500);
+renderBoard();
+</script>
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
