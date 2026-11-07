@@ -1,0 +1,831 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>Top Speed for Property Managers — One Portal for Every Unit's Appliances</title>
+<meta name="description" content="Top Speed Appliance gives Broward County property managers, landlords, HOAs and realtors one portal for every unit's appliance repairs — tenant requests, Service Setters dispatch, live status, photo reports and one monthly invoice. $99 diagnostic per visit, credited toward repair." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --navy:#0A265C;
+    --navy-deep:#061A42;
+    --navy-ink:#04122E;
+    --blue:#1E7CFF;
+    --blue-bright:#3D9BFF;
+    --red:#E63329;
+    --red-dark:#C2241B;
+    --bg:#F4F7FC;
+    --surface:#FFFFFF;
+    --surface-2:#EAF0F9;
+    --ink:#10233F;
+    --ink-soft:#42557A;
+    --line:#D5DFEF;
+    --on-navy:#FFFFFF;
+    --on-navy-soft:#BFD4F5;
+    --good:#1B9E57;
+    --shadow:0 18px 44px rgba(6,26,66,.16);
+    --radius:14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#050F24;
+      --surface:#0B1E42;
+      --surface-2:#0E2650;
+      --ink:#EDF3FD;
+      --ink-soft:#A9BCDD;
+      --line:#1E3A6E;
+      --shadow:0 18px 44px rgba(0,0,0,.5);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    *{animation:none!important;transition:none!important}
+  }
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:17px;line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block}
+  a{color:var(--blue)}
+  h1,h2,h3{font-family:"Barlow Condensed","Barlow",sans-serif;line-height:1.04;margin:0;font-weight:700;letter-spacing:.01em}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  .checker{
+    height:14px;
+    background:
+      conic-gradient(var(--navy-ink) 25%, #fff 0 50%, var(--navy-ink) 0 75%, #fff 0) 0 0/28px 28px;
+    opacity:.95;
+  }
+  .checker.redline{box-shadow:0 3px 0 var(--red)}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:var(--navy-deep);color:#fff;
+    border-bottom:3px solid var(--red);
+  }
+  .topbar-in{display:flex;align-items:center;gap:18px;padding:12px 0}
+  .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:#fff;min-width:0}
+  .brand-flag{
+    width:42px;height:42px;flex:0 0 auto;border-radius:9px;overflow:hidden;
+    background:conic-gradient(#0A265C 25%, #fff 0 50%, #0A265C 0 75%, #fff 0) 0 0/21px 21px;
+    border:2px solid #fff;display:grid;place-items:center;
+  }
+  .brand-flag span{
+    background:var(--red);color:#fff;font-family:"Barlow Condensed",sans-serif;font-weight:700;
+    font-size:15px;line-height:1;padding:3px 5px;border-radius:4px;letter-spacing:.03em;
+  }
+  .brand-name{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:24px;letter-spacing:.02em;line-height:1;text-transform:uppercase;white-space:nowrap}
+  .brand-name em{font-style:normal;color:var(--blue-bright)}
+  .brand-sub{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-navy-soft);white-space:nowrap}
+  .topnav{margin-left:auto;display:flex;align-items:center;gap:26px}
+  .topnav a.nl{color:#DCE8FB;text-decoration:none;font-weight:600;font-size:15.5px}
+  .topnav a.nl:hover{color:#fff;text-decoration:underline;text-underline-offset:4px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;justify-content:center;
+    font-family:"Barlow",sans-serif;font-weight:700;font-size:16.5px;
+    padding:13px 24px;border-radius:10px;border:2px solid transparent;
+    text-decoration:none;cursor:pointer;transition:transform .15s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-red:hover{background:var(--red-dark)}
+  .btn-blue{background:var(--blue);color:#fff}
+  .btn-blue:hover{background:#0F66DB}
+  .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+  .btn-ghost:hover{border-color:#fff}
+  .btn-call{background:#fff;color:var(--navy);padding:10px 18px;font-size:15.5px;border-radius:9px;white-space:nowrap}
+  .btn-call:hover{background:var(--surface-2)}
+  @media (max-width:860px){ .topnav a.nl{display:none} }
+  @media (max-width:640px){
+    .topbar-in{flex-wrap:wrap;gap:10px;padding:10px 0}
+    .topnav{margin-left:0}
+    .brand-name{font-size:21px}
+    .brand-sub{font-size:10.5px}
+    .btn-call{padding:8px 14px;font-size:14.5px}
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:
+      radial-gradient(900px 480px at 88% -10%, rgba(30,124,255,.34), transparent 60%),
+      linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 62%, var(--navy-ink) 100%);
+    color:#fff;overflow:hidden;
+  }
+  .hero-in{display:grid;grid-template-columns:1.02fr .98fr;gap:44px;padding:56px 0 64px;align-items:center}
+  .hero-tag{
+    display:inline-flex;align-items:center;gap:9px;background:rgba(255,255,255,.09);
+    border:1px solid rgba(255,255,255,.24);border-radius:999px;padding:6px 14px 6px 8px;
+    font-size:13.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#DCE8FB;
+  }
+  .hero-tag b{background:var(--red);color:#fff;border-radius:999px;padding:2px 10px;letter-spacing:.06em}
+  .hero h1{font-size:clamp(44px,6.2vw,74px);text-transform:uppercase;margin:20px 0 16px}
+  .hero h1 .hl{color:var(--blue-bright)}
+  .hero p.lede{font-size:19.5px;color:var(--on-navy-soft);max-width:34em;margin:0 0 26px}
+  .hero p.lede strong{color:#fff}
+  .hero-ctas{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:30px}
+  .hero-proof{display:flex;flex-wrap:wrap;gap:10px 26px;font-size:15.5px;color:#DCE8FB}
+  .hero-proof .stars{color:#FFC531;letter-spacing:2px}
+  .hero-proof b{color:#fff}
+
+  .hero-visual{position:relative}
+  .hero-photo{border-radius:18px;box-shadow:var(--shadow);aspect-ratio:4/3;object-fit:cover;width:100%;border:1px solid rgba(255,255,255,.25)}
+  .portal-card{
+    position:absolute;left:-14px;right:auto;bottom:-26px;width:min(430px,94%);
+    background:var(--surface);color:var(--ink);border-radius:var(--radius);
+    box-shadow:var(--shadow);padding:18px 18px 14px;border-top:5px solid var(--red);
+  }
+  .portal-card h3{font-size:19px;text-transform:uppercase;letter-spacing:.03em;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .portal-card h3 small{font-family:"Barlow",sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);letter-spacing:.05em;text-transform:uppercase}
+  .wo-row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:15px}
+  .wo-row:last-of-type{border-bottom:none}
+  .wo-row .u{font-weight:700}
+  .wo-row .a{color:var(--ink-soft)}
+  .pill{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-radius:999px;padding:3px 10px;white-space:nowrap;align-self:center}
+  .pill.enroute{background:#FFF3D6;color:#8A5B00}
+  .pill.done{background:#DFF5E7;color:#0E6B38}
+  .pill.booked{background:#E1EDFF;color:#0B4CAD}
+  @media (prefers-color-scheme: dark){ .pill.enroute{background:#4A3600;color:#FFD97A} .pill.done{background:#0C3A22;color:#7FE3AB} .pill.booked{background:#123B75;color:#A9CCFF} }
+  .tracker{display:flex;align-items:center;gap:0;margin-top:12px}
+  .tracker .step{flex:1;text-align:center;position:relative;font-size:11.5px;font-weight:600;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;padding-top:20px}
+  .tracker .step::before{content:"";position:absolute;top:5px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:var(--line);z-index:2}
+  .tracker .step::after{content:"";position:absolute;top:10px;left:-50%;width:100%;height:2px;background:var(--line)}
+  .tracker .step:first-child::after{display:none}
+  .tracker .step.on{color:var(--ink)}
+  .tracker .step.on::before{background:var(--good)}
+  .tracker .step.on::after{background:var(--good)}
+  .tracker .step.now::before{background:var(--blue);box-shadow:0 0 0 5px rgba(30,124,255,.22)}
+  @media (max-width:960px){
+    .hero-in{grid-template-columns:1fr;padding:42px 0 84px}
+    .portal-card{left:8px}
+  }
+
+  /* ---------- Sections ---------- */
+  section{padding:72px 0}
+  .kicker{font-size:13.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin:0 0 10px}
+  h2{font-size:clamp(32px,4.4vw,48px);text-transform:uppercase;margin-bottom:14px}
+  .sub{font-size:18.5px;color:var(--ink-soft);max-width:46em;margin:0 0 36px}
+
+  /* Pain -> solution */
+  .pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .pain-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:26px 24px;box-shadow:0 6px 18px rgba(6,26,66,.05)}
+  .pain-card .pain{
+    display:flex;gap:12px;align-items:flex-start;padding-bottom:16px;margin-bottom:16px;border-bottom:1px dashed var(--line);
+  }
+  .pain-ico,.sol-ico{flex:0 0 auto;width:40px;height:40px;border-radius:10px;display:grid;place-items:center}
+  .pain-ico{background:#FDECEA;color:var(--red)}
+  .sol-ico{background:#E4F2EA;color:var(--good)}
+  @media (prefers-color-scheme: dark){ .pain-ico{background:#3D130F} .sol-ico{background:#0E3320} }
+  .pain-card h3{font-size:22px;margin-bottom:4px}
+  .pain-card p{margin:0;color:var(--ink-soft);font-size:16px}
+  .pain-card .sol{display:flex;gap:12px;align-items:flex-start}
+  .pain-card .sol h3{color:var(--navy)}
+  @media (prefers-color-scheme: dark){ .pain-card .sol h3{color:var(--blue-bright)} }
+  @media (max-width:960px){ .pain-grid{grid-template-columns:1fr} }
+
+  /* Portal / demo */
+  .portal-sec{background:linear-gradient(180deg, var(--navy-deep), var(--navy-ink));color:#fff}
+  .portal-sec .sub{color:var(--on-navy-soft)}
+  .portal-sec .kicker{color:var(--blue-bright)}
+  .demo{display:grid;grid-template-columns:.92fr 1.08fr;gap:26px;align-items:start}
+  .wo-list{display:flex;flex-direction:column;gap:10px}
+  .wo-item{
+    text-align:left;width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);
+    color:#fff;border-radius:12px;padding:14px 16px;cursor:pointer;font-family:inherit;
+    display:flex;justify-content:space-between;gap:12px;align-items:center;transition:background .15s ease,border-color .15s ease;
+  }
+  .wo-item:hover{background:rgba(255,255,255,.11)}
+  .wo-item[aria-selected="true"]{background:rgba(30,124,255,.22);border-color:var(--blue-bright)}
+  .wo-item .t{font-weight:700;font-size:16.5px}
+  .wo-item .d{font-size:14px;color:var(--on-navy-soft)}
+  .wo-detail{background:var(--surface);color:var(--ink);border-radius:var(--radius);padding:26px;box-shadow:var(--shadow)}
+  .wo-detail h3{font-size:26px;text-transform:uppercase}
+  .wo-detail .meta{color:var(--ink-soft);font-size:15.5px;margin:4px 0 20px}
+  .big-tracker{display:flex;margin:26px 0 8px}
+  .big-tracker .step{flex:1;text-align:center;position:relative;padding-top:26px;font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft)}
+  .big-tracker .step::before{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);width:15px;height:15px;border-radius:50%;background:var(--line);z-index:2}
+  .big-tracker .step::after{content:"";position:absolute;top:13px;left:-50%;width:100%;height:3px;background:var(--line)}
+  .big-tracker .step:first-child::after{display:none}
+  .big-tracker .step.on{color:var(--ink)}
+  .big-tracker .step.on::before{background:var(--good)}
+  .big-tracker .step.on::after{background:var(--good)}
+  .big-tracker .step.now::before{background:var(--blue);box-shadow:0 0 0 6px rgba(30,124,255,.2)}
+  .step-note{background:var(--surface-2);border-radius:10px;padding:14px 16px;font-size:15.5px;margin-top:18px}
+  .step-note b{display:block;margin-bottom:2px}
+  .demo-hint{font-size:14px;color:var(--on-navy-soft);margin-top:12px}
+  @media (max-width:960px){ .demo{grid-template-columns:1fr} }
+
+  .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:44px}
+  .feat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:var(--radius);padding:24px}
+  .feat h3{font-size:21px;margin:12px 0 6px;text-transform:uppercase;letter-spacing:.02em}
+  .feat p{margin:0;color:var(--on-navy-soft);font-size:15.5px}
+  .feat .fi{width:44px;height:44px;border-radius:11px;background:rgba(30,124,255,.25);display:grid;place-items:center;color:#BFD9FF}
+  @media (max-width:960px){ .feat-grid{grid-template-columns:1fr 1fr} }
+  @media (max-width:620px){ .feat-grid{grid-template-columns:1fr} }
+
+  .diag-band{
+    margin-top:44px;background:#fff;color:var(--navy-ink);border-radius:var(--radius);
+    display:grid;grid-template-columns:auto 1fr auto;gap:26px;align-items:center;padding:28px 30px;
+    border-left:8px solid var(--red);
+  }
+  .diag-price{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:76px;line-height:.9;color:var(--navy)}
+  .diag-price small{display:block;font-size:15px;font-family:"Barlow",sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+  .diag-band h3{font-size:25px;text-transform:uppercase;color:var(--navy)}
+  .diag-band p{margin:4px 0 0;color:#42557A;font-size:16px;max-width:38em}
+  @media (max-width:760px){ .diag-band{grid-template-columns:1fr;text-align:left} }
+
+  /* Coverage */
+  .cov-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px}
+  .area-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;list-style:none;margin:0;padding:0}
+  .area-list li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;font-weight:600;display:flex;align-items:center;gap:10px}
+  .area-list li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--blue);flex:0 0 auto}
+  .svc-list{list-style:none;margin:0;padding:0;columns:2;column-gap:28px}
+  .svc-list li{padding:9px 0;border-bottom:1px solid var(--line);font-weight:500;break-inside:avoid;display:flex;gap:10px;align-items:center}
+  .svc-list li svg{color:var(--red);flex:0 0 auto}
+  @media (max-width:860px){ .cov-grid{grid-template-columns:1fr} .svc-list{columns:1} }
+
+  /* Onboarding */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:step}
+  .step-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px 24px;position:relative;overflow:hidden}
+  .step-card::before{
+    counter-increment:step;content:counter(step);
+    font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:110px;line-height:1;
+    color:var(--surface-2);position:absolute;right:10px;top:2px;z-index:0;
+  }
+  .step-card h3,.step-card p{position:relative;z-index:1}
+  .step-card h3{font-size:24px;text-transform:uppercase;margin-bottom:8px}
+  .step-card p{margin:0;color:var(--ink-soft);font-size:16px}
+  .step-card .tag{display:inline-block;position:relative;z-index:1;background:var(--navy);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:5px;padding:3px 9px;margin-bottom:14px}
+  @media (max-width:860px){ .steps{grid-template-columns:1fr} }
+
+  /* Trust band */
+  .trust{background:var(--navy);color:#fff;padding:44px 0}
+  .trust-in{display:flex;flex-wrap:wrap;gap:22px 48px;align-items:center;justify-content:space-between}
+  .trust .big{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:44px;line-height:1}
+  .trust .lbl{font-size:14px;color:var(--on-navy-soft);letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-top:4px}
+  .trust .stars{color:#FFC531;font-size:26px;letter-spacing:3px;line-height:1}
+
+  /* Form */
+  .form-sec{background:var(--surface-2)}
+  @media (prefers-color-scheme: dark){ .form-sec{background:#071633} }
+  .form-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:44px;align-items:start}
+  .form-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:30px;box-shadow:var(--shadow)}
+  .frow{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  label{display:block;font-weight:600;font-size:14.5px;margin-bottom:6px}
+  label .req{color:var(--red)}
+  input,select,textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--ink);
+    background:var(--bg);border:1.5px solid var(--line);border-radius:9px;padding:11px 13px;margin-bottom:16px;
+  }
+  @media (prefers-color-scheme: dark){ input,select,textarea{background:#081A3C} }
+  input:focus,select,textarea:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+  textarea{resize:vertical;min-height:96px}
+  .form-note{font-size:14.5px;color:var(--ink-soft);margin:12px 0 0}
+  .form-ok{display:none;background:#E7F6EC;border:1.5px solid var(--good);border-radius:12px;padding:22px;color:#0C4A28}
+  @media (prefers-color-scheme: dark){ .form-ok{background:#0C2E1B;color:#A9EBC4} }
+  .form-ok h3{font-size:24px;text-transform:uppercase;margin-bottom:6px}
+  .form-ok p{margin:0 0 14px}
+  .aside-points{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:16px}
+  .aside-points li{display:flex;gap:12px;align-items:flex-start;font-size:16.5px}
+  .aside-points svg{color:var(--good);flex:0 0 auto;margin-top:3px}
+  @media (max-width:860px){ .form-grid{grid-template-columns:1fr} .frow{grid-template-columns:1fr} }
+
+  /* Footer */
+  footer{background:var(--navy-ink);color:var(--on-navy-soft);padding:52px 0 0}
+  .foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:36px;padding-bottom:40px}
+  footer h3{color:#fff;font-size:20px;text-transform:uppercase;margin-bottom:12px}
+  footer p,footer li{font-size:15.5px}
+  footer ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+  footer a{color:#BFD4F5;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .foot-brand{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:30px;color:#fff;text-transform:uppercase;line-height:1}
+  .foot-brand em{font-style:normal;color:var(--blue-bright)}
+  .foot-bottom{border-top:1px solid rgba(255,255,255,.14);padding:18px 0 22px;display:flex;flex-wrap:wrap;gap:8px 26px;font-size:14px;justify-content:space-between}
+  @media (max-width:860px){ .foot-grid{grid-template-columns:1fr} }
+  .svg-ico{width:22px;height:22px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar-in">
+    <a class="brand" href="#top" aria-label="Top Speed Appliance — property managers home">
+      <span class="brand-flag" aria-hidden="true"><span>TS</span></span>
+      <span>
+        <span class="brand-name">Top <em>Speed</em> Appliance</span><br />
+        <span class="brand-sub">Property Manager Portal · Top Speed Service OS</span>
+      </span>
+    </a>
+    <nav class="topnav" aria-label="Page sections">
+      <a class="nl" href="#portal">The Portal</a>
+      <a class="nl" href="#coverage">Coverage</a>
+      <a class="nl" href="#onboarding">Getting Started</a>
+      <a class="btn btn-call" href="tel:+19549317997">☎ 954-931-7997</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <div class="hero">
+    <div class="wrap hero-in">
+      <div>
+        <span class="hero-tag"><b>For Pros</b> Property Managers · Landlords · HOAs · Realtors</span>
+        <h1>Every unit's appliances, <span class="hl">handled from one portal.</span></h1>
+        <p class="lede">Stop being the middleman between tenants and repair techs. Your tenants submit appliance requests, <strong>Service Setters dispatch</strong> the job, and you watch every work order move — booked, dispatched, en route, done — from one dashboard covering your whole Broward County portfolio.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-red" href="#demo-form">Book a demo</a>
+          <a class="btn btn-ghost" href="tel:+19549317997">Call 954-931-7997</a>
+        </div>
+        <div class="hero-proof">
+          <span><span class="stars" aria-hidden="true">★★★★★</span> <b>4.8</b> rating</span>
+          <span><b>2,500</b> reviews</span>
+          <span><b>Same-day</b> service across Broward</span>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img class="hero-photo" src="hero-apartments.jpg" alt="Aerial view of a multi-family apartment community in Florida — the kind of portfolio the Top Speed portal covers" width="1158" height="841" />
+        <div class="portal-card" role="img" aria-label="Portal preview: work orders for Unit 12 Refrigerator en route, Unit 7 Washer done, Unit 3 Dryer booked, with a live status tracker">
+          <h3>Today at your properties <small>Live portal preview</small></h3>
+          <div class="wo-row"><span><span class="u">Unit 12</span> · <span class="a">Refrigerator</span></span><span class="pill enroute">En route</span></div>
+          <div class="wo-row"><span><span class="u">Unit 7</span> · <span class="a">Washer</span></span><span class="pill done">Done</span></div>
+          <div class="wo-row"><span><span class="u">Unit 3</span> · <span class="a">Dryer</span></span><span class="pill booked">Booked</span></div>
+          <div class="tracker" aria-hidden="true">
+            <span class="step on">Booked</span>
+            <span class="step on">Dispatched</span>
+            <span class="step on now">En route</span>
+            <span class="step">Done</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="checker redline" aria-hidden="true"></div>
+  </div>
+
+  <!-- ============ PAIN -> SOLUTION ============ -->
+  <section aria-labelledby="pain-h">
+    <div class="wrap">
+      <p class="kicker">Sound familiar?</p>
+      <h2 id="pain-h">The 11 p.m. phone call ends here</h2>
+      <p class="sub">Managing appliance repairs across dozens of units usually means being the dispatcher, the tracker, and the bookkeeper yourself. The Top Speed portal takes all three jobs off your plate.</p>
+      <div class="pain-grid">
+
+        <article class="pain-card">
+          <div class="pain">
+            <span class="pain-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+            <div>
+              <h3>The pain: tenant calls at midnight</h3>
+              <p>A fridge dies at 11 p.m., the tenant calls <em>you</em>, and you start phone-tag with a repair company in the morning.</p>
+            </div>
+          </div>
+          <div class="sol">
+            <span class="sol-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <div>
+              <h3>The fix: tenants submit it themselves</h3>
+              <p>Tenants send requests straight into the portal, day or night. Each one routes automatically to Service Setters dispatch — no call to you required.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="pain-card">
+          <div class="pain">
+            <span class="pain-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>
+            <div>
+              <h3>The pain: no visibility</h3>
+              <p>"Did anyone call the tenant? Is the tech coming today?" You're chasing updates across texts, calls, and sticky notes.</p>
+            </div>
+          </div>
+          <div class="sol">
+            <span class="sol-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <div>
+              <h3>The fix: live status on every job</h3>
+              <p>Every work order shows its stage — booked, dispatched, en route, done — plus a photo report when the job closes. You check the portal, not your phone log.</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="pain-card">
+          <div class="pain">
+            <span class="pain-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6M9 17h6"/></svg></span>
+            <div>
+              <h3>The pain: scattered invoices</h3>
+              <p>A receipt here, a card charge there, a different invoice format for every visit — month-end reconciliation eats hours.</p>
+            </div>
+          </div>
+          <div class="sol">
+            <span class="sol-ico" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></span>
+            <div>
+              <h3>The fix: one monthly invoice</h3>
+              <p>Every visit across every property rolls into a single consolidated monthly invoice, itemized by unit — ready for your owners and your books.</p>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PORTAL FEATURES + DEMO ============ -->
+  <section class="portal-sec" id="portal" aria-labelledby="portal-h">
+    <div class="wrap">
+      <p class="kicker">Inside Top Speed Service OS</p>
+      <h2 id="portal-h">One dashboard. Every property. Every work order.</h2>
+      <p class="sub">Tap a work order below to see exactly what you see in the portal — where the job stands, who approved it, and what happens next.</p>
+
+      <div class="demo">
+        <div>
+          <div class="wo-list" role="tablist" aria-label="Sample work orders">
+            <button class="wo-item" role="tab" aria-selected="true" data-wo="0" type="button">
+              <span><span class="t">Unit 12 — Refrigerator</span><br /><span class="d">Not cooling · Sunrise property</span></span>
+              <span class="pill enroute">En route</span>
+            </button>
+            <button class="wo-item" role="tab" aria-selected="false" data-wo="1" type="button">
+              <span><span class="t">Unit 7 — Washer</span><br /><span class="d">Drain pump replaced · Lauderhill property</span></span>
+              <span class="pill done">Done</span>
+            </button>
+            <button class="wo-item" role="tab" aria-selected="false" data-wo="2" type="button">
+              <span><span class="t">Unit 3 — Dryer</span><br /><span class="d">No heat · Plantation property</span></span>
+              <span class="pill booked">Booked</span>
+            </button>
+            <button class="wo-item" role="tab" aria-selected="false" data-wo="3" type="button">
+              <span><span class="t">Unit 21 — Oven &amp; Range</span><br /><span class="d">Igniter fault · Fort Lauderdale property</span></span>
+              <span class="pill booked" style="background:#E1EDFF;color:#0B4CAD">Dispatched</span>
+            </button>
+          </div>
+          <p class="demo-hint">Sample work orders shown to demonstrate the portal — your dashboard shows your real properties and jobs.</p>
+        </div>
+
+        <div class="wo-detail" aria-live="polite">
+          <h3 id="woTitle">Unit 12 — Refrigerator</h3>
+          <p class="meta" id="woMeta">Tenant request: "Fridge running warm, food spoiling." · $99 diagnostic collected at booking</p>
+          <div class="big-tracker" id="woTracker">
+            <span class="step on">Booked</span>
+            <span class="step on">Dispatched</span>
+            <span class="step on now">En route</span>
+            <span class="step">Done</span>
+          </div>
+          <div class="step-note"><b id="woNoteTitle">Technician en route</b><span id="woNote">The assigned tech is on the way and the tenant has the arrival window. You'll get the photo report the moment the job closes.</span></div>
+        </div>
+      </div>
+
+      <div class="feat-grid">
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></span>
+          <h3>All properties, one dashboard</h3>
+          <p>Every building, unit, and appliance in your portfolio in a single view — filter by property, unit, or status in seconds.</p>
+        </div>
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg></span>
+          <h3>Tenant requests, auto-routed</h3>
+          <p>Tenants submit requests with the appliance and the problem. The portal routes each one into dispatch automatically — no forwarding, no re-typing.</p>
+        </div>
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg></span>
+          <h3>Service Setters dispatch, with approval</h3>
+          <p>Our Service Setters team reviews and approves every booking before a tech rolls — the right provider, matched to the job, every time.</p>
+        </div>
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>
+          <h3>Live status per work order</h3>
+          <p>Booked → dispatched → en route → done. You and your tenants always know where a job stands without making a single call.</p>
+        </div>
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+          <h3>Photo report after every job</h3>
+          <p>Each completed visit closes with photos and a written summary in the portal — proof of work you can forward straight to owners.</p>
+        </div>
+        <div class="feat">
+          <span class="fi" aria-hidden="true"><svg class="svg-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M8 7h8M8 11h8M8 15h5"/></svg></span>
+          <h3>One consolidated monthly invoice</h3>
+          <p>All visits, all properties, one itemized invoice per month. Reconciliation stops being a project.</p>
+        </div>
+      </div>
+
+      <div class="diag-band">
+        <div class="diag-price"><small>Diagnostic per visit</small>$99</div>
+        <div>
+          <h3>One simple diagnostic model — no surprises</h3>
+          <p>Every visit runs on the same terms: a <strong>$99 diagnostic fee per visit, collected at booking and credited toward the repair</strong> when you approve the work. Your tenants and owners see the same number every time, and it lands itemized on your monthly invoice.</p>
+        </div>
+        <a class="btn btn-red" href="#demo-form">Book a demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ COVERAGE ============ -->
+  <section id="coverage" aria-labelledby="cov-h">
+    <div class="wrap">
+      <p class="kicker">Coverage</p>
+      <h2 id="cov-h">All of Broward, all major appliances</h2>
+      <p class="sub">One vendor for your whole portfolio — if a unit sits in these 12 service areas, its appliances are covered.</p>
+      <div class="cov-grid">
+        <div>
+          <h3 style="font-size:24px;text-transform:uppercase;margin-bottom:16px">12 Broward County service areas</h3>
+          <ul class="area-list">
+            <li>Lauderhill</li>
+            <li>Plantation</li>
+            <li>Sunrise</li>
+            <li>Tamarac</li>
+            <li>Fort Lauderdale</li>
+            <li>Lauderdale Lakes</li>
+            <li>North Lauderdale</li>
+            <li>Davie</li>
+            <li>Coral Springs</li>
+            <li>Pompano Beach</li>
+            <li>Oakland Park</li>
+            <li>Margate</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="font-size:24px;text-transform:uppercase;margin-bottom:8px">What we service &amp; install</h3>
+          <ul class="svc-list">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Refrigerator repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Washer repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Dryer repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Oven &amp; range repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Dishwasher repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Freezer &amp; ice maker repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Microwave repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Garbage disposal repair</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Appliance installation</li>
+          </ul>
+          <figure style="margin:26px 0 0">
+            <img src="tech-fridge.jpg" alt="Technician kneeling to service an open refrigerator during a repair visit" width="1024" height="535" style="border-radius:14px;box-shadow:var(--shadow)" />
+            <figcaption style="font-size:14px;color:var(--ink-soft);margin-top:8px">Every completed visit closes with a photo report in your portal.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ONBOARDING ============ -->
+  <section id="onboarding" aria-labelledby="onb-h" style="padding-top:0">
+    <div class="wrap">
+      <p class="kicker">Getting started</p>
+      <h2 id="onb-h">Live in three steps</h2>
+      <p class="sub">No new software for your team to learn on day one — we set the portal up with you, and requests start flowing.</p>
+      <div class="steps">
+        <div class="step-card">
+          <span class="tag">Step one</span>
+          <h3>Add your properties</h3>
+          <p>Tell us your buildings and units — single-family rentals, multifamily, HOA common areas. We load them into your portal and map each unit's appliances.</p>
+        </div>
+        <div class="step-card">
+          <span class="tag">Step two</span>
+          <h3>Invite your tenants</h3>
+          <p>Tenants get a simple link to submit appliance requests with the unit, the appliance, and the problem — no account maze, no app to install.</p>
+        </div>
+        <div class="step-card">
+          <span class="tag">Step three</span>
+          <h3>Requests flow, you watch</h3>
+          <p>Requests route to Service Setters for approval and dispatch. You follow every job live and get one itemized invoice at month's end.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRUST BAND ============ -->
+  <div class="trust" role="region" aria-label="Why managers trust Top Speed">
+    <div class="wrap trust-in">
+      <div>
+        <div class="stars" aria-hidden="true">★★★★★</div>
+        <div class="lbl">Average rating</div>
+      </div>
+      <div>
+        <div class="big">4.8 / 5</div>
+        <div class="lbl">From Broward customers</div>
+      </div>
+      <div>
+        <div class="big">2,500</div>
+        <div class="lbl">Customer reviews</div>
+      </div>
+      <div>
+        <div class="big">Same-day</div>
+        <div class="lbl">Service across 12 Broward areas</div>
+      </div>
+      <div>
+        <div class="big">$99</div>
+        <div class="lbl">Diagnostic — credited toward repair</div>
+      </div>
+    </div>
+  </div>
+  <div class="checker" aria-hidden="true"></div>
+
+  <!-- ============ LEAD FORM ============ -->
+  <section class="form-sec" id="demo-form" aria-labelledby="form-h">
+    <div class="wrap form-grid">
+      <div>
+        <p class="kicker">Book a demo</p>
+        <h2 id="form-h">See your portfolio in the portal</h2>
+        <p class="sub" style="margin-bottom:0">Tell us about your properties and we'll walk you through the dashboard with your own unit count in mind. <strong>The team replies within one business day.</strong></p>
+        <ul class="aside-points">
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>No midnight relay duty</strong> — tenant requests come to us first.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Photo proof for owners</strong> — forward the job report straight from the portal.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Predictable terms</strong> — $99 diagnostic per visit, collected at booking, credited toward repair.</span></li>
+          <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg><span><strong>Prefer to talk?</strong> Call <a href="tel:+19549317997">954-931-7997</a> and ask for the property manager program.</span></li>
+        </ul>
+      </div>
+
+      <div class="form-card">
+        <form id="leadForm" novalidate>
+          <div class="frow">
+            <div>
+              <label for="f-company">Company <span class="req" aria-hidden="true">*</span></label>
+              <input id="f-company" name="company" type="text" autocomplete="organization" required placeholder="e.g. Sunrise Property Group" />
+            </div>
+            <div>
+              <label for="f-name">Contact name <span class="req" aria-hidden="true">*</span></label>
+              <input id="f-name" name="contact" type="text" autocomplete="name" required placeholder="Your full name" />
+            </div>
+          </div>
+          <div class="frow">
+            <div>
+              <label for="f-phone">Phone <span class="req" aria-hidden="true">*</span></label>
+              <input id="f-phone" name="phone" type="tel" autocomplete="tel" required placeholder="(954) 555-0100" />
+            </div>
+            <div>
+              <label for="f-email">Email <span class="req" aria-hidden="true">*</span></label>
+              <input id="f-email" name="email" type="email" autocomplete="email" required placeholder="you@company.com" />
+            </div>
+          </div>
+          <div>
+            <label for="f-units">Number of units you manage <span class="req" aria-hidden="true">*</span></label>
+            <select id="f-units" name="units" required>
+              <option value="">Select a range…</option>
+              <option>1 – 10 units</option>
+              <option>11 – 50 units</option>
+              <option>51 – 200 units</option>
+              <option>201 – 500 units</option>
+              <option>500+ units</option>
+            </select>
+          </div>
+          <div>
+            <label for="f-msg">Anything we should know? <span style="color:var(--ink-soft);font-weight:500">(optional)</span></label>
+            <textarea id="f-msg" name="message" placeholder="Property types, cities, your biggest appliance headache…"></textarea>
+          </div>
+          <button class="btn btn-red" type="submit" style="width:100%">Request my demo</button>
+          <p class="form-note">The Top Speed team replies within <strong>one business day</strong>. In a hurry? Call <a href="tel:+19549317997">954-931-7997</a>.</p>
+          <p class="form-note" id="formError" role="alert" style="display:none;color:var(--red);font-weight:600"></p>
+        </form>
+        <div class="form-ok" id="formOk" tabindex="-1">
+          <h3>Request received — checkered flag's out</h3>
+          <p id="okText">Thanks! A member of the Top Speed team will reach out within one business day to schedule your portal walkthrough.</p>
+          <a class="btn btn-blue" href="tel:+19549317997">Call now: 954-931-7997</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="foot-brand">Top <em>Speed</em> Appliance</div>
+        <p style="margin:12px 0 0;max-width:32em">Top Speed Appliance LLC — appliance repair and installation for Broward County, powered by the Top Speed Service OS platform. The Faster, The Better.</p>
+      </div>
+      <div>
+        <h3>The Network</h3>
+        <ul>
+          <li><a href="/" target="_blank" rel="noopener">topspeedappliance.net</a> — customers, bookings &amp; property managers</li>
+          <li><a href="/service/" target="_blank" rel="noopener">topspeedapplianceservice.com</a> — the provider network: join as a technician</li>
+          <li>Top Speed Service OS — the one platform behind both</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Contact</h3>
+        <ul>
+          <li><a href="tel:+19549317997">954-931-7997</a></li>
+          <li><a href="#demo-form">Book a portal demo</a></li>
+          <li><a href="#coverage">12 Broward County service areas</a></li>
+          <li>4.8 rating · 2,500 reviews · Same-day service</li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 Top Speed Appliance LLC. All rights reserved.</span>
+      <span>$99 diagnostic per visit, collected at booking, credited toward repair.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // ---- Interactive work-order demo ----
+  var orders = [
+    {
+      title: "Unit 12 — Refrigerator",
+      meta: "Tenant request: “Fridge running warm, food spoiling.” · Sunrise property · $99 diagnostic collected at booking",
+      stage: 2,
+      noteTitle: "Technician en route",
+      note: "The assigned tech is on the way and the tenant has the arrival window. You'll get the photo report the moment the job closes."
+    },
+    {
+      title: "Unit 7 — Washer",
+      meta: "Drain pump replaced and tested · Lauderhill property · Photo report filed",
+      stage: 3,
+      noteTitle: "Job complete — photo report ready",
+      note: "Before/after photos and the technician's summary are in the portal, and the visit is queued onto your consolidated monthly invoice."
+    },
+    {
+      title: "Unit 3 — Dryer",
+      meta: "Tenant request: “Dryer runs but no heat.” · Plantation property · Awaiting dispatch approval",
+      stage: 0,
+      noteTitle: "Booked — with Service Setters",
+      note: "The request came in through the tenant link and is with the Service Setters team for approval and provider matching. The $99 diagnostic was collected at booking and will be credited toward the repair."
+    },
+    {
+      title: "Unit 21 — Oven & Range",
+      meta: "Igniter fault reported · Fort Lauderdale property · Provider matched and approved",
+      stage: 1,
+      noteTitle: "Dispatched — provider assigned",
+      note: "Service Setters approved the booking and matched a network provider. The tenant has been notified of the visit window; you'll see the status flip to En route when the tech heads out."
+    }
+  ];
+  var steps = ["Booked","Dispatched","En route","Done"];
+  var items = document.querySelectorAll(".wo-item");
+  var titleEl = document.getElementById("woTitle");
+  var metaEl = document.getElementById("woMeta");
+  var trackerEl = document.getElementById("woTracker");
+  var noteTitleEl = document.getElementById("woNoteTitle");
+  var noteEl = document.getElementById("woNote");
+
+  function render(idx){
+    var o = orders[idx];
+    titleEl.textContent = o.title;
+    metaEl.textContent = o.meta;
+    noteTitleEl.textContent = o.noteTitle;
+    noteEl.textContent = o.note;
+    trackerEl.innerHTML = "";
+    steps.forEach(function(name, i){
+      var s = document.createElement("span");
+      s.className = "step" + (i < o.stage ? " on" : i === o.stage ? (o.stage === 3 ? " on" : " on now") : "");
+      s.textContent = name;
+      trackerEl.appendChild(s);
+    });
+    items.forEach(function(it, i){ it.setAttribute("aria-selected", i === idx ? "true" : "false"); });
+  }
+  items.forEach(function(it, i){
+    it.addEventListener("click", function(){ render(i); });
+  });
+  render(0);
+
+  // ---- Lead form (preview) ----
+  var form = document.getElementById("leadForm");
+  var ok = document.getElementById("formOk");
+  var err = document.getElementById("formError");
+  form.addEventListener("submit", function(e){
+    e.preventDefault();
+    err.style.display = "none";
+    var company = document.getElementById("f-company").value.trim();
+    var name = document.getElementById("f-name").value.trim();
+    var phone = document.getElementById("f-phone").value.trim();
+    var email = document.getElementById("f-email").value.trim();
+    var units = document.getElementById("f-units").value;
+    var missing = [];
+    if(!company) missing.push("company");
+    if(!name) missing.push("contact name");
+    if(!phone) missing.push("phone");
+    if(!email || email.indexOf("@") < 1) missing.push("a valid email");
+    if(!units) missing.push("number of units");
+    if(missing.length){
+      err.textContent = "Please add: " + missing.join(", ") + ".";
+      err.style.display = "block";
+      return;
+    }
+    document.getElementById("okText").textContent =
+      "Thanks, " + name.split(" ")[0] + " — your demo request for " + company + " (" + units + ") is in. A member of the Top Speed team will reach out within one business day to schedule your portal walkthrough.";
+    form.style.display = "none";
+    ok.style.display = "block";
+    ok.focus();
+  });
+})();
+</script>
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

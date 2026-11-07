@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>Service Setters Book OS — Dispatch Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0A265C;--navy2:#061A42;--blue:#0066FF;--sky:#00AEEF;--red:#E30613;--bg:#EEF2F8;--card:#fff;--ink:#0F1E3D;--mut:#64748B;--line:#DCE4F0;--green:#0E9F6E;--amber:#D97706;--chip:#EAF0FF}
+@media(prefers-color-scheme:dark){:root{--bg:#070E1F;--card:#0E1E3D;--ink:#EAF0FF;--mut:#94A3B8;--line:#1E365E;--chip:#162B52}}
+*{box-sizing:border-box}body{margin:0;font-family:Barlow,system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+a{color:inherit}
+.flag{height:10px;background:repeating-conic-gradient(#0A265C 0% 25%, #fff 0% 50%) 0 0/20px 20px;border-bottom:3px solid var(--red)}
+.top{background:var(--navy);color:#fff;padding:16px 18px 18px}
+.topin{max-width:1280px;margin:0 auto;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+.brand{display:flex;gap:14px;align-items:center}
+.logo{width:52px;height:52px;background:var(--red);border-radius:12px;display:grid;place-items:center;font-family:"Barlow Condensed";font-weight:800;font-size:28px}
+.brand h1{font-family:"Barlow Condensed";margin:0;font-size:32px;line-height:.95;letter-spacing:.4px;text-transform:uppercase}
+.brand p{margin:2px 0 0;color:#B9D2FF;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.pills{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{border:1px solid rgba(255,255,255,.25);padding:8px 11px;border-radius:999px;font-size:13px;font-weight:700}
+.pill.live{background:#fff;color:var(--navy)}
+.pill.red{background:var(--red);border-color:var(--red)}
+.wrap{max-width:1280px;margin:0 auto;padding:16px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.metric{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+.metric small{font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);font-size:11px}
+.metric b{font-family:"Barlow Condensed";font-size:42px;display:block;line-height:1}
+.metric span{font-size:13px;color:var(--mut)}
+.notice{background:#FFF7E6;border:1px solid #FDE68A;color:#92400E;border-radius:12px;padding:10px 12px;font-size:13.5px;margin:14px 0;font-weight:600}
+@media(prefers-color-scheme:dark){.notice{background:#2A2105;color:#FDE68A}}
+.grid2{display:grid;grid-template-columns:1.55fr .95fr;gap:14px;margin-top:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+.ph{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.ph h2{font-family:"Barlow Condensed";font-size:24px;margin:0;text-transform:uppercase;letter-spacing:.3px}
+.ph p{margin:2px 0 0;color:var(--mut);font-size:13px}
+.badge{background:var(--chip);color:var(--navy);padding:5px 9px;border-radius:999px;font-weight:800;font-size:12px;white-space:nowrap}
+@media(prefers-color-scheme:dark){.badge{color:#B9D2FF}}
+.qcard{padding:14px 16px;border-bottom:1px solid var(--line)}
+.qcard:last-child{border-bottom:0}
+.qtop{display:flex;justify-content:space-between;gap:10px}
+.qtop b{font-size:17px}.age{color:var(--red);font-weight:800;font-size:12px;white-space:nowrap}
+.meta{color:var(--mut);font-size:13.5px;line-height:1.5;margin-top:3px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:5px 7px;border-radius:999px;background:var(--chip)}
+.tag.src{background:#FFE8E9;color:#9F0E18}.tag.win{background:#E6F7EE;color:#065F46}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{border:0;cursor:pointer;padding:10px 13px;border-radius:999px;font-weight:800;font-size:13.5px}
+.btn.primary{background:var(--blue);color:#fff}.btn.navy{background:var(--navy);color:#fff}.btn.red{background:var(--red);color:#fff}.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.script{padding:6px 16px 16px}
+.step{display:flex;gap:11px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border:0}
+.num{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+.step b{font-size:14.5px}.step p{margin:2px 0 0;color:var(--mut);font-size:13.5px;line-height:1.45}
+.quote{background:var(--chip);border-radius:12px;padding:12px;margin:12px 16px 16px;font-size:14px;line-height:1.5}
+.board{margin-top:14px}
+.windows{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+.win{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:11px;min-height:130px}
+.win h3{margin:0 0 8px;font-size:13px;letter-spacing:.06em}
+.job{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px;margin-bottom:8px;font-size:13px;line-height:1.4}
+.job b{font-size:13.5px}
+.st{font-size:11px;font-weight:800;padding:3px 6px;border-radius:999px;display:inline-block;margin-top:5px}
+.st.c{background:#DBEAFE;color:#1E40AF}.st.e{background:#FEF3C7;color:#92400E}.st.o{background:#FCE7F3;color:#9D174D}.st.d{background:#DCFCE7;color:#166534}
+.dispatch{margin-top:14px}
+.cols{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+.col{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px;min-height:220px}
+.col h3{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;display:flex;justify-content:space-between}
+.col h3 span{background:var(--navy);color:#fff;border-radius:999px;padding:1px 7px}
+.dcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px}
+.dcard b{font-size:14px}.dcard p{margin:4px 0;color:var(--mut);font-size:12.8px;line-height:1.45}
+.score{display:flex;justify-content:space-between;align-items:center;background:var(--chip);border-radius:8px;padding:7px 8px;margin:8px 0;font-size:12.5px;font-weight:700}
+.score strong{color:var(--blue);font-size:16px}
+.dcard .actions{margin-top:8px}.dcard .btn{padding:8px 10px;font-size:12.5px}
+.reminders{margin-top:14px}
+.remgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px}
+.rem{border:1px solid var(--line);border-radius:14px;padding:13px}
+.rem b{font-size:14.5px}.rem p{color:var(--mut);font-size:13px;line-height:1.5;margin:6px 0 10px}
+.toggle{border:0;cursor:pointer;border-radius:999px;padding:7px 11px;font-weight:800;font-size:12px;background:#DCFCE7;color:#166534}
+.toggle.off{background:#FEE2E2;color:#991B1B}
+.flywheel{margin-top:14px;background:var(--navy);color:#fff;border-radius:18px;overflow:hidden}
+.flywheel .ph{border-color:rgba(255,255,255,.15)}.flywheel .ph p{color:#B9D2FF}
+.flygrid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+.fly{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:13px}
+.fly b{font-size:15px}.fly p{color:#CBD8F5;font-size:13px;line-height:1.5;margin:6px 0 0}
+.fly em{font-style:normal;color:#7DD3FC;font-weight:800;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+.areas{padding:0 14px 14px;color:#B9D2FF;font-size:13px;line-height:1.6}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:var(--navy);color:#fff;padding:13px 16px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.25);display:none;z-index:20;max-width:92vw;text-align:center}
+footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6}
+.empty{color:var(--mut);font-size:13px;text-align:center;padding:16px 6px}
+@media(max-width:900px){.metrics{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.windows,.cols,.remgrid,.flygrid{grid-template-columns:1fr}.brand h1{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="flag"></div>
+<header class="top"><div class="topin">
+<div class="brand"><div class="logo">TS</div><div><h1>Service Setters<br>Book OS</h1><p>Dispatch Console • Top Speed Service OS</p></div></div>
+<div class="pills"><span class="pill live">● PREVIEW / DEMO DATA</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
+</div></header>
+
+<main class="wrap">
+<!-- METRICS -->
+<section class="metrics" aria-label="Today metrics">
+<div class="metric"><small>Requests Today — Demo</small><b id="mRequests">47</b><span>Across web, ads, form, QR &amp; phone</span></div>
+<div class="metric"><small>Confirmation Rate — Demo</small><b id="mRate">87%</b><span>Setters confirmed / reached</span></div>
+<div class="metric"><small>Jobs Dispatched — Demo</small><b id="mDispatched">31</b><span>Approved &amp; sent to providers</span></div>
+<div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter ✓</span></div>
+</section>
+<div class="notice">⚠️ This is an operations <strong>preview</strong> for Top Speed Appliance LLC. All names, jobs and numbers below are realistic demo data — it is <strong>not connected to live bookings</strong>. Buttons work in-page so you can rehearse the real workflow.</div>
+
+<!-- QUEUE + SCRIPT -->
+<div class="grid2">
+<section class="panel"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div id="queue"></div></section>
+
+<aside class="panel"><div class="ph"><div><h2>Call Guide</h2><p>The 60-second setter script</p></div><span class="badge">SCRIPT</span></div>
+<div class="quote">“Hi [Name], this is [Setter] with <b>Top Speed Appliance</b> — I’m confirming your appliance appointment…”</div>
+<div class="script">
+<div class="step"><div class="num">1</div><div><b>Greet with name + company</b><p>Use their first name. Sound like help, not a call center.</p></div></div>
+<div class="step"><div class="num">2</div><div><b>Confirm appliance &amp; issue</b><p>“Just to confirm — fridge not cooling, is that right?” Note error codes &amp; photos.</p></div></div>
+<div class="step"><div class="num">3</div><div><b>Confirm the $99 diagnostic</b><p>Collected at booking, <b>credited toward the repair</b> if they proceed. No surprises.</p></div></div>
+<div class="step"><div class="num">4</div><div><b>Offer two windows</b><p>Give a choice of two — never an open-ended “when works for you?”</p></div></div>
+<div class="step"><div class="num">5</div><div><b>Address &amp; access notes</b><p>Gate code, parking, pets, tenant vs. owner, unit number.</p></div></div>
+<div class="step"><div class="num">6</div><div><b>Promise text updates</b><p>“You’ll get texts when we’re dispatched, en route, and when we arrive.”</p></div></div>
+</div>
+<div style="padding:0 16px 16px"><button class="btn navy" onclick="toast('Tip: confirm in under 3 minutes — speed-to-call is the #1 booking factor')" style="width:100%">Setter tip: call within 3 minutes →</button></div>
+</aside>
+</div>
+
+<!-- TODAY -->
+<section class="panel board"><div class="ph"><div><h2>2 · Today’s Appointments</h2><p>Thursday’s confirmed jobs by arrival window. Tap a status chip to advance it.</p></div><span class="badge">12 AREAS • BROWARD</span></div>
+<div class="windows" id="windows"></div></section>
+
+<!-- DISPATCH -->
+<section class="panel dispatch"><div class="ph"><div><h2>3 · Dispatch Board — Hybrid Dispatch</h2><p>AI auto-matches · <b>Service Setters approve every job</b> before a provider rolls. That human check is the quality difference.</p></div><span class="badge">SETTER APPROVAL REQUIRED</span></div>
+<div class="cols" id="dispatchCols"></div></section>
+
+<!-- REMINDERS -->
+<section class="panel reminders"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
+<div class="remgrid" id="rems"></div></section>
+
+<!-- FLYWHEEL -->
+<section class="flywheel"><div class="ph"><div><h2 style="color:#fff">5 · The Flywheel Ad Network</h2><p>How ads stop being an expense and start compounding — every job feeds the next one.</p></div><span class="badge">TOP SPEED ADS</span></div>
+<div class="flygrid">
+<div class="fly"><em>Step 1 · Attract</em><b><br>Ads + QR Everywhere</b><p>Google &amp; Meta ads, flyers, door hangers and truck QR codes all point to one booking flow on topspeedappliance.net.</p></div>
+<div class="fly"><em>Step 2 · Convert</em><b><br>Book OS Sets It</b><p>Service Setters confirm in minutes, collect the $99 diagnostic, and lock a real window — fewer tire-kickers, fewer no-shows.</p></div>
+<div class="fly"><em>Step 3 · Deliver</em><b><br>Network Does the Job</b><p>Approved providers on topspeedapplianceservice.com get matched jobs — not leads to fight over — with photos &amp; diagnosis upfront.</p></div>
+<div class="fly"><em>Step 4 · Delight</em><b><br>Texts + Review Engine</b><p>Live updates during the job, then an automatic review request at the happiest moment. 4.8★ becomes the ad.</p></div>
+<div class="fly"><em>Step 5 · Compound</em><b><br>Reviews → Cheaper Jobs</b><p>More reviews + repeat &amp; property-manager volume lower cost per booking, so the next ad dollar buys more than the last. ↻ Repeat.</p></div>
+</div>
+<div class="areas"><b style="color:#fff">One system, two doors:</b> Customers enter at <b style="color:#fff">topspeedappliance.net</b> · Providers join at <b style="color:#fff">topspeedapplianceservice.com</b> · Service Setters run both from this Book OS. &nbsp;|&nbsp; Serving Fort Lauderdale, Sunrise, Plantation, Davie, Hollywood, Pompano Beach, Coral Springs, Tamarac, Lauderdale Lakes, Lauderhill, Weston &amp; Pembroke Pines.</div>
+</section>
+
+<footer>Top Speed Appliance LLC • Service Setters Book OS — Preview • $99 diagnostic collected at booking, credited toward repair • 954-931-7997<br>Demo data only — connect the Service OS backend to run this live.</footer>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+var toastEl=document.getElementById('toast'),toastT;
+function toast(msg){toastEl.textContent=msg;toastEl.style.display='block';clearTimeout(toastT);toastT=setTimeout(function(){toastEl.style.display='none'},3400)}
+var dispatched=31;
+
+// QUEUE
+var queue=[
+{id:'TS-88424',name:'Priya Shah',appliance:'Dishwasher — leaking',zip:'33328 · Davie',source:'Google Form',window:'Tomorrow 12–2 PM',age:34,issue:'Leak at door seal, photos sent.'},
+{id:'TS-88421',name:'David Kim',appliance:'Dryer — no heat',zip:'33021 · Hollywood',source:'Referral',window:'Tomorrow 10 AM–12 PM',age:27,issue:'Tumbles but cold.'},
+{id:'TS-88418',name:'Elena Rodriguez',appliance:'Oven — not heating',zip:'33321 · Tamarac',source:'Website',window:'Tomorrow 8–10 AM',age:18,issue:'Bake element suspected.'},
+{id:'TS-88415',name:'Marcus Lee',appliance:'Washer — won\'t drain',zip:'33069 · Pompano Beach',source:'Google Ad',window:'Today 4–6 PM',age:12,issue:'Standing water, error code OE.'},
+{id:'TS-88412',name:'Jasmine Thompson',appliance:'Refrigerator — not cooling',zip:'33313 · Sunrise',source:'Flyer QR',window:'Today 2–4 PM',age:6,issue:'Fridge warm, freezer OK. Photo sent.'}
+];
+function renderQueue(){
+ var el=document.getElementById('queue');
+ document.getElementById('qCount').textContent=queue.length+' waiting';
+ if(!queue.length){el.innerHTML='<div class="empty">🎉 Queue clear — every request has been called. New requests will appear here.</div>';return}
+ el.innerHTML=queue.map(function(q,i){
+  return '<article class="qcard"><div class="qtop"><b>'+q.name+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+q.id+'</span></b><span class="age">'+q.age+' MIN AGO</span></div><div class="meta">🔧 '+q.appliance+'<br>📍 '+q.zip+' &nbsp;•&nbsp; '+q.issue+'</div><div class="tags"><span class="tag src">'+q.source+'</span><span class="tag win">⏰ '+q.window+'</span><span class="tag">$99 DIAG · AT BOOKING</span></div><div class="actions"><button class="btn red" onclick="callQ('+i+')">☎ Call</button><button class="btn primary" onclick="confirmQ('+i+')">✓ Confirm Appointment</button><button class="btn ghost" onclick="reschedQ('+i+')">Reschedule</button></div></article>'
+ }).join('');
+}
+function callQ(i){toast('Calling '+queue[i].name+'… Follow the Call Guide on the right →')}
+function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set */ toast('✓ '+q.name+' confirmed for '+q.window+' — confirmation text sent · '+q.id);renderQueue();addToToday(q)}
+function reschedQ(i){var wins=['Today 4–6 PM','Tomorrow 8–10 AM','Tomorrow 10 AM–12 PM','Tomorrow 2–4 PM'];var cur=wins.indexOf(queue[i].window);queue[i].window=wins[(cur+1)%wins.length];queue[i].age=0;toast('Rescheduled '+queue[i].name+' → '+queue[i].window);renderQueue()}
+
+// TODAY
+var today={
+ '8–10 AM':[{n:'R. Alvarez',a:'Washer · Plantation',s:'Done'},{n:'S. Nguyen',a:'Fridge · Weston',s:'Done'}],
+ '10 AM–12 PM':[{n:'T. Brooks',a:'Dryer · Coral Springs',s:'On Site'},{n:'A. Patel',a:'Oven · Sunrise',s:'On Site'}],
+ '12–2 PM':[{n:'M. Johnson',a:'Dishwasher · Ft. Lauderdale',s:'En Route'},{n:'L. Garcia',a:'AC/Washer · Davie',s:'Confirmed'}],
+ '2–4 PM':[{n:'K. Wright',a:'Fridge · Hollywood',s:'Confirmed'},{n:'N. Brooks',a:'Oven · Lauderhill',s:'Confirmed'}],
+ '4–6 PM':[{n:'Open Slot',a:'Same-day hold',s:'Confirmed'}]
+};
+var nextSt={'Confirmed':'En Route','En Route':'On Site','On Site':'Done','Done':'Done'};
+var stCls={'Confirmed':'c','En Route':'e','On Site':'o','Done':'d'};
+function renderToday(){
+ document.getElementById('windows').innerHTML=Object.keys(today).map(function(w){
+  return '<div class="win"><h3>⏰ '+w+'</h3>'+today[w].map(function(j,idx){return '<div class="job"><b>'+j.n+'</b><br>'+j.a+'<br><button class="st '+stCls[j.s]+'" style="border:0;cursor:pointer" onclick="advToday(\''+w+'\','+idx+')">'+j.s+' →</button></div>'}).join('')+'</div>'
+ }).join('');
+}
+function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already Done');return}j.s=nextSt[j.s];if(j.s==='Done'){toast('✓ '+j.n+' complete — review request text queued')}else{toast(j.n+' → '+j.s)}renderToday()}
+function addToToday(q){if(q.window.indexOf('Today')!==0)return;var key=q.window.indexOf('2–4')>-1?'2–4 PM':q.window.indexOf('4–6')>-1?'4–6 PM':'12–2 PM';if(today[key]){today[key].push({n:q.name.split(' ')[0][0]+'. '+q.name.split(' ')[1],a:q.appliance.split(' —')[0]+' · '+q.zip.split('· ')[1],s:'Confirmed'});renderToday()}}
+
+// DISPATCH
+var cols=[
+ {key:'New',jobs:[
+   {id:'TS-88430',title:'Freezer not freezing',loc:'Lauderhill · 33313',diag:'Photo: frost build-up on back wall. AI: likely defrost heater failure. Medium urgency.',prov:'Awaiting match',score:'—'},
+   {id:'TS-88431',title:'Stove burner out',loc:'Lauderdale Lakes · 33319',diag:'Customer video: one burner dead, others fine. AI: likely burner switch.',prov:'Awaiting match',score:'—'}]},
+ {key:'Matched',jobs:[
+   {id:'TS-88409',title:'Refrigerator not cooling',loc:'Fort Lauderdale · 33311',diag:'Photo: water under crisper. AI: clogged defrost drain, 82% confidence. Parts: drain kit.',prov:'Carlos M. · Fridge specialist',score:'94%'},
+   {id:'TS-88410',title:'Washer leaking',loc:'Plantation · 33324',diag:'Video: leak at fill cycle. AI: inlet valve likely. Customer has shut-off access noted.',prov:'Andre B. · Laundry pro',score:'91%'},
+   {id:'TS-88411',title:'Dryer squealing',loc:'Pembroke Pines · 33028',diag:'Audio note: loud squeal. AI: idler pulley / belt kit. Same-day parts available.',prov:'Mike D. · 4.9★',score:'89%'}]},
+ {key:'Approved',jobs:[
+   {id:'TS-88398',title:'Oven temperature off',loc:'Coral Springs · 33071',diag:'Setter approved 9:42 AM. Provider confirmed window 12–2.',prov:'Sarah L.',score:'92%'},
+   {id:'TS-88402',title:'Dishwasher no drain',loc:'Weston · 33326',diag:'Setter approved 10:05 AM. Access: gate code on file.',prov:'James R.',score:'90%'}]},
+ {key:'En Route',jobs:[
+   {id:'TS-88391',title:'Fridge — warm',loc:'Davie · 33328',diag:'En route text sent. ETA 18 min shown to customer.',prov:'Carlos M.',score:'95%'},
+   {id:'TS-88394',title:'Washer — no spin',loc:'Hollywood · 33020',diag:'En route text sent. ETA 24 min.',prov:'Andre B.',score:'88%'}]},
+ {key:'Complete',jobs:[
+   {id:'TS-88380',title:'Dryer vent + heat',loc:'Sunrise · 33322',diag:'Done. Repair approved, $99 credited. Review request sent.',prov:'Mike D.',score:'93%'},
+   {id:'TS-88384',title:'Oven igniter',loc:'Tamarac · 33321',diag:'Done. Photo report filed. 5★ review received.',prov:'Sarah L.',score:'96%'}]}
+];
+var altProvs=['Carlos M. · Fridge specialist','Andre B. · Laundry pro','Sarah L. · Cooking pro','James R. · Generalist','Mike D. · 4.9★'];
+function renderDispatch(){
+ document.getElementById('mAwait').textContent=cols[1].jobs.length;
+ document.getElementById('mDispatched').textContent=dispatched;
+ document.getElementById('dispatchCols').innerHTML=cols.map(function(c,ci){
+  var btns='';
+  return '<div class="col"><h3>'+c.key+' <span>'+c.jobs.length+'</span></h3>'+(c.jobs.length?c.jobs.map(function(j,ji){
+   var actions='';
+   if(ci===0)actions='<button class="btn primary" onclick="moveJob(0,'+ji+')">Auto-Match →</button>';
+   if(ci===1)actions='<button class="btn primary" onclick="moveJob(1,'+ji+')">✓ Approve &amp; Dispatch</button><button class="btn ghost" onclick="reassign(1,'+ji+')">Reassign</button>';
+   if(ci===2)actions='<button class="btn navy" onclick="moveJob(2,'+ji+')">Mark En Route →</button><button class="btn ghost" onclick="reassign(2,'+ji+')">Reassign</button>';
+   if(ci===3)actions='<button class="btn primary" onclick="moveJob(3,'+ji+')">Complete Job ✓</button>';
+   if(ci===4)actions='<span style="font-size:12px;color:var(--green);font-weight:800">★ Review engine fired</span>';
+   return '<article class="dcard"><b>'+j.title+'</b> <span style="color:var(--mut);font-size:11px">'+j.id+'</span><p>📍 '+j.loc+'</p><p>'+j.diag+'</p><div class="score"><span>👨‍🔧 '+j.prov+'</span><strong>'+j.score+'</strong></div><div class="actions">'+actions+'</div></article>'
+  }).join(''):'<div class="empty">No jobs</div>')+'</div>'
+ }).join('');
+}
+function moveJob(ci,ji){var job=cols[ci].jobs.splice(ji,1)[0];
+ if(ci===0){job.prov=altProvs[Math.floor(Math.random()*altProvs.length)];job.score=(88+Math.floor(Math.random()*8))+'%';toast('AI matched '+job.id+' → '+job.prov+' ('+job.score+') — needs setter approval')}
+ if(ci===1){dispatched++;toast('✓ Dispatched '+job.id+' to '+job.prov+' — customer + provider texted')}
+ if(ci===2){toast(job.id+' en route — live tracking + ETA text sent to customer')}
+ if(ci===3){toast('✓ '+job.id+' complete — $99 credited, photo report + review request sent')}
+ cols[ci+1].jobs.unshift(job);renderDispatch();renderQueue()}
+function reassign(ci,ji){var j=cols[ci].jobs[ji];var idx=altProvs.indexOf(j.prov);j.prov=altProvs[(idx+1)%altProvs.length];j.score=(86+Math.floor(Math.random()*10))+'%';toast('Reassigned '+j.id+' → '+j.prov);renderDispatch()}
+
+// REMINDERS
+var rems=[
+ {t:'✓ At Booking',d:'Instant confirmation text with window, tech info placeholder & the $99 diagnostic receipt.',on:true},
+ {t:'📅 Day Before',d:'Reminder text with one-tap confirm / reschedule — cuts no-shows before they happen.',on:true},
+ {t:'🚐 En Route',d:'“Your tech is on the way” with name, photo & live ETA when the provider marks En Route.',on:true},
+ {t:'⭐ After Completion',d:'Thank-you + Google review request at the happiest moment — fuel for the flywheel.',on:true}
+];
+function renderRems(){document.getElementById('rems').innerHTML=rems.map(function(r,i){return '<div class="rem"><b>'+r.t+'</b><p>'+r.d+'</p><button class="toggle '+(r.on?'':'off')+'" onclick="toggleRem('+i+')">'+(r.on?'● AUTOMATION ON':'○ PAUSED')+'</button></div>'}).join('')}
+function toggleRem(i){rems[i].on=!rems[i].on;toast(rems[i].t+': automation '+(rems[i].on?'ON':'PAUSED')+' (preview only)');renderRems()}
+
+renderQueue();renderToday();renderDispatch();renderRems();
+</script>
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

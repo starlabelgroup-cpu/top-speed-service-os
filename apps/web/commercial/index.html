@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+    <title>Appliance Pro App — Appliance Pro Commercial Accounts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&family=Barlow+Semi+Condensed:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root{
+        --navy:#0A265C; --navy-deep:#061A42; --navy-ink:#081226;
+        --blue:#1E6FF2; --blue-bright:#3D8BFF; --red:#E63329; --red-dark:#C2241B;
+        --bg:#F4F7FC; --surface:#FFFFFF; --surface-2:#EAF0FA;
+        --ink:#101E38; --ink-soft:#42557A; --line:#D3DDF2;
+        --ok:#1B8A4B; --warn:#C77F0A; --crit:#D92D20;
+        --ok-bg:#E3F4E9; --warn-bg:#FBF0DA; --crit-bg:#FBE7E4;
+        --checker-dk:#0A265C; --checker-lt:#FFFFFF;
+        --shadow:0 10px 30px rgba(10,38,92,.12);
+        --radius:14px;
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#060F24; --surface:#0B1D42; --surface-2:#10285A;
+          --ink:#EDF3FF; --ink-soft:#A9BBDD; --line:#24407A;
+          --ok-bg:#0E3524; --warn-bg:#3D2E0C; --crit-bg:#3D1712;
+          --shadow:0 10px 30px rgba(0,0,0,.45);
+        }
+      }
+      *{box-sizing:border-box}
+      html{scroll-behavior:smooth}
+      body{margin:0;background:var(--bg);color:var(--ink);font-family:"Barlow",system-ui,sans-serif;font-size:17px;line-height:1.55}
+      h1,h2,h3,.cond{font-family:"Barlow Condensed","Barlow",sans-serif;line-height:1.08;margin:0}
+      img{max-width:100%;display:block}
+      a{color:var(--blue)}
+      .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+      .checker{height:12px;background:repeating-conic-gradient(var(--checker-dk) 0% 25%, var(--checker-lt) 0% 50%) 0 0/24px 24px;border-bottom:2px solid var(--navy)}
+      @media (prefers-color-scheme: dark){ .checker{--checker-dk:#EDF3FF; --checker-lt:#0A265C} }
+
+      /* ---------- top bar ---------- */
+      .topbar{background:var(--navy);color:#fff}
+      .topbar .wrap{display:flex;align-items:center;gap:18px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
+      .brandmark{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:26px;letter-spacing:.04em;text-transform:uppercase;line-height:1}
+      .brandmark .ts{color:#fff}.brandmark .sp{color:var(--blue-bright)}.brandmark .cm{color:#FF5A4E}
+      .brandmark small{display:block;font-family:"Barlow",sans-serif;font-weight:600;font-size:11px;letter-spacing:.22em;color:#B9CCF2;text-transform:uppercase;margin-top:3px}
+      .topnav{margin-left:auto;display:flex;gap:20px;flex-wrap:wrap;font-weight:600;font-size:15px}
+      .topnav a{color:#DCE8FF;text-decoration:none}
+      .topnav a:hover{color:#fff;text-decoration:underline}
+      .topcall{background:var(--red);color:#fff!important;padding:9px 16px;border-radius:8px;text-decoration:none;font-family:"Barlow Semi Condensed",sans-serif;letter-spacing:.03em}
+      .topcall:hover{background:var(--red-dark)}
+
+      /* ---------- hero ---------- */
+      .hero{position:relative;background:var(--navy-deep);color:#fff;overflow:hidden}
+      .hero img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}
+      .hero .shade{position:absolute;inset:0;background:linear-gradient(100deg,rgba(6,26,66,.94) 30%,rgba(6,26,66,.55) 70%,rgba(6,26,66,.35))}
+      .hero .wrap{position:relative;padding:64px 20px 56px}
+      .hero .flag-line{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 14px;font-size:13.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+      .hero .flag-line i{width:22px;height:11px;flex:none;background:repeating-conic-gradient(#fff 0% 25%, #0A265C 0% 50%) 0 0/11px 11px;border:1px solid rgba(255,255,255,.5)}
+      .hero h1{font-size:clamp(42px,7vw,76px);font-weight:700;text-transform:uppercase;letter-spacing:.01em;max-width:13ch;margin:22px 0 16px}
+      .hero h1 .rd{color:#FF5A4E}.hero h1 .bl{color:var(--blue-bright)}
+      .hero p.lede{font-size:clamp(18px,2.4vw,22px);max-width:56ch;color:#D7E4FF;margin:0 0 28px}
+      .cta-row{display:flex;gap:14px;flex-wrap:wrap}
+      .btn{display:inline-flex;align-items:center;gap:9px;border-radius:10px;padding:15px 24px;font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:18px;letter-spacing:.03em;text-decoration:none;border:2px solid transparent;cursor:pointer}
+      .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark)}
+      .btn-ghost{background:rgba(255,255,255,.06);color:#fff;border-color:#fff}.btn-ghost:hover{background:rgba(255,255,255,.16)}
+      .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1559C9}
+      .btn-outline{background:transparent;color:var(--blue);border-color:var(--blue)}
+      @media (prefers-color-scheme: dark){ .btn-outline{color:var(--blue-bright);border-color:var(--blue-bright)} }
+      .hero .proof{display:flex;gap:26px;flex-wrap:wrap;margin-top:34px;padding-top:22px;border-top:1px solid rgba(255,255,255,.22);font-size:15px;color:#C6D7F8}
+      .hero .proof b{color:#fff;font-family:"Barlow Semi Condensed",sans-serif;font-size:17px;letter-spacing:.02em}
+
+      /* ---------- sections ---------- */
+      section{padding:64px 0}
+      .kicker{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:13px;color:var(--red);margin-bottom:10px}
+      h2{font-size:clamp(32px,4.6vw,46px);font-weight:700;text-transform:uppercase;letter-spacing:.01em}
+      h2 .bl{color:var(--blue)}
+      .sub{color:var(--ink-soft);max-width:68ch;margin:12px 0 0;font-size:18px}
+      .band-navy{background:var(--navy);color:#fff}
+      .band-navy .sub{color:#C6D7F8}
+      .band-navy h2 .bl{color:var(--blue-bright)}
+
+      /* downtime cards */
+      .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
+      @media (max-width:900px){.grid3{grid-template-columns:1fr}}
+      .dcard{background:var(--surface);border:1px solid var(--line);border-top:5px solid var(--red);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+      .dcard h3{font-size:25px;font-weight:600;text-transform:uppercase;margin-bottom:8px}
+      .dcard p{margin:0;color:var(--ink-soft)}
+      .dcard .clock{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;color:var(--red);font-size:14px;letter-spacing:.12em;text-transform:uppercase;display:block;margin-bottom:10px}
+
+      /* serve chips */
+      .serve-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:30px}
+      @media (max-width:900px){.serve-grid{grid-template-columns:repeat(2,1fr)}}
+      .serve{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;font-family:"Barlow Semi Condensed",sans-serif;font-weight:600;font-size:19px;display:flex;gap:10px;align-items:center}
+      .serve span.dot{width:10px;height:10px;border-radius:50%;background:var(--blue);flex:none}
+
+      /* service categories */
+      .svc{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:36px}
+      @media (max-width:900px){.svc{grid-template-columns:1fr}}
+      .svc-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+      .svc-card .ph{height:210px;overflow:hidden}
+      .svc-card .ph img{width:100%;height:100%;object-fit:cover}
+      .svc-card .bd{padding:22px 24px 26px}
+      .svc-card h3{font-size:27px;font-weight:600;text-transform:uppercase}
+      .svc-card ul{margin:12px 0 0;padding-left:20px;color:var(--ink-soft)}
+      .svc-card li{margin:4px 0}
+      .svc-card.no-photo .bd{padding-top:26px}
+      .tagchip{display:inline-block;background:var(--surface-2);color:var(--navy);border-radius:6px;padding:3px 10px;font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+      @media (prefers-color-scheme: dark){ .tagchip{color:#CFE0FF} }
+
+      /* flow */
+      .flow{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;counter-reset:step}
+      @media (max-width:900px){.flow{grid-template-columns:1fr 1fr}}
+      @media (max-width:560px){.flow{grid-template-columns:1fr}}
+      .step{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:20px}
+      .step .n{font-family:"Barlow Condensed",sans-serif;font-size:34px;font-weight:700;color:var(--blue-bright);line-height:1}
+      .step h3{font-size:22px;font-weight:600;text-transform:uppercase;margin:8px 0 6px;color:#fff}
+      .step p{margin:0;color:#C6D7F8;font-size:15.5px}
+
+      /* SLA selector */
+      .tier-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+      .tier-btn{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:19px;letter-spacing:.03em;padding:13px 26px;border-radius:10px;border:2px solid var(--blue);background:transparent;color:var(--blue);cursor:pointer}
+      @media (prefers-color-scheme: dark){ .tier-btn{color:var(--blue-bright);border-color:var(--blue-bright)} }
+      .tier-btn[aria-pressed="true"]{background:var(--blue);color:#fff}
+      .tier-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;margin-top:18px;display:grid;grid-template-columns:1fr 1.4fr;gap:28px}
+      @media (max-width:820px){.tier-panel{grid-template-columns:1fr}}
+      .tier-panel h3{font-size:32px;font-weight:700;text-transform:uppercase}
+      .tier-panel .who{color:var(--ink-soft);margin-top:8px}
+      .tier-panel ul{list-style:none;margin:0;padding:0}
+      .tier-panel li{padding:9px 0 9px 30px;position:relative;border-bottom:1px solid var(--line)}
+      .tier-panel li:last-child{border-bottom:0}
+      .tier-panel li::before{content:"";position:absolute;left:2px;top:15px;width:14px;height:8px;border-left:3px solid var(--ok);border-bottom:3px solid var(--ok);transform:rotate(-45deg)}
+      .fineprint{color:var(--ink-soft);font-size:15px;margin-top:16px;max-width:75ch}
+      .fineprint b{color:var(--ink)}
+
+      /* portal */
+      .portal{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-top:34px}
+      .portal-head{background:var(--navy);color:#fff;padding:16px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+      .portal-head .t{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:19px;letter-spacing:.03em}
+      .demo-badge{background:var(--red);color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;border-radius:5px;padding:3px 9px}
+      .portal-head .fac{margin-left:auto;color:#B9CCF2;font-size:14.5px}
+      .portal table{width:100%;border-collapse:collapse;font-size:15.5px}
+      .portal th{text-align:left;font-family:"Barlow Semi Condensed",sans-serif;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--ink-soft);padding:12px 16px;border-bottom:2px solid var(--line)}
+      .portal td{padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+      .portal tbody tr{cursor:pointer}
+      .portal tbody tr:hover{background:var(--surface-2)}
+      .portal tbody tr.sel{background:var(--surface-2);box-shadow:inset 4px 0 0 var(--blue)}
+      .status{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13.5px;border-radius:999px;padding:4px 11px;white-space:nowrap}
+      .status i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+      .st-ok{background:var(--ok-bg);color:var(--ok)}
+      .st-warn{background:var(--warn-bg);color:var(--warn)}
+      .st-crit{background:var(--crit-bg);color:var(--crit)}
+      .portal-scroll{overflow-x:auto}
+      @media (max-width:760px){
+        .portal table,.portal tbody,.portal tr,.portal td{display:block;width:100%}
+        .portal thead{display:none}
+        .portal td{border-bottom:0;padding:4px 16px}
+        .portal tbody tr{border-bottom:1px solid var(--line);padding:10px 0}
+        .portal td:first-child{font-weight:700}
+      }
+      .unit-detail{border-top:2px solid var(--line);padding:22px;display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+      @media (max-width:820px){.unit-detail{grid-template-columns:1fr}}
+      .unit-detail h3{font-size:26px;font-weight:600;text-transform:uppercase}
+      .spec{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 18px;margin-top:12px;font-size:15px}
+      .spec div b{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);font-family:"Barlow Semi Condensed",sans-serif}
+      .qr-box{border:2px dashed var(--line);border-radius:12px;padding:16px;text-align:center}
+      .qr-box .qr{width:92px;height:92px;margin:0 auto 10px;background:repeating-conic-gradient(var(--ink) 0% 25%, transparent 0% 50%) 0 0/18px 18px;border:6px solid var(--surface);outline:2px solid var(--ink);opacity:.85}
+      .qr-box p{margin:0;font-size:14.5px;color:var(--ink-soft)}
+      .tracker{margin-top:20px}
+      .tracker .stages{display:flex;gap:0;margin:12px 0 16px}
+      .tracker .stg{flex:1 1 0;min-width:0;text-align:center;font-size:12.5px;font-weight:600;color:var(--ink-soft);padding:16px 2px 0;position:relative}
+      .tracker .stg::before{content:"";position:absolute;top:4px;left:50%;transform:translateX(-50%);width:13px;height:13px;border-radius:50%;background:var(--line);border:2px solid var(--surface)}
+      .tracker .stg::after{content:"";position:absolute;top:10px;left:calc(-50% + 8px);width:calc(100% - 16px);height:3px;background:var(--line)}
+      .tracker .stg:first-child::after{display:none}
+      .tracker .stg.done{color:var(--blue)}
+      .tracker .stg.done::before{background:var(--blue)}
+      .tracker .stg.done::after{background:var(--blue)}
+      .tracker .stg.now{color:var(--red)}
+      .tracker .stg.now::before{background:var(--red);box-shadow:0 0 0 5px var(--crit-bg)}
+      .pm-strip{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+      @media (max-width:560px){ .tracker .stg{font-size:10.5px;padding-left:0;padding-right:0} }
+      .pm-chip{background:var(--surface-2);border-radius:10px;padding:10px 14px;font-size:14.5px}
+      .pm-chip b{font-family:"Barlow Semi Condensed",sans-serif}
+
+      /* areas */
+      .areas{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+      .areas span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-weight:600;font-size:15.5px}
+
+      /* providers */
+      .prov-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:26px;margin-top:32px;align-items:start}
+      @media (max-width:900px){.prov-grid{grid-template-columns:1fr}}
+      .req-list{list-style:none;margin:18px 0 0;padding:0}
+      .req-list li{padding:11px 0 11px 34px;position:relative;border-bottom:1px solid rgba(255,255,255,.14);color:#D7E4FF}
+      .req-list li:last-child{border-bottom:0}
+      .req-list li b{color:#fff}
+      .req-list li::before{content:"";position:absolute;left:2px;top:17px;width:15px;height:9px;border-left:3px solid var(--blue-bright);border-bottom:3px solid var(--blue-bright);transform:rotate(-45deg)}
+      .prov-photo{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+      .prov-photo img{width:100%;height:100%;object-fit:cover;min-height:280px}
+
+      /* form */
+      .form-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:30px;margin-top:32px}
+      .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+      @media (max-width:700px){.form-grid{grid-template-columns:1fr}}
+      .field{display:flex;flex-direction:column;gap:6px}
+      .field.full{grid-column:1/-1}
+      .field label{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:14.5px;letter-spacing:.05em;text-transform:uppercase}
+      .field input,.field select,.field textarea{font:inherit;font-size:16px;padding:12px 13px;border:1.5px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+      .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+      .field .err{display:none;color:var(--crit);font-size:14px;font-weight:600}
+      .field.invalid input,.field.invalid select{border-color:var(--crit)}
+      .field.invalid .err{display:block}
+      .form-ok{display:none;background:var(--ok-bg);border:1.5px solid var(--ok);border-radius:12px;padding:22px;margin-top:20px}
+      .form-ok.show{display:block}
+      .form-ok h3{font-size:26px;font-weight:600;text-transform:uppercase;color:var(--ok)}
+      .form-ok .ref{font-family:"Barlow Semi Condensed",sans-serif;font-weight:700;font-size:22px;letter-spacing:.06em}
+      .hidden{display:none!important}
+
+      footer{background:var(--navy-deep);color:#C6D7F8;padding:44px 0 30px}
+      footer .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+      @media (max-width:820px){footer .cols{grid-template-columns:1fr}}
+      footer h3{color:#fff;font-size:21px;font-weight:600;text-transform:uppercase;margin-bottom:10px}
+      footer a{color:#9DC0FF}
+      footer p{margin:6px 0;font-size:15.5px}
+      .foot-checker{margin-top:34px}
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <div class="wrap">
+        <div class="brandmark"><span class="ts">Appliance</span> <span class="sp">Pro</span> <span class="cm">App</span>
+          <small>Appliance Pro Commercial Accounts · Top Speed Appliance LLC</small>
+        </div>
+        <nav class="topnav">
+          <a href="#services">Services</a>
+          <a href="#agreements">Agreements</a>
+          <a href="#portal">Client Portal</a>
+          <a href="#providers">For Providers</a>
+          <a class="topcall" href="tel:+19549317997">☎ 954-931-7997</a>
+        </nav>
+      </div>
+    </div>
+    <div class="checker" aria-hidden="true"></div>
+
+    <!-- ============ HERO ============ -->
+    <header class="hero">
+      <img class="bg" src="hero-kitchen.jpg" alt="A working commercial kitchen line with ranges, stock pots and stainless prep stations" />
+      <div class="shade"></div>
+      <div class="wrap">
+        <span class="flag-line"><i aria-hidden="true"></i> Appliance Pro Commercial Division · Broward County, FL</span>
+        <h1>When a cooler goes down, <span class="rd">revenue stops.</span> <span class="bl">We move first.</span></h1>
+        <p class="lede">The Appliance Pro App is the repair &amp; service network built for businesses that can't afford downtime — restaurants, hotels, laundromats, clinics, offices and facilities across Broward County. One Appliance Pro Commercial Account, one priority line, one monthly invoice.</p>
+        <div class="cta-row">
+          <a class="btn btn-red" href="tel:+19549317997">☎ Priority Line — 954-931-7997</a>
+          <a class="btn btn-ghost" href="#account">Open an Appliance Pro Commercial Account</a>
+        </div>
+        <div class="proof">
+          <div><b>One call</b><br />for every unit, every location</div>
+          <div><b>Service Setters Book OS</b><br />priority dispatch on every work order</div>
+          <div><b>Photo report</b><br />after every completed visit</div>
+          <div><b>1 monthly invoice</b><br />consolidated across locations</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ DOWNTIME ============ -->
+    <section>
+      <div class="wrap">
+        <p class="kicker">The real cost of waiting</p>
+        <h2>Downtime costs more <span class="bl">than the repair</span></h2>
+        <p class="sub">A failed appliance in a home is an inconvenience. In a business, it's a meter running — spoiled product, turned customers, idle staff, health-code risk. That's why commercial work runs on a priority track here, not in line behind residential calls.</p>
+        <div class="grid3">
+          <div class="dcard">
+            <span class="clock">Cold chain at risk</span>
+            <h3>A dead walk-in cooler</h3>
+            <p>Every hour above temperature puts your entire inventory — and your health inspection — on the line. Product you throw away tonight costs far more than the compressor repair that could have saved it.</p>
+          </div>
+          <div class="dcard">
+            <span class="clock">Line down, doors open</span>
+            <h3>A broken laundry line</h3>
+            <p>One extractor down in a laundromat or hotel laundry backs up every load behind it. Customers don't wait — they wash somewhere else, and hotel rooms don't turn over without linen.</p>
+          </div>
+          <div class="dcard">
+            <span class="clock">Rush hour doesn't pause</span>
+            <h3>A cooking line failure</h3>
+            <p>A range or oven failing at 6 p.m. on a Friday isn't a maintenance issue — it's a lost service, comped meals and a dining room you can't seat. Commercial accounts get dispatched first.</p>
+          </div>
+        </div>
+
+        <h3 class="cond" style="font-size:26px;font-weight:600;text-transform:uppercase;margin-top:44px">Who runs on Appliance Pro</h3>
+        <div class="serve-grid">
+          <div class="serve"><span class="dot"></span>Restaurants &amp; food service</div>
+          <div class="serve"><span class="dot"></span>Hotels &amp; hospitality</div>
+          <div class="serve"><span class="dot"></span>Laundromats &amp; laundry services</div>
+          <div class="serve"><span class="dot"></span>Hospitals &amp; clinics</div>
+          <div class="serve"><span class="dot"></span>Offices &amp; break rooms</div>
+          <div class="serve"><span class="dot"></span>Retail &amp; grocery</div>
+          <div class="serve"><span class="dot"></span>Property facilities</div>
+          <div class="serve"><span class="dot"></span>Schools &amp; institutions</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SERVICES ============ -->
+    <section id="services" style="padding-top:10px">
+      <div class="wrap">
+        <p class="kicker">What we service commercially</p>
+        <h2>Every appliance your <span class="bl">operation runs on</span></h2>
+        <p class="sub">Four commercial trades under one account — no calling a different company for the cooler, the washers and the range. If it plugs in, heats, cools or washes in your facility, it belongs in your equipment registry.</p>
+        <div class="svc">
+          <article class="svc-card">
+            <div class="ph"><img src="walkin.webp" alt="A commercial walk-in cooler with its refrigeration unit in a restaurant kitchen" loading="lazy" /></div>
+            <div class="bd">
+              <span class="tagchip">Refrigeration</span>
+              <h3>Commercial Refrigeration</h3>
+              <ul>
+                <li>Walk-in coolers &amp; freezers</li>
+                <li>Reach-in refrigerators &amp; freezers</li>
+                <li>Ice machines — cleaning, repair, production loss</li>
+                <li>Prep tables, undercounter units &amp; display cases</li>
+                <li>Temperature-loss emergencies treated as top priority</li>
+              </ul>
+            </div>
+          </article>
+          <article class="svc-card">
+            <div class="ph"><img src="laundry.webp" alt="Rows of commercial washer-extractors and stacked dryers in a laundromat" loading="lazy" /></div>
+            <div class="bd">
+              <span class="tagchip">Laundry</span>
+              <h3>Commercial Laundry</h3>
+              <ul>
+                <li>Washer-extractors, all capacities</li>
+                <li>Stacked &amp; single-pocket dryers / tumblers</li>
+                <li>Coin, card &amp; on-premise laundry (OPL) systems</li>
+                <li>Drain, belt, bearing &amp; control faults</li>
+                <li>Line-down triage so one failure doesn't stall the row</li>
+              </ul>
+            </div>
+          </article>
+          <article class="svc-card">
+            <div class="ph"><img src="tech-oven.jpg" alt="A technician servicing a commercial oven on a cooking line" loading="lazy" /></div>
+            <div class="bd">
+              <span class="tagchip">Cooking</span>
+              <h3>Cooking Lines</h3>
+              <ul>
+                <li>Commercial ranges &amp; ovens</li>
+                <li>Fryers, griddles &amp; hot holding equipment</li>
+                <li>Convection &amp; combi ovens</li>
+                <li>Steamers &amp; commercial microwaves</li>
+                <li>Ignition, thermostat &amp; heating-element faults</li>
+              </ul>
+            </div>
+          </article>
+          <article class="svc-card no-photo">
+            <div class="bd">
+              <span class="tagchip">Sanitation</span>
+              <h3>Dishwashers &amp; Sanitation</h3>
+              <ul>
+                <li>High-temp &amp; low-temp commercial dish machines</li>
+                <li>Conveyor &amp; undercounter dishwashers</li>
+                <li>Glass washers &amp; booster heaters</li>
+                <li>Wash-temperature and rinse faults that risk inspection findings</li>
+                <li>Commercial disposals &amp; pre-rinse stations</li>
+              </ul>
+              <p style="color:var(--ink-soft);margin:14px 0 0">Scope note: Appliance Pro covers appliances. Building HVAC, plumbing mains and electrical panels stay with your licensed trades for those systems — we'll tell you plainly when a problem is one of theirs, not ours.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WORK ORDER FLOW ============ -->
+    <section class="band-navy">
+      <div class="wrap">
+        <p class="kicker" style="color:#FF8A80">How a commercial work order moves</p>
+        <h2>From “it's down” to <span class="bl">one monthly invoice</span></h2>
+        <p class="sub">Every commercial job runs through the Top Speed Service OS — the same platform behind topspeedappliance.net — with Service Setters handling priority dispatch. You always know where your work order stands.</p>
+        <div class="flow">
+          <div class="step"><div class="n">01</div><h3>You open the request</h3><p>Call the priority line, tap the QR code on the unit itself, or open a request in your client portal. The unit's full history rides along automatically.</p></div>
+          <div class="step"><div class="n">02</div><h3>Service Setters dispatch</h3><p>Your request jumps the residential queue. Service Setters confirm the details, match a vetted commercial provider, and approve the dispatch.</p></div>
+          <div class="step"><div class="n">03</div><h3>Vetted provider on site</h3><p>A commercial-capable provider from the Top Speed network arrives with the unit's brand, model and service history already in hand.</p></div>
+          <div class="step"><div class="n">04</div><h3>Track it live</h3><p>Status updates as the job moves — dispatched, on site, in repair, complete. No chasing anyone for an update.</p></div>
+          <div class="step"><div class="n">05</div><h3>Photo report</h3><p>Every visit closes with a photo report: what failed, what was done, what to watch. It files straight into the unit's registry record.</p></div>
+          <div class="step"><div class="n">06</div><h3>One monthly invoice</h3><p>No per-visit card swipes or scattered receipts. All locations, all work orders — one consolidated invoice each month.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SLA TIERS ============ -->
+    <section id="agreements">
+      <div class="wrap">
+        <p class="kicker">Service agreements</p>
+        <h2>Pick your <span class="bl">priority level</span></h2>
+        <p class="sub">Three agreement tiers, priced as a custom quote per facility — sized by your equipment count, locations and hours, never off a generic rate card. Tap a tier to see exactly what it includes.</p>
+        <div class="tier-btns" role="group" aria-label="Service agreement tiers">
+          <button class="tier-btn" data-tier="essential" aria-pressed="true">Essential</button>
+          <button class="tier-btn" data-tier="priority" aria-pressed="false">Priority</button>
+          <button class="tier-btn" data-tier="total" aria-pressed="false">Total Care</button>
+        </div>
+        <div class="tier-panel">
+          <div>
+            <h3 id="tierName">Essential</h3>
+            <p class="who" id="tierWho">For single-location businesses that want one accountable number to call and a record of every unit they own.</p>
+            <p style="margin-top:16px"><a class="btn btn-blue" href="#account">Get a custom quote</a></p>
+          </div>
+          <ul id="tierList"></ul>
+        </div>
+        <p class="fineprint"><b>Straight talk on pricing:</b> commercial service is quoted per facility and per agreement — the residential <b>$99 diagnostic model does not apply to commercial accounts</b>. Your quote is built from your equipment registry, so the first step is opening an account and tagging your units. Response priority comes from your tier's place in the dispatch queue; we don't publish guaranteed response-time clocks, because honest scheduling beats a promise a busy day can break.</p>
+      </div>
+    </section>
+
+    <!-- ============ PORTAL PREVIEW ============ -->
+    <section id="portal" style="padding-top:10px">
+      <div class="wrap">
+        <p class="kicker">Equipment registry · Client portal</p>
+        <h2>Every unit, tagged <span class="bl">&amp; tracked</span></h2>
+        <p class="sub">When your account opens, every appliance in your facility gets an asset tag and a registry record — brand, model, serial, warranty status and full service history. A QR code on the unit opens that record, so anyone on your team can pull its history and request service in one tap. Try the preview: select a unit.</p>
+
+        <div class="portal" aria-label="Client portal preview">
+          <div class="portal-head">
+            <span class="t">APPLIANCE PRO CLIENT PORTAL</span>
+            <span class="demo-badge">Preview · Demo data</span>
+            <span class="fac">Sample facility: “Harbor Bites — Fort Lauderdale” (illustrative)</span>
+          </div>
+          <div class="portal-scroll">
+            <table>
+              <thead>
+                <tr><th>Asset tag</th><th>Unit</th><th>Location</th><th>Health</th><th>Next PM</th></tr>
+              </thead>
+              <tbody id="unitRows"></tbody>
+            </table>
+          </div>
+          <div class="unit-detail">
+            <div>
+              <h3 id="uName">—</h3>
+              <div class="status st-ok" id="uStatus" style="margin-top:8px"><i></i><span>Operational</span></div>
+              <div class="spec">
+                <div><b>Asset tag</b><span id="uTag">—</span></div>
+                <div><b>Brand / Model</b><span id="uModel">—</span></div>
+                <div><b>Serial</b><span id="uSerial">—</span></div>
+                <div><b>Warranty</b><span id="uWarranty">—</span></div>
+                <div><b>Last service</b><span id="uLast">—</span></div>
+                <div><b>Service visits on record</b><span id="uVisits">—</span></div>
+              </div>
+              <p id="uNote" style="color:var(--ink-soft);margin:14px 0 0"></p>
+              <div class="tracker">
+                <b style="font-family:'Barlow Semi Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;font-size:14.5px">Work-order tracker — try it</b>
+                <div class="stages" id="woStages"></div>
+                <button class="btn btn-red" id="woBtn" type="button" style="padding:12px 20px;font-size:16px">One-tap service request for this unit</button>
+                <p id="woMsg" style="color:var(--ink-soft);font-size:14.5px;margin:10px 0 0"></p>
+              </div>
+            </div>
+            <div>
+              <div class="qr-box">
+                <div class="qr" aria-hidden="true"></div>
+                <p><b style="color:var(--ink)">Scan-to-service.</b> This code lives on the physical unit. Scanning it opens this exact record — full history, warranty, and the one-tap request button above. No login hunt, no “which fridge is it?” phone calls.</p>
+              </div>
+              <div class="pm-strip" style="flex-direction:column;gap:8px">
+                <div class="pm-chip"><b>Preventive maintenance</b> — scheduled per unit from its registry record, so PM visits land before failures, not after.</div>
+                <div class="pm-chip"><b>Health status</b> — every unit reads <span style="color:var(--ok);font-weight:700">Operational</span>, <span style="color:var(--warn);font-weight:700">Warning</span> or <span style="color:var(--crit);font-weight:700">Critical</span> based on its service record.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="fineprint">The registry above is a working preview with sample units. Your real portal is populated when your account opens and your equipment is tagged on the first visit.</p>
+      </div>
+    </section>
+
+    <!-- ============ COVERAGE ============ -->
+    <section style="padding-top:6px">
+      <div class="wrap">
+        <p class="kicker">Coverage</p>
+        <h2>12 Broward County <span class="bl">service areas</span></h2>
+        <p class="sub">One commercial network across the county — multi-location accounts get the same registry, dispatch and invoicing in every area.</p>
+        <div class="areas">
+          <span>Fort Lauderdale</span><span>Hollywood</span><span>Pembroke Pines</span><span>Miramar</span>
+          <span>Coral Springs</span><span>Pompano Beach</span><span>Davie</span><span>Plantation</span>
+          <span>Sunrise</span><span>Weston</span><span>Deerfield Beach</span><span>Lauderhill</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROVIDERS ============ -->
+    <section id="providers" class="band-navy">
+      <div class="wrap">
+        <p class="kicker" style="color:#FF8A80">For commercial providers</p>
+        <h2>Join the commercial <span class="bl">network</span></h2>
+        <p class="sub">Commercial accounts mean steadier, scheduled work — agreement clients with registered equipment, recurring preventive maintenance, and repeat work orders instead of one-off calls. If your company or crew does commercial-grade appliance work, the network runs on the provider side of Top Speed Service OS.</p>
+        <div class="prov-grid">
+          <div>
+            <h3 class="cond" style="font-size:25px;font-weight:600;text-transform:uppercase;color:#fff">What commercial network work requires</h3>
+            <ul class="req-list">
+              <li><b>Commercial experience</b> — refrigeration, laundry, cooking or sanitation equipment in working businesses, not residential-only.</li>
+              <li><b>Insurance on file</b> — current liability coverage, verified before your first commercial dispatch.</li>
+              <li><b>Response capability</b> — you can take priority work orders inside Broward County service windows and keep status updated in the app.</li>
+              <li><b>Photo-report discipline</b> — every visit closes with photos and notes into the unit's registry record. It's how accounts stay and work keeps coming.</li>
+              <li><b>Registry accuracy</b> — asset tags, model and serial details recorded on every visit, so the client's equipment history stays complete.</li>
+            </ul>
+            <p style="margin-top:22px"><a class="btn btn-red" href="/service/" target="_blank" rel="noopener">Apply on the Provider Network →</a></p>
+            <p style="color:#C6D7F8;font-size:15px;margin-top:12px">Applications run through topspeedapplianceservice.com — the provider side of the same platform. Commercial capability is flagged on your application.</p>
+          </div>
+          <div class="prov-photo">
+            <img src="walkin.webp" alt="A commercial walk-in cooler installation — the kind of registered equipment commercial network providers service" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ACCOUNT FORM ============ -->
+    <section id="account">
+      <div class="wrap">
+        <p class="kicker">Appliance Pro Commercial Accounts</p>
+        <h2>Tell us about <span class="bl">your facility</span></h2>
+        <p class="sub">Two minutes. The commercial team reviews every request and replies <b>within one business day</b> with next steps and your custom quote process. Equipment down right now? Skip the form and call the priority line: <a href="tel:+19549317997"><b>954-931-7997</b></a>.</p>
+        <form class="form-card" id="acctForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="fCompany">Company / Business name *</label>
+              <input id="fCompany" name="company" type="text" autocomplete="organization" placeholder="e.g. Harbor Bites LLC" />
+              <span class="err">Please enter the business name.</span>
+            </div>
+            <div class="field">
+              <label for="fType">Business type *</label>
+              <select id="fType" name="type">
+                <option value="">Select a type…</option>
+                <option>Restaurant / Food service</option>
+                <option>Hotel / Hospitality</option>
+                <option>Laundromat / Laundry service</option>
+                <option>Hospital / Clinic</option>
+                <option>Office</option>
+                <option>Retail / Grocery</option>
+                <option>Property facility</option>
+                <option>Other commercial</option>
+              </select>
+              <span class="err">Please choose a business type.</span>
+            </div>
+            <div class="field">
+              <label for="fContact">Contact name *</label>
+              <input id="fContact" name="contact" type="text" autocomplete="name" placeholder="Your name" />
+              <span class="err">Please enter a contact name.</span>
+            </div>
+            <div class="field">
+              <label for="fPhone">Phone *</label>
+              <input id="fPhone" name="phone" type="tel" autocomplete="tel" placeholder="(954) 555-0100" />
+              <span class="err">Please enter a phone number we can reach.</span>
+            </div>
+            <div class="field">
+              <label for="fEmail">Email *</label>
+              <input id="fEmail" name="email" type="email" autocomplete="email" placeholder="you@business.com" />
+              <span class="err">Please enter a valid email address.</span>
+            </div>
+            <div class="field">
+              <label for="fLocs">Number of locations *</label>
+              <select id="fLocs" name="locations">
+                <option value="">Select…</option>
+                <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option>
+                <option>6–10</option><option>11+</option>
+              </select>
+              <span class="err">Please select the number of locations.</span>
+            </div>
+            <div class="field full">
+              <label for="fNotes">Equipment notes</label>
+              <textarea id="fNotes" name="notes" rows="4" placeholder="What do you run? Walk-ins, ice machines, laundry line, cooking equipment — and anything that's already giving you trouble."></textarea>
+            </div>
+          </div>
+          <p style="margin:20px 0 0"><button class="btn btn-red" type="submit" style="font-size:19px">Request my Appliance Pro Commercial Account</button></p>
+          <p class="fineprint" style="margin-top:14px">This preview form confirms your request on screen with a reference code. Prefer to talk it through? Call <a href="tel:+19549317997">954-931-7997</a> and ask for the commercial team.</p>
+          <div class="form-ok" id="formOk" role="status">
+            <h3>Request received</h3>
+            <p style="margin:8px 0 4px">Your reference code: <span class="ref" id="okRef">APC-000000</span></p>
+            <p style="margin:0" id="okText">The commercial team will reply within one business day. If a unit is down right now, don't wait on email — call the priority line at 954-931-7997 and give them your reference code.</p>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div class="checker" aria-hidden="true"></div>
+    <footer>
+      <div class="wrap">
+        <div class="cols">
+          <div>
+            <h3>Appliance Pro App</h3>
+            <p>Appliance Pro Commercial Accounts — the commercial repair &amp; service network of <b style="color:#fff">Top Speed Appliance LLC</b>, powered by Top Speed Service OS and Service Setters Book OS dispatch.</p>
+            <p>Priority line: <a href="tel:+19549317997"><b>954-931-7997</b></a></p>
+          </div>
+          <div>
+            <h3>The platform</h3>
+            <p><a href="/" target="_blank" rel="noopener">topspeedappliance.net</a> — customers, booking &amp; residential service</p>
+            <p><a href="/service/" target="_blank" rel="noopener">topspeedapplianceservice.com</a> — provider network &amp; applications</p>
+            <p><a href="#account">Appliance Pro Commercial Accounts</a> · <a href="#agreements">Service agreements</a> · <a href="#portal">Client portal preview</a></p>
+          </div>
+          <div>
+            <h3>Commercial scope</h3>
+            <p>Refrigeration · Laundry · Cooking lines · Dish &amp; sanitation</p>
+            <p>12 Broward County service areas. Commercial pricing is quoted per facility — the residential $99 diagnostic model does not apply to commercial accounts.</p>
+          </div>
+        </div>
+        <div class="checker foot-checker" aria-hidden="true" style="--checker-dk:#EDF3FF;--checker-lt:#0A265C;border:0;opacity:.5"></div>
+        <p style="margin-top:18px;font-size:14px;color:#8FA8D8">© Top Speed Appliance LLC · Appliance Pro App — Appliance Pro Commercial Accounts · Broward County, Florida</p>
+      </div>
+    </footer>
+
+    <script>
+      /* ---------- SLA tier selector ---------- */
+      var TIERS = {
+        essential: {
+          name: "Essential",
+          who: "For single-location businesses that want one accountable number to call and a record of every unit they own.",
+          items: [
+            "Appliance Pro Commercial Account with priority-line access — one number for every breakdown",
+            "Equipment registry: every unit tagged with asset tag, brand, model, serial & warranty",
+            "Scan-to-service QR on each unit — history and service requests in one tap",
+            "Work-order tracking with photo report after every visit",
+            "Consolidated monthly invoicing — one bill for all repair visits",
+            "Preventive maintenance available per visit, scheduled when you ask"
+          ]
+        },
+        priority: {
+          name: "Priority",
+          who: "For restaurants, hotels and laundromats where a down unit costs money by the hour and can't wait in a general queue.",
+          items: [
+            "Everything in Essential",
+            "Priority dispatch queue — commercial work orders are matched and approved ahead of standard requests",
+            "Scheduled preventive maintenance visits per unit, planned from the registry so nothing lapses",
+            "Equipment health monitoring — warning and critical units flagged in your portal before they fail outright",
+            "Consolidated monthly invoicing across all locations under the account",
+            "Named account contact who knows your facilities and your equipment"
+          ]
+        },
+        total: {
+          name: "Total Care",
+          who: "For multi-location operators and facilities teams who want their entire appliance fleet managed as one system.",
+          items: [
+            "Everything in Priority",
+            "Top-of-queue dispatch standing for every location on the account",
+            "Full preventive maintenance program — recurring visits scheduled automatically per unit and per season",
+            "Complete equipment registry management: warranty tracking, service history and replacement planning from real failure data",
+            "One consolidated monthly invoice across every location, every trade, every work order",
+            "Dedicated account contact and periodic fleet reviews — what's aging out, what's costing you, what to plan for"
+          ]
+        }
+      };
+      var tierBtns = document.querySelectorAll(".tier-btn");
+      var tierList = document.getElementById("tierList");
+      function showTier(key){
+        var t = TIERS[key];
+        document.getElementById("tierName").textContent = t.name;
+        document.getElementById("tierWho").textContent = t.who;
+        tierList.innerHTML = "";
+        t.items.forEach(function(it){
+          var li = document.createElement("li");
+          li.textContent = it;
+          tierList.appendChild(li);
+        });
+        tierBtns.forEach(function(b){ b.setAttribute("aria-pressed", b.getAttribute("data-tier") === key ? "true" : "false"); });
+      }
+      tierBtns.forEach(function(b){ b.addEventListener("click", function(){ showTier(b.getAttribute("data-tier")); }); });
+      showTier("essential");
+
+      /* ---------- Portal preview: equipment registry ---------- */
+      var UNITS = [
+        { tag:"TS-C-0142", name:"Walk-in Cooler #1", kind:"Refrigeration", loc:"Main kitchen", status:"ok", statusLabel:"Operational",
+          model:"Kolpak · KXB845", serial:"KP-8841-2207", warranty:"Parts warranty active", last:"Aug 12, 2026 — gasket & seal service", visits:6,
+          next:"Dec 2026", note:"Running steady at target temperature. Door gaskets replaced at last service — the previous warm-spot complaint has not recurred." },
+        { tag:"TS-C-0157", name:"Ice Machine — Bar", kind:"Refrigeration", loc:"Bar station", status:"warn", statusLabel:"Warning",
+          model:"Manitowoc · IDT0450A", serial:"MW-1107-5531", warranty:"Out of manufacturer warranty", last:"Oct 3, 2026 — scale & sanitation clean", visits:9,
+          next:"Nov 2026", note:"Production is trending down between cleans and scale is building faster than the PM cycle. Flagged Warning — a deep clean and water-filter change are recommended at the next visit before it becomes a no-ice night." },
+        { tag:"TS-L-0031", name:"Washer-Extractor #3", kind:"Laundry", loc:"Laundry room", status:"crit", statusLabel:"Critical",
+          model:"Speed Queen · FF7008", serial:"SQ-6630-9914", warranty:"Out of manufacturer warranty", last:"Oct 28, 2026 — drain fault, temporary clear", visits:14,
+          next:"Overdue", note:"Repeat drain faults and a worn bearing set. The last visit cleared the line as a temporary fix — this unit is flagged Critical and a full repair or planned replacement should be scheduled before it stops mid-cycle with a full load." },
+        { tag:"TS-K-0020", name:"Six-Burner Range", kind:"Cooking line", loc:"Hot line", status:"ok", statusLabel:"Operational",
+          model:"Vulcan · 36S-6B", serial:"VU-2290-4418", warranty:"Parts warranty active", last:"Sep 18, 2026 — burner ignition service", visits:5,
+          next:"Jan 2027", note:"All six burners igniting cleanly after the ignition service. Oven thermostat verified in range at the last visit." },
+        { tag:"TS-D-0008", name:"Conveyor Dish Machine", kind:"Sanitation", loc:"Dish pit", status:"ok", statusLabel:"Operational",
+          model:"Hobart · CL44e", serial:"HB-7712-3085", warranty:"Parts warranty active", last:"Oct 21, 2026 — wash-arm & rinse check", visits:7,
+          next:"Dec 2026", note:"Wash and rinse temperatures verified in spec at the last visit. No inspection findings on this unit to date." }
+      ];
+      var rowsEl = document.getElementById("unitRows");
+      var STAGES = ["Request received","Setter dispatch","Provider matched","On site","Photo report","Closed → monthly invoice"];
+      var woStage = -1, selectedUnit = 0;
+
+      function statusClass(s){ return s === "ok" ? "st-ok" : (s === "warn" ? "st-warn" : "st-crit"); }
+
+      UNITS.forEach(function(u, i){
+        var tr = document.createElement("tr");
+        tr.innerHTML = "";
+        var c1 = document.createElement("td"); c1.textContent = u.tag;
+        var c2 = document.createElement("td"); c2.textContent = u.name;
+        var c3 = document.createElement("td"); c3.textContent = u.loc;
+        var c4 = document.createElement("td");
+        var st = document.createElement("span"); st.className = "status " + statusClass(u.status);
+        st.innerHTML = "<i></i>"; st.appendChild(document.createTextNode(u.statusLabel));
+        c4.appendChild(st);
+        var c5 = document.createElement("td"); c5.textContent = u.next;
+        [c1,c2,c3,c4,c5].forEach(function(c){ tr.appendChild(c); });
+        tr.addEventListener("click", function(){ selectUnit(i); });
+        rowsEl.appendChild(tr);
+      });
+
+      function renderStages(){
+        var box = document.getElementById("woStages");
+        box.innerHTML = "";
+        STAGES.forEach(function(s, i){
+          var d = document.createElement("div");
+          d.className = "stg" + (i < woStage ? " done" : (i === woStage ? " now" : ""));
+          d.textContent = s;
+          box.appendChild(d);
+        });
+        var btn = document.getElementById("woBtn");
+        var msg = document.getElementById("woMsg");
+        var u = UNITS[selectedUnit];
+        if (woStage < 0){
+          btn.textContent = "One-tap service request for this unit";
+          msg.textContent = "";
+        } else if (woStage < STAGES.length - 1){
+          btn.textContent = "Advance the work order →";
+          msg.textContent = "Work order open for " + u.name + " (" + u.tag + "). In the live portal this advances on its own as Service Setters and the provider update it — here, tap to walk it through.";
+        } else {
+          btn.textContent = "Start another request";
+          msg.textContent = "Work order closed for " + u.name + ". The photo report filed into its registry record, and the charge lands on the account's single monthly invoice.";
+        }
+      }
+
+      function selectUnit(i){
+        selectedUnit = i;
+        var u = UNITS[i];
+        var trs = rowsEl.querySelectorAll("tr");
+        trs.forEach(function(tr, j){ tr.classList.toggle("sel", j === i); });
+        document.getElementById("uName").textContent = u.name;
+        var st = document.getElementById("uStatus");
+        st.className = "status " + statusClass(u.status);
+        st.innerHTML = "<i></i>";
+        st.appendChild(document.createTextNode(u.statusLabel));
+        document.getElementById("uTag").textContent = u.tag;
+        document.getElementById("uModel").textContent = u.model;
+        document.getElementById("uSerial").textContent = u.serial;
+        document.getElementById("uWarranty").textContent = u.warranty;
+        document.getElementById("uLast").textContent = u.last;
+        document.getElementById("uVisits").textContent = u.visits;
+        document.getElementById("uNote").textContent = u.note;
+        woStage = -1;
+        renderStages();
+      }
+      document.getElementById("woBtn").addEventListener("click", function(){
+        if (woStage >= STAGES.length - 1){ woStage = -1; }
+        else { woStage++; }
+        renderStages();
+      });
+      selectUnit(1);
+
+      /* ---------- Account form ---------- */
+      var form = document.getElementById("acctForm");
+      function setInvalid(id, bad){
+        var f = document.getElementById(id).closest(".field");
+        f.classList.toggle("invalid", bad);
+        return !bad;
+      }
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        var company = document.getElementById("fCompany").value.trim();
+        var type = document.getElementById("fType").value;
+        var contact = document.getElementById("fContact").value.trim();
+        var phone = document.getElementById("fPhone").value.trim();
+        var email = document.getElementById("fEmail").value.trim();
+        var locs = document.getElementById("fLocs").value;
+        var ok = true;
+        ok = setInvalid("fCompany", company.length < 2) && ok;
+        ok = setInvalid("fType", !type) && ok;
+        ok = setInvalid("fContact", contact.length < 2) && ok;
+        ok = setInvalid("fPhone", phone.replace(/\D/g,"").length < 7) && ok;
+        ok = setInvalid("fEmail", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) && ok;
+        ok = setInvalid("fLocs", !locs) && ok;
+        if (!ok){
+          var firstBad = form.querySelector(".field.invalid input, .field.invalid select");
+          if (firstBad) firstBad.focus();
+          return;
+        }
+        var ref = "APC-" + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById("okRef").textContent = ref;
+        document.getElementById("okText").textContent =
+          "Thanks, " + contact.split(" ")[0] + " — the commercial team will reply within one business day about " + company +
+          " (" + type.toLowerCase() + ", " + locs + (locs === "1" ? " location" : " locations") + "). " +
+          "If a unit is down right now, don't wait on email — call the priority line at 954-931-7997 and give them reference " + ref + ".";
+        var okBox = document.getElementById("formOk");
+        okBox.classList.add("show");
+        okBox.scrollIntoView({ behavior:"smooth", block:"center" });
+      });
+      ["fCompany","fType","fContact","fPhone","fEmail","fLocs"].forEach(function(id){
+        document.getElementById(id).addEventListener("input", function(){
+          document.getElementById(id).closest(".field").classList.remove("invalid");
+        });
+      });
+    </script>
+  <script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
