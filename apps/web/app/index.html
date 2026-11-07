@@ -1,0 +1,880 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>Appliance Pro App — PWA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A265C; --navy2:#061A40; --blue:#1280FF; --blue-d:#0B63CE; --red:#E8322E; --red-d:#C72420;
+  --ink:#101828; --mut:#5B6B82; --line:#E2E8F2; --bg:#EEF2F8; --card:#FFFFFF; --soft:#EAF2FE;
+  --green:#12805C; --green-bg:#E3F4EC; --amber:#9A6A00; --amber-bg:#FBF0D3;
+  --page-bg:#DCE6F4; --page-ink:#0A265C; --page-mut:#46608C;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --page-bg:#050D1F; --page-ink:#EAF1FE; --page-mut:#9DB2D6; }
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-bg); color:var(--page-ink);}
+
+/* ---------- Page layout ---------- */
+.page{min-height:100dvh; display:flex; align-items:center; justify-content:center; gap:56px; padding:28px 20px;}
+.promo{max-width:460px; display:none;}
+@media(min-width:1020px){ .promo{display:block;} }
+.promo .flag{display:inline-flex; align-items:center; gap:10px; font-family:"Barlow Condensed"; font-weight:700; letter-spacing:.14em; font-size:13px; text-transform:uppercase; color:var(--page-mut);}
+.checkers{width:44px; height:14px; border-radius:3px; background:
+  conic-gradient(#0A265C 25%, #fff 0 50%, #0A265C 0 75%, #fff 0) 0 0/14px 14px;
+  box-shadow:inset 0 0 0 1px rgba(10,38,92,.25);}
+@media (prefers-color-scheme: dark){ .checkers{background:conic-gradient(#EAF1FE 25%, #13294F 0 50%, #EAF1FE 0 75%, #13294F 0) 0 0/14px 14px;} }
+.promo h1{font-family:"Barlow Condensed"; font-size:64px; line-height:.95; margin:18px 0 6px; text-transform:uppercase; font-weight:700;}
+.promo h1 em{font-style:normal; color:var(--red);}
+.promo .tag{font-family:"Barlow Condensed"; font-size:24px; font-weight:600; letter-spacing:.02em; margin:0 0 14px;}
+.promo p{color:var(--page-mut); font-size:16.5px; line-height:1.55; margin:0 0 20px;}
+.promo .stars{font-weight:700; color:var(--page-ink);}
+.dl-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:22px 0;}
+.dl-card{background:rgba(255,255,255,.65); border:1px solid rgba(10,38,92,.14); border-radius:14px; padding:14px 12px; text-align:left; cursor:pointer; font:inherit; color:var(--page-ink);}
+@media (prefers-color-scheme: dark){ .dl-card{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.14);} }
+.dl-card b{display:block; font-size:15px; margin-bottom:2px;}
+.dl-card span{font-size:12.5px; color:var(--page-mut); line-height:1.35; display:block;}
+.dl-card.reco{outline:2px solid var(--blue); position:relative;}
+.dl-card.reco::after{content:"FOR YOU"; position:absolute; top:-9px; right:10px; background:var(--blue); color:#fff; font-size:10px; font-weight:800; letter-spacing:.08em; padding:2px 7px; border-radius:99px;}
+.feat{list-style:none; margin:0; padding:0; display:grid; gap:9px;}
+.feat li{display:flex; gap:10px; font-size:15px; color:var(--page-ink);}
+.feat li svg{flex:none; margin-top:2px;}
+.comm-promo{margin-top:22px; background:rgba(255,255,255,.65); border:1px solid rgba(10,38,92,.14); border-radius:14px; padding:16px;}
+@media (prefers-color-scheme: dark){ .comm-promo{background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.14);} }
+.promo .fine{font-size:13px; margin-top:22px;}
+.promo .fine a{color:var(--blue-d); font-weight:700; text-decoration:none;}
+@media (prefers-color-scheme: dark){ .promo .fine a{color:#7DB4FF;} }
+
+/* ---------- Phone ---------- */
+.phone-wrap{display:flex; justify-content:center;}
+.phone{width:min(412px,100vw); height:min(880px,94dvh); background:#0B1526; border-radius:48px; padding:11px; box-shadow:0 40px 80px -20px rgba(4,16,40,.55), 0 0 0 1px rgba(255,255,255,.08) inset; position:relative;}
+.phone::before{content:""; position:absolute; top:11px; left:50%; transform:translateX(-50%); width:110px; height:24px; background:#0B1526; border-radius:0 0 16px 16px; z-index:30;}
+.app{background:var(--bg); border-radius:38px; overflow:hidden; height:100%; display:flex; flex-direction:column; position:relative; color:var(--ink);}
+@media(max-width:560px){
+  .page{padding:0;}
+  .phone{width:100vw; height:100dvh; border-radius:0; padding:0; box-shadow:none;}
+  .phone::before{display:none;}
+  .app{border-radius:0;}
+}
+
+/* ---------- App header ---------- */
+.ahead{background:var(--navy); color:#fff; padding:30px 18px 12px; position:relative; flex:none;}
+.ahead::after{content:""; position:absolute; left:0; right:0; bottom:0; height:5px;
+  background:conic-gradient(#fff 25%, var(--navy2) 0 50%, #fff 0 75%, var(--navy2) 0) 0 0/12px 12px; opacity:.9;}
+.brandrow{display:flex; align-items:center; gap:10px;}
+.logo{width:40px; height:40px; border-radius:11px; background:var(--red); display:grid; place-items:center; font-family:"Barlow Condensed"; font-weight:700; font-size:19px; letter-spacing:.02em; flex:none; box-shadow:0 4px 10px rgba(0,0,0,.3);}
+.brandrow .bn{line-height:1.05;}
+.brandrow .bn b{font-family:"Barlow Condensed"; font-size:21px; letter-spacing:.03em; display:block;}
+.brandrow .bn span{font-size:11.5px; color:#BFD4F5; font-weight:600; letter-spacing:.06em; text-transform:uppercase;}
+.callbtn{margin-left:auto; background:#fff; color:var(--navy); border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; padding:9px 13px; display:flex; align-items:center; gap:6px; cursor:pointer; text-decoration:none;}
+.preview-note{margin-top:10px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#DCE9FF; font-size:11.5px; font-weight:600; border-radius:8px; padding:6px 9px; display:flex; gap:6px; align-items:center;}
+.mode-toggle{margin-top:11px; background:rgba(255,255,255,.13); border-radius:99px; padding:4px; display:flex; gap:4px;}
+.mode-toggle button{flex:1; border:none; background:transparent; color:#C9DBF8; font:inherit; font-weight:700; font-size:13.5px; padding:8px; border-radius:99px; cursor:pointer;}
+.mode-toggle button.on{background:#fff; color:var(--navy);}
+
+/* install banner */
+.install-banner{flex:none; margin:12px 14px 0; background:var(--navy); color:#fff; border-radius:14px; padding:12px 13px; display:flex; gap:11px; align-items:center; box-shadow:0 8px 18px -8px rgba(10,38,92,.5);}
+.install-banner .ib-ic{width:36px; height:36px; border-radius:10px; background:var(--blue); display:grid; place-items:center; flex:none;}
+.install-banner b{font-size:14px; display:block; line-height:1.25;}
+.install-banner span{font-size:12px; color:#C9DBF8; display:block; line-height:1.35;}
+.install-banner .ib-go{background:#fff; color:var(--navy); border:none; font:inherit; font-weight:800; font-size:12.5px; padding:8px 11px; border-radius:99px; cursor:pointer; flex:none;}
+.install-banner .ib-x{background:none; border:none; color:#9DB9E8; font-size:18px; cursor:pointer; padding:2px; flex:none; line-height:1;}
+
+/* ---------- Screens ---------- */
+.screens{flex:1; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none;}
+.screens::-webkit-scrollbar{display:none;}
+.screen{display:none; padding:16px 16px 26px; animation:fade .22s ease;}
+.screen.on{display:block;}
+@keyframes fade{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:none;}}
+@media (prefers-reduced-motion: reduce){ .screen{animation:none;} }
+.greet{font-family:"Barlow Condensed"; font-size:29px; font-weight:700; color:var(--navy); margin:2px 0 2px; text-transform:uppercase; letter-spacing:.01em;}
+.sub{color:var(--mut); font-size:14.5px; margin:0 0 14px; line-height:1.45;}
+h3.sec{font-family:"Barlow Condensed"; font-size:19px; text-transform:uppercase; letter-spacing:.04em; color:var(--navy); margin:20px 0 10px; display:flex; align-items:center; gap:8px;}
+h3.sec:first-child{margin-top:0;}
+.card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px;}
+.chip99{display:flex; gap:11px; align-items:center; background:linear-gradient(120deg,#FFF4E0,#FFE9C4); border:1px solid #F2D492; border-radius:14px; padding:12px 13px; margin-bottom:14px;}
+.chip99 .amt{font-family:"Barlow Condensed"; font-size:30px; font-weight:700; color:#8A5A00; line-height:1;}
+.chip99 p{margin:0; font-size:13px; line-height:1.4; color:#6B4E12;}
+.chip99 p b{color:#543D0B;}
+
+.grid9{display:grid; grid-template-columns:repeat(3,1fr); gap:9px;}
+.appl{background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:13px 6px 11px; text-align:center; cursor:pointer; font:inherit; color:var(--ink); transition:border-color .15s, transform .15s;}
+.appl:hover{border-color:var(--blue);}
+.appl:active{transform:scale(.97);}
+.appl svg{display:block; margin:0 auto 7px;}
+.appl span{font-size:12.5px; font-weight:700; line-height:1.15; display:block;}
+
+.jobcard{border-radius:16px; overflow:hidden; border:1px solid var(--line); background:var(--card);}
+.jobcard .jc-top{background:var(--navy); color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px;}
+.jobcard .jc-top b{font-size:15px;}
+.jobcard .jc-top .ref{margin-left:auto; font-size:12px; font-weight:700; background:rgba(255,255,255,.16); padding:4px 8px; border-radius:99px;}
+.jobcard .jc-body{padding:13px 14px;}
+.pill{display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; padding:4px 9px; border-radius:99px;}
+.pill.blue{background:var(--soft); color:var(--blue-d);}
+.pill.green{background:var(--green-bg); color:var(--green);}
+.pill.amber{background:var(--amber-bg); color:var(--amber);}
+.pill.gray{background:#EDF1F7; color:var(--mut);}
+.dot{width:7px; height:7px; border-radius:50%; background:currentColor;}
+.progress{height:7px; background:#E6ECF5; border-radius:99px; margin:12px 0 6px; overflow:hidden;}
+.progress i{display:block; height:100%; background:var(--blue); border-radius:99px; transition:width .5s ease;}
+.jc-meta{font-size:13px; color:var(--mut); line-height:1.5;}
+.btn{display:block; width:100%; border:none; border-radius:13px; padding:14px; font:inherit; font-weight:800; font-size:15.5px; cursor:pointer; text-align:center; text-decoration:none;}
+.btn.primary{background:var(--red); color:#fff; box-shadow:0 10px 20px -10px rgba(232,50,46,.7);}
+.btn.primary:active{background:var(--red-d);}
+.btn.blue{background:var(--blue); color:#fff;}
+.btn.ghost{background:#fff; color:var(--navy); border:1.5px solid var(--line);}
+.btn.small{padding:10px; font-size:14px;}
+.btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none;}
+.btnrow{display:flex; gap:9px;}
+.btnrow .btn{flex:1;}
+
+/* booking steps */
+.steps-bar{display:flex; gap:5px; margin-bottom:16px;}
+.steps-bar i{flex:1; height:5px; border-radius:99px; background:#D8E1EE;}
+.steps-bar i.done{background:var(--blue);}
+.bstep{display:none;}
+.bstep.on{display:block; animation:fade .22s ease;}
+label.fl{display:block; font-size:13px; font-weight:800; color:var(--navy); margin:14px 0 7px; text-transform:uppercase; letter-spacing:.05em;}
+textarea, input[type=text]{width:100%; font:inherit; font-size:15px; border:1.5px solid var(--line); border-radius:12px; padding:12px; background:#fff; color:var(--ink); resize:vertical;}
+textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-color:transparent;}
+.photo-box{border:2px dashed #B9CBE4; border-radius:14px; background:#F6FAFF; padding:16px; text-align:center; cursor:pointer;}
+.photo-box b{color:var(--navy); font-size:14.5px; display:block;}
+.photo-box span{font-size:12.5px; color:var(--mut);}
+.photo-preview{display:none; border-radius:14px; overflow:hidden; border:1px solid var(--line); position:relative; background:#10203C;}
+.photo-preview img{width:100%; height:170px; object-fit:cover; display:block;}
+.photo-preview .pp-tag{position:absolute; left:10px; bottom:10px; background:rgba(6,20,45,.85); color:#fff; font-size:12px; font-weight:700; padding:5px 9px; border-radius:99px;}
+.ai-note{display:none; margin-top:10px; background:var(--soft); border:1px solid #C9DEFF; border-radius:12px; padding:11px 12px; font-size:13px; line-height:1.5; color:#173A6E;}
+.ai-note b{color:var(--navy);}
+.chips{display:flex; flex-wrap:wrap; gap:8px;}
+.chip{border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:9px 14px; font:inherit; font-size:14px; font-weight:700; cursor:pointer; color:var(--ink);}
+.chip small{display:block; font-size:11px; font-weight:600; color:var(--mut);}
+.chip.on{border-color:var(--blue); background:var(--soft); color:var(--navy);}
+.chip.on small{color:var(--blue-d);}
+.sumrow{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px dashed var(--line); font-size:14.5px;}
+.sumrow:last-of-type{border-bottom:none;}
+.sumrow span{color:var(--mut);}
+.sumrow b{text-align:right;}
+.success-hero{text-align:center; padding:10px 0 4px;}
+.success-hero .ok{width:70px; height:70px; border-radius:50%; background:var(--green-bg); display:grid; place-items:center; margin:0 auto 12px;}
+.refcode{font-family:"Barlow Condensed"; font-size:34px; font-weight:700; letter-spacing:.1em; color:var(--navy); background:#fff; border:2px dashed #B9CBE4; border-radius:14px; padding:10px; margin:12px 0;}
+
+/* track */
+.stages{position:relative; margin:6px 0 4px; padding-left:6px;}
+.stage{display:flex; gap:13px; position:relative; padding-bottom:20px;}
+.stage:last-child{padding-bottom:2px;}
+.stage::before{content:""; position:absolute; left:15px; top:32px; bottom:0; width:2.5px; background:#DCE5F1;}
+.stage:last-child::before{display:none;}
+.stage.done::before{background:var(--blue);}
+.stage .st-ic{width:32px; height:32px; border-radius:50%; background:#E4EBF5; color:#8FA5C4; display:grid; place-items:center; flex:none; z-index:1; font-weight:800; font-size:13px;}
+.stage.done .st-ic{background:var(--blue); color:#fff;}
+.stage.now .st-ic{background:var(--navy); color:#fff; box-shadow:0 0 0 5px rgba(18,128,255,.18);}
+.stage b{font-size:15px; display:block; padding-top:5px;}
+.stage span{font-size:12.5px; color:var(--mut); display:block;}
+.techcard{display:flex; gap:12px; align-items:center;}
+.avatar{width:52px; height:52px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-family:"Barlow Condensed"; font-weight:700; font-size:19px; flex:none;}
+.techcard b{font-size:16px; display:block;}
+.techcard span{font-size:13px; color:var(--mut); display:block; line-height:1.4;}
+.feed{display:grid; gap:0;}
+.msg{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid var(--line);}
+.msg:last-child{border-bottom:none;}
+.msg .m-ic{width:30px; height:30px; border-radius:9px; background:var(--soft); display:grid; place-items:center; flex:none;}
+.msg p{margin:0; font-size:13.5px; line-height:1.45;}
+.msg time{font-size:11.5px; color:var(--mut); font-weight:700;}
+
+/* garage */
+.appl-row{display:flex; gap:12px; align-items:center; padding:13px 0; border-bottom:1px solid var(--line);}
+.appl-row:last-child{border-bottom:none; padding-bottom:2px;}
+.appl-row .a-ic{width:46px; height:46px; border-radius:12px; background:var(--soft); display:grid; place-items:center; flex:none;}
+.appl-row b{font-size:15px; display:block;}
+.appl-row span{font-size:12.5px; color:var(--mut); display:block; line-height:1.4;}
+.mini-btn{margin-left:auto; flex:none; border:1.5px solid var(--blue); color:var(--blue-d); background:#fff; font:inherit; font-weight:800; font-size:12.5px; padding:8px 11px; border-radius:99px; cursor:pointer;}
+.hist{display:flex; gap:10px; padding:11px 0; border-bottom:1px solid var(--line); font-size:14px;}
+.hist:last-child{border-bottom:none;}
+.hist b{display:block; font-size:14px;}
+.hist span{font-size:12.5px; color:var(--mut);}
+.hist .h-amt{margin-left:auto; font-weight:800; color:var(--navy); flex:none;}
+.remind{display:flex; gap:11px; background:#FFF8E8; border:1px solid #F2D492; border-radius:14px; padding:12px; margin-top:10px; font-size:13.5px; line-height:1.45; color:#5C430A;}
+.remind b{color:#43300A;}
+
+/* more */
+.ref-card{background:var(--navy); color:#fff; border-radius:16px; padding:17px; position:relative; overflow:hidden;}
+.ref-card::after{content:""; position:absolute; right:0; top:0; bottom:0; width:8px; background:conic-gradient(#fff 25%, var(--navy2) 0 50%, #fff 0 75%, var(--navy2) 0) 0 0/8px 8px; opacity:.85;}
+.ref-card .rc-code{font-family:"Barlow Condensed"; font-size:30px; font-weight:700; letter-spacing:.1em; margin:6px 0 4px;}
+.ref-card p{margin:0; font-size:13.5px; color:#C9DBF8; line-height:1.5; max-width:92%;}
+.copy-btn{margin-top:12px; background:#fff; color:var(--navy); border:none; font:inherit; font-weight:800; font-size:13.5px; padding:9px 14px; border-radius:99px; cursor:pointer;}
+.stars-in{display:flex; gap:6px; margin:10px 0 4px;}
+.stars-in button{background:none; border:none; cursor:pointer; padding:2px;}
+.setting{display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line);}
+.setting:last-child{border-bottom:none;}
+.setting b{font-size:14.5px; display:block;}
+.setting span{font-size:12.5px; color:var(--mut); display:block; line-height:1.4;}
+.tgl{margin-left:auto; flex:none; width:48px; height:28px; border-radius:99px; background:#CBD8EA; border:none; cursor:pointer; position:relative; transition:background .2s;}
+.tgl::after{content:""; position:absolute; top:3px; left:3px; width:22px; height:22px; border-radius:50%; background:#fff; transition:left .2s; box-shadow:0 1px 4px rgba(0,0,0,.25);}
+.tgl.on{background:var(--blue);}
+.tgl.on::after{left:23px;}
+
+/* provider */
+.offer{border:1px solid var(--line); border-radius:16px; background:#fff; padding:14px; margin-bottom:11px;}
+.offer .o-top{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
+.offer b{font-size:16px;}
+.offer p{margin:0 0 10px; font-size:13.5px; color:var(--mut); line-height:1.5;}
+.pay{margin-left:auto; font-family:"Barlow Condensed"; font-size:21px; font-weight:700; color:var(--green);}
+.route-stop{display:flex; gap:12px; padding:11px 0; border-bottom:1px solid var(--line);}
+.route-stop:last-child{border-bottom:none;}
+.route-stop .rs-n{width:28px; height:28px; border-radius:50%; background:var(--navy); color:#fff; font-weight:800; font-size:13px; display:grid; place-items:center; flex:none;}
+.route-stop b{font-size:14.5px; display:block;}
+.route-stop span{font-size:12.5px; color:var(--mut); display:block;}
+.earn-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.earn{background:#fff; border:1px solid var(--line); border-radius:14px; padding:13px;}
+.earn b{font-family:"Barlow Condensed"; font-size:26px; color:var(--navy); display:block; line-height:1;}
+.earn span{font-size:12px; color:var(--mut); font-weight:700; text-transform:uppercase; letter-spacing:.05em;}
+.demo-tag{font-size:10.5px; font-weight:800; letter-spacing:.06em; background:var(--amber-bg); color:var(--amber); padding:3px 7px; border-radius:99px; text-transform:uppercase;}
+
+/* bottom nav */
+.bnav{flex:none; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 6px calc(10px + env(safe-area-inset-bottom)); position:relative; z-index:5;}
+.bnav button{flex:1; background:none; border:none; font:inherit; cursor:pointer; color:#8496B3; font-size:11px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 0; border-radius:10px;}
+.bnav button.on{color:var(--navy);}
+.bnav button.on svg{color:var(--blue);}
+.bnav .bookfab{width:52px; height:52px; border-radius:50%; background:var(--red); color:#fff !important; display:grid; place-items:center; margin-top:-26px; box-shadow:0 10px 20px -6px rgba(232,50,46,.6); border:3.5px solid #fff;}
+.bnav .fabwrap{display:flex; flex-direction:column; align-items:center; gap:3px;}
+
+/* sheet + toast */
+.sheet{position:absolute; inset:0; background:rgba(5,15,35,.55); display:none; align-items:flex-end; z-index:40;}
+.sheet.on{display:flex;}
+.sheet .sh-card{background:#fff; width:100%; border-radius:22px 22px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom)); max-height:82%; overflow-y:auto; animation:up .25s ease;}
+@keyframes up{from{transform:translateY(30px); opacity:.5;} to{transform:none; opacity:1;}}
+@media (prefers-reduced-motion: reduce){ .sheet .sh-card{animation:none;} }
+.sheet h4{font-family:"Barlow Condensed"; font-size:23px; text-transform:uppercase; color:var(--navy); margin:0 0 6px;}
+.sheet p, .sheet li{font-size:14.5px; line-height:1.55; color:#33445E;}
+.sheet ol{padding-left:20px; margin:8px 0;}
+.toast{position:absolute; left:50%; bottom:104px; transform:translate(-50%,20px); background:var(--navy); color:#fff; font-size:13.5px; font-weight:700; padding:11px 16px; border-radius:99px; opacity:0; pointer-events:none; transition:all .3s; z-index:50; box-shadow:0 12px 24px -8px rgba(5,20,50,.6); max-width:88%; text-align:center;}
+.toast.on{opacity:1; transform:translate(-50%,0);}
+.empty-note{text-align:center; color:var(--mut); font-size:14px; padding:18px 10px; line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ===== Desktop download / promo panel (the download page) ===== -->
+  <aside class="promo" aria-label="About the Appliance Pro app">
+    <span class="flag"><span class="checkers"></span> Appliance Pro App · by Top Speed Appliance</span>
+    <h1>Appliance Pro <em>App</em></h1>
+    <p class="tag">The Faster, The Better.</p>
+    <p>Book a repair in under a minute, send a photo for AI triage, track your technician live, and keep every appliance you own in one garage. Providers get the same app — offers, route, and earnings in their pocket.</p>
+    <p><span class="stars">★ 4.8</span> from 2,500 reviews · Serving 12 Broward County areas · <b>$99 diagnostic</b>, collected at booking and credited toward your repair.</p>
+    <div class="dl-grid">
+      <button class="dl-card" data-platform="ios" onclick="openInstall('ios')"><b>iPhone</b><span>Share → Add to Home Screen</span></button>
+      <button class="dl-card" data-platform="android" onclick="openInstall('android')"><b>Android</b><span>Install prompt or browser menu</span></button>
+      <button class="dl-card" data-platform="web" onclick="openInstall('web')"><b>Web App</b><span>Use it right here, nothing to install</span></button>
+    </div>
+    <ul class="feat">
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> No app store, no download wait — it installs from the browser</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> One app, two sides — customers and the provider network</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Every booking flows into Service Setters &amp; the Book OS dispatch board</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Try the phone on the right — every screen and button works</li>
+    </ul>
+    <div class="comm-promo">
+      <b style="display:block; font-size:16px; margin-bottom:4px;">Appliance Pro Commercial Accounts</b>
+      <span style="font-size:14px; color:var(--page-mut); line-height:1.5; display:block;">For restaurants, hotels, laundromats, healthcare, offices and facilities — equipment registry, priority dispatch, preventive maintenance, and one consolidated monthly invoice, all inside the Appliance Pro App.</span>
+    </div>
+    <p class="fine">Questions? Call <a href="tel:+19549317997">954-931-7997</a> — a real person at Top Speed Appliance answers.</p>
+  </aside>
+
+  <!-- ===== Phone ===== -->
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="app" id="app">
+
+        <header class="ahead">
+          <div class="brandrow">
+            <div class="logo">AP</div>
+            <div class="bn"><b>APPLIANCE PRO</b><span>Appliance Pro App</span></div>
+            <a class="callbtn" href="tel:+19549317997"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>954-931-7997</a>
+          </div>
+          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> App preview with demo data — bookings shown here don't save into the Service OS yet.</div>
+          <div class="mode-toggle" role="tablist" aria-label="App mode">
+            <button id="mode-customer" class="on" onclick="setMode('customer')">Customer</button>
+            <button id="mode-provider" onclick="setMode('provider')">Provider Mode</button>
+          </div>
+        </header>
+
+        <div class="install-banner" id="installBanner">
+          <div class="ib-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16"/></svg></div>
+          <div style="flex:1; min-width:0;"><b>Add Appliance Pro to your home screen</b><span id="installHint">No app store needed — installs in seconds.</span></div>
+          <button class="ib-go" onclick="openInstall()">Install</button>
+          <button class="ib-x" onclick="document.getElementById('installBanner').style.display='none'" aria-label="Dismiss install banner">×</button>
+        </div>
+
+        <main class="screens" id="screens">
+
+        <!-- ================= HOME (customer) ================= -->
+        <section class="screen on" id="scr-home">
+          <h2 class="greet">Hey Ramone — what needs fixing?</h2>
+          <p class="sub">Same-day slots across Broward County. A Service Setter confirms every booking by text.</p>
+          <div class="chip99">
+            <div class="amt">$99</div>
+            <p><b>Diagnostic, collected at booking</b> — and <b>credited in full toward your repair</b>. No surprises, ever.</p>
+          </div>
+          <div class="grid9" id="applianceGrid"></div>
+
+          <h3 class="sec">Your active job</h3>
+          <div id="activeJobSlot"></div>
+
+          <h3 class="sec">Why Appliance Pro</h3>
+          <div class="card" style="display:grid; gap:10px;">
+            <div style="display:flex; gap:10px; font-size:14px;"><span class="pill blue">★ 4.8</span><span style="align-self:center;">Rated by <b>2,500 Broward customers</b></span></div>
+            <div style="display:flex; gap:10px; font-size:14px;"><span class="pill green">90-DAY</span><span style="align-self:center;">Warranty on parts &amp; labor</span></div>
+            <div style="display:flex; gap:10px; font-size:14px;"><span class="pill amber">40+</span><span style="align-self:center;">Brands serviced — Samsung, LG, GE, Whirlpool &amp; more</span></div>
+          </div>
+
+          <h3 class="sec">Appliance Pro Commercial Accounts</h3>
+          <div class="card">
+            <b style="font-size:15px;">For businesses &amp; facilities</b>
+            <p class="sub" style="margin:5px 0 10px;">Restaurants, hotels, laundromats and facilities get an equipment registry, priority dispatch, and one monthly invoice with an Appliance Pro Commercial Account.</p>
+            <button class="btn ghost small" onclick="showTab('more')">See commercial accounts</button>
+          </div>
+        </section>
+
+        <!-- ================= BOOK ================= -->
+        <section class="screen" id="scr-book">
+          <h2 class="greet">Book a repair</h2>
+          <p class="sub">Four quick steps. Under a minute.</p>
+          <div class="steps-bar" id="stepsBar"><i class="done"></i><i></i><i></i><i></i></div>
+
+          <div class="bstep on" id="bstep-1">
+            <label class="fl" style="margin-top:0;">1 · Which appliance?</label>
+            <div class="grid9" id="bookGrid"></div>
+          </div>
+
+          <div class="bstep" id="bstep-2">
+            <label class="fl" style="margin-top:0;">2 · What's it doing?</label>
+            <div class="chips" id="issueChips">
+              <button class="chip" onclick="pickIssue(this)">Not cooling / not heating</button>
+              <button class="chip" onclick="pickIssue(this)">Making noise</button>
+              <button class="chip" onclick="pickIssue(this)">Leaking water</button>
+              <button class="chip" onclick="pickIssue(this)">Won't start / no power</button>
+              <button class="chip" onclick="pickIssue(this)">Error code on display</button>
+              <button class="chip" onclick="pickIssue(this)">Something else</button>
+            </div>
+            <label class="fl">Add details (optional)</label>
+            <textarea id="issueText" rows="2" placeholder="e.g. Fridge is warm, freezer still cold. Started Tuesday."></textarea>
+            <label class="fl">Photo helps us triage faster</label>
+            <div class="photo-box" id="photoBox" onclick="document.getElementById('photoInput').click()">
+              <b>Attach a photo</b><span>Model tag, error code, or the problem itself — Speedy AI takes a first look.</span>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" hidden>
+            <div class="photo-preview" id="photoPreview">
+              <img id="photoImg" alt="Your attached appliance photo">
+              <span class="pp-tag">Photo attached</span>
+            </div>
+            <button class="btn ghost small" style="margin-top:9px;" onclick="useSamplePhoto()">Use a sample photo instead</button>
+            <div class="ai-note" id="aiNote"><b>Speedy AI first look:</b> Photo received. Likely a cooling/airflow issue — a setter will confirm the diagnosis and the tech will bring the common parts for this model.</div>
+            <div class="btnrow" style="margin-top:16px;">
+              <button class="btn ghost" onclick="bookGo(1)">Back</button>
+              <button class="btn blue" onclick="bookGo(3)">Continue</button>
+            </div>
+          </div>
+
+          <div class="bstep" id="bstep-3">
+            <label class="fl" style="margin-top:0;">3 · Pick a day</label>
+            <div class="chips" id="dayChips"></div>
+            <label class="fl">Pick a window</label>
+            <div class="chips" id="windowChips">
+              <button class="chip" onclick="pickWindow(this)">8–10 AM</button>
+              <button class="chip" onclick="pickWindow(this)">10 AM–12 PM</button>
+              <button class="chip" onclick="pickWindow(this)">12–2 PM</button>
+              <button class="chip" onclick="pickWindow(this)">2–4 PM</button>
+              <button class="chip" onclick="pickWindow(this)">4–6 PM</button>
+            </div>
+            <p class="sub" style="margin-top:12px;">Your tech texts when they're on the way — no waiting around all day.</p>
+            <div class="btnrow">
+              <button class="btn ghost" onclick="bookGo(2)">Back</button>
+              <button class="btn blue" id="toConfirm" onclick="bookGo(4)" disabled>Continue</button>
+            </div>
+          </div>
+
+          <div class="bstep" id="bstep-4">
+            <label class="fl" style="margin-top:0;">4 · Confirm booking</label>
+            <div class="card">
+              <div class="sumrow"><span>Appliance</span><b id="sumAppliance">—</b></div>
+              <div class="sumrow"><span>Issue</span><b id="sumIssue">—</b></div>
+              <div class="sumrow"><span>When</span><b id="sumWhen">—</b></div>
+              <div class="sumrow"><span>Photo</span><b id="sumPhoto">None</b></div>
+              <div class="sumrow"><span>Diagnostic due today</span><b>$99.00</b></div>
+              <div class="sumrow"><span>Credited toward repair</span><b style="color:var(--green);">−$99.00</b></div>
+            </div>
+            <div class="remind" style="margin-top:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><div><b>How the $99 works:</b> it's collected at booking to hold your slot, then credited in full toward the repair when you approve the fix. If you decline the repair, the $99 covers the diagnosis visit. 90-day warranty on parts &amp; labor.</div></div>
+            <div class="btnrow" style="margin-top:16px;">
+              <button class="btn ghost" onclick="bookGo(3)">Back</button>
+              <button class="btn primary" onclick="confirmBooking()">Confirm — $99 due</button>
+            </div>
+          </div>
+
+          <div class="bstep" id="bstep-5">
+            <div class="success-hero">
+              <div class="ok"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg></div>
+              <h2 class="greet" style="text-align:center;">You're booked</h2>
+              <p class="sub" style="text-align:center;">Your reference code</p>
+              <div class="refcode" id="refCode">TS-000000</div>
+              <p class="sub" style="text-align:center;"><b style="color:var(--navy);">A Service Setter will confirm by text</b> shortly, and your tech's details land in the Track tab once matched.</p>
+            </div>
+            <button class="btn blue" onclick="showTab('track')">Track my job</button>
+            <button class="btn ghost" style="margin-top:9px;" onclick="resetBooking()">Book another repair</button>
+          </div>
+        </section>
+
+        <!-- ================= TRACK ================= -->
+        <section class="screen" id="scr-track">
+          <h2 class="greet">Track your job</h2>
+          <p class="sub" id="trackSub">Refrigerator repair · <span id="trackRef">TS-DEMO42</span></p>
+          <div class="stages" id="stages"></div>
+          <button class="btn ghost small" id="advanceBtn" onclick="advanceStage()">Simulate: tech moves to next stage</button>
+
+          <h3 class="sec">Your technician</h3>
+          <div class="card techcard">
+            <div class="avatar">MT</div>
+            <div style="flex:1;">
+              <b>Marcus T. <span class="demo-tag">Demo</span></b>
+              <span>Appliance Pro provider · Refrigeration specialist<br>Background-checked · Insured · 40+ brands</span>
+            </div>
+            <a class="mini-btn" style="text-decoration:none;" href="tel:+19549317997">Call office</a>
+          </div>
+
+          <h3 class="sec">Text updates</h3>
+          <div class="card"><div class="feed" id="textFeed"></div></div>
+        </section>
+
+        <!-- ================= GARAGE ================= -->
+        <section class="screen" id="scr-garage">
+          <h2 class="greet">My Appliances</h2>
+          <p class="sub">Your garage — every appliance, its warranty, and its service history in one place. <span class="demo-tag">Demo data</span></p>
+          <div class="card" id="garageList" style="padding-top:4px; padding-bottom:6px;"></div>
+
+          <div class="remind"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M12 8v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z"/></svg><div><b>Maintenance reminder:</b> your Samsung fridge filter is due in ~3 weeks, and the dryer vent cleaning is coming up. Smart Maintenance Plan members get these handled automatically.</div></div>
+
+          <h3 class="sec">Service history</h3>
+          <div class="card" style="padding-top:6px; padding-bottom:6px;">
+            <div class="hist"><div><b>Dishwasher — not draining</b><span>Oct 12, 2026 · Bosch · Marcus T.</span></div><span class="pill green">Done</span><span class="h-amt">$214</span></div>
+            <div class="hist"><div><b>Washer — drain pump replaced</b><span>Aug 3, 2026 · LG · Under warranty check</span></div><span class="pill green">Done</span><span class="h-amt">$268</span></div>
+            <div class="hist"><div><b>Fridge — diagnostic visit</b><span>May 19, 2026 · Samsung · $99 credited to repair</span></div><span class="pill green">Done</span><span class="h-amt">$99 → $0</span></div>
+          </div>
+          <p class="sub" style="margin-top:12px;">History amounts are sample figures in this preview.</p>
+        </section>
+
+        <!-- ================= MORE ================= -->
+        <section class="screen" id="scr-more">
+          <h2 class="greet">Account</h2>
+          <p class="sub">Referrals, reviews, your plan, and app settings.</p>
+
+          <div class="ref-card">
+            <span class="pill" style="background:rgba(255,255,255,.16); color:#fff;">REFERRAL CODE</span>
+            <div class="rc-code" id="refCodeCard">TS-REF-7K2P</div>
+            <p>Give your code, neighbors book with it. Their booking lands tagged to you — and completed jobs send the next code out automatically. That's the flywheel working.</p>
+            <button class="copy-btn" onclick="copyRef()">Copy my code</button>
+          </div>
+
+          <h3 class="sec">Review your last job</h3>
+          <div class="card">
+            <b style="font-size:15px;">Dishwasher repair — Oct 12</b>
+            <p class="sub" style="margin:4px 0 0;">How did Marcus do? Reviews lift Appliance Pro's rankings and bring the next neighbor in.</p>
+            <div class="stars-in" id="starsIn">
+              <button onclick="rate(1)" aria-label="1 star"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
+              <button onclick="rate(2)" aria-label="2 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
+              <button onclick="rate(3)" aria-label="3 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
+              <button onclick="rate(4)" aria-label="4 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
+              <button onclick="rate(5)" aria-label="5 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
+            </div>
+            <p class="sub" id="rateMsg" style="margin:0;">Tap to rate — in the live app this posts to Google.</p>
+          </div>
+
+          <h3 class="sec">Smart Maintenance Plan</h3>
+          <div class="card">
+            <b style="font-size:15.5px;">Never think about filters &amp; vents again</b>
+            <p class="sub" style="margin:5px 0 10px;">Scheduled maintenance for everything in your garage, priority booking windows, and reminders before small issues turn into breakdowns. Plan pricing is confirmed at signup — nothing is charged from this preview.</p>
+            <button class="btn blue small" onclick="toast('A Service Setter will call with plan options — 954-931-7997')">Ask about the plan</button>
+          </div>
+
+          <h3 class="sec">Notifications</h3>
+          <div class="card" style="padding-top:4px; padding-bottom:4px;">
+            <div class="setting"><div><b>Text updates</b><span>Booking confirmations, en-route and completion texts</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle text updates"></button></div>
+            <div class="setting"><div><b>Day-before reminder</b><span>A reminder the evening before your window</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle day-before reminder"></button></div>
+            <div class="setting"><div><b>Maintenance reminders</b><span>Filters, vents, and seasonal check-ups</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle maintenance reminders"></button></div>
+            <div class="setting"><div><b>Neighbor offers</b><span>Occasional referral and seasonal offers</span></div><button class="tgl" onclick="this.classList.toggle('on')" aria-label="Toggle neighbor offers"></button></div>
+          </div>
+
+          <h3 class="sec">Appliance Pro Commercial Accounts</h3>
+          <div class="card">
+            <b style="font-size:15.5px;">Running a business? Open a commercial account</b>
+            <p class="sub" style="margin:5px 0 10px;">Appliance Pro Commercial Accounts are for restaurants, hotels, laundromats, healthcare, offices, retail and facilities. Every unit goes in an equipment registry with asset tag, brand, serial and service history, critical equipment gets priority dispatch through Service Setters, and all work rolls into one consolidated monthly invoice — no pile of tickets. Commercial work is quoted per facility; the residential $99 diagnostic terms don't apply.</p>
+            <a class="btn blue small" style="text-decoration:none;" href="tel:+19549317997">Call about a commercial account — 954-931-7997</a>
+          </div>
+
+          <h3 class="sec">Get the app</h3>
+          <div class="card">
+            <b style="font-size:15.5px;">Install Appliance Pro App — free</b>
+            <p class="sub" style="margin:5px 0 10px;" id="getAppText">This preview is the app. Install it to your home screen and it opens full-screen, works offline for your garage and history, and keeps your bookings one tap away.</p>
+            <button class="btn primary small" onclick="openInstall()">How to install</button>
+          </div>
+
+          <a class="btn primary" style="margin-top:16px;" href="tel:+19549317997">Call Appliance Pro — 954-931-7997</a>
+          <p class="sub" style="text-align:center; margin-top:14px;">Appliance Pro App · Top Speed Appliance · Broward County, FL<br>The Faster, The Better. · App v1.0 preview</p>
+        </section>
+
+        <!-- ================= PROVIDER ================= -->
+        <section class="screen" id="scr-provider">
+          <h2 class="greet">Provider day</h2>
+          <p class="sub">Offers, your route, and earnings — the same app, network side. <span class="demo-tag">Demo data</span></p>
+
+          <h3 class="sec" style="margin-top:0;">New offers <span class="pill blue" id="offerCount">3 waiting</span></h3>
+          <div id="offerList"></div>
+
+          <h3 class="sec">Today's route</h3>
+          <div class="card" id="routeList" style="padding-top:6px; padding-bottom:6px;"></div>
+
+          <h3 class="sec">Earnings <span class="demo-tag">Demo</span></h3>
+          <div class="earn-grid">
+            <div class="earn"><b>$386</b><span>Today</span></div>
+            <div class="earn"><b>$1,940</b><span>This week</span></div>
+            <div class="earn"><b>4.9</b><span>Job rating (demo)</span></div>
+            <div class="earn"><b>96%</b><span>On-time (demo)</span></div>
+          </div>
+          <p class="sub" style="margin-top:10px;">Earnings figures are placeholders in this preview. In the live network, payouts settle through the Service OS after job completion and customer approval.</p>
+          <a class="btn ghost" style="margin-top:6px;" href="tel:+19549317997">Call dispatch — 954-931-7997</a>
+        </section>
+
+        </main>
+
+        <!-- bottom nav -->
+        <nav class="bnav" id="bnav">
+          <button data-tab="home" class="on" onclick="showTab('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M3 11l9-8 9 8v9a2 2 0 01-2 2h-4v-7h-6v7H5a2 2 0 01-2-2z"/></svg>Home</button>
+          <button data-tab="track" onclick="showTab('track')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M12 21s-7-5.5-7-11a7 7 0 1114 0c0 5.5-7 11-7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>Track</button>
+          <div class="fabwrap"><button data-tab="book" onclick="showTab('book')" aria-label="Book a repair"><span class="bookfab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span></button><span style="font-size:11px; font-weight:700; color:#8496B3;">Book</span></div>
+          <button data-tab="garage" onclick="showTab('garage')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4 8l8-4 8 4v11a1 1 0 01-1 1H5a1 1 0 01-1-1z"/><path d="M4 8l8 4 8-4M12 12v8"/></svg>Garage</button>
+          <button data-tab="more" onclick="showTab('more')"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>More</button>
+        </nav>
+
+        <!-- install sheet -->
+        <div class="sheet" id="installSheet" onclick="if(event.target===this) closeInstall()">
+          <div class="sh-card">
+            <h4 id="installTitle">Install Appliance Pro App</h4>
+            <p id="installIntro">Appliance Pro is a PWA — a real app that installs straight from your browser. No app store, no big download.</p>
+            <div id="installSteps"></div>
+            <button class="btn primary" style="margin-top:14px;" onclick="closeInstall()">Got it</button>
+            <button class="btn ghost" style="margin-top:9px;" onclick="closeInstall()">Maybe later</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ data ============ */
+var APPLIANCES = [
+  {name:"Refrigerator", icon:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M6 10h12M9 6.5v2M9 13v3"/>'},
+  {name:"Washer", icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4.5"/><path d="M7 6h.01M10 6h4"/>'},
+  {name:"Dryer", icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><circle cx="12" cy="13" r="4.5"/><path d="M9.5 13c1.5-1.5 3.5 1.5 5 0M7 6h.01"/>'},
+  {name:"Oven & Range", icon:'<rect x="4" y="5" width="16" height="16" rx="2"/><circle cx="8.5" cy="8.5" r="1.3"/><circle cx="15.5" cy="8.5" r="1.3"/><rect x="7" y="12.5" width="10" height="5.5" rx="1"/>'},
+  {name:"Dishwasher", icon:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 8h16M8 12v3M12 11v4M16 12v3M7 5.5h3"/>'},
+  {name:"Freezer", icon:'<rect x="6" y="3" width="12" height="18" rx="2"/><path d="M12 9v7M9 10.5l6 4M15 10.5l-6 4M9 6.5h.01"/>'},
+  {name:"Ice Maker", icon:'<rect x="5" y="8" width="9" height="9" rx="1.5" transform="rotate(-8 9.5 12.5)"/><rect x="12" y="5" width="8" height="8" rx="1.5" transform="rotate(10 16 9)"/>'},
+  {name:"Microwave", icon:'<rect x="3" y="6" width="18" height="12" rx="2"/><rect x="6" y="9" width="9" height="6" rx="1"/><path d="M18 9.5h.01M18 13h.01"/>'},
+  {name:"Cooktop", icon:'<rect x="3" y="7" width="18" height="11" rx="2"/><circle cx="8.5" cy="12.5" r="2.4"/><circle cx="15.5" cy="12.5" r="2.4"/><path d="M6 20h.01M18 20h.01"/>'}
+];
+var GARAGE = [
+  {name:"Refrigerator", detail:"Samsung RF28R7351SR · French door", warranty:"Parts warranty to Mar 2027", wpill:"green", icon:0},
+  {name:"Washer", detail:"LG WM4000HWA · Front load", warranty:"Warranty expired Aug 2026", wpill:"amber", icon:1},
+  {name:"Dryer", detail:"LG DLEX4000W · Electric", warranty:"Appliance Pro 90-day to Dec 2026", wpill:"green", icon:2},
+  {name:"Dishwasher", detail:"Bosch SHS843AF5N · Built-in", warranty:"Appliance Pro 90-day to Jan 2027", wpill:"green", icon:4},
+  {name:"Oven & Range", detail:"GE JB645RKSS · Electric range", warranty:"No active warranty", wpill:"gray", icon:3}
+];
+var STAGES = [
+  {t:"Booked", s:"Request received by Appliance Pro"},
+  {t:"Setter confirmed", s:"Service Setters confirmed your window by text"},
+  {t:"Provider matched", s:"Marcus T. assigned — refrigeration specialist"},
+  {t:"En route", s:"Your tech is on the way — live text updates on"},
+  {t:"On site", s:"Diagnosis underway at your home"},
+  {t:"Done", s:"Repair complete — review & referral code sent"}
+];
+var FEED = [
+  {time:"9:02 AM", text:"<b>Appliance Pro:</b> Booking confirmed for today, 10 AM–12 PM window. Reply Y to confirm."},
+  {time:"9:15 AM", text:"<b>Service Setters:</b> You're matched with Marcus T., refrigeration specialist. Photo diagnosis received — he's bringing the common parts."},
+  {time:"10:04 AM", text:"<b>Appliance Pro:</b> Marcus is on the way. You'll get a text when he's close."}
+];
+var OFFERS = [
+  {id:1, title:"Refrigerator — not cooling", meta:"Fort Lauderdale · 2.1 mi · Today 12–2 PM window", note:"Photo triage: likely fan/airflow. Customer approved $99 diagnostic.", pay:"$145"},
+  {id:2, title:"Washer — won't drain", meta:"Sunrise · 4.8 mi · Today 2–4 PM window", note:"Returning customer. Model on file: LG WM4000HWA.", pay:"$120"},
+  {id:3, title:"Dishwasher — leaking", meta:"Plantation · 3.3 mi · Tomorrow 8–10 AM window", note:"Residential account — not an Appliance Pro Commercial Accounts job. Gate access notes attached.", pay:"$110"}
+];
+var ROUTE = [
+  {n:1, title:"Washer repair — Sunrise", meta:"8–10 AM · In progress · Job TS-DEMO18"},
+  {n:2, title:"Oven diagnostic — Davie", meta:"10 AM–12 PM · Confirmed"},
+  {n:3, title:"Fridge repair — Fort Lauderdale", meta:"12–2 PM · Matched, awaiting your accept"}
+];
+
+/* ============ state ============ */
+var mode = "customer", currentTab = "home";
+var booking = {appliance:null, issue:null, day:null, window:null, photo:false, ref:null};
+var stageIdx = 3; /* en route */
+var deferredPrompt = null;
+
+function svgIcon(paths, size){
+  return '<svg width="'+(size||30)+'" height="'+(size||30)+'" viewBox="0 0 24 24" fill="none" stroke="#0A265C" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+paths+'</svg>';
+}
+function toast(msg){
+  var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on');
+  setTimeout(function(){ t.classList.remove('on'); }, 2600);
+}
+
+/* ============ grids ============ */
+function buildGrids(){
+  var html = APPLIANCES.map(function(a,i){
+    return '<button class="appl" onclick="startBooking('+i+')">'+svgIcon(a.icon)+'<span>'+a.name+'</span></button>';
+  }).join('');
+  document.getElementById('applianceGrid').innerHTML = html;
+  document.getElementById('bookGrid').innerHTML = html;
+}
+function buildGarage(){
+  document.getElementById('garageList').innerHTML = GARAGE.map(function(g,i){
+    return '<div class="appl-row"><div class="a-ic">'+svgIcon(APPLIANCES[g.icon].icon,24)+'</div><div><b>'+g.name+'</b><span>'+g.detail+'</span><span class="pill '+g.wpill+'" style="margin-top:4px;">'+g.warranty+'</span></div><button class="mini-btn" onclick="bookAgain('+i+')">Book again</button></div>';
+  }).join('');
+}
+function buildDays(){
+  var days = [], names = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var now = new Date();
+  for(var i=0;i<5;i++){ var d = new Date(now.getTime() + (i+1)*864e5); days.push((i===0?"Tomorrow · ":"")+names[d.getDay()]+" "+months[d.getMonth()]+" "+d.getDate()); }
+  document.getElementById('dayChips').innerHTML = days.map(function(d){ return '<button class="chip" onclick="pickDay(this)">'+d+'</button>'; }).join('');
+}
+
+/* ============ home active job ============ */
+function renderActiveJob(){
+  var slot = document.getElementById('activeJobSlot');
+  var ref = booking.ref || "TS-DEMO42";
+  var when = booking.ref ? (booking.day+" · "+booking.window) : "Today · 10 AM–12 PM";
+  var appl = booking.ref ? booking.appliance : "Refrigerator";
+  var pct = Math.round((stageIdx+1)/STAGES.length*100);
+  slot.innerHTML = '<div class="jobcard"><div class="jc-top"><b>'+appl+' repair</b><span class="ref">'+ref+'</span></div><div class="jc-body"><span class="pill blue"><span class="dot"></span>'+STAGES[stageIdx].t+'</span><div class="progress"><i style="width:'+pct+'%"></i></div><p class="jc-meta">'+when+' · Marcus T. is your tech.<br>'+STAGES[stageIdx].s+'</p><button class="btn blue small" style="margin-top:10px;" onclick="showTab(\'track\')">Track live</button></div></div>';
+}
+
+/* ============ track ============ */
+function renderTrack(){
+  document.getElementById('trackRef').textContent = booking.ref || "TS-DEMO42";
+  document.getElementById('stages').innerHTML = STAGES.map(function(s,i){
+    var cls = i < stageIdx ? "done" : (i === stageIdx ? "now" : "");
+    var ic = i < stageIdx ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg>' : (i+1);
+    return '<div class="stage '+cls+'"><div class="st-ic">'+ic+'</div><div><b>'+s.t+'</b><span>'+s.s+'</span></div></div>';
+  }).join('');
+  document.getElementById('textFeed').innerHTML = FEED.map(function(m){
+    return '<div class="msg"><div class="m-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B63CE" stroke-width="2"><path d="M21 12a8 8 0 01-8 8H4l2-3a8 8 0 1115-5z"/></svg></div><div><p>'+m.text+'</p><time>'+m.time+'</time></div></div>';
+  }).join('');
+  var btn = document.getElementById('advanceBtn');
+  btn.disabled = stageIdx >= STAGES.length-1;
+  btn.textContent = stageIdx >= STAGES.length-1 ? "Job complete — nice work" : "Simulate: tech moves to next stage";
+}
+function advanceStage(){
+  if(stageIdx >= STAGES.length-1) return;
+  stageIdx++;
+  var msgs = {
+    4:"<b>Appliance Pro:</b> Marcus has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
+    5:"<b>Appliance Pro:</b> Repair complete and tested. Your review link and referral code TS-REF-7K2P are on the More tab. Thanks for choosing Appliance Pro!"
+  };
+  if(msgs[stageIdx]) FEED.push({time:"Now", text:msgs[stageIdx]});
+  renderTrack(); renderActiveJob();
+  toast("Stage updated: "+STAGES[stageIdx].t);
+}
+
+/* ============ tabs & mode ============ */
+function showTab(tab){
+  if(mode === "provider" && tab !== "home" && tab !== "more"){ tab = "home"; }
+  currentTab = tab;
+  var target = (mode === "provider" && tab === "home") ? "provider" : tab;
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById('scr-'+target).classList.add('on');
+  document.querySelectorAll('#bnav button[data-tab]').forEach(function(b){ b.classList.toggle('on', b.dataset.tab === tab); });
+  document.getElementById('screens').scrollTop = 0;
+  if(tab === 'track') renderTrack();
+}
+function setMode(m){
+  mode = m;
+  document.getElementById('mode-customer').classList.toggle('on', m==='customer');
+  document.getElementById('mode-provider').classList.toggle('on', m==='provider');
+  toast(m === 'provider' ? "Provider Mode — network side of the app" : "Customer view");
+  showTab('home');
+}
+
+/* ============ booking flow ============ */
+function startBooking(i){
+  booking.appliance = APPLIANCES[i].name;
+  showTab('book'); bookGo(2); syncBookGrid();
+  toast(APPLIANCES[i].name+" selected");
+}
+function bookAgain(gi){
+  booking.appliance = GARAGE[gi].name;
+  showTab('book'); bookGo(2); syncBookGrid();
+  toast("Rebooking your "+GARAGE[gi].name+" — same details on file");
+}
+function syncBookGrid(){
+  document.querySelectorAll('#bookGrid .appl').forEach(function(el,i){
+    el.style.borderColor = APPLIANCES[i].name === booking.appliance ? "var(--blue)" : "";
+    el.style.background = APPLIANCES[i].name === booking.appliance ? "var(--soft)" : "";
+  });
+}
+function bookGo(step){
+  document.querySelectorAll('.bstep').forEach(function(s){ s.classList.remove('on'); });
+  document.getElementById('bstep-'+step).classList.add('on');
+  document.querySelectorAll('#stepsBar i').forEach(function(bar,i){ bar.classList.toggle('done', i < Math.min(step,4)); });
+  if(step === 4){
+    document.getElementById('sumAppliance').textContent = booking.appliance || "Not selected";
+    document.getElementById('sumIssue').textContent = booking.issue || document.getElementById('issueText').value.trim() || "General diagnosis";
+    document.getElementById('sumWhen').textContent = (booking.day || "—") + (booking.window ? " · " + booking.window : "");
+    document.getElementById('sumPhoto').textContent = booking.photo ? "Attached — AI triage queued" : "None";
+  }
+  document.getElementById('screens').scrollTop = 0;
+}
+function pickIssue(el){
+  document.querySelectorAll('#issueChips .chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on'); booking.issue = el.textContent.trim();
+}
+function pickDay(el){
+  document.querySelectorAll('#dayChips .chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on'); booking.day = el.textContent.trim(); validateTime();
+}
+function pickWindow(el){
+  document.querySelectorAll('#windowChips .chip').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on'); booking.window = el.textContent.trim(); validateTime();
+}
+function validateTime(){ document.getElementById('toConfirm').disabled = !(booking.day && booking.window); }
+function showPhoto(src){
+  booking.photo = true;
+  document.getElementById('photoBox').style.display = 'none';
+  var pv = document.getElementById('photoPreview'); pv.style.display = 'block';
+  document.getElementById('photoImg').src = src;
+  document.getElementById('aiNote').style.display = 'block';
+}
+function useSamplePhoto(){
+  var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'><rect width='640' height='400' fill='%2310203C'/><rect x='245' y='50' width='150' height='300' rx='10' fill='%233E5C8F'/><line x1='245' y1='150' x2='395' y2='150' stroke='%2310203C' stroke-width='5'/><rect x='262' y='255' width='116' height='58' rx='6' fill='%23F5C542'/><text x='320' y='282' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='21' fill='%2310203C'>E-3 ERROR</text><text x='320' y='302' text-anchor='middle' font-family='Arial' font-size='12' fill='%2310203C'>SAMPLE PHOTO</text></svg>";
+  showPhoto("data:image/svg+xml;charset=utf-8,"+svg);
+}
+document.getElementById('photoInput').addEventListener('change', function(e){
+  if(e.target.files && e.target.files[0]) showPhoto(URL.createObjectURL(e.target.files[0]));
+});
+function confirmBooking(){
+  var chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", code = "TS-";
+  for(var i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+  booking.ref = code;
+  document.getElementById('refCode').textContent = code;
+  stageIdx = 1;
+  FEED.push({time:"Now", text:"<b>Appliance Pro:</b> New booking "+code+" received. A Service Setter will confirm by text shortly."});
+  bookGo(5); renderActiveJob();
+}
+function resetBooking(){
+  booking = {appliance:null, issue:null, day:null, window:null, photo:false, ref:booking.ref};
+  document.getElementById('photoBox').style.display = 'block';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('aiNote').style.display = 'none';
+  document.querySelectorAll('#issueChips .chip, #windowChips .chip, #dayChips .chip').forEach(function(c){ c.classList.remove('on'); });
+  syncBookGrid(); validateTime(); bookGo(1);
+}
+
+/* ============ more ============ */
+function copyRef(){
+  var code = document.getElementById('refCodeCard').textContent;
+  if(navigator.clipboard) navigator.clipboard.writeText(code).catch(function(){});
+  toast("Referral code "+code+" copied");
+}
+function rate(n){
+  document.querySelectorAll('#starsIn button svg').forEach(function(s,i){ s.setAttribute('fill', i < n ? '#F5A800' : '#D8E1EE'); });
+  document.getElementById('rateMsg').innerHTML = n >= 4
+    ? "<b style='color:var(--green);'>Thanks!</b> In the live app this opens your Google review — reviews power the flywheel."
+    : "Thanks for the honesty — a Service Setter will reach out to make it right.";
+}
+
+/* ============ provider ============ */
+function renderOffers(){
+  var list = document.getElementById('offerList');
+  if(!OFFERS.length){ list.innerHTML = '<div class="card empty-note">No new offers right now.<br>Accepted jobs appear on your route below.</div>'; }
+  else list.innerHTML = OFFERS.map(function(o){
+    return '<div class="offer"><div class="o-top"><b>'+o.title+'</b><span class="pay">'+o.pay+'</span></div><p>'+o.meta+'<br>'+o.note+'</p><div class="btnrow"><button class="btn ghost small" onclick="declineOffer('+o.id+')">Decline</button><button class="btn blue small" onclick="acceptOffer('+o.id+')">Accept job</button></div></div>';
+  }).join('');
+  document.getElementById('offerCount').textContent = OFFERS.length ? OFFERS.length+" waiting" : "All caught up";
+  document.getElementById('routeList').innerHTML = ROUTE.map(function(r){
+    return '<div class="route-stop"><div class="rs-n">'+r.n+'</div><div><b>'+r.title+'</b><span>'+r.meta+'</span></div></div>';
+  }).join('');
+}
+function acceptOffer(id){
+  var o = OFFERS.filter(function(x){ return x.id===id; })[0];
+  OFFERS = OFFERS.filter(function(x){ return x.id!==id; });
+  ROUTE.push({n:ROUTE.length+1, title:o.title.split(" — ")[0]+" — "+o.meta.split(" · ")[0], meta:o.meta.split(" · ").slice(1).join(" · ")+" · Accepted just now"});
+  renderOffers(); toast("Accepted — added to your route");
+}
+function declineOffer(id){
+  OFFERS = OFFERS.filter(function(x){ return x.id!==id; });
+  renderOffers(); toast("Declined — offer returns to dispatch");
+}
+
+/* ============ install / PWA ============ */
+function detectPlatform(){
+  var ua = navigator.userAgent || "";
+  if(/iphone|ipad|ipod/i.test(ua)) return "ios";
+  if(/android/i.test(ua)) return "android";
+  return "web";
+}
+var INSTALL_COPY = {
+  ios:{title:"Install on iPhone", steps:["Open this page in <b>Safari</b>.","Tap the <b>Share</b> button at the bottom of the screen.","Scroll and tap <b>Add to Home Screen</b>.","Tap <b>Add</b> — Appliance Pro now lives on your home screen like any app."]},
+  android:{title:"Install on Android", steps:["Open this page in <b>Chrome</b>.","If an <b>Install Appliance Pro</b> prompt appears, tap Install.","No prompt? Tap the <b>⋮ menu</b> → <b>Install app</b> / <b>Add to Home screen</b>.","Launch Appliance Pro from your home screen — full-screen, no browser bars."]},
+  web:{title:"Use the Web App", steps:["No install needed — the app runs right in this tab.","On a computer, most browsers show an <b>install icon</b> in the address bar to pin it as a desktop app.","Bookmark it and you're one tap from booking, tracking, and your garage."]}
+};
+function openInstall(platform){
+  var p = platform || detectPlatform();
+  var c = INSTALL_COPY[p];
+  document.getElementById('installTitle').textContent = c.title;
+  document.getElementById('installSteps').innerHTML = "<ol>"+c.steps.map(function(s){ return "<li>"+s+"</li>"; }).join("")+"</ol><p>Native App Store &amp; Google Play listings come later — the PWA is the app today, and it updates itself.</p>";
+  document.getElementById('installSheet').classList.add('on');
+}
+function closeInstall(){ document.getElementById('installSheet').classList.remove('on'); }
+window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); deferredPrompt = e; });
+
+/* detected-platform touches */
+(function(){
+  var p = detectPlatform();
+  document.querySelectorAll('.dl-card').forEach(function(c){ if(c.dataset.platform === p) c.classList.add('reco'); });
+  var hint = document.getElementById('installHint');
+  if(p === 'ios') hint.textContent = "No app store needed — Share → Add to Home Screen.";
+  else if(p === 'android') hint.textContent = "No app store needed — installs from Chrome in seconds.";
+  if(window.matchMedia && window.matchMedia('(display-mode: standalone)').matches){
+    document.getElementById('installBanner').style.display = 'none';
+  }
+})();
+
+/* ============ init ============ */
+buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack(); renderOffers();
+</script>
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
