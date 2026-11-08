@@ -8,11 +8,13 @@ import integrationsRouter from './routes/integrations.js';
 import bookosRouter from './routes/bookos.js';
 import flywheelRouter from './routes/flywheel.js';
 import commercialRouter from './routes/commercial.js';
+import speedyRouter from './routes/speedy.js';
 import appRouter from './routes/app.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
 import { providersStatus } from './services/senders.js';
+import { speedyStatus } from './services/speedy.js';
 import { SERVICE_AREAS } from './config/serviceAreas.js';
 
 try {
@@ -34,6 +36,9 @@ const corsOrigin = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 app.disable('x-powered-by');
 app.use(helmet());
 app.use(cors({ origin: corsOrigin, credentials: false }));
+// Photo diagnosis carries a base64 image, so that one path gets a larger
+// body limit; it must be registered before the global parser.
+app.use('/api/v1/speedy/diagnose', express.json({ limit: '6mb' }));
 app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);
@@ -52,6 +57,7 @@ app.get('/api/v1/health', async (req, res) => {
       referralsAndNotifications: 'in-memory (database move pending)',
     },
     notifications: providersStatus(),
+    speedy: speedyStatus(),
     timestamp: new Date().toISOString(),
   });
 });
@@ -66,6 +72,7 @@ app.use('/api/v1', integrationsRouter);
 app.use('/api/v1', bookosRouter);
 app.use('/api/v1', flywheelRouter);
 app.use('/api/v1', commercialRouter);
+app.use('/api/v1', speedyRouter);
 app.use('/api/v1', appRouter);
 
 app.use((req, res) => {

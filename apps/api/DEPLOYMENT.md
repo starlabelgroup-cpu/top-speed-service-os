@@ -21,6 +21,7 @@ own Vercel project from this repo.
 | `ALLOW_DEMO_AUTH` | `false` | Demo auth must be off in production. |
 | `CORS_ORIGIN` | `https://web-chi-olive-19dblh9azm.vercel.app` | Comma-separated list allowed — add the commercial platform origin when it deploys. |
 | `ALLOW_STAFF_REGISTRATION` | `true` **only for the bootstrap below**, then `false` | See step 3. |
+| `OPENAI_API_KEY` | Key from platform.openai.com → API keys | Powers Speedy (chat + photo diagnosis). Also connected to Pepper via the secure connector for verification. `OPENAI_MODEL` is optional (defaults to gpt-4o-mini; gpt-4o is the stronger vision option). |
 
 ## 3. First staff accounts (bootstrap, once)
 
