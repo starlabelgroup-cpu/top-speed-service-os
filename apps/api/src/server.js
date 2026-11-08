@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
+import authRouter from './routes/auth.js';
 import bookingsRouter from './routes/bookings.js';
 import integrationsRouter from './routes/integrations.js';
 import bookosRouter from './routes/bookos.js';
@@ -43,6 +44,7 @@ app.get('/api/v1/service-areas', (req, res) => {
   res.json({ data: SERVICE_AREAS });
 });
 
+app.use('/api/v1', authRouter);
 app.use('/api/v1', bookingsRouter);
 app.use('/api/v1', integrationsRouter);
 app.use('/api/v1', bookosRouter);

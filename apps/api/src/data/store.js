@@ -9,6 +9,10 @@ const providerCompanies = {
 };
 
 export const store = {
+  // Accounts for the login system (routes/auth.js). Mirrors the Prisma User
+  // model: id, companyId, email, passwordHash, names, phone, roles, active.
+  // Unique per (companyId, email) — enforced in the auth service.
+  users: new Map(),
   customers: new Map(),
   bookings: new Map(),
   dispatchAssignments: new Map(),
