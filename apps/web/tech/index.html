@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Top Speed Tech App — Service OS</title>
+<link rel="icon" href="data:,">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<style>
+:root{--navy:#0A265C;--navy2:#04122e;--red:#E8112D;--green:#1F9D55;--ink:#12233d;--soft:#5b6b82;--line:#dbe4f0;--bg:#eef3fa;--card:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+.phone{max-width:430px;margin:0 auto;min-height:100vh;background:var(--bg);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(4,18,46,.18)}
+header{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:18px 18px 14px}
+.hrow{display:flex;align-items:center;gap:12px}
+.avatar{width:48px;height:48px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px}
+.hrow h1{font-size:17px}
+.hrow p{font-size:12px;color:#bcd0ee}
+.chip{margin-left:auto;background:#ffb020;color:#231a00;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;letter-spacing:.06em}
+.avail{display:flex;align-items:center;gap:8px;margin-top:12px;background:rgba(255,255,255,.12);border-radius:12px;padding:9px 12px;font-size:13px}
+.dot{width:10px;height:10px;border-radius:50%;background:#37d67a}
+.avail button{margin-left:auto;background:#fff;color:var(--navy);border:0;border-radius:8px;padding:5px 10px;font-weight:700;font-size:12px;cursor:pointer}
+main{flex:1;padding:16px 16px 90px}
+.screen{display:none}.screen.on{display:block}
+h2.sec{font-size:15px;margin:4px 0 10px;color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.job{display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+.job .when{font-size:11px;font-weight:800;color:var(--navy);background:#e7eefb;border-radius:8px;padding:6px 8px;text-align:center;min-width:58px}
+.job h3{font-size:14px}
+.job p{font-size:12px;color:var(--soft);margin-top:2px;line-height:1.45}
+.st{margin-left:auto;font-size:10px;font-weight:800;padding:4px 8px;border-radius:999px;white-space:nowrap}
+.st.next{background:#e7eefb;color:var(--navy)}.st.prog{background:#fff3d6;color:#8a6100}.st.done{background:#e2f6ea;color:#157347}.st.wait{background:#f1f4f9;color:var(--soft)}
+.offer .meta{display:flex;gap:14px;font-size:12px;color:var(--soft);margin:8px 0}
+.btnrow{display:flex;gap:10px;margin-top:10px}
+.btn{flex:1;border:0;border-radius:12px;padding:12px;font-size:14px;font-weight:800;cursor:pointer}
+.btn.go{background:var(--green);color:#fff}.btn.no{background:#eef1f6;color:var(--ink)}.btn.navy{background:var(--navy);color:#fff}.btn.red{background:var(--red);color:#fff}
+.steps{display:flex;gap:4px;margin:12px 0}
+.steps div{flex:1;text-align:center;font-size:10px;color:var(--soft)}
+.steps i{display:block;height:6px;border-radius:3px;background:#dbe4f0;margin-bottom:5px}
+.steps div.done i{background:var(--green)}.steps div.done{color:var(--ink);font-weight:700}
+.kv{display:flex;justify-content:space-between;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.kv b{color:var(--navy)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;text-align:center}
+.tile .n{font-size:24px;font-weight:800;color:var(--navy)}
+.tile .l{font-size:11px;color:var(--soft);margin-top:2px}
+.bars{display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:8px}
+.bars div{flex:1;background:var(--navy);border-radius:6px 6px 0 0;position:relative}
+.bars span{position:absolute;bottom:-18px;left:0;right:0;text-align:center;font-size:10px;color:var(--soft)}
+.note{font-size:11px;color:var(--soft);line-height:1.5;margin-top:8px}
+.row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.row a{color:var(--navy);font-weight:700;text-decoration:none}
+.row .r{margin-left:auto;color:var(--soft);font-size:12px}
+nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--line);display:flex;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+nav.tabs button{flex:1;background:none;border:0;font-size:11px;color:var(--soft);cursor:pointer;padding:6px 0;position:relative;font-weight:600}
+nav.tabs button.on{color:var(--navy)}
+nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:999px;padding:2px 5px}
+#toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy2);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:9}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.demo{font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+</style>
+</head>
+<body>
+<div class="phone">
+  <header>
+    <div class="hrow">
+      <div class="avatar">AR</div>
+      <div><h1>Alex R. — Technician</h1><p>Tech TS-T-014 · ★ 4.9 · Broward County</p></div>
+      <span class="chip">PREVIEW</span>
+    </div>
+    <div class="avail"><span class="dot" id="availDot"></span><span id="availTxt">Available for offers</span><button id="availBtn" type="button">Go offline</button></div>
+  </header>
+  <main>
+    <!-- TODAY -->
+    <section class="screen on" id="s-today">
+      <h2 class="sec">Today — Saturday, Nov 7 <span class="demo">· demo schedule</span></h2>
+      <div id="todayList">
+        <div class="card job" data-open-job><div class="when">8–10 AM</div><div><h3>Refrigerator — not cooling</h3><p>Sunrise · 33322 · Diagnostic $99 collected</p></div><span class="st done">DONE</span></div>
+        <div class="card job" data-open-job><div class="when">10–12 PM</div><div><h3>Washer — won't drain</h3><p>Plantation · 33324 · Gate code in notes</p></div><span class="st prog">IN PROGRESS</span></div>
+        <div class="card job" data-open-job><div class="when">12–2 PM</div><div><h3>Dryer — no heat</h3><p>Lauderhill · 33313</p></div><span class="st next">NEXT</span></div>
+        <div class="card job" data-open-job><div class="when">2–4 PM</div><div><h3>Oven — not heating</h3><p>Fort Lauderdale · 33311</p></div><span class="st wait">QUEUED</span></div>
+      </div>
+      <p class="note">Jobs are matched by Service Setters dispatch and confirmed here before they land on your day — the hybrid dispatch you already know, in your pocket.</p>
+    </section>
+    <!-- OFFERS -->
+    <section class="screen" id="s-offers">
+      <h2 class="sec">New job offers <span class="demo">· demo</span></h2>
+      <div id="offerList">
+        <div class="card offer"><h3 style="font-size:15px">Dishwasher — leaking</h3><div class="meta"><span>📍 Davie · 3.2 mi</span><span>🕓 Today 4–6 PM</span></div><p style="font-size:12px;color:var(--soft)">Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" data-decline type="button">Decline</button><button class="btn go" data-accept type="button">Accept job</button></div></div>
+        <div class="card offer"><h3 style="font-size:15px">Ice maker — not making ice</h3><div class="meta"><span>📍 Coral Springs · 5.8 mi</span><span>🕓 Tomorrow 8–10 AM</span></div><p style="font-size:12px;color:var(--soft)">Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" data-decline type="button">Decline</button><button class="btn go" data-accept type="button">Accept job</button></div></div>
+      </div>
+      <p class="note" id="offerEmpty" style="display:none">No open offers right now. Keep availability on — dispatch matches by area, appliance, and your ratings.</p>
+    </section>
+    <!-- JOB DETAIL -->
+    <section class="screen" id="s-job">
+      <h2 class="sec">Job detail <span class="demo">· demo</span></h2>
+      <div class="card">
+        <h3 style="font-size:16px">Washer — won't drain</h3>
+        <p style="font-size:12px;color:var(--soft);margin-top:2px">Ref TS-1042 · Window 10 AM – 12 PM</p>
+        <div class="steps" id="steps"><div class="done"><i></i>En route</div><div><i></i>Arrived</div><div><i></i>Working</div><div><i></i>Complete</div></div>
+        <div class="kv"><span>Customer</span><b>Demo Customer — M. Johnson</b></div>
+        <div class="kv"><span>Area</span><b>Plantation · 33324</b></div>
+        <div class="kv"><span>Appliance</span><b>Washer (front-load)</b></div>
+        <div class="kv"><span>Reported issue</span><b>Won't drain; standing water</b></div>
+        <div class="kv"><span>Diagnostic</span><b>$99 collected at booking</b></div>
+        <div class="kv" style="border-bottom:0"><span>Notes</span><b>Gate code in booking notes</b></div>
+        <div class="btnrow"><button class="btn navy" id="callBtn" type="button">📞 Call customer</button><button class="btn red" id="advBtn" type="button">I've arrived</button></div>
+        <p class="note" id="jobDone" style="display:none">✅ Job complete. The $99 diagnostic is credited toward the repair, the customer gets a review request, and a referral code (TS-REF) is issued — the flywheel turns.</p>
+      </div>
+      <p class="note">Status updates flow straight to the customer's live tracking — they see you coming, no phone tag.</p>
+    </section>
+    <!-- EARNINGS -->
+    <section class="screen" id="s-earn">
+      <h2 class="sec">My week <span class="demo">· demo</span></h2>
+      <div class="tiles">
+        <div class="tile"><div class="n" id="jobsToday">1</div><div class="l">Jobs done today</div></div>
+        <div class="tile"><div class="n">12</div><div class="l">Jobs this week</div></div>
+        <div class="tile"><div class="n">4.9 ★</div><div class="l">My rating</div></div>
+        <div class="tile"><div class="n">98%</div><div class="l">On-time arrivals</div></div>
+      </div>
+      <div class="card" style="margin-top:12px"><h3 style="font-size:13px;color:var(--navy)">Jobs per day</h3><div class="bars"><div style="height:45%"><span>Mon</span></div><div style="height:65%"><span>Tue</span></div><div style="height:55%"><span>Wed</span></div><div style="height:80%"><span>Thu</span></div><div style="height:70%"><span>Fri</span></div><div style="height:35%"><span>Sat</span></div></div><p class="note" style="margin-top:26px">Payout amounts follow your provider agreement. When the Service OS backend connects, your live statement appears here and in the provider portal.</p></div>
+    </section>
+    <!-- MORE -->
+    <section class="screen" id="s-more">
+      <h2 class="sec">More</h2>
+      <div class="card">
+        <div class="row">🗺️ My service areas <span class="r">12 Broward areas</span></div>
+        <div class="row">🧰 My appliances <span class="r">All 9 services</span></div>
+        <div class="row">🚐 Vehicle <span class="r">Van 2 · stocked</span></div>
+        <div class="row">📄 Documents <span class="r">License & insurance on file</span></div>
+        <div class="row">📞 Call dispatch <a href="tel:+19549317997">954-931-7997</a></div>
+        <div class="row">🌐 Provider portal <a href="/service/">Open</a></div>
+        <div class="row">🖥️ Service OS web portal <a href="/portal">Open</a></div>
+        <div class="row" style="border-bottom:0">📱 Customer app <a href="/app">Appliance Pro</a></div>
+      </div>
+      <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Preview build: demo data only; live jobs flow when your provider account connects.</p>
+    </section>
+  </main>
+  <nav class="tabs">
+    <button class="on" data-tab="today" type="button">📋 Today</button>
+    <button data-tab="offers" type="button">📥 Offers<span class="bdg" id="offerBdg">2</span></button>
+    <button data-tab="job" type="button">🔧 Job</button>
+    <button data-tab="earn" type="button">📊 Week</button>
+    <button data-tab="more" type="button">☰ More</button>
+  </nav>
+</div>
+<div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+function go(tab){$$('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+tab));$$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));window.scrollTo(0,0)}
+$$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
+$$('[data-open-job]').forEach(c=>c.addEventListener('click',()=>go('job')));
+let offers=2;
+function syncOffers(){$('#offerBdg').style.display=offers>0?'':'none';$('#offerBdg').textContent=offers;$('#offerEmpty').style.display=offers>0?'none':''}
+$$('#offerList .offer').forEach(card=>{
+  card.querySelector('[data-accept]').addEventListener('click',()=>{
+    const title=card.querySelector('h3').textContent;card.remove();offers--;syncOffers();
+    const d=document.createElement('div');d.className='card job';d.innerHTML='<div class="when">NEW</div><div><h3>'+title+'</h3><p>Accepted just now · details in Job tab</p></div><span class="st next">ADDED</span>';
+    d.addEventListener('click',()=>go('job'));$('#todayList').appendChild(d);toast('✅ Job accepted — added to your day');go('today');
+  });
+  card.querySelector('[data-decline]').addEventListener('click',()=>{card.remove();offers--;syncOffers();toast('Offer declined — dispatch will re-match it')});
+});
+const stages=['I\'ve arrived','Start work','Complete job','Completed ✓'];let stage=0;
+$('#advBtn').addEventListener('click',()=>{
+  if(stage>=3)return;stage++;
+  $$('#steps div').forEach((el,i)=>el.classList.toggle('done',i<=stage));
+  $('#advBtn').textContent=stages[stage]||'Completed ✓';
+  if(stage===1)toast('📍 Arrival shared with the customer');
+  if(stage===2)toast('🔧 Work started — timer running');
+  if(stage>=3){$('#advBtn').disabled=true;$('#jobDone').style.display='';$('#jobsToday').textContent='2';toast('🎉 Job complete — nice work')}
+});
+$('#callBtn').addEventListener('click',()=>toast('Demo build — calling connects in the live app'));
+let avail=true;
+$('#availBtn').addEventListener('click',()=>{avail=!avail;$('#availDot').style.background=avail?'#37d67a':'#e8112d';$('#availTxt').textContent=avail?'Available for offers':'Offline — offers paused';$('#availBtn').textContent=avail?'Go offline':'Go available';toast(avail?'You are available for offers':'You are offline')});
+</script>
+<script src="/install.js"></script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
+</body>
+</html>
