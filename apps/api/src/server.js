@@ -22,7 +22,13 @@ try {
 
 const app = express();
 const port = Number(process.env.PORT || 4000);
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:5173';
+// CORS_ORIGIN accepts one origin or a comma-separated list (the platform
+// ships two front ends — the customer/provider site and the commercial
+// platform — plus local dev).
+const corsOrigin = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 app.disable('x-powered-by');
 app.use(helmet());
