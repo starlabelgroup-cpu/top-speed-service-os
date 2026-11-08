@@ -10,6 +10,7 @@ import flywheelRouter from './routes/flywheel.js';
 import commercialRouter from './routes/commercial.js';
 import appRouter from './routes/app.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
+import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { SERVICE_AREAS } from './config/serviceAreas.js';
 
 try {
@@ -29,13 +30,18 @@ app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);
 
-app.get('/api/v1/health', (req, res) => {
+app.get('/api/v1/health', async (req, res) => {
+  const database = await databaseStatus();
   res.json({
     status: 'ok',
     service: 'Top Speed Service OS API',
     version: 'v1',
-    mode: 'phase-1-in-memory-skeleton',
-    database: 'not-connected-in-skeleton',
+    mode: DATABASE_ENABLED ? 'database' : 'phase-1-in-memory-skeleton',
+    database,
+    persistence: {
+      accounts: DATABASE_ENABLED ? 'database' : 'in-memory',
+      bookings: 'in-memory (database move in progress)',
+    },
     timestamp: new Date().toISOString(),
   });
 });
@@ -65,7 +71,9 @@ const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
   app.listen(port, () => {
     console.log(`Top Speed Service OS API listening on http://localhost:${port}/api/v1`);
-    console.log('Storage mode: in-memory Phase 1 skeleton (Prisma/PostgreSQL is modeled, not connected).');
+    console.log(DATABASE_ENABLED
+      ? 'Storage mode: PostgreSQL via Prisma (accounts on database; bookings move next).'
+      : 'Storage mode: in-memory Phase 1 skeleton (set DATABASE_URL for the real database).');
   });
 }
 

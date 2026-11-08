@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
+import { DATABASE_ENABLED, db } from '../db/client.js';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
@@ -10,11 +11,14 @@ import { signAccessToken } from '../services/tokens.js';
  * The Service OS login system.
  *
  * Accounts mirror the Prisma User model (companyId + email unique, scrypt
- * passwordHash, roles array). Public self-registration creates CUSTOMER
- * accounts on the platform tenant. Staff and provider roles can only be
- * granted by an authenticated PLATFORM_ADMIN / COMPANY_OWNER, or — for local
- * development and first-admin bootstrap only — when
- * ALLOW_STAFF_REGISTRATION=true.
+ * passwordHash, roles array). Storage runs on the real PostgreSQL database
+ * when DATABASE_URL is set; without it, the Phase-1 in-memory skeleton is
+ * used so the flow can be exercised with no database at all.
+ *
+ * Public self-registration creates CUSTOMER accounts on the platform tenant.
+ * Staff and provider roles can only be granted by an authenticated
+ * PLATFORM_ADMIN / COMPANY_OWNER, or — for local development and first-admin
+ * bootstrap only — when ALLOW_STAFF_REGISTRATION=true.
  *
  * Responses never include passwordHash.
  */
@@ -41,6 +45,67 @@ const changePasswordSchema = z.object({
   newPassword: z.string().min(10, 'Password must be at least 10 characters').max(200),
 });
 
+// ---------------------------------------------------------------------------
+// User repository: Prisma (real database) or the in-memory skeleton.
+// Both return the same plain-object shape.
+// ---------------------------------------------------------------------------
+const usersRepo = DATABASE_ENABLED
+  ? {
+      async findByEmail(companyId, email) {
+        return db().user.findUnique({ where: { companyId_email: { companyId, email } } });
+      },
+      async findById(id) {
+        return db().user.findUnique({ where: { id } });
+      },
+      async create(user) {
+        return db().user.create({
+          data: {
+            id: user.id, companyId: user.companyId, email: user.email,
+            passwordHash: user.passwordHash, firstName: user.firstName,
+            lastName: user.lastName, phone: user.phone, roles: user.roles,
+            active: user.active,
+          },
+        });
+      },
+      async updatePassword(id, passwordHash) {
+        return db().user.update({ where: { id }, data: { passwordHash } });
+      },
+      async listForCompany(companyId, includeAll) {
+        return db().user.findMany({ where: includeAll ? {} : { companyId } });
+      },
+    }
+  : {
+      async findByEmail(companyId, email) {
+        for (const user of store.users.values()) {
+          if (user.companyId === companyId && user.email === email) return user;
+        }
+        return null;
+      },
+      async findById(id) {
+        return store.users.get(id) ?? null;
+      },
+      async create(user) {
+        store.users.set(user.id, user);
+        return user;
+      },
+      async updatePassword(id, passwordHash) {
+        const user = store.users.get(id);
+        if (user) {
+          user.passwordHash = passwordHash;
+          user.updatedAt = new Date().toISOString();
+        }
+        return user;
+      },
+      async listForCompany(companyId, includeAll) {
+        return [...store.users.values()].filter((user) => includeAll || user.companyId === companyId);
+      },
+    };
+
+function iso(value) {
+  if (!value) return null;
+  return value instanceof Date ? value.toISOString() : String(value);
+}
+
 function publicUser(user) {
   return {
     id: user.id,
@@ -51,15 +116,8 @@ function publicUser(user) {
     phone: user.phone ?? null,
     roles: user.roles,
     active: user.active,
-    createdAt: user.createdAt,
+    createdAt: iso(user.createdAt),
   };
-}
-
-function findUserByEmail(companyId, email) {
-  for (const user of store.users.values()) {
-    if (user.companyId === companyId && user.email === email) return user;
-  }
-  return null;
 }
 
 function canGrantStaffRoles(req) {
@@ -85,11 +143,11 @@ router.post('/auth/register', async (req, res, next) => {
     }
 
     const companyId = PLATFORM_COMPANY_ID;
-    if (findUserByEmail(companyId, email)) {
+    if (await usersRepo.findByEmail(companyId, email)) {
       return res.status(409).json({ error: 'An account with this email already exists' });
     }
 
-    const user = {
+    const draft = {
       id: createId(),
       companyId,
       email,
@@ -102,11 +160,24 @@ router.post('/auth/register', async (req, res, next) => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    store.users.set(user.id, user);
 
-    // A customer account gets a linked Customer record so bookings, the
-    // garage, and referrals have a person to attach to from day one.
-    if (requestedRole === ROLES.CUSTOMER) {
+    let user;
+    try {
+      user = await usersRepo.create(draft);
+    } catch (error) {
+      // Prisma unique violation on (companyId, email) — a registration race.
+      if (error?.code === 'P2002') {
+        return res.status(409).json({ error: 'An account with this email already exists' });
+      }
+      throw error;
+    }
+
+    // A customer account also gets a linked Customer record so bookings, the
+    // garage, and referrals have a person to attach to. In database mode the
+    // Prisma Customer model requires phone/city/zip, which a fresh signup may
+    // not have yet — there the record is created at profile completion or
+    // first booking (the bookings route already creates full records).
+    if (requestedRole === ROLES.CUSTOMER && !DATABASE_ENABLED) {
       const customerRecord = {
         id: createId(),
         companyId,
@@ -118,7 +189,6 @@ router.post('/auth/register', async (req, res, next) => {
         createdAt: new Date().toISOString(),
       };
       store.customers.set(customerRecord.id, customerRecord);
-      user.customerId = customerRecord.id;
     }
 
     return res.status(201).json({ user: publicUser(user), ...signAccessToken(user) });
@@ -134,7 +204,7 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid login', details: parsed.error.flatten() });
     }
     const { email, password } = parsed.data;
-    const user = findUserByEmail(PLATFORM_COMPANY_ID, email);
+    const user = await usersRepo.findByEmail(PLATFORM_COMPANY_ID, email);
 
     // Verify against a dummy hash when the account does not exist so the
     // response time does not reveal which emails are registered.
@@ -153,11 +223,15 @@ router.post('/auth/login', async (req, res, next) => {
   }
 });
 
-router.get('/auth/me', authenticate, (req, res) => {
-  const user = store.users.get(req.user.id);
-  if (user) return res.json({ user: publicUser(user), authMode: req.authMode });
-  // Token is valid but the account is not in the store (e.g. demo context).
-  return res.json({ user: { id: req.user.id, companyId: req.user.companyId, email: req.user.email, roles: req.user.roles }, authMode: req.authMode });
+router.get('/auth/me', authenticate, async (req, res, next) => {
+  try {
+    const user = await usersRepo.findById(req.user.id);
+    if (user) return res.json({ user: publicUser(user), authMode: req.authMode });
+    // Token is valid but the account is not in the store (e.g. demo context).
+    return res.json({ user: { id: req.user.id, companyId: req.user.companyId, email: req.user.email, roles: req.user.roles }, authMode: req.authMode });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 router.post('/auth/change-password', authenticate, async (req, res, next) => {
@@ -169,7 +243,7 @@ router.post('/auth/change-password', authenticate, async (req, res, next) => {
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid password change', details: parsed.error.flatten() });
     }
-    const user = store.users.get(req.user.id);
+    const user = await usersRepo.findById(req.user.id);
     if (!user) return res.status(404).json({ error: 'Account not found' });
 
     const currentOk = await verifyPassword(parsed.data.currentPassword, user.passwordHash);
@@ -178,8 +252,7 @@ router.post('/auth/change-password', authenticate, async (req, res, next) => {
       return res.status(400).json({ error: 'New password must be different from the current password' });
     }
 
-    user.passwordHash = await hashPassword(parsed.data.newPassword);
-    user.updatedAt = new Date().toISOString();
+    await usersRepo.updatePassword(user.id, await hashPassword(parsed.data.newPassword));
     return res.json({ ok: true, note: 'Password updated. Other signed-in sessions keep their token until it expires.' });
   } catch (error) {
     return next(error);
@@ -193,11 +266,14 @@ router.post('/auth/logout', authenticate, (req, res) => {
   return res.json({ ok: true, note: 'Discard your access token to complete sign-out.' });
 });
 
-router.get('/auth/users', authenticate, requireRole(ROLES.PLATFORM_ADMIN, ROLES.COMPANY_OWNER), (req, res) => {
-  const users = [...store.users.values()]
-    .filter((user) => user.companyId === req.user.companyId || req.user.roles.includes(ROLES.PLATFORM_ADMIN))
-    .map(publicUser);
-  return res.json({ data: users, count: users.length });
+router.get('/auth/users', authenticate, requireRole(ROLES.PLATFORM_ADMIN, ROLES.COMPANY_OWNER), async (req, res, next) => {
+  try {
+    const includeAll = req.user.roles.includes(ROLES.PLATFORM_ADMIN);
+    const users = await usersRepo.listForCompany(req.user.companyId, includeAll);
+    return res.json({ data: users.map(publicUser), count: users.length });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 export default router;
