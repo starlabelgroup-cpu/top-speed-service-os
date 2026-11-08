@@ -59,7 +59,7 @@ The notification outbox sends for real once these Production env vars exist:
 | Name | Value | Notes |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Key from resend.com → API Keys | Also connected to Pepper via the secure connector for verification. |
-| `EMAIL_FROM` | `Top Speed Appliance <service@topspeedappliance.net>` | The domain must be **verified in Resend** (add the SPF/DKIM DNS records Resend shows you) or sends fail and the outbox entry records the error. |
+| `EMAIL_FROM` | `Top Speed Appliance <service@updates.topspeedapplianceservice.com>` | Verified in Resend on 2026-11-08 (sending + receiving enabled). `topspeedappliance.net` is added in Resend but its verification is **failed** until its SPF/DKIM DNS records are fixed — switch EMAIL_FROM to the .net address only after it shows verified. |
 | `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_PHONE_NUMBER` | From the Twilio console | SMS sends from the Twilio number. US A2P 10DLC registration for the number may be required for reliable delivery. |
 | `CRON_SECRET` | Any long random string (optional) | Enables the automatic drain below. |
 
