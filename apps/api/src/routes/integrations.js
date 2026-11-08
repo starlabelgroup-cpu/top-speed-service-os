@@ -7,6 +7,7 @@ import { appendEvent, createId, createReferenceCode, store } from '../data/store
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { notifyBookingConfirmation } from '../services/notifications.js';
+import { drainOutbox, providersStatus } from '../services/senders.js';
 
 const router = Router();
 
@@ -333,5 +334,35 @@ router.get(
     return res.json({ data: filtered });
   },
 );
+
+/**
+ * Deliver queued notifications through the live providers (Resend email,
+ * Twilio SMS). Entries whose provider is not configured stay queued.
+ */
+router.post(
+  '/notifications/send',
+  authenticate,
+  requireCompany,
+  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  async (req, res) => {
+    const summary = await drainOutbox();
+    return res.json({ data: { ...summary, providers: providersStatus() } });
+  },
+);
+
+/**
+ * Cron drain — called by Vercel Cron (or any scheduler). Guarded by the
+ * CRON_SECRET env var: Vercel sends it as a Bearer token automatically.
+ * Refuses to run when CRON_SECRET is not set, so it is never an open door.
+ */
+router.get('/notifications/cron-drain', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return res.status(403).json({ error: 'Cron drain is not enabled' });
+  if (req.get('authorization') !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'Invalid cron secret' });
+  }
+  const summary = await drainOutbox();
+  return res.json({ data: summary });
+});
 
 export default router;

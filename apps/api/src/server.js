@@ -12,6 +12,7 @@ import appRouter from './routes/app.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
+import { providersStatus } from './services/senders.js';
 import { SERVICE_AREAS } from './config/serviceAreas.js';
 
 try {
@@ -50,6 +51,7 @@ app.get('/api/v1/health', async (req, res) => {
       bookings: DATABASE_ENABLED ? 'database' : 'in-memory',
       referralsAndNotifications: 'in-memory (database move pending)',
     },
+    notifications: providersStatus(),
     timestamp: new Date().toISOString(),
   });
 });

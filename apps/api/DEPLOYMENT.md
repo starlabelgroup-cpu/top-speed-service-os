@@ -52,6 +52,23 @@ Troubleshooting:
 - Build fails at `prisma migrate deploy` → DATABASE_URL missing at build
   time, or not the direct :5432 string.
 
+## Notification providers (Resend email + Twilio SMS)
+
+The notification outbox sends for real once these Production env vars exist:
+
+| Name | Value | Notes |
+| --- | --- | --- |
+| `RESEND_API_KEY` | Key from resend.com → API Keys | Also connected to Pepper via the secure connector for verification. |
+| `EMAIL_FROM` | `Top Speed Appliance <service@topspeedappliance.net>` | The domain must be **verified in Resend** (add the SPF/DKIM DNS records Resend shows you) or sends fail and the outbox entry records the error. |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_PHONE_NUMBER` | From the Twilio console | SMS sends from the Twilio number. US A2P 10DLC registration for the number may be required for reliable delivery. |
+| `CRON_SECRET` | Any long random string (optional) | Enables the automatic drain below. |
+
+Delivery triggers: staff call `POST /api/v1/notifications/send`, or schedule
+Vercel Cron to `GET /api/v1/notifications/cron-drain` (Vercel sends
+`CRON_SECRET` automatically when the env var exists; cron frequency depends
+on the Vercel plan). Health reports each provider as configured or not.
+Entries whose provider is unconfigured stay queued — never lost.
+
 ## How it runs
 
 Vercel serverless: `api/index.js` wraps the Express app. Each cold-started
