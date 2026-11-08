@@ -4,6 +4,7 @@ import { INTAKE_SOURCES, PLATFORM_CONSTANTS } from '../config/platform.js';
 import { ROLES } from '../config/security.js';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
+import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { NOTIFICATION_TEMPLATES, notifyBookingConfirmation } from '../services/notifications.js';
 import { findReferralByCode } from '../services/flywheel.js';
@@ -61,7 +62,7 @@ router.get('/flywheel/referrals', ...staffOnly, (req, res) => {
  * linked back to the code and the customer who earned it. Same ZIP/city
  * validation and $99 rules as every other booking.
  */
-router.post('/flywheel/referrals/redeem', authenticate, requireCompany, (req, res) => {
+router.post('/flywheel/referrals/redeem', authenticate, requireCompany, async (req, res) => {
   const parsed = redeemSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid referral redemption', details: parsed.error.flatten() });
@@ -130,6 +131,8 @@ router.post('/flywheel/referrals/redeem', authenticate, requireCompany, (req, re
     feeStatus: booking.feeStatus,
   });
   store.bookings.set(booking.id, booking);
+  await persistCustomer(customerRecord);
+  await persistBooking(booking);
 
   referral.redemptions.push({
     bookingId: booking.id,

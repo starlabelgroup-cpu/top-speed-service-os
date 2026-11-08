@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
+import { persistAssignment, persistAssignmentsForBooking, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
@@ -48,7 +49,7 @@ function publicBooking(booking) {
   return booking;
 }
 
-router.post('/bookings', authenticate, requireCompany, (req, res) => {
+router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   const parsed = bookingSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
@@ -104,6 +105,8 @@ router.post('/bookings', authenticate, requireCompany, (req, res) => {
     feeStatus: booking.feeStatus,
   });
   store.bookings.set(booking.id, booking);
+  await persistCustomer(customerRecord);
+  await persistBooking(booking);
   appendEvent('BOOKING_CREATED', {
     source: booking.source,
     actor: req.user.id,
@@ -135,7 +138,7 @@ router.post(
   authenticate,
   requireCompany,
   requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
-  (req, res) => {
+  async (req, res) => {
     const parsed = matchSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid match request', details: parsed.error.flatten() });
@@ -158,6 +161,8 @@ router.post(
       details: { candidateCount: result.candidates.length, status: booking.status },
     });
     notifyDispatchMatched(booking, result.candidates.length, booking.source || null);
+    await persistBooking(booking);
+    for (const assignment of result.assignments) await persistAssignment(assignment);
     return res.json({
       data: {
         bookingId: booking.id,
@@ -175,7 +180,7 @@ router.post(
   authenticate,
   requireCompany,
   requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
-  (req, res) => {
+  async (req, res) => {
     const parsed = approveSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid approval request', details: parsed.error.flatten() });
@@ -202,6 +207,8 @@ router.post(
       details: { assignmentId: assignment.id, providerId: parsed.data.providerId, status: booking.status },
     });
     notifyDispatchApproved(booking, assignment, booking.source || null);
+    await persistBooking(booking);
+    await persistAssignmentsForBooking(booking.id);
     return res.json({
       data: {
         booking: publicBooking(booking),
@@ -222,7 +229,7 @@ router.post(
   authenticate,
   requireCompany,
   requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
-  (req, res) => {
+  async (req, res) => {
     const parsed = completeSchema.safeParse(req.body || {});
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid completion request', details: parsed.error.flatten() });
@@ -253,6 +260,7 @@ router.post(
     // Flywheel "refer" stage: completion also issues the customer their
     // personal referral code (one active code per customer).
     const { referral, created: referralCreated } = issueReferralForBooking(booking, booking.source || null);
+    await persistBooking(booking);
 
     return res.json({
       data: {

@@ -114,6 +114,8 @@ model User {
 model Customer {
   id        String   @id @default(uuid()) @db.Uuid
   companyId String   @db.Uuid
+  userId    String?  @db.Uuid
+  source    String?
   name      String
   phone     String
   email     String?
@@ -141,6 +143,17 @@ model ServiceRequest {
   appliance                       String
   issue                           String
   preferredWindow                 String?
+  referenceCode                   String?       @unique
+  source                          String        @default("WEBSITE")
+  // Working-state documents the API services operate on. The relational
+  // core (customer, status, fee, assignments) stays in columns/tables;
+  // these JSON columns carry the booking's event history, its dispatch
+  // state, and its Book OS appointment exactly as the services produce them.
+  history                         Json          @default("[]")
+  dispatch                        Json?
+  appointment                     Json?
+  completedAt                     DateTime?
+  completedBy                     String?
   status                          BookingStatus @default(PENDING_DISPATCH)
   diagnosticFee                   Decimal       @default(99.00) @db.Decimal(10, 2)
   diagnosticFeeCreditedTowardRepair Boolean     @default(true)
@@ -185,7 +198,9 @@ model DispatchAssignment {
   dispatchMode    DispatchMode     @default(HYBRID)
   approvalRequired Boolean         @default(true)
   matchScore      Int?
-  approvedById    String?          @db.Uuid
+  providerCompanyId String?        @db.Uuid
+  approvedById    String?
+  approvedByName  String?
   approvedAt      DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt

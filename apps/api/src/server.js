@@ -11,6 +11,7 @@ import commercialRouter from './routes/commercial.js';
 import appRouter from './routes/app.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
+import { hydrateStore } from './db/bookingsRepo.js';
 import { SERVICE_AREAS } from './config/serviceAreas.js';
 
 try {
@@ -40,7 +41,8 @@ app.get('/api/v1/health', async (req, res) => {
     database,
     persistence: {
       accounts: DATABASE_ENABLED ? 'database' : 'in-memory',
-      bookings: 'in-memory (database move in progress)',
+      bookings: DATABASE_ENABLED ? 'database' : 'in-memory',
+      referralsAndNotifications: 'in-memory (database move pending)',
     },
     timestamp: new Date().toISOString(),
   });
@@ -69,10 +71,14 @@ app.use((error, req, res, next) => {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
+  if (DATABASE_ENABLED) {
+    const counts = await hydrateStore();
+    console.log(`Database hydrated: ${counts.bookings} bookings, ${counts.customers} customers, ${counts.assignments} assignments, ${counts.providers} providers.`);
+  }
   app.listen(port, () => {
     console.log(`Top Speed Service OS API listening on http://localhost:${port}/api/v1`);
     console.log(DATABASE_ENABLED
-      ? 'Storage mode: PostgreSQL via Prisma (accounts on database; bookings move next).'
+      ? 'Storage mode: PostgreSQL via Prisma (accounts + bookings on database).'
       : 'Storage mode: in-memory Phase 1 skeleton (set DATABASE_URL for the real database).');
   });
 }

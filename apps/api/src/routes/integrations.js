@@ -4,6 +4,7 @@ import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceArea
 import { INTAKE_SOURCES, PLATFORM_CONSTANTS, SURFACES } from '../config/platform.js';
 import { ROLES } from '../config/security.js';
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
+import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { notifyBookingConfirmation } from '../services/notifications.js';
 
@@ -72,7 +73,7 @@ function inferRecordType(data) {
   return 'BOOKING';
 }
 
-function createIntakeBooking(req, data, referenceCode) {
+async function createIntakeBooking(req, data, referenceCode) {
   const city = data.city || areasForZip(data.zip)[0];
   if (!city || !SERVICE_CITIES.includes(city)) {
     return { error: { status: 422, body: { error: 'City is outside the current service area', serviceCities: SERVICE_CITIES } } };
@@ -134,10 +135,12 @@ function createIntakeBooking(req, data, referenceCode) {
     feeStatus: booking.feeStatus,
   });
   store.bookings.set(booking.id, booking);
+  await persistCustomer(customerRecord);
+  await persistBooking(booking);
   return { record: booking };
 }
 
-router.post('/intake/webhook', authenticate, requireCompany, (req, res) => {
+router.post('/intake/webhook', authenticate, requireCompany, async (req, res) => {
   const parsed = intakeSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid intake payload', details: parsed.error.flatten() });
@@ -158,7 +161,7 @@ router.post('/intake/webhook', authenticate, requireCompany, (req, res) => {
     if (!data.zip) {
       return res.status(400).json({ error: 'Bookings require a ZIP code', source: data.source });
     }
-    const result = createIntakeBooking(req, data, referenceCode);
+    const result = await createIntakeBooking(req, data, referenceCode);
     if (result.error) return res.status(result.error.status).json(result.error.body);
     const booking = result.record;
     appendEvent('BOOKING_CREATED', {

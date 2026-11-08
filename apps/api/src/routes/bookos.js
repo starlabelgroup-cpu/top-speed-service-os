@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { ROLES } from '../config/security.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
+import { persistBooking } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import {
   APPOINTMENT_WINDOWS,
@@ -106,7 +107,7 @@ router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
 });
 
 /** Confirm an appointment with the customer: date + window on a booking. */
-router.post('/bookos/appointments', ...staffOnly, (req, res) => {
+router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
   const parsed = setAppointmentSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid appointment request', details: parsed.error.flatten() });
@@ -147,6 +148,7 @@ router.post('/bookos/appointments', ...staffOnly, (req, res) => {
     details: { team: 'Service Setters', setBy, date, window, city: booking.city, status: booking.status },
   });
   const confirmations = notifyBookingConfirmation(booking, booking.source || null);
+  await persistBooking(booking);
 
   return res.status(201).json({
     data: {
@@ -160,7 +162,7 @@ router.post('/bookos/appointments', ...staffOnly, (req, res) => {
 });
 
 /** Move an already-set appointment to a new date/window. */
-router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, (req, res) => {
+router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (req, res) => {
   const parsed = rescheduleSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid reschedule request', details: parsed.error.flatten() });
@@ -203,6 +205,7 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, (req, re
     details: { team: 'Service Setters', rescheduledBy, from: previous, to: { date, window }, city: booking.city },
   });
   const confirmations = notifyBookingConfirmation(booking, booking.source || null);
+  await persistBooking(booking);
 
   return res.json({
     data: {

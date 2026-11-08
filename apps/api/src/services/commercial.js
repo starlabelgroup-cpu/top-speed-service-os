@@ -1,5 +1,6 @@
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
+import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 
 /**
  * Commercial — accounts, facilities, equipment, work orders.
@@ -54,7 +55,7 @@ export function deriveWorkOrderPriority(account, equipment) {
  * redeem create (same fee fields as stored platform-wide — the billing
  * summary reports them verbatim rather than re-pricing commercial work).
  */
-export function createCommercialBooking({ companyId, account, facility, equipment, workOrder }) {
+export async function createCommercialBooking({ companyId, account, facility, equipment, workOrder }) {
   const customerRecord = {
     id: createId(),
     companyId,
@@ -117,6 +118,8 @@ export function createCommercialBooking({ companyId, account, facility, equipmen
     feeStatus: booking.feeStatus,
   });
   store.bookings.set(booking.id, booking);
+  await persistCustomer(customerRecord);
+  await persistBooking(booking);
   appendEvent('BOOKING_CREATED', {
     source: 'COMMERCIAL',
     actor: 'commercial:work-order',

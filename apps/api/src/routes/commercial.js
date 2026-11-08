@@ -294,7 +294,7 @@ router.patch('/commercial/equipment/:id/status', ...staffOnly, (req, res) => {
 /* Work orders                                                         */
 /* ------------------------------------------------------------------ */
 
-router.post('/commercial/work-orders', ...staffOnly, (req, res) => {
+router.post('/commercial/work-orders', ...staffOnly, async (req, res) => {
   const parsed = workOrderSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid work order', details: parsed.error.flatten() });
@@ -339,7 +339,7 @@ router.post('/commercial/work-orders', ...staffOnly, (req, res) => {
     updatedAt: now,
   };
 
-  const booking = createCommercialBooking({ companyId: req.companyId, account, facility, equipment, workOrder });
+  const booking = await createCommercialBooking({ companyId: req.companyId, account, facility, equipment, workOrder });
   workOrder.bookingId = booking.id;
   workOrder.bookingReferenceCode = booking.referenceCode;
   store.commercialWorkOrders.set(workOrder.id, workOrder);
