@@ -217,3 +217,27 @@ ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_serviceRequestId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- Booking working-state changes (squashed from 20261108000607_booking_working_state
+-- on 2026-11-09 so a fresh database can be built in order: tables first, then these).
+
+-- AlterTable
+ALTER TABLE "Customer" ADD COLUMN     "source" TEXT,
+ADD COLUMN     "userId" UUID;
+
+-- AlterTable
+ALTER TABLE "DispatchAssignment" ADD COLUMN     "approvedByName" TEXT,
+ADD COLUMN     "providerCompanyId" UUID,
+ALTER COLUMN "approvedById" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "ServiceRequest" ADD COLUMN     "appointment" JSONB,
+ADD COLUMN     "completedAt" TIMESTAMP(3),
+ADD COLUMN     "completedBy" TEXT,
+ADD COLUMN     "dispatch" JSONB,
+ADD COLUMN     "history" JSONB NOT NULL DEFAULT '[]',
+ADD COLUMN     "referenceCode" TEXT,
+ADD COLUMN     "source" TEXT NOT NULL DEFAULT 'WEBSITE';
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ServiceRequest_referenceCode_key" ON "ServiceRequest"("referenceCode");

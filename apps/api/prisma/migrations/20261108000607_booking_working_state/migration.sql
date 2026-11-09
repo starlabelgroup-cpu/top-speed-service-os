@@ -1,21 +1,6 @@
--- AlterTable
-ALTER TABLE "Customer" ADD COLUMN     "source" TEXT,
-ADD COLUMN     "userId" UUID;
-
--- AlterTable
-ALTER TABLE "DispatchAssignment" ADD COLUMN     "approvedByName" TEXT,
-ADD COLUMN     "providerCompanyId" UUID,
-ALTER COLUMN "approvedById" SET DATA TYPE TEXT;
-
--- AlterTable
-ALTER TABLE "ServiceRequest" ADD COLUMN     "appointment" JSONB,
-ADD COLUMN     "completedAt" TIMESTAMP(3),
-ADD COLUMN     "completedBy" TEXT,
-ADD COLUMN     "dispatch" JSONB,
-ADD COLUMN     "history" JSONB NOT NULL DEFAULT '[]',
-ADD COLUMN     "referenceCode" TEXT,
-ADD COLUMN     "source" TEXT NOT NULL DEFAULT 'WEBSITE';
-
--- CreateIndex
-CREATE UNIQUE INDEX "ServiceRequest_referenceCode_key" ON "ServiceRequest"("referenceCode");
-
+-- Squashed into 20261108050237_init on 2026-11-09.
+-- This migration's ALTER statements were generated before the init migration
+-- existed, so on a fresh database it ran first and failed with
+-- 'relation "Customer" does not exist'. Its changes are now appended to the
+-- end of the init migration, which creates the tables first.
+-- Intentionally no statements below this comment.
