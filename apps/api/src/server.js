@@ -66,6 +66,31 @@ app.get('/api/v1/service-areas', (req, res) => {
   res.json({ data: SERVICE_AREAS });
 });
 
+// Cold-start hydration: serverless instances are stateless, so the working
+// store is loaded from the database once before the routers serve traffic.
+// Mutations write through to the database inside the routes, so a
+// cold-started instance always begins from the real data. This runs inside
+// the Express pipeline (after the body parsers), NOT in a wrapper around
+// the app — awaiting before the app takes the request breaks body streams
+// on Vercel (see api/index.js).
+let hydration = null;
+app.use('/api/v1', async (req, res, next) => {
+  if (!DATABASE_ENABLED) return next();
+  if (!hydration) {
+    hydration = hydrateStore().catch((error) => {
+      // Do not cache a failed hydration — the next request retries.
+      hydration = null;
+      throw error;
+    });
+  }
+  try {
+    await hydration;
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+});
+
 app.use('/api/v1', authRouter);
 app.use('/api/v1', bookingsRouter);
 app.use('/api/v1', integrationsRouter);
