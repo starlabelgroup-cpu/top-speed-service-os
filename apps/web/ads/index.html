@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>Top Speed Ads — Flywheel AI Advertising HQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A265C; --navy-2:#071A40; --blue:#1479FF; --blue-bright:#3D9BFF; --red:#E63329; --red-dark:#C2241B;
+    --bg:#F2F5FA; --surface:#FFFFFF; --surface-2:#EAF0F8; --ink:#0E1B33; --muted:#4B5B74; --line:#D3DDEA;
+    --good:#0E7A4A; --good-bg:#E2F3EA; --amber:#9A6200; --amber-bg:#FDF0D5; --info-bg:#E3EEFF;
+    --shadow:0 10px 30px rgba(10,38,92,.12);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#060D1D; --surface:#0C1B36; --surface-2:#12264A; --ink:#EDF3FF; --muted:#A9BAD6; --line:#243A61;
+      --good:#5BD598; --good-bg:#0F2E22; --amber:#F2C063; --amber-bg:#33270E; --info-bg:#13294F;
+      --shadow:0 10px 30px rgba(0,0,0,.45);
+      color-scheme:dark;
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Barlow",system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+  a{color:var(--blue)}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  .checker{height:14px;background:
+    conic-gradient(var(--navy-2) 25%, #fff 0 50%, var(--navy-2) 0 75%, #fff 0) 0 0/28px 28px;
+    border-bottom:3px solid var(--red)}
+  @media (prefers-color-scheme: dark){ .checker{background:conic-gradient(#000 25%, #dfe7f5 0 50%, #000 0 75%, #dfe7f5 0) 0 0/28px 28px} }
+
+  /* ---------- HERO ---------- */
+  .hero{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 78%);color:#fff;padding:44px 0 40px;position:relative;overflow:hidden}
+  .hero::after{content:"";position:absolute;right:-70px;top:-70px;width:340px;height:340px;border:44px solid rgba(61,155,255,.14);border-radius:50%;pointer-events:none}
+  .hero .kicker{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.28);color:#CFE4FF;font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+  .hero .kicker i{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+  .hero h1{font-family:"Barlow Condensed",sans-serif;font-size:clamp(2.5rem,6vw,4.3rem);line-height:.98;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.01em;max-width:820px}
+  .hero h1 .accent{color:var(--blue-bright)}
+  .hero .slogan{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.15rem,2.6vw,1.5rem);color:#FFD9D6;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:0 0 12px}
+  .hero p.lede{max-width:680px;color:#D7E4F7;font-size:1.06rem;margin:0 0 22px}
+  .hero-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;border-radius:10px;padding:13px 20px;font-size:1rem;border:2px solid transparent;cursor:pointer}
+  .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark)}
+  .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
+  .btn-ghost:hover{border-color:#fff}
+  .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#0F63D6}
+  .hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:30px;max-width:900px}
+  .hero-stats div{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:12px;padding:13px 15px}
+  .hero-stats b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:1.55rem;line-height:1;color:#fff}
+  .hero-stats span{font-size:.83rem;color:#BFD3F2}
+  @media(max-width:720px){.hero-stats{grid-template-columns:1fr 1fr}}
+
+  section{padding:46px 0 8px}
+  h2{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.7rem,3.6vw,2.4rem);text-transform:uppercase;line-height:1.05;margin:0 0 8px;color:var(--ink)}
+  h2 .accent{color:var(--red)}
+  .sub{color:var(--muted);max-width:760px;margin:0 0 22px}
+
+  /* ---------- DOCTRINE PIPE ---------- */
+  .pipe{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:22px}
+  .pipe-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  @media(max-width:860px){.pipe-steps{grid-template-columns:1fr}}
+  .pstep{padding:6px 16px 6px 0;position:relative}
+  .pstep + .pstep{border-left:1px solid var(--line);padding-left:16px}
+  @media(max-width:860px){.pstep + .pstep{border-left:none;border-top:1px solid var(--line);padding:14px 0 6px}}
+  .pstep .pn{display:inline-flex;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-weight:800;font-size:.85rem;align-items:center;justify-content:center;margin-bottom:7px}
+  .pstep h3{margin:0 0 4px;font-size:1rem}
+  .pstep p{margin:0;color:var(--muted);font-size:.9rem}
+  .pipe-note{margin:16px 0 0;background:var(--surface-2);border-radius:10px;padding:12px 15px;font-size:.93rem;color:var(--muted)}
+  .pipe-note b{color:var(--ink)}
+
+  /* ---------- CARDS ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:960px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:620px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:0 4px 16px rgba(10,38,92,.06);display:flex;flex-direction:column}
+  .card .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px}
+  .card h3{font-family:"Barlow Condensed",sans-serif;font-size:1.35rem;text-transform:uppercase;margin:0;line-height:1.05}
+  .card p{color:var(--muted);margin:0 0 12px;font-size:.96rem}
+  .card ul{margin:0;padding-left:18px;color:var(--muted);font-size:.92rem}
+  .card ul li{margin-bottom:4px}
+  .status{flex-shrink:0;font-size:.72rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .st-live{background:var(--good-bg);color:var(--good)}
+  .st-ready{background:var(--info-bg);color:var(--blue)}
+  @media (prefers-color-scheme: dark){ .st-ready{color:#8FB9F5} }
+  .st-progress{background:var(--amber-bg);color:var(--amber)}
+  .card .dest{margin-top:auto;padding-top:12px;border-top:1px dashed var(--line);font-size:.86rem;color:var(--muted)}
+  .card .dest b{color:var(--ink)}
+
+  /* ---------- RULE LIST (campaigns) ---------- */
+  .rule-list{list-style:none;margin:0;padding:0;counter-reset:rule}
+  .rule-list li{padding:13px 0 13px 44px;position:relative;border-bottom:1px solid var(--line)}
+  .rule-list li:last-child{border-bottom:none}
+  .rule-list li::before{counter-increment:rule;content:counter(rule);position:absolute;left:0;top:12px;width:30px;height:30px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+  .rule-list b{display:block}
+  .rule-list span{color:var(--muted);font-size:.93rem}
+
+  /* ---------- CREATIVE ---------- */
+  .getspeed{background:#0A0A0A;color:#fff;border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+  .getspeed .gs-line{font-family:"Barlow Condensed",sans-serif;font-size:clamp(1.5rem,4vw,2.2rem);line-height:1.25;text-transform:uppercase;letter-spacing:.02em}
+  .getspeed .gs-line b{color:#FF5B47}
+  .getspeed .gs-line span{color:#C9CED6}
+  .getspeed p{color:#AEB6C2;margin:14px 0 0;max-width:720px;font-size:.96rem}
+
+  /* ---------- MEASUREMENT ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:960px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.kpis{grid-template-columns:1fr}}
+  .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .kpi b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:1.25rem;line-height:1.1;text-transform:uppercase;color:var(--navy)}
+  @media (prefers-color-scheme: dark){ .kpi b{color:#fff} }
+  .kpi span{font-size:.86rem;color:var(--muted);display:block;margin-top:4px}
+
+  /* ---------- LINK CARDS / CTA ---------- */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.two-col{grid-template-columns:1fr}}
+  .link-card{display:block;text-decoration:none}
+  .link-card h3{color:var(--ink)}
+  .link-card .go{margin-top:auto;padding-top:12px;font-weight:800;color:var(--red)}
+  .cta-band{margin:52px 0 0;background:var(--navy);border-radius:18px;color:#fff;padding:30px;display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+  .cta-band h2{color:#fff;margin:0}
+  .cta-band p{color:#C9DBF6;margin:4px 0 0;max-width:560px}
+  footer{padding:30px 0 44px;color:var(--muted);font-size:.92rem}
+  footer .frow{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding-top:18px}
+  footer nav{display:flex;gap:18px;flex-wrap:wrap}
+  footer a{font-weight:600;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="checker" aria-hidden="true"></div>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="kicker"><i></i> Flywheel AI Advertising · HQ</span>
+    <h1>Top Speed Ads:<br>buy the <span class="accent">“right now”</span> searches</h1>
+    <p class="slogan">“The Faster, The Better.”</p>
+    <p class="lede">Top Speed Ads is the paid-media arm of Flywheel AI Advertising. It exists for one job: capture the Broward homeowner whose appliance just broke — and turn that search into an answered call and a booked job, never a vanity click.</p>
+    <div class="hero-cta">
+      <a class="btn btn-red" href="tel:+19549317997">Call 954-931-7997</a>
+      <a class="btn btn-ghost" href="/flywheel">Open the Flywheel console ↗</a>
+    </div>
+    <div class="hero-stats">
+      <div><b>Call-first</b><span>The win is an answered call that books — not a click</span></div>
+      <div><b>5 campaigns</b><span>General first; appliance campaigns split out on data</span></div>
+      <div><b>60 seconds</b><span>Minimum call length to count as a conversion</span></div>
+      <div><b>12 cities</b><span>Presence targeting across the real service areas</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ DOCTRINE ============ -->
+  <section id="doctrine">
+    <h2>The call-first doctrine</h2>
+    <p class="sub">Repair is an emergency purchase. The customer isn’t browsing — their fridge is warming up. So every campaign in this system is built around one chain, and every link in it is measured.</p>
+
+    <div class="pipe">
+      <div class="pipe-steps">
+        <div class="pstep"><span class="pn">1</span><h3>Search</h3><p>“Refrigerator repair near me” — high-intent, problem-first searches across the 12 service areas.</p></div>
+        <div class="pstep"><span class="pn">2</span><h3>Call</h3><p>Responsive Search Ads with a Call Asset: one tap dials (954) 931-7997. The number never appears typed in ad text.</p></div>
+        <div class="pstep"><span class="pn">3</span><h3>Answered</h3><p>Service Setters answer, confirm the issue, address and window — ad scheduling matches real answering coverage.</p></div>
+        <div class="pstep"><span class="pn">4</span><h3>Booked</h3><p>The appointment lands in the Service OS with its campaign attached, and the $99 diagnostic is collected at booking (residential).</p></div>
+      </div>
+      <p class="pipe-note"><b>Bidding follows the doctrine:</b> Maximize Conversions from day one, optimizing toward Phone Call Leads — with no Target CPA until real booked-job data earns one.</p>
+    </div>
+  </section>
+
+  <!-- ============ CHANNEL STACK ============ -->
+  <section id="channels">
+    <h2>The channel stack <span class="accent">&amp; honest status</span></h2>
+    <p class="sub">Three Google channels stack around the customer website, with Meta and retargeting as support. This is where each one actually stands today.</p>
+
+    <div class="grid">
+      <article class="card">
+        <div class="top"><h3>Google Business Profile / Maps</h3><span class="status st-live">Foundation</span></div>
+        <p>The free foundation of the stack — the listing and map presence every other channel leans on for trust.</p>
+        <ul>
+          <li>Profile listed as Top Speed Appliance Repair</li>
+          <li>Ownership verification in progress with Google (see Local OS)</li>
+          <li>Reviews from completed jobs land here</li>
+        </ul>
+        <p class="dest">Managed in: <b><a href="/local">Top Speed Local OS</a></b></p>
+      </article>
+
+      <article class="card">
+        <div class="top"><h3>Local Services Ads</h3><span class="status st-progress">Verification in progress</span></div>
+        <p>Pay-per-lead placement at the very top of local results. The account is set up — job types on, budget configured.</p>
+        <ul>
+          <li><b>Not live yet:</b> Business Profile verification must pass first</li>
+          <li>No Google Screened badge has been earned yet</li>
+          <li>Goes live the moment Google’s checks clear</li>
+        </ul>
+        <p class="dest">Status tracked in: <b><a href="/local">Top Speed Local OS</a></b></p>
+      </article>
+
+      <article class="card">
+        <div class="top"><h3>Google Search Ads</h3><span class="status st-ready">Draft built — publishes paused</span></div>
+        <p>The main engine: the “Call Top Speed” campaign system, built from the approved copy — Campaign 1 with its appliance ad groups.</p>
+        <ul>
+          <li>Campaign 1 draft is built in the account at a $50/day test budget</li>
+          <li>It publishes <b>paused</b> — no spend until the owner activates the budget</li>
+          <li>Presence targeting: people in or regularly in the 12 cities</li>
+        </ul>
+        <p class="dest">Lands on: <b>service pages + the Call Asset</b> · source-tagged into the intake</p>
+      </article>
+
+      <article class="card">
+        <div class="top"><h3>Meta Ads — FB / IG</h3><span class="status st-progress">Pending</span></div>
+        <p>Facebook and Instagram reach for homeowner messaging and brand presence across Broward.</p>
+        <ul>
+          <li>Campaign copy is written and approved</li>
+          <li><b>Blocked honestly:</b> no Top Speed Appliance Facebook Page exists yet — the campaign launches when the Page does</li>
+        </ul>
+        <p class="dest">Lands on: <b>lead forms → Top Speed Leads intake</b></p>
+      </article>
+
+      <article class="card">
+        <div class="top"><h3>Retargeting</h3><span class="status st-ready">Blueprint</span></div>
+        <p>“Still need that appliance fixed?” — recapturing site visitors who looked but didn’t call.</p>
+        <ul>
+          <li>Message and audience design complete</li>
+          <li>Activates once Search traffic volume justifies it</li>
+        </ul>
+        <p class="dest">Lands on: <b>the matching service page</b></p>
+      </article>
+
+      <article class="card">
+        <div class="top"><h3>Flyers &amp; Print</h3><span class="status st-ready">Designs ready</span></div>
+        <p>Offline media run like an ad channel: full-page flyer, door hanger and leave-behind, each with a QR code into booking.</p>
+        <ul>
+          <li>Print-ready designs in the brand theme</li>
+          <li>$99 diagnostic terms and the phone number on every piece</li>
+          <li>QR scans source-tagged by placement</li>
+        </ul>
+        <p class="dest">Lands on: <b>QR → mobile booking</b></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ CAMPAIGN ARCHITECTURE ============ -->
+  <section id="campaigns">
+    <div class="card">
+      <h3 style="margin-bottom:6px;font-size:1.6rem">Campaign architecture — 1 to 5</h3>
+      <p>Build Campaign 1 first, with its ad groups, responsive search ads, keywords, negatives and conversion tracking. Then let actual lead and job performance decide when Campaigns 2–5 split out.</p>
+      <ol class="rule-list">
+        <li><b>Campaign 1 · General + “Call Top Speed”</b><span>The launch campaign: one general structure with appliance ad groups (Refrigerator, Washer &amp; Dryer, Oven &amp; Range, Dishwasher, General), phrase/exact keywords, and Phone Call Leads as the primary goal. Draft built; publishes paused.</span></li>
+        <li><b>Campaign 2 · Refrigerator Repair</b><span>The highest-urgency category — food at risk means the fastest decisions. Split out with its own budget when the data justifies it.</span></li>
+        <li><b>Campaign 3 · Washer &amp; Dryer</b><span>Laundry intent with problem-led copy: not draining, not heating, not spinning.</span></li>
+        <li><b>Campaign 4 · Oven &amp; Range</b><span>Cooking intent with problem-led copy: not heating, won’t ignite, temperature off.</span></li>
+        <li><b>Campaign 5 · Property Managers</b><span>A separate B2B campaign — one dispatch, multiple properties, tenant scheduling and documentation — feeding Appliance Pro Commercial Accounts. Commercial work is quoted per facility.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ CREATIVE SYSTEM ============ -->
+  <section id="creative">
+    <h2>The creative system <span class="accent">— one hook, every channel</span></h2>
+    <p class="sub">The strongest advertising concept is the brand itself. One repeatable system runs on search, social, print and video: the customer’s problem, the Top Speed name, and a call to act now.</p>
+
+    <div class="getspeed">
+      <div class="gs-line"><b>GET TOP SPEED.</b> <span>— Refrigerator Repair</span></div>
+      <div class="gs-line"><b>GET TOP SPEED.</b> <span>— Washer Repair</span></div>
+      <div class="gs-line"><b>GET TOP SPEED.</b> <span>— Dryer Repair</span></div>
+      <div class="gs-line"><b>GET TOP SPEED.</b> <span>— Oven Repair</span></div>
+      <div class="gs-line"><b>GET TOP SPEED.</b> <span>— Same-Day Appliance Service</span></div>
+      <p>Supporting voices run underneath the hook: homeowner problem lines (“Don’t Replace It — Repair It.” · “Cold Food at Risk? Call Refrigerator Repair.”), the property-manager line (“One Dispatch. Multiple Properties.”), and the retargeting line (“Still Need That Appliance Fixed?”). Copy law: no claim the operation can’t keep — no invented response times, no “lowest price,” nothing we can’t do.</p>
+    </div>
+  </section>
+
+  <!-- ============ MEASUREMENT ============ -->
+  <section id="measurement">
+    <h2>Measurement <span class="accent">— the numbers that run Ads</span></h2>
+    <p class="sub">Clicks are a cost; booked jobs are the product. A call only counts as a conversion at <b>60 seconds</b> or longer — a five-second wrong number teaches Google nothing. Bidding starts at <b>Maximize Conversions</b> with no Target CPA, and the budget ramp ($30 → $50 → $75 → $100/day) is earned by booked-job evidence, not enthusiasm.</p>
+
+    <div class="kpis">
+      <div class="kpi"><b>Cost per qualified lead</b><span>Spend ÷ real inquiries — calls ≥ 60 sec, forms, bookings</span></div>
+      <div class="kpi"><b>Cost per booked job</b><span>The number every budget answers to</span></div>
+      <div class="kpi"><b>Close rate</b><span>Booked ÷ qualified, per source and campaign</span></div>
+      <div class="kpi"><b>Speed-to-lead</b><span>Minutes from inquiry to first response — the brand promise, measured</span></div>
+      <div class="kpi"><b>Review velocity</b><span>New Google reviews per week, fed by the Local OS reviews engine</span></div>
+    </div>
+  </section>
+
+  <!-- ============ LINKS ============ -->
+  <section id="explore">
+    <div class="two-col">
+      <a class="card link-card" href="/flywheel">
+        <h3>📣 The Flywheel Console</h3>
+        <p>The full growth engine — Attract → Book → Serve → Review → Refer → Reinvest — with channel status, the ad-asset library and the compounding simulator.</p>
+        <div class="go">Open the Flywheel →</div>
+      </a>
+      <a class="card link-card" href="/local">
+        <h3>📍 Top Speed Local OS</h3>
+        <p>The local presence system behind the ads: listings core, the reviews engine, and the interactive service directory — 12 cities × 9 services.</p>
+        <div class="go">Open Local OS →</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ CTA ============ -->
+  <div class="cta-band">
+    <div>
+      <h2>Broken appliance? Get Top Speed.</h2>
+      <p>Call now and a Service Setter will book your repair. $99 diagnostic, credited toward your repair (residential).</p>
+    </div>
+    <a class="btn btn-red" href="tel:+19549317997">Call 954-931-7997</a>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <span>© Top Speed Appliance LLC — Top Speed Ads, part of Flywheel AI Advertising on the Top Speed Service OS. “The Faster, The Better.”</span>
+      <nav>
+        <a href="/">Platform home</a>
+        <a href="/flywheel">Flywheel</a>
+        <a href="/local">Local OS</a>
+        <a href="/portal">Portal</a>
+        <a href="tel:+19549317997">954-931-7997</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
