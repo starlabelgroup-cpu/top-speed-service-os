@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speedy Live Video — Top Speed Appliance</title>
+<meta name="description" content="Show us your appliance problem live on video. A Top Speed technician looks at it with you — arranged by our Service Setters: immediate, scheduled, or manager-assisted.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:14px 26px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn:disabled{opacity:.55;cursor:default}
+.phone{font-weight:800;color:#fff}
+.hero{background:var(--navy2);color:#fff;text-align:center;padding:52px 24px 40px}
+.hero h1{font-size:36px;margin-bottom:12px}
+.hero p{color:#b9cdf0;font-size:18px;max-width:680px;margin:0 auto;line-height:1.55}
+section{max-width:980px;margin:0 auto;padding:44px 24px}
+h2{font-size:28px;color:var(--navy);margin-bottom:10px}
+.sub{color:var(--muted);margin-bottom:24px;font-size:16px;line-height:1.55}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.card{background:var(--light);border-radius:14px;padding:26px}
+.card h3{color:var(--navy);margin-bottom:10px;font-size:20px}
+.card p{color:var(--muted);font-size:15px;line-height:1.55}
+.joinbox{max-width:760px;margin:-22px auto 0;background:#fff;border:1px solid #dbe6f3;border-radius:14px;box-shadow:0 10px 30px rgba(7,31,79,.12);padding:24px 28px;position:relative;text-align:center}
+.joinbox h2{font-size:24px}
+#jitsiMount{margin-top:18px;border-radius:12px;overflow:hidden;background:#0a265c;min-height:120px}
+#jitsiMount iframe{border:0;width:100%;height:560px;display:block}
+form.f{display:grid;gap:12px;max-width:560px}
+form.f label{font-weight:700;color:var(--navy);font-size:14px}
+form.f input,form.f select,form.f textarea{width:100%;padding:12px;border:1px solid #c9d8ec;border-radius:10px;font-size:16px;font-family:inherit;margin-top:4px}
+.msg{font-weight:600;min-height:22px;margin-top:12px}
+.msg.ok{color:var(--green)} .msg.err{color:var(--red)}
+.note{font-size:13px;color:var(--muted);line-height:1.55;margin-top:14px}
+footer{background:#04122e;color:#9db6d8;padding:36px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+  <img class="flag" src="/flag.jpg" alt="Top Speed checkered flag">
+  <div class="brand">TOP <span>SPEED</span> APPLIANCE</div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/#services">Services</a>
+    <a href="/#book">Book Service</a>
+    <a href="/app">Open the App</a>
+    <a class="phone" href="tel:+19549317997">954-931-7997</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Speedy Live Video</h1>
+  <p>Show us the problem, live. Instead of describing the noise, the leak, or the error code, point your camera at it — a Top Speed technician looks at it with you and tells you the next step.</p>
+</div>
+
+<div class="joinbox hidden" id="joinBox">
+  <h2 id="joinTitle">Your video consultation</h2>
+  <p class="sub" id="joinSub" style="margin-bottom:6px;">Loading your room…</p>
+  <button class="btn blue hidden" id="joinBtn" onclick="joinRoom()">Join the video call</button>
+  <div id="jitsiMount"></div>
+  <p class="note">Your camera and microphone are only used inside the call, and only after you tap join. The call runs over our video partner's secure link (Jitsi) — nothing to install.</p>
+</div>
+
+<section>
+  <h2>How it works</h2>
+  <p class="sub">Every video consultation is arranged by our Service Setters team — the same people who run our dispatch — in one of three ways:</p>
+  <div class="grid">
+    <div class="card"><h3>⚡ Immediate</h3><p>A qualified technician is free right now. You get your join link and you're face-to-face in minutes.</p></div>
+    <div class="card"><h3>🗓️ Scheduled</h3><p>Nobody's free this minute, so we book the video call for a time that works and send your link ahead of it.</p></div>
+    <div class="card"><h3>👥 Manager-assisted</h3><p>When a manager should be on the call too — tricky diagnosis, a big decision — they join with the technician.</p></div>
+  </div>
+</section>
+
+<section style="padding-top:0;">
+  <h2>Request a video consultation</h2>
+  <p class="sub">Tell us who you are and what to look at. A Service Setter reviews every request, picks the mode that fits, and sends your join link by text. The video consultation helps us see the problem — the repair itself still starts with the $99 diagnostic visit, credited toward your repair.</p>
+  <form class="f" id="videoForm" onsubmit="return submitRequest(event)">
+    <div><label>Your name<input id="vName" type="text" autocomplete="name" placeholder="Full name" required></label></div>
+    <div><label>Mobile phone<input id="vPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" required></label></div>
+    <div><label>Appliance
+      <select id="vAppliance" required>
+        <option value="">Choose…</option>
+        <option>Refrigerator</option><option>Freezer / Ice Maker</option><option>Washer</option><option>Dryer</option>
+        <option>Oven / Range</option><option>Dishwasher</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option>
+      </select></label></div>
+    <div><label>What's going on? (optional)<textarea id="vNote" rows="3" placeholder="e.g. Fridge is making a clicking noise and the freezer isn't cold"></textarea></label></div>
+    <div><label>Booking reference, if you have one (optional)<input id="vRef" type="text" placeholder="TS-XXXXXX"></label></div>
+    <div><button class="btn" id="vSubmit" type="submit">Request my video consultation</button></div>
+    <p class="msg" id="vMsg"></p>
+  </form>
+  <p class="note">Safety first: if you smell gas, see sparking, or have flooding, don't wait on a video call — stop using the appliance and call us at <a href="tel:+19549317997" style="color:var(--blue);font-weight:700;">954-931-7997</a> (911 for gas or fire emergencies).</p>
+</section>
+
+<section style="padding-top:0;">
+  <h2>Already have a join link?</h2>
+  <p class="sub">Paste the room code from your text — it's the part after <b>?room=</b> — and we'll take you to your consultation.</p>
+  <form class="f" onsubmit="return gotoRoom(event)">
+    <div><label>Room code<input id="roomCode" type="text" placeholder="topspeed-…"></label></div>
+    <div><button class="btn ghost" type="submit">Go to my room</button></div>
+  </form>
+</section>
+
+<footer>
+  <strong>Top Speed Appliance</strong> — The Faster, The Better.<br>
+  Appliance repair &amp; service across Broward County · <a href="tel:+19549317997" style="color:#fff;font-weight:700;">954-931-7997</a>
+</footer>
+
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var roomData = null;
+
+function getRoomParam(){
+  var m = /[?&]room=([^&]+)/.exec(location.search);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function loadRoom(){
+  var room = getRoomParam();
+  if(!room) return;
+  var box = document.getElementById('joinBox');
+  box.classList.remove('hidden');
+  box.scrollIntoView({behavior:'smooth'});
+  fetch(API + '/video/room/' + encodeURIComponent(room))
+    .then(function(r){ if(!r.ok) throw new Error('not found'); return r.json(); })
+    .then(function(j){
+      roomData = j.data;
+      document.getElementById('joinTitle').textContent = 'Your ' + roomData.appliance + ' consultation';
+      document.getElementById('joinSub').textContent = 'Hi ' + roomData.customerFirstName + ' — your Top Speed technician meets you here. Mode: ' + String(roomData.mode || '').replace(/_/g,' ').toLowerCase() + '. Tap join when you are ready.';
+      document.getElementById('joinBtn').classList.remove('hidden');
+    })
+    .catch(function(){
+      document.getElementById('joinTitle').textContent = 'Room not found';
+      document.getElementById('joinSub').textContent = 'That room code does not match a consultation. Check the link from your text, or call us at 954-931-7997.';
+    });
+}
+
+function joinRoom(){
+  if(!roomData) return;
+  var btn = document.getElementById('joinBtn');
+  btn.disabled = true; btn.textContent = 'Opening your call…';
+  function mount(){
+    var api = new JitsiMeetExternalAPI('meet.jit.si', {
+      roomName: roomData.roomName,
+      parentNode: document.getElementById('jitsiMount'),
+      width: '100%',
+      height: 560,
+      userInfo: { displayName: roomData.customerFirstName + ' (customer)' },
+      configOverwrite: { prejoinPageEnabled: true, disableDeepLinking: true },
+      interfaceConfigOverwrite: { MOBILE_APP_PROMO: false }
+    });
+    btn.classList.add('hidden');
+  }
+  if(window.JitsiMeetExternalAPI){ mount(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://meet.jit.si/external_api.js';
+  s.onload = mount;
+  s.onerror = function(){
+    btn.disabled = false; btn.textContent = 'Join the video call';
+    document.getElementById('jitsiMount').innerHTML = '<p style="color:#fff;padding:22px;">The video service did not load here — <a style="color:#9db6d8;text-decoration:underline;" target="_blank" rel="noopener" href="' + roomData.providerRoomUrl + '">open your room in a new tab</a> instead.</p>';
+  };
+  document.head.appendChild(s);
+}
+
+function gotoRoom(e){
+  e.preventDefault();
+  var code = document.getElementById('roomCode').value.trim();
+  if(code){
+    var m = /room=([^&]+)/.exec(code);
+    location.search = '?room=' + encodeURIComponent(m ? m[1] : code);
+  }
+  return false;
+}
+
+function submitRequest(e){
+  e.preventDefault();
+  var msg = document.getElementById('vMsg');
+  var btn = document.getElementById('vSubmit');
+  var payload = {
+    customerName: document.getElementById('vName').value.trim(),
+    phone: document.getElementById('vPhone').value.trim(),
+    appliance: document.getElementById('vAppliance').value,
+    note: document.getElementById('vNote').value.trim() || undefined,
+    bookingReference: document.getElementById('vRef').value.trim() || undefined
+  };
+  if(payload.customerName.length < 2 || payload.phone.replace(/\D/g,'').length < 7 || !payload.appliance){
+    msg.className = 'msg err'; msg.textContent = 'Please add your name, a valid phone, and the appliance.';
+    return false;
+  }
+  btn.disabled = true; btn.textContent = 'Sending…';
+  fetch(API + '/video/requests', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || 'Request failed'); return j; }); })
+    .then(function(j){
+      msg.className = 'msg ok'; msg.textContent = j.data.message;
+      btn.textContent = 'Request sent ✓';
+      document.getElementById('videoForm').reset();
+    })
+    .catch(function(err){
+      msg.className = 'msg err'; msg.textContent = 'Something went wrong sending that — please call 954-931-7997 and we will set it up by phone.';
+      btn.disabled = false; btn.textContent = 'Request my video consultation';
+    });
+  return false;
+}
+
+loadRoom();
+</script>
+<script src="/install.js"></script>
+</body>
+</html>

@@ -158,6 +158,8 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div class="cols" id="dispatchCols"></div></section>
 
 <!-- REMINDERS -->
+<section class="panel"><div class="ph"><div><h2>· Speedy Live Video</h2><p>Customers who asked to show the problem live (from the /video page). Arrange a request to create its room — the customer gets the join link by text, and both sides join on the video page.</p></div><span class="badge" id="vidCount">STAFF</span></div><div id="videoList"><p style="color:var(--muted)">Sign in above to work the live video requests.</p></div></section>
+
 <section class="panel reminders"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div class="remgrid" id="rems"></div></section>
 
@@ -444,6 +446,51 @@ function renderLiveToday(board){
 if(tsosToken()){
   apiFetch('/auth/me').then(function(j){ enterLive(j.user); loadLive(); }).catch(function(){ localStorage.removeItem('tsos_token'); });
 }
+</script>
+
+
+<script>
+/* ============ BOOK OS — SPEEDY LIVE VIDEO (LIVE) ============ */
+var V_API='https://top-speed-service-os.vercel.app/api/v1';
+function vTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function escV(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var VBTN='style="padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-weight:600;"';
+function loadVideoRequests(){
+  var box=document.getElementById('videoList'); if(!box||!vTok()) return;
+  fetch(V_API+'/video/requests',{headers:{'Authorization':'Bearer '+vTok()}})
+    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+    .then(function(j){
+      var list=j.data||[];
+      var badge=document.getElementById('vidCount'); if(badge) badge.textContent=list.filter(function(x){return x.status==='PENDING';}).length+' waiting';
+      if(!list.length){ box.innerHTML='<p style="color:var(--muted)">No video requests yet \\u2014 they appear here the moment a customer asks on the /video page.</p>'; return; }
+      box.innerHTML=list.map(function(v){
+        var actions='';
+        if(v.status==='PENDING'||v.status==='ROOM_READY'){
+          actions='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center;">'
+            +'<select id="vmode-'+v.id+'" style="padding:8px;border:1px solid var(--line);border-radius:8px;">'
+            +'<option value="IMMEDIATE">\\u26a1 Immediate</option><option value="SCHEDULED">\\ud83d\\uddd3\\ufe0f Scheduled</option><option value="MANAGER_ASSISTED">\\ud83d\\udc65 Manager-assisted</option></select>'
+            +'<button '+VBTN+' onclick="arrangeVideo(\''+v.id+'\')">'+(v.status==='PENDING'?'Arrange + create room':'Re-arrange')+'</button>'
+            +(v.joinUrl?'<a '+VBTN+' target="_blank" rel="noopener" href="'+v.joinUrl+'">Open room page</a>':'')
+            +'<button '+VBTN+' onclick="completeVideo(\''+v.id+'\')">Mark done</button></div>';
+        }
+        return '<div class="qcard"><div class="qmain"><b>'+escV(v.customerName)+'</b> \\u2014 '+escV(v.appliance)+(v.bookingReference?' \\u00b7 '+escV(v.bookingReference):'')+'<br><span style="color:var(--muted)">'+escV(v.phone)+(v.note?' \\u00b7 '+escV(v.note):'')+'</span></div><span class="badge">'+escV(v.status.replace(/_/g,' '))+'</span></div>'+actions;
+      }).join('');
+    })
+    .catch(function(){ box.innerHTML='<p style="color:var(--muted)">Could not load video requests right now.</p>'; });
+}
+function arrangeVideo(id){
+  var sel=document.getElementById('vmode-'+id);
+  fetch(V_API+'/video/requests/'+id+'/arrange',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+vTok()},body:JSON.stringify({mode:sel?sel.value:'IMMEDIATE'})})
+    .then(function(r){ if(!r.ok) throw new Error('x'); return r.json(); })
+    .then(function(){ loadVideoRequests(); })
+    .catch(function(){ alert('Arrange failed \\u2014 try again.'); });
+}
+function completeVideo(id){
+  fetch(V_API+'/video/requests/'+id+'/complete',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+vTok()},body:'{}'})
+    .then(function(){ loadVideoRequests(); });
+}
+setInterval(function(){ if(vTok()) loadVideoRequests(); }, 30000);
+if(vTok()) loadVideoRequests();
 </script>
 
 <script src="/install.js"></script>
