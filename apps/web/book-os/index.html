@@ -371,6 +371,7 @@ function liveResched(i){
     .catch(function(e){ toast('Reschedule failed: '+e.message); });
 }
 var BOARD_COLS=[['PENDING_DISPATCH','New'],['MATCH_PENDING_APPROVAL','Awaiting Approval'],['CONFIRMED','Confirmed / Dispatched'],['COMPLETED','Complete']];
+var liveCandidates={};
 function renderLiveBoard(board){
   var counts=board.counts||{};
   document.getElementById('mAwait').textContent=counts['MATCH_PENDING_APPROVAL']||0;
@@ -381,9 +382,47 @@ function renderLiveBoard(board){
     return '<div class="col"><h3>'+col[1]+' <span>'+items.length+'</span></h3>'+(items.length?items.map(function(b){
       var appt=b.appointment&&b.appointment.status==='SET'?('Appt: '+dateLabel(b.appointment.date)+' \u00b7 '+escH(b.appointment.windowLabel||'')):'No appointment set yet';
       var prov=b.providerId?'Provider assigned':'Awaiting match';
-      return '<article class="dcard"><b>'+escH(b.appliance||'Appliance job')+'</b> <span style="color:var(--mut);font-size:11px">'+escH(b.referenceCode||'')+'</span><p>\ud83d\udccd '+escH(b.city||'')+'</p><p>'+escH(b.customerName||'')+' \u00b7 '+appt+'</p><div class="score"><span>\ud83d\udc68\u200d\ud83d\udd27 '+prov+'</span><strong>'+escH(b.source||'')+'</strong></div></article>';
+      var actions='';
+      if(col[0]==='PENDING_DISPATCH'){
+        actions='<button class="btn primary" onclick="liveMatch(\''+b.bookingId+'\')">Auto-Match \u2192</button>';
+      } else if(col[0]==='MATCH_PENDING_APPROVAL'){
+        var cands=liveCandidates[b.bookingId];
+        if(cands&&cands.length){
+          actions=cands.map(function(c){
+            return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:12px"><b>'+escH(c.businessName)+'</b> \u00b7 '+c.matchScore+'% match'+(c.rating?' \u00b7 '+c.rating+'\u2605':'')+'</span><button class="btn primary" onclick="liveApprove(\''+b.bookingId+'\',\''+c.providerId+'\',this)">\u2713 Approve</button></div>';
+          }).join('');
+        } else {
+          actions='<button class="btn primary" onclick="liveMatch(\''+b.bookingId+'\')">Show Match Candidates</button>';
+        }
+      } else if(col[0]==='CONFIRMED'){
+        actions='<button class="btn primary" onclick="liveComplete(\''+b.bookingId+'\',\''+escH(b.referenceCode||'')+'\')">Complete Job \u2713</button>';
+      } else if(col[0]==='COMPLETED'){
+        actions='<span style="font-size:12px;color:var(--green);font-weight:800">\u2605 Review engine fired</span>';
+      }
+      return '<article class="dcard"><b>'+escH(b.appliance||'Appliance job')+'</b> <span style="color:var(--mut);font-size:11px">'+escH(b.referenceCode||'')+'</span><p>\ud83d\udccd '+escH(b.city||'')+'</p><p>'+escH(b.customerName||'')+' \u00b7 '+appt+'</p><div class="score"><span>\ud83d\udc68\u200d\ud83d\udd27 '+prov+'</span><strong>'+escH(b.source||'')+'</strong></div><div class="actions">'+actions+'</div></article>';
     }).join(''):'<div class="empty">No jobs</div>')+'</div>';
   }).join('');
+}
+function liveMatch(bookingId){
+  apiFetch('/dispatch/match',{method:'POST',body:JSON.stringify({bookingId:bookingId})})
+    .then(function(j){
+      liveCandidates[bookingId]=j.data.candidates||[];
+      if(!liveCandidates[bookingId].length){ toast('No provider scored high enough for this job yet \u2014 check the network roster'); }
+      else{ toast('AI matched '+liveCandidates[bookingId].length+' candidate(s) \u2014 setter approval required'); }
+      loadLive();
+    })
+    .catch(function(e){ toast('Match failed: '+e.message); });
+}
+function liveApprove(bookingId,providerId,btn){
+  apiFetch('/dispatch/approve',{method:'POST',body:JSON.stringify({bookingId:bookingId,providerId:providerId,approvedBy:(staffUser?staffUser.email:'Service Setters')})})
+    .then(function(j){ delete liveCandidates[bookingId]; toast('\u2713 Dispatched \u2014 provider approved and notified'); loadLive(); })
+    .catch(function(e){ toast('Approve failed: '+e.message); });
+}
+function liveComplete(bookingId,ref){
+  if(!confirm('Mark '+(ref||'this job')+' complete? This queues the customer review request and issues their referral code.')) return;
+  apiFetch('/bookings/'+bookingId+'/complete',{method:'POST',body:JSON.stringify({completedBy:(staffUser?staffUser.email:'Service Setters')})})
+    .then(function(j){ toast('\u2713 Job complete \u2014 review request queued, referral code issued'); loadLive(); })
+    .catch(function(e){ toast('Complete failed: '+e.message); });
 }
 function renderLiveToday(board){
   var groups=board.groups||{}; var t=todayStr(); var byWin={};
