@@ -71,6 +71,35 @@ footer a{color:#cfe0f7;text-decoration:none}
   </div>
   <div class="panel" id="winPanel"><h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today's appointments by window</h3><div class="bars"><div style="height:55%"><span>8–10 AM</span></div><div style="height:85%"><span>10–12 PM</span></div><div style="height:65%"><span>12–2 PM</span></div><div style="height:95%"><span>2–4 PM</span></div><div style="height:45%"><span>4–6 PM</span></div></div><div style="height:22px"></div></div>
 
+  <h2 class="sec" id="team">Team accounts</h2>
+  <p class="sub">Owner only — staff and provider accounts are created here, never by self-registration. <span class="demo" id="teamNote">Sign in with the owner account (on the Book OS page, same browser) and this panel opens.</span></p>
+  <div class="panel" id="teamPanel" style="display:none;">
+    <div id="teamList" style="margin-bottom:18px;"></div>
+    <h3 style="font-size:15px;color:var(--navy);margin-bottom:10px;">Add a team account</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
+      <label>First name<input id="tFirst" type="text" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+      <label>Last name<input id="tLast" type="text" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+      <label>Email<input id="tEmail" type="email" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+      <label>Mobile phone<input id="tPhone" type="tel" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+      <label>Role
+        <select id="tRole" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+          <option value="DISPATCHER">Service Setter / Dispatcher</option>
+          <option value="COMPANY_ADMIN">Company Admin</option>
+          <option value="PROVIDER_TECH">Provider Technician (Tech App)</option>
+          <option value="PROVIDER_OWNER">Provider Owner (Tech App)</option>
+        </select></label>
+      <label id="tCompanyRow" style="display:none;">Provider company
+        <select id="tCompany" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></select></label>
+      <label>Temporary password<input id="tPass" type="text" autocomplete="off" placeholder="10+ characters" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;">
+      <button id="tGen" style="padding:10px 16px;border:1px solid #D8E1EE;border-radius:10px;background:#fff;cursor:pointer;font-weight:600;">Generate password</button>
+      <button id="tCreate" style="padding:10px 20px;border:0;border-radius:10px;background:#1473ff;color:#fff;cursor:pointer;font-weight:700;">Create account</button>
+      <span id="tMsg" style="font-weight:600;"></span>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-top:12px;">Give the person their email + temporary password yourself (text or in person — never in a group chat). They sign in at Book OS (setters/dispatch) or the Tech App (providers) and can change the password from their account. One person, one account; when someone leaves, tell Pepper to deactivate it.</p>
+  </div>
+
   <h2 class="sec">Run the operation</h2>
   <p class="sub">Pick your desk — each console is a working preview of its part of the Service OS.</p>
   <div class="grid">
@@ -135,6 +164,70 @@ footer a{color:#cfe0f7;text-decoration:none}
       }
     })
     .catch(function(){ var n=document.getElementById('kpiNote'); if(n) n.textContent='Preview data \u2014 your staff sign-in has expired; sign in again on the Book OS page.'; });
+})();
+</script>
+
+
+<script>
+/* Team accounts — owner/admin only. The API enforces it (account list and
+   role grants require PLATFORM_ADMIN / COMPANY_OWNER); this panel just
+   stays hidden for anyone else. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var PLATFORM='10000000-0000-4000-8000-000000000001';
+  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
+  if(!tok) return;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function get(path){ return fetch(API+path,{headers:{'Authorization':'Bearer '+tok}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  var companies=[];
+  function companyName(id){ if(id===PLATFORM) return 'Top Speed (platform)'; for(var i=0;i<companies.length;i++){ if(companies[i].companyId===id) return companies[i].businessName; } return 'Company '+String(id||'').slice(0,8)+'\u2026'; }
+  function loadTeam(){
+    get('/auth/users').then(function(j){
+      var users=j.data||[];
+      document.getElementById('teamList').innerHTML='<h3 style="font-size:15px;color:var(--navy);margin-bottom:10px;">Your team \u00b7 '+users.length+' accounts</h3>'+
+        users.map(function(u){ return '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;border:1px solid #D8E1EE;border-radius:10px;padding:10px 14px;margin-bottom:8px;"><span><b>'+esc(((u.firstName||'')+' '+(u.lastName||'')).trim()||u.email)+'</b> \u00b7 '+esc(u.email)+(u.phone?' \u00b7 '+esc(u.phone):'')+'</span><span style="color:var(--muted);">'+esc((u.roles||[]).join(', '))+' \u00b7 '+esc(companyName(u.companyId))+(u.active?'':' \u00b7 INACTIVE')+'</span></div>'; }).join('');
+    }).catch(function(){});
+  }
+  get('/auth/me').then(function(j){
+    var roles=(j.user&&j.user.roles)||[];
+    if(!(roles.indexOf('COMPANY_OWNER')>=0||roles.indexOf('PLATFORM_ADMIN')>=0)) return;
+    document.getElementById('teamPanel').style.display='';
+    document.getElementById('teamNote').textContent='You are signed in as the owner \u2014 create accounts and see the whole team below.';
+    get('/provider/companies').then(function(cj){
+      companies=cj.data||[];
+      var sel=document.getElementById('tCompany');
+      sel.innerHTML=companies.map(function(c){ return '<option value="'+c.companyId+'">'+esc(c.businessName)+'</option>'; }).join('');
+      loadTeam();
+    }).catch(function(){ loadTeam(); });
+    var roleSel=document.getElementById('tRole');
+    function syncCompany(){ var prov=['PROVIDER_TECH','PROVIDER_OWNER'].indexOf(roleSel.value)>=0; document.getElementById('tCompanyRow').style.display=prov?'':'none'; }
+    roleSel.addEventListener('change', syncCompany); syncCompany();
+    document.getElementById('tGen').addEventListener('click', function(){
+      var chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#', pw='';
+      for(var i=0;i<14;i++) pw+=chars[Math.floor(Math.random()*chars.length)];
+      document.getElementById('tPass').value=pw;
+      document.getElementById('tMsg').textContent='Temporary password generated \u2014 it is in the field, ready to create.';
+      document.getElementById('tMsg').style.color='var(--muted)';
+    });
+    document.getElementById('tCreate').addEventListener('click', function(){
+      var msg=document.getElementById('tMsg');
+      var body={ email:document.getElementById('tEmail').value.trim(), password:document.getElementById('tPass').value,
+        firstName:document.getElementById('tFirst').value.trim()||undefined, lastName:document.getElementById('tLast').value.trim()||undefined,
+        phone:document.getElementById('tPhone').value.trim()||undefined, role:roleSel.value };
+      if(['PROVIDER_TECH','PROVIDER_OWNER'].indexOf(roleSel.value)>=0){ body.companyId=document.getElementById('tCompany').value; }
+      if(!/.+@.+\..+/.test(body.email)){ msg.textContent='Add a valid email.'; msg.style.color='#e01a22'; return; }
+      if(!body.password||body.password.length<10){ msg.textContent='Temporary password needs 10+ characters \u2014 tap Generate.'; msg.style.color='#e01a22'; return; }
+      msg.textContent='Creating\u2026'; msg.style.color='var(--muted)';
+      fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(body)})
+        .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); })
+        .then(function(j){
+          msg.textContent='Account created for '+j.user.email+' ('+(j.user.roles||[]).join(', ')+'). Give them the temporary password you set \u2014 they sign in and change it.';
+          msg.style.color='#0f7a3d';
+          loadTeam();
+        })
+        .catch(function(e){ msg.textContent='Could not create: '+e.message; msg.style.color='#e01a22'; });
+    });
+  }).catch(function(){});
 })();
 </script>
 
