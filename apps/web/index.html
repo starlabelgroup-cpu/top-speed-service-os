@@ -774,7 +774,7 @@ footer a{color:#D7E6FF}
 <div id="speedyPanel" role="dialog" aria-label="Ask Speedy chat assistant">
   <div class="sp-head">
     <div class="av">🏎️</div>
-    <div><b>Speedy</b><small>Top Speed AI assistant • Preview</small></div>
+    <div><b>Speedy</b><small>Top Speed AI assistant • Live</small></div>
     <button onclick="toggleSpeedy()" aria-label="Close chat">×</button>
   </div>
   <div class="sp-quick">
@@ -1032,37 +1032,37 @@ function toggleSpeedy(){
 function addMsg(text,me){
   var d=document.createElement('div'); d.className='msg '+(me?'me':'bot'); d.textContent=text;
   var body=document.getElementById('spBody'); body.appendChild(d); body.scrollTop=body.scrollHeight;
+  return d;
 }
 function botSay(t){ setTimeout(function(){addMsg(t,false);},260); }
-function speedyAnswer(qraw){
-  var q=qraw.toLowerCase();
-  if(/book|appointment|schedule|visit/.test(q)) return 'Easy — tap "Book a Repair" and pick a day + window; it takes about 60 seconds. The $99 diagnostic is collected at booking and credited toward your repair, and dispatch confirms by phone. Want me to open it? Just scroll to Smart Booking, or call 954-931-7997.';
-  if(/99|diagnostic|cost|price|charge|fee|estimate|much/.test(q)) return 'The diagnostic is $99, collected at booking — and credited in full toward your repair when you approve the work. You always approve a flat quote before repairs start. Try the Instant Price Estimator in the Diagnose Lab for a planning range.';
-  if(/fridge|refrigerator|cool/.test(q)) return 'Warm fridge? Check the vents aren\u2019t blocked and the coils are clean first. Still warm after a few hours — likely a fan, defrost or sealed-system issue. The Photo Diagnosis in the Diagnose Lab can give you a head start, then book the $99 diagnostic.';
-  if(/washer|drain|spin/.test(q)) return 'Washer won\u2019t drain is usually the pump or a clog in the trap — very fixable. Dryer with no heat is often a thermal fuse or element. I can estimate either in the Diagnose Lab, or book a visit and we\u2019ll confirm in person.';
-  if(/dryer|heat/.test(q)) return 'No-heat dryers: thermal fuse and element are the usual suspects — and a clogged vent is often the root cause, so we check that too. Want a range? Try the Estimator, or book the $99 diagnostic (credited toward repair).';
-  if(/oven|stove|range/.test(q)) return 'Oven not heating is commonly the igniter (gas) or bake element (electric) — both are standard same-visit repairs when parts are on the truck. Book a window and we\u2019ll confirm the flat price after diagnosis.';
-  if(/city|area|serve|come to|location|zip|near/.test(q)){
-    var hit=CITIES.find(function(c){return q.indexOf(c.toLowerCase())>=0;});
-    if(hit) return 'Yes! '+hit+' is one of our 12 core Broward cities — same-day windows are offered there. Book online or call 954-931-7997.';
-    return 'We cover 12 core Broward cities: '+CITIES.join(', ')+'. If you\u2019re just outside, call 954-931-7997 — if a tech is nearby, we\u2019re coming.';
-  }
-  if(/track|where.*tech|eta|arrive/.test(q)) return 'Live tracking is a headline V2 feature: booked → dispatched → en route → arrived, with a text at every stage. Try the playable demo in the "Track My Tech" section on this page.';
-  if(/warranty|guarantee/.test(q)) return 'Every repair is backed by a parts & labor warranty, with the terms provided in writing before work begins. Your invoice and warranty status live in My Appliances after the visit.';
-  if(/brand|samsung|lg|whirlpool|ge |bosch|maytag|frigidaire|kitchenaid/.test(q)) return 'We service Samsung, LG, Whirlpool, GE, Frigidaire, Maytag, Bosch and KitchenAid — including smart/Wi-Fi models — plus commercial units.';
-  if(/plan|maintenance|member/.test(q)) return 'The Smart Maintenance Plan keeps profiles of all your appliances, sends filter/vent reminders, and includes annual checks. Three directions: Essential, Whole Home, and Property & Commercial — pricing is shown at signup.';
-  if(/commercial|restaurant|landlord|property|manager/.test(q)) return 'For restaurants, landlords and property managers we offer priority windows, multi-unit scheduling, photo reports and one consolidated invoice. Call 954-931-7997 and ask about the manager portal.';
-  if(/hour|open|when/.test(q)) return 'Booking online runs 24/7, and dispatch confirms by phone. For the fastest answer on today\u2019s windows, call 954-931-7997.';
-  if(/human|person|call|phone/.test(q)) return 'Of course — a human is one tap away: 954-931-7997. That\u2019s Top Speed Appliance dispatch in Broward County.';
-  if(/hi|hello|hey/.test(q)) return 'Hey there! 👋 Tell me what appliance is acting up, ask about the $99 diagnostic, or type "book" to grab a window.';
-  if(/thank/.test(q)) return 'Anytime! That\u2019s what I\u2019m here for. If anything else acts up, you know the number: 954-931-7997. 🏁';
-  return 'I can help with repairs, the $99 diagnostic, estimates, service areas, tracking and booking. Try: "my fridge is warm", "do you serve Davie?", or "book me". For anything else, dispatch is at 954-931-7997.';
+/* Speedy — live AI assistant, powered by the Top Speed Service OS API.
+   Replies come from the real Speedy (OpenAI) at /speedy/chat with the
+   conversation history attached. If the API cannot be reached, Speedy says
+   so honestly and points to dispatch — no canned answers. */
+var spHistory=[];
+var SP_API='https://top-speed-service-os.vercel.app/api/v1';
+function askSpeedy(text){
+  addMsg(text,true);
+  spHistory.push({role:'user',content:text});
+  var typing=addMsg('Speedy is typing\u2026',false);
+  fetch(SP_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:spHistory.slice(-10)})})
+    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+    .then(function(j){
+      var reply=(j.data&&j.data.reply)||'';
+      if(!reply) throw new Error('empty reply');
+      typing.textContent=reply;
+      spHistory.push({role:'assistant',content:reply});
+      var body=document.getElementById('spBody'); body.scrollTop=body.scrollHeight;
+    })
+    .catch(function(){
+      typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 \u2014 or try me again in a moment.';
+    });
 }
-function quickAsk(t){ if(!spOpen)toggleSpeedy(); addMsg(t,true); botSay(speedyAnswer(t)); }
+function quickAsk(t){ if(!spOpen)toggleSpeedy(); askSpeedy(t); }
 document.getElementById('spForm').addEventListener('submit',function(e){
   e.preventDefault();
   var inp=document.getElementById('spText'); var v=inp.value.trim(); if(!v)return;
-  addMsg(v,true); inp.value=''; botSay(speedyAnswer(v));
+  inp.value=''; askSpeedy(v);
 });
 
 /* ---------- provider demo ---------- */
