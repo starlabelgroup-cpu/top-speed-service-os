@@ -1,0 +1,374 @@
+// Top Speed Service OS — canonical Phase 1 Prisma schema.
+// Company is the tenant boundary (companyId). IDs are UUIDs and money uses Decimal(10, 2).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum Role {
+  PLATFORM_ADMIN
+  COMPANY_OWNER
+  COMPANY_ADMIN
+  DISPATCHER
+  CUSTOMER
+  PROVIDER_OWNER
+  PROVIDER_TECH
+  TECHNICIAN
+  ADVERTISER
+  MARKETING_MANAGER
+  DEVELOPER
+}
+
+enum CompanyType {
+  PLATFORM_OWNER
+  NETWORK_BUSINESS
+  INDEPENDENT_PROVIDER
+  CUSTOMER_COMPANY
+}
+
+enum BookingStatus {
+  PENDING_DISPATCH
+  MATCH_PENDING_APPROVAL
+  CONFIRMED
+  EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FeeStatus {
+  COLLECTED_AT_BOOKING
+  NOT_COLLECTED
+  REFUNDED
+}
+
+enum DispatchMode {
+  HYBRID
+  MANUAL
+  AUTOMATIC
+}
+
+enum AssignmentStatus {
+  PROPOSED
+  APPROVED
+  ACCEPTED
+  NOT_SELECTED
+  DECLINED
+  COMPLETED
+  CANCELLED
+}
+
+enum ProviderType {
+  NETWORK_BUSINESS
+  INDEPENDENT_PROVIDER
+  INTERNAL_TEAM
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  PARTIALLY_PAID
+  VOID
+}
+
+model Company {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String      @unique
+  type      CompanyType
+  isPlatformOwner Boolean @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  users               User[]
+  customers           Customer[]
+  serviceRequests     ServiceRequest[]
+  dispatchAssignments DispatchAssignment[]
+  providers           Provider[]
+  invoices            Invoice[]
+  referrals           Referral[]
+  notificationOutbox  NotificationOutbox[]
+  videoRequests       VideoConsultRequest[]
+  payments            Payment[]
+  channelLinks ChannelLink[]
+
+  @@index([type])
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @db.Uuid
+  email        String
+  passwordHash String
+  firstName    String?
+  lastName     String?
+  phone        String?
+  roles        Role[]
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  channelLinks ChannelLink[]
+
+  @@unique([companyId, email])
+  @@index([companyId])
+}
+
+model Customer {
+  id        String   @id @default(uuid()) @db.Uuid
+  companyId String   @db.Uuid
+  userId    String?  @db.Uuid
+  source    String?
+  name      String
+  phone     String
+  email     String?
+  address   String?
+  city      String
+  zip       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequests ServiceRequest[]
+  invoices        Invoice[]
+
+  @@index([companyId])
+  @@index([companyId, phone])
+}
+
+// The booking record exposed by the API as /bookings.
+model ServiceRequest {
+  id                              String        @id @default(uuid()) @db.Uuid
+  companyId                       String        @db.Uuid
+  customerId                      String        @db.Uuid
+  city                            String
+  zip                             String
+  appliance                       String
+  issue                           String
+  preferredWindow                 String?
+  referenceCode                   String?       @unique
+  source                          String        @default("WEBSITE")
+  // Working-state documents the API services operate on. The relational
+  // core (customer, status, fee, assignments) stays in columns/tables;
+  // these JSON columns carry the booking's event history, its dispatch
+  // state, and its Book OS appointment exactly as the services produce them.
+  history                         Json          @default("[]")
+  dispatch                        Json?
+  appointment                     Json?
+  completedAt                     DateTime?
+  completedBy                     String?
+  status                          BookingStatus @default(PENDING_DISPATCH)
+  diagnosticFee                   Decimal       @default(99.00) @db.Decimal(10, 2)
+  diagnosticFeeCreditedTowardRepair Boolean     @default(true)
+  feeStatus                       FeeStatus     @default(COLLECTED_AT_BOOKING)
+  createdAt                       DateTime      @default(now())
+  updatedAt                       DateTime      @updatedAt
+
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  dispatchAssignments DispatchAssignment[]
+  invoices            Invoice[]
+  payments            Payment[]
+
+  @@index([companyId, status])
+  @@index([companyId, zip])
+}
+
+model Provider {
+  id            String       @id @default(uuid()) @db.Uuid
+  companyId     String       @db.Uuid
+  businessName  String
+  type          ProviderType
+  specialties   String[]
+  serviceCities String[]
+  rating        Decimal?     @db.Decimal(3, 2)
+  active        Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  dispatchAssignments DispatchAssignment[]
+
+  @@index([companyId])
+  @@index([active])
+}
+
+model DispatchAssignment {
+  id              String           @id @default(uuid()) @db.Uuid
+  companyId       String           @db.Uuid
+  serviceRequestId String           @db.Uuid
+  providerId      String           @db.Uuid
+  status          AssignmentStatus @default(PROPOSED)
+  dispatchMode    DispatchMode     @default(HYBRID)
+  approvalRequired Boolean         @default(true)
+  matchScore      Int?
+  providerCompanyId String?        @db.Uuid
+  approvedById    String?
+  approvedByName  String?
+  approvedAt      DateTime?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+  provider       Provider       @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+  @@index([providerId])
+}
+
+model Invoice {
+  id               String        @id @default(uuid()) @db.Uuid
+  companyId        String        @db.Uuid
+  serviceRequestId String        @db.Uuid
+  customerId       String        @db.Uuid
+  status           InvoiceStatus @default(DRAFT)
+  subtotal         Decimal       @default(0.00) @db.Decimal(10, 2)
+  diagnosticFee    Decimal       @default(99.00) @db.Decimal(10, 2)
+  diagnosticCredit Decimal       @default(99.00) @db.Decimal(10, 2)
+  total            Decimal       @default(0.00) @db.Decimal(10, 2)
+  currency         String        @default("USD")
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Restrict)
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+}
+
+// Flywheel persistence (2026-11-09): referral codes and the notification
+// outbox move from the in-memory store to the database so they survive
+// cold starts. Redemptions and payloads ride in JSON columns in exactly
+// the shapes the services produce; the relational core stays in columns.
+model Referral {
+  id                      String   @id @default(uuid()) @db.Uuid
+  companyId               String   @db.Uuid
+  code                    String
+  customerId              String?  @db.Uuid
+  customerName            String?
+  customerPhone           String?
+  status                  String   @default("ACTIVE")
+  issuedFromBookingId     String?  @db.Uuid
+  issuedFromReferenceCode String?
+  redemptions             Json     @default("[]")
+  issuedAt                DateTime @default(now())
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model NotificationOutbox {
+  id         String    @id @default(uuid()) @db.Uuid
+  companyId  String    @db.Uuid
+  channel    String
+  template   String
+  to         String
+  payload    Json      @default("{}")
+  status     String    @default("QUEUED_SIMULATED")
+  attempts   Int       @default(0)
+  providerId String?
+  error      String?
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([createdAt])
+}
+
+// Speedy Live Video (2026-11-09): a customer asks to show the problem
+// live; Service Setters arrange it — immediate, scheduled, or
+// manager-assisted — and the request gets a video room both sides join.
+model VideoConsultRequest {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  customerName     String
+  phone            String
+  appliance        String
+  note             String?
+  bookingReference String?
+  mode             String   @default("UNDECIDED")
+  status           String   @default("PENDING")
+  roomName         String?  @unique
+  arrangedBy       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+}
+
+/**
+ * A customer payment collected through Stripe — the payment ledger.
+ * One row per Checkout session attempt. The webhook flips PENDING →
+ * PAID; `diagnosticPaid` everywhere in the API is derived from a PAID
+ * row for the booking, so this table is the single source of truth
+ * for money received online (the feeStatus column on ServiceRequest
+ * remains the office's manual bookkeeping).
+ */
+model Payment {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  serviceRequestId      String    @db.Uuid
+  customerId            String?   @db.Uuid
+  purpose               String    @default("DIAGNOSTIC")
+  amountCents           Int
+  currency              String    @default("usd")
+  status                String    @default("PENDING")
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+}
+
+// One row per ad-channel connection an advertiser-console user has
+// requested or completed (Google Ads, Meta, TikTok, ...). The link itself
+// is completed by the team (manager-account link / partner access), so a
+// row starts PENDING_LINK and staff flip it to CONNECTED. This table is
+// the connect system's record; live metrics sync arrives with each
+// platform's API approval.
+model ChannelLink {
+  id         String   @id @default(uuid()) @db.Uuid
+  companyId  String   @db.Uuid
+  userId     String   @db.Uuid
+  channel    String
+  accountRef String
+  status     String   @default("PENDING_LINK")
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+  @@index([companyId, status])
+}
