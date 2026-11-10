@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advertiser Console — Top Speed Ads Platform</title>
+<meta name="description" content="The Top Speed marketing platform console for advertisers, marketing managers, and developers: connect your ad channels, plan campaigns, build copy, and optimize against the flywheel.">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#eef3fa;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--greenbg:#eef6ee;--amber:#8a6100;--amberbg:#fff6dd;--line:#d7e3f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#f6f9fd;line-height:1.55}
+header{background:var(--navy);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+header .brand{font-weight:900;letter-spacing:.5px} header .brand span{color:#ff3b42}
+header nav a{color:#bcd2f2;text-decoration:none;font-weight:600;font-size:14px;margin-left:16px}
+.hero{background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;padding:36px 20px}
+.hero h1{font-size:32px;max-width:820px}
+.hero p{color:#b9cdf0;max-width:760px;margin-top:8px}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 18px 60px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin:18px 0;box-shadow:0 4px 16px rgba(7,31,79,.05)}
+.card h2{color:var(--navy);font-size:22px;margin-bottom:6px}
+.card h3{color:var(--navy2);font-size:17px;margin:14px 0 6px}
+.sub{color:var(--muted);font-size:14.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-top:12px}
+label{display:block;font-size:13px;font-weight:700;color:var(--navy2);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #b9cbe4;border-radius:9px;font-size:15px;font-family:inherit;background:#fff}
+.btn{display:inline-block;background:var(--blue);color:#fff;border:none;padding:11px 20px;border-radius:10px;font-weight:800;font-size:15px;cursor:pointer}
+.btn.red{background:var(--red)} .btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.small{padding:7px 13px;font-size:13.5px}
+.chip{display:inline-block;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.4px}
+.chip.none{background:#eef1f6;color:#5a6b82}.chip.pend{background:var(--amberbg);color:var(--amber)}.chip.ok{background:var(--greenbg);color:var(--green)}
+.msg{margin-top:12px;font-weight:700;font-size:14.5px}.ok{color:var(--green)}.err{color:#b00020}
+.chan{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fbfdff}
+.chan h4{color:var(--navy);font-size:16.5px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chan .hint{font-size:13px;color:var(--muted);margin:4px 0 8px}
+.out{background:var(--light);border-radius:10px;padding:14px 16px;margin-top:12px;font-size:14.5px}
+.out b{color:var(--navy)}
+.copyrow{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px dashed #c4d4ea;padding:7px 0}
+.copyrow:last-child{border-bottom:none}
+.count{font-size:12px;color:var(--muted);white-space:nowrap}
+.check{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px dashed #dbe6f3;font-size:15px}
+.check input{width:auto;margin-top:4px}
+.score{font-size:34px;font-weight:900;color:var(--navy)}
+.hidden{display:none}
+footer{background:#04122e;color:#9db6d8;padding:28px 20px;text-align:center;font-size:14px}
+footer strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">TOP <span>SPEED</span> ADS PLATFORM</div>
+  <nav><a href="/ads">Ads HQ</a><a href="/flywheel">Flywheel</a><a href="/">Platform home</a></nav>
+</header>
+
+<div class="hero">
+  <h1>Advertiser Console</h1>
+  <p>For advertisers, marketing managers, and developers working with Top Speed. Connect your ad channels, plan campaigns against the flywheel, build platform-ready copy, and run the optimization playbook — one account, every tool.</p>
+</div>
+
+<div class="wrap">
+
+  <!-- SIGNED OUT -->
+  <div id="authCard" class="card">
+    <h2>Sign in or create your account</h2>
+    <p class="sub">Marketing-platform accounts are free and self-serve. Staff and provider accounts are created by the owner instead — use your normal console sign-in if that's you.</p>
+    <div class="grid">
+      <div>
+        <h3>Sign in</h3>
+        <label>Email</label><input id="liEmail" type="email" autocomplete="email">
+        <label>Password</label><input id="liPass" type="password" autocomplete="current-password">
+        <div style="margin-top:14px"><button class="btn" onclick="advLogin()">Sign in</button></div>
+      </div>
+      <div>
+        <h3>Create account</h3>
+        <label>I am a…</label>
+        <select id="suRole"><option value="ADVERTISER">Advertiser</option><option value="MARKETING_MANAGER">Marketing manager</option><option value="DEVELOPER">Developer</option></select>
+        <label>First name</label><input id="suFirst">
+        <label>Last name</label><input id="suLast">
+        <label>Email</label><input id="suEmail" type="email" autocomplete="email">
+        <label>Phone (optional)</label><input id="suPhone" autocomplete="tel">
+        <label>Password (10+ characters)</label><input id="suPass" type="password" autocomplete="new-password">
+        <div style="margin-top:14px"><button class="btn red" onclick="advSignup()">Create my account</button></div>
+      </div>
+    </div>
+    <div id="authMsg" class="msg"></div>
+  </div>
+
+  <!-- CONSOLE -->
+  <div id="console" class="hidden">
+    <div class="card">
+      <h2 id="whoLine">Your console</h2>
+      <p class="sub">Your channels, your tools. Connection requests go to the Top Speed team, who complete the manager/partner link on the platform side — you'll see the status flip to Connected here. <button class="btn ghost small" onclick="advLogout()">Sign out</button></p>
+    </div>
+
+    <div class="card">
+      <h2>🔗 Connect your channels</h2>
+      <p class="sub">Add the account reference for each channel you run. We link from our manager accounts — no password sharing, ever.</p>
+      <div class="grid" id="chanGrid"></div>
+      <div id="chanMsg" class="msg"></div>
+    </div>
+
+    <div class="card">
+      <h2>🧮 Campaign planner</h2>
+      <p class="sub">The flywheel split, sized to your budget. Planning estimates use typical local-services ranges — your real numbers replace them once channels are connected.</p>
+      <div class="grid">
+        <div><label>Service</label><select id="plService"></select></div>
+        <div><label>City focus</label><select id="plCity"></select></div>
+        <div><label>Monthly budget ($)</label><input id="plBudget" type="number" value="1500" min="100" step="50"></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn" onclick="advPlan()">Build my plan</button></div>
+      <div id="planOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>✍️ Ad copy builder</h2>
+      <p class="sub">Google Ads-ready headlines (30 characters) and descriptions (90) in the house voice — honest claims only: no invented prices, the $99 is residential and credited toward repair.</p>
+      <div class="grid">
+        <div><label>Service</label><select id="cpService"></select></div>
+        <div><label>City</label><select id="cpCity"></select></div>
+        <div><label>Angle</label><select id="cpAngle"><option value="speed">Speed / same-day</option><option value="trust">Trust / warranty</option><option value="tech">See it live (video + AI)</option></select></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn" onclick="advCopy()">Generate copy</button></div>
+      <div id="copyOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>🏷️ Tracking link builder</h2>
+      <p class="sub">Every link you publish should carry its source home. This builds the UTM + platform source tag the Service OS attribution reads.</p>
+      <label>Destination URL</label><input id="utmUrl" value="https://topspeedserviceos.com/">
+      <div class="grid">
+        <div><label>Source</label><input id="utmSource" placeholder="google / facebook / nextdoor"></div>
+        <div><label>Medium</label><input id="utmMedium" placeholder="cpc / social / flyer"></div>
+        <div><label>Campaign</label><input id="utmCampaign" placeholder="fridge-repair-sunrise"></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn" onclick="advUtm()">Build link</button></div>
+      <div id="utmOut"></div>
+    </div>
+
+    <div class="card">
+      <h2>📈 Optimization scorecard</h2>
+      <p class="sub">The ten checks that separate accounts that compound from accounts that leak. Tick what's truly live — your score and next fix update instantly.</p>
+      <div id="scoreChecks"></div>
+      <div class="out"><span class="score" id="scoreNum">0%</span><div id="scoreNext"><b>Next fix:</b> start at the top.</div></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <strong>Top Speed Appliance LLC</strong> — The Faster, The Better.<br>
+  Advertiser Console · topspeedserviceos.com/advertiser · Business line 954-931-7997
+</footer>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var SERVICES=['Refrigerator','Washer','Dryer','Oven / Range','Dishwasher','Freezer / Ice Maker','Microwave','Garbage Disposal','Installation'];
+var CITIES=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
+function tok(){ try{return localStorage.getItem('tsos_adv_token')||'';}catch(e){return '';} }
+function setTok(t){ try{ if(t) localStorage.setItem('tsos_adv_token',t); else localStorage.removeItem('tsos_adv_token'); }catch(e){} }
+function fillSel(id,arr){ var el=document.getElementById(id); el.innerHTML=arr.map(function(x){return '<option>'+x+'</option>';}).join(''); }
+fillSel('plService',SERVICES); fillSel('plCity',CITIES); fillSel('cpService',SERVICES); fillSel('cpCity',CITIES);
+
+function api(path,opts){ opts=opts||{}; var h={'Content-Type':'application/json'}; if(tok()) h.Authorization='Bearer '+tok();
+  return fetch(API+path,Object.assign({},opts,{headers:h})).then(function(r){ return r.json().then(function(j){ return {status:r.status,j:j}; }); }); }
+function msg(id,text,ok){ var el=document.getElementById(id); el.textContent=text; el.className='msg '+(ok?'ok':'err'); }
+
+function advLogin(){ var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPass').value;
+  if(!email||!pw) return msg('authMsg','Enter your email and password.');
+  api('/auth/login',{method:'POST',body:JSON.stringify({email:email,password:pw})}).then(function(x){
+    if(x.status===200&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken); showConsole(x.j.user); }
+    else msg('authMsg',(x.j&&x.j.error)||'Sign-in failed.'); }); }
+function advSignup(){ var role=document.getElementById('suRole').value;
+  var body={email:document.getElementById('suEmail').value.trim(),password:document.getElementById('suPass').value,
+    firstName:document.getElementById('suFirst').value.trim(),lastName:document.getElementById('suLast').value.trim(),
+    phone:document.getElementById('suPhone').value.trim()||undefined,role:role};
+  if(!body.email||!body.password||!body.firstName) return msg('authMsg','First name, email, and a 10+ character password are required.');
+  api('/auth/register',{method:'POST',body:JSON.stringify(body)}).then(function(x){
+    if(x.status===201&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken); showConsole(x.j.user); }
+    else msg('authMsg',(x.j&&x.j.error)||'Could not create the account.'); }); }
+function advLogout(){ setTok(''); location.reload(); }
+
+function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Marketing Manager',DEVELOPER:'Developer',COMPANY_OWNER:'Owner',DISPATCHER:'Service Setter / Dispatcher',PLATFORM_ADMIN:'Platform Admin'}[r]||r; }
+function showConsole(user){
+  document.getElementById('authCard').classList.add('hidden');
+  document.getElementById('console').classList.remove('hidden');
+  if(user){ var roles=(user.roles||[]).map(roleLabel).join(', ');
+    document.getElementById('whoLine').textContent='Welcome, '+((user.firstName||'')+' '+(user.lastName||'')).trim()+' — '+roles; }
+  loadChannels();
+}
+function chipFor(link){ if(!link) return '<span class="chip none">NOT CONNECTED</span>';
+  if(link.status==='CONNECTED') return '<span class="chip ok">CONNECTED</span>';
+  if(link.status==='REJECTED') return '<span class="chip none">NOT APPROVED</span>';
+  return '<span class="chip pend">LINK PENDING</span>'; }
+function loadChannels(){
+  api('/marketing/channels').then(function(x){
+    if(x.status!==200){ msg('chanMsg','Could not load channels ('+x.status+').'); return; }
+    var cat=x.j.data.catalog;
+    document.getElementById('chanGrid').innerHTML=cat.map(function(c,i){
+      var ref=c.link?c.link.accountRef:'';
+      return '<div class="chan"><h4>'+c.label+' '+chipFor(c.link)+'</h4><div class="hint">'+c.hint+'</div>'
+        +'<input id="chanRef'+i+'" placeholder="Account reference" value="'+String(ref).replace(/"/g,'&quot;')+'">'
+        +'<div style="margin-top:9px"><button class="btn small" onclick="advConnect('+i+',\''+c.key+'\')">'+(c.link?'Update & re-request link':'Request connection')+'</button></div></div>';
+    }).join('');
+  });
+}
+function advConnect(i,key){ var ref=document.getElementById('chanRef'+i).value.trim();
+  if(ref.length<3) return msg('chanMsg','Add the account reference for that channel first.');
+  api('/marketing/channels',{method:'POST',body:JSON.stringify({channel:key,accountRef:ref})}).then(function(x){
+    if(x.status===201){ msg('chanMsg','Connection requested — the Top Speed team will complete the link and the status will flip to Connected here.',true); loadChannels(); }
+    else msg('chanMsg',(x.j&&x.j.error)||'Request failed.'); }); }
+
+function money(n){ return '$'+Math.round(n).toLocaleString(); }
+function advPlan(){ var svc=document.getElementById('plService').value, city=document.getElementById('plCity').value;
+  var b=Math.max(100,Number(document.getElementById('plBudget').value)||0);
+  var split=[['Google Search (high intent)',0.55],['Local Services Ads',0.20],['Social + remarketing',0.15],['Video / display prospecting',0.10]];
+  var rows=split.map(function(s){ return '<div class="copyrow"><span>'+s[0]+'</span><b>'+money(b*s[1])+'/mo · '+money(b*s[1]/30)+'/day</b></div>'; }).join('');
+  var leadsLo=Math.floor(b/65), leadsHi=Math.floor(b/35), jobsLo=Math.floor(leadsLo*0.35), jobsHi=Math.floor(leadsHi*0.45);
+  document.getElementById('planOut').innerHTML='<div class="out"><b>'+svc+' — '+city+' · '+money(b)+'/mo</b>'+rows
+    +'<p style="margin-top:10px">Planning estimate: <b>'+leadsLo+'–'+leadsHi+' leads/mo</b> at a $35–$65 cost per lead, <b>'+jobsLo+'–'+jobsHi+' booked jobs</b> at typical close rates. Structure: one campaign per service line, city-tight radius, call + booking conversions wired into the Service OS so every lead lands in the setter queue with its source tag.</p></div>'; }
+
+function fit(t,n){ return t.length<=n?t:t.slice(0,n); }
+function advCopy(){ var svc=document.getElementById('cpService').value.split(' /')[0], city=document.getElementById('cpCity').value, ang=document.getElementById('cpAngle').value;
+  var H=['Top Speed Appliance Repair',svc+' Repair in '+city,'Same-Day '+svc+' Repair','Local '+svc+' Experts','Book Online in 60 Seconds','$99 Diagnostic — Credited','Appliance Repair Near You','The Faster, The Better'];
+  if(ang==='trust') H=['90-Day Warranty on Repairs','Licensed Local Technicians','Flat Quote Before We Start','$99 Diagnostic — Credited','Top Speed Appliance Repair',svc+' Repair in '+city,'Book Online in 60 Seconds','Rated by Broward Neighbors'];
+  if(ang==='tech') H=['Show Us Live On Video','AI Photo Diagnosis — Free','Track Your Tech Live','$99 Diagnostic — Credited','Top Speed Appliance Repair',svc+' Repair in '+city,'Book Online in 60 Seconds','The Faster, The Better'];
+  var D=['Top Speed fixes '+svc.toLowerCase()+'s across '+city+'. $99 diagnostic collected at booking and credited toward your repair. Book online or call 954-931-7997.',
+    'Flat quote after diagnosis, before any work. Parts and labor carry a 90-day warranty. Five arrival windows daily — book in 60 seconds.',
+    'Send a photo, get a preliminary diagnosis, watch your tech arrive live. Serving '+city+' and 11 more Broward cities. The Faster, The Better.'];
+  var hr=H.map(function(h){ var f=fit(h,30); return '<div class="copyrow"><span>'+f+'</span><span class="count">'+f.length+'/30</span></div>'; }).join('');
+  var dr=D.map(function(d){ var f=fit(d,90); return '<div class="copyrow"><span>'+f+'</span><span class="count">'+f.length+'/90</span></div>'; }).join('');
+  document.getElementById('copyOut').innerHTML='<div class="out"><b>Headlines</b>'+hr+'<b style="display:block;margin-top:10px">Descriptions</b>'+dr+'</div>'; }
+
+function advUtm(){ var base=document.getElementById('utmUrl').value.trim()||'https://topspeedserviceos.com/';
+  var s=document.getElementById('utmSource').value.trim().toLowerCase().replace(/\s+/g,'-');
+  var m=document.getElementById('utmMedium').value.trim().toLowerCase().replace(/\s+/g,'-');
+  var c=document.getElementById('utmCampaign').value.trim().toLowerCase().replace(/\s+/g,'-');
+  if(!s) return document.getElementById('utmOut').innerHTML='<div class="out">Add at least a source.</div>';
+  var sep=base.indexOf('?')>=0?'&':'?';
+  var url=base+sep+'utm_source='+encodeURIComponent(s)+(m?'&utm_medium='+encodeURIComponent(m):'')+(c?'&utm_campaign='+encodeURIComponent(c):'')+'&src='+encodeURIComponent(s);
+  document.getElementById('utmOut').innerHTML='<div class="out"><b>Your tracked link</b><div class="copyrow"><span style="word-break:break-all">'+url+'</span><button class="btn small" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+url+'\')">Copy</button></div></div>'; }
+
+var CHECKS=[['Conversion tracking fires on calls, forms, and bookings',15],['Call tracking numbers on every channel',10],['One landing page per service (not the homepage)',12],['Review engine on — every finished job asks',12],['Negative keyword list maintained weekly',10],['Radius targeting tight to real service areas',8],['Ad schedule weighted to booking hours',8],['Remarketing audiences built (site + video viewers)',8],['Every link carries UTM + source tags',9],['Budget paced weekly against booked jobs, not clicks',8]];
+document.getElementById('scoreChecks').innerHTML=CHECKS.map(function(c,i){ return '<label class="check"><input type="checkbox" onchange="advScore()" id="sc'+i+'"><span>'+c[0]+' <span class="count">('+c[1]+' pts)</span></span></label>'; }).join('');
+function advScore(){ var total=0,next=null;
+  CHECKS.forEach(function(c,i){ if(document.getElementById('sc'+i).checked) total+=c[1]; else if(!next) next=c[0]; });
+  document.getElementById('scoreNum').textContent=total+'%';
+  document.getElementById('scoreNext').innerHTML='<b>Next fix:</b> '+(next?next:'all ten live — this account compounds. Keep the weekly pacing check sacred.');
+}
+if(tok()){ api('/auth/me').then(function(x){ if(x.status===200) showConsole(x.j.user||x.j.data); else setTok(''); }); }
+</script>
+</body>
+</html>

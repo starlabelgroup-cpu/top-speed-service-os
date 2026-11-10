@@ -318,6 +318,65 @@
     </div>
     <a class="btn btn-red" href="tel:+19549317997">Call 954-931-7997</a>
   </div>
+
+<section style="max-width:1000px;margin:0 auto;padding:10px 20px 30px;">
+  <div style="background:#071f4f;color:#fff;border-radius:16px;padding:28px;">
+    <h2 style="color:#fff;margin:0 0 6px;">The Advertiser Platform is open 🎛️</h2>
+    <p style="color:#b9cdf0;max-width:720px;">Advertisers, marketing managers, and developers: create a free account, connect your channels (Google Ads, Meta, TikTok, YouTube, Local Services, Nextdoor), and run the planner, copy builder, tracking-link builder, and optimization scorecard from one console.</p>
+    <p style="margin-top:14px;"><a href="/advertiser" style="display:inline-block;background:#e01a22;color:#fff;font-weight:800;padding:12px 22px;border-radius:10px;text-decoration:none;">Open the Advertiser Console →</a></p>
+  </div>
+
+  <div style="background:#fff;border:1px solid #d7e3f2;border-radius:16px;padding:26px;margin-top:18px;">
+    <h2 style="margin:0 0 4px;">Talk to the ads team — advanced contact</h2>
+    <p style="color:#5a6b82;">Tell us who you are, where you advertise, and what you're trying to grow. A Service Setter follows up on the business line, 954-931-7997.</p>
+    <form id="advForm">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px;">
+        <label style="font-size:13px;font-weight:700;">Full name<input id="afName" required style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></label>
+        <label style="font-size:13px;font-weight:700;">Email<input id="afEmail" type="email" required style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></label>
+        <label style="font-size:13px;font-weight:700;">Phone<input id="afPhone" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></label>
+        <label style="font-size:13px;font-weight:700;">Company / brand<input id="afCompany" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></label>
+        <label style="font-size:13px;font-weight:700;">I am a…
+          <select id="afRole" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"><option>Advertiser / business owner</option><option>Marketing manager</option><option>Media buyer</option><option>Developer</option><option>Agency partner</option><option>Other marketing professional</option></select></label>
+        <label style="font-size:13px;font-weight:700;">Monthly ad budget
+          <select id="afBudget" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"><option>Under $1,000</option><option>$1,000 – $3,000</option><option selected>$3,000 – $10,000</option><option>$10,000+</option><option>Not sure yet</option></select></label>
+        <label style="font-size:13px;font-weight:700;">Website<input id="afSite" placeholder="https://" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></label>
+        <label style="font-size:13px;font-weight:700;">Best way to reach me
+          <select id="afContact" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"><option>Call me</option><option>Text me</option><option>Email me</option></select></label>
+      </div>
+      <fieldset style="border:1px solid #d7e3f2;border-radius:10px;margin-top:14px;padding:12px;">
+        <legend style="font-size:13px;font-weight:700;padding:0 6px;">Channels you run (or want to)</legend>
+        <label style="margin-right:14px;"><input type="checkbox" class="afChan" value="Google Ads"> Google Ads</label>
+        <label style="margin-right:14px;"><input type="checkbox" class="afChan" value="Meta"> Meta</label>
+        <label style="margin-right:14px;"><input type="checkbox" class="afChan" value="Local Services"> Local Services</label>
+        <label style="margin-right:14px;"><input type="checkbox" class="afChan" value="TikTok"> TikTok</label>
+        <label style="margin-right:14px;"><input type="checkbox" class="afChan" value="YouTube"> YouTube</label>
+        <label><input type="checkbox" class="afChan" value="Nextdoor"> Nextdoor</label>
+      </fieldset>
+      <label style="display:block;font-size:13px;font-weight:700;margin-top:14px;">What are you trying to grow?<textarea id="afGoals" rows="3" style="width:100%;padding:10px;border:1px solid #b9cbe4;border-radius:9px;margin-top:4px;"></textarea></label>
+      <button type="submit" style="margin-top:16px;background:#1473ff;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-weight:800;cursor:pointer;">Send to the ads team</button>
+      <span id="afMsg" style="font-weight:700;margin-left:12px;"></span>
+    </form>
+  </div>
+</section>
+<script>
+document.getElementById('advForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var chans=Array.prototype.map.call(document.querySelectorAll('.afChan:checked'),function(c){return c.value;}).join(', ')||'—';
+  var lines=['Role: '+document.getElementById('afRole').value,
+    'Company: '+(document.getElementById('afCompany').value||'—'),
+    'Monthly budget: '+document.getElementById('afBudget').value,
+    'Channels: '+chans,
+    'Website: '+(document.getElementById('afSite').value||'—'),
+    'Preferred contact: '+document.getElementById('afContact').value,
+    'Goals: '+(document.getElementById('afGoals').value||'—')].join('
+');
+  var body={name:document.getElementById('afName').value.trim(),email:document.getElementById('afEmail').value.trim(),
+    phone:document.getElementById('afPhone').value.trim()||undefined,type:'ADVERTISER_CONTACT',source:'ads-page-advanced-form',message:lines};
+  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ document.getElementById('afMsg').textContent=r.ok?'✅ Sent — the ads team will follow up.':'Something went wrong — call 954-931-7997.'; if(r.ok) ev.target.reset(); })
+    .catch(function(){ document.getElementById('afMsg').textContent='Something went wrong — call 954-931-7997.'; });
+});
+</script>
 </main>
 
 <footer>

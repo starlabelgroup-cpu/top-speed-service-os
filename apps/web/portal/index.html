@@ -87,6 +87,9 @@ footer a{color:#cfe0f7;text-decoration:none}
           <option value="COMPANY_ADMIN">Company Admin</option>
           <option value="PROVIDER_TECH">Provider Technician (Tech App)</option>
           <option value="PROVIDER_OWNER">Provider Owner (Tech App)</option>
+          <option value="ADVERTISER">Advertiser (Console)</option>
+          <option value="MARKETING_MANAGER">Marketing Manager (Console)</option>
+          <option value="DEVELOPER">Developer (Console)</option>
         </select></label>
       <label id="tCompanyRow" style="display:none;">Provider company
         <select id="tCompany" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></select></label>
@@ -100,6 +103,14 @@ footer a{color:#cfe0f7;text-decoration:none}
     <p style="font-size:13px;color:var(--muted);margin-top:12px;">Give the person their email + temporary password yourself (text or in person — never in a group chat). They sign in at Book OS (setters/dispatch) or the Tech App (providers) and can change the password from their account. One person, one account; when someone leaves, tell Pepper to deactivate it.</p>
   </div>
 
+  
+  <h2 class="sec" id="chanlinks">Advertiser channel links</h2>
+  <p class="sub">Staff — connection requests from the Advertiser Console land here. Complete the manager/partner link on the ad platform, then mark it connected so the advertiser sees it live in their console. <span class="demo" id="clNote">Sign in with a staff account (Book OS, same browser) and this panel opens.</span></p>
+  <div class="panel" id="clPanel" style="display:none;">
+    <div id="clList"></div>
+    <span id="clMsg" style="font-weight:600;"></span>
+  </div>
+
   <h2 class="sec">Run the operation</h2>
   <p class="sub">Pick your desk — each console is a working preview of its part of the Service OS.</p>
   <div class="grid">
@@ -108,6 +119,7 @@ footer a{color:#cfe0f7;text-decoration:none}
     <a class="card" href="/commercial"><div class="ic">🏢</div><h3>Commercial Accounts</h3><p>Appliance Pro Commercial Accounts: restaurants, hotels, laundromats and facilities on service agreements, with an equipment registry and one monthly invoice per account.</p><div class="go">Open commercial →</div></a>
     <a class="card" href="/property-managers"><div class="ic">🏠</div><h3>Property Managers</h3><p>Portfolio view for managers: units, open work orders, and tenant-ready booking across every property — running on the same Service OS queue as residential.</p><div class="go">Open property managers →</div></a>
     <a class="card" href="/network"><div class="ic">🤝</div><h3>Join the Network</h3><p>For independent providers and appliance businesses: how the network works, what membership includes, and the application to start receiving matched jobs.</p><div class="go">See the network →</div></a>
+    <a class="card" href="/advertiser"><div class="ic">🎛️</div><h3>Advertiser Console<span class="new">NEW</span></h3><p>For advertisers, marketing managers, and developers: connect Google Ads, Meta, TikTok and more, plan campaigns, build copy, and run the optimization scorecard. Marketing professionals self-register; channel links are approved by staff below.</p><div class="go">Open advertiser console →</div></a>
     <a class="card" href="/media"><div class="ic">🎬</div><h3>Top Speed Media OS</h3><p>The media network — Videos, Social, Publishing, Live and News divisions, coordinated by Speedy AI. One publishing queue, owned audience, Top Speed 360.</p><span class="tag" style="background:#F1E9FB;color:#5B3FA8">Media Network · NEW</span></a>
 <a class="card" href="/flywheel"><div class="ic">📣</div><h3>Flywheel Advertising</h3><p>The growth engine: Attract → Book → Serve → Review → Refer → Reinvest. Channel status, the ad-asset library, and the compounding simulator fed by real platform activity.</p><div class="go">Open flywheel →</div></a>
     <a class="card" href="/local"><div class="ic">📍</div><h3>Top Speed Local OS<span class="new">NEW</span></h3><p>The local presence operating system: listings core with honest verification status, the reviews engine, and the interactive service directory — 9 services across all 12 Broward cities.</p><div class="go">Open Local OS →</div></a>
@@ -233,5 +245,38 @@ footer a{color:#cfe0f7;text-decoration:none}
 
 <script src="/install.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
+
+<script>
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
+  if(!tok) return;
+  function h(){ return {'Content-Type':'application/json','Authorization':'Bearer '+tok}; }
+  function load(){
+    fetch(API+'/marketing/channel-links',{headers:h()}).then(function(r){ return r.json().then(function(j){ return {s:r.status,j:j}; }); }).then(function(x){
+      if(x.s!==200) return;
+      document.getElementById('clPanel').style.display='block';
+      document.getElementById('clNote').textContent='';
+      var links=(x.j.data&&x.j.data.links)||[];
+      if(!links.length){ document.getElementById('clList').innerHTML='<p style="color:var(--muted);font-size:14px;">No channel connection requests yet.</p>'; return; }
+      var CH={GOOGLE_ADS:'Google Ads',META:'Meta',LOCAL_SERVICES:'Local Services',TIKTOK:'TikTok',YOUTUBE:'YouTube',NEXTDOOR:'Nextdoor'};
+      document.getElementById('clList').innerHTML=links.map(function(l){
+        var u=l.user?((l.user.name||l.user.email||'')+' · '+(l.user.email||'')):'';
+        var st=l.status==='CONNECTED'?'<span style="color:#0f7a3d;font-weight:800;">CONNECTED</span>':(l.status==='REJECTED'?'<span style="color:#8a6100;font-weight:800;">REJECTED</span>':'<span style="color:#8a6100;font-weight:800;">PENDING LINK</span>');
+        var btns=l.status!=='CONNECTED'?'<button data-cl="'+l.id+'" data-st="CONNECTED" style="padding:6px 12px;border:0;border-radius:8px;background:#1473ff;color:#fff;cursor:pointer;font-weight:700;">Mark connected</button> <button data-cl="'+l.id+'" data-st="REJECTED" style="padding:6px 12px;border:1px solid #D8E1EE;border-radius:8px;background:#fff;cursor:pointer;">Reject</button>':'';
+        return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px dashed #D8E1EE;padding:10px 0;flex-wrap:wrap;"><div><b>'+(CH[l.channel]||l.channel)+'</b> — '+l.accountRef+'<br><span style="font-size:13px;color:var(--muted);">'+u+'</span></div><div style="display:flex;gap:8px;align-items:center;">'+st+' '+btns+'</div></div>';
+      }).join('');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-cl]'),function(b){
+        b.addEventListener('click',function(){
+          fetch(API+'/marketing/channel-links/'+b.getAttribute('data-cl'),{method:'PATCH',headers:h(),body:JSON.stringify({status:b.getAttribute('data-st')})}).then(function(r){
+            document.getElementById('clMsg').textContent=r.ok?'Updated.':'Update failed ('+r.status+').'; load();
+          });
+        });
+      });
+    }).catch(function(){});
+  }
+  load();
+})();
+</script>
 </body>
 </html>
