@@ -35,6 +35,10 @@ const registerSchema = z.object({
   lastName: z.string().trim().min(1).max(80).optional(),
   phone: z.string().trim().min(7).max(30).optional(),
   role: z.enum(ALL_ROLES).optional(),
+  // Admin-only: create the account inside another company (e.g. a
+  // provider's company, so its techs can sign in to the Tech App).
+  // Honored only when canGrantStaffRoles(req) — see the handler.
+  companyId: z.string().uuid().optional(),
 });
 
 const loginSchema = z.object({
@@ -143,7 +147,24 @@ router.post('/auth/register', async (req, res, next) => {
       });
     }
 
-    const companyId = PLATFORM_COMPANY_ID;
+    // Accounts normally live on the platform tenant. An administrator may
+    // create an account inside another company (provider accounts for the
+    // Tech App); anyone else asking for a foreign companyId is refused.
+    let companyId = PLATFORM_COMPANY_ID;
+    if (parsed.data.companyId && parsed.data.companyId !== PLATFORM_COMPANY_ID) {
+      if (!canGrantStaffRoles(req)) {
+        return res.status(403).json({
+          error: 'Only an administrator can create accounts for another company',
+        });
+      }
+      if (DATABASE_ENABLED) {
+        const company = await db.company.findUnique({ where: { id: parsed.data.companyId } });
+        if (!company) {
+          return res.status(400).json({ error: 'Unknown companyId' });
+        }
+      }
+      companyId = parsed.data.companyId;
+    }
     if (await usersRepo.findByEmail(companyId, email)) {
       return res.status(409).json({ error: 'An account with this email already exists' });
     }
