@@ -54,22 +54,22 @@ footer a{color:#cfe0f7;text-decoration:none}
   <nav><a href="/">Customer Site</a><a href="/service/">Provider Site</a><a href="tel:+19549317997">954-931-7997</a></nav>
 </header>
 <div class="hero">
-  <div><span class="chip">WEB PORTAL · PREVIEW</span></div>
+  <div><span class="chip" id="portalChip">WEB PORTAL · PREVIEW</span></div>
   <h1>Every side of the operation. One portal.</h1>
   <p>Dispatch, management, the provider network, commercial accounts, property managers and the growth flywheel — the whole Top Speed Service OS, organized by the job you came to do.</p>
 </div>
 <div class="wrap">
   <h2 class="sec" id="management">Management snapshot</h2>
-  <p class="sub">The owner's view across the whole platform. <span class="demo">Preview data — live numbers connect with the Service OS backend in Phase 4.</span></p>
+  <p class="sub">The owner's view across the whole platform. <span class="demo" id="kpiNote">Preview data — staff sign in on the Book OS page (same browser) and this snapshot goes live.</span></p>
   <div class="kpis">
-    <div class="kpi"><div class="n">14</div><div class="l">Jobs booked today</div></div>
-    <div class="kpi"><div class="n">9</div><div class="l">Completed today</div></div>
-    <div class="kpi"><div class="n">6</div><div class="l">Techs on the road</div></div>
-    <div class="kpi"><div class="n">4.8 ★</div><div class="l">Average rating</div></div>
-    <div class="kpi"><div class="n">3</div><div class="l">Referral bookings</div></div>
-    <div class="kpi"><div class="n">7</div><div class="l">Commercial accounts</div></div>
+    <div class="kpi"><div class="n" id="k1">14</div><div class="l" id="l1">Jobs booked today</div></div>
+    <div class="kpi"><div class="n" id="k2">9</div><div class="l" id="l2">Completed today</div></div>
+    <div class="kpi"><div class="n" id="k3">6</div><div class="l" id="l3">Techs on the road</div></div>
+    <div class="kpi"><div class="n" id="k4">4.8 ★</div><div class="l" id="l4">Average rating</div></div>
+    <div class="kpi"><div class="n" id="k5">3</div><div class="l" id="l5">Referral bookings</div></div>
+    <div class="kpi"><div class="n" id="k6">7</div><div class="l" id="l6">Commercial accounts</div></div>
   </div>
-  <div class="panel"><h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today's appointments by window</h3><div class="bars"><div style="height:55%"><span>8–10 AM</span></div><div style="height:85%"><span>10–12 PM</span></div><div style="height:65%"><span>12–2 PM</span></div><div style="height:95%"><span>2–4 PM</span></div><div style="height:45%"><span>4–6 PM</span></div></div><div style="height:22px"></div></div>
+  <div class="panel" id="winPanel"><h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today's appointments by window</h3><div class="bars"><div style="height:55%"><span>8–10 AM</span></div><div style="height:85%"><span>10–12 PM</span></div><div style="height:65%"><span>12–2 PM</span></div><div style="height:95%"><span>2–4 PM</span></div><div style="height:45%"><span>4–6 PM</span></div></div><div style="height:22px"></div></div>
 
   <h2 class="sec">Run the operation</h2>
   <p class="sub">Pick your desk — each console is a working preview of its part of the Service OS.</p>
@@ -98,6 +98,46 @@ footer a{color:#cfe0f7;text-decoration:none}
   <a href="/book-os">Dispatch</a> · <a href="/commercial">Commercial</a> · <a href="/property-managers">Property Managers</a> · <a href="/network">Network</a> · <a href="/flywheel">Flywheel</a> · <a href="/app">Customer App</a> · <a href="/tech">Tech App</a><br>
   The Faster, The Better. · 954-931-7997
 </footer>
+
+<script>
+/* Management snapshot — live when a staff token exists in this browser
+   (set by the Book OS sign-in). Signed out, the preview numbers stay and
+   are labelled as preview. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
+  if(!tok) return;
+  function get(path){ return fetch(API+path,{headers:{'Authorization':'Bearer '+tok}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  Promise.all([get('/flywheel/metrics'),get('/bookos/setter-queue'),get('/bookos/dispatch-board'),get('/commercial/accounts')])
+    .then(function(res){
+      var m=res[0].data, q=res[1].data, b=res[2].data, accts=res[3].data||[];
+      function set(id,v){ document.getElementById(id).textContent=v; }
+      set('k1', m.book.totalBookings); set('l1','Total bookings \u2014 LIVE');
+      set('k2', m.serve.completed); set('l2','Jobs completed \u2014 LIVE');
+      set('k3', q.count); set('l3','In Setter Queue \u2014 LIVE');
+      set('k4', (b.counts||{})['MATCH_PENDING_APPROVAL']||0); set('l4','Awaiting approval \u2014 LIVE');
+      set('k5', (m.attract.bySource||{})['REFERRAL']||0); set('l5','Referral bookings \u2014 LIVE');
+      set('k6', accts.length); set('l6','Commercial accounts \u2014 LIVE');
+      document.getElementById('portalChip').textContent='WEB PORTAL \u00b7 LIVE';
+      document.getElementById('kpiNote').textContent='Live \u2014 connected to the Service OS backend just now.';
+      /* Real window bars: appointments set for the board's date, by window */
+      var byWin={}; var groups=b.groups||{};
+      Object.keys(groups).forEach(function(st){ (groups[st]||[]).forEach(function(it){
+        if(it.appointment&&it.appointment.status==='SET'){ var w=it.appointment.windowLabel||'Window'; byWin[w]=(byWin[w]||0)+1; } }); });
+      var order=['8\u201310 AM','10 AM\u201312 PM','12\u20132 PM','2\u20134 PM','4\u20136 PM'];
+      var max=0; order.forEach(function(w){ max=Math.max(max,byWin[w]||0); });
+      var panel=document.getElementById('winPanel');
+      if(panel){
+        if(!max){ panel.innerHTML='<h3 style="font-size:13px;color:var(--navy);margin-bottom:6px">Today\u2019s appointments by window \u2014 LIVE</h3><p style="font-size:13px;color:var(--soft);margin:0">No appointments set for today yet. Confirmed appointments from Book OS will chart here.</p>'; }
+        else{
+          panel.innerHTML='<h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today\u2019s appointments by window \u2014 LIVE</h3><div class="bars">'+order.map(function(w){ var c=byWin[w]||0; return '<div style="height:'+Math.max(8,Math.round(c/max*100))+'%"><span>'+w+' \u00b7 '+c+'</span></div>'; }).join('')+'</div><div style="height:22px"></div>';
+        }
+      }
+    })
+    .catch(function(){ var n=document.getElementById('kpiNote'); if(n) n.textContent='Preview data \u2014 your staff sign-in has expired; sign in again on the Book OS page.'; });
+})();
+</script>
+
 <script src="/install.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
 </body>

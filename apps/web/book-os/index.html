@@ -282,12 +282,12 @@ renderQueue();renderToday();renderDispatch();renderRems();
    Signed out: the page is the original demo preview (sample data).
    Signed in as staff: Setter Queue, Today's Appointments and the Dispatch
    Board render REAL data from the Service OS API, and Confirm / Reschedule
-   write real appointments. Token lives in sessionStorage only. */
+   write real appointments. Token lives in localStorage (shared with the other Service OS console pages in this browser; sign out clears it). */
 var TSOS_API='https://top-speed-service-os.vercel.app/api/v1';
 var LIVE=false, liveQueue=[], staffUser=null;
 var WIN_LABEL={'08-10':'8\u201310 AM','10-12':'10 AM\u201312 PM','12-14':'12\u20132 PM','14-16':'2\u20134 PM','16-18':'4\u20136 PM'};
 function escH(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function tsosToken(){return sessionStorage.getItem('tsos_token')||''}
+function tsosToken(){return localStorage.getItem('tsos_token')||''}
 function apiFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tsosToken()},opts.headers||{});
   return fetch(TSOS_API+path,opts).then(function(r){ if(r.status===401){ throw new Error('session expired'); } if(!r.ok){ return r.json().catch(function(){return {}}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
@@ -312,14 +312,14 @@ function staffSignIn(){
   fetch(TSOS_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
     .then(function(j){
-      sessionStorage.setItem('tsos_token',j.token);
+      localStorage.setItem('tsos_token',j.token);
       enterLive(j.user);
       toast('Welcome — Live Book OS connected');
       loadLive();
     })
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
 }
-function staffSignOut(){ sessionStorage.removeItem('tsos_token'); location.reload(); }
+function staffSignOut(){ localStorage.removeItem('tsos_token'); location.reload(); }
 function enterLive(user){
   LIVE=true; staffUser=user;
   document.getElementById('modePill').textContent='\u25cf LIVE \u2014 SERVICE OS CONNECTED';
@@ -403,7 +403,7 @@ function renderLiveToday(board){
 }
 /* Auto-resume a live session */
 if(tsosToken()){
-  apiFetch('/auth/me').then(function(j){ enterLive(j.user); loadLive(); }).catch(function(){ sessionStorage.removeItem('tsos_token'); });
+  apiFetch('/auth/me').then(function(j){ enterLive(j.user); loadLive(); }).catch(function(){ localStorage.removeItem('tsos_token'); });
 }
 </script>
 
