@@ -11,8 +11,8 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
-<title>Top Speed Appliance — Advanced V2 | topspeedappliance.net Preview</title>
-<meta name="description" content="Next-generation preview of topspeedappliance.net: AI diagnosis, live tech tracking, smart booking and My Appliances — Top Speed Appliance LLC, Broward County. $99 diagnostic credited toward repair. Call 954-931-7997.">
+<title>Top Speed Appliance — Appliance Repair in Broward County | Book, Diagnose & Track Online</title>
+<meta name="description" content="Top Speed Appliance, live on the Service OS: AI photo diagnosis, real job tracking, smart booking and your appliance garage — Broward County. $99 diagnostic credited toward repair. Call 954-931-7997.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,700;0,800;0,900;1,800;1,900&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -281,7 +281,7 @@ footer a{color:#D7E6FF}
 </head>
 <body>
 
-<div class="ribbon">🏁 <b>NEXT-GENERATION PREVIEW</b> — the future of topspeedappliance.net, in development. The live site keeps running. Features marked <span class="preview-dot"></span> <b>Preview</b> are interactive demos.</div>
+<div class="ribbon">🏁 <b>THE TOP SPEED PLATFORM IS LIVE</b> — book, diagnose, track, and pay right here on the Service OS. Real bookings, real tracking, real people dispatching. Prefer the phone? <b>954-931-7997</b>.</div>
 
 <header class="site">
   <div class="wrap nav">
@@ -370,7 +370,7 @@ footer a{color:#D7E6FF}
 <section id="diagnose" style="background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag red"><span class="preview-dot"></span> Live — AI Diagnose Lab</span>
+      <span class="tag live">● Live — AI Diagnose Lab</span>
       <h2>Snap. Send. <em>Diagnosed.</em></h2>
       <p>Two tools, live now: Speedy’s photo diagnosis reads your appliance photo and symptom, and the estimator gives a planning range before anyone rolls a truck.</p>
     </div>
@@ -451,9 +451,9 @@ footer a{color:#D7E6FF}
 <section id="track">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag red"><span class="preview-dot"></span> Preview — Live Tracking</span>
+      <span class="tag live">● Live Tracking — Real Jobs</span>
       <h2>Know exactly when <em>help arrives.</em></h2>
-      <p>No more four-hour guessing games. Press play and watch a Top Speed visit move from booked to your door — with the text updates you'd receive at every step.</p>
+      <p>No more four-hour guessing games. Enter the booking reference from your confirmation (it looks like TS-XXXXXX) and the phone number on the booking — your real job status appears here, the same record our dispatch team works from.</p>
     </div>
     <div class="track-grid reveal">
       <div class="mapbox" aria-label="Demo map showing technician route to a home in Sunrise">
@@ -467,12 +467,14 @@ footer a{color:#D7E6FF}
         </svg>
         <div class="homeMark" id="homeMark" style="left:84%;top:29%">⌂</div>
         <div id="vanMark" style="left:12%;top:84%">🚐</div>
-        <div class="eta-pill" id="etaPill">Status: Booked — tap ▶ Play demo</div>
+        <div class="eta-pill" id="etaPill">Enter your booking reference to see live status</div>
       </div>
       <div class="card" style="padding:20px">
-        <div style="display:flex;gap:10px;margin-bottom:14px">
-          <button class="btn btn-red" id="playBtn" style="padding:11px 20px;font-size:15px" onclick="playTrack()">▶ Play demo</button>
-          <button class="btn btn-ghost" style="padding:11px 18px;font-size:15px" onclick="resetTrack()">↺ Reset</button>
+        <div style="display:grid;gap:10px;margin-bottom:14px">
+          <input id="trkRef" placeholder="Booking reference — e.g. TS-AEVEQH" style="padding:12px;border:1px solid #B9CFEA;border-radius:10px;font-size:15px;text-transform:uppercase">
+          <input id="trkPhone" type="tel" placeholder="Phone number on the booking" style="padding:12px;border:1px solid #B9CFEA;border-radius:10px;font-size:15px">
+          <button class="btn btn-red" id="playBtn" style="padding:12px 20px;font-size:15px" onclick="trackJob()">📍 Track my job</button>
+          <p class="fine" style="margin:0">In the Top Speed app instead? <a href="/app"><b>Open the app</b></a> — your jobs track themselves there, no reference needed.</p>
         </div>
         <div class="stages" id="stageList" role="group" aria-label="Tracking stages"></div>
         <div class="sms-feed" id="smsFeed" aria-live="polite"></div>
@@ -515,19 +517,23 @@ footer a{color:#D7E6FF}
 <section id="garage">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag red"><span class="preview-dot"></span> Preview — Customer Account</span>
+      <span class="tag live">● Customer Account — Live in the App</span>
       <h2>My Appliances: <em>your home's garage.</em></h2>
-      <p>Every appliance you own, its service history and warranty status — and one-tap rebooking when something acts up again. Sample household shown.</p>
+      <p>Every appliance you own, its service history and warranty status — and one-tap rebooking when something acts up again. Your real garage lives in the Top Speed app, tied to your account.</p>
     </div>
-    <div class="garage-grid reveal" id="garageGrid"></div>
+    <div class="garage-grid reveal" id="garageGrid">
+      <div class="card appl"><div class="ic">🧊</div><div><h3>Your appliances, on record</h3><p>Every unit you add — brand, model, serial — kept with its full service history.</p><a class="btn btn-blue" href="/app">Open my garage →</a></div></div>
+      <div class="card appl"><div class="ic">🛡️</div><div><h3>Warranties, tracked for you</h3><p>Parts and labor warranty status on every repair, counted down automatically.</p><a class="btn btn-blue" href="/app">See my warranties →</a></div></div>
+      <div class="card appl"><div class="ic">↻</div><div><h3>One-tap rebooking</h3><p>Something acting up again? Rebook from the appliance itself — the history rides along for the tech.</p><a class="btn btn-blue" href="/app">Rebook in the app →</a></div></div>
+    </div>
     <div class="card history reveal">
-      <h3 style="font-size:19px;margin-bottom:10px">🗂️ Service history — sample account</h3>
+      <h3 style="font-size:19px;margin-bottom:10px">🗂️ Service history — built automatically</h3>
       <ul style="margin:0;padding-left:20px">
         <li><b>Refrigerator — drain line cleared &amp; fan checked.</b> Invoice, parts and payment receipt saved to the account.</li>
         <li><b>Washer — drain pump replaced.</b> Warranty status tracked automatically; photo report from the tech attached.</li>
         <li><b>Dryer — annual vent &amp; lint service</b> under the Smart Maintenance Plan, with a reminder before the next one is due.</li>
       </ul>
-      <p class="fine" style="margin:12px 0 0">At launch, your real history builds itself: every booking, diagnosis, photo report, invoice and warranty in one place — no paper folders, no guessing when you bought what.</p>
+      <p class="fine" style="margin:12px 0 0">Your history builds itself from your first booking: every diagnosis, photo report, invoice and warranty in one place — no paper folders, no guessing when you bought what.</p>
     </div>
   </div>
 </section>
@@ -669,7 +675,7 @@ footer a{color:#D7E6FF}
       <details class="faq"><summary>How does the $99 diagnostic work?</summary><p>It's collected at booking to reserve your window, the tech diagnoses the appliance in person, and if you approve the repair, the full $99 is credited toward the total. You approve a flat quote before any repair work starts.</p></details>
       <details class="faq"><summary>How fast can you come?</summary><p>Same-day windows are offered across our 12 core Broward cities when the board allows — pick a window in Smart Booking or call 954-931-7997 and dispatch will tell you the earliest real opening.</p></details>
       <details class="faq"><summary>Do you service my brand?</summary><p>Yes — Samsung, LG, Whirlpool, GE, Frigidaire, Maytag, Bosch, KitchenAid and more, including smart/Wi-Fi models and commercial units.</p></details>
-      <details class="faq"><summary>Is this the live website?</summary><p>This is the next-generation preview in development. The current live site at topspeedappliance.net keeps running untouched; demos marked Preview show how the new platform will work at launch. To book today, use the phone — 954-931-7997 — and we'll take it from there.</p></details>
+      <details class="faq"><summary>Is this the live website?</summary><p>Yes — this is Top Speed's live platform at topspeedserviceos.com, running on the Top Speed Service OS. Bookings, AI diagnosis, and tracking here are real. Our longtime address topspeedappliance.net keeps running while it moves over to this platform. To book by phone instead: 954-931-7997.</p></details>
     </div>
   </div>
 </section>
@@ -678,7 +684,7 @@ footer a{color:#D7E6FF}
 <section id="providers" style="background:var(--navy-2)">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)"><span class="preview-dot"></span> Preview — The Other Door</span>
+      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">● Live — The Other Door</span>
       <h2 style="color:#fff;overflow-wrap:anywhere;font-size:clamp(24px,5.4vw,42px)">topspeedapplianceservice.com <em style="color:var(--electric)">V2 — for providers.</em></h2>
       <p style="color:#B9CFF2">The provider-network half of the same platform. Customers book on .net; qualified techs and repair companies receive matched, pre-qualified jobs here — with the $99 diagnostic already collected, so no-shows and tire-kickers are rare.</p>
     </div>
@@ -710,7 +716,7 @@ footer a{color:#D7E6FF}
           </ol>
         </div>
         <form class="card" style="padding:24px" id="provForm" novalidate>
-          <h3 style="font-size:20px;margin-bottom:6px">Apply to the network — preview</h3>
+          <h3 style="font-size:20px;margin-bottom:6px">Apply to the network</h3>
           <p style="margin:0 0 14px;font-size:15px">Two minutes. We reply by phone to finish verification.</p>
           <div class="frow">
             <div><label class="flabel" for="pvName">Your / company name</label><input id="pvName" type="text" placeholder="Name"></div>
@@ -719,7 +725,7 @@ footer a{color:#D7E6FF}
           <div style="margin-bottom:14px"><label class="flabel" for="pvTrade">Main trade</label>
             <select id="pvTrade"><option>Refrigeration</option><option>Laundry (washer/dryer)</option><option>Cooking (oven/range)</option><option>All appliances</option><option>Installation</option><option>Commercial</option></select></div>
           <p class="fine" id="pvError" style="color:var(--red);font-weight:600" role="alert"></p>
-          <button class="btn btn-blue" type="submit" style="width:100%">Submit application preview</button>
+          <button class="btn btn-blue" type="submit" style="width:100%">Submit application</button>
           <div class="confirm" id="pvConfirm" role="status"></div>
         </form>
       </div>
@@ -740,8 +746,8 @@ footer a{color:#D7E6FF}
         <h3 style="font-size:17px;margin-bottom:12px">Book service</h3>
         <p>📞 <a href="tel:+19549317997"><b>954-931-7997</b></a><br>
         🌐 <a href="https://topspeedappliance.net" target="_blank" rel="noopener">topspeedappliance.net</a> (current live site)<br>
-        📅 <a href="#book">Smart Booking preview</a><br>
-        📸 <a href="#diagnose">AI Diagnosis preview</a></p>
+        📅 <a href="#book">Smart Booking</a><br>
+        📸 <a href="#diagnose">AI Diagnosis</a></p>
       </div>
       <div>
         <h3 style="font-size:17px;margin-bottom:12px">The network</h3>
@@ -764,7 +770,7 @@ footer a{color:#D7E6FF}
         ⬇️ <a href="/download">Get the App</a></p>
       </div>
     </div>
-    <p style="margin-top:30px;font-size:13.5px;color:#7E96C4">Advanced V2 development preview — not the live production site. Interactive features are working demos; bookings in this preview are confirmed by phone at 954-931-7997.</p>
+    <p style="margin-top:30px;font-size:13.5px;color:#7E96C4">topspeedserviceos.com — the live Top Speed Appliance platform, running on the Top Speed Service OS. Every booking is reviewed by a Service Setter and confirmed by phone at 954-931-7997.</p>
   </div>
 </footer>
 
@@ -857,21 +863,13 @@ document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s){
 }).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<div class="card brand reveal">'+b+'<div style="font-family:Barlow;font-weight:600;font-size:13px;color:var(--muted);margin-top:4px">Repair • Parts • Smart models</div></div>';}).join('');
 document.getElementById('cityGrid').innerHTML=CITIES.map(function(c){return '<div class="card city reveal">📍 '+c+'</div>';}).join('');
-document.getElementById('garageGrid').innerHTML=GARAGE.map(function(g){
- return '<div class="card appl"><div class="ic">'+g.icon+'</div><div><h3>'+g.name+'</h3><p>'+g.meta+' • <span class="pill '+g.pill+'">'+g.pillText+'</span></p><p>'+g.last+'</p><button type="button" class="btn btn-blue" onclick="rebook(\''+g.svc+'\')">↻ Book service for this one</button></div></div>';
-}).join('');
 
 function pickService(name,id){
-  var bk=document.getElementById('bkAppliance');
-  for(var i=0;i<bk.options.length;i++){if(bk.options[i].text.replace(/\s+/g,' ').trim()===name||bk.options[i].text.indexOf(name.split(' ')[0])===0){bk.selectedIndex=i;break;}}
   if(DIAG[id]){document.getElementById('estAppliance').value=id;syncEstIssues();switchLab('est');}
   document.getElementById('diagnose').scrollIntoView({behavior:'smooth'});
   setTimeout(function(){document.getElementById('book').scrollIntoView({behavior:'smooth'});},900);
 }
 function rebook(svc){
-  var bk=document.getElementById('bkAppliance');
-  for(var i=0;i<bk.options.length;i++){if(bk.options[i].text.indexOf(svc.split(' ')[0])===0){bk.selectedIndex=i;break;}}
-  document.getElementById('bkIssue').value='Rebook from My Appliances — same issue / checkup for my '+svc+'.';
   document.getElementById('book').scrollIntoView({behavior:'smooth'});
 }
 
@@ -983,82 +981,48 @@ function runEstimate(){
     '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Lock it in — book now</a>';
 }
 
-/* ---------- tracking demo ---------- */
-var STAGES=[
- {t:'Booked',d:'Request received & confirmed by phone. Window held for you.',sms:'Top Speed: You\u2019re booked for {day}{win}. We\u2019ll text your tech\u2019s details before the visit. — TopSpeedAppliance.net',pos:[12,84],eta:'Status: Booked ✓'},
- {t:'Dispatched',d:'Service Setters matched your job to a qualified nearby tech.',sms:'Top Speed: Your job is dispatched for {day}{win}. Your technician is being assigned now.',pos:[12,55],eta:'Status: Dispatched — tech assigned'},
- {t:'En Route',d:'Your tech is on the way with live ETA and photo ID by text.',sms:'Top Speed: Your tech is en route 🚐 ETA ~25 min. Track live: TopSpeedAppliance.net/track',pos:[48,55],eta:'Tech en route — ETA ~25 min'},
- {t:'Arrived',d:'Tech at your door. Diagnosis begins — $99 credited if you approve the repair.',sms:'Top Speed: Your technician has arrived and started the $99 diagnostic. We\u2019ll text your flat quote for approval.',pos:[84,29],eta:'Arrived — diagnosis in progress ✓'}
+/* ---------- live tracking (real bookings) ---------- */
+var TRK_STAGES=[
+ {t:'Request received',d:'A Service Setter is reviewing your request and confirming your window by phone.',pos:[12,84]},
+ {t:'Appointment confirmed',d:'Your window is locked in. We match your job to a qualified nearby tech next.',pos:[34,62]},
+ {t:'Technician assigned',d:'Your tech is assigned — you will get their details by text before the visit.',pos:[58,44]},
+ {t:'Job completed',d:'Work done. Your invoice, warranty, and referral code live in your account.',pos:[84,29]}
 ];
-var stageIdx=0, trackTimer=null;
-function renderStages(){
-  document.getElementById('stageList').innerHTML=STAGES.map(function(s,i){
-    var cls=i<stageIdx?'done':(i===stageIdx?'now':'');
-    var mark=i<stageIdx?'✓':(i+1);
-    return '<button type="button" class="stage '+cls+'" onclick="goStage('+i+')"><span class="dot">'+mark+'</span><span><b>'+s.t+'</b><span>'+s.d+'</span></span></button>';
+function renderTrkStages(active){
+  document.getElementById('stageList').innerHTML=TRK_STAGES.map(function(st,i){
+    var cls=i<active?'done':(i===active?'now':'');
+    var mark=i<active?'✓':(i+1);
+    return '<div class="stage '+cls+'"><span class="dot">'+mark+'</span><span><b>'+st.t+'</b><span>'+st.d+'</span></span></div>';
   }).join('');
+  var pos=TRK_STAGES[Math.max(0,active)]||TRK_STAGES[0];
+  document.getElementById('vanMark').style.left=pos.pos[0]+'%';
+  document.getElementById('vanMark').style.top=pos.pos[1]+'%';
 }
-function goStage(i){
-  stageIdx=i; renderStages();
-  var s=STAGES[i];
-  document.getElementById('vanMark').style.left=s.pos[0]+'%';
-  document.getElementById('vanMark').style.top=s.pos[1]+'%';
-  document.getElementById('etaPill').textContent=s.eta;
+function trkMsg(html){
   var feed=document.getElementById('smsFeed');
-  feed.innerHTML='';
-  for(var k=0;k<=i;k++){
-    var d=document.createElement('div'); d.className='sms';
-    d.innerHTML='💬 '+esc(STAGES[k].sms.replace('{day}',chosenDay||'your chosen day').replace('{win}',chosenWin?', '+chosenWin:''))+'<small>Text update • Stage '+(k+1)+' of 4</small>';
-    feed.appendChild(d);
-  }
-  feed.scrollTop=feed.scrollHeight;
+  feed.innerHTML='<div class="sms">'+html+'</div>';
 }
-function playTrack(){
-  if(trackTimer){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play demo';return;}
-  document.getElementById('playBtn').textContent='⏸ Pause';
-  if(stageIdx>=STAGES.length-1)goStage(0);
-  trackTimer=setInterval(function(){
-    if(stageIdx>=STAGES.length-1){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play again';return;}
-    goStage(stageIdx+1);
-  },2200);
+function trackJob(){
+  var ref=document.getElementById('trkRef').value.trim().toUpperCase();
+  var phone=document.getElementById('trkPhone').value.replace(/\D/g,'');
+  if(!ref){trkMsg('Add your booking reference — it is in your confirmation text and email.');return;}
+  if(phone.length<10){trkMsg('Add the phone number on the booking so we can match it.');return;}
+  trkMsg('Looking up <b>'+ref+'</b>…');
+  fetch('https://top-speed-service-os.vercel.app/api/v1/bookings/track/'+encodeURIComponent(ref)+'?phone='+encodeURIComponent(phone))
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(x){
+      if(x.s!==200){trkMsg('⚠️ '+((x.j&&x.j.error)||'We could not find that booking.')+' Check the reference and phone, or call <b>954-931-7997</b>.');return;}
+      var d=x.j.data;
+      renderTrkStages(d.stage);
+      document.getElementById('etaPill').textContent='Status: '+d.stageLabel;
+      var pay=d.payment&&d.payment.diagnosticPaid?' • $99 diagnostic: PAID ✓':'';
+      trkMsg('💬 <b>'+d.reference+'</b> — '+d.appliance+' in '+d.city+(d.preferredWindow?' • Window '+d.preferredWindow:'')+'<br>Status: <b>'+d.stageLabel+'</b>'+pay+'<small>Live from the Top Speed Service OS — the same record dispatch works from.</small>');
+    })
+    .catch(function(){trkMsg('⚠️ Tracking is unreachable right now — call <b>954-931-7997</b> and we will read your status straight off the board.');});
 }
-function resetTrack(){if(trackTimer){clearInterval(trackTimer);trackTimer=null;document.getElementById('playBtn').textContent='▶ Play demo';}goStage(0);}
-renderStages(); goStage(0);
+renderTrkStages(0);
 
-/* ---------- booking ---------- */
-var chosenDay='', chosenWin='';
-(function(){
-  var days=['Today','Tomorrow'];
-  var now=new Date();
-  for(var i=2;i<5;i++){var d=new Date(now.getTime()+i*86400000);days.push(d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}));}
-  if(now.getHours()>=15)days[0]='Tomorrow';
-  var box=document.getElementById('dayChips');
-  if(!box)return;
-  box.innerHTML=days.map(function(d,i){return '<button type="button" class="chip" data-day="'+d+'" aria-pressed="'+(i===0?'true':'false')+'">'+d+'<small>'+(i===0?'Earliest':'')+'</small></button>';}).join('');
-  chosenDay=days[0];
-  box.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;box.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenDay=b.getAttribute('data-day');});
-  var wins=document.getElementById('winChips');
-  wins.addEventListener('click',function(e){var b=e.target.closest('.chip');if(!b)return;wins.querySelectorAll('.chip').forEach(function(c){c.setAttribute('aria-pressed','false');});b.setAttribute('aria-pressed','true');chosenWin=b.getAttribute('data-win');});
-  var first=wins.querySelector('.chip'); first.setAttribute('aria-pressed','true'); chosenWin=first.getAttribute('data-win');
-})();
-var _bf=document.getElementById('bookForm'); if(_bf) _bf.addEventListener('submit',function(e){
-  e.preventDefault();
-  var name=document.getElementById('bkName').value.trim();
-  var phone=document.getElementById('bkPhone').value.replace(/\D/g,'');
-  var zip=document.getElementById('bkZip').value.trim();
-  var err=document.getElementById('bkError');
-  if(name.length<2){err.textContent='Please add your name so dispatch can confirm with you.';return;}
-  if(phone.length<10){err.textContent='Please add a valid mobile number — your tracking texts go there.';return;}
-  if(zip.length<5){err.textContent='Please add your ZIP so we route the nearest tech.';return;}
-  err.textContent='';
-  var ref='TS-'+Math.random().toString(36).slice(2,7).toUpperCase();
-  var appl=document.getElementById('bkAppliance').value;
-  var city=document.getElementById('bkCity').value;
-  var c=document.getElementById('bkConfirm');
-  c.innerHTML='<b>✓ Request received — preview</b><br>Reference <b class="code">'+ref+'</b> • '+esc(appl)+' in '+esc(city)+'<br><b>'+esc(chosenDay)+', '+esc(chosenWin)+'</b> — $99 diagnostic collected at booking &amp; credited toward repair.<br>On the live platform, Service Setters dispatch confirms this appointment by phone at the number you gave. Need it faster? <a href="tel:+19549317997"><b>Call 954-931-7997</b></a>.';
-  c.classList.add('show');
-  c.scrollIntoView({behavior:'smooth',block:'center'});
-});
+/* ---------- booking: Smart Booking runs the live Google Form intake (above) ---------- */
 
 /* ---------- Speedy chat ---------- */
 var spOpen=false, spGreeted=false;
@@ -1107,20 +1071,26 @@ document.getElementById('spForm').addEventListener('submit',function(e){
 /* ---------- provider demo ---------- */
 function acceptOffer(){
   var b=document.getElementById('offerBtn'); b.textContent='✓ Job accepted — see you 2–5 PM'; b.disabled=true; b.style.opacity='.75';
-  document.getElementById('offerMsg').innerHTML='<b style="color:var(--green)">Accepted (demo).</b> In the live app, the customer gets your name, photo and live tracking automatically, and the job lands on your route with the diagnosis photos attached.';
+  document.getElementById('offerMsg').innerHTML='<b style="color:var(--green)">That is how one tap does it.</b> Real offers arrive in the <a href="/tech"><b>Tech App</b></a> — the customer gets your name, photo and live tracking automatically, and the job lands on your route with the diagnosis photos attached.';
 }
 document.getElementById('provForm').addEventListener('submit',function(e){
   e.preventDefault();
   var n=document.getElementById('pvName').value.trim();
-  var p=document.getElementById('pvPhone').value.replace(/\D/g,'');
+  var p=document.getElementById('pvPhone').value.trim();
   var err=document.getElementById('pvError');
   if(n.length<2){err.textContent='Please add your name or company.';return;}
-  if(p.length<10){err.textContent='Please add a valid mobile number — verification is by phone.';return;}
+  if(p.replace(/\D/g,'').length<10){err.textContent='Please add a valid mobile number — verification is by phone.';return;}
   err.textContent='';
-  var ref='PV-'+Math.random().toString(36).slice(2,7).toUpperCase();
   var c=document.getElementById('pvConfirm');
-  c.innerHTML='<b>✓ Application received — preview</b><br>Reference <b class="code">'+ref+'</b> • '+esc(document.getElementById('pvTrade').value)+'<br>On the live network we call to verify license/insurance and set your areas. Questions: <a href="tel:+19549317997"><b>954-931-7997</b></a>.';
-  c.classList.add('show');
+  c.innerHTML='Sending your application…'; c.classList.add('show');
+  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,type:'PROVIDER_APPLICATION',source:'flagship-home',message:'Main trade: '+document.getElementById('pvTrade').value})})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(x){
+      if(x.s!==201&&x.s!==200){c.innerHTML='⚠️ Something went wrong sending that — call <a href="tel:+19549317997"><b>954-931-7997</b></a> and we will take your application by phone.';return;}
+      var ref=(x.j.data&&(x.j.data.reference||x.j.data.id))||'received';
+      c.innerHTML='<b>✓ Application received</b><br>Reference <b class="code">'+ref+'</b> • '+esc(document.getElementById('pvTrade').value)+'<br>A Service Setter will call to verify license/insurance and set your areas. Questions: <a href="tel:+19549317997"><b>954-931-7997</b></a>.';
+    })
+    .catch(function(){c.innerHTML='⚠️ Something went wrong sending that — call <a href="tel:+19549317997"><b>954-931-7997</b></a> and we will take your application by phone.';});
 });
 
 /* ---------- sticky bar present on mobile ---------- */

@@ -11,7 +11,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
-<title>TopSpeedApplianceService.com — Advanced V2 | Service OS Preview</title>
+<title>Top Speed Service Network — Providers & Dispatch | Top Speed Service OS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -146,7 +146,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 </head>
 <body>
 <div class="topbar"><div class="wrap" style="padding-left:0;padding-right:0">
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge red">Advanced V2 — Development Preview</span><span class="badge outline">Powered by Top Speed Service OS</span><span style="opacity:.85">Not replacing the live site — built for future development</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge red">Top Speed Service Network — Live</span><span class="badge outline">Powered by Top Speed Service OS</span><span style="opacity:.85">The provider door of the live platform</span></div>
   <div><strong>954-931-7997</strong> &nbsp;•&nbsp; Same-Day Service &nbsp;•&nbsp; Broward + Miami</div>
 </div></div>
 
@@ -175,27 +175,27 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
         <div class="stat"><b>90-Day</b><span>Parts + Labor Warranty</span></div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
-        <span class="badge outline">✓ Same-Day Windows</span><span class="badge outline">✓ Photo Diagnosis Preview</span><span class="badge outline">✓ Live Status Texts</span><span class="badge outline">✓ Jobs — Not Leads</span>
+        <span class="badge outline">✓ Same-Day Windows</span><span class="badge outline">✓ Photo Triage</span><span class="badge outline">✓ Live Status Texts</span><span class="badge outline">✓ Jobs — Not Leads</span>
       </div>
       <div class="hero-img" style="margin-top:22px"><img src="hero-tech.webp" alt="Top Speed technician with tablet repairing a refrigerator in a South Florida home"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 12 Broward areas + Miami</span></div></div>
     </div>
 
     <!-- QUICK REQUEST MINI -->
     <div class="hero-form" id="quick">
-      <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3>Request Service in 60 Seconds</h3><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Residential or commercial — add a photo and get an instant AI triage preview.</p></div><span class="pill bluep">PREVIEW</span></div>
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3>Request Service in 60 Seconds</h3><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Residential or commercial — add a photo and get instant triage guidance.</p></div><span class="pill bluep">LIVE</span></div>
       <div class="toggle" style="margin:16px 0" role="tablist"><button class="active" id="tgRes" onclick="setTrack('res')">🏠 Residential</button><button id="tgCom" onclick="setTrack('com')">🏢 Commercial</button></div>
       <form id="quickForm" onsubmit="submitQuick(event)">
         <div class="grid2"><div class="field"><label>Your name</label><input id="qName" placeholder="Full name" required></div><div class="field"><label>Phone *</label><input id="qPhone" placeholder="(954) 000-0000" required></div></div>
         <div class="field" id="bizField" style="display:none"><label>Business / Property name</label><input id="qBiz" placeholder="e.g. Sunrise Plaza — Building B"></div>
         <div class="grid2"><div class="field"><label>Appliance</label><select id="qAppliance" onchange="runTriage()"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Microwave</option><option>Freezer</option><option>Ice Maker</option><option>Cooktop</option></select></div><div class="field"><label>City / ZIP</label><select id="qCity"><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Miami</option></select></div></div>
         <div class="field"><label>What's happening?</label><textarea id="qIssue" rows="2" placeholder="e.g. Fridge not cooling, ice maker stopped, error code F8E1…" oninput="runTriage()"></textarea></div>
-        <div class="upload"><strong>📸 Add a photo — appliance or error code</strong><p style="margin:4px 0 10px;color:var(--muted);font-size:13px">Helps triage pre-load the right parts. Preview only — nothing is uploaded to a server in this demo.</p><input type="file" id="qPhoto" accept="image/*" onchange="previewPhoto(event)"><div id="photoPreview"></div></div>
+        <div class="upload"><strong>📸 Add a photo — appliance or error code</strong><p style="margin:4px 0 10px;color:var(--muted);font-size:13px">Helps triage pre-load the right parts. In this quick form your photo stays on your device — for a full AI photo diagnosis, use the Diagnose Lab on our customer site.</p><input type="file" id="qPhoto" accept="image/*" onchange="previewPhoto(event)"><div id="photoPreview"></div></div>
         <button class="btn btn-red" style="width:100%;margin-top:14px">Get My Triage + Request Callback →</button>
-        <p style="font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0">Preview form — in production every request is confirmed by phone by the Service Setters team. $99 diagnostic collected at booking, credited toward repair.</p>
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0">Every request goes to the Service Setters team and is confirmed by phone. $99 diagnostic collected at booking, credited toward repair.</p>
       </form>
       <div class="success" id="quickSuccess"></div>
       <div class="triage" style="margin-top:16px" id="triageBox">
-        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>🤖 AI Triage Preview</h3><span class="pill amber" id="triageUrgency">Urgency: Standard</span></div>
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3>🤖 AI Triage</h3><span class="pill amber" id="triageUrgency">Urgency: Standard</span></div>
         <p id="triageIssue" style="margin:0;color:#D6E6FF">Pick an appliance and describe the issue — triage will estimate the likely cause, urgency, and parts to bring.</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
           <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px"><small style="letter-spacing:.08em;text-transform:uppercase;opacity:.8">Likely parts to bring</small><div id="triageParts" style="font-weight:700;margin-top:4px">—</div></div>
@@ -236,17 +236,17 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 
 <!-- DISPATCH BOARD -->
 <section class="section alt" id="dispatch"><div class="wrap">
-  <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:end"><div><div class="eyebrow">Live Preview • Service Setters Hybrid Dispatch</div><h2 class="title">Dispatch Board — Watch Jobs Move</h2><p class="sub">Auto-match does the speed work. Humans do the judgment work. Every job needs Service Setters approval before a provider rolls — that's the Top Speed difference.</p></div><div style="display:flex;gap:8px"><button class="btn btn-navy btn-sm" id="dispatchToggle" onclick="toggleDispatch()">⏸ Pause Simulation</button><button class="btn btn-outline btn-sm" onclick="addDispatchJob()">+ Simulate New Request</button></div></div>
+  <div style="display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:end"><div><div class="eyebrow">How It Works • Service Setters Hybrid Dispatch</div><h2 class="title">Dispatch Board — Watch Jobs Move</h2><p class="sub">Auto-match does the speed work. Humans do the judgment work. Every job needs Service Setters approval before a provider rolls — that's the Top Speed difference.</p></div><div style="display:flex;gap:8px"><button class="btn btn-navy btn-sm" id="dispatchToggle" onclick="toggleDispatch()">⏸ Pause Simulation</button><button class="btn btn-outline btn-sm" onclick="addDispatchJob()">+ Simulate New Request</button></div></div>
 
   <div class="dispatch" style="margin-top:20px">
-    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge">SERVICE OS • DISPATCH</span><span class="badge blue" id="dispatchClock">Live Preview</span></div><div style="font-size:13px;color:#BFD6F5">Auto-match → <b style="color:#fff">Human Approval</b> → Provider Notified → En Route</div></div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center"><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge">SERVICE OS • DISPATCH</span><span class="badge blue" id="dispatchClock">Simulation</span></div><div style="font-size:13px;color:#BFD6F5">Auto-match → <b style="color:#fff">Human Approval</b> → Provider Notified → En Route</div></div>
     <div class="board" id="board">
       <div class="col"><h4>🆕 New Requests <span id="c0">0</span></h4><div id="col0"></div></div>
       <div class="col"><h4>🤖 AI Matched <span id="c1">0</span></h4><div id="col1"></div></div>
       <div class="col"><h4>👩‍💼 Awaiting Approval <span id="c2">0</span></h4><div id="col2"></div></div>
       <div class="col"><h4>🚐 Dispatched / En Route <span id="c3">0</span></h4><div id="col3"></div></div>
     </div>
-    <p style="font-size:12px;color:#8FB0DD;margin:12px 0 0">Preview data only — simulated jobs to show the flow. In production this board is the Service Setters team's live operations view. Use “Approve &amp; Dispatch” on any awaiting card to move it yourself.</p>
+    <p style="font-size:12px;color:#8FB0DD;margin:12px 0 0">Simulated jobs to show the flow — the live board is the Service Setters team's operations view in Book OS. Use “Approve &amp; Dispatch” on any awaiting card to move it yourself.</p>
   </div>
 
   <div class="kpi" style="margin-top:16px">
@@ -282,7 +282,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <!-- Join form -->
       <form class="card" style="margin-top:16px" onsubmit="submitProvider(event)">
         <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0">Apply to Join the Network</h3><span class="pill bluep">Reviewed by Service Setters</span></div>
-        <p style="color:var(--muted);font-size:14px">Preview application — in production, applications are reviewed by the Service Setters team and confirmed by phone before activation.</p>
+        <p style="color:var(--muted);font-size:14px">Applications are reviewed by the Service Setters team and confirmed by phone before activation.</p>
         <div class="grid2"><div class="field"><label>Your name *</label><input id="pName" required placeholder="Full name"></div><div class="field"><label>Phone *</label><input id="pPhone" required placeholder="(954) 000-0000"></div></div>
         <div class="grid2"><div class="field"><label>Business name</label><input id="pBiz" placeholder="Your shop / LLC"></div><div class="field"><label>Years experience</label><select id="pExp"><option>1–3 years</option><option>3–5 years</option><option>5–10 years</option><option>10+ years</option></select></div></div>
         <label>Areas you cover (tap to select)</label><div class="chips" id="areaChips"></div>
@@ -325,8 +325,8 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <div class="card" style="margin-top:14px"><h3 style="margin-top:0">Who this is for</h3><div class="brands"><span class="brand">🍽️ Restaurants &amp; Cafés</span><span class="brand">🧺 Laundromats</span><span class="brand">🏘️ Property Managers</span><span class="brand">🏨 Hotels &amp; Rentals</span><span class="brand">🏢 Offices &amp; Retail</span><span class="brand">🏠 HOAs &amp; Multi-Unit</span></div><p style="color:var(--muted);font-size:14px;margin:12px 0 0">Property managers: pair this with the customer-side portal on <a href="/" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">topspeedappliance.net</a> for tenant intake across all your units.</p></div>
     </div>
     <form class="card" onsubmit="submitCommercial(event)" style="align-self:start">
-      <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0;font-size:28px">Commercial Work Order — Preview</h3><span class="pill redp">PRIORITY</span></div>
-      <p style="color:var(--muted);font-size:14px">Preview intake — commercial requests are confirmed by phone and scoped before dispatch. Separate written terms may apply for commercial equipment.</p>
+      <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0;font-size:28px">Commercial Work Order</h3><span class="pill redp">PRIORITY</span></div>
+      <p style="color:var(--muted);font-size:14px">Commercial requests are confirmed by phone and scoped before dispatch. Separate written terms may apply for commercial equipment.</p>
       <div class="grid2"><div class="field"><label>Business / Property *</label><input id="cBiz" required placeholder="Business name"></div><div class="field"><label>Contact + Phone *</label><input id="cContact" required placeholder="Name — (954) 000-0000"></div></div>
       <div class="grid2"><div class="field"><label>Property type</label><select id="cType"><option>Restaurant / Food Service</option><option>Laundromat</option><option>Property Management</option><option>Hotel / Short-Term Rental</option><option>Office / Retail</option><option>Multi-Unit Residential</option><option>Other Commercial</option></select></div><div class="field"><label>City</label><select id="cCity"><option>Fort Lauderdale</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Miami</option><option>Other Broward</option></select></div></div>
       <div class="grid2"><div class="field"><label>Equipment</label><select id="cEquip"><option>Commercial Refrigeration</option><option>Commercial Oven / Range</option><option>Commercial Washer / Dryer</option><option>Dishwasher / Sanitation</option><option>Ice Machine</option><option>Residential Appliance (in unit)</option><option>Multiple / Not Sure</option></select></div><div class="field"><label>Urgency</label><select id="cUrg"><option>Down — losing business now</option><option>Urgent — today if possible</option><option>Standard — this week</option><option>Planned / Preventive</option></select></div></div>
@@ -483,9 +483,33 @@ function runTriage(hasPhoto){
 runTriage();
 // Forms
 function refCode(){return 'TS-'+Math.random().toString(36).slice(2,7).toUpperCase();}
-function submitQuick(e){e.preventDefault();var code=refCode();var box=document.getElementById('quickSuccess');box.style.display='block';box.innerHTML='<b>✓ Request received — Ref '+code+'</b><br>Preview confirmation: Service Setters will call <b>'+(document.getElementById('qPhone').value||'your phone')+'</b> to confirm details and collect the $99 diagnostic (credited toward repair). Keep your photo handy — your matched provider reviews it before arrival.<br><span style="font-size:13px">Need it faster? Call <a href="tel:+19549317997"><b>954-931-7997</b></a></span>';addDispatchJob(document.getElementById('qAppliance').value, document.getElementById('qCity').value);box.scrollIntoView({behavior:'smooth',block:'center'});}
-function submitProvider(e){e.preventDefault();var code=refCode();var box=document.getElementById('providerSuccess');box.style.display='block';box.innerHTML='<b>✓ Application received — Ref '+code+'</b><br>Preview confirmation: the Service Setters team reviews every application and will call <b>'+document.getElementById('pPhone').value+'</b> to verify details, areas, and onboarding requirements before activation.';}
-function submitCommercial(e){e.preventDefault();var code=refCode();var box=document.getElementById('commSuccess');box.style.display='block';box.innerHTML='<b>✓ Work order received — Ref '+code+'</b><br>Preview confirmation: commercial requests get priority review. Service Setters will call to confirm scope, access, and '+(document.getElementById('cConsol').checked?'consolidated invoicing setup':'per-visit invoicing')+' before dispatch.';}
+
+function postConnection(payload, box, okHtml){
+  box.style.display='block'; box.innerHTML='Sending…';
+  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(x){
+      if(x.s!==201&&x.s!==200){box.innerHTML='<b>⚠️ Something went wrong sending that.</b><br>Call <a href="tel:+19549317997"><b>954-931-7997</b></a> and Service Setters will take it by phone.';return;}
+      var ref=(x.j.data&&(x.j.data.reference||x.j.data.id))||'received';
+      box.innerHTML=okHtml(ref);
+    })
+    .catch(function(){box.innerHTML='<b>⚠️ Something went wrong sending that.</b><br>Call <a href="tel:+19549317997"><b>954-931-7997</b></a> and Service Setters will take it by phone.';});
+}
+function submitQuick(e){e.preventDefault();var box=document.getElementById('quickSuccess');
+  var payload={name:document.getElementById('qName').value.trim(),phone:document.getElementById('qPhone').value.trim(),type:'SERVICE_REQUEST',source:'service-page-quick',
+    message:['Appliance: '+document.getElementById('qAppliance').value,'City: '+document.getElementById('qCity').value,'Business/Property: '+(document.getElementById('qBiz')?document.getElementById('qBiz').value:'—'),'Issue: '+document.getElementById('qIssue').value].join('\n')};
+  postConnection(payload, box, function(ref){return '<b>✓ Request received — Ref '+ref+'</b><br>Service Setters will call <b>'+payload.phone+'</b> to confirm details and collect the $99 diagnostic (credited toward repair). Keep your photo handy — your matched provider reviews it before arrival.<br><span style="font-size:13px">Need it faster? Call <a href="tel:+19549317997"><b>954-931-7997</b></a></span>';});
+  addDispatchJob(document.getElementById('qAppliance').value, document.getElementById('qCity').value);
+  box.scrollIntoView({behavior:'smooth',block:'center'});}
+function submitProvider(e){e.preventDefault();var box=document.getElementById('providerSuccess');
+  var payload={name:document.getElementById('pName').value.trim(),phone:document.getElementById('pPhone').value.trim(),type:'PROVIDER_APPLICATION',source:'service-page',
+    message:['Business: '+(document.getElementById('pBiz')?document.getElementById('pBiz').value:'—'),'Experience: '+(document.getElementById('pExp')?document.getElementById('pExp').value:'—')].join('\n')};
+  postConnection(payload, box, function(ref){return '<b>✓ Application received — Ref '+ref+'</b><br>The Service Setters team reviews every application and will call <b>'+payload.phone+'</b> to verify details, areas, and onboarding requirements before activation.';});}
+function submitCommercial(e){e.preventDefault();var box=document.getElementById('commSuccess');
+  var cContactVal=document.getElementById('cContact').value.trim(); var cDigits=cContactVal.replace(/\D/g,'');
+  var payload={name:document.getElementById('cBiz').value.trim(),phone:cDigits.length>=7?cDigits:cContactVal,type:'COMMERCIAL_WORK_ORDER',source:'service-page',
+    message:['Contact: '+cContactVal,'City: '+document.getElementById('cCity').value,'Facility type: '+document.getElementById('cType').value,'Equipment: '+document.getElementById('cEquip').value,'Urgency: '+document.getElementById('cUrg').value,'Recurring: '+document.getElementById('cRecur').value,'Invoicing: '+(document.getElementById('cConsol').checked?'Consolidated monthly':'Per-visit'),'Notes: '+document.getElementById('cNotes').value].join('\n')};
+  postConnection(payload, box, function(ref){return '<b>✓ Work order received — Ref '+ref+'</b><br>Commercial requests get priority review. Service Setters will call to confirm scope, access, and '+(document.getElementById('cConsol').checked?'consolidated invoicing setup':'per-visit invoicing')+' before dispatch.';});}
 // Chips
 var areas=CITIES.map(function(c){return c.n});
 document.getElementById('areaChips').innerHTML=areas.map(function(a){return '<button type="button" class="chip" onclick="this.classList.toggle(\'on\')">'+a+'</button>'}).join('');
