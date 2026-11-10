@@ -1,5 +1,6 @@
 import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
+import { hydrateFlywheel } from './flywheelRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -190,7 +191,9 @@ export async function hydrateStore() {
     store.dispatchAssignments.set(assignment.id, assignment);
   }
 
-  return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length };
+  const flywheel = await hydrateFlywheel();
+
+  return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0 };
 }
 
 export async function persistCustomer(record) {

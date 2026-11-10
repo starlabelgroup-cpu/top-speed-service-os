@@ -1,4 +1,5 @@
 import { store } from '../data/store.js';
+import { persistNotification } from '../db/flywheelRepo.js';
 
 /**
  * Notification senders — the live drain for the notification outbox.
@@ -134,6 +135,9 @@ export async function drainOutbox() {
   for (const entry of store.notificationOutbox) {
     if (!QUEUED_STATUSES.has(entry.status)) continue;
     const outcome = await deliverEntry(entry);
+    // Persist the delivery outcome (SENT/FAILED + provider id) so the
+    // outbox record in the database matches what actually happened.
+    await persistNotification(entry).catch(() => {});
     summary[outcome.result] = (summary[outcome.result] || 0) + 1;
   }
   return summary;

@@ -55,7 +55,7 @@ app.get('/api/v1/health', async (req, res) => {
     persistence: {
       accounts: DATABASE_ENABLED ? 'database' : 'in-memory',
       bookings: DATABASE_ENABLED ? 'database' : 'in-memory',
-      referralsAndNotifications: 'in-memory (database move pending)',
+      referralsAndNotifications: DATABASE_ENABLED ? 'database' : 'in-memory',
     },
     notifications: providersStatus(),
     speedy: speedyStatus(),

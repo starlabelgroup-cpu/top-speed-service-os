@@ -90,6 +90,8 @@ model Company {
   dispatchAssignments DispatchAssignment[]
   providers           Provider[]
   invoices            Invoice[]
+  referrals           Referral[]
+  notificationOutbox  NotificationOutbox[]
 
   @@index([type])
 }
@@ -236,4 +238,50 @@ model Invoice {
 
   @@index([companyId, status])
   @@index([serviceRequestId])
+}
+
+// Flywheel persistence (2026-11-09): referral codes and the notification
+// outbox move from the in-memory store to the database so they survive
+// cold starts. Redemptions and payloads ride in JSON columns in exactly
+// the shapes the services produce; the relational core stays in columns.
+model Referral {
+  id                      String   @id @default(uuid()) @db.Uuid
+  companyId               String   @db.Uuid
+  code                    String
+  customerId              String?  @db.Uuid
+  customerName            String?
+  customerPhone           String?
+  status                  String   @default("ACTIVE")
+  issuedFromBookingId     String?  @db.Uuid
+  issuedFromReferenceCode String?
+  redemptions             Json     @default("[]")
+  issuedAt                DateTime @default(now())
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+model NotificationOutbox {
+  id         String    @id @default(uuid()) @db.Uuid
+  companyId  String    @db.Uuid
+  channel    String
+  template   String
+  to         String
+  payload    Json      @default("{}")
+  status     String    @default("QUEUED_SIMULATED")
+  attempts   Int       @default(0)
+  providerId String?
+  error      String?
+  sentAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([createdAt])
 }

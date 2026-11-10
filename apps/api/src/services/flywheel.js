@@ -1,4 +1,5 @@
 import { appendEvent, createReferralCode, store } from '../data/store.js';
+import { persistReferral } from '../db/flywheelRepo.js';
 import { notifyReferralIssued } from './notifications.js';
 
 /**
@@ -46,6 +47,10 @@ export function issueReferralForBooking(booking, source = null) {
     redemptions: [],
   };
   store.referrals.set(referral.code, referral);
+  // Write-through so the code survives cold starts and stays redeemable.
+  void persistReferral(referral).catch((error) => {
+    console.error(JSON.stringify({ level: 'error', message: 'referral persist failed', error: String(error?.message || error) }));
+  });
   appendEvent('REFERRAL_CODE_ISSUED', {
     source,
     actor: 'system:flywheel',

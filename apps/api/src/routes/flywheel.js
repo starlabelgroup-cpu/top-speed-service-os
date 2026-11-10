@@ -5,6 +5,7 @@ import { ROLES } from '../config/security.js';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
+import { persistReferral } from '../db/flywheelRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { NOTIFICATION_TEMPLATES, notifyBookingConfirmation } from '../services/notifications.js';
 import { findReferralByCode } from '../services/flywheel.js';
@@ -141,6 +142,7 @@ router.post('/flywheel/referrals/redeem', authenticate, requireCompany, async (r
     city,
     at: new Date().toISOString(),
   });
+  await persistReferral(referral);
 
   appendEvent('REFERRAL_REDEEMED', {
     source: 'REFERRAL',

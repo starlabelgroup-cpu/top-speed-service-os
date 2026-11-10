@@ -1,15 +1,17 @@
 import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
+import { persistNotification } from '../db/flywheelRepo.js';
 
 /**
- * Notification pipeline — SIMULATED in Phase 1.
+ * Notification pipeline.
  *
- * No real Twilio/Resend calls happen here: there are no provider keys in
- * the skeleton. Every message the platform *would* send is appended to
- * the in-memory outbox (GET /api/v1/notifications/outbox) with its
- * channel, template, recipient, and payload, so the full flow can be
- * inspected and tested. When Twilio/Resend are configured, a sender
- * drains this outbox; templates and triggers stay the same.
+ * Every message the platform sends is appended to the notification
+ * outbox (GET /api/v1/notifications/outbox) with its channel, template,
+ * recipient, and payload — and written through to the database
+ * (db/flywheelRepo) so queued messages survive cold starts. The live
+ * drain in services/senders.js delivers them through Resend (email)
+ * and Twilio (SMS) when those providers are configured; entries for an
+ * unconfigured provider stay queued with status QUEUED_SIMULATED.
  */
 export const NOTIFICATION_TEMPLATES = {
   BOOKING_CONFIRMATION: 'BOOKING_CONFIRMATION',
@@ -33,6 +35,11 @@ export function queueNotification({ channel, template, to, payload = {}, source 
     createdAt: new Date().toISOString(),
   };
   store.notificationOutbox.push(entry);
+  // Write-through so the outbox survives cold starts. Fire-and-forget:
+  // the in-memory push above is what this response is built from.
+  void persistNotification(entry).catch((error) => {
+    console.error(JSON.stringify({ level: 'error', message: 'notification persist failed', error: String(error?.message || error) }));
+  });
   appendEvent('NOTIFICATION_QUEUED', {
     source,
     entityType: 'NOTIFICATION',
