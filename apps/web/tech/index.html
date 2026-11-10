@@ -68,11 +68,26 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
     <div class="hrow">
       <div class="avatar">AR</div>
       <div><h1>Alex R. — Technician</h1><p>Tech TS-T-014 · ★ 4.9 · Broward County</p></div>
-      <span class="chip">PREVIEW</span>
+      <span class="chip" id="techChip">PREVIEW</span>
     </div>
     <div class="avail"><span class="dot" id="availDot"></span><span id="availTxt">Available for offers</span><button id="availBtn" type="button">Go offline</button></div>
   </header>
   <main>
+    
+    <!-- TECH SIGN-IN / LIVE MODE -->
+    <div class="card" id="techAuth" style="margin:12px 12px 0">
+      <h3 style="font-size:14px;color:var(--navy)">Technician sign-in \u2014 live jobs</h3>
+      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see real job offers from Service Setters dispatch. Signed out, this app shows a demo schedule.</p>
+      <div id="techLogin">
+        <input id="techEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">
+        <input id="techPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
+        <button class="btn go" type="button" onclick="techSignIn()" style="width:100%">Sign in to live jobs \u2192</button>
+      </div>
+      <div id="techBar" style="display:none">
+        <p class="note" id="techWho" style="margin:0 0 8px;font-weight:700"></p>
+        <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">\u21bb Refresh</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
+      </div>
+    </div>
     <!-- TODAY -->
     <section class="screen on" id="s-today">
       <h2 class="sec">Today — Saturday, Nov 7 <span class="demo">· demo schedule</span></h2>
@@ -176,6 +191,76 @@ $('#callBtn').addEventListener('click',()=>toast('Demo build — calling connect
 let avail=true;
 $('#availBtn').addEventListener('click',()=>{avail=!avail;$('#availDot').style.background=avail?'#37d67a':'#e8112d';$('#availTxt').textContent=avail?'Available for offers':'Offline — offers paused';$('#availBtn').textContent=avail?'Go offline':'Go available';toast(avail?'You are available for offers':'You are offline')});
 </script>
+
+<script>
+/* ================= TECH APP — LIVE MODE =================
+   Signed out: demo schedule + demo offers (labelled).
+   Signed in with a provider account: Offers are the setter-APPROVED
+   assignments from the Service OS API; Accept / Decline answer dispatch
+   for real, and accepted jobs land in the Today list. */
+var T_API='https://top-speed-service-os.vercel.app/api/v1';
+function tTok(){ try{ return localStorage.getItem('tsos_tech_token')||''; }catch(e){ return ''; } }
+function escT(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tTok()},opts.headers||{});
+  return fetch(T_API+path,opts).then(function(r){ if(!r.ok){ return r.json().catch(function(){return {};}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
+}
+function tDateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+function techSignIn(){
+  var email=document.getElementById('techEmail').value.trim();
+  var pw=document.getElementById('techPw').value;
+  if(!email||!pw){ toast('Enter your email and password'); return; }
+  fetch(T_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){ try{ localStorage.setItem('tsos_tech_token',j.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); })
+    .catch(function(e){ toast('Sign-in failed: '+e.message); });
+}
+function techSignOut(){ try{ localStorage.removeItem('tsos_tech_token'); }catch(e){} location.reload(); }
+function loadTech(){
+  Promise.all([tFetch('/provider/me'),tFetch('/provider/assignments'),tFetch('/auth/me')])
+    .then(function(res){ renderTech(res[0].data.provider,res[1].data.assignments||[],res[2].user); })
+    .catch(function(e){ toast('Live jobs unavailable: '+e.message); });
+}
+function renderTech(provider,assignments,user){
+  document.getElementById('techChip').textContent='\u25cf LIVE';
+  document.getElementById('techLogin').style.display='none';
+  document.getElementById('techBar').style.display='';
+  document.getElementById('techWho').textContent=(user?((user.firstName||'')+' '+(user.lastName||'')):'')+' \u00b7 '+provider.businessName;
+  var h1=document.querySelector('header h1'); if(h1&&user) h1.textContent=((user.firstName||'')+' '+(user.lastName||'')).trim()+' \u2014 Technician';
+  var sub=document.querySelector('header .hrow p'); if(sub) sub.textContent=provider.businessName+' \u00b7 \u2605 '+(provider.rating||'\u2014')+' \u00b7 Broward County';
+  var offersDemo=document.querySelector('#s-offers .demo'); if(offersDemo) offersDemo.textContent='\u00b7 LIVE';
+  var todayDemo=document.querySelector('#s-today .demo'); if(todayDemo) todayDemo.textContent='\u00b7 LIVE';
+  var offerList=assignments.filter(function(a){ return a.status==='APPROVED'; });
+  var accepted=assignments.filter(function(a){ return a.status==='ACCEPTED'; });
+  document.getElementById('offerBdg').style.display=offerList.length?'':'none';
+  document.getElementById('offerBdg').textContent=offerList.length;
+  document.getElementById('offerEmpty').style.display=offerList.length?'none':'';
+  document.getElementById('offerList').innerHTML=offerList.map(function(a){
+    var b=a.booking||{};
+    var when=b.appointment?('\ud83d\udd53 '+tDateLabel(b.appointment.date)+' \u00b7 '+escT(b.appointment.windowLabel||'')):'\ud83d\udd53 Window to be set by dispatch';
+    return '<div class="card offer"><h3 style="font-size:15px">'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><div class="meta"><span>\ud83d\udccd '+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+'</span><span>'+when+'</span></div><p style="font-size:12px;color:var(--soft)">Match score '+a.matchScore+'% \u00b7 Ref '+escT(b.referenceCode||'')+'. Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" type="button" onclick="liveDeclineTech(\''+a.id+'\')">Decline</button><button class="btn go" type="button" onclick="liveAcceptTech(\''+a.id+'\')">Accept job</button></div></div>';
+  }).join('');
+  document.getElementById('todayList').innerHTML=accepted.length?accepted.map(function(a){
+    var b=a.booking||{};
+    var when=b.appointment?(escT(b.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(b.appointment.date)):'Window TBD';
+    var cust=b.customer?(' \u00b7 '+escT(b.customer.name||'')):'';
+    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span></div>';
+  }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with the customer details.</p>';
+}
+function liveAcceptTech(id){
+  tFetch('/provider/assignments/'+id+'/accept',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ toast('\u2705 Job accepted \u2014 added to your jobs'); loadTech(); go('today'); })
+    .catch(function(e){ toast('Accept failed: '+e.message); });
+}
+function liveDeclineTech(id){
+  if(!confirm('Decline this job? It goes back to Service Setters for a new match.')) return;
+  tFetch('/provider/assignments/'+id+'/decline',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ toast('Offer declined \u2014 dispatch will re-match it'); loadTech(); })
+    .catch(function(e){ toast('Decline failed: '+e.message); });
+}
+if(tTok()){ loadTech(); }
+</script>
+
 <script src="/install.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
 </body>
