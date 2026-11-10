@@ -39,7 +39,7 @@ const SERVICES = [
 function openAiConfig() {
   return {
     configured: Boolean(process.env.OPENAI_API_KEY),
-    apiKey: <redacted>
+    apiKey: process.env.OPENAI_API_KEY,
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     base: process.env.OPENAI_API_BASE || 'https://api.openai.com',
   };
@@ -83,7 +83,7 @@ async function responsesRequest(body) {
   const response = await fetch(`${config.base}/v1/responses`, {
     method: 'POST',
     headers: {
-      Authorization: <redacted>
+      Authorization: `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ model: config.model, ...body }),
