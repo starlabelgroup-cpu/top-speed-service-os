@@ -20,19 +20,18 @@ own Vercel project from this repo.
 | `JWT_SECRET` | A long random phrase you invent (32+ characters) | Signs login tokens. Never reuse it anywhere else. Changing it signs everyone out. |
 | `ALLOW_DEMO_AUTH` | `false` | Demo auth must be off in production. |
 | `CORS_ORIGIN` | `https://web-chi-olive-19dblh9azm.vercel.app` | Comma-separated list allowed — add the commercial platform origin when it deploys. |
-| `ALLOW_STAFF_REGISTRATION` | `true` **only for the bootstrap below**, then `false` | See step 3. |
+| `ALLOW_STAFF_REGISTRATION` | No longer read by the code (bootstrap bypass removed 2026-11-09) | See step 3. |
 | `OPENAI_API_KEY` | Key from platform.openai.com → API keys | Powers Speedy (chat + photo diagnosis). Also connected to Pepper via the secure connector for verification. `OPENAI_MODEL` is optional (defaults to gpt-4o-mini; gpt-4o is the stronger vision option). |
 
-## 3. First staff accounts (bootstrap, once)
+## 3. First staff accounts (bootstrap, once) — DONE 2026-11-09
 
-With `ALLOW_STAFF_REGISTRATION=true` on the first deploy:
-
-1. Create the staff accounts you need via `POST /api/v1/auth/register` with
-   `"role": "DISPATCHER"` (Service Setters) — Pepper can run these calls with
-   emails/passwords you provide through a safe channel, or you can use the
-   sign-up screens once the front ends are wired (Stage 3).
-2. Set `ALLOW_STAFF_REGISTRATION=false` and redeploy. From then on, staff
-   accounts can only be created by a signed-in PLATFORM_ADMIN / COMPANY_OWNER.
+The bootstrap is complete: the first COMPANY_OWNER account exists
+(service@topspeedappliance.net) and the `ALLOW_STAFF_REGISTRATION` code
+bypass has been **removed** from `src/routes/auth.js`. From now on, staff
+accounts can only be created by a signed-in PLATFORM_ADMIN / COMPANY_OWNER
+via `POST /api/v1/auth/register` with a staff `"role"` (e.g. `"DISPATCHER"`
+for Service Setters) while authenticated as the admin. Never re-add an
+unauthenticated staff-registration path.
 
 Customers self-register freely at any time (CUSTOMER role only).
 

@@ -17,8 +17,10 @@ import { signAccessToken } from '../services/tokens.js';
  *
  * Public self-registration creates CUSTOMER accounts on the platform tenant.
  * Staff and provider roles can only be granted by an authenticated
- * PLATFORM_ADMIN / COMPANY_OWNER, or — for local development and first-admin
- * bootstrap only — when ALLOW_STAFF_REGISTRATION=true.
+ * PLATFORM_ADMIN / COMPANY_OWNER. (An ALLOW_STAFF_REGISTRATION env bypass
+ * existed for the first-admin bootstrap; the bootstrap completed on
+ * 2026-11-09 and the bypass was removed the same day — do not re-add it:
+ * with the flag live on production, anyone could self-register as owner.)
  *
  * Responses never include passwordHash.
  */
@@ -121,7 +123,6 @@ function publicUser(user) {
 }
 
 function canGrantStaffRoles(req) {
-  if (process.env.ALLOW_STAFF_REGISTRATION === 'true') return true;
   const roles = req.user?.roles || [];
   return req.authMode === 'jwt' && (roles.includes(ROLES.PLATFORM_ADMIN) || roles.includes(ROLES.COMPANY_OWNER));
 }
