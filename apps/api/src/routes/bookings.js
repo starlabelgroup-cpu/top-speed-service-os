@@ -128,6 +128,50 @@ router.get('/bookings', authenticate, requireCompany, (req, res) => {
   return res.json({ data: bookings.map(publicBooking) });
 });
 
+
+/**
+ * PUBLIC job tracking (added 2026-11-10): a customer tracks a real booking
+ * with the reference from their confirmation (TS-XXXXXX) plus the phone
+ * number on the booking — no account needed. Returns status only: no
+ * names, no addresses, no issue details. The phone must match the booking,
+ * so a reference alone reveals nothing.
+ */
+const STAGE_LABELS = ['Request received — a Service Setter is reviewing it', 'Appointment confirmed', 'Technician assigned', 'Job completed'];
+router.get('/bookings/track/:reference', (req, res) => {
+  const reference = String(req.params.reference || '').trim().toUpperCase();
+  const phoneDigits = String(req.query.phone || '').replace(/\D/g, '').slice(-10);
+  if (!reference || phoneDigits.length < 10) {
+    return res.status(400).json({ error: 'Booking reference and the phone number on the booking are required' });
+  }
+  const booking = [...store.bookings.values()].find(
+    (b) => String(b.referenceCode || '').toUpperCase() === reference,
+  );
+  if (!booking) return res.status(404).json({ error: 'No booking found with that reference' });
+  const bookingPhone = String(booking.customer?.phone || booking.phone || '').replace(/\D/g, '').slice(-10);
+  if (!bookingPhone || bookingPhone !== phoneDigits) {
+    return res.status(403).json({ error: 'That phone number does not match this booking' });
+  }
+  const assignments = [...store.dispatchAssignments.values()].filter((a) => a.bookingId === booking.id);
+  const hasTech = assignments.some((a) => a.status === 'APPROVED' || a.status === 'ACCEPTED');
+  let stage = 0;
+  if (booking.status === 'COMPLETED') stage = 3;
+  else if (hasTech) stage = 2;
+  else if (booking.status === 'CONFIRMED' || booking.status === 'MATCH_PENDING_APPROVAL') stage = 1;
+  return res.json({
+    data: {
+      reference: booking.referenceCode,
+      status: booking.status,
+      stage,
+      stageLabel: STAGE_LABELS[stage],
+      stages: STAGE_LABELS,
+      appliance: booking.appliance,
+      city: booking.city,
+      preferredWindow: booking.preferredWindow ?? null,
+      payment: paymentSummary(booking.id),
+    },
+  });
+});
+
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {
   const booking = store.bookings.get(req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
