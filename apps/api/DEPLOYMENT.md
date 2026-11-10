@@ -74,6 +74,8 @@ Entries whose provider is unconfigured stay queued — never lost.
 Vercel serverless: `api/index.js` wraps the Express app. Each cold-started
 instance hydrates its working store from the database before serving;
 mutations write through to PostgreSQL inside the routes, so the database is
-always the source of truth. Referral and notification queues are still
-in-memory in this phase (health reports them honestly) — they move to the
-database in a later phase.
+always the source of truth. Referrals and the notification outbox also
+persist to the database (Referral + NotificationOutbox tables, added
+2026-11-09): they hydrate at cold start and write through on issue,
+redemption, queue, and delivery, so referral codes stay redeemable and
+queued messages survive instance recycling.
