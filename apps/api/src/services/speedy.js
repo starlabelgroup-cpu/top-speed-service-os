@@ -1,4 +1,11 @@
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
+import {
+  SPEEDY_GOVERNANCE,
+  escalateToHuman,
+  governanceGate,
+  governancePromptBlock,
+  requestRefundApproval,
+} from './speedyPolicy.js';
 
 /**
  * Speedy — the Top Speed AI customer assistant, powered by OpenAI.
@@ -7,6 +14,17 @@ import { PLATFORM_CONSTANTS } from '../config/platform.js';
  * the server (OPENAI_API_KEY) and never ships to the website code. The
  * front-end chat calls POST /api/v1/speedy/chat; photo diagnosis calls
  * POST /api/v1/speedy/diagnose with a vision-capable model.
+ *
+ * Engine: OpenAI's Responses API — tool calling for the governance
+ * actions, and strict structured outputs (a JSON schema) for photo
+ * diagnosis, so the integration is reliable instead of free-text luck.
+ *
+ * Governance (services/speedyPolicy.js) is enforced in code: a
+ * deterministic pre-screen runs before the model, the rules are in the
+ * system prompt, and Speedy's only tools CREATE human-owned requests
+ * (a refund approval, an escalation) — Speedy can never approve a
+ * refund, certify safety, override credentials, or change a compliance
+ * status itself.
  *
  * Everything Speedy is allowed to state as fact comes from the platform
  * config: phone, the $99 diagnostic terms, and the 12 service areas. It
@@ -21,7 +39,7 @@ const SERVICES = [
 function openAiConfig() {
   return {
     configured: Boolean(process.env.OPENAI_API_KEY),
-    apiKey: process.env.OPENAI_API_KEY,
+    apiKey: <redacted>
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     base: process.env.OPENAI_API_BASE || 'https://api.openai.com',
   };
@@ -29,7 +47,13 @@ function openAiConfig() {
 
 export function speedyStatus() {
   const { configured, model } = openAiConfig();
-  return { provider: 'openai', configured, model: configured ? model : null };
+  return {
+    provider: 'openai',
+    api: 'responses',
+    configured,
+    model: configured ? model : null,
+    governance: SPEEDY_GOVERNANCE,
+  };
 }
 
 export function speedySystemPrompt() {
@@ -48,59 +72,238 @@ export function speedySystemPrompt() {
     `Live video consultations: when a customer wants to show the problem live, the ${PLATFORM_CONSTANTS.dispatchTeam} team arranges it three ways — immediate when a qualified technician is available, scheduled when nobody is free, or manager-assisted when a manager should join. Collect their name, phone and appliance, tell them which mode fits, and say the team will set it up. Never claim a video call has started inside this chat.`,
     'Wider network: this same engine and record will serve the wider Top Speed Service Network (including future Top Speed trades such as HVAC, plumbing and electrical). Today, Top Speed serves appliances only — if someone asks for another trade, say it is coming to the network and give the phone number for anything urgent.',
     'Style: friendly, fast, plain language. Short answers unless detail is needed. If a problem sounds unsafe (sparking, gas smell, flooding), tell them to stop using the appliance and stay safe first.',
+    governancePromptBlock(),
   ].join('\n');
 }
 
-async function chatCompletion(messages, { maxTokens = 500 } = {}) {
+/* ------------------------- Responses API plumbing ------------------------ */
+
+async function responsesRequest(body) {
   const config = openAiConfig();
-  const response = await fetch(`${config.base}/v1/chat/completions`, {
+  const response = await fetch(`${config.base}/v1/responses`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${config.apiKey}`,
+      Authorization: <redacted>
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages,
-      temperature: 0.4,
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify({ model: config.model, ...body }),
   });
-  const body = await response.json().catch(() => ({}));
+  const parsed = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(body?.error?.message || `OpenAI error ${response.status}`);
+    throw new Error(parsed?.error?.message || `OpenAI error ${response.status}`);
   }
-  const reply = body?.choices?.[0]?.message?.content?.trim();
-  if (!reply) throw new Error('OpenAI returned an empty reply');
-  return { reply, model: body.model || config.model };
+  return parsed;
 }
+
+function extractText(responseBody) {
+  if (typeof responseBody?.output_text === 'string' && responseBody.output_text.trim()) {
+    return responseBody.output_text.trim();
+  }
+  const parts = [];
+  for (const item of responseBody?.output || []) {
+    if (item?.type !== 'message') continue;
+    for (const content of item.content || []) {
+      if (content?.type === 'output_text' && content.text) parts.push(content.text);
+    }
+  }
+  return parts.join('\n').trim();
+}
+
+const SPEEDY_TOOLS = [
+  {
+    type: 'function',
+    name: 'request_refund_approval',
+    description:
+      'Record a customer refund request for human approval. Speedy can never issue or approve a refund itself — this only creates the request a team member will review and decide.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        reason: { type: 'string', description: 'Why the customer wants a refund, in their words where possible.' },
+        amount_usd: { type: ['number', 'null'], description: 'Amount the customer mentioned, or null if none.' },
+        booking_reference: { type: ['string', 'null'], description: 'Booking reference code (e.g. TS-XXXXXX) if known, else null.' },
+      },
+      required: ['reason', 'amount_usd', 'booking_reference'],
+    },
+  },
+  {
+    type: 'function',
+    name: 'escalate_to_human_professional',
+    description:
+      'Escalate the conversation to the human team. Mandatory for safety-critical conditions (gas, carbon monoxide, sparking, fire, flooding, electric shock, refrigerant leaks); also right whenever a human professional should take over.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        reason: { type: 'string', description: 'What happened, briefly and factually.' },
+        safety_critical: { type: 'boolean', description: 'True when the report involves a safety-critical condition.' },
+      },
+      required: ['reason', 'safety_critical'],
+    },
+  },
+];
+
+function executeSpeedyTool(call) {
+  let args = {};
+  try { args = JSON.parse(call.arguments || '{}'); } catch { args = {}; }
+  if (call.name === 'request_refund_approval') {
+    requestRefundApproval({
+      reason: args.reason || 'Customer requested a refund in Speedy chat',
+      amount: typeof args.amount_usd === 'number' ? args.amount_usd : null,
+      bookingReference: args.booking_reference || null,
+    });
+    return { recorded: true, status: 'PENDING_HUMAN_APPROVAL', decidedBy: 'human' };
+  }
+  if (call.name === 'escalate_to_human_professional') {
+    escalateToHuman({ reason: args.reason || 'Speedy escalated the conversation', safetyCritical: Boolean(args.safety_critical) });
+    return { escalated: true, owner: 'human-professional' };
+  }
+  return { error: `Unknown tool ${call.name}` };
+}
+
+/* --------------------------------- chat ---------------------------------- */
 
 /** history: prior turns [{ role: 'user'|'assistant', content }], oldest first. */
 export async function speedyChat({ message, history = [] }) {
-  const messages = [
-    { role: 'system', content: speedySystemPrompt() },
-    ...history.slice(-10),
+  // Governance layer 1: the deterministic pre-screen. A matched category
+  // is answered by policy (and its action performed) without the model.
+  const gated = governanceGate(message);
+  if (gated) return gated;
+
+  const input = [
+    ...history.slice(-10).map((turn) => ({ role: turn.role, content: String(turn.content) })),
     { role: 'user', content: message },
   ];
-  return chatCompletion(messages);
+
+  let body = await responsesRequest({
+    instructions: speedySystemPrompt(),
+    input,
+    tools: SPEEDY_TOOLS,
+    temperature: 0.4,
+    max_output_tokens: 500,
+  });
+
+  // Tool loop: Speedy's tools only create human-owned requests.
+  for (let round = 0; round < 3; round++) {
+    const calls = (body.output || []).filter((item) => item?.type === 'function_call');
+    if (!calls.length) break;
+    const outputs = calls.map((call) => ({
+      type: 'function_call_output',
+      call_id: call.call_id,
+      output: JSON.stringify(executeSpeedyTool(call)),
+    }));
+    body = await responsesRequest({
+      previous_response_id: body.id,
+      input: outputs,
+      tools: SPEEDY_TOOLS,
+      temperature: 0.4,
+      max_output_tokens: 500,
+    });
+  }
+
+  const reply = extractText(body);
+  if (!reply) throw new Error('OpenAI returned an empty reply');
+  return { reply, model: body.model || openAiConfig().model };
+}
+
+/* --------------------------- photo diagnosis ----------------------------- */
+
+const DIAGNOSIS_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_diagnosis',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      appliance: { type: 'string', description: 'The appliance in the photo, or "Not an appliance photo" when it is not one.' },
+      visible_findings: { type: 'array', items: { type: 'string' }, description: 'What is visibly wrong or notable in the photo.' },
+      likely_causes: { type: 'array', items: { type: 'string' }, description: 'Most likely causes, most likely first.' },
+      safety_critical: { type: 'boolean', description: 'True if the photo shows a safety-critical condition (fire/smoke damage, sparking, gas components damaged, flooding, exposed live wiring).' },
+      safety_actions: { type: 'array', items: { type: 'string' }, description: 'Immediate safety steps for the customer; empty when none are needed.' },
+      next_step: { type: 'string', description: 'What a technician would check on site, in one or two plain sentences.' },
+    },
+    required: ['appliance', 'visible_findings', 'likely_causes', 'safety_critical', 'safety_actions', 'next_step'],
+  },
+};
+
+function renderDiagnosis(diagnosis) {
+  const lines = ['Here is my preliminary read from your photo — a first look, not a guaranteed diagnosis.', ''];
+  lines.push(`Appliance: ${diagnosis.appliance}`);
+  if (diagnosis.visible_findings?.length) {
+    lines.push('', 'What I can see:');
+    for (const finding of diagnosis.visible_findings) lines.push(`• ${finding}`);
+  }
+  if (diagnosis.likely_causes?.length) {
+    lines.push('', 'Most likely causes:');
+    for (const cause of diagnosis.likely_causes) lines.push(`• ${cause}`);
+  }
+  if (diagnosis.safety_critical) {
+    lines.push('', '⚠️ Safety first — this one needs a human professional, not a DIY fix:');
+    for (const action of diagnosis.safety_actions || []) lines.push(`• ${action}`);
+    lines.push('I have flagged this for our team as safety-critical.');
+  } else if (diagnosis.safety_actions?.length) {
+    lines.push('', 'Stay-safe steps:');
+    for (const action of diagnosis.safety_actions) lines.push(`• ${action}`);
+  }
+  lines.push('', diagnosis.next_step);
+  lines.push('', 'The $99 diagnostic visit (credited toward the repair) confirms it in person. Want me to book it? I just need your city and ZIP.');
+  return lines.join('\n');
 }
 
 export async function speedyDiagnose({ imageUrl, note = '' }) {
-  const messages = [
-    { role: 'system', content: speedySystemPrompt() },
+  const promptText =
+    'A customer sent this photo of their appliance problem.' +
+    (note ? ` They add: "${note}".` : '') +
+    ' Give a preliminary read in the required structured format: identify the appliance, what you can see, the most likely causes, whether it is safety-critical and the safety steps for right now, and what a technician would check on site. This is a preliminary read from a photo, not a guaranteed diagnosis — never state a repair price.';
+
+  const input = [
     {
       role: 'user',
       content: [
-        {
-          type: 'text',
-          text:
-            'A customer sent this photo of their appliance problem.' +
-            (note ? ` They add: "${note}".` : '') +
-            ' Give a preliminary read: what appliance it is, what you can see, the most likely causes, any safety step they should take now, and what a technician would check on site. Be clear this is a preliminary read from a photo, not a guaranteed diagnosis, and recommend the $99 diagnostic visit (credited toward the repair) to confirm. Ask for their city and ZIP if they want to book.',
-        },
-        { type: 'image_url', image_url: { url: imageUrl } },
+        { type: 'input_text', text: promptText },
+        { type: 'input_image', image_url: imageUrl },
       ],
     },
   ];
-  return chatCompletion(messages, { maxTokens: 700 });
+
+  try {
+    const body = await responsesRequest({
+      instructions: speedySystemPrompt(),
+      input,
+      text: { format: DIAGNOSIS_FORMAT },
+      max_output_tokens: 700,
+    });
+    const raw = extractText(body);
+    const diagnosis = JSON.parse(raw);
+    if (diagnosis.safety_critical) {
+      escalateToHuman({
+        reason: `Photo diagnosis flagged safety-critical (${diagnosis.appliance}): ${(diagnosis.visible_findings || []).join('; ')}`,
+        safetyCritical: true,
+      });
+    }
+    return { reply: renderDiagnosis(diagnosis), model: body.model || openAiConfig().model, diagnosis };
+  } catch (error) {
+    // Structured output is the reliable path, not the only one: if the
+    // schema call fails for any reason, fall back to a plain read so the
+    // customer still gets an answer.
+    const body = await responsesRequest({
+      instructions: speedySystemPrompt(),
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: promptText + ' Answer in plain text.' },
+            { type: 'input_image', image_url: imageUrl },
+          ],
+        },
+      ],
+      max_output_tokens: 700,
+    });
+    const reply = extractText(body);
+    if (!reply) throw new Error('OpenAI returned an empty reply');
+    return { reply, model: body.model || openAiConfig().model };
+  }
 }
