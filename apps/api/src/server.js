@@ -12,6 +12,7 @@ import commercialRouter from './routes/commercial.js';
 import speedyRouter from './routes/speedy.js';
 import videoRouter from './routes/video.js';
 import paymentsRouter from './routes/payments.js';
+import marketingRouter from './routes/marketing.js';
 import appRouter from './routes/app.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
@@ -106,6 +107,7 @@ app.use('/api/v1', flywheelRouter);
 app.use('/api/v1', commercialRouter);
 app.use('/api/v1', speedyRouter);
 app.use('/api/v1', paymentsRouter);
+app.use('/api/v1', marketingRouter);
 app.use('/api/v1', videoRouter);
 app.use('/api/v1', appRouter);
 

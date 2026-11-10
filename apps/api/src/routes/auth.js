@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.js';
-import { ROLES } from '../config/security.js';
+import { PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { signAccessToken } from '../services/tokens.js';
 
@@ -146,10 +146,10 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
     const { email, password, firstName, lastName, phone } = parsed.data;
     const requestedRole = parsed.data.role ?? ROLES.CUSTOMER;
 
-    if (requestedRole !== ROLES.CUSTOMER && !canGrantStaffRoles(req)) {
+    if (!PUBLIC_SELF_SERVE_ROLES.includes(requestedRole) && !canGrantStaffRoles(req)) {
       return res.status(403).json({
         error: 'Staff and provider accounts are created by an administrator',
-        hint: 'Register as a customer, or sign in with an admin account to grant roles.',
+        hint: 'Customers and marketing-platform professionals (advertiser, marketing manager, developer) can self-register; staff and provider roles are granted by an administrator.',
       });
     }
 

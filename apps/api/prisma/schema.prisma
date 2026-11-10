@@ -20,6 +20,9 @@ enum Role {
   PROVIDER_OWNER
   PROVIDER_TECH
   TECHNICIAN
+  ADVERTISER
+  MARKETING_MANAGER
+  DEVELOPER
 }
 
 enum CompanyType {
@@ -94,6 +97,7 @@ model Company {
   notificationOutbox  NotificationOutbox[]
   videoRequests       VideoConsultRequest[]
   payments            Payment[]
+  channelLinks ChannelLink[]
 
   @@index([type])
 }
@@ -112,6 +116,8 @@ model User {
   updatedAt    DateTime @updatedAt
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  channelLinks ChannelLink[]
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -341,4 +347,28 @@ model Payment {
 
   @@index([companyId, status])
   @@index([serviceRequestId])
+}
+
+// One row per ad-channel connection an advertiser-console user has
+// requested or completed (Google Ads, Meta, TikTok, ...). The link itself
+// is completed by the team (manager-account link / partner access), so a
+// row starts PENDING_LINK and staff flip it to CONNECTED. This table is
+// the connect system's record; live metrics sync arrives with each
+// platform's API approval.
+model ChannelLink {
+  id         String   @id @default(uuid()) @db.Uuid
+  companyId  String   @db.Uuid
+  userId     String   @db.Uuid
+  channel    String
+  accountRef String
+  status     String   @default("PENDING_LINK")
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel])
+  @@index([companyId, status])
 }
