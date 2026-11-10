@@ -5,6 +5,7 @@ import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
+import { speedyStatus, speedyStructureNote } from '../services/speedy.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -213,3 +214,76 @@ router.post('/provider/assignments/:id/decline', ...providerOnly, async (req, re
 });
 
 export default router;
+
+/* ------------- AI-assisted job updates (technician-confirmed) -------------
+ * The tech dictates; Speedy structures; the TECH confirms before
+ * anything is saved. Saving writes a TECH_NOTE event onto the job —
+ * status changes stay on the explicit accept/complete actions, and
+ * Speedy never certifies a repair (governance, 2026-11-10).
+ */
+const aiNotePreviewSchema = z.object({ text: z.string().trim().min(3).max(4000) });
+
+router.post('/provider/assignments/:id/ai-note/preview', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment || assignment.providerId !== provider.id) {
+    return res.status(404).json({ error: 'Assignment not found' });
+  }
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy is not configured yet' });
+  }
+  const parsed = aiNotePreviewSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid note text' });
+  try {
+    const structured = await speedyStructureNote(parsed.data.text);
+    return res.json({ data: { structured } });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not structure that note — your words are kept; try again or save a plain note', detail: String(error?.message || error) });
+  }
+});
+
+const aiNoteSaveSchema = z.object({
+  raw: z.string().trim().min(3).max(4000),
+  note: z.string().trim().min(3).max(2000),
+  partsUsed: z.array(z.string().trim().max(120)).max(20).optional(),
+  nextStep: z.string().trim().max(300).nullable().optional(),
+  statusSuggestion: z.enum(['NONE', 'COMPLETED', 'NEEDS_PARTS', 'FOLLOW_UP']).optional(),
+});
+
+router.post('/provider/assignments/:id/ai-note', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment || assignment.providerId !== provider.id) {
+    return res.status(404).json({ error: 'Assignment not found' });
+  }
+  const parsed = aiNoteSaveSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid note', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(assignment.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const { raw, note, partsUsed = [], nextStep = null, statusSuggestion = 'NONE' } = parsed.data;
+  addBookingEvent(booking, 'TECH_NOTE', req.user.email, {
+    assignmentId: assignment.id,
+    note,
+    partsUsed,
+    nextStep,
+    statusSuggestion,
+    rawDictation: raw,
+    structuredBy: 'SPEEDY',
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = new Date().toISOString();
+  await persistBooking(booking);
+  appendEvent('TECH_NOTE', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { statusSuggestion },
+  });
+  return res.status(201).json({ data: { saved: true, referenceCode: booking.referenceCode } });
+});

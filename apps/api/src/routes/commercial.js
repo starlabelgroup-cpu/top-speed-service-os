@@ -11,6 +11,8 @@ import {
   store,
 } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
+import { createConnectionRecord } from '../db/connectionsRepo.js';
+import { createReferenceCode } from '../data/store.js';
 import {
   ACCOUNT_TYPES,
   EQUIPMENT_STATUSES,
@@ -494,3 +496,48 @@ router.get('/commercial/overview', ...staffOnly, (req, res) => {
 });
 
 export default router;
+
+/* ------- Property-manager AI bulk requests (public intake) -------
+ * The PM portal's Speedy panel turns one pasted message into a batch:
+ * one connection record per unit problem, all sharing a batch
+ * reference, landing with the Service Setters like every other intake.
+ */
+const bulkSchema = z.object({
+  manager: z.object({
+    name: z.string().trim().min(2).max(120),
+    phone: z.string().trim().min(7).max(30),
+    company: z.string().trim().max(120).optional(),
+  }),
+  property: z.string().trim().min(3).max(200),
+  requests: z.array(z.object({
+    unit: z.string().trim().max(40).nullable().optional(),
+    appliance: z.string().trim().min(2).max(80),
+    issue: z.string().trim().min(3).max(500),
+    urgency: z.enum(['standard', 'urgent']).optional(),
+  })).min(1).max(25),
+});
+
+router.post('/commercial/bulk-requests', async (req, res) => {
+  const parsed = bulkSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid bulk request', details: parsed.error.flatten() });
+  }
+  const { manager, property, requests } = parsed.data;
+  const batchReference = createReferenceCode();
+  const references = [];
+  for (const item of requests) {
+    const record = await createConnectionRecord({
+      name: manager.name,
+      phone: manager.phone,
+      type: 'PM_SERVICE_REQUEST',
+      source: 'pm-bulk-speedy',
+      message:
+        `Batch ${batchReference} · Property: ${property}` +
+        (manager.company ? ` · Manager company: ${manager.company}` : '') +
+        ` · ${item.unit ? item.unit + ' — ' : ''}${item.appliance}: ${item.issue}` +
+        (item.urgency === 'urgent' ? ' · URGENCY: urgent' : ''),
+    });
+    references.push(record.reference);
+  }
+  return res.status(201).json({ data: { batchReference, count: references.length, references } });
+});

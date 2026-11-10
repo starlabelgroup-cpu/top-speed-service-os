@@ -11,6 +11,7 @@ import flywheelRouter from './routes/flywheel.js';
 import commercialRouter from './routes/commercial.js';
 import speedyRouter from './routes/speedy.js';
 import videoRouter from './routes/video.js';
+import connectionsRouter from './routes/connections.js';
 import paymentsRouter from './routes/payments.js';
 import marketingRouter from './routes/marketing.js';
 import appRouter from './routes/app.js';
@@ -109,6 +110,7 @@ app.use('/api/v1', speedyRouter);
 app.use('/api/v1', paymentsRouter);
 app.use('/api/v1', marketingRouter);
 app.use('/api/v1', videoRouter);
+app.use('/api/v1', connectionsRouter);
 app.use('/api/v1', appRouter);
 
 app.use((req, res) => {

@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { speedyChat, speedyDiagnose, speedyStatus } from '../services/speedy.js';
+import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, speedyStatus } from '../services/speedy.js';
+import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
+import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
+import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
+import { notifyBookingConfirmation } from '../services/notifications.js';
 
 /**
  * Speedy AI endpoints — public on purpose: the website's Ask Speedy chat
@@ -76,3 +80,124 @@ router.post('/speedy/diagnose', async (req, res) => {
 });
 
 export default router;
+
+/* ------------- Conversation-first booking (customers only) -------------
+ * The chat collects the details; the extractor structures them; the
+ * customer taps confirm; THIS endpoint creates the real booking — the
+ * same record, queue and notifications as the form path. Signed-in app
+ * customers book through POST /bookings; this is the guest twin.
+ */
+
+const extractSchema = z.object({
+  text: z.string().trim().min(3).max(8000),
+});
+
+router.post('/speedy/extract-booking', async (req, res) => {
+  if (!speedyStatus().configured) return notConfigured(res);
+  const parsed = extractSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid extraction request' });
+  try {
+    const data = await speedyExtractBooking(parsed.data.text);
+    return res.json({ data });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not read that yet — keep chatting, or call (954) 931-7997', detail: String(error?.message || error) });
+  }
+});
+
+router.post('/speedy/extract-bulk', async (req, res) => {
+  if (!speedyStatus().configured) return notConfigured(res);
+  const parsed = extractSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid extraction request' });
+  try {
+    const data = await speedyExtractBulk(parsed.data.text);
+    return res.json({ data });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not sort that list yet — try splitting it into shorter lines', detail: String(error?.message || error) });
+  }
+});
+
+const guestBookingSchema = z.object({
+  customer: z.object({
+    name: z.string().trim().min(2),
+    phone: z.string().trim().min(7),
+    email: z.string().email().optional(),
+    address: z.string().trim().min(5).optional(),
+  }),
+  city: z.string().trim().min(2),
+  zip: z.string().regex(/^\d{5}$/),
+  appliance: z.string().trim().min(2),
+  issue: z.string().trim().min(3),
+  preferredWindow: z.string().trim().optional(),
+});
+
+router.post('/speedy/book', async (req, res) => {
+  const parsed = guestBookingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
+  }
+  const { customer, city, zip, appliance, issue, preferredWindow } = parsed.data;
+  const canonicalCity = SERVICE_CITIES.find((c) => c.toLowerCase() === city.toLowerCase());
+  if (!canonicalCity) {
+    return res.status(422).json({ error: 'City is outside the current service area', serviceCities: SERVICE_CITIES });
+  }
+  if (!SERVICE_ZIPS.has(zip)) {
+    return res.status(422).json({ error: 'ZIP is outside the current service area', serviceCities: areasForZip(zip) });
+  }
+
+  const customerRecord = {
+    id: createId(),
+    companyId: PLATFORM_COMPANY_ID,
+    ...customer,
+    city: canonicalCity,
+    zip,
+    createdAt: new Date().toISOString(),
+  };
+  store.customers.set(customerRecord.id, customerRecord);
+
+  const booking = {
+    id: createId(),
+    companyId: PLATFORM_COMPANY_ID,
+    customerId: customerRecord.id,
+    customer: customerRecord,
+    referenceCode: createReferenceCode(),
+    source: 'SPEEDY_CHAT',
+    city: canonicalCity,
+    zip,
+    appliance,
+    issue,
+    preferredWindow: preferredWindow || null,
+    diagnosticFee: 99,
+    diagnosticFeeCurrency: 'USD',
+    diagnosticFeeCreditedTowardRepair: true,
+    feeStatus: 'collected_at_booking',
+    status: 'PENDING_DISPATCH',
+    dispatch: { mode: 'HYBRID', stage: 'AWAITING_MATCH', candidateProviderIds: [], assignmentIds: [] },
+    history: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  addBookingEvent(booking, 'BOOKING_CREATED', 'speedy-chat', { diagnosticFee: 99, feeStatus: booking.feeStatus });
+  store.bookings.set(booking.id, booking);
+  await persistCustomer(customerRecord);
+  await persistBooking(booking);
+  appendEvent('BOOKING_CREATED', {
+    source: booking.source,
+    actor: 'speedy-chat',
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { appliance: booking.appliance, city: booking.city, status: booking.status },
+  });
+  notifyBookingConfirmation(booking, booking.source);
+
+  return res.status(201).json({
+    data: {
+      referenceCode: booking.referenceCode,
+      status: booking.status,
+      city: booking.city,
+      appliance: booking.appliance,
+      preferredWindow: booking.preferredWindow,
+      diagnosticFee: 99,
+    },
+  });
+});

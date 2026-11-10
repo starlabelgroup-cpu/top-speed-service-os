@@ -307,3 +307,112 @@ export async function speedyDiagnose({ imageUrl, note = '' }) {
     return { reply, model: body.model || openAiConfig().model };
   }
 }
+
+/* -------------------- Structured extraction (conversation-first) --------------------
+ * Ramone's rule (2026-11-10): conversation is the front door on every
+ * surface; forms are the fallback. These extractors turn free talk/text
+ * into structured records the customer confirms BEFORE anything is
+ * created — Speedy structures, the human confirms, the system records.
+ */
+
+const BOOKING_EXTRACT_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_booking_extract',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      name: { type: ['string', 'null'], description: 'Customer full name, or null if not stated.' },
+      phone: { type: ['string', 'null'], description: 'Customer phone number as digits/formatted, or null.' },
+      city: { type: ['string', 'null'], description: 'Service city exactly as named, or null.' },
+      zip: { type: ['string', 'null'], description: '5-digit ZIP, or null.' },
+      appliance: { type: ['string', 'null'], description: 'The appliance needing service, or null.' },
+      issue: { type: ['string', 'null'], description: 'What is wrong, in the customer\'s words, or null.' },
+      preferred_window: { type: ['string', 'null'], description: 'One of 08-10, 10-12, 12-14, 14-16, 16-18 if a time window was named, else null.' },
+      ready: { type: 'boolean', description: 'True only when name, phone, city, zip, appliance and issue are ALL present.' },
+      missing: { type: 'array', items: { type: 'string' }, description: 'Field names still missing (from: name, phone, city, zip, appliance, issue).' },
+    },
+    required: ['name', 'phone', 'city', 'zip', 'appliance', 'issue', 'preferred_window', 'ready', 'missing'],
+  },
+};
+
+export async function speedyExtractBooking(text) {
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nExtraction mode: read the conversation and extract the booking details into the required structured format. Copy values exactly as the customer stated them — never invent a name, phone, city, ZIP, appliance or issue that is not there. Set ready=true only when every required field is present.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 8000) }] }],
+    text: { format: BOOKING_EXTRACT_FORMAT },
+    max_output_tokens: 400,
+  });
+  return JSON.parse(extractText(body));
+}
+
+const BULK_EXTRACT_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_bulk_requests',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      requests: {
+        type: 'array',
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            unit: { type: ['string', 'null'], description: 'Unit / suite / location label (e.g. "Unit 4B"), or null.' },
+            appliance: { type: 'string', description: 'The appliance needing service.' },
+            issue: { type: 'string', description: 'What is wrong, in the writer\'s words.' },
+            urgency: { type: 'string', enum: ['standard', 'urgent'], description: 'urgent only when the text signals emergency/spoilage/no-cooling risk.' },
+          },
+          required: ['unit', 'appliance', 'issue', 'urgency'],
+        },
+      },
+    },
+    required: ['requests'],
+  },
+};
+
+export async function speedyExtractBulk(text) {
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nExtraction mode: a property manager described one or more service requests in free text. Split the text into one structured request per unit/appliance problem, in the order written. Never invent units, appliances or problems that are not in the text.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 8000) }] }],
+    text: { format: BULK_EXTRACT_FORMAT },
+    max_output_tokens: 900,
+  });
+  return JSON.parse(extractText(body));
+}
+
+const NOTE_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_job_note',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      note: { type: 'string', description: 'A clean, professional job note rewritten from the technician\'s words — facts only, nothing added.' },
+      parts_used: { type: 'array', items: { type: 'string' }, description: 'Parts the technician says were installed/used; empty if none.' },
+      next_step: { type: ['string', 'null'], description: 'The next step the technician named (return visit, order part, quote approval), or null.' },
+      status_suggestion: { type: 'string', enum: ['NONE', 'COMPLETED', 'NEEDS_PARTS', 'FOLLOW_UP'], description: 'COMPLETED only if the tech clearly says the job is done; NEEDS_PARTS if a part must be ordered; FOLLOW_UP if another visit is needed; else NONE. Advisory only — the technician confirms.' },
+    },
+    required: ['note', 'parts_used', 'next_step', 'status_suggestion'],
+  },
+};
+
+export async function speedyStructureNote(text) {
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nNote mode: a field technician dictated a job update. Rewrite it as a clean professional job note in the required structured format. Preserve every fact; add none. Never certify that a repair is safe — if the tech\'s words touch safety, keep the note factual and let the human record stand.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 4000) }] }],
+    text: { format: NOTE_FORMAT },
+    max_output_tokens: 500,
+  });
+  return JSON.parse(extractText(body));
+}

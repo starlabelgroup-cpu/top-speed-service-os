@@ -372,3 +372,15 @@ model ChannelLink {
   @@unique([userId, channel])
   @@index([companyId, status])
 }
+
+model Connection {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  phone     String
+  email     String?
+  type      String
+  source    String?
+  message   String?
+  reference String   @unique
+  createdAt DateTime @default(now())
+}

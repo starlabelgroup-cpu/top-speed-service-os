@@ -42,6 +42,8 @@ export const store = {
   appInstalls: [],
   // Simulated notification outbox (no real Twilio/Resend sends in Phase 1).
   notificationOutbox: [],
+  // Public web intake records (forms + Speedy-assisted flows), hydrated from the Connection table.
+  connections: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [
