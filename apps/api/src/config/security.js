@@ -21,3 +21,13 @@ export const ROLES = {
   PROVIDER_TECH: 'PROVIDER_TECH',
   TECHNICIAN: 'TECHNICIAN',
 };
+
+/**
+ * Roles that operate the platform day to day — the staff gates on Book OS,
+ * video, commercial, flywheel, bookings, and integration routes. The
+ * COMPANY_OWNER and COMPANY_ADMIN roles belong here: the owner runs the
+ * consoles personally. (Launch bug, found 2026-11-10 from Ramone's own
+ * sign-in: every staff gate listed only DISPATCHER + PLATFORM_ADMIN, so
+ * the owner got "Insufficient role" from his own Book OS.)
+ */
+export const STAFF_ROLES = [ROLES.DISPATCHER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN];

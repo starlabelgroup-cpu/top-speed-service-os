@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistVideoRequest } from '../db/videoRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -23,7 +23,7 @@ import { queueNotification } from '../services/notifications.js';
  */
 const router = Router();
 
-const staffOnly = [authenticate, requireCompany, requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN)];
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 export const VIDEO_MODES = ['IMMEDIATE', 'SCHEDULED', 'MANAGER_ASSISTED'];
 export const VIDEO_JOIN_BASE = 'https://topspeedserviceos.com/video/';

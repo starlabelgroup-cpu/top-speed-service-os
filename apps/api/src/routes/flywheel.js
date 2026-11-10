@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { INTAKE_SOURCES, PLATFORM_CONSTANTS } from '../config/platform.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
@@ -27,7 +27,7 @@ const router = Router();
  * estimated, projected, or invented.
  */
 
-const staffOnly = [authenticate, requireCompany, requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN)];
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 const redeemSchema = z.object({
   code: z.string().trim().min(4),

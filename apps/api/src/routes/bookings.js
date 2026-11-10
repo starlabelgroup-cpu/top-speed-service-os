@@ -4,7 +4,7 @@ import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceArea
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistAssignment, persistAssignmentsForBooking, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import {
   notifyBookingConfirmation,
@@ -137,7 +137,7 @@ router.post(
   '/dispatch/match',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   async (req, res) => {
     const parsed = matchSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -179,7 +179,7 @@ router.post(
   '/dispatch/approve',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   async (req, res) => {
     const parsed = approveSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -228,7 +228,7 @@ router.post(
   '/bookings/:id/complete',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   async (req, res) => {
     const parsed = completeSchema.safeParse(req.body || {});
     if (!parsed.success) {

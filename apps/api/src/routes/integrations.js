@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { INTAKE_SOURCES, PLATFORM_CONSTANTS, SURFACES } from '../config/platform.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -264,7 +264,7 @@ router.get(
   '/intake/provider-applications',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   (req, res) => {
     const applications = [...store.providerApplications.values()].filter(
       (item) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || item.companyId === req.companyId,
@@ -277,7 +277,7 @@ router.get(
   '/intake/pm-leads',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   (req, res) => {
     const leads = [...store.pmLeads.values()].filter(
       (item) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || item.companyId === req.companyId,
@@ -314,7 +314,7 @@ router.get(
   '/platform/events',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   (req, res) => {
     const events = [...store.events].reverse();
     const filtered = req.query.source ? events.filter((event) => event.source === req.query.source) : events;
@@ -327,7 +327,7 @@ router.get(
   '/notifications/outbox',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   (req, res) => {
     const outbox = [...store.notificationOutbox].reverse();
     const filtered = req.query.template ? outbox.filter((entry) => entry.template === req.query.template) : outbox;
@@ -343,7 +343,7 @@ router.post(
   '/notifications/send',
   authenticate,
   requireCompany,
-  requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN),
+  requireRole(...STAFF_ROLES),
   async (req, res) => {
     const summary = await drainOutbox();
     return res.json({ data: { ...summary, providers: providersStatus() } });

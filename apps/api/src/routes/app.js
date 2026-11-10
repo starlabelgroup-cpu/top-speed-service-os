@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 
@@ -60,7 +60,7 @@ const STORE_LISTINGS = [
   },
 ];
 
-const staffOnly = [authenticate, requireCompany, requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN)];
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 /** Current app release + how to get it on each store. Public. */
 router.get('/app/current-version', (req, res) => {

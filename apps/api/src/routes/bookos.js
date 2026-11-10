@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
 import { persistBooking } from '../db/bookingsRepo.js';
@@ -27,7 +27,7 @@ const router = Router();
  * platform event feed with actor role DISPATCHER (team: Service Setters).
  */
 
-const staffOnly = [authenticate, requireCompany, requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN)];
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 const dateParam = z.string().refine(isValidDateString, { message: 'date must be a valid YYYY-MM-DD' });
 

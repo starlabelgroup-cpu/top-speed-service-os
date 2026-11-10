@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import {
   appendEvent,
   createAssetTag,
@@ -41,7 +41,7 @@ const router = Router();
  * (DISPATCHER / PLATFORM_ADMIN), consistent with Book OS.
  */
 
-const staffOnly = [authenticate, requireCompany, requireRole(ROLES.DISPATCHER, ROLES.PLATFORM_ADMIN)];
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 const accountSchema = z.object({
   companyName: z.string().trim().min(2),
