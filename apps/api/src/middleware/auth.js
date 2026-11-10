@@ -80,6 +80,33 @@ export function authenticate(req, res, next) {
   }
 }
 
+export function optionalAuthenticate(req, res, next) {
+  const header = req.get('authorization');
+  if (!header) return next();
+
+  const [, token] = header.split(' ');
+  if (!token) return next();
+
+  // Demo tokens never attach a user here: optional auth exists so the
+  // public register route can recognize a signed-in administrator, and a
+  // demo context must never look like one.
+  if (!process.env.JWT_SECRET) return next();
+
+  try {
+    const payload = verifyHs256(token, process.env.JWT_SECRET);
+    req.user = {
+      id: payload.sub,
+      companyId: payload.companyId,
+      email: payload.email,
+      roles: Array.isArray(payload.roles) ? payload.roles : [],
+    };
+    req.authMode = 'jwt';
+  } catch {
+    // Invalid or expired token: proceed as an anonymous request.
+  }
+  return next();
+}
+
 export function requireCompany(req, res, next) {
   if (!req.user?.companyId) {
     return res.status(403).json({ error: 'A company context is required' });

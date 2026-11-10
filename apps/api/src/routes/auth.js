@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
-import { authenticate, requireRole } from '../middleware/auth.js';
+import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { signAccessToken } from '../services/tokens.js';
@@ -131,7 +131,7 @@ function canGrantStaffRoles(req) {
   return req.authMode === 'jwt' && (roles.includes(ROLES.PLATFORM_ADMIN) || roles.includes(ROLES.COMPANY_OWNER));
 }
 
-router.post('/auth/register', async (req, res, next) => {
+router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
