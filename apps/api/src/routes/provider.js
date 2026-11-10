@@ -32,6 +32,27 @@ function myProvider(req) {
   return store.providers.find((provider) => provider.companyId === req.user.companyId) || null;
 }
 
+/**
+ * Provider company directory for the Portal's team-accounts panel: when
+ * the owner creates a Tech App account, the account must land inside the
+ * provider's company. Staff-level read — names and ids only.
+ */
+router.get(
+  '/provider/companies',
+  authenticate,
+  requireCompany,
+  requireRole(ROLES.PLATFORM_ADMIN, ROLES.COMPANY_OWNER, ROLES.COMPANY_ADMIN, ROLES.DISPATCHER),
+  (req, res) => {
+    const seen = new Map();
+    for (const provider of store.providers) {
+      if (!seen.has(provider.companyId)) {
+        seen.set(provider.companyId, { companyId: provider.companyId, businessName: provider.businessName });
+      }
+    }
+    return res.json({ data: [...seen.values()] });
+  },
+);
+
 function noProvider(res) {
   return res.status(404).json({
     error: 'No provider record is linked to this account\u2019s company',
