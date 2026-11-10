@@ -23,6 +23,8 @@ export const store = {
   // Flywheel: referral codes issued to customers when a job completes.
   // One active code per customer; redemptions link new bookings back to it.
   referrals: new Map(),
+  // Speedy Live Video: consultation requests and their rooms.
+  videoRequests: new Map(),
   // Commercial: business accounts, their facilities, the equipment
   // registry at each facility, and commercial work orders. A work order
   // also creates a linked residential-pipeline booking (source

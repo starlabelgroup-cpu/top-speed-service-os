@@ -24,6 +24,7 @@ export const NOTIFICATION_TEMPLATES = {
   COMMERCIAL_WORK_ORDER_RECEIVED: 'COMMERCIAL_WORK_ORDER_RECEIVED',
   REFUND_REQUEST: 'REFUND_REQUEST',
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
+  VIDEO_REQUEST: 'VIDEO_REQUEST',
 };
 
 export function queueNotification({ channel, template, to, payload = {}, source = null }) {

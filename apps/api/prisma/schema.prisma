@@ -92,6 +92,7 @@ model Company {
   invoices            Invoice[]
   referrals           Referral[]
   notificationOutbox  NotificationOutbox[]
+  videoRequests       VideoConsultRequest[]
 
   @@index([type])
 }
@@ -284,4 +285,27 @@ model NotificationOutbox {
 
   @@index([companyId, status])
   @@index([createdAt])
+}
+
+// Speedy Live Video (2026-11-09): a customer asks to show the problem
+// live; Service Setters arrange it — immediate, scheduled, or
+// manager-assisted — and the request gets a video room both sides join.
+model VideoConsultRequest {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  customerName     String
+  phone            String
+  appliance        String
+  note             String?
+  bookingReference String?
+  mode             String   @default("UNDECIDED")
+  status           String   @default("PENDING")
+  roomName         String?  @unique
+  arrangedBy       String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
 }
