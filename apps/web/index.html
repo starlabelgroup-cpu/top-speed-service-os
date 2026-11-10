@@ -370,9 +370,9 @@ footer a{color:#D7E6FF}
 <section id="diagnose" style="background:var(--surface-2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag red"><span class="preview-dot"></span> Preview — AI Diagnose Lab</span>
+      <span class="tag red"><span class="preview-dot"></span> Live — AI Diagnose Lab</span>
       <h2>Snap. Send. <em>Diagnosed.</em></h2>
-      <p>Two new tools launching with the platform. Try them: the photo diagnosis reads your appliance and symptom, and the estimator gives a planning range before anyone rolls a truck.</p>
+      <p>Two tools, live now: Speedy’s photo diagnosis reads your appliance photo and symptom, and the estimator gives a planning range before anyone rolls a truck.</p>
     </div>
     <div class="lab reveal">
       <div class="lab-tabs" role="tablist" aria-label="Diagnosis tools">
@@ -389,7 +389,7 @@ footer a{color:#D7E6FF}
               <label class="btn btn-blue" style="padding:11px 20px;font-size:15px" for="fileUp">Choose photo / video</label>
               <input type="file" id="fileUp" accept="image/*,video/*" style="display:none">
               <img id="upPreview" alt="Your uploaded appliance photo preview" style="display:none">
-              <p class="fine" id="upName">No file yet — or try a sample below. Your file stays on this device in the preview.</p>
+              <p class="fine" id="upName">No file yet — or try a sample below. A photo you run is sent securely to Speedy AI for analysis; the samples are illustrative examples.</p>
               <div class="sample-row" role="group" aria-label="Sample cases">
                 <button type="button" onclick="sampleCase('fridge')">🧊 Fridge not cooling</button>
                 <button type="button" onclick="sampleCase('washer')">🌀 Washer won't drain</button>
@@ -403,14 +403,14 @@ footer a{color:#D7E6FF}
               <div><label class="flabel" for="dgSymptom">What is it doing?</label>
                 <select id="dgSymptom"></select></div>
             </div>
-            <button class="btn btn-red" style="width:100%" onclick="runDiagnosis()">🔍 Run AI Diagnosis — Preview</button>
+            <button class="btn btn-red" style="width:100%" onclick="runDiagnosis()">🔍 Run AI Diagnosis</button>
           </div>
           <div>
             <div class="result" id="dgResult">
-              <span class="tag live">How it will work</span>
+              <span class="tag live">● Live — Speedy AI</span>
               <h3 style="margin-top:10px">A head start before the visit</h3>
-              <p>At launch, Speedy's diagnosis reviews your photo/video, the model and the symptom, then returns the <b>most likely issue</b>, what the repair usually involves, and a <b>planning price range</b> — so the tech can arrive with the right part on the truck.</p>
-              <p class="fine">Preview results here use the same sample logic. A technician always confirms the diagnosis in person; your $99 diagnostic is credited toward the repair.</p>
+              <p>Speedy’s diagnosis reviews your photo, the appliance and the symptom, then returns the <b>most likely issue</b>, what the repair usually involves, and what a technician would check on site — so the tech can arrive with the right part on the truck.</p>
+              <p class="fine">A photo read is a preliminary head start, not a guaranteed diagnosis. A technician always confirms in person; your $99 diagnostic is credited toward the repair.</p>
             </div>
           </div>
         </div>
@@ -893,37 +893,71 @@ var curSample=null;
 function sampleCase(k){
   curSample=k;
   document.getElementById('dgAppliance').value=k; syncSymptoms();
-  document.getElementById('upName').textContent='Sample case loaded: '+k+' — run the diagnosis to see the preview result.';
+  document.getElementById('upName').textContent='Sample case loaded: '+k+' — run the diagnosis to see an illustrative example.';
   document.getElementById('upPreview').style.display='none';
   runDiagnosis();
 }
+var dgPhoto=null;
 document.getElementById('fileUp').addEventListener('change',function(e){
   var f=e.target.files[0]; if(!f)return;
-  curSample=null;
-  document.getElementById('upName').textContent='Loaded: '+f.name+' ('+Math.round(f.size/1024)+' KB) — now run the diagnosis.';
+  curSample=null; dgPhoto=null;
   if(f.type.indexOf('image/')===0){
     var r=new FileReader();
-    r.onload=function(ev){var img=document.getElementById('upPreview');img.src=ev.target.result;img.style.display='block';};
+    r.onload=function(ev){
+      var img=new Image();
+      img.onload=function(){
+        var pv=document.getElementById('upPreview'); pv.src=img.src; pv.style.display='block';
+        try{
+          var mx=1280,w=img.naturalWidth,h=img.naturalHeight,sc=Math.min(1,mx/Math.max(w,h));
+          var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+          cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+          dgPhoto=cv.toDataURL('image/jpeg',0.82);
+        }catch(err){ dgPhoto=null; }
+        document.getElementById('upName').textContent='Loaded: '+f.name+' \u2014 now run the diagnosis for a live AI read of your photo.';
+      };
+      img.src=ev.target.result;
+    };
     r.readAsDataURL(f);
-  } else { document.getElementById('upPreview').style.display='none'; }
+  } else {
+    document.getElementById('upPreview').style.display='none';
+    document.getElementById('upName').textContent='Loaded: '+f.name+' \u2014 video analysis is coming soon. Add a photo for a live AI diagnosis today, or book and the tech reviews it in person.';
+  }
 });
 function resultFor(appliance){
   var d=DIAG[appliance]; var idx=Math.floor(Math.random()*d.results.length); return d.results[idx];
 }
-function runDiagnosis(){
-  var a=document.getElementById('dgAppliance').value;
-  var sym=document.getElementById('dgSymptom').value;
+function renderSampleDiagnosis(a,sym){
   var r=resultFor(a);
   var name=document.querySelector('#dgAppliance option:checked').textContent;
   document.getElementById('dgResult').innerHTML=
-    '<span class="tag live">● AI Diagnosis — Preview result</span>'+
+    '<span class="tag">Sample case \u2014 illustrative example</span>'+
     '<h3 style="margin-top:10px">'+esc(name)+': '+esc(r.issue)+'</h3>'+
     '<p style="margin:4px 0">Symptom: <b>'+esc(sym)+'</b></p>'+
     '<p>'+esc(r.detail)+'</p>'+
-    '<div class="fine">Match confidence</div><div class="conf"><i id="confBar"></i></div><div class="fine" style="margin-bottom:10px">'+r.conf+'% likely — technician confirms in person</div>'+
-    '<div class="fine">Typical repair range (incl. $99 diagnostic credit)</div><div class="price-big">'+r.range+'</div>'+
+    '<p class="fine">This sample shows the kind of head start Speedy gives. For a live read of YOUR appliance, add a photo above and run the diagnosis.</p>'+
     '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+19549317997">Call 954-931-7997</a></div>';
-  requestAnimationFrame(function(){var b=document.getElementById('confBar'); if(b)b.style.width=r.conf+'%';});
+}
+function runDiagnosis(){
+  var a=document.getElementById('dgAppliance').value;
+  var sym=document.getElementById('dgSymptom').value;
+  var name=document.querySelector('#dgAppliance option:checked').textContent;
+  if(!dgPhoto){ renderSampleDiagnosis(a,sym); return; }
+  var box=document.getElementById('dgResult');
+  box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Reading your photo\u2026</h3><p>Speedy is reviewing your photo with the symptom: <b>'+esc(sym)+'</b>. This takes a few seconds.</p>';
+  fetch(SP_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:dgPhoto,note:name+': '+sym})})
+    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+    .then(function(j){
+      var reply=(j.data&&j.data.reply)||'';
+      if(!reply) throw new Error('empty reply');
+      box.innerHTML='<span class="tag live">\u25cf AI Diagnosis \u2014 Live read</span>'+
+        '<h3 style="margin-top:10px">'+esc(name)+' \u2014 Speedy\u2019s preliminary read</h3>'+
+        '<p style="white-space:pre-wrap">'+esc(reply)+'</p>'+
+        '<p class="fine">Preliminary read from your photo \u2014 a technician confirms the diagnosis in person. Your $99 diagnostic is credited toward the repair.</p>'+
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+19549317997">Call 954-931-7997</a></div>';
+    })
+    .catch(function(){
+      box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Speedy could not read that photo</h3><p>Try a clearer, well-lit photo \u2014 or skip ahead: book the $99 diagnostic (credited toward your repair) and the technician will diagnose it in person.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+19549317997">Call 954-931-7997</a></div>';
+    });
 }
 function runEstimate(){
   var a=document.getElementById('estAppliance').value;
