@@ -102,7 +102,7 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div class="flag"></div>
 <header class="top"><div class="topin">
 <div class="brand"><div class="logo">TS</div><div><h1>Service Setters<br>Book OS</h1><p>Dispatch Console • Top Speed Service OS</p></div></div>
-<div class="pills"><span class="pill live">● PREVIEW / DEMO DATA</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
+<div class="pills"><span class="pill live" id="modePill">● PREVIEW / DEMO DATA</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
 </div></header>
 
 <main class="wrap">
@@ -113,7 +113,23 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div class="metric"><small>Jobs Dispatched — Demo</small><b id="mDispatched">31</b><span>Approved &amp; sent to providers</span></div>
 <div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter ✓</span></div>
 </section>
-<div class="notice">⚠️ This is an operations <strong>preview</strong> for Top Speed Appliance LLC. All names, jobs and numbers below are realistic demo data — it is <strong>not connected to live bookings</strong>. Buttons work in-page so you can rehearse the real workflow.</div>
+<div class="notice" id="modeNotice">⚠️ This is an operations <strong>preview</strong> for Top Speed Appliance LLC. All names, jobs and numbers below are realistic demo data — it is <strong>not connected to live bookings</strong>. Buttons work in-page so you can rehearse the real workflow.</div>
+
+
+<!-- STAFF SIGN-IN / LIVE MODE -->
+<section class="panel" id="staffPanel" style="margin-bottom:18px">
+<div class="ph"><div><h2>Staff Sign-In \u2014 Live Book OS</h2><p>Service Setters &amp; dispatch: sign in with your Service OS account to work the <b>live</b> queue, today\u2019s appointments and the dispatch board. Signed out, this page stays a demo preview with sample data.</p></div><span class="badge" id="staffState">SIGNED OUT</span></div>
+<div id="staffLogin" style="padding:0 16px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:end">
+<label style="flex:1;min-width:210px;font-size:13px;font-weight:700">Email<br><input id="staffEmail" type="email" autocomplete="username" placeholder="service@topspeedappliance.net" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+<label style="flex:1;min-width:170px;font-size:13px;font-weight:700">Password<br><input id="staffPw" type="password" autocomplete="current-password" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+<button class="btn primary" onclick="staffSignIn()">Sign in to Live Book OS \u2192</button>
+</div>
+<div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
+<span id="staffWho" style="font-weight:700"></span>
+<button class="btn navy" onclick="loadLive()">\u21bb Refresh live data</button>
+<button class="btn ghost" onclick="staffSignOut()">Sign out</button>
+</div>
+</section>
 
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
@@ -260,6 +276,137 @@ function toggleRem(i){rems[i].on=!rems[i].on;toast(rems[i].t+': automation '+(re
 
 renderQueue();renderToday();renderDispatch();renderRems();
 </script>
+
+<script>
+/* ================= LIVE MODE — Top Speed Service OS API =================
+   Signed out: the page is the original demo preview (sample data).
+   Signed in as staff: Setter Queue, Today's Appointments and the Dispatch
+   Board render REAL data from the Service OS API, and Confirm / Reschedule
+   write real appointments. Token lives in sessionStorage only. */
+var TSOS_API='https://top-speed-service-os.vercel.app/api/v1';
+var LIVE=false, liveQueue=[], staffUser=null;
+var WIN_LABEL={'08-10':'8\u201310 AM','10-12':'10 AM\u201312 PM','12-14':'12\u20132 PM','14-16':'2\u20134 PM','16-18':'4\u20136 PM'};
+function escH(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function tsosToken(){return sessionStorage.getItem('tsos_token')||''}
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tsosToken()},opts.headers||{});
+  return fetch(TSOS_API+path,opts).then(function(r){ if(r.status===401){ throw new Error('session expired'); } if(!r.ok){ return r.json().catch(function(){return {}}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
+}
+function dstr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayStr(){ return dstr(new Date()); }
+function tomorrowStr(){ var d=new Date(); d.setDate(d.getDate()+1); return dstr(d); }
+function dateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+function ageLabel(m){ if(m==null) return ''; if(m<60) return m+' MIN AGO'; var h=Math.floor(m/60); return h+'H '+(m%60)+'M AGO'; }
+function windowIdFromText(t){ if(!t) return '10-12'; t=(''+t).toLowerCase();
+  if(t.indexOf('morning')>-1||t.indexOf('8')===0) return '08-10';
+  if(t.indexOf('10')===0) return '10-12';
+  if(t.indexOf('12')===0||t.indexOf('noon')>-1||t.indexOf('midday')>-1) return '12-14';
+  if(t.indexOf('2')===0||t.indexOf('afternoon')>-1) return '14-16';
+  if(t.indexOf('4')===0||t.indexOf('evening')>-1) return '16-18';
+  return '10-12'; }
+
+function staffSignIn(){
+  var email=document.getElementById('staffEmail').value.trim();
+  var pw=document.getElementById('staffPw').value;
+  if(!email||!pw){ toast('Enter your staff email and password'); return; }
+  fetch(TSOS_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      sessionStorage.setItem('tsos_token',j.token);
+      enterLive(j.user);
+      toast('Welcome — Live Book OS connected');
+      loadLive();
+    })
+    .catch(function(e){ toast('Sign-in failed: '+e.message); });
+}
+function staffSignOut(){ sessionStorage.removeItem('tsos_token'); location.reload(); }
+function enterLive(user){
+  LIVE=true; staffUser=user;
+  document.getElementById('modePill').textContent='\u25cf LIVE \u2014 SERVICE OS CONNECTED';
+  document.getElementById('modeNotice').innerHTML='<strong>Live mode:</strong> the Setter Queue, Today\u2019s Appointments and the Dispatch Board below are reading the real Service OS database right now. Anything still labelled \u201cDemo\u201d is demo.';
+  document.getElementById('staffState').textContent='\u25cf LIVE';
+  document.getElementById('staffLogin').style.display='none';
+  var bar=document.getElementById('staffBar'); bar.style.display='flex';
+  document.getElementById('staffWho').textContent='Signed in as '+user.email+' \u00b7 '+(user.roles||[]).join(', ');
+}
+function loadLive(){
+  if(!LIVE) return;
+  Promise.all([apiFetch('/bookos/setter-queue'),apiFetch('/bookos/dispatch-board')])
+    .then(function(res){
+      renderLiveQueue(res[0].data.queue||[]);
+      renderLiveBoard(res[1].data);
+      renderLiveToday(res[1].data);
+    })
+    .catch(function(e){ toast('Live data error: '+e.message+' \u2014 sign in again if it persists'); });
+}
+function renderLiveQueue(items){
+  liveQueue=items;
+  document.getElementById('qCount').textContent=items.length+' waiting';
+  var mReq=document.querySelectorAll('.metric small')[0]; if(mReq) mReq.textContent='Requests in Queue \u2014 Live';
+  document.getElementById('mRequests').textContent=items.length;
+  var el=document.getElementById('queue');
+  if(!items.length){ el.innerHTML='<div class="empty">\ud83c\udf89 Queue clear \u2014 every request has been called. New bookings will appear here live.</div>'; return; }
+  el.innerHTML=items.map(function(q,i){
+    var appt=q.appointment&&q.appointment.status==='SET';
+    var winTag=appt?('\u23f0 SET: '+dateLabel(q.appointment.date)+' \u00b7 '+escH(q.appointment.windowLabel||'')):('\u23f0 Wants: '+escH(q.preferredWindow||'any window'));
+    var actions='<button class="btn red" onclick="liveCall('+i+')">\u260e Call</button>';
+    if(appt){ actions+='<button class="btn primary" onclick="liveResched('+i+')">\u21bb Move to Tomorrow</button>'; }
+    else{ actions+='<button class="btn primary" onclick="liveConfirm('+i+')">\u2713 Confirm Appointment</button>'; }
+    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta">\ud83d\udd27 '+escH(q.appliance||'')+'<br>\ud83d\udccd '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span></div><div class="actions">'+actions+'</div></article>';
+  }).join('');
+}
+function liveCall(i){ var q=liveQueue[i]; var digits=(''+(q.customerPhone||'')).replace(/\D/g,''); if(digits){ location.href='tel:+1'+digits; } else { toast('No phone number on this booking'); } }
+function liveConfirm(i){
+  var q=liveQueue[i]; if(!q) return;
+  var payload={bookingId:q.bookingId,date:tomorrowStr(),window:windowIdFromText(q.preferredWindow),setBy:(staffUser?staffUser.email:'Service Setters')};
+  apiFetch('/bookos/appointments',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){ toast('\u2713 '+q.customerName+' confirmed \u2014 '+dateLabel(j.data.appointment.date)+' \u00b7 '+j.data.appointment.windowLabel+' \u00b7 confirmation queued'); loadLive(); })
+    .catch(function(e){ toast('Confirm failed: '+e.message); });
+}
+function liveResched(i){
+  var q=liveQueue[i]; if(!q||!q.appointment) return;
+  var payload={date:tomorrowStr(),window:q.appointment.window,rescheduledBy:(staffUser?staffUser.email:'Service Setters')};
+  apiFetch('/bookos/appointments/'+q.bookingId+'/reschedule',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){ toast('\u21bb '+q.customerName+' moved \u2014 '+dateLabel(j.data.appointment.date)+' \u00b7 '+j.data.appointment.windowLabel); loadLive(); })
+    .catch(function(e){ toast('Reschedule failed: '+e.message); });
+}
+var BOARD_COLS=[['PENDING_DISPATCH','New'],['MATCH_PENDING_APPROVAL','Awaiting Approval'],['CONFIRMED','Confirmed / Dispatched'],['COMPLETED','Complete']];
+function renderLiveBoard(board){
+  var counts=board.counts||{};
+  document.getElementById('mAwait').textContent=counts['MATCH_PENDING_APPROVAL']||0;
+  document.getElementById('mDispatched').textContent=counts['CONFIRMED']||0;
+  var groups=board.groups||{};
+  document.getElementById('dispatchCols').innerHTML=BOARD_COLS.map(function(col){
+    var items=groups[col[0]]||[];
+    return '<div class="col"><h3>'+col[1]+' <span>'+items.length+'</span></h3>'+(items.length?items.map(function(b){
+      var appt=b.appointment&&b.appointment.status==='SET'?('Appt: '+dateLabel(b.appointment.date)+' \u00b7 '+escH(b.appointment.windowLabel||'')):'No appointment set yet';
+      var prov=b.providerId?'Provider assigned':'Awaiting match';
+      return '<article class="dcard"><b>'+escH(b.appliance||'Appliance job')+'</b> <span style="color:var(--mut);font-size:11px">'+escH(b.referenceCode||'')+'</span><p>\ud83d\udccd '+escH(b.city||'')+'</p><p>'+escH(b.customerName||'')+' \u00b7 '+appt+'</p><div class="score"><span>\ud83d\udc68\u200d\ud83d\udd27 '+prov+'</span><strong>'+escH(b.source||'')+'</strong></div></article>';
+    }).join(''):'<div class="empty">No jobs</div>')+'</div>';
+  }).join('');
+}
+function renderLiveToday(board){
+  var groups=board.groups||{}; var t=todayStr(); var byWin={};
+  Object.keys(groups).forEach(function(st){ (groups[st]||[]).forEach(function(b){
+    if(b.appointment&&b.appointment.status==='SET'&&b.appointment.date===t){
+      var w=b.appointment.windowLabel||'Window'; (byWin[w]=byWin[w]||[]).push({n:b.customerName||'Customer',a:(b.appliance||'')+' \u00b7 '+(b.city||''),s:st});
+    } }); });
+  var order=['8\u201310 AM','10 AM\u201312 PM','12\u20132 PM','2\u20134 PM','4\u20136 PM'];
+  var stTxt={'PENDING_DISPATCH':'Appt Set','MATCH_PENDING_APPROVAL':'Awaiting Approval','CONFIRMED':'Confirmed','COMPLETED':'Done'};
+  var stClsL={'PENDING_DISPATCH':'c','MATCH_PENDING_APPROVAL':'e','CONFIRMED':'c','COMPLETED':'d'};
+  var keys=order.filter(function(w){return byWin[w]&&byWin[w].length});
+  var el=document.getElementById('windows');
+  if(!keys.length){ el.innerHTML='<div class="empty">No appointments set for today yet. Confirm a request from the Setter Queue and it appears here.</div>'; return; }
+  el.innerHTML=keys.map(function(w){
+    return '<div class="win"><h3>\u23f0 '+w+'</h3>'+byWin[w].map(function(j){ return '<div class="job"><b>'+escH(j.n)+'</b><br>'+escH(j.a)+'<br><span class="st '+(stClsL[j.s]||'c')+'">'+stTxt[j.s]+'</span></div>'; }).join('')+'</div>';
+  }).join('');
+}
+/* Auto-resume a live session */
+if(tsosToken()){
+  apiFetch('/auth/me').then(function(j){ enterLive(j.user); loadLive(); }).catch(function(){ sessionStorage.removeItem('tsos_token'); });
+}
+</script>
+
 <script src="/install.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
