@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
@@ -98,6 +99,7 @@ router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
       city: booking.city,
       zip: booking.zip,
       appliance: booking.appliance,
+      payment: paymentSummary(booking.id),
       issue: booking.issue,
       priority: booking.priority || false,
       preferredWindow: booking.preferredWindow || null,
@@ -287,6 +289,7 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
         city: booking.city,
         appliance: booking.appliance,
         customerName: booking.customer?.name || null,
+        payment: paymentSummary(booking.id),
         appointment: appointmentSummary(booking),
         providerId: booking.dispatch?.providerId || null,
         createdAt: booking.createdAt,

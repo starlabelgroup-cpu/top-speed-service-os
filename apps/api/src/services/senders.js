@@ -28,6 +28,7 @@ const SUBJECTS = {
   REVIEW_REQUEST: 'How did we do? Review your Top Speed service',
   REFERRAL_CODE: 'Your Top Speed Appliance referral code',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'Top Speed commercial work order received',
+  PAYMENT_RECEIVED: 'Payment received — Top Speed Appliance',
 };
 
 function resendConfig() {

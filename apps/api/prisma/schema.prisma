@@ -93,6 +93,7 @@ model Company {
   referrals           Referral[]
   notificationOutbox  NotificationOutbox[]
   videoRequests       VideoConsultRequest[]
+  payments            Payment[]
 
   @@index([type])
 }
@@ -170,6 +171,7 @@ model ServiceRequest {
   customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
   dispatchAssignments DispatchAssignment[]
   invoices            Invoice[]
+  payments            Payment[]
 
   @@index([companyId, status])
   @@index([companyId, zip])
@@ -308,4 +310,35 @@ model VideoConsultRequest {
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId, status])
+}
+
+/**
+ * A customer payment collected through Stripe — the payment ledger.
+ * One row per Checkout session attempt. The webhook flips PENDING →
+ * PAID; `diagnosticPaid` everywhere in the API is derived from a PAID
+ * row for the booking, so this table is the single source of truth
+ * for money received online (the feeStatus column on ServiceRequest
+ * remains the office's manual bookkeeping).
+ */
+model Payment {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  serviceRequestId      String    @db.Uuid
+  customerId            String?   @db.Uuid
+  purpose               String    @default("DIAGNOSTIC")
+  amountCents           Int
+  currency              String    @default("usd")
+  status                String    @default("PENDING")
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
 }

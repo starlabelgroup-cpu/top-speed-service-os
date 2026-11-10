@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
@@ -46,7 +47,7 @@ const completeSchema = z.object({
 });
 
 function publicBooking(booking) {
-  return booking;
+  return { ...booking, payment: paymentSummary(booking.id) };
 }
 
 router.post('/bookings', authenticate, requireCompany, async (req, res) => {
@@ -124,7 +125,7 @@ router.get('/bookings', authenticate, requireCompany, (req, res) => {
   const bookings = [...store.bookings.values()].filter(
     (booking) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || booking.companyId === req.companyId,
   );
-  return res.json({ data: bookings });
+  return res.json({ data: bookings.map(publicBooking) });
 });
 
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {

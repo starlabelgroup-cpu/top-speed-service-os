@@ -79,3 +79,29 @@ persist to the database (Referral + NotificationOutbox tables, added
 2026-11-09): they hydrate at cold start and write through on issue,
 redemption, queue, and delivery, so referral codes stay redeemable and
 queued messages survive instance recycling.
+
+## Payments (Stripe — built 2026-11-10, activates when keys are set)
+
+Ramone approved both routes: Stripe Payment Links (created in the
+Stripe dashboard / via the connected Stripe account) and this built-in
+checkout. The API ships dark: without keys, GET /payments/status
+reports configured:false, the apps hide their Pay buttons, and
+checkout attempts answer 503 payments_not_configured.
+
+To activate, set in the API project's Vercel env (Ramone pastes these
+himself — they never pass through chat or the vault):
+
+- `STRIPE_SECRET_KEY` — the Stripe account's secret key.
+- `STRIPE_WEBHOOK_SECRET` — after creating a webhook endpoint in the
+  Stripe dashboard pointing at
+  `https://top-speed-service-os.vercel.app/api/v1/payments/webhook`
+  with events `checkout.session.completed` and
+  `checkout.session.expired`, paste its signing secret here.
+
+Flow: POST /payments/diagnostic/checkout (customer who owns the
+booking, or staff) creates a $99 Checkout Session + a PENDING Payment
+row; the webhook flips it to PAID, derives `payment.diagnosticPaid`
+on every booking serializer, and queues the customer's receipt
+(PAYMENT_RECEIVED) in the notification outbox. Book OS queue cards
+show a PAID chip or a Pay Link button (copies a checkout URL for the
+setter to text). Card data never touches this server.

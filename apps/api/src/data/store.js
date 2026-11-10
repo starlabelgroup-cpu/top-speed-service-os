@@ -25,6 +25,7 @@ export const store = {
   referrals: new Map(),
   // Speedy Live Video: consultation requests and their rooms.
   videoRequests: new Map(),
+  payments: new Map(),
   // Commercial: business accounts, their facilities, the equipment
   // registry at each facility, and commercial work orders. A work order
   // also creates a linked residential-pipeline booking (source
