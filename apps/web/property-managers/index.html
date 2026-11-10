@@ -627,6 +627,32 @@
   <div class="checker" aria-hidden="true"></div>
 
   <!-- ============ LEAD FORM ============ -->
+  <!-- ================= AI BULK SERVICE REQUESTS ================= -->
+  <section id="ai-bulk" aria-labelledby="bulk-h" style="padding:56px 0;">
+    <div class="wrap">
+      <p class="kicker">New — Speedy AI</p>
+      <h2 id="bulk-h">Bulk service requests, in one message</h2>
+      <p class="sub" style="max-width:640px;">Don't fill out a form per unit. Paste the day's tenant requests the way you'd text them — Speedy sorts them into separate work orders, and every one lands with the Service Setters under a single batch reference.</p>
+      <div class="form-card" style="max-width:760px;">
+        <div class="frow">
+          <div><label for="bk-name">Your name *</label><input id="bk-name" type="text" placeholder="Property manager name"></div>
+          <div><label for="bk-phone">Mobile phone *</label><input id="bk-phone" type="tel" placeholder="954-555-0100"></div>
+        </div>
+        <div class="frow">
+          <div><label for="bk-company">Company</label><input id="bk-company" type="text" placeholder="e.g. Sunrise Property Group"></div>
+          <div><label for="bk-property">Property *</label><input id="bk-property" type="text" placeholder="e.g. Sunset Villas, 4400 W Sunrise Blvd"></div>
+        </div>
+        <label for="bk-text">The requests — one per unit, in plain words *</label>
+        <textarea id="bk-text" rows="5" style="width:100%; border:1.5px solid #C9D6EA; border-radius:10px; padding:11px; font:inherit;" placeholder="Unit 4B fridge not cooling, food spoiling. Unit 7A washer leaking underneath. Unit 12 dryer runs but no heat…"></textarea>
+        <div id="bkMsg" style="font-size:14px; margin:10px 0;"></div>
+        <button class="btn" type="button" id="bkSortBtn" onclick="bkSort()" style="background:#0A265C; color:#fff; border:none; border-radius:99px; padding:12px 22px; font:inherit; font-weight:800; cursor:pointer;">✨ Let Speedy sort it</button>
+        <div id="bkList" style="margin-top:14px;"></div>
+        <button class="btn" type="button" id="bkSendBtn" onclick="bkSend()" style="display:none; background:#E8322E; color:#fff; border:none; border-radius:99px; padding:12px 22px; font:inherit; font-weight:800; cursor:pointer; margin-top:8px;">Send all requests to Service Setters</button>
+        <p class="sub" style="margin-top:12px; font-size:13px;">Prefer one request at a time? The classic form is right below — it stays as the fallback.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="form-sec" id="demo-form" aria-labelledby="form-h">
     <div class="wrap form-grid">
       <div>
@@ -827,5 +853,57 @@
         });
       }
     </script>
-  </body>
+  
+<script>
+/* ============ PM BULK REQUESTS — Speedy sorts, manager confirms ============ */
+var BK_API='https://top-speed-service-os.vercel.app/api/v1';
+var bkItems=[];
+function bkEsc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+function bkSort(){
+  var text=document.getElementById('bk-text').value.trim();
+  var msg=document.getElementById('bkMsg');
+  if(text.length<10){ msg.textContent='Paste at least one request first.'; return; }
+  var btn=document.getElementById('bkSortBtn'); btn.disabled=true; btn.textContent='Speedy is sorting\u2026';
+  fetch(BK_API+'/speedy/extract-bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not sort that'); return j; }); })
+    .then(function(j){
+      bkItems=(j.data&&j.data.requests)||[];
+      btn.disabled=false; btn.textContent='✨ Let Speedy sort it';
+      if(!bkItems.length){ msg.textContent='Speedy could not find a unit request in that text — try one request per line.'; return; }
+      msg.innerHTML='Speedy found <b>'+bkItems.length+'</b> request'+(bkItems.length>1?'s':'')+'. Check them, remove anything wrong, then send.';
+      bkRender();
+    })
+    .catch(function(e){ btn.disabled=false; btn.textContent='✨ Let Speedy sort it'; msg.textContent='\u26a0\ufe0f '+e.message; });
+}
+function bkRender(){
+  var slot=document.getElementById('bkList');
+  slot.innerHTML=bkItems.map(function(it,i){
+    return '<div style="display:flex; gap:10px; align-items:flex-start; background:#F2F6FD; border:1.5px solid #D5E2F4; border-radius:12px; padding:10px 12px; margin-bottom:8px;">' +
+      '<div style="flex:1; font-size:14.5px;"><b>'+bkEsc(it.unit||'Unit')+'</b> — '+bkEsc(it.appliance)+': '+bkEsc(it.issue)+(it.urgency==='urgent'?' <b style="color:#C72420;">URGENT</b>':'')+'</div>' +
+      '<button type="button" onclick="bkRemove('+i+')" style="background:none; border:none; color:#C72420; font-weight:800; cursor:pointer;">\u2715</button></div>';
+  }).join('');
+  document.getElementById('bkSendBtn').style.display=bkItems.length?'':'none';
+}
+function bkRemove(i){ bkItems.splice(i,1); bkRender(); }
+function bkSend(){
+  var name=document.getElementById('bk-name').value.trim();
+  var phone=document.getElementById('bk-phone').value.trim();
+  var company=document.getElementById('bk-company').value.trim();
+  var property=document.getElementById('bk-property').value.trim();
+  var msg=document.getElementById('bkMsg');
+  if(name.length<2||phone.replace(/\D/g,'').length<7||property.length<3){ msg.textContent='Add your name, a valid phone, and the property before sending.'; return; }
+  if(!bkItems.length){ msg.textContent='Sort the requests with Speedy first.'; return; }
+  var btn=document.getElementById('bkSendBtn'); btn.disabled=true; btn.textContent='Sending\u2026';
+  fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })
+    .then(function(j){
+      msg.innerHTML='\u2705 <b>Sent!</b> Batch reference <b>'+j.data.batchReference+'</b> — '+j.data.count+' work orders are with the Service Setters. Individual references: '+j.data.references.join(', ')+'.';
+      btn.style.display='none';
+      document.getElementById('bkList').innerHTML='';
+      bkItems=[];
+    })
+    .catch(function(e){ btn.disabled=false; btn.textContent='Send all requests to Service Setters'; msg.textContent='\u26a0\ufe0f '+e.message+' — or call 954-931-7997.'; });
+}
+</script>
+</body>
 </html>

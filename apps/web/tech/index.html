@@ -244,7 +244,12 @@ function renderTech(provider,assignments,user){
     var b=a.booking||{};
     var when=b.appointment?(escT(b.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(b.appointment.date)):'Window TBD';
     var cust=b.customer?(' \u00b7 '+escT(b.customer.name||'')):'';
-    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span></div>';
+    var noteBox='<div style="flex-basis:100%; margin-top:10px; border-top:1px dashed #D5E2F4; padding-top:10px;">' +
+      '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">AI job update \u2014 say it, Speedy writes it</label>' +
+      '<textarea id="ainote-'+a.id+'" rows="2" placeholder="e.g. Replaced the drain pump, tested two cycles, running fine." style="width:100%; margin-top:6px; border:1.5px solid #D5E2F4; border-radius:10px; padding:9px; font:inherit; font-size:14px;"></textarea>' +
+      '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+a.id+'\')">\u2728 Structure with Speedy</button></div>' +
+      '<div id="ainote-prev-'+a.id+'" style="margin-top:8px;"></div></div>';
+    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span>'+noteBox+'</div>';
   }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with the customer details.</p>';
 }
 function liveAcceptTech(id){
@@ -263,5 +268,35 @@ if(tTok()){ loadTech(); }
 
 <script src="/install.js"></script>
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
+
+<script>
+/* ============ AI-ASSISTED JOB UPDATES (tech dictates, tech confirms) ============ */
+function aiNotePreview(id){
+  var raw=document.getElementById('ainote-'+id).value.trim();
+  var slot=document.getElementById('ainote-prev-'+id);
+  if(raw.length<3){ slot.innerHTML='<p class="note">Type or dictate the update first.</p>'; return; }
+  slot.innerHTML='<p class="note">Speedy is structuring\u2026</p>';
+  tFetch('/provider/assignments/'+id+'/ai-note/preview',{method:'POST',body:JSON.stringify({text:raw})})
+    .then(function(j){
+      var st=j.data.structured; window._aiNote=window._aiNote||{}; window._aiNote[id]={raw:raw,structured:st};
+      slot.innerHTML='<div style="background:#F2F6FD; border:1.5px solid #D5E2F4; border-radius:12px; padding:11px; font-size:14px;">' +
+        '<b>Job note:</b> '+escT(st.note) +
+        (st.parts_used&&st.parts_used.length?'<br><b>Parts used:</b> '+st.parts_used.map(escT).join(', '):'') +
+        (st.next_step?'<br><b>Next step:</b> '+escT(st.next_step):'') +
+        '<br><b>Status suggestion:</b> '+escT(st.status_suggestion)+' <span style="color:#5A6E94">(advisory \u2014 the status buttons still rule)</span>' +
+        '<div class="btnrow" style="margin-top:8px;"><button class="btn go" type="button" onclick="aiNoteSave(\''+id+'\')">Save to job</button></div></div>';
+    })
+    .catch(function(e){ slot.innerHTML='<p class="note">\u26a0\ufe0f '+(e.message||'Speedy could not structure that')+' \u2014 your words are still in the box above.</p>'; });
+}
+function aiNoteSave(id){
+  var entry=window._aiNote&&window._aiNote[id];
+  var slot=document.getElementById('ainote-prev-'+id);
+  if(!entry){ slot.innerHTML='<p class="note">Structure the note with Speedy first.</p>'; return; }
+  var st=entry.structured;
+  tFetch('/provider/assignments/'+id+'/ai-note',{method:'POST',body:JSON.stringify({raw:entry.raw,note:st.note,partsUsed:st.parts_used||[],nextStep:st.next_step||null,statusSuggestion:st.status_suggestion||'NONE'})})
+    .then(function(){ slot.innerHTML='<p class="note" style="color:#1E9E6A; font-weight:700;">\u2705 Saved to the job record \u2014 it is on the customer history now.</p>'; document.getElementById('ainote-'+id).value=''; })
+    .catch(function(e){ slot.innerHTML='<p class="note">\u26a0\ufe0f '+(e.message||'Save failed')+'</p>'; });
+}
+</script>
 </body>
 </html>

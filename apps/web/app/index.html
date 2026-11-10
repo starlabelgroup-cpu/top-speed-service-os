@@ -329,6 +329,12 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <div class="amt">$99</div>
             <p><b>Diagnostic, collected at booking</b> — and <b>credited in full toward your repair</b>. No surprises, ever.</p>
           </div>
+          <div class="card" style="background:var(--navy); color:#fff; border:none;">
+            <b style="font-size:16px;">💬 Talk to Speedy — the fastest way to book</b>
+            <p style="margin:6px 0 12px; font-size:14px; opacity:.92;">Just say what's wrong — "My fridge stopped cooling, can someone come today?" Speedy asks the few details needed and books your $99 diagnostic visit right in the chat.</p>
+            <button class="btn" style="background:#fff; color:var(--navy);" onclick="showTab('speedy')">Talk to Speedy</button>
+          </div>
+
           <div class="grid9" id="applianceGrid"></div>
 
           <h3 class="sec">Your active job</h3>
@@ -353,7 +359,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <!-- ================= BOOK ================= -->
         <section class="screen" id="scr-book">
           <h2 class="greet">Book a repair</h2>
-          <p class="sub">Four quick steps. Under a minute.</p>
+          <p class="sub">Four quick steps. Under a minute. <b>Prefer to just say it?</b> <a href="#" onclick="showTab('speedy'); return false;" style="color:var(--blue); font-weight:800;">Talk to Speedy instead →</a> — this form stays here as the classic option.</p>
           <div class="steps-bar" id="stepsBar"><i class="done"></i><i></i><i></i><i></i></div>
 
           <div class="bstep on" id="bstep-1">
@@ -460,6 +466,30 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         </section>
 
         <!-- ================= TRACK ================= -->
+        <!-- ================= TALK TO SPEEDY ================= -->
+        <section class="screen" id="scr-speedy">
+          <h2 class="greet">Talk to Speedy 💬</h2>
+          <p class="sub">Tell Speedy what's wrong, in your own words. When Speedy has everything, you'll confirm the booking right here — no form needed.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:14px 0 4px;">
+            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">🎥</div><b style="font-size:14.5px;">Live video</b><div style="font-size:12.5px; opacity:.85;">Talk to a technician</div></a>
+            <a href="https://topspeedserviceos.com/#diagnose" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">📷</div><b style="font-size:14.5px;">Photo diagnosis</b><div style="font-size:12.5px; opacity:.85;">Send appliance pictures</div></a>
+            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">📹</div><b style="font-size:14.5px;">Send video</b><div style="font-size:12.5px; opacity:.85;">Show symptoms</div></a>
+            <a href="mailto:service@topspeedappliance.net?subject=Diagnostic%20evidence" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">✉️</div><b style="font-size:14.5px;">Email technician</b><div style="font-size:12.5px; opacity:.85;">Send diagnostic evidence</div></a>
+            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">📞</div><b style="font-size:14.5px;">Call technician</b><div style="font-size:12.5px; opacity:.85;">AI-directed connection</div></a>
+            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;">🎧</div><b style="font-size:14.5px;">Call manager</b><div style="font-size:12.5px; opacity:.85;">Escalation support</div></a>
+          </div>
+          <button class="btn" style="background:var(--red); color:#fff; width:100%; margin-bottom:6px;" onclick="document.getElementById('aspInput').focus()">✨ Let Speedy AI choose who to contact</button>
+          <div id="aspLog" style="display:grid; gap:9px; margin:14px 0;">
+            <div style="background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;"><b style="color:var(--navy);">Speedy</b><br>Hi! I'm Speedy. What's going on with your appliance?</div>
+          </div>
+          <div id="aspCard"></div>
+          <div style="display:flex; gap:8px; margin-top:6px;">
+            <input id="aspInput" type="text" placeholder="My fridge stopped cooling…" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
+            <button class="btn blue" id="aspSendBtn" onclick="aspSend()">Send</button>
+          </div>
+          <p class="sub" style="margin-top:12px;">Prefer the classic way? <a href="#" onclick="showTab('book'); return false;" style="color:var(--blue); font-weight:800;">Use the booking form →</a></p>
+        </section>
+
         <section class="screen" id="scr-track">
           <h2 class="greet">Track your job</h2>
           <p class="sub" id="trackSub">Refrigerator repair · <span id="trackRef">TS-DEMO42</span></p>
@@ -1081,5 +1111,102 @@ if(cTok()){
         });
       }
     </script>
+
+<script>
+/* ============ TALK TO SPEEDY (customer app) ============
+   Conversation-first booking: chat with Speedy, the extractor watches
+   the transcript, and when the details are complete the customer
+   confirms a REAL booking — authed /bookings when signed in, the
+   guest /speedy/book twin when not. The form remains the fallback. */
+var aspHistory = [];
+var aspBusy = false;
+function aspBubble(who, text){
+  var log = document.getElementById('aspLog');
+  var d = document.createElement('div');
+  if(who === 'me'){
+    d.style.cssText = 'background:var(--soft); border:1.5px solid #C9DBF5; border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%; justify-self:end;';
+    d.innerHTML = '<b style="color:var(--navy);">You</b><br>' + escC(text);
+  } else {
+    d.style.cssText = 'background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;';
+    d.innerHTML = '<b style="color:var(--navy);">Speedy</b><br>' + escC(text);
+  }
+  log.appendChild(d);
+  document.getElementById('screens').scrollTop = 99999;
+}
+function aspTranscript(){
+  return aspHistory.map(function(h){ return (h.role === 'user' ? 'Customer: ' : 'Speedy: ') + h.content; }).join('\n');
+}
+function aspSend(){
+  if(aspBusy) return;
+  var inp = document.getElementById('aspInput');
+  var text = inp.value.trim();
+  if(!text) return;
+  inp.value = '';
+  aspBusy = true;
+  document.getElementById('aspSendBtn').textContent = '…';
+  aspBubble('me', text);
+  aspHistory.push({ role: 'user', content: text });
+  fetch(C_API + '/speedy/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: aspHistory.slice(-11, -1) }) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var reply = (j.data && j.data.reply) || 'I hit a snag — call us at (954) 931-7997 and we will take it from there.';
+      aspBubble('speedy', reply);
+      aspHistory.push({ role: 'assistant', content: reply });
+      aspBusy = false;
+      document.getElementById('aspSendBtn').textContent = 'Send';
+      aspMaybeCard();
+    })
+    .catch(function(){
+      aspBubble('speedy', 'I could not reach the team just now — call (954) 931-7997 and we will book you right away.');
+      aspBusy = false;
+      document.getElementById('aspSendBtn').textContent = 'Send';
+    });
+}
+function aspMaybeCard(){
+  fetch(C_API + '/speedy/extract-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: aspTranscript() }) })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var d = j.data || {};
+      if(!d.ready) return;
+      var slot = document.getElementById('aspCard');
+      var rows = [['Name', d.name], ['Phone', d.phone], ['City', d.city], ['ZIP', d.zip], ['Appliance', d.appliance], ['Problem', d.issue], ['Window', d.preferred_window || 'First available']];
+      slot.innerHTML = '<div class="card" style="border:2px solid var(--blue);">' +
+        '<b style="font-size:15.5px; color:var(--navy);">Ready to book — look right?</b>' +
+        rows.map(function(r){ return '<div style="display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--line); font-size:14px;"><span style="color:#8496B3; font-weight:700;">' + r[0] + '</span><b>' + escC(r[1]) + '</b></div>'; }).join('') +
+        '<p class="sub" style="margin:9px 0;">$99 diagnostic, collected at booking and credited toward your repair. A Service Setter confirms by text.</p>' +
+        '<button class="btn blue" id="aspBookBtn" onclick="aspBook()">✓ Book my visit</button>' +
+        '<div id="aspBookMsg" style="margin-top:8px; font-size:14px;"></div></div>';
+      window._aspData = d;
+      document.getElementById('screens').scrollTop = 99999;
+    })
+    .catch(function(){});
+}
+function aspBook(){
+  var d = window._aspData;
+  if(!d) return;
+  var btn = document.getElementById('aspBookBtn');
+  btn.disabled = true; btn.textContent = 'Booking…';
+  var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
+  var done = function(ref){
+    document.getElementById('aspBookMsg').innerHTML = '✅ <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.';
+    btn.style.display = 'none';
+  };
+  var fail = function(msg){
+    document.getElementById('aspBookMsg').textContent = '⚠️ ' + msg;
+    btn.disabled = false; btn.textContent = '✓ Book my visit';
+  };
+  if(cTok()){
+    if(cUser && cUser.email) payload.customer.email = cUser.email;
+    cFetch('/bookings', { method: 'POST', body: JSON.stringify(payload) })
+      .then(function(j){ done(j.data.referenceCode); })
+      .catch(function(e){ fail(e.message || 'Booking failed — try the form or call (954) 931-7997.'); });
+  } else {
+    fetch(C_API + '/speedy/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || 'Booking failed'); return j; }); })
+      .then(function(j){ done(j.data.referenceCode); })
+      .catch(function(e){ fail((e.message || 'Booking failed') + ' — try the form or call (954) 931-7997.'); });
+  }
+}
+</script>
   </body>
 </html>
