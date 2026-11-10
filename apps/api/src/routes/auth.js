@@ -60,6 +60,9 @@ const usersRepo = DATABASE_ENABLED
       async findByEmail(companyId, email) {
         return db().user.findUnique({ where: { companyId_email: { companyId, email } } });
       },
+      async findAllByEmail(email) {
+        return db().user.findMany({ where: { email } });
+      },
       async findById(id) {
         return db().user.findUnique({ where: { id } });
       },
@@ -86,6 +89,9 @@ const usersRepo = DATABASE_ENABLED
           if (user.companyId === companyId && user.email === email) return user;
         }
         return null;
+      },
+      async findAllByEmail(email) {
+        return [...store.users.values()].filter((user) => user.email === email);
       },
       async findById(id) {
         return store.users.get(id) ?? null;
@@ -158,7 +164,7 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
         });
       }
       if (DATABASE_ENABLED) {
-        const company = await db.company.findUnique({ where: { id: parsed.data.companyId } });
+        const company = await db().company.findUnique({ where: { id: parsed.data.companyId } });
         if (!company) {
           return res.status(400).json({ error: 'Unknown companyId' });
         }
@@ -226,13 +232,22 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(400).json({ error: 'Invalid login', details: parsed.error.flatten() });
     }
     const { email, password } = parsed.data;
-    const user = await usersRepo.findByEmail(PLATFORM_COMPANY_ID, email);
-
-    // Verify against a dummy hash when the account does not exist so the
-    // response time does not reveal which emails are registered.
-    const hashToCheck = user ? user.passwordHash : await DUMMY_HASH_PROMISE;
-    const passwordOk = await verifyPassword(password, hashToCheck);
-    if (!user || !passwordOk) {
+    // Accounts are unique per (companyId, email): the same email can exist
+    // in more than one company (platform staff, a provider's techs,
+    // customers), so login checks every account with this email and the
+    // password picks the match.
+    const candidates = await usersRepo.findAllByEmail(email);
+    if (!candidates.length) {
+      // Verify against a dummy hash when the account does not exist so the
+      // response time does not reveal which emails are registered.
+      await verifyPassword(password, await DUMMY_HASH_PROMISE);
+      return res.status(401).json({ error: 'Email or password is incorrect' });
+    }
+    let user = null;
+    for (const candidate of candidates) {
+      if (await verifyPassword(password, candidate.passwordHash)) { user = candidate; break; }
+    }
+    if (!user) {
       return res.status(401).json({ error: 'Email or password is incorrect' });
     }
     if (!user.active) {
