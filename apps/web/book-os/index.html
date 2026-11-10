@@ -354,8 +354,18 @@ function renderLiveQueue(items){
     var actions='<button class="btn red" onclick="liveCall('+i+')">\u260e Call</button>';
     if(appt){ actions+='<button class="btn primary" onclick="liveResched('+i+')">\u21bb Move to Tomorrow</button>'; }
     else{ actions+='<button class="btn primary" onclick="liveConfirm('+i+')">\u2713 Confirm Appointment</button>'; }
-    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta">\ud83d\udd27 '+escH(q.appliance||'')+'<br>\ud83d\udccd '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span></div><div class="actions">'+actions+'</div></article>';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta">\ud83d\udd27 '+escH(q.appliance||'')+'<br>\ud83d\udccd '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d">\u2713 $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')">\ud83d\udcb3 Pay Link</button>')+'</div></article>';
   }).join('');
+}
+function livePayLink(i){
+  var q=liveQueue[i]; if(!q) return;
+  apiFetch('/payments/diagnostic/checkout',{method:'POST',body:JSON.stringify({bookingId:q.bookingId})})
+    .then(function(j){
+      var url=j.data.url;
+      if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(function(){ toast('Payment link copied \u2014 text it to '+ (q.customerName||'the customer') + ' to collect the $99'); },function(){ toast('Payment link: '+url); }); }
+      else{ toast('Payment link: '+url); }
+    })
+    .catch(function(e){ toast(e.message==='payments_not_configured'?'Payments are not switched on yet \u2014 Stripe keys are still being added':'Pay link failed: '+e.message); });
 }
 function liveCall(i){ var q=liveQueue[i]; var digits=(''+(q.customerPhone||'')).replace(/\D/g,''); if(digits){ location.href='tel:+1'+digits; } else { toast('No phone number on this booking'); } }
 function liveConfirm(i){

@@ -333,6 +333,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
           <h3 class="sec">Your active job</h3>
           <div id="activeJobSlot"></div>
+          <div id="payBar"></div>
 
           <h3 class="sec">Why Appliance Pro</h3>
           <div class="card" style="display:grid; gap:10px;">
@@ -963,7 +964,7 @@ function refreshMyBooking(){
     var list=(j.data||[]).slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
     if(!list.length) return;
     var latest=list[0];
-    booking.ref=latest.referenceCode||booking.ref;
+    booking.ref=latest.referenceCode||booking.ref; booking.id=latest.id||booking.id; booking.payment=latest.payment||null; if(window.tsosPayRender) window.tsosPayRender();
     booking.appliance=latest.appliance||booking.appliance;
     stageIdx=stageForBooking(latest);
     var btn=document.getElementById('advanceBtn');
@@ -1010,7 +1011,7 @@ function confirmBooking(){
     payload.customer.email=cUser?cUser.email:payload.customer.email;
     cFetch('/bookings',{method:'POST',body:JSON.stringify(payload)})
       .then(function(j){
-        booking.ref=j.data.referenceCode;
+        booking.ref=j.data.referenceCode; booking.id=j.data.id; booking.payment=j.data.payment||null;
         document.getElementById('refCode').textContent=booking.ref;
         stageIdx=stageForBooking(j.data);
         FEED.push({time:'Now',text:'<b>Appliance Pro:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
@@ -1033,6 +1034,41 @@ function confirmBooking(){
 if(cTok()){
   cFetch('/auth/me').then(function(j){ custApplyUser(j.user); refreshMyBooking(); }).catch(function(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} });
 }
+</script>
+
+
+<script>
+/* Payments — the built-in Stripe checkout (Route B). The Pay bar only
+   appears when the API reports Stripe configured; paying happens on
+   Stripe's hosted page, never with card data in this app. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var configured=false;
+  function tok(){ try{ return localStorage.getItem('tsos_cust_token')||''; }catch(e){ return ''; } }
+  window.tsosPayRender=function(){
+    var bar=document.getElementById('payBar'); if(!bar) return;
+    if(!booking.id){ bar.innerHTML=''; return; }
+    if(booking.payment&&booking.payment.diagnosticPaid){
+      bar.innerHTML='<div style="background:#e5f4ea;border:1px solid #bfe0bf;border-radius:14px;padding:12px 16px;margin-top:12px;font-size:14px;">\u2713 <b>$99 diagnostic paid.</b> It is credited in full toward your repair when you approve it.</div>';
+      return;
+    }
+    if(!configured){ bar.innerHTML=''; return; }
+    bar.innerHTML='<div style="background:#eef4ff;border:1px solid #c9dcff;border-radius:14px;padding:12px 16px;margin-top:12px;font-size:14px;">Lock your slot now: <button class="btn blue small" style="margin-left:8px;" onclick="tsosPayNow()">Pay $99 diagnostic</button><div style="color:#5a6b82;margin-top:6px;">Secure checkout by Stripe. Credited in full toward your repair.</div></div>';
+  };
+  window.tsosPayNow=function(){
+    if(!tok()){ toast('Sign in first so the payment attaches to your booking'); return; }
+    fetch(API+'/payments/diagnostic/checkout',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify({bookingId:booking.id})})
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); })
+      .then(function(j){ location.href=j.data.url; })
+      .catch(function(e){ toast(e.message==='payments_not_configured'?'Online payment is being switched on \u2014 a Service Setter will collect the $99 when they confirm':'Payment could not start: '+e.message); });
+  };
+  fetch(API+'/payments/status').then(function(r){ return r.json(); }).then(function(j){ configured=!!(j.data&&j.data.configured); window.tsosPayRender(); }).catch(function(){});
+  try{
+    var q=new URLSearchParams(location.search);
+    if(q.get('payment')==='success'){ setTimeout(function(){ toast('Thanks! Your payment is confirming \u2014 it will show as paid here within a minute.'); if(window.refreshMyBooking) refreshMyBooking(); },600); }
+    if(q.get('payment')==='cancelled'){ setTimeout(function(){ toast('No payment was made \u2014 your booking is still saved, and a Service Setter can collect the $99 when they confirm.'); },600); }
+  }catch(e){}
+})();
 </script>
 
 <script src="/install.js"></script>
