@@ -417,10 +417,31 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
               <div class="sumrow"><span>Diagnostic due today</span><b>$99.00</b></div>
               <div class="sumrow"><span>Credited toward repair</span><b style="color:var(--green);">−$99.00</b></div>
             </div>
-            <div class="remind" style="margin-top:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><div><b>How the $99 works:</b> it's collected at booking to hold your slot, then credited in full toward the repair when you approve the fix. If you decline the repair, the $99 covers the diagnosis visit. 90-day warranty on parts &amp; labor.</div></div>
+            <div class="remind" style="margin-top:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M12 11v5"/></svg><div><b>How the $99 works:</b> it's collected when our Service Setters confirm your booking — no card is charged in the app — then credited in full toward the repair when you approve the fix. If you decline the repair, the $99 covers the diagnosis visit. 90-day warranty on parts &amp; labor.</div></div>
+            <div class="card" id="custDetails" style="margin-top:12px;">
+              <b style="font-size:15px;">Your details</b>
+              <p class="sub" style="margin:4px 0 10px;" id="custAcctNote">Create your free account to book — it keeps your bookings, appliances and warranty in one place.</p>
+              <label class="fl">Full name</label><input id="cdName" type="text" autocomplete="name" placeholder="Your name" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">Mobile phone</label><input id="cdPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">City</label><select id="cdCity" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"><option value="">Choose your city…</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
+              <label class="fl">ZIP code</label><input id="cdZip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="33311" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">Street address (optional)</label><input id="cdAddr" type="text" autocomplete="street-address" placeholder="123 Main St, Apt 4" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div id="cdNewAcct">
+                <label class="fl">Email</label><input id="cdEmail" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <label class="fl">Create a password (10+ characters)</label><input id="cdPw" type="password" autocomplete="new-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <p class="sub" style="margin:8px 0 0;">Already have an account? <a href="#" onclick="custToggleLogin(event)">Sign in instead</a></p>
+              </div>
+              <div id="cdLogin" style="display:none;">
+                <label class="fl">Email</label><input id="cdEmail2" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <label class="fl">Password</label><input id="cdPw2" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <button class="btn blue" style="margin-top:10px;" onclick="custLoginFromBook()">Sign in</button>
+                <p class="sub" style="margin:8px 0 0;">New here? <a href="#" onclick="custToggleLogin(event)">Create an account</a></p>
+              </div>
+              <p class="sub" id="cdSignedIn" style="display:none; margin:8px 0 0;"></p>
+            </div>
             <div class="btnrow" style="margin-top:16px;">
               <button class="btn ghost" onclick="bookGo(3)">Back</button>
-              <button class="btn primary" onclick="confirmBooking()">Confirm — $99 due</button>
+              <button class="btn primary" id="confirmBtn" onclick="confirmBooking()">Confirm booking</button>
             </div>
           </div>
 
@@ -479,6 +500,21 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <section class="screen" id="scr-more">
           <h2 class="greet">Account</h2>
           <p class="sub">Referrals, reviews, your plan, and app settings.</p>
+
+                    <div class="card" id="acctCard" style="margin-bottom:12px;">
+            <b style="font-size:15px;">My account</b>
+            <div id="acctOut">
+              <p class="sub" style="margin:4px 0 10px;">Sign in to book repairs and track your jobs live.</p>
+              <label class="fl">Email</label><input id="acEmail" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">Password</label><input id="acPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div class="btnrow" style="margin-top:10px;"><button class="btn blue" onclick="custLogin()">Sign in</button></div>
+              <p class="sub" style="margin:8px 0 0;">New here? Start a booking — you create the account on the confirm step.</p>
+            </div>
+            <div id="acctIn" style="display:none;">
+              <p class="sub" style="margin:4px 0 10px;" id="acctWho"></p>
+              <div class="btnrow"><button class="btn blue" onclick="showTab('book')">Book a repair</button><button class="btn ghost" onclick="custLogout()">Sign out</button></div>
+            </div>
+          </div>
 
           <div class="ref-card">
             <span class="pill" style="background:rgba(255,255,255,.16); color:#fff;">REFERRAL CODE</span>
@@ -866,6 +902,139 @@ window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); 
 /* ============ init ============ */
 buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack(); renderOffers();
 </script>
+
+<script>
+/* ================= CUSTOMER APP — LIVE BOOKING =================
+   The booking confirm, photo first-look and job tracking run on the real
+   Service OS API. Confirm creates the customer's account (or uses their
+   sign-in), posts the booking, and shows the REAL reference code — the
+   booking lands straight in the Service Setters queue. */
+var C_API='https://top-speed-service-os.vercel.app/api/v1';
+var cUser=null;
+function cTok(){ try{ return localStorage.getItem('tsos_cust_token')||''; }catch(e){ return ''; } }
+function escC(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function cFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+cTok()},opts.headers||{});
+  return fetch(C_API+path,opts).then(function(r){ if(!r.ok){ return r.json().catch(function(){return {};}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
+}
+function cVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function setCustSession(j){
+  try{ localStorage.setItem('tsos_cust_token',j.token); }catch(e){}
+  custApplyUser(j.user);
+}
+function custApplyUser(user){
+  cUser=user;
+  var cdN=document.getElementById('cdNewAcct'), cdL=document.getElementById('cdLogin'), cdS=document.getElementById('cdSignedIn');
+  if(cdN) cdN.style.display='none';
+  if(cdL) cdL.style.display='none';
+  if(cdS){ cdS.style.display=''; cdS.innerHTML='Booking as <b>'+escC(((user.firstName||'')+' '+(user.lastName||'')).trim()||user.email)+'</b> \u00b7 '+escC(user.email)+' \u2014 this booking saves to your account.'; }
+  var nm=document.getElementById('cdName'); if(nm&&!nm.value) nm.value=(((user.firstName||'')+' '+(user.lastName||'')).trim());
+  var ph=document.getElementById('cdPhone'); if(ph&&!ph.value&&user.phone) ph.value=user.phone;
+  var aO=document.getElementById('acctOut'), aI=document.getElementById('acctIn'), aW=document.getElementById('acctWho');
+  if(aO) aO.style.display='none';
+  if(aI) aI.style.display='';
+  if(aW) aW.innerHTML='Signed in as <b>'+escC(((user.firstName||'')+' '+(user.lastName||'')).trim()||user.email)+'</b> \u00b7 '+escC(user.email);
+}
+function custToggleLogin(e){
+  if(e) e.preventDefault();
+  var n=document.getElementById('cdNewAcct'), l=document.getElementById('cdLogin');
+  var showLogin=l.style.display==='none';
+  l.style.display=showLogin?'':'none';
+  n.style.display=showLogin?'none':'';
+}
+function doCustLogin(email,pw){
+  return fetch(C_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){ setCustSession(j); toast('Welcome back \u2014 signed in'); refreshMyBooking(); });
+}
+function custLogin(){ var em=cVal('acEmail'), pw=cVal('acPw'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
+function custLoginFromBook(){ var em=cVal('cdEmail2'), pw=cVal('cdPw2'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
+function custLogout(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} location.reload(); }
+function stageForBooking(b){
+  if(!b) return 1;
+  if(b.status==='COMPLETED') return 5;
+  if(b.status==='CONFIRMED') return 2;
+  if(b.status==='MATCH_PENDING_APPROVAL') return 1;
+  return (b.appointment&&b.appointment.status==='SET')?1:0;
+}
+function refreshMyBooking(){
+  if(!cTok()) return;
+  cFetch('/bookings').then(function(j){
+    var list=(j.data||[]).slice().sort(function(a,b){ return (b.createdAt||'').localeCompare(a.createdAt||''); });
+    if(!list.length) return;
+    var latest=list[0];
+    booking.ref=latest.referenceCode||booking.ref;
+    booking.appliance=latest.appliance||booking.appliance;
+    stageIdx=stageForBooking(latest);
+    var btn=document.getElementById('advanceBtn');
+    if(btn){ btn.disabled=false; btn.textContent='\u21bb Refresh status'; btn.onclick=function(){ refreshMyBooking(); renderTrack(); toast('Status updated'); }; }
+    renderActiveJob();
+    if(currentTab==='track') renderTrack();
+  }).catch(function(){});
+}
+/* --- real photo first look (overrides the preview's canned note) --- */
+function showPhoto(src){
+  booking.photo=true;
+  document.getElementById('photoBox').style.display='none';
+  var pv=document.getElementById('photoPreview'); pv.style.display='block';
+  var img=document.getElementById('photoImg'); img.src=src;
+  var note=document.getElementById('aiNote'); note.style.display='block';
+  if(src.indexOf('data:image/svg')===0){ note.innerHTML='<b>Speedy AI first look:</b> This is the sample photo \u2014 attach a real photo of your appliance and Speedy will read it live.'; return; }
+  note.innerHTML='<b>Speedy AI first look:</b> Photo received \u2014 Speedy is taking a look\u2026';
+  img.onload=function(){
+    try{
+      var mx=1280,w=img.naturalWidth,h=img.naturalHeight,sc=Math.min(1,mx/Math.max(w,h));
+      var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var dataUrl=cv.toDataURL('image/jpeg',0.82);
+      fetch(C_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:dataUrl,note:(booking.appliance||'Appliance')+': '+(booking.issue||document.getElementById('issueText').value.trim()||'customer photo')})})
+        .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+        .then(function(j){ var rep=(j.data&&j.data.reply)||''; if(!rep) throw new Error('empty'); note.innerHTML='<b>Speedy AI first look:</b> '+escC(rep.slice(0,320))+(rep.length>320?'\u2026':''); })
+        .catch(function(){ note.innerHTML='<b>Speedy AI first look:</b> Photo attached. Speedy could not read this one \u2014 your setter will review it, and the tech confirms the diagnosis in person.'; });
+    }catch(e){ note.innerHTML='<b>Speedy AI first look:</b> Photo attached \u2014 a setter will review it with your booking.'; }
+  };
+}
+/* --- real booking confirm (overrides the preview's random code) --- */
+function confirmBooking(){
+  var name=cVal('cdName'), phone=cVal('cdPhone'), city=cVal('cdCity'), zip=cVal('cdZip'), addr=cVal('cdAddr');
+  if(name.length<2) return toast('Please add your full name');
+  if(phone.replace(/\D/g,'').length<10) return toast('Please add a valid mobile number');
+  if(!city) return toast('Please choose your city');
+  if(!/^\d{5}$/.test(zip)) return toast('Please add your 5-digit ZIP');
+  var issue=booking.issue||document.getElementById('issueText').value.trim()||'General diagnosis';
+  var btn=document.getElementById('confirmBtn');
+  function setBtn(t,en){ if(btn){ btn.textContent=t; btn.disabled=!en; } }
+  setBtn('Booking\u2026',false);
+  var payload={customer:{name:name,phone:phone,address:addr||undefined},city:city,zip:zip,appliance:booking.appliance||'Refrigerator',issue:issue,preferredWindow:((booking.day||'')+' \u00b7 '+(booking.window||'')).trim()||undefined};
+  function doBook(){
+    payload.customer.email=cUser?cUser.email:payload.customer.email;
+    cFetch('/bookings',{method:'POST',body:JSON.stringify(payload)})
+      .then(function(j){
+        booking.ref=j.data.referenceCode;
+        document.getElementById('refCode').textContent=booking.ref;
+        stageIdx=stageForBooking(j.data);
+        FEED.push({time:'Now',text:'<b>Appliance Pro:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
+        setBtn('Confirm booking',true);
+        bookGo(5); renderActiveJob();
+      })
+      .catch(function(e){ setBtn('Confirm booking',true); toast('Booking failed: '+e.message); });
+  }
+  if(cUser){ doBook(); return; }
+  var email=cVal('cdEmail'), pw=cVal('cdPw');
+  if(!/.+@.+\..+/.test(email)){ setBtn('Confirm booking',true); return toast('Please add your email to create your account'); }
+  if(pw.length<10){ setBtn('Confirm booking',true); return toast('Password needs 10+ characters'); }
+  var parts=name.split(' ');
+  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':(j.error||'Could not create your account')); return j; }); })
+    .then(function(j){ setCustSession(j); payload.customer.email=email; doBook(); })
+    .catch(function(e){ setBtn('Confirm booking',true); toast(e.message); });
+}
+/* Auto-resume a customer session */
+if(cTok()){
+  cFetch('/auth/me').then(function(j){ custApplyUser(j.user); refreshMyBooking(); }).catch(function(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} });
+}
+</script>
+
 <script src="/install.js"></script>
     <script>
       if ('serviceWorker' in navigator) {
