@@ -988,7 +988,7 @@ footer a{color:#D7E6FF}
     <p style="margin-top:30px;font-size:13.5px;color:#7E96C4">topspeedserviceos.com — the live Top Speed Appliance platform, running on the Top Speed Service OS. Every booking is reviewed by a Service Setter and confirmed by phone at 954-931-7997.</p>
   </div>
 
-<div class="footer-ad" style="background:linear-gradient(120deg,#071a3d,#0a265c 60%,#123a7d);border-top:4px solid #e01a22;margin-top:36px;">
+<div class="footer-ad" id="footerAdSlot" style="background:linear-gradient(120deg,#071a3d,#0a265c 60%,#123a7d);border-top:4px solid #e01a22;margin-top:36px;transition:opacity .45s ease;">
   <div style="max-width:1180px;margin:0 auto;padding:26px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;">
     <img src="/graphic-gettopspeed.jpg" alt="Get Top Speed" style="width:104px;height:104px;object-fit:cover;border-radius:14px;flex:0 0 auto;" onerror="this.style.display='none'">
     <div style="flex:1;min-width:240px;">
@@ -1001,6 +1001,7 @@ footer a{color:#D7E6FF}
     </div>
   </div>
 </div>
+<div style="text-align:center;padding:10px 12px 4px;font-size:12.5px;color:#8aa3c7;">Your business in this spot? <a href="/advertise" style="color:#cfe0f5;font-weight:700;text-decoration:underline;">Advertise on Top Speed</a></div>
 </footer>
 
 <!-- STICKY BAR -->
@@ -1405,5 +1406,55 @@ function hubEmailSend(btn){
 .hero{position:relative;isolation:isolate}
 .hero::before{content:'';position:absolute;inset:0;z-index:-1;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='48'%3E%3Crect width='96' height='48' fill='%23ffffff'/%3E%3Crect x='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' width='24' height='24' fill='%230a0a0a'/%3E%3Crect y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='48' y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' y='24' width='24' height='24' fill='%23e01a22'/%3E%3C/svg%3E");background-size:144px 72px;background-repeat:repeat;opacity:.10;-webkit-mask-image:linear-gradient(100deg,transparent 42%,#000 92%);mask-image:linear-gradient(100deg,transparent 42%,#000 92%)}
 </style>
+
+<script>
+/* Advertiser banner system — streaming rotation for the footer slot.
+   Direct-sold creatives come from the Service OS and rotate here;
+   impressions and clicks are counted per creative. Google AdSense is
+   the backfill: set ADSENSE_PUB to the ca-pub ID once the account is
+   approved and unsold slots will fill with AdSense instead. */
+(function(){
+  var ADSENSE_PUB='';
+  var slot=document.getElementById('footerAdSlot');
+  if(!slot) return;
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  function ping(id,type){
+    try{ fetch(API+'/marketing/banners/'+id+'/event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:type}),keepalive:true}); }catch(e){}
+  }
+  function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+  function render(b){
+    slot.innerHTML='<div style="max-width:1180px;margin:0 auto;padding:26px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;">'
+      +(b.imageUrl?'<img src="'+esc(b.imageUrl)+'" alt="" style="width:104px;height:104px;object-fit:cover;border-radius:14px;flex:0 0 auto;" onerror="this.style.display='none'">':'')
+      +'<div style="flex:1;min-width:240px;"><div class="michroma" style="color:#fff;font-size:clamp(20px,3.4vw,30px);letter-spacing:.02em;">'+esc(b.headline)+'</div>'
+      +(b.copy?'<p style="color:#b9cdf0;margin-top:6px;font-size:15.5px;line-height:1.5;">'+esc(b.copy)+'</p>':'')
+      +'</div>'
+      +(b.ctaText?'<div><a id="footerAdCta" href="'+esc(b.ctaUrl)+'" style="background:#e01a22;color:#fff;padding:13px 22px;border-radius:9px;font-weight:800;display:inline-block;">'+esc(b.ctaText)+'</a></div>':'')
+      +'</div>';
+    ping(b.id,'impression');
+    var cta=document.getElementById('footerAdCta');
+    if(cta) cta.addEventListener('click',function(){ ping(b.id,'click'); });
+  }
+  function adsenseFallback(){
+    if(!ADSENSE_PUB) return;
+    var sc=document.createElement('script');
+    sc.async=true; sc.crossOrigin='anonymous';
+    sc.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client='+ADSENSE_PUB;
+    document.head.appendChild(sc);
+    slot.innerHTML='<div style="max-width:1180px;margin:0 auto;padding:18px 20px;"><ins class="adsbygoogle" style="display:block" data-ad-client="'+ADSENSE_PUB+'" data-ad-slot="footer" data-ad-format="auto" data-full-width-responsive="true"></ins></div>';
+    try{ (window.adsbygoogle=window.adsbygoogle||[]).push({}); }catch(e){}
+  }
+  fetch(API+'/marketing/banners?placement=FOOTER').then(function(r){return r.json();}).then(function(j){
+    var list=(j&&j.data)||[];
+    if(!list.length){ adsenseFallback(); return; }
+    var i=0; render(list[0]);
+    if(list.length>1){
+      setInterval(function(){
+        slot.style.opacity='0';
+        setTimeout(function(){ i=(i+1)%list.length; render(list[i]); slot.style.opacity='1'; },460);
+      },8000);
+    }
+  }).catch(function(){ adsenseFallback(); });
+})();
+</script>
 </body>
 </html>
