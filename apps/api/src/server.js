@@ -19,6 +19,7 @@ import paymentsRouter from './routes/payments.js';
 import marketingRouter from './routes/marketing.js';
 import appRouter from './routes/app.js';
 import trackingRouter from './routes/tracking.js';
+import adminRouter from './routes/admin.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
@@ -126,6 +127,7 @@ app.use('/api/v1', crmRouter);
 app.use('/api/v1', bannersRouter);
 app.use('/api/v1', appRouter);
 app.use('/api/v1', trackingRouter);
+app.use('/api/v1', adminRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
