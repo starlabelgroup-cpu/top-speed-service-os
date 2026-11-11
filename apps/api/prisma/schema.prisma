@@ -384,3 +384,15 @@ model Connection {
   reference String   @unique
   createdAt DateTime @default(now())
 }
+
+model CustomerAppliance {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  type      String
+  brand     String?
+  model     String?
+  serial    String?
+  year      Int?
+  notes     String?
+  createdAt DateTime @default(now())
+}

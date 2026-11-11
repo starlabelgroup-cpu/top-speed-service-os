@@ -44,6 +44,8 @@ export const store = {
   notificationOutbox: [],
   // Public web intake records (forms + Speedy-assisted flows), hydrated from the Connection table.
   connections: [],
+  // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
+  appliances: new Map(),
   // Single operational event feed connecting every surface.
   events: [],
   providers: [

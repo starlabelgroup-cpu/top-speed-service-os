@@ -4,6 +4,7 @@ import { hydrateFlywheel } from './flywheelRepo.js';
 import { hydrateVideoRequests } from './videoRepo.js';
 import { hydratePayments } from './paymentsRepo.js';
 import { hydrateConnections } from './connectionsRepo.js';
+import { hydrateAppliances } from './appliancesRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -198,6 +199,7 @@ export async function hydrateStore() {
   const video = await hydrateVideoRequests();
   await hydratePayments();
   await hydrateConnections();
+  await hydrateAppliances();
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };
 }
