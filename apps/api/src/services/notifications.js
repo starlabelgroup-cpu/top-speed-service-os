@@ -16,6 +16,7 @@ import { persistNotification } from '../db/flywheelRepo.js';
 export const NOTIFICATION_TEMPLATES = {
   BOOKING_CONFIRMATION: 'BOOKING_CONFIRMATION',
   TECH_EN_ROUTE: 'TECH_EN_ROUTE',
+  TRACKING_UPDATE: 'TRACKING_UPDATE',
   DISPATCH_MATCHED: 'DISPATCH_MATCHED',
   DISPATCH_APPROVED: 'DISPATCH_APPROVED',
   REVIEW_REQUEST: 'REVIEW_REQUEST',
@@ -153,6 +154,23 @@ export function notifyTechEnRoute(booking, source = null) {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
         message: 'Top Speed Appliance: your technician is on the way. You can follow the visit status from your booking updates.',
+      },
+    }),
+  );
+}
+
+/** A Track My Tech status update, queued from the staff tracking console. */
+export function notifyTrackingUpdate(booking, stageLabel, source = null) {
+  return customerChannels(booking).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.TRACKING_UPDATE,
+      to,
+      source,
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        message: `Top Speed Appliance: update on your service visit (${booking.referenceCode || ''}) — current status: ${stageLabel}. Track your technician any time at topspeedserviceos.com/track.`,
       },
     }),
   );

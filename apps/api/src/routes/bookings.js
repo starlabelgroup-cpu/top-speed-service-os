@@ -7,6 +7,7 @@ import { persistAssignment, persistAssignmentsForBooking, persistBooking, persis
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
+import { computeTracking } from '../services/tracking.js';
 import {
   notifyBookingConfirmation,
   notifyDispatchApproved,
@@ -136,7 +137,6 @@ router.get('/bookings', authenticate, requireCompany, (req, res) => {
  * names, no addresses, no issue details. The phone must match the booking,
  * so a reference alone reveals nothing.
  */
-const STAGE_LABELS = ['Request received — a Service Setter is reviewing it', 'Appointment confirmed', 'Technician assigned', 'Job completed'];
 router.get('/bookings/track/:reference', (req, res) => {
   const reference = String(req.params.reference || '').trim().toUpperCase();
   const phoneDigits = String(req.query.phone || '').replace(/\D/g, '').slice(-10);
@@ -151,56 +151,9 @@ router.get('/bookings/track/:reference', (req, res) => {
   if (!bookingPhone || bookingPhone !== phoneDigits) {
     return res.status(403).json({ error: 'That phone number does not match this booking' });
   }
-  const assignments = [...store.dispatchAssignments.values()].filter((a) => a.bookingId === booking.id);
-  const activeAssignment = assignments.find((a) => a.status === 'APPROVED' || a.status === 'ACCEPTED');
-  const hasTech = Boolean(activeAssignment);
-  let stage = 0;
-  if (booking.status === 'COMPLETED') stage = 3;
-  else if (hasTech) stage = 2;
-  else if (booking.status === 'CONFIRMED' || booking.status === 'MATCH_PENDING_APPROVAL') stage = 1;
-  // Track My Tech — the full 8-stage customer timeline (Ramone's spec,
-  // 2026-11-10). Stages 3-6 advance from technician job events recorded
-  // in the Tech App; nothing here is estimated or invented. The ETA is
-  // the technician's own estimate, set when they tap En route.
-  const STAGE8_LABELS = ['Request received', 'Appointment confirmed', 'Technician assigned', 'Technician en route', 'Technician arrived', 'Diagnosis in progress', 'Estimate approved', 'Repair completed'];
-  const history = Array.isArray(booking.history) ? booking.history : [];
-  const hasEvent = (type) => history.some((e) => e.type === type);
-  let stageIndex = 0;
-  if (booking.status === 'CONFIRMED' || booking.status === 'MATCH_PENDING_APPROVAL') stageIndex = Math.max(stageIndex, 1);
-  if (hasTech) stageIndex = Math.max(stageIndex, 2);
-  if (hasEvent('TECH_EN_ROUTE')) stageIndex = Math.max(stageIndex, 3);
-  if (hasEvent('TECH_ARRIVED')) stageIndex = Math.max(stageIndex, 4);
-  if (hasEvent('DIAGNOSIS_STARTED')) stageIndex = Math.max(stageIndex, 5);
-  if (hasEvent('ESTIMATE_APPROVED')) stageIndex = Math.max(stageIndex, 6);
-  if (booking.status === 'COMPLETED') stageIndex = 7;
-  let etaMinutes = null;
-  if (stageIndex === 3) {
-    const enRoute = [...history].reverse().find((e) => e.type === 'TECH_EN_ROUTE');
-    etaMinutes = enRoute?.etaMinutes ?? activeAssignment?.etaMinutes ?? null;
-  }
-  let technician = { assigned: false, name: null };
-  if (activeAssignment) {
-    const provider = store.providers?.get?.(activeAssignment.providerId);
-    technician = { assigned: true, name: provider?.businessName || 'Your Top Speed technician' };
-  }
-  return res.json({
-    data: {
-      reference: booking.referenceCode,
-      status: booking.status,
-      stage,
-      stageLabel: STAGE_LABELS[stage],
-      stages: STAGE_LABELS,
-      stageIndex,
-      stageLabels: STAGE8_LABELS,
-      stageLabel8: STAGE8_LABELS[stageIndex],
-      technician,
-      etaMinutes,
-      appliance: booking.appliance,
-      city: booking.city,
-      preferredWindow: booking.preferredWindow ?? null,
-      payment: paymentSummary(booking.id),
-    },
-  });
+  // Stage math lives in services/tracking.js (shared with the signed-in
+  // customer view and the staff console, so every surface agrees).
+  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id) } });
 });
 
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {

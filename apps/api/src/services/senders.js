@@ -23,6 +23,7 @@ const SUBJECTS = {
   BOOKING_CONFIRMATION: 'Your Top Speed Appliance booking is confirmed',
   APPOINTMENT_REMINDER: 'Reminder: your Top Speed appointment is tomorrow',
   TECH_EN_ROUTE: 'Your Top Speed technician is on the way',
+  TRACKING_UPDATE: 'An update on your Top Speed service visit',
   DISPATCH_MATCHED: 'We are assigning your Top Speed technician',
   DISPATCH_APPROVED: 'Your Top Speed technician is assigned',
   REVIEW_REQUEST: 'How did we do? Review your Top Speed service',
