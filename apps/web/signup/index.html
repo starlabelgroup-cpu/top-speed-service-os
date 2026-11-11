@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Top Speed Account — Appliance Connect · Powered by Service OS</title>
+<meta name="description" content="One Top Speed account for everything: register your appliances, request repairs, track appointments, and keep your full service history. Homeowners, businesses, and property managers.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#E8322E;--ink:#101828;--mut:#667085;--line:#d7dee9}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1200px 700px at 50% -10%,#12294f 0%,#0a1628 55%,#070f1d 100%);color:#fff;min-height:100vh}
+  .col{max-width:430px;margin:0 auto;padding:30px 18px 44px}
+  .shield{display:flex;justify-content:center}
+  h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:31px;line-height:1.2;text-align:center;margin:14px 0 8px}
+  .sub{text-align:center;color:#aebfe0;font-size:15px;font-weight:500}
+  .card{background:#fff;color:var(--ink);border-radius:22px;padding:26px 24px;margin-top:24px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  .fldLabel{font-size:15px;font-weight:600;color:#344054;display:block;margin:20px 0 8px}
+  .types{display:grid;gap:6px;margin-top:4px}
+  .types label{display:flex;gap:13px;align-items:flex-start;padding:11px 12px;border-radius:14px;cursor:pointer;font-size:16.5px;font-weight:500;color:var(--ink)}
+  .types label:hover{background:#f6f9fd}
+  .types input{appearance:none;width:26px;height:26px;border:2px solid #c3cedd;border-radius:50%;flex:none;margin-top:1px;position:relative;cursor:pointer;background:#fff}
+  .types input:checked{border-color:#101828;background:#101828}
+  .types input:checked::after{content:'';position:absolute;inset:7px;background:#fff;border-radius:50%}
+  input[type=text],input[type=email],input[type=tel],input[type=password]{width:100%;padding:15px 20px;border:1.5px solid var(--line);border-radius:999px;font:inherit;font-size:15.5px;background:#fff;color:var(--ink)}
+  input::placeholder{color:#98a2b3}
+  input:focus{outline:2px solid #1280FF;border-color:#1280FF}
+  .hint{font-size:12.5px;color:var(--mut);margin-top:6px}
+  .benefits{background:#f2f6fb;border-radius:16px;padding:18px;margin-top:24px}
+  .benefits b{font-size:16.5px}
+  .benefits p{color:#475467;font-size:14.5px;line-height:1.55;margin-top:6px}
+  .create{width:100%;margin-top:22px;padding:16px;border:none;border-radius:999px;background:var(--red);color:#fff;font:inherit;font-weight:700;font-size:16.5px;cursor:pointer}
+  .create:disabled{opacity:.55;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:16px}
+  .alt{text-align:center;color:#aebfe0;font-size:14.5px;margin-top:20px}
+  .alt a{color:#fff;font-weight:700}
+  .fine{color:#7e93b5;font-size:12.5px;text-align:center;margin-top:14px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="shield">
+    <svg width="46" height="46" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3l7 2.5V11c0 4.6-3 7.7-7 9.5C8 18.7 5 15.6 5 11V5.5L12 3z" stroke="#5ea2ff" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 11.6l2.1 2.1L15.4 9.4" stroke="#5ea2ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+  <h1>Create Your Top Speed Account</h1>
+  <div class="sub">Appliance Connect • Powered by Service OS</div>
+
+  <form class="card" id="signupForm" novalidate>
+    <span class="fldLabel" style="margin-top:0">Account type</span>
+    <div class="types">
+      <label><input type="radio" name="atype" value="homeowner" checked><span>Homeowner / Residential Customer</span></label>
+      <label><input type="radio" name="atype" value="business"><span>Business / Commercial Customer</span></label>
+      <label><input type="radio" name="atype" value="pm"><span>Property Manager</span></label>
+    </div>
+
+    <label class="fldLabel" for="fName">Full Name</label>
+    <input type="text" id="fName" autocomplete="name" placeholder="Your full name">
+    <label class="fldLabel" for="fEmail">Email Address</label>
+    <input type="email" id="fEmail" autocomplete="email" placeholder="name@example.com">
+    <label class="fldLabel" for="fPhone">Phone Number</label>
+    <input type="tel" id="fPhone" autocomplete="tel" placeholder="(954) 000-0000">
+    <label class="fldLabel" for="fPass">Password</label>
+    <input type="password" id="fPass" autocomplete="new-password" placeholder="Create a secure password">
+    <p class="hint">At least 10 characters. This one account signs you in everywhere — booking, tracking, your garage, and the apps.</p>
+
+    <div class="benefits">
+      <b>✦ Your account benefits</b>
+      <p>Register your appliances, request repairs, track appointments, access your service history, and receive maintenance reminders.</p>
+    </div>
+
+    <div class="err" id="err"></div>
+    <button class="create" id="createBtn" type="submit">Create Account</button>
+    <p class="hint" id="googleNote" style="text-align:center;margin-top:12px"></p>
+  </form>
+
+  <p class="alt">Already have an account? <a href="/garage">Sign in</a></p>
+  <p class="fine">One Top Speed account is your identity across the Service OS — the same sign-in works for booking, Track My Tech, My Appliances, and both apps.</p>
+</div>
+
+<script>
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var $=function(id){return document.getElementById(id)};
+  var DEST={homeowner:'/garage',business:'/appliance-pro',pm:'/connect-pro-app'};
+
+  fetch(API+'/auth/google/status').then(function(r){return r.json()}).then(function(j){
+    if(!j.configured) $('googleNote').textContent='Google sign-in is being connected — email sign-up works now.';
+  }).catch(function(){});
+
+  $('signupForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var err=$('err'); err.style.display='none';
+    function fail(m){ err.textContent=m; err.style.display='block'; }
+    var name=$('fName').value.trim();
+    var email=$('fEmail').value.trim();
+    var phone=$('fPhone').value.trim();
+    var pass=$('fPass').value;
+    var type=document.querySelector('input[name="atype"]:checked').value;
+    if(name.length<2) return fail('Please add your full name.');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Please add a valid email address — it is your sign-in.');
+    if(phone.replace(/\D/g,'').length<7) return fail('Please add your phone number — booking confirmations and updates go there.');
+    if(pass.length<10) return fail('Password needs at least 10 characters.');
+    var parts=name.split(/\s+/);
+    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER'};
+    if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
+    var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
+    fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(!x.ok||!x.j.token){
+        var m=(x.j&&x.j.error)||'Sign-up did not go through.';
+        if(/exist|already|registered/i.test(m)) m='That email already has a Top Speed account — use Sign in below instead.';
+        throw new Error(m);
+      }
+      localStorage.setItem('tsos_token',x.j.token);
+      localStorage.setItem('tsos_account_type',type);
+      location.href=DEST[type];
+    })
+    .catch(function(ex){ fail(ex.message); })
+    .finally(function(){ btn.disabled=false; btn.textContent='Create Account'; });
+  });
+})();
+</script>
+</body>
+</html>
