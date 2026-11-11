@@ -128,6 +128,9 @@ const guestBookingSchema = z.object({
   appliance: z.string().trim().min(2),
   issue: z.string().trim().min(3),
   preferredWindow: z.string().trim().optional(),
+  // Which coordinated booking surface created this: the Speedy chat or
+  // the five-step Smart Booking form. Attribution only — same pipeline.
+  source: z.enum(['SPEEDY_CHAT', 'WEB_FORM']).optional(),
 });
 
 router.post('/speedy/book', async (req, res) => {
@@ -135,7 +138,7 @@ router.post('/speedy/book', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
   }
-  const { customer, city, zip, appliance, issue, preferredWindow } = parsed.data;
+  const { customer, city, zip, appliance, issue, preferredWindow, source } = parsed.data;
   const canonicalCity = SERVICE_CITIES.find((c) => c.toLowerCase() === city.toLowerCase());
   if (!canonicalCity) {
     return res.status(422).json({ error: 'City is outside the current service area', serviceCities: SERVICE_CITIES });
@@ -160,7 +163,7 @@ router.post('/speedy/book', async (req, res) => {
     customerId: customerRecord.id,
     customer: customerRecord,
     referenceCode: createReferenceCode(),
-    source: 'SPEEDY_CHAT',
+    source: source || 'SPEEDY_CHAT',
     city: canonicalCity,
     zip,
     appliance,
@@ -176,13 +179,13 @@ router.post('/speedy/book', async (req, res) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  addBookingEvent(booking, 'BOOKING_CREATED', 'speedy-chat', { diagnosticFee: 99, feeStatus: booking.feeStatus });
+  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'WEB_FORM' ? 'web-form' : 'speedy-chat', { diagnosticFee: 99, feeStatus: booking.feeStatus });
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
   appendEvent('BOOKING_CREATED', {
     source: booking.source,
-    actor: 'speedy-chat',
+    actor: booking.source === 'WEB_FORM' ? 'web-form' : 'speedy-chat',
     entityType: 'BOOKING',
     entityId: booking.id,
     referenceCode: booking.referenceCode,
