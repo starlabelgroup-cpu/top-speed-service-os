@@ -127,6 +127,7 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
 <button class="btn navy" onclick="loadLive()">\u21bb Refresh live data</button>
+<button class="btn ghost" onclick="cleanupTestData()">🧹 Clear test data</button>
 <button class="btn ghost" onclick="staffSignOut()">Sign out</button>
 </div>
 </section>
@@ -320,6 +321,16 @@ function staffSignIn(){
       loadLive();
     })
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
+}
+function cleanupTestData(){
+  apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:true})}).then(function(j){
+    var r=j.removed||{}; var parts=Object.keys(r).filter(function(k){return r[k]>0}).map(function(k){return r[k]+' '+k}).join(', ')||'nothing found';
+    if(!confirm('Remove ALL test/drill data from the live system?\n\nWill remove: '+parts+'\n\nKept untouched: Aldo Alay TS-BRWT9Y (the real booking) and every real record.\n\nThis cannot be undone.')) return;
+    apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:false})}).then(function(x){
+      toast('Test data cleared. '+(x.remainingBookings!=null?x.remainingBookings:'')+' booking(s) remain — Aldo kept: '+((x.kept&&x.kept.present)?'yes':'CHECK NOW'));
+      loadLive();
+    }).catch(function(e){ toast('Cleanup failed: '+e.message); });
+  }).catch(function(e){ toast('Cleanup check failed: '+e.message+' (owner sign-in required)'); });
 }
 function staffSignOut(){ localStorage.removeItem('tsos_token'); location.reload(); }
 function enterLive(user){
