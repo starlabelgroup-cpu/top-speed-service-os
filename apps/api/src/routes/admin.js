@@ -12,7 +12,7 @@ import { db, DATABASE_ENABLED } from '../db/client.js';
  *
  * POST /admin/cleanup-test-data { dryRun: true }  → counts, deletes nothing
  * POST /admin/cleanup-test-data { dryRun: false } → deletes, returns counts
- * Executed for the launch reset on 2026-11-11 (drills removed, Aldo kept).
+ * Executed for the launch reset on 2026-11-11 (drills + video drills removed, Aldo kept).
  */
 const router = Router();
 const ownerOnly = [authenticate, requireCompany, requireRole('COMPANY_OWNER', 'PLATFORM_ADMIN')];
