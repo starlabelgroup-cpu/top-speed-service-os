@@ -344,3 +344,37 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   });
   return res.status(201).json({ data: { saved: true, referenceCode: booking.referenceCode, event: type } });
 });
+
+const locationSchema = z.object({
+  lat: z.number().min(-90).max(90),
+  lng: z.number().min(-180).max(180),
+  accuracy: z.number().min(0).max(100000).optional(),
+});
+
+/**
+ * Track My Tech live GPS (2026-11-11): the technician's device reports
+ * its position for an active assignment. Only the latest fix is kept on
+ * the assignment; customers see it solely while the job is en route,
+ * via services/tracking.js. A position is never generated server-side.
+ */
+router.post('/provider/assignments/:id/location', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment || assignment.providerId !== provider.id) {
+    return res.status(404).json({ error: 'Assignment not found' });
+  }
+  if (!['APPROVED', 'ACCEPTED'].includes(assignment.status)) {
+    return res.status(409).json({ error: 'Assignment is not active' });
+  }
+  const parsed = locationSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid location report', details: parsed.error.flatten() });
+  }
+  assignment.lastLat = parsed.data.lat;
+  assignment.lastLng = parsed.data.lng;
+  assignment.lastLocationAt = new Date().toISOString();
+  assignment.locationAccuracy = parsed.data.accuracy ?? null;
+  await persistAssignment(assignment);
+  return res.status(201).json({ data: { saved: true, updatedAt: assignment.lastLocationAt } });
+});

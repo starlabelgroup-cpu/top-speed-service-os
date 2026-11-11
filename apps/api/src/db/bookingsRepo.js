@@ -6,6 +6,7 @@ import { hydratePayments } from './paymentsRepo.js';
 import { hydrateConnections } from './connectionsRepo.js';
 import { hydrateAppliances } from './appliancesRepo.js';
 import { hydrateBanners } from './bannersRepo.js';
+import { hydrateTrackingTokens } from './trackingRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -137,6 +138,9 @@ function assignmentToRow(assignment) {
     matchScore: assignment.matchScore ?? null,
     approvedByName: assignment.approvedBy ?? null,
     approvedAt: assignment.approvedAt ? new Date(assignment.approvedAt) : null,
+    lastLat: assignment.lastLat ?? null,
+    lastLng: assignment.lastLng ?? null,
+    lastLocationAt: assignment.lastLocationAt ? new Date(assignment.lastLocationAt) : null,
   };
 }
 
@@ -154,6 +158,9 @@ function assignmentFromRow(row) {
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
     approvedBy: row.approvedByName ?? null,
     approvedAt: row.approvedAt?.toISOString?.() ?? null,
+    lastLat: row.lastLat ?? undefined,
+    lastLng: row.lastLng ?? undefined,
+    lastLocationAt: row.lastLocationAt?.toISOString?.() ?? null,
   };
 }
 
@@ -202,6 +209,7 @@ export async function hydrateStore() {
   await hydrateConnections();
   await hydrateAppliances();
   await hydrateBanners();
+  await hydrateTrackingTokens();
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };
 }

@@ -16,6 +16,8 @@ export const store = {
   customers: new Map(),
   bookings: new Map(),
   dispatchAssignments: new Map(),
+  // Track My Tech secure tracking links, keyed by token SHA-256 hash.
+  trackingTokens: new Map(),
   // Connection layer: records that arrive through the universal intake
   // (provider applications and property-manager leads are not bookings).
   providerApplications: new Map(),

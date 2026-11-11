@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { addBookingEvent, appendEvent, createId, store } from '../data/store.js';
 import { persistAssignment, persistAssignmentsForBooking, persistBooking } from '../db/bookingsRepo.js';
@@ -7,6 +8,8 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { activeAssignmentFor, computeTracking, providerById } from '../services/tracking.js';
 import { notifyDispatchApproved, notifyTrackingUpdate } from '../services/notifications.js';
+import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
+import { paymentSummary } from '../db/paymentsRepo.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
 
 /**
@@ -260,6 +263,62 @@ router.post('/tracking/console/:reference/notify', ...staffOnly, async (req, res
   const tracking = computeTracking(booking);
   const queued = notifyTrackingUpdate(booking, tracking.stageLabel8, 'TRACKING_CONSOLE');
   return res.status(201).json({ data: { queued: queued.length, stageLabel: tracking.stageLabel8 } });
+});
+
+/**
+ * Secure per-job tracking links (2026-11-11, pattern ported from the
+ * tracking starter Ramone supplied): staff issue a link whose raw token
+ * exists only in the customer's copy — the database stores its SHA-256
+ * hash. Issuing a new link revokes the booking's previous links; links
+ * expire after 7 days, and 24 hours after the job completes.
+ */
+router.post('/tracking/console/:reference/tracking-link', ...staffOnly, async (req, res) => {
+  const booking = findBookingByReference(req.params.reference);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const raw = randomBytes(24).toString('base64url');
+  const tokenHash = createHash('sha256').update(raw).digest('hex');
+  await revokeTrackingTokensForBooking(booking.id);
+  const record = {
+    id: createId(),
+    tokenHash,
+    bookingId: booking.id,
+    issuedBy: req.user.email,
+    expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
+    revokedAt: null,
+    createdAt: new Date().toISOString(),
+  };
+  await persistTrackingToken(record);
+  appendEvent('TRACKING_LINK_ISSUED', {
+    source: 'TRACK_CONSOLE',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { expiresAt: record.expiresAt },
+  });
+  return res.status(201).json({ data: { url: `/track?t=${raw}`, expiresAt: record.expiresAt } });
+});
+
+/** Public tracking via a secure per-job token — no phone number needed. */
+router.get('/tracking/by-token/:token', (req, res) => {
+  const tokenHash = createHash('sha256').update(String(req.params.token || '')).digest('hex');
+  const record = store.trackingTokens.get(tokenHash);
+  if (!record || record.revokedAt) {
+    return res.status(404).json({ error: 'Tracking link not found' });
+  }
+  if (new Date(record.expiresAt).getTime() < Date.now()) {
+    return res.status(410).json({ error: 'This tracking link has expired' });
+  }
+  const booking = store.bookings.get(record.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (
+    booking.status === 'COMPLETED' &&
+    booking.completedAt &&
+    Date.now() - new Date(booking.completedAt).getTime() > 24 * 3600 * 1000
+  ) {
+    return res.status(410).json({ error: 'This tracking link has expired' });
+  }
+  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id) } });
 });
 
 export default router;

@@ -178,6 +178,7 @@ model ServiceRequest {
   dispatchAssignments DispatchAssignment[]
   invoices            Invoice[]
   payments            Payment[]
+  trackingTokens      TrackingToken[]
 
   @@index([companyId, status])
   @@index([companyId, zip])
@@ -215,6 +216,11 @@ model DispatchAssignment {
   approvedById    String?
   approvedByName  String?
   approvedAt      DateTime?
+  // Track My Tech live GPS: the technician device's latest reported
+  // position for this assignment (only ever set by a real device report).
+  lastLat         Float?
+  lastLng         Float?
+  lastLocationAt  DateTime?
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 
@@ -411,4 +417,22 @@ model Banner {
   clicks         Int      @default(0)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+// Secure per-job customer tracking links (Track My Tech, 2026-11-11):
+// only the SHA-256 hash of the token is stored; the raw token exists
+// solely in the link given to the verified customer. Links expire and
+// issuing a new link revokes the previous ones for that booking.
+model TrackingToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  bookingId String    @db.Uuid
+  issuedBy  String?
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  booking ServiceRequest @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
 }

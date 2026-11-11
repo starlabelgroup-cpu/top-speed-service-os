@@ -268,6 +268,7 @@ router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
     for (const [id, a] of [...store.dispatchAssignments]) if (a.bookingId === booking.id) store.dispatchAssignments.delete(id);
     for (const [id, pay] of [...store.payments]) if (pay.bookingId === booking.id) store.payments.delete(id);
     for (const [id, r] of [...store.referrals]) if (r.issuedFromBookingId === booking.id) store.referrals.delete(id);
+    for (const [hash, t] of [...store.trackingTokens]) if (t.bookingId === booking.id) store.trackingTokens.delete(hash);
     if (customer && siblings === 0) store.customers.delete(customer.id);
     store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
 

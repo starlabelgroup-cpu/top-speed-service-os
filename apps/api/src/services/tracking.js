@@ -73,6 +73,30 @@ export function computeTracking(booking) {
     etaMinutes = enRoute?.etaMinutes ?? enRoute?.details?.etaMinutes ?? activeAssignment?.etaMinutes ?? null;
   }
 
+  // Live GPS: exposed ONLY while the technician is en route (stage 3)
+  // and only when their device has actually reported a position. A stale
+  // fix is flagged, never hidden or faked.
+  let technicianLocation = null;
+  if (
+    activeAssignment &&
+    stageIndex === 3 &&
+    activeAssignment.lastLat != null &&
+    activeAssignment.lastLng != null &&
+    activeAssignment.lastLocationAt
+  ) {
+    const ageSeconds = Math.max(
+      0,
+      Math.round((Date.now() - new Date(activeAssignment.lastLocationAt).getTime()) / 1000),
+    );
+    technicianLocation = {
+      lat: activeAssignment.lastLat,
+      lng: activeAssignment.lastLng,
+      updatedAt: activeAssignment.lastLocationAt,
+      ageSeconds,
+      stale: ageSeconds > 600,
+    };
+  }
+
   let technician = { assigned: false, name: null };
   if (activeAssignment) {
     const provider = providerById(activeAssignment.providerId);
@@ -90,6 +114,7 @@ export function computeTracking(booking) {
     stageLabel8: STAGE8_LABELS[stageIndex],
     technician,
     etaMinutes,
+    technicianLocation,
     appliance: booking.appliance,
     city: booking.city,
     preferredWindow: booking.preferredWindow ?? null,
