@@ -230,4 +230,56 @@ router.post('/admin/cleanup-test-data', ...ownerOnly, async (req, res) => {
   }
 });
 
+
+/**
+ * Owner-only: permanently delete ONE booking by reference (a bogus or
+ * mis-entered record, or one the owner says is not a real customer), with
+ * its assignments, invoices, issued referral and queued notifications.
+ * The customer record is removed too when this was their only booking.
+ * POST /admin/bookings/delete { reference }
+ */
+router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
+  if (!DATABASE_ENABLED) return res.status(503).json({ error: 'Database is not connected.' });
+  const reference = String(req.body?.reference || '').trim();
+  if (!reference) return res.status(400).json({ error: 'A booking reference is required' });
+  const prisma = db();
+  try {
+    const booking = await prisma.serviceRequest.findUnique({ where: { referenceCode: reference } });
+    if (!booking) return res.status(404).json({ error: 'No booking found with that reference' });
+    const customer = await prisma.customer.findUnique({ where: { id: booking.customerId } });
+    const siblings = await prisma.serviceRequest.count({ where: { customerId: booking.customerId, id: { not: booking.id } } });
+    const invoiceRows = await prisma.invoice.findMany({ where: { serviceRequestId: booking.id }, select: { id: true } });
+    const referralRows = await prisma.referral.findMany({ where: { issuedFromBookingId: booking.id }, select: { id: true } });
+    const outboxIds = new Set();
+    for (const entry of store.notificationOutbox) {
+      const blob = JSON.stringify(entry || {});
+      if (blob.includes(reference) || entry?.payload?.bookingId === booking.id) outboxIds.add(entry.id);
+    }
+    const ops = [
+      prisma.invoice.deleteMany({ where: { id: { in: invoiceRows.map((r) => r.id) } } }),
+      prisma.referral.deleteMany({ where: { id: { in: referralRows.map((r) => r.id) } } }),
+      prisma.notificationOutbox.deleteMany({ where: { id: { in: [...outboxIds] } } }),
+      prisma.serviceRequest.delete({ where: { id: booking.id } }),
+    ];
+    if (customer && siblings === 0) ops.push(prisma.customer.delete({ where: { id: customer.id } }));
+    await prisma.$transaction(ops);
+
+    store.bookings.delete(booking.id);
+    for (const [id, a] of [...store.dispatchAssignments]) if (a.bookingId === booking.id) store.dispatchAssignments.delete(id);
+    for (const [id, pay] of [...store.payments]) if (pay.bookingId === booking.id) store.payments.delete(id);
+    for (const [id, r] of [...store.referrals]) if (r.issuedFromBookingId === booking.id) store.referrals.delete(id);
+    if (customer && siblings === 0) store.customers.delete(customer.id);
+    store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
+
+    const remaining = await prisma.serviceRequest.count();
+    return res.json({
+      ok: true,
+      deleted: { reference, bookings: 1, invoices: invoiceRows.length, referrals: referralRows.length, outbox: outboxIds.size, customer: customer && siblings === 0 ? 1 : 0 },
+      remainingBookings: remaining,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Delete failed' });
+  }
+});
+
 export default router;
