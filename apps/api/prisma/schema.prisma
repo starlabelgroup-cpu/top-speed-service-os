@@ -396,3 +396,19 @@ model CustomerAppliance {
   notes     String?
   createdAt DateTime @default(now())
 }
+
+model Banner {
+  id             String   @id @default(uuid()) @db.Uuid
+  placement      String   @default("FOOTER")
+  advertiserName String
+  headline       String
+  copy           String?
+  imageUrl       String?
+  ctaText        String?
+  ctaUrl         String
+  active         Boolean  @default(true)
+  impressions    Int      @default(0)
+  clicks         Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}

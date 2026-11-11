@@ -46,6 +46,8 @@ export const store = {
   connections: [],
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
+  // Advertiser banner creatives, hydrated from the Banner table.
+  banners: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [

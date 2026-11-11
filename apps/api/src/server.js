@@ -14,6 +14,7 @@ import videoRouter from './routes/video.js';
 import connectionsRouter from './routes/connections.js';
 import connectRouter from './routes/connect.js';
 import crmRouter from './routes/crm.js';
+import bannersRouter from './routes/banners.js';
 import paymentsRouter from './routes/payments.js';
 import marketingRouter from './routes/marketing.js';
 import appRouter from './routes/app.js';
@@ -115,6 +116,7 @@ app.use('/api/v1', videoRouter);
 app.use('/api/v1', connectionsRouter);
 app.use('/api/v1', connectRouter);
 app.use('/api/v1', crmRouter);
+app.use('/api/v1', bannersRouter);
 app.use('/api/v1', appRouter);
 
 app.use((req, res) => {
