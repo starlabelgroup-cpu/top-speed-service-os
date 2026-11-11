@@ -333,6 +333,13 @@ footer a{color:#D7E6FF}
 .nh-links{display:flex;gap:14px 24px;flex-wrap:wrap;align-items:center;margin-top:22px}
 .nh-links a{color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.35);padding-bottom:2px}
 .nh-rating{color:#C4D6F6;margin-left:auto;font-size:15px}
+.nh-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.nh-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#e8eefb;font-size:13.5px;font-weight:600;padding:7px 12px;border-radius:999px}
+.nh-chip i{font-style:normal;background:#22c05e;color:#fff;width:18px;height:18px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:900}
+.nh-contact{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.nh-contact a{flex:1;min-width:150px;text-align:center;padding:13px;border-radius:13px;font-weight:800;font-size:15.5px;text-decoration:none}
+.nh-text{background:#fff;color:#0A265C}
+.nh-wa{background:#22c05e;color:#fff}
 .nh-rating .stars{color:#FFC531;letter-spacing:2px}
 @media(max-width:560px){.nh-rating{margin-left:0}.nh-brand-name{font-size:26px}}
 </style>
@@ -350,6 +357,7 @@ footer a{color:#D7E6FF}
       <div class="nh-photo"><img src="banner-hero-web.jpg" alt="Top Speed Appliance — refrigerator, washer, dryer, oven and microwave service across Broward County"></div>
       <h1 class="nh-h1">Appliance Repair.<br>Smarter. Faster.<br>Connected.</h1>
       <p class="nh-sub">Professional home and commercial appliance service, powered by Speedy AI and Top Speed Service OS.</p>
+      <div class="nh-chips"><span class="nh-chip"><i>\u2713</i>$99 diagnostic credited toward repair</span><span class="nh-chip"><i>\u2713</i>Warranty-backed repairs</span><span class="nh-chip"><i>\u2713</i>Residential &amp; Commercial</span></div>
       <div class="nh-grid2">
         <a class="nh-cta nh-red" href="#book"><span class="nh-ic">📅</span>Book a Repair</a>
         <a class="nh-cta nh-navy" href="#ask-speedy"><span class="nh-ic">🤖</span>Ask Speedy AI</a>
@@ -359,6 +367,7 @@ footer a{color:#D7E6FF}
         <a class="nh-tile" href="/commercial"><span class="nh-ic">🏢</span>Commercial</a>
         <a class="nh-tile" href="/local"><span class="nh-ic">📍</span>Service Areas</a>
       </div>
+      <div class="nh-contact"><a class="nh-text" href="sms:+19549317997">💬 Text Us</a><a class="nh-wa" href="https://wa.me/19549317997" target="_blank" rel="noopener">WhatsApp</a></div>
       <div class="nh-speedy">
         <div class="nh-speedy-h">✦ Meet Speedy — Your AI Service Assistant</div>
         <p>Describe your appliance problem, upload photos, request live video support, or schedule a technician.</p>
@@ -782,6 +791,13 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           #wizBody{background:#fff;color:var(--ink);padding:22px;border-radius:18px;margin-top:16px}
           #wizBody h4{font-size:21px;color:var(--navy);display:flex;justify-content:space-between;align-items:baseline}
           #wizBody h4 small{color:#8fa1bb;font-size:13px;font-weight:600}
+.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.atile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px;border:1.5px solid #dbe4f0;border-radius:13px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#0A265C;cursor:pointer}
+.atile span{font-size:24px;line-height:1}
+.atile.on{border-color:#E8322E;background:#fdf0ef;box-shadow:0 0 0 1px #E8322E inset}
+.locBtn{margin-top:10px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.locBtn:disabled{opacity:.6;cursor:wait}
+
           #wizBody label{font-size:13px;font-weight:700;color:#42557a;display:block;margin:14px 0 5px}
           #wizBody input,#wizBody select,#wizBody textarea{width:100%;padding:13px 16px;border:1.5px solid #ccd8ec;border-radius:999px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
           #wizBody textarea{border-radius:16px;min-height:92px;resize:vertical}
@@ -828,11 +844,23 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             <label for="wCity">City</label>
             <select id="wCity"><option value="">Choose your city</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
             <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
+            <button type="button" class="locBtn" id="wLocBtn">\uD83D\uDCCD Use my location</button>
           </div>
           <div class="wizPane" data-pane="3" hidden>
             <h4>What needs fixing? <small>3 of 5</small></h4>
             <label for="wAppliance">Appliance</label>
-            <select id="wAppliance"><option value="">Choose the appliance</option><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select>
+            <input type="hidden" id="wAppliance" value="">
+            <div class="tileGrid">
+              <button type="button" class="atile" data-v="Refrigerator"><span>🧊</span>Refrigerator</button>
+              <button type="button" class="atile" data-v="Washer"><span>🌀</span>Washer</button>
+              <button type="button" class="atile" data-v="Dryer"><span>👕</span>Dryer</button>
+              <button type="button" class="atile" data-v="Oven / Range"><span>🔥</span>Oven / Range</button>
+              <button type="button" class="atile" data-v="Dishwasher"><span>🍽️</span>Dishwasher</button>
+              <button type="button" class="atile" data-v="Freezer / Ice Maker"><span>❄️</span>Freezer / Ice Maker</button>
+              <button type="button" class="atile" data-v="Microwave"><span>♨️</span>Microwave</button>
+              <button type="button" class="atile" data-v="Garbage Disposal"><span>🗑️</span>Garbage Disposal</button>
+              <button type="button" class="atile" data-v="Installation"><span>🔧</span>Installation</button>
+            </div>
             <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm, ice maker stopped, started two days ago…"></textarea>
           </div>
           <div class="wizPane" data-pane="4" hidden>
@@ -885,7 +913,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             step=n;
             panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
             segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
-            labels.forEach(function(l,i){l.className=i===n-1?'now':''});
+            var NAMES=['Contact','Location','Appliance','Schedule','Review'];
+            labels.forEach(function(l,i){l.className=i===n-1?'now':'';l.textContent=(i<n-1?'\u2713 ':'')+NAMES[i];});
             $('wizBackBtn').style.visibility=n===1?'hidden':'visible';
             $('wizNextBtn').textContent=n===5?'✓ Confirm booking':'Continue →';
             $('wizNextBtn').classList.toggle('red',n===5);
@@ -894,6 +923,27 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           }
           function err(msg){var e=$('wizErr');e.textContent=msg;e.style.display='block';}
           function val(id){return $(id).value.trim()}
+          var atiles=[].slice.call(document.querySelectorAll('.atile'));
+          atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
+
+          var locBtn=document.getElementById('wLocBtn');
+          if(locBtn) locBtn.addEventListener('click',function(){
+            if(!navigator.geolocation){err('Location is not available on this device \u2014 type the ZIP instead.');return;}
+            locBtn.disabled=true; var old=locBtn.textContent; locBtn.textContent='\uD83D\uDCCD Finding you\u2026';
+            function done(){locBtn.disabled=false;locBtn.textContent=old;}
+            navigator.geolocation.getCurrentPosition(function(p){
+              fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+p.coords.latitude+'&lon='+p.coords.longitude)
+              .then(function(r){return r.json()}).then(function(j){
+                var a=(j&&j.address)||{}; var zip=(a.postcode||'').slice(0,5);
+                if(/^\d{5}$/.test(zip)) document.getElementById('wZip').value=zip;
+                var city=a.city||a.town||a.village||a.suburb||'';
+                var sel=document.getElementById('wCity');
+                if(city&&sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===city.toLowerCase()){sel.selectedIndex=i;break;}}}
+                done(); if(!zip) err('We found your location but not a ZIP \u2014 type it in and continue.');
+              }).catch(function(){done();err('Could not read your location \u2014 type the ZIP instead.');});
+            },function(){done();err('Location permission was not given \u2014 type the ZIP instead.');},{timeout:10000});
+          });
+
           function valid(n){
             if(n===1){
               if(val('wName').length<2) return 'Please add your name so the setter knows who to ask for.';
@@ -1258,8 +1308,9 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 
 <!-- STICKY BAR -->
 <div class="stickybar">
-  <a class="btn btn-ghost" href="tel:+19549317997">📞 Call</a>
-  <a class="btn btn-red" href="#book">📅 Book — $99 Diagnostic</a>
+  <a class="btn btn-red" href="#book">📅 Book Online</a>
+  <a class="btn btn-ghost" href="tel:+19549317997">📞 Call Us</a>
+  <button class="btn" type="button" style="background:#0A265C;color:#fff;border:none" onclick="toggleSpeedy()">💬 Chat</button>
 </div>
 
 <!-- SPEEDY -->

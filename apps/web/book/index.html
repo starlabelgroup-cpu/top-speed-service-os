@@ -59,6 +59,13 @@
   .doneBox .ref{font-family:'Space Grotesk',sans-serif;font-size:29px;font-weight:700;color:#0A265C;letter-spacing:1px;margin:6px 0}
   .doneBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
   .doneBtns a{padding:13px 20px;border-radius:999px;font-weight:700;text-decoration:none;font-size:15px}
+
+.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.atile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px;border:1.5px solid #dbe4f0;border-radius:13px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#0A265C;cursor:pointer}
+.atile span{font-size:24px;line-height:1}
+.atile.on{border-color:#E8322E;background:#fdf0ef;box-shadow:0 0 0 1px #E8322E inset}
+.locBtn{margin-top:10px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.locBtn:disabled{opacity:.6;cursor:wait}
 </style>
 </head>
 <body>
@@ -96,11 +103,23 @@
       <label for="wCity">City</label>
       <select id="wCity"><option value="">City</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
       <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
+      <button type="button" class="locBtn" id="wLocBtn">\uD83D\uDCCD Use my location</button>
     </div>
     <div class="pane" data-pane="3" hidden>
       <h2>What needs fixing? <small>3 of 5</small></h2>
       <label for="wAppliance">Appliance</label>
-      <select id="wAppliance"><option value="">Choose the appliance</option><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select>
+      <input type="hidden" id="wAppliance" value="">
+            <div class="tileGrid">
+              <button type="button" class="atile" data-v="Refrigerator"><span>🧊</span>Refrigerator</button>
+              <button type="button" class="atile" data-v="Washer"><span>🌀</span>Washer</button>
+              <button type="button" class="atile" data-v="Dryer"><span>👕</span>Dryer</button>
+              <button type="button" class="atile" data-v="Oven / Range"><span>🔥</span>Oven / Range</button>
+              <button type="button" class="atile" data-v="Dishwasher"><span>🍽️</span>Dishwasher</button>
+              <button type="button" class="atile" data-v="Freezer / Ice Maker"><span>❄️</span>Freezer / Ice Maker</button>
+              <button type="button" class="atile" data-v="Microwave"><span>♨️</span>Microwave</button>
+              <button type="button" class="atile" data-v="Garbage Disposal"><span>🗑️</span>Garbage Disposal</button>
+              <button type="button" class="atile" data-v="Installation"><span>🔧</span>Installation</button>
+            </div>
       <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm and the ice maker stopped, started two days ago…"></textarea>
     </div>
     <div class="pane" data-pane="4" hidden>
@@ -160,7 +179,8 @@
     step=n;
     panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
     segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
-    labels.forEach(function(l,i){l.className=i<n-1?'done':(i===n-1?'now':'')});
+    var NAMES=['Contact','Location','Appliance','Schedule','Review'];
+    labels.forEach(function(l,i){l.className=i<n-1?'done':(i===n-1?'now':'');l.textContent=(i<n-1?'\u2713 ':'')+NAMES[i];});
     $('backBtn').style.visibility=n===1?'hidden':'visible';
     $('nextBtn').innerHTML=n===5?'✓ Confirm booking':'Continue&nbsp;&nbsp;→';
     $('err').style.display='none';
@@ -169,6 +189,27 @@
   }
   function err(m){var e=$('err');e.textContent=m;e.style.display='block';}
   function val(id){return $(id).value.trim()}
+          var atiles=[].slice.call(document.querySelectorAll('.atile'));
+          atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
+
+          var locBtn=document.getElementById('wLocBtn');
+          if(locBtn) locBtn.addEventListener('click',function(){
+            if(!navigator.geolocation){err('Location is not available on this device \u2014 type the ZIP instead.');return;}
+            locBtn.disabled=true; var old=locBtn.textContent; locBtn.textContent='\uD83D\uDCCD Finding you\u2026';
+            function done(){locBtn.disabled=false;locBtn.textContent=old;}
+            navigator.geolocation.getCurrentPosition(function(p){
+              fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+p.coords.latitude+'&lon='+p.coords.longitude)
+              .then(function(r){return r.json()}).then(function(j){
+                var a=(j&&j.address)||{}; var zip=(a.postcode||'').slice(0,5);
+                if(/^\d{5}$/.test(zip)) document.getElementById('wZip').value=zip;
+                var city=a.city||a.town||a.village||a.suburb||'';
+                var sel=document.getElementById('wCity');
+                if(city&&sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===city.toLowerCase()){sel.selectedIndex=i;break;}}}
+                done(); if(!zip) err('We found your location but not a ZIP \u2014 type it in and continue.');
+              }).catch(function(){done();err('Could not read your location \u2014 type the ZIP instead.');});
+            },function(){done();err('Location permission was not given \u2014 type the ZIP instead.');},{timeout:10000});
+          });
+
   function valid(n){
     if(n===1){
       if(val('wName').length<2) return 'Please add your name so the setter knows who to ask for.';

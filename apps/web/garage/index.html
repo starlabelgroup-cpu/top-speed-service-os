@@ -36,6 +36,11 @@
   .btn:disabled{opacity:.55;cursor:wait}
   .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px}
+  .portalGrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:12px}
+  .portalGrid a{border:1.5px solid var(--line);border-radius:13px;padding:15px;text-decoration:none;display:grid;gap:3px;background:#fbfcfe}
+  .portalGrid b{color:var(--red);font-size:16.5px}
+  .portalGrid span{color:var(--mut);font-size:14px}
+  @media(max-width:560px){.portalGrid{grid-template-columns:1fr}}
   .appl{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fbfcfe}
   .appl b{color:var(--navy);font-size:16px}
   .appl .meta{color:var(--mut);font-size:13.5px;margin-top:3px}
@@ -99,6 +104,16 @@
   </section>
 
   <div id="garage" class="hidden" style="display:grid;gap:20px">
+    <div class="card">
+      <h2>Your Client Portal</h2>
+      <p class="sub" style="margin-bottom:2px">Everything for your service, in one place.</p>
+      <div class="portalGrid">
+        <a href="/book"><b>📝 Request Service</b><span>Book a new repair in under a minute.</span></a>
+        <a href="/track"><b>📅 Manage Appointments</b><span>See upcoming visits and follow your tech live.</span></a>
+        <a href="#appliances"><b>🧊 My Appliances</b><span>Your registered units, just below.</span></a>
+        <a href="#offers"><b>🎁 Promotions &amp; Rewards</b><span>Your offers and referral code.</span></a>
+      </div>
+    </div>
     <section class="card">
       <div class="acct">
         <strong id="who" style="color:var(--navy)"></strong>
