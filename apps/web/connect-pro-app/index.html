@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Appliance Connect Pro App — Homeowners & Property Managers | Top Speed</title>
+<meta name="description" content="Sign in to the Appliance Connect Pro app: appliance registry, service history and Speedy booking for homeowners, bulk service requests for property managers.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3f9;min-height:100vh}
+a{text-decoration:none}
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap}
+.topbar img.flag{height:40px;border-radius:4px}
+.brand{font-weight:900;font-size:20px;letter-spacing:.4px} .brand span{color:#ff3b42}
+.topbar nav{margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.topbar nav a{color:#cfe0f5;font-size:14.5px}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 60px}
+.hero-card{background:linear-gradient(160deg,#071a3d,#0a265c);color:#fff;border-radius:18px;padding:30px 28px;margin-bottom:18px}
+.hero-card h1{font-size:clamp(26px,4.5vw,36px);margin-bottom:8px}
+.hero-card p{color:#b9cdf0;line-height:1.55;font-size:16px}
+.card{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 10px rgba(10,38,92,.06)}
+.card h2{color:var(--navy);font-size:21px;margin-bottom:8px}
+.card p{color:var(--muted);line-height:1.55;font-size:15px}
+label{font-weight:700;color:var(--navy);font-size:13.5px;display:block;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15.5px;background:#fff}
+.btn{background:var(--red);color:#fff;padding:13px 22px;border-radius:9px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15.5px;font-family:inherit}
+.btn.blue{background:var(--blue)} .btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.btn.google{background:#fff;color:#1f1f1f;border:1.5px solid #dadce0;display:flex;align-items:center;gap:10px;justify-content:center;width:100%}
+.msg{font-size:14.5px;margin-top:10px;min-height:20px} .msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+.tabs{display:flex;gap:8px;margin-bottom:16px}
+.tab{flex:1;padding:12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;font-weight:800;color:var(--navy);cursor:pointer;font-size:15px}
+.tab.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.item{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:14.5px}
+.item b{color:var(--navy)}
+.pill{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <img class="flag" src="/flag.jpg" alt="Top Speed flag">
+  <div class="brand">APPLIANCE CONNECT <span>PRO</span> APP</div>
+  <nav><a href="/">Site home</a><a href="/connect">Connect</a><a href="/app">Customer App</a><a href="tel:+19549317997">954-931-7997</a></nav>
+</div>
+<div class="wrap">
+  <div id="gate">
+    <div class="hero-card">
+      <h1>Your home. Your properties. One login.</h1>
+      <p>The Appliance Connect Pro app for homeowners and property managers: your appliance registry, your service history, Speedy booking — and bulk tenant requests for managers. Sign in to open your workspace.</p>
+    </div>
+    <div class="card">
+      <h2>Sign in</h2>
+      <button class="btn google" onclick="googleGo()"><span style="font-weight:900;color:#4285F4;">G</span> Continue with Google</button>
+      <label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="email" placeholder="you@email.com">
+      <label for="liPass">Password</label><input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••">
+      <div style="margin-top:16px;"><button class="btn" onclick="doLogin()">Sign in</button></div>
+      <div class="msg" id="gateMsg"></div>
+    </div>
+    <div class="card">
+      <h2>New here? Create your free account</h2>
+      <p>Homeowners and property managers alike — one account holds your home's appliances and your properties' requests.</p>
+      <div class="row2">
+        <div><label for="rgName">Your name</label><input id="rgName" type="text" placeholder="Full name"></div>
+        <div><label for="rgPhone">Phone</label><input id="rgPhone" type="tel" placeholder="954-555-0100"></div>
+      </div>
+      <label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" placeholder="you@email.com">
+      <label for="rgPass">Create a password (10+ characters)</label><input id="rgPass" type="password" placeholder="••••••••••">
+      <div style="margin-top:16px;"><button class="btn blue" onclick="doRegister()">Create account &amp; open the app</button></div>
+    </div>
+  </div>
+
+  <div id="app" style="display:none;">
+    <div class="hero-card">
+      <h1>Your workspace</h1>
+      <p>Signed in as <b id="who" style="color:#fff;"></b> · <a href="#" onclick="signOut(); return false;" style="color:#ffb3b6; font-weight:700;">Sign out</a></p>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="tabHome" onclick="showMode('home')">🏠 My Home</button>
+      <button class="tab" id="tabPm" onclick="showMode('pm')">🏢 Property Manager</button>
+    </div>
+    <div id="modeHome">
+      <div class="card">
+        <h2>🔌 My appliances</h2>
+        <p>Your Appliance Connect registry — Speedy and your techs work from this record.</p>
+        <div id="eqList"><p>Loading…</p></div>
+        <div class="row2">
+          <div><label for="eqType">Type</label><select id="eqType"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Other</option></select></div>
+          <div><label for="eqBrand">Brand</label><input id="eqBrand" type="text" placeholder="Samsung, LG, GE…"></div>
+        </div>
+        <label for="eqModel">Model</label><input id="eqModel" type="text" placeholder="Optional">
+        <div class="msg" id="eqMsg"></div>
+        <button class="btn blue" onclick="addEquip()">Add appliance</button>
+      </div>
+      <div class="card">
+        <h2>💬 Book with Speedy</h2>
+        <p>Talk to Speedy in the customer app — book, track your tech live, and pay the $99 diagnostic online there.</p>
+        <div style="margin-top:12px;"><a class="btn" href="/app">Open the Customer App</a></div>
+      </div>
+      <div class="card">
+        <h2>🕘 Service history</h2>
+        <div id="actList"><p>Loading…</p></div>
+      </div>
+    </div>
+    <div id="modePm" style="display:none;">
+      <div class="card">
+        <h2>📋 Bulk service requests</h2>
+        <p>Paste the day's tenant requests in plain words. Speedy AI sorts them into separate work orders under one batch reference — a Service Setter confirms each by text.</p>
+        <label for="bkProperty">Property</label><input id="bkProperty" type="text" placeholder="e.g. Coral Palms Apartments — 2200 NW 39th St">
+        <label for="bkPhone">Callback phone (if not on your account)</label><input id="bkPhone" type="tel" placeholder="954-555-0100">
+        <label for="bkText">Tenant requests</label>
+        <textarea id="bkText" rows="4" placeholder="Unit 12 fridge warm. Unit 7 washer leaks. Unit 21 dryer no heat — urgent."></textarea>
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn blue" onclick="bulkSort()">Sort with Speedy</button>
+          <button class="btn" id="bkSendBtn" style="display:none;" onclick="bulkSend()">Send to Service Setters</button>
+        </div>
+        <div class="msg" id="bkMsg"></div>
+        <div id="bkItems"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function showMode(m){
+  document.getElementById('modeHome').style.display=(m==='home')?'':'none';
+  document.getElementById('modePm').style.display=(m==='pm')?'':'none';
+  document.getElementById('tabHome').className='tab'+(m==='home'?' on':'');
+  document.getElementById('tabPm').className='tab'+(m==='pm'?' on':'');
+}
+</script>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var NEXT_PATH='/connect-pro-app';
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function setTok(t){ try{ if(t) localStorage.setItem('tsos_token',t); }catch(e){} }
+function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+function api(path, opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+  if(tok()) opts.headers['Authorization']='Bearer '+tok();
+  return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
+}
+(function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); history.replaceState(null,'',location.pathname); } })();
+function gateErr(e){ var m=document.getElementById('gateMsg'); m.textContent='\u26a0\ufe0f '+e.message; m.className='msg err'; }
+function doLogin(){
+  api('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPass').value})})
+    .then(function(j){ setTok(j.token); boot(); }).catch(gateErr);
+}
+function doRegister(){
+  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined};
+  api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); }).catch(gateErr);
+}
+function googleGo(){
+  fetch(API+'/auth/google/status').then(function(r){return r.json();}).then(function(j){
+    if(j.configured){ location.href=API+'/auth/google?next='+encodeURIComponent(NEXT_PATH); }
+    else { var m=document.getElementById('gateMsg'); m.textContent='Google sign-in is being connected \u2014 email sign-in works now, and it is the same account.'; m.className='msg'; }
+  }).catch(function(){ var m=document.getElementById('gateMsg'); m.textContent='Could not check Google sign-in just now \u2014 email works.'; m.className='msg'; });
+}
+function signOut(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); }
+function boot(){
+  if(!tok()){ document.getElementById('gate').style.display=''; return; }
+  api('/auth/me').then(function(j){
+    window.CUR=j.user||{};
+    document.getElementById('gate').style.display='none';
+    document.getElementById('app').style.display='';
+    var w=document.getElementById('who'); if(w) w.textContent=(CUR.email||'');
+    onAppReady();
+  }).catch(function(){ try{localStorage.removeItem('tsos_token');}catch(e){} document.getElementById('gate').style.display=''; });
+}
+document.addEventListener('DOMContentLoaded', boot);
+</script>
+
+<script>
+var bulkItems=[];
+function bulkSort(){
+  var m=document.getElementById('bkMsg'); var text=document.getElementById('bkText').value.trim();
+  if(text.length<8){ m.textContent='\u26a0\ufe0f Add a little more detail first.'; m.className='msg err'; return; }
+  m.textContent='Speedy is sorting your list\u2026'; m.className='msg';
+  api('/speedy/extract-bulk',{method:'POST',body:JSON.stringify({text:text})})
+    .then(function(j){ bulkItems=(j.data&&j.data.items)||[]; bulkRender();
+      m.textContent=bulkItems.length?('Speedy found '+bulkItems.length+' request'+(bulkItems.length===1?'':'s')+'. Check them, then send.'):'Speedy could not find a request in that \u2014 try one line per unit.';
+      m.className='msg '+(bulkItems.length?'ok':'err'); })
+    .catch(function(e){ m.textContent='\u26a0\ufe0f '+e.message; m.className='msg err'; });
+}
+function bulkRender(){
+  document.getElementById('bkItems').innerHTML=bulkItems.map(function(it,i){
+    return '<div class="item"><b>'+esc(it.unit||'Unit')+' \u00b7 '+esc(it.appliance)+'</b>'+(it.urgency==='urgent'?' <span class="pill" style="background:#ffe1e1;color:#a1141a;">URGENT</span>':'')+'<br>'+esc(it.issue)+' <a href="#" onclick="bulkItems.splice('+i+',1);bulkRender();return false;" style="color:var(--red);font-weight:700;">remove</a></div>';
+  }).join('');
+  document.getElementById('bkSendBtn').style.display=bulkItems.length?'':'none';
+}
+function bulkSend(){
+  var m=document.getElementById('bkMsg');
+  var prop=document.getElementById('bkProperty').value.trim();
+  if(!prop){ m.textContent='\u26a0\ufe0f Add the property / business location first.'; m.className='msg err'; return; }
+  var payload={manager:{name:(window.CUR&&(CUR.firstName||CUR.email))||'Account holder', phone:(window.CUR&&CUR.phone)||document.getElementById('bkPhone').value.trim(), company:window.BIZ||undefined}, property:prop, requests:bulkItems};
+  if(!payload.manager.phone){ m.textContent='\u26a0\ufe0f Add a callback phone so the setters can confirm.'; m.className='msg err'; return; }
+  api('/commercial/bulk-requests',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){ m.textContent='\u2705 Sent \u2014 batch '+j.data.batchReference+' ('+j.data.count+' requests). A Service Setter confirms every one by text.'; m.className='msg ok'; bulkItems=[]; bulkRender(); document.getElementById('bkText').value=''; if(window.loadActivity) loadActivity(); })
+    .catch(function(e){ m.textContent='\u26a0\ufe0f '+e.message; m.className='msg err'; });
+}
+</script>
+
+<script>
+function loadEquip(){
+  var box=document.getElementById('eqList'); if(!box) return;
+  api('/connect/appliances').then(function(j){
+    var a=j.data||[];
+    box.innerHTML=a.length?a.map(function(x){ return '<div class="item"><b>'+esc(x.type)+'</b> \u00b7 '+esc([x.brand,x.model,x.year].filter(Boolean).join(' ')||'Details on file')+'</div>'; }).join(''):'<p>No units registered yet \u2014 add your first one below.</p>';
+  }).catch(function(){ box.innerHTML='<p>Could not load the registry just now.</p>'; });
+}
+function addEquip(){
+  var m=document.getElementById('eqMsg');
+  var payload={type:document.getElementById('eqType').value,brand:document.getElementById('eqBrand').value.trim()||undefined,model:document.getElementById('eqModel').value.trim()||undefined};
+  api('/connect/appliances',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(){ m.textContent='\u2705 Added to the registry.'; m.className='msg ok'; loadEquip(); })
+    .catch(function(e){ m.textContent='\u26a0\ufe0f '+e.message; m.className='msg err'; });
+}
+function loadActivity(){
+  var box=document.getElementById('actList'); if(!box) return;
+  api('/connect/summary').then(function(j){
+    var h=(j.data&&j.data.serviceHistory)||[];
+    box.innerHTML=h.length?h.slice(0,8).map(function(b){ return '<div class="item"><b>'+esc(b.referenceCode)+'</b> \u00b7 '+esc(b.appliance)+' \u2014 '+esc(b.issue)+'<br><span style="color:var(--muted)">'+esc(b.city||'')+' \u00b7 '+esc(String(b.createdAt).slice(0,10))+'</span> <span class="pill">'+esc(b.status)+'</span></div>'; }).join(''):'<p>No service activity yet \u2014 your requests and bookings will show here.</p>';
+  }).catch(function(){ box.innerHTML='<p>Could not load activity just now.</p>'; });
+}
+function onAppReady(){ loadEquip(); loadActivity(); }
+</script>
+</body></html>
