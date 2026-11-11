@@ -128,7 +128,7 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
 <button class="btn navy" onclick="loadLive()">\u21bb Refresh live data</button>
-<button class="btn ghost" onclick="cleanupTestData()">🧹 Clear test data</button>
+<button class="btn ghost" id="cleanupBtn" onclick="cleanupTestData()">🧹 Clear test data</button>
 <button class="btn ghost" onclick="staffSignOut()">Sign out</button>
 </div>
 </section>
@@ -324,13 +324,22 @@ function staffSignIn(){
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
 }
 function cleanupTestData(){
+  var b=document.getElementById('cleanupBtn');
+  if(window.__cleanupArm){
+    window.__cleanupArm=false;
+    apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:false})}).then(function(x){
+      if(b){ b.textContent='🧹 Clear test data'; b.style.background=''; b.style.color=''; }
+      toast('Test data cleared. '+(x.remainingBookings!=null?x.remainingBookings:'')+' booking(s) remain \u2014 Aldo kept: '+((x.kept&&x.kept.present)?'yes':'CHECK NOW'));
+      loadLive();
+    }).catch(function(e){ if(b){ b.textContent='🧹 Clear test data'; b.style.background=''; b.style.color=''; } toast('Cleanup failed: '+e.message); });
+    return;
+  }
   apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:true})}).then(function(j){
     var r=j.removed||{}; var parts=Object.keys(r).filter(function(k){return r[k]>0}).map(function(k){return r[k]+' '+k}).join(', ')||'nothing found';
-    if(!confirm('Remove ALL test/drill data from the live system?\n\nWill remove: '+parts+'\n\nKept untouched: Aldo Alay TS-BRWT9Y (the real booking) and every real record.\n\nThis cannot be undone.')) return;
-    apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:false})}).then(function(x){
-      toast('Test data cleared. '+(x.remainingBookings!=null?x.remainingBookings:'')+' booking(s) remain — Aldo kept: '+((x.kept&&x.kept.present)?'yes':'CHECK NOW'));
-      loadLive();
-    }).catch(function(e){ toast('Cleanup failed: '+e.message); });
+    window.__cleanupArm=true;
+    if(b){ b.textContent='\u26a0\ufe0f Tap again to DELETE: '+parts+' (Aldo kept)'; b.style.background='#E8322E'; b.style.color='#fff'; }
+    toast('Will remove: '+parts+'. Aldo Alay TS-BRWT9Y is kept untouched. Tap the red button again within 30s to delete.');
+    setTimeout(function(){ if(window.__cleanupArm){ window.__cleanupArm=false; var b2=document.getElementById('cleanupBtn'); if(b2){ b2.textContent='🧹 Clear test data'; b2.style.background=''; b2.style.color=''; } } },30000);
   }).catch(function(e){ toast('Cleanup check failed: '+e.message+' (owner sign-in required)'); });
 }
 function staffSignOut(){ localStorage.removeItem('tsos_token'); location.reload(); }
