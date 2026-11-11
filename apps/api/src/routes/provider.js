@@ -287,3 +287,60 @@ router.post('/provider/assignments/:id/ai-note', ...providerOnly, async (req, re
   });
   return res.status(201).json({ data: { saved: true, referenceCode: booking.referenceCode } });
 });
+
+/* ------------- Track My Tech: technician job progression -------------
+ * The tech advances the job from the Tech App; each tap records a real
+ * event on the booking, which is what the customer's 8-stage tracking
+ * timeline reads. ETAs are the technician's own estimate — never
+ * generated. Status changes to the booking itself (completion etc.)
+ * stay on their existing actions.
+ */
+const jobStatusSchema = z.object({
+  action: z.enum(['EN_ROUTE', 'ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED']),
+  etaMinutes: z.number().int().min(1).max(600).optional(),
+});
+const JOB_EVENT_TYPES = {
+  EN_ROUTE: 'TECH_EN_ROUTE',
+  ARRIVED: 'TECH_ARRIVED',
+  DIAGNOSIS_STARTED: 'DIAGNOSIS_STARTED',
+  ESTIMATE_APPROVED: 'ESTIMATE_APPROVED',
+};
+
+router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment || assignment.providerId !== provider.id) {
+    return res.status(404).json({ error: 'Assignment not found' });
+  }
+  if (!['APPROVED', 'ACCEPTED'].includes(assignment.status)) {
+    return res.status(409).json({ error: 'Assignment is not active' });
+  }
+  const parsed = jobStatusSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid job status update', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(assignment.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const type = JOB_EVENT_TYPES[parsed.data.action];
+  addBookingEvent(booking, type, req.user.email, {
+    assignmentId: assignment.id,
+    etaMinutes: parsed.data.action === 'EN_ROUTE' ? parsed.data.etaMinutes ?? null : null,
+    confirmedBy: 'TECHNICIAN',
+  });
+  if (parsed.data.action === 'EN_ROUTE' && parsed.data.etaMinutes) {
+    assignment.etaMinutes = parsed.data.etaMinutes;
+    await persistAssignment(assignment);
+  }
+  booking.updatedAt = new Date().toISOString();
+  await persistBooking(booking);
+  appendEvent(type, {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { etaMinutes: parsed.data.etaMinutes ?? null },
+  });
+  return res.status(201).json({ data: { saved: true, referenceCode: booking.referenceCode, event: type } });
+});
