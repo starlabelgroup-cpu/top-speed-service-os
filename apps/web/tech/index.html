@@ -249,7 +249,16 @@ function renderTech(provider,assignments,user){
       '<textarea id="ainote-'+a.id+'" rows="2" placeholder="e.g. Replaced the drain pump, tested two cycles, running fine." style="width:100%; margin-top:6px; border:1.5px solid #D5E2F4; border-radius:10px; padding:9px; font:inherit; font-size:14px;"></textarea>' +
       '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+a.id+'\')">\u2728 Structure with Speedy</button></div>' +
       '<div id="ainote-prev-'+a.id+'" style="margin-top:8px;"></div></div>';
-    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span>'+noteBox+'</div>';
+    var progBox='<div style="flex-basis:100%; margin-top:10px; border-top:1px dashed #D5E2F4; padding-top:10px;">' +
+      '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">Track My Tech \u2014 update the customer</label>' +
+      '<div class="btnrow" style="margin-top:7px; gap:7px; flex-wrap:wrap;">' +
+      '<input id="eta-'+a.id+'" type="number" min="1" max="600" placeholder="ETA min" style="width:96px; padding:9px; border:1.5px solid #D5E2F4; border-radius:9px; font:inherit; font-size:14px;">' +
+      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'EN_ROUTE\')">\ud83d\ude90 En route</button>' +
+      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'ARRIVED\')">\ud83d\udccd Arrived</button>' +
+      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'DIAGNOSIS_STARTED\')">\ud83d\udd0d Diagnosis</button>' +
+      '<button class="btn go" type="button" onclick="jobStatus(\''+a.id+'\',\'ESTIMATE_APPROVED\')">\u2705 Estimate approved</button></div>' +
+      '<div id="jsmsg-'+a.id+'" style="margin-top:7px; font-size:13.5px;"></div></div>';
+    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span>'+noteBox+progBox+'</div>';
   }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with the customer details.</p>';
 }
 function liveAcceptTech(id){
@@ -271,6 +280,14 @@ if(tTok()){ loadTech(); }
 
 <script>
 /* ============ AI-ASSISTED JOB UPDATES (tech dictates, tech confirms) ============ */
+function jobStatus(id, action){
+  var m=document.getElementById('jsmsg-'+id);
+  var payload={action:action};
+  if(action==='EN_ROUTE'){ var eta=document.getElementById('eta-'+id).value; if(eta) payload.etaMinutes=parseInt(eta,10); }
+  tFetch('/provider/assignments/'+id+'/job-status',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(){ if(m){ m.textContent='\u2705 Customer tracking updated \u2014 '+(action==='EN_ROUTE'?'Technician en route':action.replace(/_/g,' ').toLowerCase())+'.'; m.style.color='#0f7a3d'; } })
+    .catch(function(e){ if(m){ m.textContent='\u26a0\ufe0f '+(e.message||'Could not update tracking'); m.style.color='#c2262e'; } });
+}
 function aiNotePreview(id){
   var raw=document.getElementById('ainote-'+id).value.trim();
   var slot=document.getElementById('ainote-prev-'+id);

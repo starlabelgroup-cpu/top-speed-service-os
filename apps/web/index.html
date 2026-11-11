@@ -684,6 +684,31 @@ footer a{color:#D7E6FF}
   </div>
 </section>
 
+<!-- TRACK MY TECH — EXPLORE THE STAGES -->
+<section style="background:#fff;">
+  <div class="wrap">
+    <div class="sec-head"><span class="kicker">Track My Tech</span>
+    <h2>Explore the <span>job tracking stages</span></h2>
+    <p>Every Top Speed job moves through the same eight stages. Preview each one here — when your job is live, this exact timeline fills in with your technician's real updates.</p></div>
+    <div class="card" style="padding:20px; max-width:640px;">
+      <label for="exploreStage" style="font-weight:800;color:var(--navy);font-size:13.5px;">PREVIEW A STAGE</label>
+      <select id="exploreStage" onchange="renderExplore()" style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15.5px;margin:8px 0 14px;">
+        <option value="0">1. Request received</option>
+        <option value="1">2. Appointment confirmed</option>
+        <option value="2">3. Technician assigned</option>
+        <option value="3" selected>4. Technician en route</option>
+        <option value="4">5. Technician arrived</option>
+        <option value="5">6. Diagnosis in progress</option>
+        <option value="6">7. Estimate approved</option>
+        <option value="7">8. Repair completed</option>
+      </select>
+      <div id="exploreEta" style="margin-bottom:12px;"></div>
+      <div class="stages" id="exploreList"></div>
+      <p class="fine" style="margin-top:12px;">This interactive example demonstrates the intended interface; it does not display actual customer jobs or locations. ETAs on live jobs are the technician's own estimate, set when they head out.</p>
+    </div>
+  </div>
+</section>
+
 <!-- BOOKING -->
 <section id="book" style="background:var(--navy-2);">
   <div class="wrap">
@@ -1214,9 +1239,13 @@ function runEstimate(){
 /* ---------- live tracking (real bookings) ---------- */
 var TRK_STAGES=[
  {t:'Request received',d:'A Service Setter is reviewing your request and confirming your window by phone.',pos:[12,84]},
- {t:'Appointment confirmed',d:'Your window is locked in. We match your job to a qualified nearby tech next.',pos:[34,62]},
- {t:'Technician assigned',d:'Your tech is assigned — you will get their details by text before the visit.',pos:[58,44]},
- {t:'Job completed',d:'Work done. Your invoice, warranty, and referral code live in your account.',pos:[84,29]}
+ {t:'Appointment confirmed',d:'Your window is locked in. We match your job to a qualified nearby tech next.',pos:[22,74]},
+ {t:'Technician assigned',d:'Your tech is assigned — their details appear here and by text before the visit.',pos:[34,62]},
+ {t:'Technician en route',d:'Your tech is on the way. Their own ETA shows here the moment they set it.',pos:[46,54]},
+ {t:'Technician arrived',d:'Your tech is at your door.',pos:[58,44]},
+ {t:'Diagnosis in progress',d:'The tech is diagnosing the appliance. The repair estimate comes next — nothing is repaired before you approve it.',pos:[68,38]},
+ {t:'Estimate approved',d:'You approved the estimate — the repair is underway with the parts and price agreed.',pos:[76,33]},
+ {t:'Repair completed',d:'Work done and tested. Your invoice, warranty, and referral code live in your account.',pos:[84,29]}
 ];
 function renderTrkStages(active){
   document.getElementById('stageList').innerHTML=TRK_STAGES.map(function(st,i){
@@ -1243,14 +1272,31 @@ function trackJob(){
     .then(function(x){
       if(x.s!==200){trkMsg('⚠️ '+((x.j&&x.j.error)||'We could not find that booking.')+' Check the reference and phone, or call <b>954-931-7997</b>.');return;}
       var d=x.j.data;
-      renderTrkStages(d.stage);
-      document.getElementById('etaPill').textContent='Status: '+d.stageLabel;
+      var idx=(typeof d.stageIndex==='number')?d.stageIndex:({0:0,1:1,2:2,3:7})[d.stage||0];
+      renderTrkStages(idx);
+      var etaTxt;
+      if(idx===3&&d.etaMinutes){ etaTxt='\ud83d\ude90 En route \u2014 about '+d.etaMinutes+' min away (your technician\u2019s estimate)'; }
+      else if(idx===3){ etaTxt='\ud83d\ude90 Technician en route'; }
+      else { etaTxt='Status: '+(d.stageLabel8||d.stageLabel); }
+      document.getElementById('etaPill').textContent=etaTxt;
       var pay=d.payment&&d.payment.diagnosticPaid?' • $99 diagnostic: PAID ✓':'';
-      trkMsg('💬 <b>'+d.reference+'</b> — '+d.appliance+' in '+d.city+(d.preferredWindow?' • Window '+d.preferredWindow:'')+'<br>Status: <b>'+d.stageLabel+'</b>'+pay+'<small>Live from the Top Speed Service OS — the same record dispatch works from.</small>');
+      var techLine=(d.technician&&d.technician.assigned)?('Assigned technician: <b>'+d.technician.name+'</b>'):('Assigned technician: details available after assignment');
+      trkMsg('💬 <b>'+d.reference+'</b> — '+d.appliance+' in '+d.city+(d.preferredWindow?' • Window '+d.preferredWindow:'')+'<br>Status: <b>'+(d.stageLabel8||d.stageLabel)+'</b>'+pay+'<br>'+techLine+'<br><span style="display:inline-flex;gap:8px;margin-top:9px;flex-wrap:wrap;"><a href="#" onclick="toggleSpeedy();return false;" style="background:#fff;color:#12233d;padding:9px 16px;border-radius:99px;font-weight:800;">💬 Ask Speedy</a><a href="tel:+19549317997" style="background:transparent;color:#12233d;padding:9px 16px;border-radius:99px;font-weight:800;border:1.5px solid #B9CFEA;">📞 Contact</a></span><small>Live from the Top Speed Service OS — the same record dispatch works from.</small>');
     })
     .catch(function(){trkMsg('⚠️ Tracking is unreachable right now — call <b>954-931-7997</b> and we will read your status straight off the board.');});
 }
 renderTrkStages(0);
+function renderExplore(){
+  var sel=document.getElementById('exploreStage'); if(!sel) return;
+  var active=parseInt(sel.value,10)||0;
+  document.getElementById('exploreList').innerHTML=TRK_STAGES.map(function(st,i){
+    var cls=i<active?'done':(i===active?'now':'');
+    var mark=i<active?'✓':(i+1);
+    return '<div class="stage '+cls+'"><span class="dot">'+mark+'</span><span><b>'+st.t+'</b><span>'+st.d+'</span></span></div>';
+  }).join('');
+  document.getElementById('exploreEta').innerHTML=(active===3)?'<span class="eta-pill" style="position:static;">18\u201325 min \u00b7 Illustrative ETA \u2014 not connected to an actual technician</span>':'';
+}
+renderExplore();
 
 /* ---------- booking: Smart Booking runs the live Google Form intake (above) ---------- */
 

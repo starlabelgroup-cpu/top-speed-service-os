@@ -686,13 +686,15 @@ var GARAGE = [
   {name:"Oven & Range", detail:"GE JB645RKSS · Electric range", warranty:"No active warranty", wpill:"gray", icon:3}
 ];
 var STAGES = [
-  {t:"Booked", s:"Request received by Appliance Pro"},
-  {t:"Setter confirmed", s:"Service Setters confirmed your window by text"},
-  {t:"Provider matched", s:"Marcus T. assigned — refrigeration specialist"},
-  {t:"En route", s:"Your tech is on the way — live text updates on"},
-  {t:"On site", s:"Diagnosis underway at your home"},
-  {t:"Done", s:"Repair complete — review & referral code sent"}
-];
+  {t:"Request received", s:"A Service Setter is reviewing your request"},
+  {t:"Appointment confirmed", s:"Your window is locked in"},
+  {t:"Technician assigned", s:"Your tech is matched — details by text"},
+  {t:"Technician en route", s:"Your tech is on the way — their ETA shows here"},
+  {t:"Technician arrived", s:"Your tech is at your door"},
+  {t:"Diagnosis in progress", s:"Diagnosis underway — estimate next, nothing repaired before you approve"},
+  {t:"Estimate approved", s:"Repair underway at the agreed price"},
+  {t:"Repair completed", s:"Work done and tested — review & referral code sent"}
+]
 var FEED = [
   {time:"9:02 AM", text:"<b>Appliance Pro:</b> Booking confirmed for today, 10 AM–12 PM window. Reply Y to confirm."},
   {time:"9:15 AM", text:"<b>Service Setters:</b> You're matched with Marcus T., refrigeration specialist. Photo diagnosis received — he's bringing the common parts."},
@@ -772,8 +774,8 @@ function advanceStage(){
   if(stageIdx >= STAGES.length-1) return;
   stageIdx++;
   var msgs = {
-    4:"<b>Appliance Pro:</b> Marcus has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
-    5:"<b>Appliance Pro:</b> Repair complete and tested. Your review link and referral code TS-REF-7K2P are on the More tab. Thanks for choosing Appliance Pro!"
+    4:"<b>Appliance Pro:</b> Your technician has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
+    7:"<b>Appliance Pro:</b> Repair complete and tested. Your review link and referral code are on the More tab. Thanks for choosing Top Speed!"
   };
   if(msgs[stageIdx]) FEED.push({time:"Now", text:msgs[stageIdx]});
   renderTrack(); renderActiveJob();
