@@ -303,42 +303,81 @@ footer a{color:#D7E6FF}
 <div class="flag-strip" aria-hidden="true"></div>
 
 <!-- HERO -->
+<style>
+.nh{max-width:880px;margin:0 auto}
+.nh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.nh-brand{display:flex;flex-direction:column}
+.nh-brand-red{color:#FF4D52;font-weight:800;letter-spacing:2px;font-size:15px;font-family:'Space Grotesk',sans-serif}
+.nh-brand-name{color:#fff;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:31px;letter-spacing:1px;line-height:1.05}
+.nh-brand-tag{color:#9DB6DD;font-size:12.5px;letter-spacing:2.5px;margin-top:3px;font-weight:600}
+.nh-book{background:#E8322E;color:#fff;font-weight:800;padding:13px 22px;border-radius:12px;text-decoration:none;letter-spacing:.5px;white-space:nowrap;font-size:15px}
+.nh-photo{margin-top:22px;border-radius:20px;overflow:hidden;border:3px solid rgba(255,255,255,.22)}
+.nh-photo img{width:100%;display:block;aspect-ratio:16/8;object-fit:cover}
+.nh-h1{font-family:'Poppins',sans-serif;font-style:normal;font-weight:800;font-size:clamp(34px,5.4vw,54px);line-height:1.12;color:#fff;margin:26px 0 12px;letter-spacing:-.01em}
+.nh-sub{color:#C4D6F6;font-size:18px;max-width:56ch;line-height:1.55}
+.nh-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
+.nh-cta{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 14px;border-radius:16px;color:#fff;font-weight:700;font-size:18px;text-decoration:none;text-align:center}
+.nh-red{background:linear-gradient(180deg,#F0564F,#E5322D)}
+.nh-navy{background:#17386B;border:1px solid rgba(255,255,255,.14)}
+.nh-ic{font-size:24px;line-height:1}
+.nh-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.nh-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 10px;border-radius:16px;background:#12294F;border:1px solid rgba(255,255,255,.1);color:#fff;font-weight:600;font-size:16px;text-decoration:none;text-align:center}
+.nh-speedy{margin-top:16px;background:#14315E;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px}
+.nh-speedy-h{font-family:'Poppins',sans-serif;font-weight:700;font-size:22px;color:#fff}
+.nh-speedy p{color:#B9CFF2;margin-top:8px;font-size:15.5px;line-height:1.55}
+.nh-ask{display:flex;margin-top:16px;background:#fff;border-radius:999px;padding:6px;align-items:center}
+.nh-ask input{flex:1;border:none;font:inherit;font-size:16px;padding:10px 16px;color:#12233D;background:transparent;min-width:0}
+.nh-ask input:focus{outline:none}
+.nh-ask button{background:none;border:none;font-size:20px;color:#1473FF;cursor:pointer;padding:6px 14px}
+.nh-links{display:flex;gap:14px 24px;flex-wrap:wrap;align-items:center;margin-top:22px}
+.nh-links a{color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid rgba(255,255,255,.35);padding-bottom:2px}
+.nh-rating{color:#C4D6F6;margin-left:auto;font-size:15px}
+.nh-rating .stars{color:#FFC531;letter-spacing:2px}
+@media(max-width:560px){.nh-rating{margin-left:0}.nh-brand-name{font-size:26px}}
+</style>
 <div class="hero" id="top">
   <div class="wrap">
-    <div class="hero-grid">
-      <div>
-        <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Broward County • Same-Day Service</span>
-        <h1 style="margin:16px 0 14px">Your Appliances. Your Services. <span class="rd">Your Control.</span></h1>
-        <p class="lede">One intelligent platform for appliance repair, installation, maintenance, equipment management and service scheduling. <b style="color:#fff">TOP SPEED SERVICE OS</b> — One Service Ecosystem. Powered by Speedy AI.</p>
-        <div class="hero-ctas">
-          <a class="btn btn-red" href="#ask-speedy">💬 Ask Speedy AI</a>
-          <a class="btn" style="background:#fff;color:var(--navy)" href="#book">📅 Book Service</a>
-          <a class="btn" style="background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)" href="/signup">Create Customer Account</a>
-          <a class="btn" style="background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.45)" href="/commercial">Explore Commercial Solutions</a>
+    <div class="nh">
+      <div class="nh-top">
+        <div class="nh-brand">
+          <span class="nh-brand-red">TOP SPEED</span>
+          <span class="nh-brand-name">APPLIANCE</span>
+          <span class="nh-brand-tag">THE FASTER, THE BETTER.</span>
         </div>
-        <div class="rating-row">
-          <span class="stars" aria-hidden="true">★★★★★</span>
-          <span><b style="color:#fff">4.8</b> from <b style="color:#fff">2,500 reviews</b> • Top Speed Appliance LLC</span>
-        </div>
-        <div class="hero-badges">
-          <div class="hbadge">💲 <b>$99 diagnostic</b> — credited toward repair</div>
-          <div class="hbadge">⚡ <b>Same-day</b> windows across 12 cities</div>
-          <div class="hbadge">🛡️ <b>Warranty-backed</b> repairs</div>
-        </div>
+        <a class="nh-book" href="#book">BOOK SERVICE</a>
       </div>
-      <div>
-        <div class="hero-img"><img src="banner-hero-web.jpg" alt="Get Top Speed — Top Speed Appliance banner showing a refrigerator, washer, dryer, oven and microwave with checkered flag"></div>
-        <div class="diag-chip" style="border-radius:0 0 16px 16px;margin-top:0">
-          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-            <b>$99</b>
-            <p style="flex:1;min-width:200px"><strong style="color:var(--navy)">Diagnostic, done right.</strong> Collected at booking, credited in full toward your repair when you approve the work. No surprises — the tech confirms the total before starting.</p>
-            <a class="btn btn-blue" style="padding:11px 18px;font-size:15px" href="#pricing">How pricing works</a>
-          </div>
-        </div>
+      <div class="nh-photo"><img src="banner-hero-web.jpg" alt="Top Speed Appliance — refrigerator, washer, dryer, oven and microwave service across Broward County"></div>
+      <h1 class="nh-h1">Appliance Repair.<br>Smarter. Faster.<br>Connected.</h1>
+      <p class="nh-sub">Professional home and commercial appliance service, powered by Speedy AI and Top Speed Service OS.</p>
+      <div class="nh-grid2">
+        <a class="nh-cta nh-red" href="#book"><span class="nh-ic">📅</span>Book a Repair</a>
+        <a class="nh-cta nh-navy" href="#ask-speedy"><span class="nh-ic">🤖</span>Ask Speedy AI</a>
+      </div>
+      <div class="nh-grid3">
+        <a class="nh-tile" href="/home-appliance-services"><span class="nh-ic">🔧</span>Home Repair</a>
+        <a class="nh-tile" href="/commercial"><span class="nh-ic">🏢</span>Commercial</a>
+        <a class="nh-tile" href="/local"><span class="nh-ic">📍</span>Service Areas</a>
+      </div>
+      <div class="nh-speedy">
+        <div class="nh-speedy-h">✦ Meet Speedy — Your AI Service Assistant</div>
+        <p>Describe your appliance problem, upload photos, request live video support, or schedule a technician.</p>
+        <form class="nh-ask" onsubmit="return nhAsk(event)">
+          <input id="nhAskInput" type="text" placeholder="What's happening with your appliance?" aria-label="What's happening with your appliance?">
+          <button type="submit" aria-label="Ask Speedy">➤</button>
+        </form>
+      </div>
+      <div class="nh-links">
+        <a href="/app">Create Customer Account</a>
+        <a href="/commercial">Explore Commercial Solutions</a>
+        <span class="nh-rating"><span class="stars">★★★★★</span> <b style="color:#fff">4.8</b> from <b style="color:#fff">2,500 reviews</b> • Top Speed Appliance LLC</span>
       </div>
     </div>
   </div>
   <div style="height:26px"></div>
+<script>
+function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInput').value||'').trim(); if(t){ quickAsk(t); } else { toggleSpeedy(); } return false; }
+</script>
+
   <div class="stats">
     <div class="wrap">
       <div class="stat"><b>4.8 ★</b><span>2,500 reviews</span></div>

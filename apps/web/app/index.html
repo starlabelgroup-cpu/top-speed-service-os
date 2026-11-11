@@ -287,6 +287,111 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
       <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Every booking flows into Service Setters &amp; the Book OS dispatch board</li>
       <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Try the phone on the right — every screen and button works</li>
     </ul>
+    <style>
+      .acct-card{background:#fff;border:1px solid #DCE6F5;border-radius:18px;padding:22px;margin:22px 0;box-shadow:0 14px 34px -18px rgba(5,20,50,.25)}
+      .acct-card h2{font-size:21px;color:#0A265C;margin:0 0 4px}
+      .acct-card .sub{font-size:14px;color:#5A6B82;line-height:1.5;margin:0 0 14px}
+      .acct-tabs{display:flex;background:#EEF3FB;border-radius:99px;padding:4px;margin-bottom:16px}
+      .acct-tabs button{flex:1;border:none;background:transparent;font:inherit;font-weight:700;font-size:14.5px;padding:10px;border-radius:99px;cursor:pointer;color:#42557A}
+      .acct-tabs button.on{background:#0A265C;color:#fff}
+      .acct-card label{font-size:13.5px;font-weight:700;color:#344054;display:block;margin:12px 0 6px}
+      .acct-card input{width:100%;padding:13px 16px;border:1.5px solid #D7DEE9;border-radius:12px;font:inherit;font-size:15px;box-sizing:border-box}
+      .acct-card input:focus{outline:2px solid #1280FF;border-color:#1280FF}
+      .acct-go{width:100%;margin-top:18px;padding:14px;border:none;border-radius:12px;background:#E01A22;color:#fff;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer}
+      .acct-go:disabled{opacity:.55}
+      .acct-err{display:none;background:#FDECEC;border:1px solid #F5C2C0;color:#8F1D1A;border-radius:12px;padding:11px 13px;font-size:13.5px;margin-top:14px}
+      .acct-links{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+      .acct-links a{text-align:center;padding:12px 8px;border-radius:12px;background:#0A265C;color:#fff;font-weight:700;font-size:14px;text-decoration:none}
+      .acct-links a.alt{background:#EEF3FB;color:#0A265C}
+      .acct-out{margin-top:12px;width:100%;background:none;border:none;color:#B3261E;font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:6px}
+      .acct-note{font-size:12.5px;color:#8496B3;margin-top:12px;line-height:1.5}
+    </style>
+    <div class="acct-card" id="landingAcct">
+      <h2>🔐 Your Top Speed Account</h2>
+      <p class="sub">One account for everything — this app, the web portal, and the mobile app. Create it once and sign in everywhere.</p>
+      <div id="laOut">
+        <div class="acct-tabs">
+          <button type="button" id="laTabIn" class="on">Sign in</button>
+          <button type="button" id="laTabUp">Create account</button>
+        </div>
+        <form id="laInForm">
+          <label for="laInEmail">Email</label><input id="laInEmail" type="email" autocomplete="email" placeholder="you@example.com">
+          <label for="laInPw">Password</label><input id="laInPw" type="password" autocomplete="current-password" placeholder="Your password">
+          <button class="acct-go" id="laInBtn" type="submit">Sign in</button>
+        </form>
+        <form id="laUpForm" style="display:none">
+          <label for="laUpName">Full name</label><input id="laUpName" type="text" autocomplete="name" placeholder="Your full name">
+          <label for="laUpEmail">Email</label><input id="laUpEmail" type="email" autocomplete="email" placeholder="you@example.com">
+          <label for="laUpPhone">Mobile phone</label><input id="laUpPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
+          <label for="laUpPw">Password</label><input id="laUpPw" type="password" autocomplete="new-password" placeholder="At least 10 characters">
+          <button class="acct-go" id="laUpBtn" type="submit">Create my account</button>
+        </form>
+        <div class="acct-err" id="laErr"></div>
+        <p class="acct-note">Your account unlocks real booking, live tech tracking, your appliance garage, and your referral code — on the web and in the app.</p>
+      </div>
+      <div id="laIn" style="display:none">
+        <p class="sub" id="laWho" style="margin-bottom:0"></p>
+        <div class="acct-links">
+          <a href="#app">📱 Open the app</a>
+          <a href="/garage">🧰 My Appliances</a>
+          <a href="/track">📍 Track My Tech</a>
+          <a href="/portal" class="alt">🖥️ Web Portal</a>
+        </div>
+        <button class="acct-out" id="laOutBtn" type="button">Sign out</button>
+      </div>
+    </div>
+    <script>
+    (function(){
+      var API='https://top-speed-service-os.vercel.app/api/v1';
+      function $(i){return document.getElementById(i)}
+      function tok(){ try{ return localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+      function fail(m){ var e=$('laErr'); e.textContent=m; e.style.display='block'; }
+      function tab(up){
+        $('laTabIn').className=up?'':'on'; $('laTabUp').className=up?'on':'';
+        $('laInForm').style.display=up?'none':''; $('laUpForm').style.display=up?'':'none';
+        $('laErr').style.display='none';
+      }
+      $('laTabIn').addEventListener('click',function(){ tab(false); });
+      $('laTabUp').addEventListener('click',function(){ tab(true); });
+      function save(j){ try{ localStorage.setItem('tsos_cust_token',j.token); localStorage.setItem('tsos_token',j.token); }catch(e){} location.reload(); }
+      function post(path,body){
+        return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+        .then(function(r){ return r.json().then(function(j){ if(!r.ok||!j.token) throw new Error(j.error||'Something went wrong'); return j; }); });
+      }
+      $('laInForm').addEventListener('submit',function(e){
+        e.preventDefault();
+        var em=$('laInEmail').value.trim(), pw=$('laInPw').value;
+        if(!em||!pw) return fail('Enter your email and password.');
+        var b=$('laInBtn'); b.disabled=true; b.textContent='Signing in…';
+        post('/auth/login',{email:em,password:pw}).then(save).catch(function(x){ fail('Sign-in failed: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Sign in'; });
+      });
+      $('laUpForm').addEventListener('submit',function(e){
+        e.preventDefault();
+        var name=$('laUpName').value.trim(), em=$('laUpEmail').value.trim(), ph=$('laUpPhone').value.trim(), pw=$('laUpPw').value;
+        if(name.length<2) return fail('Please add your full name.');
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return fail('Please add a valid email address.');
+        if(ph.replace(/\D/g,'').length<7) return fail('Please add your mobile number.');
+        if(pw.length<10) return fail('Password needs at least 10 characters.');
+        var parts=name.split(/\s+/);
+        var body={email:em,password:pw,firstName:parts[0],phone:ph,role:'CUSTOMER'};
+        if(parts.length>1) body.lastName=parts.slice(1).join(' ');
+        var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
+        post('/auth/register',body).then(save).catch(function(x){
+          var m=x.message; if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
+          fail(m);
+        }).finally(function(){ b.disabled=false; b.textContent='Create my account'; });
+      });
+      $('laOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_cust_token'); localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+      if(tok()){
+        fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+tok()}}).then(function(r){ return r.json(); }).then(function(j){
+          if(!j.user) return;
+          var nm=((j.user.firstName||'')+' '+(j.user.lastName||'')).trim()||j.user.email;
+          $('laWho').innerHTML='Signed in as <b>'+nm.replace(/</g,'&lt;')+'</b> · '+String(j.user.email||'').replace(/</g,'&lt;');
+          $('laOut').style.display='none'; $('laIn').style.display='';
+        }).catch(function(){});
+      }
+    })();
+    </script>
     <div class="comm-promo">
       <b style="display:block; font-size:16px; margin-bottom:4px;">Appliance Pro Commercial Accounts</b>
       <span style="font-size:14px; color:var(--page-mut); line-height:1.5; display:block;">For restaurants, hotels, laundromats, healthcare, offices and facilities — equipment registry, priority dispatch, preventive maintenance, and one consolidated monthly invoice, all inside the Appliance Pro App.</span>
@@ -305,7 +410,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <div class="bn"><b>APPLIANCE PRO</b><span>Appliance Pro App</span></div>
             <a class="callbtn" href="tel:+19549317997"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>954-931-7997</a>
           </div>
-          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> App preview with demo data — bookings shown here don't save into the Service OS yet.</div>
+          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Live Service OS app — sign in and your bookings save for real. Provider Mode earnings are a preview.</div>
           <div class="mode-toggle" role="tablist" aria-label="App mode">
             <button id="mode-customer" class="on" onclick="setMode('customer')">Customer</button>
             <button id="mode-provider" onclick="setMode('provider')">Provider Mode</button>
@@ -958,7 +1063,7 @@ buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack(); rend
    booking lands straight in the Service Setters queue. */
 var C_API='https://top-speed-service-os.vercel.app/api/v1';
 var cUser=null;
-function cTok(){ try{ return localStorage.getItem('tsos_cust_token')||''; }catch(e){ return ''; } }
+function cTok(){ try{ return localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function escC(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function cFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+cTok()},opts.headers||{});
@@ -966,7 +1071,7 @@ function cFetch(path,opts){
 }
 function cVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
 function setCustSession(j){
-  try{ localStorage.setItem('tsos_cust_token',j.token); }catch(e){}
+  try{ localStorage.setItem('tsos_cust_token',j.token); localStorage.setItem('tsos_token',j.token); }catch(e){}
   custApplyUser(j.user);
 }
 function custApplyUser(user){
@@ -996,7 +1101,7 @@ function doCustLogin(email,pw){
 }
 function custLogin(){ var em=cVal('acEmail'), pw=cVal('acPw'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
 function custLoginFromBook(){ var em=cVal('cdEmail2'), pw=cVal('cdPw2'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
-function custLogout(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} location.reload(); }
+function custLogout(){ try{ localStorage.removeItem('tsos_cust_token'); localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); }
 function stageForBooking(b){
   if(!b) return 1;
   if(b.status==='COMPLETED') return 5;
