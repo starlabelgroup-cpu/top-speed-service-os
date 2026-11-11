@@ -721,9 +721,194 @@ footer a{color:#D7E6FF}
       <p style="color:#fff; margin-top:10px;"><b>Fastest way:</b> tap <b>💬 Ask Speedy</b> (bottom right) and just say what's wrong — Speedy books it right in the chat. This form stays here if you prefer it.</p>
     </div>
     <div class="book-grid">
-      <div class="card book-form reveal" style="padding:12px">
-        <iframe src="https://docs.google.com/forms/d/e/1FAIpQLScUUHyHxvmecyYgIpA9TXaSaTjguUepAeKsLzeVp33eiXBlFA/viewform?embedded=true" style="display:block;width:100%;height:1280px;border:0;border-radius:10px;background:#fff" loading="lazy" title="Top Speed Appliance — Book a Repair">Loading the booking form…</iframe>
-        <p style="margin:10px 4px 2px;font-size:13.5px;color:#5A6E94">Form not loading? <a href="https://docs.google.com/forms/d/e/1FAIpQLScUUHyHxvmecyYgIpA9TXaSaTjguUepAeKsLzeVp33eiXBlFA/viewform" target="_blank" rel="noopener"><b>Open the booking form</b></a> — or call <a href="tel:+19549317997"><b>954-931-7997</b></a>. Every booking goes straight to our dispatch log, and a Service Setter confirms your appointment by phone.</p>
+      <div class="card book-form reveal" style="padding:0;overflow:hidden">
+        <!-- SMART BOOKING WIZARD — five steps, one coordinated experience with
+             Speedy AI. Submits to the live Service OS (POST /speedy/book,
+             source WEB_FORM): creates the customer + service request in the
+             CRM, queues the Resend/Twilio confirmation, and lands the job in
+             the Service Setters dispatch queue, trackable in Track My Tech. -->
+        <style>
+          #wiz{background:#0b1e42;color:#fff;padding:22px 22px 0}
+          #wiz .wb{color:var(--red);font-weight:800;letter-spacing:1.5px;font-size:13px}
+          #wiz .ws{color:#9db6dd;font-size:13px;margin-top:2px}
+          #wiz h3{font-size:clamp(22px,3.4vw,30px);margin:12px 0 4px;color:#fff}
+          #wiz .wtag{color:#c7d6f2;font-size:14px}
+          #wizSegs{display:flex;gap:6px;margin:18px 0 8px}
+          #wizSegs i{flex:1;height:6px;border-radius:99px;background:#33507e}
+          #wizSegs i.done,#wizSegs i.now{background:var(--red)}
+          #wizSteps{display:flex;gap:6px;padding-bottom:16px}
+          #wizSteps span{flex:1;text-align:center;font-size:12px;color:#8fa8cf;font-weight:600}
+          #wizSteps span.now{color:#fff}
+          #wizBody{background:#fff;color:var(--ink);padding:22px}
+          #wizBody h4{font-size:21px;color:var(--navy);display:flex;justify-content:space-between;align-items:baseline}
+          #wizBody h4 small{color:#8fa1bb;font-size:13px;font-weight:600}
+          #wizBody label{font-size:13px;font-weight:700;color:#42557a;display:block;margin:14px 0 5px}
+          #wizBody input,#wizBody select,#wizBody textarea{width:100%;padding:13px 16px;border:1.5px solid #ccd8ec;border-radius:999px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+          #wizBody textarea{border-radius:16px;min-height:92px;resize:vertical}
+          #wizBody input:focus,#wizBody select:focus,#wizBody textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+          .wizNav{display:flex;justify-content:space-between;gap:12px;margin-top:22px}
+          .wizBack{padding:13px 26px;border-radius:999px;border:1.5px solid #ccd8ec;background:#fff;font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
+          .wizNext{padding:13px 26px;border-radius:999px;border:none;background:#101828;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+          .wizNext.red{background:var(--red)}
+          .wizNext:disabled{opacity:.55;cursor:wait}
+          #wizErr{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:12px;padding:11px 13px;font-size:14px;margin-top:14px}
+          .winGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px;margin-top:6px}
+          .winGrid label{margin:0!important}
+          .winGrid input{position:absolute;opacity:0;pointer-events:none}
+          .winGrid .wc{display:block;text-align:center;padding:12px 6px;border:1.5px solid #ccd8ec;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#42557a}
+          .winGrid input:checked + .wc{background:var(--navy);color:#fff;border-color:var(--navy)}
+          #wizReview{display:grid;gap:8px;font-size:15px}
+          #wizReview .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #dbe4f0;padding:7px 0}
+          #wizReview .r b{color:var(--navy);text-align:right}
+          #wizReview .r span{color:#5a6b84}
+          #wizDone{display:none;background:#fff;color:var(--ink);padding:26px 22px;text-align:center}
+          #wizDone .ref{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--navy);letter-spacing:1px}
+          #wizSpeedy{display:flex;align-items:center;gap:12px;background:#123064;color:#fff;border:none;width:100%;padding:16px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left}
+          #wizSpeedy small{display:block;font-weight:500;color:#b9cff2;font-size:13px}
+          #wizSpeedy .bub{margin-left:auto;font-size:22px}
+        </style>
+        <div id="wiz">
+          <div class="wb">TOP SPEED APPLIANCE</div>
+          <div class="ws">Service OS Booking</div>
+          <h3>Book Your Appliance Repair</h3>
+          <div class="wtag">Fast • Reliable • Local Service</div>
+          <div id="wizSegs"><i></i><i></i><i></i><i></i><i></i></div>
+          <div id="wizSteps"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
+        </div>
+        <div id="wizBody">
+          <div class="wizPane" data-pane="1">
+            <h4>Contact details <small>1 of 5</small></h4>
+            <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
+            <label for="wPhone">Mobile phone</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000 — we confirm by text">
+            <label for="wEmail">Email (for your confirmation)</label><input id="wEmail" type="email" autocomplete="email" placeholder="you@example.com">
+          </div>
+          <div class="wizPane" data-pane="2" hidden>
+            <h4>Service Location <small>2 of 5</small></h4>
+            <label for="wAddress">Street Address</label><input id="wAddress" autocomplete="street-address" placeholder="Service address">
+            <label for="wCity">City</label>
+            <select id="wCity"><option value="">Choose your city</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
+            <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
+          </div>
+          <div class="wizPane" data-pane="3" hidden>
+            <h4>What needs fixing? <small>3 of 5</small></h4>
+            <label for="wAppliance">Appliance</label>
+            <select id="wAppliance"><option value="">Choose the appliance</option><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select>
+            <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm, ice maker stopped, started two days ago…"></textarea>
+          </div>
+          <div class="wizPane" data-pane="4" hidden>
+            <h4>Pick a window <small>4 of 5</small></h4>
+            <p style="color:#5a6b84;font-size:14px">Two-hour arrival windows, confirmed by your Service Setter. Same-day windows show when the board allows.</p>
+            <div class="winGrid" id="wWins">
+              <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 AM</span></label>
+              <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 AM–12 PM</span></label>
+              <label><input type="radio" name="wwin" value="12-14"><span class="wc">12–2 PM</span></label>
+              <label><input type="radio" name="wwin" value="14-16"><span class="wc">2–4 PM</span></label>
+              <label><input type="radio" name="wwin" value="16-18"><span class="wc">4–6 PM</span></label>
+            </div>
+            <label for="wNote">Anything else? (gate code, parking, pets — optional)</label><input id="wNote" placeholder="Optional">
+          </div>
+          <div class="wizPane" data-pane="5" hidden>
+            <h4>Review &amp; book <small>5 of 5</small></h4>
+            <div id="wizReview"></div>
+            <p style="font-size:13.5px;color:#5a6b84;margin-top:12px">The <b>$99 diagnostic</b> is collected at booking and <b>credited in full toward your repair</b>. A Service Setter reviews every request and confirms your appointment by phone/text before dispatch — and you'll be able to follow the visit live in Track My Tech.</p>
+          </div>
+          <div id="wizErr"></div>
+          <div class="wizNav">
+            <button class="wizBack" id="wizBackBtn" type="button" style="visibility:hidden">Back</button>
+            <button class="wizNext" id="wizNextBtn" type="button">Continue →</button>
+          </div>
+        </div>
+        <div id="wizDone">
+          <div style="font-size:40px">✅</div>
+          <h4 style="font-size:22px;color:var(--navy);margin:8px 0">You're on the board!</h4>
+          <p style="color:#5a6b84">Your booking reference:</p>
+          <div class="ref" id="wizRef">TS-XXXXXX</div>
+          <p style="color:#5a6b84;max-width:440px;margin:10px auto">Your request is in the Service Setters dispatch queue and your confirmation is on its way by text/email. A setter confirms your window shortly — then you can follow your technician live.</p>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px">
+            <a class="btn btn-red" href="/track" style="padding:12px 20px">📍 Track this job</a>
+            <a class="btn btn-navy" href="/garage" style="padding:12px 20px">My Appliances</a>
+          </div>
+        </div>
+        <button id="wizSpeedy" type="button" onclick="toggleSpeedy()">
+          <span>💬 Need help? Ask Speedy AI<small>Rather talk it through? Speedy books it in the chat — same queue, same confirmation.</small></span>
+          <span class="bub">💬</span>
+        </button>
+        <script>
+        (function(){
+          var API='https://top-speed-service-os.vercel.app/api/v1';
+          var step=1, busy=false;
+          var $=function(id){return document.getElementById(id)};
+          var panes=[].slice.call(document.querySelectorAll('.wizPane'));
+          var segs=[].slice.call(document.querySelectorAll('#wizSegs i'));
+          var labels=[].slice.call(document.querySelectorAll('#wizSteps span'));
+          function show(n){
+            step=n;
+            panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
+            segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
+            labels.forEach(function(l,i){l.className=i===n-1?'now':''});
+            $('wizBackBtn').style.visibility=n===1?'hidden':'visible';
+            $('wizNextBtn').textContent=n===5?'✓ Confirm booking':'Continue →';
+            $('wizNextBtn').classList.toggle('red',n===5);
+            $('wizErr').style.display='none';
+            if(n===5) fillReview();
+          }
+          function err(msg){var e=$('wizErr');e.textContent=msg;e.style.display='block';}
+          function val(id){return $(id).value.trim()}
+          function valid(n){
+            if(n===1){
+              if(val('wName').length<2) return 'Please add your name so the setter knows who to ask for.';
+              if(val('wPhone').replace(/\D/g,'').length<7) return 'Please add a mobile number — your confirmation and updates go there.';
+              var em=val('wEmail'); if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return 'That email doesn\'t look complete — fix it or leave it blank.';
+            }
+            if(n===2){
+              if(val('wAddress').length<5) return 'Please add the street address for the visit.';
+              if(!val('wCity')) return 'Please choose your city — we serve 12 Broward cities.';
+              if(!/^\d{5}$/.test(val('wZip'))) return 'Please add the 5-digit ZIP code.';
+            }
+            if(n===3){
+              if(!val('wAppliance')) return 'Please choose the appliance.';
+              if(val('wIssue').length<3) return 'A sentence about the problem helps the tech bring the right parts.';
+            }
+            if(n===4){
+              if(!document.querySelector('input[name="wwin"]:checked')) return 'Please pick an arrival window.';
+            }
+            return '';
+          }
+          function fillReview(){
+            var win=document.querySelector('input[name="wwin"]:checked');
+            var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Window',win?win.nextElementSibling.textContent:'—']];
+            $('wizReview').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+r[1].replace(/</g,'&lt;')+'</b></div>'}).join('');
+          }
+          function submit(){
+            var win=document.querySelector('input[name="wwin"]:checked').value;
+            var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
+            var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
+            var em=val('wEmail'); if(em) payload.customer.email=em;
+            busy=true; var btn=$('wizNextBtn'); btn.disabled=true; btn.textContent='Booking…';
+            fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+            .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+            .then(function(x){
+              if(!x.ok){
+                if(x.j && x.j.serviceCities) throw new Error('That address is outside our current service area. We serve: '+x.j.serviceCities.join(', ')+'. Call 954-931-7997 and we\'ll tell you honestly if we can make an exception.');
+                throw new Error((x.j&&x.j.error)||'The booking did not go through.');
+              }
+              $('wizRef').textContent=x.j.data.referenceCode;
+              $('wizBody').style.display='none';
+              document.getElementById('wiz').style.display='none';
+              $('wizDone').style.display='block';
+            })
+            .catch(function(e){ err(e.message+' You can also book by chat — tap Ask Speedy below — or call 954-931-7997.'); })
+            .finally(function(){ busy=false; btn.disabled=false; btn.textContent='✓ Confirm booking'; });
+          }
+          $('wizBackBtn').addEventListener('click',function(){ if(step>1) show(step-1); });
+          $('wizNextBtn').addEventListener('click',function(){
+            if(busy) return;
+            var v=valid(step); if(v){ err(v); return; }
+            if(step<5) show(step+1); else submit();
+          });
+          show(1);
+        })();
+        </script>
       </div>
       <aside class="card fee-card reveal" id="pricing">
         <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Pricing &amp; Warranty</span>
@@ -1300,7 +1485,10 @@ function renderExplore(){
 }
 renderExplore();
 
-/* ---------- booking: Smart Booking runs the live Google Form intake (above) ---------- */
+/* ---------- booking: Smart Booking is the native 5-step wizard in the #book
+   section above (self-contained script, POST /speedy/book source WEB_FORM).
+   The Google Form intake it replaced is retired — every booking now lands
+   in the Service OS directly. ---------- */
 
 /* ---------- Speedy chat ---------- */
 var spOpen=false, spGreeted=false;
