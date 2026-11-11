@@ -113,6 +113,7 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div class="metric"><small>Jobs Dispatched — Demo</small><b id="mDispatched">31</b><span>Approved &amp; sent to providers</span></div>
 <div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter ✓</span></div>
 </section>
+<section class="panel" id="scorePanel" style="display:none;margin-bottom:18px"><div class="ph"><div><h2>Launch Scorecard — Live</h2><p>Real numbers from the Service OS database — the launch baseline starts at zero and every booking, confirmation and dispatch moves it. <span id="scoreWhen"></span></p></div><span class="badge">LIVE SCORING</span></div><div id="scoreGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:0 16px 16px"></div></section>
 <div class="notice" id="modeNotice">⚠️ This is an operations <strong>preview</strong> for Top Speed Appliance LLC. All names, jobs and numbers below are realistic demo data — it is <strong>not connected to live bookings</strong>. Buttons work in-page so you can rehearse the real workflow.</div>
 
 
@@ -338,12 +339,41 @@ function enterLive(user){
   document.getElementById('modePill').textContent='\u25cf LIVE \u2014 SERVICE OS CONNECTED';
   document.getElementById('modeNotice').innerHTML='<strong>Live mode:</strong> the Setter Queue, Today\u2019s Appointments and the Dispatch Board below are reading the real Service OS database right now. Anything still labelled \u201cDemo\u201d is demo.';
   document.getElementById('staffState').textContent='\u25cf LIVE';
+  document.getElementById('scorePanel').style.display='block';
   document.getElementById('staffLogin').style.display='none';
   var bar=document.getElementById('staffBar'); bar.style.display='flex';
   document.getElementById('staffWho').textContent='Signed in as '+user.email+' \u00b7 '+(user.roles||[]).join(', ');
 }
+function renderScorecard(d){
+  var smalls=document.querySelectorAll('.metric small');
+  if(smalls[0]) smalls[0].textContent='Requests Today \u2014 Live';
+  document.getElementById('mRequests').textContent=d.bookings.today;
+  if(smalls[1]) smalls[1].textContent='Confirmation Rate \u2014 Live';
+  document.getElementById('mRate').textContent=d.confirmation.ratePct+'%';
+  var rateSpan=document.getElementById('mRate').parentElement.querySelector('span');
+  if(rateSpan) rateSpan.textContent=d.confirmation.confirmed+' confirmed / '+d.confirmation.reached+' reached';
+  if(smalls[2]) smalls[2].textContent='Jobs Dispatched \u2014 Live';
+  document.getElementById('mDispatched').textContent=d.dispatch.dispatched;
+  document.getElementById('scoreWhen').textContent='Updated '+new Date(d.generatedAt).toLocaleTimeString()+'.';
+  function tile(k,v){ return '<div style="background:var(--chip);border-radius:10px;padding:10px 12px"><small style="display:block;color:var(--mut);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">'+k+'</small><b style="font-size:19px">'+v+'</b></div>'; }
+  function breakdown(obj){ var ks=Object.keys(obj||{}); if(!ks.length) return 'none yet'; return ks.map(function(k){ return k+' '+obj[k]; }).join(' \u00b7 '); }
+  document.getElementById('scoreGrid').innerHTML=
+    tile('Bookings \u2014 total', d.bookings.total)+
+    tile('Bookings by source', breakdown(d.bookings.bySource))+
+    tile('Setter queue waiting', d.dispatch.queueWaiting)+
+    tile('Providers active', d.network.providersActive)+
+    tile('Cities covered', d.network.citiesCovered)+
+    tile('Intake records', d.intake.connectionsTotal+' <span style="font-size:12px;font-weight:600">'+breakdown(d.intake.byType)+'</span>')+
+    tile('Customers', d.customers.total)+
+    tile('Accounts', d.customers.accounts==null?'\u2014':d.customers.accounts)+
+    tile('Referrals issued / redeemed', d.flywheel.referralsIssued+' / '+d.flywheel.referralsRedeemed)+
+    tile('Video requests (pending)', d.flywheel.videoRequests+' ('+d.flywheel.videoPending+')')+
+    tile('$99 paid online', d.payments.paidOnline)+
+    tile('Online payments', d.payments.configured?'LIVE':'Not switched on yet');
+}
 function loadLive(){
   if(!LIVE) return;
+  apiFetch('/bookos/scorecard').then(function(j){ renderScorecard(j.data); }).catch(function(e){ toast('Scorecard error: '+e.message); });
   Promise.all([apiFetch('/bookos/setter-queue'),apiFetch('/bookos/dispatch-board')])
     .then(function(res){
       renderLiveQueue(res[0].data.queue||[]);
@@ -355,8 +385,6 @@ function loadLive(){
 function renderLiveQueue(items){
   liveQueue=items;
   document.getElementById('qCount').textContent=items.length+' waiting';
-  var mReq=document.querySelectorAll('.metric small')[0]; if(mReq) mReq.textContent='Requests in Queue \u2014 Live';
-  document.getElementById('mRequests').textContent=items.length;
   var el=document.getElementById('queue');
   if(!items.length){ el.innerHTML='<div class="empty">\ud83c\udf89 Queue clear \u2014 every request has been called. New bookings will appear here live.</div>'; return; }
   el.innerHTML=items.map(function(q,i){
