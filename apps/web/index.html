@@ -721,14 +721,14 @@ footer a{color:#D7E6FF}
       <p style="color:#fff; margin-top:10px;"><b>Fastest way:</b> tap <b>💬 Ask Speedy</b> (bottom right) and just say what's wrong — Speedy books it right in the chat. This form stays here if you prefer it.</p>
     </div>
     <div class="book-grid">
-      <div class="card book-form reveal" style="padding:0;overflow:hidden">
+      <div class="card book-form reveal" style="padding:0;overflow:visible;background:transparent;border:none;box-shadow:none">
         <!-- SMART BOOKING WIZARD — five steps, one coordinated experience with
              Speedy AI. Submits to the live Service OS (POST /speedy/book,
              source WEB_FORM): creates the customer + service request in the
              CRM, queues the Resend/Twilio confirmation, and lands the job in
              the Service Setters dispatch queue, trackable in Track My Tech. -->
         <style>
-          #wiz{background:#0b1e42;color:#fff;padding:22px 22px 0}
+          #wiz{background:transparent;color:#fff;padding:4px 4px 0}
           #wiz .wb{color:var(--red);font-weight:800;letter-spacing:1.5px;font-size:13px}
           #wiz .ws{color:#9db6dd;font-size:13px;margin-top:2px}
           #wiz h3{font-size:clamp(22px,3.4vw,30px);margin:12px 0 4px;color:#fff}
@@ -739,7 +739,7 @@ footer a{color:#D7E6FF}
           #wizSteps{display:flex;gap:6px;padding-bottom:16px}
           #wizSteps span{flex:1;text-align:center;font-size:12px;color:#8fa8cf;font-weight:600}
           #wizSteps span.now{color:#fff}
-          #wizBody{background:#fff;color:var(--ink);padding:22px}
+          #wizBody{background:#fff;color:var(--ink);padding:22px;border-radius:18px;margin-top:16px}
           #wizBody h4{font-size:21px;color:var(--navy);display:flex;justify-content:space-between;align-items:baseline}
           #wizBody h4 small{color:#8fa1bb;font-size:13px;font-weight:600}
           #wizBody label{font-size:13px;font-weight:700;color:#42557a;display:block;margin:14px 0 5px}
@@ -761,9 +761,9 @@ footer a{color:#D7E6FF}
           #wizReview .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #dbe4f0;padding:7px 0}
           #wizReview .r b{color:var(--navy);text-align:right}
           #wizReview .r span{color:#5a6b84}
-          #wizDone{display:none;background:#fff;color:var(--ink);padding:26px 22px;text-align:center}
+          #wizDone{display:none;background:#fff;color:var(--ink);padding:26px 22px;text-align:center;border-radius:18px;margin-top:16px}
           #wizDone .ref{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--navy);letter-spacing:1px}
-          #wizSpeedy{display:flex;align-items:center;gap:12px;background:#123064;color:#fff;border:none;width:100%;padding:16px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left}
+          #wizSpeedy{display:flex;align-items:center;gap:12px;background:#123064;color:#fff;border:none;width:100%;padding:16px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left;margin-top:14px;border-radius:16px}
           #wizSpeedy small{display:block;font-weight:500;color:#b9cff2;font-size:13px}
           #wizSpeedy .bub{margin-left:auto;font-size:22px}
         </style>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Your Appliance Repair — Top Speed Appliance · Service OS Booking</title>
+<meta name="description" content="Book appliance repair in five quick steps. Your request goes straight into the Top Speed CRM and the Service Setters dispatch queue — confirmation by text and email, live tracking after.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#ff3b47;--red2:#E8322E;--ink:#101828;--mut:#667085;--line:#d7dee9;--panel:#10254d}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1200px 700px at 50% -10%,#12294f 0%,#0a1628 55%,#070f1d 100%);color:#fff;min-height:100vh}
+  .col{max-width:430px;margin:0 auto;padding:26px 18px 44px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .brand{color:var(--red);font-weight:800;letter-spacing:1.6px;font-size:15px}
+  .brandSub{color:#9db6dd;font-size:14px;margin-top:3px}
+  .menuBtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#fff;width:42px;height:42px;border-radius:12px;font-size:19px;cursor:pointer;flex:none}
+  .menu{display:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;margin-top:12px}
+  .menu a{display:block;color:#dce8fb;text-decoration:none;font-weight:600;padding:9px 10px;border-radius:9px;font-size:15px}
+  .menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+  h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:31px;line-height:1.16;margin:26px 0 8px}
+  .tagline{text-align:center;color:#aebfe0;font-size:15px;font-weight:500}
+  .segs{display:flex;gap:7px;margin:24px 0 7px}
+  .segs i{flex:1;height:6px;border-radius:99px;background:#33475f}
+  .segs i.done,.segs i.now{background:var(--red2)}
+  .segLabels{display:flex;gap:7px}
+  .segLabels span{flex:1;text-align:center;font-size:12.5px;color:#7e93b5;font-weight:600}
+  .segLabels span.now{color:#fff}
+  .segLabels span.done{color:#c7d6f2}
+  .card{background:#fff;color:var(--ink);border-radius:22px;padding:26px 24px;margin-top:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  .card h2{font-size:24px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;color:var(--ink)}
+  .card h2 small{color:#98a2b3;font-size:13.5px;font-weight:600}
+  label{font-size:14.5px;font-weight:600;color:#344054;display:block;margin:18px 0 7px}
+  input,select,textarea{width:100%;padding:15px 20px;border:1.5px solid var(--line);border-radius:999px;font:inherit;font-size:15.5px;background:#fff;color:var(--ink)}
+  textarea{border-radius:18px;min-height:96px;resize:vertical}
+  input::placeholder,textarea::placeholder{color:#98a2b3}
+  input:focus,select:focus,textarea:focus{outline:2px solid #1280FF;border-color:#1280FF}
+  .nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px}
+  .back{padding:14px 30px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:600;cursor:pointer;color:var(--ink);font-size:15.5px}
+  .next{padding:14px 30px;border-radius:999px;border:none;background:#0b0f14;color:#fff;font:inherit;font-weight:600;cursor:pointer;font-size:15.5px}
+  .next:disabled{opacity:.55;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:16px}
+  .winGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:9px;margin-top:8px}
+  .winGrid label{margin:0}
+  .winGrid input{position:absolute;opacity:0;pointer-events:none;width:auto}
+  .winGrid .wc{display:block;text-align:center;padding:13px 6px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#344054}
+  .winGrid input:checked + .wc{background:#0A265C;color:#fff;border-color:#0A265C}
+  .review{display:grid;gap:7px;font-size:15px}
+  .review .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #e2e8f0;padding:7px 0}
+  .review .r span{color:var(--mut)} .review .r b{color:var(--ink);text-align:right}
+  .speedy{display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:18px;padding:20px 22px;margin-top:18px;text-decoration:none;color:#fff}
+  .speedy b{font-size:18.5px;display:block}
+  .speedy small{color:#b9cff2;font-size:13.5px;font-weight:500}
+  .speedy .bub{margin-left:auto;font-size:24px;background:rgba(255,255,255,.1);width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .fine{color:#7e93b5;font-size:12.5px;text-align:center;margin-top:18px;line-height:1.6}
+  .fine a{color:#c7d6f2;font-weight:600}
+  .doneBox{text-align:center}
+  .doneBox .ref{font-family:'Space Grotesk',sans-serif;font-size:29px;font-weight:700;color:#0A265C;letter-spacing:1px;margin:6px 0}
+  .doneBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+  .doneBtns a{padding:13px 20px;border-radius:999px;font-weight:700;text-decoration:none;font-size:15px}
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="top">
+    <div>
+      <div class="brand">TOP SPEED APPLIANCE</div>
+      <div class="brandSub">Service OS Booking</div>
+    </div>
+    <button class="menuBtn" id="menuBtn" aria-label="Menu">☰</button>
+  </div>
+  <nav class="menu" id="menu">
+    <a href="/">🏠 Home</a>
+    <a href="/track">📍 Track My Tech</a>
+    <a href="/garage">🧰 My Appliances</a>
+    <a href="tel:+19549317997">📞 Call 954-931-7997</a>
+  </nav>
+
+  <h1>Book Your Appliance Repair</h1>
+  <div class="tagline">Fast • Reliable • Local Service</div>
+
+  <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="segLabels" id="segLabels"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
+
+  <div class="card" id="formCard">
+    <div class="pane" data-pane="1">
+      <h2>Contact details <small>1 of 5</small></h2>
+      <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
+      <label for="wPhone">Mobile phone</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
+      <label for="wEmail">Email (for your confirmation)</label><input id="wEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    </div>
+    <div class="pane" data-pane="2" hidden>
+      <h2>Service Location <small>2 of 5</small></h2>
+      <label for="wAddress">Street Address</label><input id="wAddress" autocomplete="street-address" placeholder="Service address">
+      <label for="wCity">City</label>
+      <select id="wCity"><option value="">City</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
+      <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
+    </div>
+    <div class="pane" data-pane="3" hidden>
+      <h2>What needs fixing? <small>3 of 5</small></h2>
+      <label for="wAppliance">Appliance</label>
+      <select id="wAppliance"><option value="">Choose the appliance</option><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select>
+      <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm and the ice maker stopped, started two days ago…"></textarea>
+    </div>
+    <div class="pane" data-pane="4" hidden>
+      <h2>Pick a window <small>4 of 5</small></h2>
+      <p style="color:var(--mut);font-size:14px;margin-top:10px">Two-hour arrival windows. Your Service Setter confirms the exact appointment by text before dispatch.</p>
+      <div class="winGrid">
+        <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 AM</span></label>
+        <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 AM–12 PM</span></label>
+        <label><input type="radio" name="wwin" value="12-14"><span class="wc">12–2 PM</span></label>
+        <label><input type="radio" name="wwin" value="14-16"><span class="wc">2–4 PM</span></label>
+        <label><input type="radio" name="wwin" value="16-18"><span class="wc">4–6 PM</span></label>
+      </div>
+      <label for="wNote">Anything else? (optional)</label><input id="wNote" placeholder="Gate code, parking, pets…">
+    </div>
+    <div class="pane" data-pane="5" hidden>
+      <h2>Review &amp; book <small>5 of 5</small></h2>
+      <div class="review" id="review" style="margin-top:12px"></div>
+      <p style="font-size:13.5px;color:var(--mut);margin-top:14px">The <b>$99 diagnostic</b> is collected at booking and <b>credited in full toward your repair</b>. A Service Setter reviews every request and confirms by phone/text — then you can follow the visit live in Track My Tech.</p>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="nav">
+      <button class="back" id="backBtn" type="button" style="visibility:hidden">Back</button>
+      <button class="next" id="nextBtn" type="button">Continue&nbsp;&nbsp;→</button>
+    </div>
+  </div>
+
+  <div class="card doneBox" id="doneCard" hidden>
+    <div style="font-size:42px">✅</div>
+    <h2 style="justify-content:center">You're on the board!</h2>
+    <p style="color:var(--mut);margin-top:8px">Your booking reference:</p>
+    <div class="ref" id="doneRef">TS-XXXXXX</div>
+    <p style="color:var(--mut)">Your request is in the Service Setters dispatch queue and your confirmation is on its way by text/email. A setter confirms your window shortly.</p>
+    <div class="doneBtns">
+      <a href="/track" style="background:var(--red2);color:#fff">📍 Track this job</a>
+      <a href="/garage" style="background:#0A265C;color:#fff">My Appliances</a>
+    </div>
+  </div>
+
+  <a class="speedy" href="/app">
+    <span><b>Need help? Ask Speedy AI</b><small>Rather talk it through? Speedy books it in the chat — same queue, same confirmation.</small></span>
+    <span class="bub">💬</span>
+  </a>
+
+  <p class="fine">$99 diagnostic collected at booking, credited toward your repair.<br>Serving 12 Broward County cities · <a href="tel:+19549317997">954-931-7997</a><br>Powered by Top Speed CRM — booking, CRM &amp; dispatch in one system.</p>
+</div>
+
+<script>
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var step=1, busy=false;
+  var $=function(id){return document.getElementById(id)};
+  var panes=[].slice.call(document.querySelectorAll('.pane'));
+  var segs=[].slice.call(document.querySelectorAll('#segs i'));
+  var labels=[].slice.call(document.querySelectorAll('#segLabels span'));
+  $('menuBtn').addEventListener('click',function(){var m=$('menu');m.style.display=m.style.display==='block'?'none':'block';});
+  function show(n){
+    step=n;
+    panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
+    segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
+    labels.forEach(function(l,i){l.className=i<n-1?'done':(i===n-1?'now':'')});
+    $('backBtn').style.visibility=n===1?'hidden':'visible';
+    $('nextBtn').innerHTML=n===5?'✓ Confirm booking':'Continue&nbsp;&nbsp;→';
+    $('err').style.display='none';
+    if(n===5) fillReview();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function err(m){var e=$('err');e.textContent=m;e.style.display='block';}
+  function val(id){return $(id).value.trim()}
+  function valid(n){
+    if(n===1){
+      if(val('wName').length<2) return 'Please add your name so the setter knows who to ask for.';
+      if(val('wPhone').replace(/\D/g,'').length<7) return 'Please add a mobile number — your confirmation and updates go there.';
+      var em=val('wEmail'); if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return 'That email doesn\'t look complete — fix it or leave it blank.';
+    }
+    if(n===2){
+      if(val('wAddress').length<5) return 'Please add the street address for the visit.';
+      if(!val('wCity')) return 'Please choose your city — we serve 12 Broward cities.';
+      if(!/^\d{5}$/.test(val('wZip'))) return 'Please add the 5-digit ZIP code.';
+    }
+    if(n===3){
+      if(!val('wAppliance')) return 'Please choose the appliance.';
+      if(val('wIssue').length<3) return 'A sentence about the problem helps the tech bring the right parts.';
+    }
+    if(n===4){
+      if(!document.querySelector('input[name="wwin"]:checked')) return 'Please pick an arrival window.';
+    }
+    return '';
+  }
+  function esc(s){return s.replace(/</g,'&lt;')}
+  function fillReview(){
+    var win=document.querySelector('input[name="wwin"]:checked');
+    var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Window',win?win.nextElementSibling.textContent:'—']];
+    $('review').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+esc(r[1])+'</b></div>'}).join('');
+  }
+  function submit(){
+    var win=document.querySelector('input[name="wwin"]:checked').value;
+    var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
+    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
+    var em=val('wEmail'); if(em) payload.customer.email=em;
+    busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Booking…';
+    fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(!x.ok){
+        if(x.j && x.j.serviceCities) throw new Error('That address is outside our current service area. We serve: '+x.j.serviceCities.join(', ')+'. Call 954-931-7997 and we\'ll tell you honestly if we can make an exception.');
+        throw new Error((x.j&&x.j.error)||'The booking did not go through.');
+      }
+      $('doneRef').textContent=x.j.data.referenceCode;
+      $('formCard').hidden=true; $('doneCard').hidden=false;
+      segs.forEach(function(s){s.className='done'}); labels.forEach(function(l){l.className='done'});
+      window.scrollTo({top:0,behavior:'smooth'});
+    })
+    .catch(function(e){ err(e.message+' You can also book with Speedy below, or call 954-931-7997.'); })
+    .finally(function(){ busy=false; btn.disabled=false; btn.innerHTML='✓ Confirm booking'; });
+  }
+  $('backBtn').addEventListener('click',function(){ if(step>1) show(step-1); });
+  $('nextBtn').addEventListener('click',function(){
+    if(busy) return;
+    var v=valid(step); if(v){ err(v); return; }
+    if(step<5) show(step+1); else submit();
+  });
+  show(1);
+})();
+</script>
+</body>
+</html>
