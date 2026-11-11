@@ -109,7 +109,13 @@ async function identify(prisma) {
   });
   const videoRows = await prisma.videoConsultRequest.findMany();
   const drillVideos = videoRows.filter(
-    (v) => drillPhones.has(digits(v.phone)) || DRILL_REFS.includes(v.bookingReference) || /^Pepper\b/.test(v.customerName || '')
+    (v) =>
+      drillPhones.has(digits(v.phone)) ||
+      digits(v.phone).startsWith('555010') ||
+      DRILL_REFS.includes(v.bookingReference) ||
+      /^Pepper\b/.test(v.customerName || '') ||
+      /drill|smoke test/i.test(v.customerName || '') ||
+      /drill|smoke test/i.test(v.note || '')
   );
   const connectionRows = await prisma.connection.findMany();
   const drillConnections = connectionRows.filter(
