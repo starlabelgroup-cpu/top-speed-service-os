@@ -373,6 +373,7 @@ footer a{color:#D7E6FF}
         <p>Describe your appliance problem, upload photos, request live video support, or schedule a technician.</p>
         <form class="nh-ask" onsubmit="return nhAsk(event)">
           <input id="nhAskInput" type="text" placeholder="What's happening with your appliance?" aria-label="What's happening with your appliance?">
+          <button type="button" id="nhMic" title="Speak instead of typing" aria-label="Speak your question" style="background:#fff;border:none;border-radius:999px;width:42px;height:42px;font-size:17px;cursor:pointer;flex:none">🎤</button>
           <button type="submit" aria-label="Ask Speedy">➤</button>
         </form>
       </div>
@@ -1329,7 +1330,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   </div>
   <div class="sp-body" id="spBody"></div>
   <form class="sp-input" id="spForm">
-    <input id="spText" type="text" placeholder="Ask about repairs, pricing, areas…" autocomplete="off" aria-label="Message Speedy">
+    <input id="spText" type="text" placeholder="Ask about repairs, pricing, areas… or tap 🎤 and say it" autocomplete="off" aria-label="Message Speedy">
+    <button type="button" id="spMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer">🎤</button>
     <button type="submit">Send</button>
   </form>
 </div>
@@ -1782,6 +1784,27 @@ function hubEmailSend(btn){
     }
   }).catch(function(){ adsenseFallback(); });
 })();
+</script>
+
+<style>#spMic.rec,#aspMic.rec,#nhMic.rec{background:#fdecec !important;animation:vpulse 1s infinite}@keyframes vpulse{50%{opacity:.55}}</style>
+<script>
+function wireVoice(btnId, inputId){
+  var B=document.getElementById(btnId), I=document.getElementById(inputId);
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!B||!I) return;
+  if(!SR){ B.style.display='none'; return; }
+  var rec=null, listening=false;
+  B.addEventListener('click',function(){
+    if(listening){ try{rec.stop();}catch(e){} return; }
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
+    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onerror=rec.onend;
+    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+  });
+}
+wireVoice('spMic','spText');
+wireVoice('nhMic','nhAskInput');
 </script>
 </body>
 </html>

@@ -589,7 +589,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           </div>
           <div id="aspCard"></div>
           <div style="display:flex; gap:8px; margin-top:6px;">
-            <input id="aspInput" type="text" placeholder="My fridge stopped cooling…" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
+            <input id="aspInput" type="text" placeholder="My fridge stopped cooling… or tap 🎤 and say it" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
+            <button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)">🎤</button>
             <button class="btn blue" id="aspSendBtn" onclick="aspSend()">Send</button>
           </div>
           <p class="sub" style="margin-top:12px;">Prefer the classic way? <a href="#" onclick="showTab('book'); return false;" style="color:var(--blue); font-weight:800;">Use the booking form →</a></p>
@@ -1392,5 +1393,25 @@ function garageAddAppliance(){
 
 <!-- TYPE SYSTEM V2 — POSTER GUIDELINES + MICHROMA HOME -->
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Sora',Inter,sans-serif;font-weight:600}</style>
+
+<style>#spMic.rec,#aspMic.rec,#nhMic.rec{background:#fdecec !important;animation:vpulse 1s infinite}@keyframes vpulse{50%{opacity:.55}}</style>
+<script>
+function wireVoice(btnId, inputId){
+  var B=document.getElementById(btnId), I=document.getElementById(inputId);
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!B||!I) return;
+  if(!SR){ B.style.display='none'; return; }
+  var rec=null, listening=false;
+  B.addEventListener('click',function(){
+    if(listening){ try{rec.stop();}catch(e){} return; }
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
+    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onerror=rec.onend;
+    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+  });
+}
+wireVoice('aspMic','aspInput');
+</script>
 </body>
 </html>
