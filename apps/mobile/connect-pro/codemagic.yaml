@@ -1,0 +1,100 @@
+# Codemagic cloud builds for Appliance Connect Pro (Capacitor).
+# Ramone has no Mac, so iOS builds run here on Codemagic's macOS machines.
+#
+# One-time setup (in codemagic.io, signed in as Ramone):
+#   1. Add the top-speed-service-os GitHub repo as an app, TWICE is not
+#      needed — one Codemagic app can point at this file's path; create a
+#      second Codemagic app for Connect Pro pointing at its codemagic.yaml.
+#   2. iOS signing: connect the Apple Developer account under
+#      Teams > Integrations > Apple Developer Portal, and let Codemagic
+#      fetch/generate the certificate + provisioning profile for
+#      net.topspeedappliance.connectpro.
+#   3. Android signing: generate the upload keystore once (Codemagic docs:
+#      "Android code signing") and store it in the Codemagic encrypted
+#      keystore reference named in the android workflow below; also create
+#      a Google Play service account key for automatic publishing later.
+#
+# The native android/ and ios/ folders are generated during the build
+# (they contain binaries, so they are not committed to git).
+
+workflows:
+  android-connect-pro:
+    name: Appliance Connect Pro - Android (Google Play AAB)
+    instance_type: linux_x2
+    max_build_duration: 60
+    working_directory: apps/mobile/connect-pro
+    environment:
+      node: 22
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Fetch shared web assets
+        script: |
+          curl -sL https://topspeedserviceos.com/flag.jpg -o www/flag.jpg
+          curl -sL https://topspeedserviceos.com/icon-192.png -o www/icon-192.png
+          curl -sL https://topspeedserviceos.com/icon-512.png -o www/icon-512.png
+      - name: Generate branded icons (best effort)
+        script: |
+          mkdir -p resources
+          curl -sL https://topspeedserviceos.com/icon-512.png -o resources/icon.png || true
+          if [ -s resources/icon.png ]; then
+            (command -v convert >/dev/null && convert resources/icon.png -resize 1024x1024! resources/icon.png) || true
+            npx -y @capacitor/assets generate --android || true
+          fi
+      - name: Add Android platform and sync web app
+        script: |
+          if [ ! -d android ]; then npx cap add android; fi
+          npx cap sync android
+      - name: Build release bundle
+        script: |
+          cd android
+          chmod +x gradlew
+          ./gradlew bundleRelease
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+
+  ios-connect-pro:
+    name: Appliance Connect Pro - iOS (App Store IPA)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    working_directory: apps/mobile/connect-pro
+    environment:
+      node: 22
+      xcode: latest
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm install
+      - name: Fetch shared web assets
+        script: |
+          curl -sL https://topspeedserviceos.com/flag.jpg -o www/flag.jpg
+          curl -sL https://topspeedserviceos.com/icon-192.png -o www/icon-192.png
+          curl -sL https://topspeedserviceos.com/icon-512.png -o www/icon-512.png
+      - name: Generate branded icons (best effort)
+        script: |
+          mkdir -p resources
+          curl -sL https://topspeedserviceos.com/icon-512.png -o resources/icon.png || true
+          if [ -s resources/icon.png ]; then
+            (command -v convert >/dev/null && convert resources/icon.png -resize 1024x1024! resources/icon.png) || true
+            npx -y @capacitor/assets generate --ios || true
+          fi
+      - name: Add iOS platform and sync web app
+        script: |
+          if [ ! -d ios ]; then npx cap add ios; fi
+          npx cap sync ios
+      - name: Set up code signing
+        script: |
+          # Uses the Apple Developer integration configured in Codemagic.
+          keychain initialize
+          app-store-connect fetch-signing-files net.topspeedappliance.connectpro --type IOS_APP_STORE --create || true
+          keychain add-certificates
+          xcode-project use-profiles
+      - name: Build IPA
+        script: |
+          xcode-project build-ipa --project "ios/App/App.xcodeproj" --scheme "App" || \
+          xcode-project build-ipa --workspace "ios/App/App.xcworkspace" --scheme "App"
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log

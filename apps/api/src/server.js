@@ -40,6 +40,12 @@ const corsOrigin = (process.env.CORS_ORIGIN || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+// The native mobile apps (Capacitor wraps of Appliance Pro and Appliance
+// Connect Pro) run their WebView from these local origins; without them the
+// store apps cannot reach the API at all, so they are always allowed.
+for (const nativeOrigin of ['capacitor://localhost', 'https://localhost']) {
+  if (!corsOrigin.includes(nativeOrigin)) corsOrigin.push(nativeOrigin);
+}
 
 app.disable('x-powered-by');
 app.use(helmet());
