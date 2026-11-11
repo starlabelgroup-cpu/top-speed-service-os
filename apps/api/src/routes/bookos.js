@@ -5,6 +5,8 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
 import { persistBooking } from '../db/bookingsRepo.js';
+import { db, DATABASE_ENABLED } from '../db/client.js';
+import { stripeConfigured } from '../services/stripe.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import {
   APPOINTMENT_WINDOWS,
@@ -298,6 +300,83 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
     counts[status] = items.length;
   }
   return res.json({ data: { date, counts, groups } });
+});
+
+
+/**
+ * Launch Scorecard — live scoring for the network/platform launch.
+ * Confirmation rate = setter-confirmed / customers reached. A booking is
+ * "reached" once a setter has acted on it (appointment set or moved, or
+ * the job has moved past the untouched queue state) and "confirmed" once
+ * its appointment is set. On a clean board both counts are 0 and the rate
+ * reads 0% — the launch baseline.
+ */
+router.get('/bookos/scorecard', ...staffOnly, async (req, res) => {
+  const bookings = visibleBookings(req);
+  const today = todayDateString();
+  const hasEvent = (b, types) => (b.history || []).some((h) => types.includes(h.type || h.event));
+  const isConfirmed = (b) =>
+    b.appointment?.status === 'SET' ||
+    b.status === 'CONFIRMED' ||
+    b.status === 'COMPLETED' ||
+    hasEvent(b, ['APPOINTMENT_CONFIRMED', 'APPOINTMENT_SET']);
+  const isReached = (b) =>
+    isConfirmed(b) || (b.appointment?.history?.length || 0) > 0 || b.status !== 'PENDING_DISPATCH';
+  const confirmed = bookings.filter(isConfirmed).length;
+  const reached = bookings.filter(isReached).length;
+  const ratePct = reached > 0 ? Math.round((confirmed / reached) * 100) : 0;
+
+  const byStatus = {};
+  const bySource = {};
+  for (const b of bookings) {
+    byStatus[b.status] = (byStatus[b.status] || 0) + 1;
+    const src = b.source || 'WEBSITE';
+    bySource[src] = (bySource[src] || 0) + 1;
+  }
+  const cities = new Set();
+  for (const p of store.providers) for (const c of p.serviceCities || []) cities.add(c);
+  const byType = {};
+  for (const c of store.connections) byType[c.type] = (byType[c.type] || 0) + 1;
+  const customers = [...store.customers.values()].filter(
+    (c) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || c.companyId === req.companyId,
+  );
+  let accounts = null;
+  if (DATABASE_ENABLED) {
+    try { accounts = await db().user.count({ where: { companyId: req.companyId } }); } catch { accounts = null; }
+  }
+  const referrals = [...store.referrals.values()];
+  const videos = [...store.videoRequests.values()];
+
+  return res.json({
+    data: {
+      generatedAt: new Date().toISOString(),
+      confirmation: { confirmed, reached, ratePct },
+      bookings: {
+        total: bookings.length,
+        today: bookings.filter((b) => String(b.createdAt).slice(0, 10) === today).length,
+        byStatus,
+        bySource,
+      },
+      dispatch: {
+        dispatched: bookings.filter((b) => b.status === 'CONFIRMED' || b.status === 'COMPLETED').length,
+        awaitingApproval: bookings.filter((b) => b.status === 'MATCH_PENDING_APPROVAL').length,
+        queueWaiting: bookings.filter((b) => b.status === 'PENDING_DISPATCH').length,
+      },
+      network: { providersActive: store.providers.filter((p) => p.active).length, citiesCovered: cities.size },
+      intake: { connectionsTotal: store.connections.length, byType },
+      customers: { total: customers.length, accounts },
+      flywheel: {
+        referralsIssued: referrals.length,
+        referralsRedeemed: referrals.reduce((n, r) => n + (r.redemptions?.length || 0), 0),
+        videoRequests: videos.length,
+        videoPending: videos.filter((v) => v.status === 'PENDING').length,
+      },
+      payments: {
+        paidOnline: [...store.payments.values()].filter((p) => p.status === 'PAID').length,
+        configured: stripeConfigured(),
+      },
+    },
+  });
 });
 
 export default router;
