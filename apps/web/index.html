@@ -280,6 +280,7 @@ footer a{color:#D7E6FF}
 </style>
 </head>
 <body>
+<div class="flag-rail left" aria-hidden="true"></div><div class="flag-rail right" aria-hidden="true"></div>
 
 <div class="ribbon">🏁 <b>THE TOP SPEED PLATFORM IS LIVE</b> — book, diagnose, track, and pay right here on the Service OS. Real bookings, real tracking, real people dispatching. Prefer the phone? <b>954-931-7997</b>.</div>
 
@@ -299,6 +300,7 @@ footer a{color:#D7E6FF}
     <a class="btn btn-red call" href="tel:+19549317997">📞 954-931-7997</a>
   </div>
 </header>
+<div class="flag-strip" aria-hidden="true"></div>
 
 <!-- HERO -->
 <div class="hero" id="top">
@@ -946,6 +948,7 @@ footer a{color:#D7E6FF}
 
 
 <div class="checker" aria-hidden="true"></div>
+<div class="flag-strip" aria-hidden="true"></div>
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -1380,5 +1383,13 @@ function hubEmailSend(btn){
 
 <!-- TYPE SYSTEM V2 — POSTER GUIDELINES + MICHROMA HOME -->
 <link href="https://fonts.googleapis.com/css2?family=Michroma&display=swap" rel="stylesheet"><style>/* TYPE SYSTEM V2 */ h1{font-family:'Michroma','Space Grotesk',sans-serif;font-weight:400} h2,h3{font-family:'Poppins',Inter,sans-serif;font-weight:800} .michroma{font-family:'Michroma',sans-serif} .anton{font-family:'Michroma',sans-serif} .brand,.logo-text,.wordmark{font-weight:700}</style>
+<style>/* TOP SPEED RACING FLAG — homepage background system */
+.flag-strip{height:22px;background-color:#0a0a0a;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='48'%3E%3Crect width='96' height='48' fill='%23ffffff'/%3E%3Crect x='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' width='24' height='24' fill='%230a0a0a'/%3E%3Crect y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='48' y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' y='24' width='24' height='24' fill='%23e01a22'/%3E%3C/svg%3E");background-size:96px 48px;background-repeat:repeat-x;background-position:center top}
+.flag-rail{position:fixed;top:0;bottom:0;width:24px;z-index:40;pointer-events:none;background-color:#0a0a0a;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='48'%3E%3Crect width='96' height='48' fill='%23ffffff'/%3E%3Crect x='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' width='24' height='24' fill='%230a0a0a'/%3E%3Crect y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='48' y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' y='24' width='24' height='24' fill='%23e01a22'/%3E%3C/svg%3E");background-size:48px 48px;background-repeat:repeat-y;opacity:.95}
+.flag-rail.left{left:0}.flag-rail.right{right:0}
+@media(max-width:1180px){.flag-rail{display:none}}
+.hero{position:relative;isolation:isolate}
+.hero::before{content:'';position:absolute;inset:0;z-index:-1;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='48'%3E%3Crect width='96' height='48' fill='%23ffffff'/%3E%3Crect x='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' width='24' height='24' fill='%230a0a0a'/%3E%3Crect y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='48' y='24' width='24' height='24' fill='%230a0a0a'/%3E%3Crect x='72' y='24' width='24' height='24' fill='%23e01a22'/%3E%3C/svg%3E");background-size:144px 72px;background-repeat:repeat;opacity:.10;-webkit-mask-image:linear-gradient(100deg,transparent 42%,#000 92%);mask-image:linear-gradient(100deg,transparent 42%,#000 92%)}
+</style>
 </body>
 </html>
