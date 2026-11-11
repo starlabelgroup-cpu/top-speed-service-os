@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track My Tech — Top Speed Service OS</title>
+<meta name="description" content="Follow your Top Speed technician live: sign in with your Top Speed account to see every job's stage, your assigned technician and their ETA — or track with your booking reference.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0A265C;--navy2:#071f4f;--red:#E8322E;--blue:#1280FF;--ink:#12233f;--mut:#5a6b84;--line:#dbe4f0;--bg:#f4f7fc;--ok:#0e9f6e;--amber:#e8a13a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  header{background:var(--navy);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header img{height:30px;width:30px;border-radius:7px}
+  header .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px}
+  header .brand span{color:var(--red)}
+  header nav{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}
+  header nav a{color:#dce8fb;text-decoration:none;font-weight:600;font-size:14px}
+  header nav a:hover{color:#fff}
+  .hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:40px 20px 34px;text-align:center}
+  .hero h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(28px,5vw,42px);line-height:1.12}
+  .hero h1 em{font-style:normal;color:var(--red)}
+  .hero p{color:#c7d6f2;max-width:620px;margin:12px auto 0;font-size:16px}
+  main{max-width:860px;margin:0 auto;padding:28px 18px 60px;display:grid;gap:20px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(10,38,92,.05)}
+  .card h2{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
+  .card .sub{color:var(--mut);font-size:14.5px;margin-bottom:16px}
+  label{font-size:13px;font-weight:700;color:var(--navy);display:block;margin:12px 0 5px}
+  input{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fbfcfe}
+  input:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:11px;padding:13px 20px;font-size:15px;text-decoration:none}
+  .btn-red{background:var(--red);color:#fff;width:100%;margin-top:16px}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn-ghost{background:#eef3fb;color:var(--navy);border:1px solid var(--line)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+  .acct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .acct .who{font-weight:700;color:var(--navy)}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.3px}
+  .pill-staff{background:#efe4ff;color:#5b21b6}
+  .pill-eta{background:#fff3d6;color:#8a5a00;border:1px solid #f0d48a}
+  .job{border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px;background:#fbfcfe}
+  .job-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+  .job-head .ref{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--navy);font-size:17px}
+  .job-head .meta{color:var(--mut);font-size:13.5px}
+  .stage-now{font-weight:800;color:var(--navy);margin-top:8px;font-size:16px}
+  .dots{display:flex;gap:5px;margin:12px 0 4px}
+  .dots i{flex:1;height:7px;border-radius:99px;background:#dfe7f3}
+  .dots i.on{background:var(--blue)}
+  .dots i.done{background:var(--ok)}
+  .timeline{list-style:none;margin-top:12px}
+  .timeline li{display:flex;gap:11px;padding:6px 0;color:#8fa1bb;font-size:14.5px;align-items:baseline}
+  .timeline li .n{width:22px;height:22px;border-radius:50%;background:#e3ebf7;color:#7d92b2;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex:none;transform:translateY(4px)}
+  .timeline li.done{color:var(--ink)}
+  .timeline li.done .n{background:var(--ok);color:#fff}
+  .timeline li.now{color:var(--navy);font-weight:700}
+  .timeline li.now .n{background:var(--blue);color:#fff}
+  .techline{margin-top:10px;font-size:14.5px;color:#2a3c58}
+  .empty{color:var(--mut);font-size:15px;padding:8px 0}
+  footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
+  footer a{color:#fff;font-weight:600;text-decoration:none}
+  .hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <img src="/icon-192.png" alt="Top Speed logo">
+  <div class="brand">TOP SPEED <span>SERVICE OS</span></div>
+  <nav>
+    <a href="/">Home</a><a href="/garage">My Appliances</a><a href="/app">Customer App</a><a href="tel:+19549317997">954-931-7997</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Track My <em>Tech</em></h1>
+  <p>Your visit, live — from request received to repair completed. Sign in with your Top Speed account and your jobs are right here.</p>
+</div>
+
+<main>
+  <!-- Account -->
+  <section class="card" id="loginCard">
+    <h2>Sign in to track your jobs</h2>
+    <p class="sub">Use the same email and password as your Top Speed account — the one you book and manage your appliances with. No separate tracking account.</p>
+    <form id="loginForm">
+      <div class="row">
+        <div><label for="email">Email</label><input id="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Your password"></div>
+      </div>
+      <button class="btn btn-red" id="loginBtn" type="submit">Sign in &amp; show my jobs</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+    <p class="sub" style="margin-top:14px">No account yet? <a href="/app" style="color:var(--blue);font-weight:700">Create one in the Customer App</a> — or track as a guest below.</p>
+  </section>
+
+  <section class="card hidden" id="accountCard">
+    <div class="acct">
+      <span class="who" id="accountWho">Signed in</span>
+      <span class="pill pill-staff hidden" id="staffPill">STAFF</span>
+      <span style="flex:1"></span>
+      <a class="btn btn-navy hidden" id="consoleBtn" href="/track-console" style="padding:10px 16px">Open Track My Tech Console</a>
+      <button class="btn btn-ghost" id="signOutBtn" style="padding:10px 16px">Sign out</button>
+    </div>
+    <div id="myJobs"></div>
+  </section>
+
+  <!-- Guest lookup -->
+  <section class="card">
+    <h2>Track as a guest</h2>
+    <p class="sub">No account? Use the booking reference from your confirmation (like TS-XXXXXX) and the phone number on the booking.</p>
+    <form id="guestForm">
+      <div class="row">
+        <div><label for="gRef">Booking reference</label><input id="gRef" required placeholder="TS-XXXXXX" style="text-transform:uppercase"></div>
+        <div><label for="gPhone">Phone on the booking</label><input id="gPhone" type="tel" required placeholder="(954) 000-0000"></div>
+      </div>
+      <button class="btn btn-red" id="guestBtn" type="submit">Track my visit</button>
+      <div class="err" id="guestErr"></div>
+    </form>
+    <div id="guestResult"></div>
+  </section>
+</main>
+
+<footer>© 2026 Top Speed Appliance LLC · The Faster, The Better. · <a href="/">topspeedserviceos.com</a></footer>
+
+<script>
+const API = 'https://top-speed-service-os.vercel.app/api/v1';
+const STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+const token = () => localStorage.getItem('tsos_token');
+const $ = (id) => document.getElementById(id);
+
+function timelineHTML(t) {
+  const items = t.stageLabels.map((label, i) => {
+    const cls = i < t.stageIndex ? 'done' : (i === t.stageIndex ? (t.stageIndex >= 7 ? 'done' : 'now') : '');
+    const mark = i < t.stageIndex || t.stageIndex >= 7 && i === 7 ? '✓' : (i + 1);
+    return `<li class="${cls}"><span class="n">${mark}</span><span>${label}</span></li>`;
+  }).join('');
+  const dots = t.stageLabels.map((_, i) => `<i class="${i < t.stageIndex ? 'done' : (i === t.stageIndex ? 'on' : '')}"></i>`).join('');
+  const eta = t.stageIndex === 3 && t.etaMinutes ? `<span class="pill pill-eta">ETA ~${t.etaMinutes} min</span>` : '';
+  const tech = t.technician && t.technician.assigned
+    ? `<div class="techline">🔧 Your technician: <strong>${t.technician.name}</strong></div>`
+    : `<div class="techline">Technician details appear here once your Service Setter assigns your visit.</div>`;
+  return `<div class="dots">${dots}</div>
+    <div class="stage-now">${t.stageLabel8} ${eta}</div>
+    ${tech}
+    <ol class="timeline">${items}</ol>`;
+}
+
+function jobCard(t, extra) {
+  return `<div class="job">
+    <div class="job-head"><span class="ref">${t.reference}</span><span class="meta">${t.appliance || ''}${t.city ? ' · ' + t.city : ''}${t.preferredWindow ? ' · Window ' + t.preferredWindow : ''}</span></div>
+    ${extra || ''}
+    ${timelineHTML(t)}
+  </div>`;
+}
+
+async function loadMine() {
+  const res = await fetch(API + '/tracking/mine', { headers: { Authorization: 'Bearer ' + token() } });
+  if (res.status === 401) { signOut(); return; }
+  const body = await res.json();
+  const jobs = body.data || [];
+  $('myJobs').innerHTML = jobs.length
+    ? jobs.map((j) => jobCard(j, j.issue ? `<div class="techline">Issue: ${j.issue}</div>` : '')).join('')
+    : '<p class="empty">No jobs on this account yet. When you book a repair, its live tracking shows up here automatically.</p>';
+}
+
+async function showAccount() {
+  const res = await fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token() } });
+  if (!res.ok) { signOut(); return; }
+  const me = (await res.json()).user || {};
+  $('loginCard').classList.add('hidden');
+  $('accountCard').classList.remove('hidden');
+  $('accountWho').textContent = 'Signed in as ' + (me.email || 'your account');
+  const isStaff = (me.roles || []).some((r) => STAFF.includes(r));
+  $('staffPill').classList.toggle('hidden', !isStaff);
+  $('consoleBtn').classList.toggle('hidden', !isStaff);
+  loadMine();
+}
+
+function signOut() {
+  localStorage.removeItem('tsos_token');
+  $('accountCard').classList.add('hidden');
+  $('loginCard').classList.remove('hidden');
+}
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('loginBtn'), err = $('loginErr');
+  btn.disabled = true; err.style.display = 'none';
+  try {
+    const res = await fetch(API + '/auth/login', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: $('email').value.trim(), password: $('password').value }),
+    });
+    const body = await res.json();
+    if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
+    localStorage.setItem('tsos_token', body.token);
+    showAccount();
+  } catch (ex) {
+    err.textContent = ex.message === 'Invalid email or password' ? 'That email and password don\'t match an account. Check them and try again.' : ('Sign-in problem: ' + ex.message);
+    err.style.display = 'block';
+  } finally { btn.disabled = false; }
+});
+
+$('signOutBtn').addEventListener('click', signOut);
+
+$('guestForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('guestBtn'), err = $('guestErr');
+  btn.disabled = true; err.style.display = 'none'; $('guestResult').innerHTML = '';
+  try {
+    const ref = $('gRef').value.trim().toUpperCase();
+    const phone = $('gPhone').value.replace(/\D/g, '');
+    const res = await fetch(`${API}/bookings/track/${encodeURIComponent(ref)}?phone=${encodeURIComponent(phone)}`);
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Lookup failed');
+    $('guestResult').innerHTML = jobCard(body.data);
+  } catch (ex) {
+    err.textContent = ex.message;
+    err.style.display = 'block';
+  } finally { btn.disabled = false; }
+});
+
+if (token()) showAccount();
+</script>
+</body>
+</html>

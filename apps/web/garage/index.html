@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Appliances — Your Garage · Top Speed Service OS</title>
+<meta name="description" content="Your appliance garage: sign in with your Top Speed account to see your registered appliances, service history, and the promotions on your account.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;800&family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0A265C;--navy2:#071f4f;--red:#E8322E;--blue:#1280FF;--ink:#12233f;--mut:#5a6b84;--line:#dbe4f0;--bg:#f4f7fc;--ok:#0e9f6e}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Manrope','Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  header{background:var(--navy);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header img{height:30px;width:30px;border-radius:7px}
+  header .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px}
+  header .brand span{color:var(--red)}
+  header nav{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}
+  header nav a{color:#dce8fb;text-decoration:none;font-weight:600;font-size:14px}
+  .hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:40px 20px 34px;text-align:center}
+  .hero h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(28px,5vw,42px);line-height:1.12}
+  .hero h1 em{font-style:normal;color:var(--red)}
+  .hero p{color:#c7d6f2;max-width:620px;margin:12px auto 0;font-size:16px}
+  main{max-width:900px;margin:0 auto;padding:28px 18px 60px;display:grid;gap:20px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(10,38,92,.05)}
+  .card h2{font-family:'Poppins',sans-serif;font-weight:600;font-size:20px;color:var(--navy);margin-bottom:6px}
+  .sub{color:var(--mut);font-size:14.5px;margin-bottom:14px}
+  label{font-size:13px;font-weight:700;color:var(--navy);display:block;margin:12px 0 5px}
+  input,select{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15px;background:#fbfcfe}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:11px;padding:12px 18px;font-size:14.5px;text-decoration:none}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn-ghost{background:#eef3fb;color:var(--navy);border:1px solid var(--line)}
+  .btn:disabled{opacity:.55;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:13px}
+  .appl{border:1px solid var(--line);border-radius:13px;padding:16px;background:#fbfcfe}
+  .appl b{color:var(--navy);font-size:16px}
+  .appl .meta{color:var(--mut);font-size:13.5px;margin-top:3px}
+  .appl button{margin-top:10px}
+  .offer{border:1.5px solid var(--line);border-radius:13px;padding:17px;background:#fbfcfe}
+  .offer.avail{border-color:#b5e3cb;background:#f2fbf6}
+  .offer b{color:var(--navy);font-size:16.5px}
+  .offer p{font-size:14px;color:#2a3c58;margin-top:4px}
+  .offer .note{font-size:13px;margin-top:8px;font-weight:700}
+  .offer .note.yes{color:var(--ok)} .offer .note.no{color:var(--mut)}
+  .refcode{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--navy);letter-spacing:1px}
+  .hist{display:grid;gap:9px}
+  .hist .h{border:1px solid var(--line);border-radius:11px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:#fbfcfe;font-size:14px}
+  .hist .h b{color:var(--navy)}
+  .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:800;background:#e8effc;color:var(--navy)}
+  .empty{color:var(--mut);font-size:14.5px}
+  .acct{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .hidden{display:none!important}
+  footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
+  footer a{color:#fff;font-weight:600;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+  <img src="/icon-192.png" alt="Top Speed logo">
+  <div class="brand">TOP SPEED <span>SERVICE OS</span></div>
+  <nav><a href="/">Home</a><a href="/track">Track My Tech</a><a href="/connect">Appliance Connect</a><a href="tel:+19549317997">954-931-7997</a></nav>
+</header>
+
+<div class="hero">
+  <h1>My Appliances — <em>Your Garage</em></h1>
+  <p>Every appliance you own, its service history, and the promotions on your account — behind one sign-in, the same account you book with.</p>
+</div>
+
+<main>
+  <section class="card" id="gateCard">
+    <h2 id="gateTitle">Sign in to your garage</h2>
+    <p class="sub">Same Top Speed account as booking and Track My Tech. Your appliances and history live on your account — not on this device.</p>
+    <form id="loginForm">
+      <div class="row">
+        <div><label for="email">Email</label><input id="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      </div>
+      <button class="btn btn-red" id="loginBtn" type="submit" style="width:100%;margin-top:16px">Sign in</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+    <form id="registerForm" class="hidden">
+      <div class="row">
+        <div><label for="rFirst">First name</label><input id="rFirst" required></div>
+        <div><label for="rLast">Last name</label><input id="rLast" required></div>
+      </div>
+      <div class="row">
+        <div><label for="rEmail">Email</label><input id="rEmail" type="email" required></div>
+        <div><label for="rPhone">Phone</label><input id="rPhone" type="tel" placeholder="(954) 000-0000"></div>
+      </div>
+      <label for="rPass">Password (8+ characters)</label><input id="rPass" type="password" minlength="8" required>
+      <button class="btn btn-red" id="registerBtn" type="submit" style="width:100%;margin-top:16px">Create my account</button>
+      <div class="err" id="registerErr"></div>
+    </form>
+    <p class="sub" style="margin-top:14px"><a href="#" id="toggleMode" style="color:var(--blue);font-weight:700">New here? Create a free account →</a></p>
+  </section>
+
+  <div id="garage" class="hidden" style="display:grid;gap:20px">
+    <section class="card">
+      <div class="acct">
+        <strong id="who" style="color:var(--navy)"></strong>
+        <span style="flex:1"></span>
+        <a class="btn btn-navy" href="/track" style="padding:10px 15px">Track My Tech</a>
+        <button class="btn btn-ghost" id="signOutBtn" style="padding:10px 15px">Sign out</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>🏠 Your appliances</h2>
+      <p class="sub">Registered to your account — Speedy and your Service Setters see these when you book, so diagnosis starts faster.</p>
+      <div class="grid" id="appliances"></div>
+      <form id="addForm" style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
+        <div class="row">
+          <div><label for="aType">Appliance</label>
+            <select id="aType"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Other</option></select></div>
+          <div><label for="aBrand">Brand</label><input id="aBrand" placeholder="Samsung, LG, Whirlpool…"></div>
+        </div>
+        <div class="row">
+          <div><label for="aModel">Model (optional)</label><input id="aModel"></div>
+          <div><label for="aYear">Year (optional)</label><input id="aYear" type="number" min="1950" max="2100" placeholder="2021"></div>
+        </div>
+        <button class="btn btn-navy" type="submit" style="margin-top:14px">+ Add appliance</button>
+        <div class="err" id="addErr"></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>🎁 Promotions on your account</h2>
+      <p class="sub">The offers published for Top Speed customers, with what's actually available on your account right now.</p>
+      <div class="grid" id="offers"></div>
+      <div id="referral" style="margin-top:16px"></div>
+    </section>
+
+    <section class="card">
+      <h2>🧾 Service history</h2>
+      <p class="sub">Your real bookings with Top Speed, newest first.</p>
+      <div class="hist" id="history"></div>
+    </section>
+  </div>
+</main>
+
+<footer>© 2026 Top Speed Appliance LLC · The Faster, The Better. · <a href="/">topspeedserviceos.com</a></footer>
+
+<script>
+const API = 'https://top-speed-service-os.vercel.app/api/v1';
+const token = () => localStorage.getItem('tsos_token');
+const $ = (id) => document.getElementById(id);
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token(), ...(opts.headers || {}) } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || ('Request failed (' + res.status + ')'));
+  return body.data !== undefined ? body.data : body;
+}
+
+async function loadGarage() {
+  const me = await fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token() } }).then((r) => r.json());
+  $('who').textContent = 'Signed in as ' + ((me.user && me.user.email) || 'your account');
+  const [appliances, summary, promos] = await Promise.all([
+    api('/connect/appliances'), api('/connect/summary'), api('/connect/promotions'),
+  ]);
+  $('appliances').innerHTML = appliances.length ? appliances.map((a) => `
+    <div class="appl"><b>${a.type}</b>
+      <div class="meta">${[a.brand, a.model].filter(Boolean).join(' · ') || 'Brand not recorded'}${a.year ? ' · ' + a.year : ''}</div>
+      ${a.serial ? `<div class="meta">Serial: ${a.serial}</div>` : ''}
+      <button class="btn btn-ghost" style="padding:7px 12px;font-size:13px" onclick="removeAppliance('${a.id}')">Remove</button>
+    </div>`).join('') : '<p class="empty">No appliances yet — add your first one below and it\'s on your account for every future visit.</p>';
+  $('offers').innerHTML = (promos.offers || []).map((o) => `
+    <div class="offer ${o.eligible ? 'avail' : ''}"><b>${o.title}</b><p>${o.detail}</p>
+      <div class="note ${o.eligible ? 'yes' : 'no'}">${o.eligible ? '✓ ' : ''}${o.eligibilityNote}</div>
+      ${o.url ? `<div style="margin-top:8px"><a href="${o.url}" style="color:var(--blue);font-weight:700;font-size:14px">See plans →</a></div>` : ''}
+    </div>`).join('');
+  $('referral').innerHTML = promos.referral && promos.referral.code
+    ? `<div class="offer avail"><b>Your referral code</b><div class="refcode">${promos.referral.code}</div><p>${promos.referral.note}</p></div>`
+    : `<p class="empty">${(promos.referral && promos.referral.note) || ''}</p>`;
+  const hist = summary.serviceHistory || [];
+  $('history').innerHTML = hist.length ? hist.map((h) => `
+    <div class="h"><span><b>${h.referenceCode}</b> · ${h.appliance || ''} — ${h.issue || ''}</span><span class="chip">${h.status}</span></div>`).join('')
+    : '<p class="empty">No service visits yet. Your completed and upcoming jobs will appear here.</p>';
+  $('gateCard').classList.add('hidden');
+  $('garage').classList.remove('hidden');
+}
+
+async function removeAppliance(id) {
+  try { await api('/connect/appliances/' + id, { method: 'DELETE' }); loadGarage(); } catch (e) { alert(e.message); }
+}
+
+$('addForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('addErr'); err.style.display = 'none';
+  const payload = { type: $('aType').value, brand: $('aBrand').value.trim() || undefined, model: $('aModel').value.trim() || undefined };
+  const yr = parseInt($('aYear').value, 10); if (yr) payload.year = yr;
+  try { await api('/connect/appliances', { method: 'POST', body: JSON.stringify(payload) }); e.target.reset(); loadGarage(); }
+  catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
+});
+
+async function doLogin(email, password, errEl, btn) {
+  btn.disabled = true; errEl.style.display = 'none';
+  try {
+    const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const body = await res.json();
+    if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
+    localStorage.setItem('tsos_token', body.token);
+    await loadGarage();
+  } catch (ex) { errEl.textContent = ex.message; errEl.style.display = 'block'; }
+  finally { btn.disabled = false; }
+}
+
+$('loginForm').addEventListener('submit', (e) => { e.preventDefault(); doLogin($('email').value.trim(), $('password').value, $('loginErr'), $('loginBtn')); });
+
+$('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('registerErr'), btn = $('registerBtn');
+  btn.disabled = true; err.style.display = 'none';
+  try {
+    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value }) });
+    const body = await res.json();
+    if (!res.ok || !body.token) throw new Error(body.error || 'Registration failed');
+    localStorage.setItem('tsos_token', body.token);
+    await loadGarage();
+  } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
+  finally { btn.disabled = false; }
+});
+
+$('toggleMode').addEventListener('click', (e) => {
+  e.preventDefault();
+  const reg = $('registerForm').classList.toggle('hidden');
+  $('loginForm').classList.toggle('hidden', !reg);
+  $('gateTitle').textContent = reg ? 'Sign in to your garage' : 'Create your free account';
+  e.target.textContent = reg ? 'New here? Create a free account →' : 'Already have an account? Sign in →';
+});
+
+$('signOutBtn').addEventListener('click', () => { localStorage.removeItem('tsos_token'); location.reload(); });
+
+if (token()) loadGarage().catch(() => { localStorage.removeItem('tsos_token'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Track My Tech Console — Staff · Top Speed Service OS</title>
+<meta name="description" content="Service Setters, dispatchers, managers and owners: run the Track My Tech board — assign technicians, advance job stages, and update customers.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0A265C;--navy2:#071f4f;--red:#E8322E;--blue:#1280FF;--ink:#12233f;--mut:#5a6b84;--line:#dbe4f0;--bg:#eef2f9;--ok:#0e9f6e;--amber:#e8a13a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'IBM Plex Sans','Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+  header{background:var(--navy);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header img{height:30px;width:30px;border-radius:7px}
+  header .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px}
+  header .brand span{color:var(--red)}
+  header nav{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}
+  header nav a{color:#dce8fb;text-decoration:none;font-weight:600;font-size:14px}
+  .hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:30px 20px 26px}
+  .hero .wrap{max-width:1060px;margin:0 auto}
+  .hero h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px)}
+  .hero p{color:#c7d6f2;margin-top:6px;font-size:15px;max-width:700px}
+  main{max-width:1060px;margin:0 auto;padding:24px 18px 60px;display:grid;gap:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 4px 16px rgba(10,38,92,.05)}
+  .card h2{font-family:'Poppins',sans-serif;font-weight:600;font-size:19px;color:var(--navy);margin-bottom:6px}
+  .sub{color:var(--mut);font-size:14px;margin-bottom:14px}
+  label{font-size:12.5px;font-weight:700;color:var(--navy);display:block;margin:10px 0 4px}
+  input,select{width:100%;padding:11px 12px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:14.5px;background:#fbfcfe}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;font:inherit;font-weight:700;border-radius:9px;padding:10px 14px;font-size:13.5px;text-decoration:none}
+  .btn-red{background:var(--red);color:#fff}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn-blue{background:var(--blue);color:#fff}
+  .btn-ghost{background:#eef3fb;color:var(--navy);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+  .okmsg{display:none;background:#e7f7ef;border:1px solid #b5e3cb;color:#0b6b45;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+  .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;text-align:center}
+  .stat b{display:block;font-size:26px;color:var(--navy);font-family:'Poppins',sans-serif}
+  .stat span{font-size:12.5px;color:var(--mut);font-weight:600}
+  .job{border:1px solid var(--line);border-radius:13px;padding:16px;margin-top:12px;background:#fbfcfe}
+  .job-top{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;justify-content:space-between}
+  .ref{font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--navy);font-size:16.5px}
+  .meta{color:var(--mut);font-size:13px}
+  .chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#e8effc;color:var(--navy)}
+  .chip.live{background:#fff3d6;color:#8a5a00;border:1px solid #f0d48a}
+  .chip.done{background:#e7f7ef;color:#0b6b45}
+  .dots{display:flex;gap:4px;margin:10px 0}
+  .dots i{flex:1;height:6px;border-radius:99px;background:#dfe7f3}
+  .dots i.on{background:var(--blue)} .dots i.done{background:var(--ok)}
+  .controls{display:grid;grid-template-columns:1.2fr auto;gap:10px;margin-top:10px}
+  @media(max-width:640px){.controls{grid-template-columns:1fr}}
+  .stagebtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .stagebtns input{width:92px;padding:9px 10px}
+  .hidden{display:none!important}
+  footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:22px 18px;font-size:13.5px}
+</style>
+</head>
+<body>
+<header>
+  <img src="/icon-192.png" alt="Top Speed logo">
+  <div class="brand">TOP SPEED <span>SERVICE OS</span></div>
+  <nav><a href="/portal">Portal</a><a href="/track">Customer tracking</a><a href="/">Home</a></nav>
+</header>
+
+<div class="hero"><div class="wrap">
+  <h1>Track My Tech — Staff Console</h1>
+  <p>The back door for owners, managers, Service Setters and dispatchers. Every active job's stage, technician and ETA — assign techs, advance stages, and keep the customer updated.</p>
+</div></div>
+
+<main>
+  <section class="card" id="gateCard">
+    <h2>Staff sign-in</h2>
+    <p class="sub">Sign in with your Service OS staff account. Customer accounts can't open the console — the board is role-gated on the server, not just hidden here.</p>
+    <form id="loginForm">
+      <div class="row">
+        <div><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+        <div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      </div>
+      <button class="btn btn-red" id="loginBtn" type="submit" style="margin-top:16px;width:100%;padding:13px">Sign in to the console</button>
+      <div class="err" id="loginErr"></div>
+    </form>
+  </section>
+
+  <section id="board" class="hidden">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span id="who" style="font-weight:700;color:var(--navy)"></span>
+      <span style="flex:1"></span>
+      <button class="btn btn-ghost" id="refreshBtn">↻ Refresh board</button>
+      <button class="btn btn-ghost" id="signOutBtn">Sign out</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <div class="err" id="boardErr"></div>
+    <div class="okmsg" id="boardOk"></div>
+    <div id="jobs"></div>
+  </section>
+</main>
+
+<footer>Top Speed Service OS · Staff console · Actions are recorded with your account name.</footer>
+
+<script>
+const API = 'https://top-speed-service-os.vercel.app/api/v1';
+const token = () => localStorage.getItem('tsos_token');
+const $ = (id) => document.getElementById(id);
+let PROVIDERS = [];
+
+async function api(path, opts = {}) {
+  const res = await fetch(API + path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token(), ...(opts.headers || {}) } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error || ('Request failed (' + res.status + ')'));
+  return body.data;
+}
+
+function flash(ok, msg) {
+  const el = ok ? $('boardOk') : $('boardErr');
+  el.textContent = msg; el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4200);
+}
+
+function jobHTML(j) {
+  const dots = j.stageLabels.map((_, i) => `<i class="${i < j.stageIndex ? 'done' : (i === j.stageIndex ? 'on' : '')}"></i>`).join('');
+  const chipCls = j.stageIndex >= 7 ? 'chip done' : (j.stageIndex >= 3 ? 'chip live' : 'chip');
+  const eta = j.stageIndex === 3 && j.etaMinutes ? ` · ETA ~${j.etaMinutes} min` : '';
+  const opts = PROVIDERS.map((p) => `<option value="${p.id}" ${p.id === j.providerId ? 'selected' : ''}>${p.businessName}</option>`).join('');
+  const closed = j.stageIndex >= 7;
+  return `<div class="job" data-ref="${j.reference}">
+    <div class="job-top">
+      <span><span class="ref">${j.reference}</span> <span class="chip ${chipCls}">${j.stageLabel8}${eta}</span></span>
+      <span class="meta">${j.createdAt ? new Date(j.createdAt).toLocaleString() : ''}</span>
+    </div>
+    <div class="meta" style="margin-top:4px"><strong style="color:var(--ink)">${j.customerName}</strong>${j.customerPhone ? ' · <a href="tel:+1' + String(j.customerPhone).replace(/\D/g,'') + '">' + j.customerPhone + '</a>' : ''} · ${j.appliance || ''} · ${j.city || ''}${j.preferredWindow ? ' · Window ' + j.preferredWindow : ''}${j.feeStatus ? ' · Fee: ' + j.feeStatus : ''}</div>
+    ${j.issue ? `<div class="meta">Issue: ${j.issue}</div>` : ''}
+    <div class="meta">Technician: <strong style="color:var(--ink)">${j.technician.assigned ? j.technician.name : 'Not assigned yet'}</strong></div>
+    <div class="dots">${dots}</div>
+    ${closed ? '' : `
+    <div class="controls">
+      <select id="prov-${j.reference}"><option value="">— Assign technician —</option>${opts}</select>
+      <button class="btn btn-navy" onclick="assignTech('${j.reference}')">Assign</button>
+    </div>
+    <div class="stagebtns">
+      <button class="btn btn-ghost" onclick="stage('${j.reference}','CONFIRM')">✓ Confirm appt</button>
+      <input type="number" min="1" max="600" placeholder="ETA min" id="eta-${j.reference}">
+      <button class="btn btn-blue" onclick="stage('${j.reference}','EN_ROUTE')">🚐 En route</button>
+      <button class="btn btn-ghost" onclick="stage('${j.reference}','ARRIVED')">📍 Arrived</button>
+      <button class="btn btn-ghost" onclick="stage('${j.reference}','DIAGNOSIS')">🔍 Diagnosis</button>
+      <button class="btn btn-ghost" onclick="stage('${j.reference}','ESTIMATE')">🧾 Estimate OK</button>
+      <button class="btn btn-red" onclick="stage('${j.reference}','COMPLETE')">Complete job</button>
+      <button class="btn btn-ghost" onclick="notifyCust('${j.reference}')">✉️ Update customer</button>
+    </div>`}
+  </div>`;
+}
+
+async function loadBoard() {
+  const data = await api('/tracking/console');
+  PROVIDERS = data.providers || [];
+  const s = data.summary || {};
+  $('stats').innerHTML = [
+    ['Active jobs', s.active], ['Awaiting assignment', s.awaitingAssignment],
+    ['En route now', s.enRoute], ['On site', s.onSite], ['Completed', s.completed],
+  ].map(([label, n]) => `<div class="stat"><b>${n ?? 0}</b><span>${label}</span></div>`).join('');
+  $('jobs').innerHTML = (data.jobs || []).length ? data.jobs.map(jobHTML).join('') : '<div class="card">No jobs on the board yet.</div>';
+}
+
+async function assignTech(ref) {
+  const sel = $('prov-' + ref);
+  if (!sel.value) { flash(false, 'Pick a technician first for ' + ref); return; }
+  try { await api(`/tracking/console/${ref}/assign`, { method: 'POST', body: JSON.stringify({ providerId: sel.value }) }); flash(true, ref + ': technician assigned and the customer notified.'); loadBoard(); }
+  catch (e) { flash(false, e.message); }
+}
+
+async function stage(ref, action) {
+  const etaEl = $('eta-' + ref);
+  const body = { action };
+  if (action === 'EN_ROUTE' && etaEl && etaEl.value) body.etaMinutes = parseInt(etaEl.value, 10);
+  try { const j = await api(`/tracking/console/${ref}/stage`, { method: 'POST', body: JSON.stringify(body) }); flash(true, ref + ': now at “' + j.stageLabel8 + '”.'); loadBoard(); }
+  catch (e) { flash(false, e.message); }
+}
+
+async function notifyCust(ref) {
+  try { const r = await api(`/tracking/console/${ref}/notify`, { method: 'POST', body: '{}' }); flash(true, ref + ': update queued on ' + r.queued + ' channel(s) — “' + r.stageLabel + '”.'); }
+  catch (e) { flash(false, e.message); }
+}
+
+async function enter() {
+  try {
+    const me = await fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token() } }).then((r) => r.json());
+    $('who').textContent = 'Signed in: ' + ((me.user && me.user.email) || '') + ' · ' + ((me.user && me.user.roles || []).join(', '));
+    await loadBoard();
+    $('gateCard').classList.add('hidden');
+    $('board').classList.remove('hidden');
+  } catch (e) {
+    $('gateCard').classList.remove('hidden');
+    $('board').classList.add('hidden');
+    const err = $('loginErr');
+    err.textContent = e.message.includes('Insufficient role') ? 'That account is a customer account — the console needs a staff role (owner, manager, setter or dispatcher).' : e.message;
+    err.style.display = 'block';
+  }
+}
+
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('loginBtn'), err = $('loginErr');
+  btn.disabled = true; err.style.display = 'none';
+  try {
+    const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('email').value.trim(), password: $('password').value }) });
+    const body = await res.json();
+    if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
+    localStorage.setItem('tsos_token', body.token);
+    enter();
+  } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
+  finally { btn.disabled = false; }
+});
+
+$('refreshBtn').addEventListener('click', () => loadBoard().catch((e) => flash(false, e.message)));
+$('signOutBtn').addEventListener('click', () => { localStorage.removeItem('tsos_token'); location.reload(); });
+setInterval(() => { if (token() && !$('board').classList.contains('hidden')) loadBoard().catch(() => {}); }, 30000);
+
+if (token()) enter();
+</script>
+</body>
+</html>
