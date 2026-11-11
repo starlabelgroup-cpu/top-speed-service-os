@@ -130,7 +130,7 @@ const guestBookingSchema = z.object({
   preferredWindow: z.string().trim().optional(),
   // Which coordinated booking surface created this: the Speedy chat or
   // the five-step Smart Booking form. Attribution only — same pipeline.
-  source: z.enum(['SPEEDY_CHAT', 'WEB_FORM']).optional(),
+  source: z.enum(['SPEEDY_CHAT', 'WEB_FORM', 'FLAGSHIP_NET']).optional(),
 });
 
 router.post('/speedy/book', async (req, res) => {
@@ -179,13 +179,13 @@ router.post('/speedy/book', async (req, res) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'WEB_FORM' ? 'web-form' : 'speedy-chat', { diagnosticFee: 99, feeStatus: booking.feeStatus });
+  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus });
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
   appendEvent('BOOKING_CREATED', {
     source: booking.source,
-    actor: booking.source === 'WEB_FORM' ? 'web-form' : 'speedy-chat',
+    actor: booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form',
     entityType: 'BOOKING',
     entityId: booking.id,
     referenceCode: booking.referenceCode,
