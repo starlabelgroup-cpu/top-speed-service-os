@@ -513,18 +513,31 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <!-- ================= GARAGE ================= -->
         <section class="screen" id="scr-garage">
           <h2 class="greet">My Appliances</h2>
-          <p class="sub">Your garage — every appliance, its warranty, and its service history in one place. <span class="demo-tag">Demo data</span></p>
+          <p class="sub">Your garage — powered by <b>Appliance Connect</b>. Every appliance and its real service history, on your Service OS record.</p>
           <div class="card" id="garageList" style="padding-top:4px; padding-bottom:6px;"></div>
 
-          <div class="remind"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M12 8v5l3 2M12 21a9 9 0 110-18 9 9 0 010 18z"/></svg><div><b>Maintenance reminder:</b> your Samsung fridge filter is due in ~3 weeks, and the dryer vent cleaning is coming up. Smart Maintenance Plan members get these handled automatically.</div></div>
+          <div id="garageAdd" style="display:none;">
+            <h3 class="sec">Add an appliance</h3>
+            <div class="card">
+              <label class="fl">Appliance type</label>
+              <select id="gaType" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">
+                <option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Other</option>
+              </select>
+              <label class="fl">Brand</label><input id="gaBrand" type="text" placeholder="Samsung, LG, GE…" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">
+              <label class="fl">Model</label><input id="gaModel" type="text" placeholder="Model (optional)" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1;"><label class="fl">Serial</label><input id="gaSerial" type="text" placeholder="Optional" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
+                <div style="width:110px;"><label class="fl">Year</label><input id="gaYear" type="number" min="1950" max="2100" placeholder="2021" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
+              </div>
+              <div id="gaMsg" style="font-size:14px; margin-top:8px;"></div>
+              <button class="btn blue" style="margin-top:10px;" onclick="garageAddAppliance()">＋ Add to my garage</button>
+            </div>
+          </div>
 
           <h3 class="sec">Service history</h3>
-          <div class="card" style="padding-top:6px; padding-bottom:6px;">
-            <div class="hist"><div><b>Dishwasher — not draining</b><span>Oct 12, 2026 · Bosch · Marcus T.</span></div><span class="pill green">Done</span><span class="h-amt">$214</span></div>
-            <div class="hist"><div><b>Washer — drain pump replaced</b><span>Aug 3, 2026 · LG · Under warranty check</span></div><span class="pill green">Done</span><span class="h-amt">$268</span></div>
-            <div class="hist"><div><b>Fridge — diagnostic visit</b><span>May 19, 2026 · Samsung · $99 credited to repair</span></div><span class="pill green">Done</span><span class="h-amt">$99 → $0</span></div>
+          <div class="card" id="garageHistory" style="padding-top:6px; padding-bottom:6px;">
+            <p class="sub" style="margin:8px 0;">Sign in to see your real service history here.</p>
           </div>
-          <p class="sub" style="margin-top:12px;">History amounts are sample figures in this preview.</p>
         </section>
 
         <!-- ================= MORE ================= -->
@@ -777,6 +790,7 @@ function showTab(tab){
   document.querySelectorAll('#bnav button[data-tab]').forEach(function(b){ b.classList.toggle('on', b.dataset.tab === tab); });
   document.getElementById('screens').scrollTop = 0;
   if(tab === 'track') renderTrack();
+  if(tab === 'garage') loadGarage();
 }
 function setMode(m){
   mode = m;
@@ -1206,6 +1220,62 @@ function aspBook(){
       .then(function(j){ done(j.data.referenceCode); })
       .catch(function(e){ fail((e.message || 'Booking failed') + ' — try the form or call (954) 931-7997.'); });
   }
+}
+</script>
+
+<script>
+/* ============ APPLIANCE CONNECT — the real garage ============
+   Signed-in customers manage their actual appliances on the Service
+   OS (/connect) and see their real bookings as the service history.
+   Signed-out visitors get a sign-in prompt — no sample homes. */
+function loadGarage(){
+  var list=document.getElementById('garageList');
+  var hist=document.getElementById('garageHistory');
+  var addBox=document.getElementById('garageAdd');
+  if(!cTok()){
+    if(list) list.innerHTML='<p class="sub" style="margin:10px 0;">Sign in (More tab) or book your first repair to start your garage — your appliances and their history live here, on your record.</p>';
+    if(hist) hist.innerHTML='<p class="sub" style="margin:8px 0;">Your service history appears here once you are signed in.</p>';
+    if(addBox) addBox.style.display='none';
+    return;
+  }
+  if(addBox) addBox.style.display='';
+  cFetch('/connect/summary')
+    .then(function(j){
+      var apps=j.data.appliances||[];
+      if(list){
+        list.innerHTML=apps.length?apps.map(function(a){
+          var meta=[a.brand,a.model,a.year?('· '+a.year):'',a.serial?('· S/N '+a.serial):''].filter(Boolean).join(' ');
+          return '<div class="hist"><div><b>'+escC(a.type)+'</b><span>'+escC(meta||'Details on file')+'</span></div>' +
+            '<button class="btn ghost small" onclick="garageBook(\''+escC(a.type).replace(/'/g,"\'")+'\')">Book service</button>' +
+            '<button class="btn ghost small" style="color:#C72420;" onclick="garageRemove(\''+a.id+'\')">Remove</button></div>';
+        }).join(''):'<p class="sub" style="margin:10px 0;">No appliances yet — add your first one below. It takes 20 seconds and Speedy will know your home from then on.</p>';
+      }
+      var history=j.data.serviceHistory||[];
+      if(hist){
+        hist.innerHTML=history.length?history.map(function(b){
+          return '<div class="hist"><div><b>'+escC(b.appliance)+' — '+escC(b.issue)+'</b><span>'+escC(String(b.createdAt).slice(0,10))+' · '+escC(b.city)+' · Ref '+escC(b.referenceCode)+'</span></div><span class="pill blue">'+escC(b.status)+'</span></div>';
+        }).join(''):'<p class="sub" style="margin:8px 0;">No visits yet — your bookings will build this history automatically.</p>';
+      }
+    })
+    .catch(function(){
+      if(list) list.innerHTML='<p class="sub" style="margin:10px 0;">Could not load your garage just now — try again in a moment.</p>';
+    });
+}
+function garageBook(type){
+  showTab('speedy');
+  var inp=document.getElementById('aspInput');
+  if(inp){ inp.value='My '+type+' needs service — '; inp.focus(); }
+}
+function garageRemove(id){
+  cFetch('/connect/appliances/'+id,{method:'DELETE'}).then(function(){ loadGarage(); }).catch(function(){});
+}
+function garageAddAppliance(){
+  var msg=document.getElementById('gaMsg');
+  var yearVal=document.getElementById('gaYear').value.trim();
+  var payload={ type: document.getElementById('gaType').value, brand: document.getElementById('gaBrand').value.trim()||undefined, model: document.getElementById('gaModel').value.trim()||undefined, serial: document.getElementById('gaSerial').value.trim()||undefined, year: yearVal?parseInt(yearVal,10):undefined };
+  cFetch('/connect/appliances',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(){ msg.textContent='\u2705 Added — it is on your record.'; document.getElementById('gaBrand').value=''; document.getElementById('gaModel').value=''; document.getElementById('gaSerial').value=''; document.getElementById('gaYear').value=''; loadGarage(); })
+    .catch(function(e){ msg.textContent='\u26a0\ufe0f '+(e.message||'Could not add that'); });
 }
 </script>
   </body>

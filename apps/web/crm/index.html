@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service OS CRM — Top Speed Appliance</title>
+<meta name="description" content="The Top Speed Service OS CRM: the team's single customer view — every customer, booking and intake record in one searchable place.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+main{max-width:1080px;margin:0 auto;padding:40px 24px 60px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:8px 0 22px;line-height:1.55}
+.card{background:var(--light);border-radius:14px;padding:24px}
+input,select{width:100%;padding:12px;border:1px solid #c9d8ec;border-radius:10px;font-size:15.5px;font-family:inherit}
+label{font-weight:700;color:var(--navy);font-size:13.5px;display:block;margin-bottom:6px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:9px 8px}
+td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
+tr.cust{cursor:pointer}
+tr.cust:hover{background:#eef4fd}
+.pill{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.msg{font-weight:600;min-height:22px;margin-top:12px}
+.msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+footer{background:#04122e;color:#9db6d8;padding:32px 24px;text-align:center;font-size:14px}
+footer strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <img class="flag" src="/flag.jpg" alt="Top Speed checkered flag">
+  <div class="brand">TOP <span>SPEED</span> APPLIANCE</div>
+  <nav>
+    <a href="/software">Software</a>
+    <a href="/portal">Portal</a>
+    <a href="/book-os">Book OS</a>
+    <a href="#" id="crmOut" style="display:none;" onclick="crmSignOut(); return false;">Sign out</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Service OS CRM</h1>
+  <p class="sub">Every customer the platform has taken — bookings, Speedy chats, web forms, PM batches — in one searchable view, with their full history attached. Staff only.</p>
+
+  <div class="card" id="crmLogin">
+    <div class="row">
+      <div><label for="crmEmail">Team email</label><input id="crmEmail" type="email" placeholder="you@topspeedappliance.net"></div>
+      <div><label for="crmPass">Password</label><input id="crmPass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div style="margin-top:14px;"><button class="btn blue" onclick="crmSignIn()">Sign in to the CRM</button></div>
+    <div class="msg" id="crmLoginMsg"></div>
+  </div>
+
+  <div id="crmApp" style="display:none;">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <input id="crmQ" type="text" placeholder="Search name, phone, email or city…" style="flex:1; min-width:220px;" onkeydown="if(event.key==='Enter'){crmLoad();}">
+      <button class="btn blue" onclick="crmLoad()">Search</button>
+    </div>
+    <div class="msg" id="crmMsg"></div>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Customer</th><th>Contact</th><th>City</th><th>Bookings</th><th>Last booking</th></tr></thead>
+        <tbody id="crmRows"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="crmDetail" style="margin-top:20px;"></div>
+  </div>
+</main>
+
+<footer><strong>Top Speed Appliance LLC</strong> · Service OS CRM · Internal — customer data stays in the platform.</footer>
+
+<script>
+var CRM_API='https://top-speed-service-os.vercel.app/api/v1';
+function crmTok(){ try{ return localStorage.getItem('tsos_crm_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function crmEsc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+function crmFetch(path){
+  return fetch(CRM_API+path,{headers:{'Content-Type':'application/json','Authorization':'Bearer '+crmTok()}})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
+}
+function crmSignIn(){
+  var email=document.getElementById('crmEmail').value.trim();
+  var pass=document.getElementById('crmPass').value;
+  var msg=document.getElementById('crmLoginMsg');
+  fetch(CRM_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      try{ localStorage.setItem('tsos_crm_token', j.data.token); }catch(e){}
+      crmShow();
+    })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function crmSignOut(){ try{ localStorage.removeItem('tsos_crm_token'); }catch(e){} location.reload(); }
+function crmShow(){
+  document.getElementById('crmLogin').style.display='none';
+  document.getElementById('crmApp').style.display='';
+  document.getElementById('crmOut').style.display='';
+  crmLoad();
+}
+function crmLoad(){
+  var q=document.getElementById('crmQ').value.trim();
+  crmFetch('/crm/customers'+(q?'?q='+encodeURIComponent(q):''))
+    .then(function(j){
+      var rows=j.data.customers||[];
+      document.getElementById('crmMsg').textContent=rows.length+' customer'+(rows.length===1?'':'s');
+      document.getElementById('crmRows').innerHTML=rows.length?rows.map(function(c){
+        var last=c.lastBooking?(crmEsc(c.lastBooking.appliance)+' · '+crmEsc(c.lastBooking.referenceCode)+' · <span class="pill">'+crmEsc(c.lastBooking.status)+'</span>'):'—';
+        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td></tr>';
+      }).join(''):'<tr><td colspan="5">No customers match.</td></tr>';
+    })
+    .catch(function(e){
+      document.getElementById('crmRows').innerHTML='<tr><td colspan="5">⚠️ '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
+    });
+}
+function crmDetail(id){
+  crmFetch('/crm/customers/'+id)
+    .then(function(j){
+      var c=j.data.customer;
+      var bk=j.data.bookings.map(function(b){
+        return '<div style="padding:9px 0; border-bottom:1px solid var(--line);"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span style="color:var(--muted); font-size:13px;">'+crmEsc(b.city)+' · '+crmEsc(b.source)+' · '+crmEsc(b.status)+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span></div>';
+      }).join('')||'<p style="color:var(--muted);">No bookings yet.</p>';
+      var intake=j.data.intake.map(function(x){
+        return '<div style="padding:9px 0; border-bottom:1px solid var(--line);"><b>'+crmEsc(x.reference)+'</b> · '+crmEsc(x.type)+' <span style="color:var(--muted); font-size:13px;">('+crmEsc(x.source||'web')+')</span><br>'+crmEsc(x.message||'')+'</div>';
+      }).join('')||'<p style="color:var(--muted);">No form/chat intake on this number.</p>';
+      document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
+        '<p style="color:var(--muted); margin:6px 0 14px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
+        '<b>Bookings</b>'+bk+'<div style="margin-top:14px;"><b>Intake history</b></div>'+intake+'</div>';
+      window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
+    })
+    .catch(function(e){ document.getElementById('crmMsg').textContent='⚠️ '+e.message; });
+}
+if(crmTok()){ crmFetch('/crm/customers').then(function(){ crmShow(); }).catch(function(){}); }
+</script>
+</body>
+</html>
