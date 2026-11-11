@@ -257,6 +257,7 @@ function renderTech(provider,assignments,user){
       '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'ARRIVED\')">\ud83d\udccd Arrived</button>' +
       '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'DIAGNOSIS_STARTED\')">\ud83d\udd0d Diagnosis</button>' +
       '<button class="btn go" type="button" onclick="jobStatus(\''+a.id+'\',\'ESTIMATE_APPROVED\')">\u2705 Estimate approved</button></div>' +
+      '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="locShare(\''+a.id+'\',this)">\ud83d\udccd Share live location</button></div>' +
       '<div id="jsmsg-'+a.id+'" style="margin-top:7px; font-size:13.5px;"></div></div>';
     return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span>'+noteBox+progBox+'</div>';
   }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with the customer details.</p>';
@@ -287,6 +288,27 @@ function jobStatus(id, action){
   tFetch('/provider/assignments/'+id+'/job-status',{method:'POST',body:JSON.stringify(payload)})
     .then(function(){ if(m){ m.textContent='\u2705 Customer tracking updated \u2014 '+(action==='EN_ROUTE'?'Technician en route':action.replace(/_/g,' ').toLowerCase())+'.'; m.style.color='#0f7a3d'; } })
     .catch(function(e){ if(m){ m.textContent='\u26a0\ufe0f '+(e.message||'Could not update tracking'); m.style.color='#c2262e'; } });
+}
+var locWatch = {};
+function locShare(id, btn){
+  var m=document.getElementById('jsmsg-'+id);
+  if(locWatch[id] != null){
+    try{ navigator.geolocation.clearWatch(locWatch[id]); }catch(e){}
+    locWatch[id]=null;
+    btn.textContent='\ud83d\udccd Share live location';
+    if(m){ m.textContent='Location sharing off.'; m.style.color='#5A6E94'; }
+    return;
+  }
+  if(!navigator.geolocation){ if(m){ m.textContent='\u26a0\ufe0f This device cannot share location.'; m.style.color='#c2262e'; } return; }
+  var last=0;
+  locWatch[id]=navigator.geolocation.watchPosition(function(pos){
+    var now=Date.now(); if(now-last<20000) return; last=now;
+    tFetch('/provider/assignments/'+id+'/location',{method:'POST',body:JSON.stringify({lat:pos.coords.latitude,lng:pos.coords.longitude,accuracy:pos.coords.accuracy})})
+      .then(function(){ if(m){ m.textContent='\u2705 Live location on \u2014 your customer can see you in Track My Tech while you are en route.'; m.style.color='#0f7a3d'; } })
+      .catch(function(e){ if(m){ m.textContent='\u26a0\ufe0f '+(e.message||'Location update failed'); m.style.color='#c2262e'; } });
+  }, function(){ if(m){ m.textContent='\u26a0\ufe0f Location permission is needed to share.'; m.style.color='#c2262e'; } }, {enableHighAccuracy:true, maximumAge:15000});
+  btn.textContent='\u23f9 Stop sharing location';
+  if(m){ m.textContent='Sharing live location for this job\u2026'; m.style.color='#5A6E94'; }
 }
 function aiNotePreview(id){
   var raw=document.getElementById('ainote-'+id).value.trim();

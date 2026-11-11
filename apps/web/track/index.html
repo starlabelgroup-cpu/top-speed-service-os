@@ -144,7 +144,16 @@ function timelineHTML(t) {
   return `<div class="dots">${dots}</div>
     <div class="stage-now">${t.stageLabel8} ${eta}</div>
     ${tech}
+    ${locLine(t)}
     <ol class="timeline">${items}</ol>`;
+}
+
+function locLine(t) {
+  const L = t.technicianLocation;
+  if (!L) return '';
+  const ago = L.ageSeconds < 90 ? 'just now' : (L.ageSeconds < 3600 ? Math.round(L.ageSeconds / 60) + ' min ago' : Math.round(L.ageSeconds / 3600) + ' hr ago');
+  const stale = L.stale ? ' <span class="pill">GPS may be stale</span>' : '';
+  return `<div class="techline">📍 <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>`;
 }
 
 function jobCard(t, extra) {
@@ -221,6 +230,27 @@ $('guestForm').addEventListener('submit', async (e) => {
     err.style.display = 'block';
   } finally { btn.disabled = false; }
 });
+
+// Secure per-job tracking link (?t=...): no sign-in, no phone number —
+// the token IS the credential, and it expires. Auto-refreshes live.
+const linkToken = new URLSearchParams(location.search).get('t');
+async function loadByToken() {
+  try {
+    const res = await fetch(API + '/tracking/by-token/' + encodeURIComponent(linkToken));
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'This tracking link is not valid');
+    $('guestResult').innerHTML = jobCard(body.data) + '<p class="empty">This page refreshes itself every 30 seconds while your job is live.</p>';
+  } catch (ex) {
+    const err = $('guestErr');
+    err.textContent = ex.message;
+    err.style.display = 'block';
+  }
+}
+if (linkToken) {
+  $('guestForm').style.display = 'none';
+  loadByToken();
+  setInterval(loadByToken, 30000);
+}
 
 if (token()) showAccount();
 </script>

@@ -150,6 +150,7 @@ function jobHTML(j) {
       <button class="btn btn-ghost" onclick="stage('${j.reference}','ESTIMATE')">🧾 Estimate OK</button>
       <button class="btn btn-red" onclick="stage('${j.reference}','COMPLETE')">Complete job</button>
       <button class="btn btn-ghost" onclick="notifyCust('${j.reference}')">✉️ Update customer</button>
+      <button class="btn btn-ghost" onclick="issueLink('${j.reference}')">🔗 Tracking link</button>
     </div>`}
   </div>`;
 }
@@ -178,6 +179,15 @@ async function stage(ref, action) {
   if (action === 'EN_ROUTE' && etaEl && etaEl.value) body.etaMinutes = parseInt(etaEl.value, 10);
   try { const j = await api(`/tracking/console/${ref}/stage`, { method: 'POST', body: JSON.stringify(body) }); flash(true, ref + ': now at “' + j.stageLabel8 + '”.'); loadBoard(); }
   catch (e) { flash(false, e.message); }
+}
+
+async function issueLink(ref) {
+  try {
+    const r = await api(`/tracking/console/${ref}/tracking-link`, { method: 'POST', body: '{}' });
+    const url = location.origin + r.url;
+    try { await navigator.clipboard.writeText(url); } catch (e) {}
+    flash(true, ref + ': secure tracking link copied — ' + url + ' (expires ' + new Date(r.expiresAt).toLocaleDateString() + '). A new link revokes the old one.');
+  } catch (e) { flash(false, ref + ': could not issue the tracking link.'); }
 }
 
 async function notifyCust(ref) {
