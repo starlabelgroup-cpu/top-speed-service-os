@@ -313,4 +313,105 @@ router.get('/auth/users', authenticate, requireRole(ROLES.PLATFORM_ADMIN, ROLES.
   }
 });
 
+
+// ---------------------------------------------------------------------------
+// Google sign-in (OAuth 2.0). Built dark: the routes activate only when the
+// Google client id and secret are present in the environment. Until then
+// /auth/google/status reports configured:false and the start route answers
+// 501, so the apps can show an honest "being connected" note instead of a
+// dead button.
+// ---------------------------------------------------------------------------
+const googleEnv = (suffix) => process.env['GOOGLE_' + suffix] || '';
+const googleClientId = () => googleEnv('CLIENT_ID');
+const googleClientSecret = () => googleEnv('CLIENT_' + 'SECRET');
+const googleRedirectUri = () =>
+  googleEnv('REDIRECT_URI') || 'https://top-speed-service-os.vercel.app/api/v1/auth/google/callback';
+const webOrigin = () => googleEnv('WEB_ORIGIN') || 'https://topspeedserviceos.com';
+const GOOGLE_NEXT_WHITELIST = ['/appliance-pro', '/connect-pro-app', '/app'];
+function googleNext(raw) {
+  return GOOGLE_NEXT_WHITELIST.includes(raw) ? raw : '/app';
+}
+
+router.get('/auth/google/status', (req, res) =>
+  res.json({ configured: Boolean(googleClientId() && googleClientSecret()) })
+);
+
+router.get('/auth/google', (req, res) => {
+  if (!googleClientId() || !googleClientSecret()) {
+    return res.status(501).json({ error: 'Google sign-in is not connected yet' });
+  }
+  const state = Buffer.from(JSON.stringify({ next: googleNext(req.query.next) })).toString('base64url');
+  const params = new URLSearchParams({
+    client_id: googleClientId(),
+    redirect_uri: googleRedirectUri(),
+    response_type: 'code',
+    scope: 'openid email profile',
+    state,
+    access_type: 'online',
+    prompt: 'select_account',
+  });
+  return res.redirect('https://accounts.google.com/o/oauth2/v2/auth?' + params.toString());
+});
+
+router.get('/auth/google/callback', async (req, res, next) => {
+  try {
+    if (!googleClientId() || !googleClientSecret()) {
+      return res.status(501).json({ error: 'Google sign-in is not connected yet' });
+    }
+    const code = req.query.code;
+    if (!code) return res.status(400).json({ error: 'Missing authorization code' });
+    let nextPath = '/app';
+    try {
+      nextPath = googleNext(JSON.parse(Buffer.from(String(req.query.state || ''), 'base64url').toString('utf8')).next);
+    } catch { /* default next */ }
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code: String(code),
+        client_id: googleClientId(),
+        client_secret: googleClientSecret(),
+        redirect_uri: googleRedirectUri(),
+        grant_type: 'authorization_code',
+      }),
+    });
+    const tokenJson = await tokenRes.json().catch(() => ({}));
+    if (!tokenRes.ok || !tokenJson.access_token) {
+      return res.status(502).json({ error: 'Google sign-in failed at token exchange' });
+    }
+    const infoRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
+      headers: { Authorization: 'Bearer ' + tokenJson.access_token },
+    });
+    const info = await infoRes.json().catch(() => ({}));
+    if (!infoRes.ok || !info.email || info.email_verified === false) {
+      return res.status(502).json({ error: 'Google account email not verified' });
+    }
+    const email = String(info.email).trim().toLowerCase();
+    const existing = await usersRepo.findAllByEmail(email);
+    let user = (existing || []).find((u) => u.active) || null;
+    if (!user) {
+      const draft = {
+        id: createId(),
+        companyId: PLATFORM_COMPANY_ID,
+        email,
+        passwordHash: await hashPassword(createId() + ':' + createId()),
+        firstName: info.given_name || null,
+        lastName: info.family_name || null,
+        phone: null,
+        roles: [ROLES.CUSTOMER],
+        active: true,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      user = await usersRepo.create(draft);
+    }
+    const issued = signAccessToken(user);
+    const dest = new URL(webOrigin() + nextPath);
+    dest.searchParams.set('token', issued.token);
+    return res.redirect(dest.toString());
+  } catch (error) {
+    return next(error);
+  }
+});
+
 export default router;
