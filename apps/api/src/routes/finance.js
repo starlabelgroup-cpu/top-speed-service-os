@@ -50,7 +50,9 @@ const invoiceSchema = z.object({
 
 const syncSchema = z.object({
   connection: z.object({
-    companyName: z.string().trim().min(1).max(200),
+    // The connected QuickBooks company may legitimately have no name
+    // on its profile yet — a sync must still land truthfully.
+    companyName: z.string().trim().max(200).optional(),
     realmHint: z.string().trim().max(80).optional(),
   }),
   snapshots: z.array(snapshotSchema).max(24).optional(),
@@ -68,7 +70,7 @@ router.post('/finance/sync', authenticate, requireCompany, requireRole(ROLES.COM
     id: existing?.id || createId(),
     provider: 'quickbooks',
     status: 'connected',
-    companyName: parsed.data.connection.companyName,
+    companyName: parsed.data.connection.companyName || existing?.companyName || null,
     realmHint: parsed.data.connection.realmHint || existing?.realmHint || null,
     lastSyncAt: t,
     updatedBy: req.user?.id || null,
