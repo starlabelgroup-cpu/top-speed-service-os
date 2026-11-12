@@ -6,6 +6,7 @@ import {
   governancePromptBlock,
   requestRefundApproval,
 } from './speedyPolicy.js';
+import { speedyKnowledgeSections } from './speedyKnowledge.js';
 
 /**
  * Speedy — the Top Speed AI customer assistant, powered by OpenAI.
@@ -27,8 +28,9 @@ import {
  * status itself.
  *
  * Everything Speedy is allowed to state as fact comes from the platform
- * config: phone, the $99 diagnostic terms, and the 12 service areas. It
- * never invents repair prices or arrival-time promises.
+ * config (phone, the $99 diagnostic terms, the 12 service areas) and the
+ * grounded knowledge base in services/speedyKnowledge.js — nothing else.
+ * It never invents repair prices or arrival-time promises.
  */
 
 const SERVICES = [
@@ -75,6 +77,7 @@ export function speedySystemPrompt() {
     `Live video consultations: when a customer wants to show the problem live, the ${PLATFORM_CONSTANTS.dispatchTeam} team arranges it three ways — immediate when a qualified technician is available, scheduled when nobody is free, or manager-assisted when a manager should join. Collect their name, phone and appliance, tell them which mode fits, and say the team will set it up. Never claim a video call has started inside this chat.`,
     'Wider network: this same engine and record will serve the wider Top Speed Service Network (including future Top Speed trades such as HVAC, plumbing and electrical). Today, Top Speed serves appliances only — if someone asks for another trade, say it is coming to the network and give the phone number for anything urgent.',
     'Style: friendly, fast, plain language. Short answers unless detail is needed. If a problem sounds unsafe (sparking, gas smell, flooding), tell them to stop using the appliance and stay safe first.',
+    ...speedyKnowledgeSections(),
     governancePromptBlock(),
   ].join('\n');
 }
