@@ -7,6 +7,7 @@ import {
   requestRefundApproval,
 } from './speedyPolicy.js';
 import { speedyKnowledgeSections } from './speedyKnowledge.js';
+import { createInvite, getReferralStatusForCode, resolveCode } from './referrals.js';
 
 /**
  * Speedy — the Top Speed AI customer assistant, powered by OpenAI.
@@ -25,7 +26,11 @@ import { speedyKnowledgeSections } from './speedyKnowledge.js';
  * system prompt, and Speedy's only tools CREATE human-owned requests
  * (a refund approval, an escalation) — Speedy can never approve a
  * refund, certify safety, override credentials, or change a compliance
- * status itself.
+ * status itself. The ApplianceReferral tools follow the same shape:
+ * send_referral_invite is consent-gated in code (no explicit customer
+ * confirmation, no send) and get_referral_status is read-only and
+ * aggregate — neither can issue, approve, or redeem a referral credit,
+ * and neither exposes a program reward amount.
  *
  * Everything Speedy is allowed to state as fact comes from the platform
  * config (phone, the $99 diagnostic terms, the 12 service areas) and the
@@ -135,6 +140,40 @@ const SPEEDY_TOOLS = [
   },
   {
     type: 'function',
+    name: 'send_referral_invite',
+    description:
+      'Send an ApplianceReferral invite to a friend on behalf of a customer, using the customer\'s personal referral code (TS-REF-XXXX). Call ONLY after collecting the friend\'s name plus a phone number or email, reading back exactly what will be sent, asking "Should I send it?", and getting an explicit yes — set customerConfirmed to true only then. Speedy never states a referrer-reward amount for the program; the friend-facing offer is the published New Customer Welcome.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        referrerCode: { type: 'string', description: 'The customer\'s personal referral code, e.g. TS-REF-XXXX.' },
+        friendName: { type: 'string', description: 'The friend\'s name.' },
+        friendPhone: { type: 'string', description: 'The friend\'s phone number, or an empty string if none was provided.' },
+        friendEmail: { type: 'string', description: 'The friend\'s email address, or an empty string if none was provided.' },
+        customerConfirmed: { type: 'boolean', description: 'True only when the customer explicitly confirmed the send after the read-back. Never true on an assumption.' },
+      },
+      required: ['referrerCode', 'friendName', 'friendPhone', 'friendEmail', 'customerConfirmed'],
+    },
+  },
+  {
+    type: 'function',
+    name: 'get_referral_status',
+    description:
+      'Look up aggregate ApplianceReferral status for a customer\'s personal referral code (TS-REF-XXXX): journey counts by stage and how many issued credits are available. Returns no friend contact details and no program reward amounts — an available-credit total appears only when a credit was actually issued to this customer by human approval. Report only what it returns.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        code: { type: 'string', description: 'The customer\'s personal referral code, e.g. TS-REF-XXXX.' },
+      },
+      required: ['code'],
+    },
+  },
+  {
+    type: 'function',
     name: 'escalate_to_human_professional',
     description:
       'Escalate the conversation to the human team. Mandatory for safety-critical conditions (gas, carbon monoxide, sparking, fire, flooding, electric shock, refrigerant leaks); also right whenever a human professional should take over.',
@@ -151,9 +190,66 @@ const SPEEDY_TOOLS = [
   },
 ];
 
-function executeSpeedyTool(call) {
+async function executeSpeedyTool(call) {
   let args = {};
   try { args = JSON.parse(call.arguments || '{}'); } catch { args = {}; }
+  if (call.name === 'send_referral_invite') {
+    // Consent is enforced HERE, in code — not left to the prompt: without
+    // an explicit customer confirmation nothing is sent, and the tool
+    // result sends the model back to ask for one.
+    if (args.customerConfirmed !== true) {
+      return {
+        sent: false,
+        confirmationRequired: true,
+        message: 'Do NOT send this invite yet. Read back to the customer exactly what will be sent — the friend\'s name, the phone number or email it will go to, and that it carries the customer\'s referral link — then ask "Should I send it?" Call send_referral_invite again with customerConfirmed=true only after the customer explicitly says yes.',
+      };
+    }
+    const referrerCode = String(args.referrerCode || '').trim();
+    const friendName = String(args.friendName || '').trim();
+    const friendPhone = String(args.friendPhone || '').trim() || null;
+    const friendEmail = String(args.friendEmail || '').trim() || null;
+    const referral = resolveCode(referrerCode);
+    if (!referral) {
+      return { sent: false, error: 'CODE_NOT_FOUND', message: 'That referral code was not found. Ask the customer to check the code on their "Refer & Earn" screen in Appliance Connect and try again — do not guess a code.' };
+    }
+    if (!friendName) {
+      return { sent: false, error: 'FRIEND_NAME_REQUIRED', message: 'Ask for the friend\'s name before sending an invite.' };
+    }
+    if (!friendPhone && !friendEmail) {
+      return { sent: false, error: 'CONTACT_REQUIRED', message: 'Ask for the friend\'s phone number or email address — an invite needs at least one of them.' };
+    }
+    try {
+      const { journey, created } = await createInvite({
+        code: referral.code,
+        friendName,
+        phone: friendPhone,
+        email: friendEmail,
+        source: 'SPEEDY',
+      });
+      return {
+        sent: created,
+        alreadyInvited: !created,
+        journeyId: journey.id,
+        status: journey.status,
+        referralCode: referral.code,
+        referralLink: `https://topspeedserviceos.com/refer?c=${referral.code}`,
+        message: created
+          ? 'The invite was recorded and queued to send to the friend through the referral program. Tell the customer it is on its way; do not claim a delivery confirmation you do not have, and do not state any referrer-reward amount.'
+          : 'This friend already has an invite on this code, so no duplicate was sent. Tell the customer the earlier invite stands.',
+      };
+    } catch (error) {
+      // Self-referral, a disabled program, and validation failures come
+      // back as plain tool results the model can explain to the customer.
+      return { sent: false, error: error?.code || 'INVITE_FAILED', message: error?.message || 'The invite could not be sent.' };
+    }
+  }
+  if (call.name === 'get_referral_status') {
+    try {
+      return getReferralStatusForCode(String(args.code || '').trim());
+    } catch (error) {
+      return { found: false, error: error?.code || 'STATUS_FAILED', message: error?.message || 'Referral status could not be read.' };
+    }
+  }
   if (call.name === 'request_refund_approval') {
     requestRefundApproval({
       reason: args.reason || 'Customer requested a refund in Speedy chat',
@@ -195,11 +291,14 @@ export async function speedyChat({ message, history = [] }) {
   for (let round = 0; round < 3; round++) {
     const calls = (body.output || []).filter((item) => item?.type === 'function_call');
     if (!calls.length) break;
-    const outputs = calls.map((call) => ({
-      type: 'function_call_output',
-      call_id: call.call_id,
-      output: JSON.stringify(executeSpeedyTool(call)),
-    }));
+    const outputs = [];
+    for (const call of calls) {
+      outputs.push({
+        type: 'function_call_output',
+        call_id: call.call_id,
+        output: JSON.stringify(await executeSpeedyTool(call)),
+      });
+    }
     body = await responsesRequest({
       previous_response_id: body.id,
       input: outputs,

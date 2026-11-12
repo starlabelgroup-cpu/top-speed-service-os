@@ -613,6 +613,56 @@ export async function redeemCredit(creditId, bookingReference = null, staffUser 
 }
 
 /* ------------------------------------------------------------------ */
+/* Aggregate status by code (Speedy's get_referral_status tool)        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Aggregate, safe referral status for one code — the ONLY referral
+ * status Speedy may report. Returns journey counts by plain stage and
+ * the customer's AVAILABLE issued credits (count + totalCents). No
+ * referee contact details, no per-journey rows, and NO program reward
+ * amounts: a total appears here only because those credits were
+ * actually issued to this customer by a staff approval.
+ */
+export function getReferralStatusForCode(code) {
+  const referral = resolveCode(code);
+  if (!referral) {
+    return {
+      found: false,
+      referrerFirstName: null,
+      counts: { invited: 0, booked: 0, completed: 0, pendingApproval: 0, creditIssued: 0, redeemed: 0 },
+      creditsAvailable: { count: 0, totalCents: 0 },
+    };
+  }
+  const customer = referral.customerId ? store.customers.get(referral.customerId) : null;
+  const referrerName = referral.customerName || customer?.name || null;
+  const journeys = journeysForReferral(referral);
+  const count = (...statuses) => journeys.filter((journey) => statuses.includes(journey.status)).length;
+  const available = store.referralCredits.filter(
+    (credit) => referral.customerId
+      && credit.customerId === referral.customerId
+      && credit.status === 'AVAILABLE'
+      && (!credit.expiresAt || new Date(credit.expiresAt).getTime() >= Date.now()),
+  );
+  return {
+    found: true,
+    referrerFirstName: referrerName ? String(referrerName).trim().split(/\s+/)[0] : null,
+    counts: {
+      invited: count('INVITED', 'CLICKED'),
+      booked: count('BOOKED'),
+      completed: count('COMPLETED'),
+      pendingApproval: count('REWARD_PENDING_APPROVAL', 'REWARD_APPROVED'),
+      creditIssued: count('CREDIT_ISSUED'),
+      redeemed: count('REDEEMED'),
+    },
+    creditsAvailable: {
+      count: available.length,
+      totalCents: available.reduce((sum, credit) => sum + (credit.amountCents || 0), 0),
+    },
+  };
+}
+
+/* ------------------------------------------------------------------ */
 /* Customer dashboard                                                  */
 /* ------------------------------------------------------------------ */
 
