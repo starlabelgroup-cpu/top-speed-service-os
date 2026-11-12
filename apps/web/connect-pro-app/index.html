@@ -193,6 +193,11 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
         <div id="bkItems"></div>
       </div>
     </div>
+    <div class="card">
+      <h2>🤝 Refer &amp; Earn</h2>
+      <p>Share Top Speed with neighbors, tenants, and fellow businesses and earn a <b>$25 service credit</b> for each referral whose job is completed and paid — rising to <b>$35</b> from your 5th completed referral and <b>$50</b> from your 10th, plus a <b>$100</b> bonus at 10 lifetime referrals and <b>$250</b> at 25. Credits are staff-approved and expire 12 months after issue. Property managers refer on the <b>partner track</b> — the same approved terms, tracked separately, no separate partner rate.</p>
+      <div id="refBody"><p>Loading your referral code…</p></div>
+    </div>
   </div>
 </div>
 <script>
@@ -660,5 +665,21 @@ function saLoad(){
   }
 }
 (function(){ var prev=window.onAppReady; window.onAppReady=function(){ if(prev) prev(); saLoad(); }; })();
+</script>
+<script>
+/* ApplianceReferral Phase 2 — Refer & Earn (partner track for PMs), data from GET /referrals/me. */
+function loadReferral(){
+  var box=document.getElementById('refBody'); if(!box||!tok()) return;
+  api('/referrals/me').then(function(j){
+    var d=j.data||j;
+    if(!d.code){ box.innerHTML='<p>'+esc(d.explanation||'Your referral code is issued when your first job completes.')+'</p>'; return; }
+    var s=d.stats||{}; var avail=(s.creditsAvailable)||{};
+    box.innerHTML='<p>Your referral code: <b style="font-size:17px;">'+esc(d.code)+'</b> <span class="pill">'+(d.track==='PARTNER'?'PARTNER TRACK':'CUSTOMER TRACK')+'</span></p>'
+      +'<p>Share your link: <a href="'+esc(d.link)+'" style="font-weight:700;">'+esc(d.link)+'</a></p>'
+      +'<p style="color:var(--muted)">Link clicks '+(s.clicks||0)+' · invited '+(s.invited||0)+' · booked '+(s.booked||0)+' · completed '+(s.completed||0)+' · credit available: <b>$'+(((avail.totalCents||0)/100)).toFixed(2)+'</b></p>'
+      +'<p style="color:var(--muted)">Program details and the public leaderboard: <a href="/refer" style="font-weight:700;">Refer &amp; Earn →</a></p>';
+  }).catch(function(){ box.innerHTML='<p>Referral details could not be loaded right now.</p>'; });
+}
+(function(){ var prev=window.onAppReady; window.onAppReady=function(){ if(prev) prev(); loadReferral(); }; })();
 </script>
 </body></html>
