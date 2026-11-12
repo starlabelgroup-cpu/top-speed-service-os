@@ -53,7 +53,8 @@ h1{font-family:"Archivo";font-size:clamp(28px,5vw,40px);margin:6px 0 8px;color:v
 .sp-rec a{font-weight:800;color:var(--blue);white-space:nowrap}
 .sp-rec.upd{background:#EAF6EF;border-color:#BFE6CF}
 .sp-input{display:flex;gap:8px;padding:12px}
-.sp-input input{flex:1;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:15px}
+.sp-input input{flex:1;min-width:0;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:15px}
+@media(max-width:640px){.sp-input{gap:6px;padding:10px}.sp-input button[type=submit]{padding:0 13px}.sp-input input{padding:11px 12px}}
 .sp-input button[type=submit]{background:var(--red);color:#fff;border:none;border-radius:11px;padding:0 18px;font-weight:700;cursor:pointer}
 .fine{font-size:13px;color:var(--muted);line-height:1.5;margin:14px 2px 0}
 .doors{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:26px}

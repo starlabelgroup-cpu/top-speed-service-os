@@ -245,7 +245,7 @@ body:has(#swPanel.open) #swBtn{opacity:0;visibility:hidden;pointer-events:none}
 #swPanel.open{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .18s ease}
 .sw-grab{display:none}
 @media(max-width:640px){#swPanel{left:0;right:0;bottom:0;width:auto;height:min(620px,calc(100vh - 40px));height:min(620px,calc(100dvh - 40px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}.sw-grab{display:block;width:44px;height:5px;border-radius:99px;background:#c9d6ea;margin:8px auto 2px;flex:none}}
-@media(max-height:500px){#swPanel{bottom:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}}
+@media(max-height:500px){#swPanel{bottom:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));height:calc(100vh - 20px);height:calc(100dvh - 20px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}#swPanel .sw-recs{max-height:84px}#swPanel .sw-head{padding:9px 14px}#swPanel .sw-input{padding:8px 10px}}
 @media(max-width:640px) and (max-height:500px){#swPanel{left:0;right:0;bottom:0;height:auto;border-radius:24px 24px 0 0}}
 @media(prefers-reduced-motion:reduce){#swPanel,#swBtn{transition:none}}
 .sw-head{background:#0A265C;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:11px;flex:none}

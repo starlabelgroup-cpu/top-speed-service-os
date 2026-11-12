@@ -13,7 +13,7 @@
  * Bump CACHE_VERSION whenever the shell changes so old caches are purged
  * on activate.
  */
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const SHELL_CACHE = `top-speed-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `top-speed-runtime-${CACHE_VERSION}`;
 
@@ -87,6 +87,30 @@ self.addEventListener('fetch', (event) => {
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(() => caches.match('/index.html')),
+    );
+    return;
+  }
+
+  // Scripts & styles: NETWORK-FIRST. Code must never be stranded by a
+  // stale cache entry (v1 cached speedy-widget.js cache-first forever,
+  // so devices kept running an old chat widget after the fix shipped).
+  // Fresh copies are cached only as an offline fallback.
+  const isCode =
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.css');
+  if (isCode) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok && url.origin === self.location.origin) {
+            const copy = response.clone();
+            caches.open(SHELL_CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request)),
     );
     return;
   }

@@ -46,7 +46,7 @@
     '.tsw-input .send{background:#1280FF;color:#fff;border:none;border-radius:12px;padding:0 16px;font:800 14.5px Inter,system-ui,sans-serif;cursor:pointer}',
     '.tsw-fine{padding:0 14px 11px;margin:0;font-size:11.3px;color:#5a6b87;flex:none}',
     '@media(max-width:640px){.tsw-panel{left:0;right:0;bottom:0;width:auto;height:min(620px,calc(100vh - 40px));height:min(620px,calc(100dvh - 40px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}.tsw-grab{display:block;width:44px;height:5px;border-radius:99px;background:#c9d6ea;margin:8px auto 2px;flex:none}.tsw-btn{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}}',
-    '@media(max-height:500px){.tsw-panel{bottom:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}}',
+    '@media(max-height:500px){.tsw-panel{bottom:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));height:calc(100vh - 20px);height:calc(100dvh - 20px);max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}.tsw-recs{max-height:84px}.tsw-head{padding:9px 14px}.tsw-input{padding:8px 10px}}',
     '@media(max-width:640px) and (max-height:500px){.tsw-panel{left:0;right:0;bottom:0;height:auto;border-radius:24px 24px 0 0}}',
     '@media(prefers-reduced-motion:reduce){.tsw-panel,.tsw-btn{transition:none;animation:none}}'
   ].join('');
