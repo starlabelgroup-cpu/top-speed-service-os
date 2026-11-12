@@ -12,6 +12,7 @@ export const PLATFORM_CONSTANTS = {
   slogan: 'The Faster, The Better.',
   phone: '954-931-7997',
   phoneDisplay: '(954) 931-7997',
+  officeAddress: '6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073',
   diagnosticFee: 99,
   diagnosticFeeCurrency: 'USD',
   feeStatus: 'collected_at_booking',

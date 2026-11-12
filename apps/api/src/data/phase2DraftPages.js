@@ -71,11 +71,11 @@ const CITY_PAGES = [
   {
     slug: 'coral-springs',
     name: 'Coral Springs',
-    meta: 'Appliance repair in Coral Springs, FL, from the locally based Top Speed Appliance team. Online booking, Service Setter confirmation, live tracking — $99 diagnostic credited toward your repair.',
-    hero: 'Coral Springs is a master-planned city of family neighborhoods, and many of its homes are reaching the age where the original washer, dryer, and refrigerator all start asking for attention at once. Top Speed Appliance is based right here — our office is in Coral Springs — so local bookings get the full platform: online booking, a Service Setter confirmation call, and live job tracking.',
+    meta: 'Appliance repair in Coral Springs, FL, from the Top Speed Appliance team. Online booking, Service Setter confirmation, live tracking — $99 diagnostic credited toward your repair.',
+    hero: 'Coral Springs is a master-planned city of family neighborhoods, and many of its homes are reaching the age where the original washer, dryer, and refrigerator all start asking for attention at once. Our office is right next door in Coconut Creek, so Coral Springs bookings get the full platform: online booking, a Service Setter confirmation call, and live job tracking.',
     faqLocal: {
-      q: 'Are you actually based in Coral Springs?',
-      a: 'Yes. Top Speed Appliance LLC operates from Coconut Creek / Coral Springs, and Coral Springs is one of our twelve covered Broward service cities.',
+      q: 'Where is Top Speed Appliance based?',
+      a: 'Our office is at 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073 — right next door to Coral Springs, which is one of our twelve covered Broward service cities. Technicians are dispatched from the office to your home.',
     },
   },
   {
