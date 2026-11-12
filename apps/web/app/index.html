@@ -801,7 +801,7 @@ function renderActiveJob(){
   var when = booking.day+" · "+booking.window;
   var appl = booking.appliance;
   var pct = Math.round((stageIdx+1)/STAGES.length*100);
-  slot.innerHTML = '<div class="jobcard"><div class="jc-top"><b>'+appl+' repair</b><span class="ref">'+ref+'</span></div><div class="jc-body"><span class="pill blue"><span class="dot"></span>'+STAGES[stageIdx].t+'</span><div class="progress"><i style="width:'+pct+'%"></i></div><p class="jc-meta">'+when+' · Marcus T. is your tech.<br>'+STAGES[stageIdx].s+'</p><button class="btn blue small" style="margin-top:10px;" onclick="showTab(\'track\')">Track live</button></div></div>';
+  slot.innerHTML = '<div class="jobcard"><div class="jc-top"><b>'+appl+' repair</b><span class="ref">'+ref+'</span></div><div class="jc-body"><span class="pill blue"><span class="dot"></span>'+STAGES[stageIdx].t+'</span><div class="progress"><i style="width:'+pct+'%"></i></div><p class="jc-meta">'+when+'<br>'+STAGES[stageIdx].s+'</p><button class="btn blue small" style="margin-top:10px;" onclick="showTab(\'track\')">Track live</button></div></div>';
 }
 
 /* ============ track ============ */
