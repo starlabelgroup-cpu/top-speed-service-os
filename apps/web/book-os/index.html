@@ -168,14 +168,16 @@ body:not(.live) .gated{display:none!important}</style>
 <section class="panel"><div class="ph"><div><h2>· Speedy Live Video</h2><p>Customers who asked to show the problem live (from the /video page). Arrange a request to create its room — the customer gets the join link by text, and both sides join on the video page.</p></div><span class="badge" id="vidCount">STAFF</span></div><div id="videoList"><p style="color:var(--muted)">Sign in above to work the live video requests.</p></div></section>
 
 <!-- REFERRALS — ApplianceReferral (staff only, live data) -->
-<section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human ✓ before credit is issued. Amounts stay unpublished until set in Program Settings below.</p></div><span class="badge" id="refCount">STAFF</span></div>
+<section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human ✓ before credit is issued. Approved terms (both tracks): $25 base credit · $35 from the 5th completed referral · $50 from the 10th · milestone bonuses $100 @ 10 / $250 @ 25 · credits expire 12 months after issue. Customer and partner (business / property manager) referrals run on the same terms.</p></div><span class="badge" id="refCount">STAFF</span></div>
 <div style="padding:14px 16px">
 <div id="refMsg" style="font-size:13.5px;margin-bottom:10px"></div>
+<div id="refFunnel" style="font-size:13.5px;margin-bottom:12px;color:var(--mut)"></div>
 <h3 style="margin:0 0 8px;font-size:16px">Pending approval queue</h3>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px"><span style="font-size:13px;font-weight:700">Track:</span><button class="btn ghost" onclick="refSetTrack('ALL')">All</button><button class="btn ghost" onclick="refSetTrack('CUSTOMER')">Customers</button><button class="btn ghost" onclick="refSetTrack('PARTNER')">Partners</button><span id="refTrackNow" style="font-size:12.5px;color:var(--mut)">showing: all tracks</span></div>
 <div id="refQueue"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the referral queue.</p></div>
 <h3 style="margin:18px 0 8px;font-size:16px">Issued credits</h3>
 <div id="refCredits"><p style="color:var(--mut);font-size:13.5px">Issued credits appear here once referrals are approved.</p></div>
-<h3 style="margin:18px 0 8px;font-size:16px">Program Settings <span style="font-weight:600;color:var(--mut);font-size:12.5px">— owner only to save · amounts stay unpublished until set</span></h3>
+<h3 style="margin:18px 0 8px;font-size:16px">Program Settings <span style="font-weight:600;color:var(--mut);font-size:12.5px">— owner only to save · the monthly cap stays blank until Ramone sets a number</span></h3>
 <form id="refSettingsForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
 <label style="font-size:13px;font-weight:700">Program enabled<br><select id="rsEnabled" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"><option value="">— unset —</option><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
 <label style="font-size:13px;font-weight:700">Reward amount ($)<br><input id="rsReward" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
@@ -575,9 +577,23 @@ if(vTok()) loadVideoRequests();
 function refMoneyB(cents){ return '$'+((cents||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function refMsgB(kind,text){ var m=document.getElementById('refMsg'); if(!m) return; m.innerHTML=text?('<span style="font-weight:700;color:'+(kind==='err'?'#B3261E':'#0E7A3D')+'">'+escH(text)+'</span>'):''; }
 function refUnwrap(j){ return (j&&(j.data||j))||{}; }
+var refTrack='ALL';
+function refSetTrack(t){ refTrack=t; var n=document.getElementById('refTrackNow'); if(n) n.textContent='showing: '+(t==='ALL'?'all tracks':(t==='PARTNER'?'partners only':'customers only')); loadReferrals(); }
+function refFlagTrack(code,track){
+  if(!code) return;
+  apiFetch('/referrals/admin/codes/'+encodeURIComponent(code)+'/track',{method:'POST',body:JSON.stringify({track:track})})
+    .then(function(){ refMsgB('ok','Code '+code+' moved to the '+track.toLowerCase()+' track. Journeys already recorded keep the track they started on.'); loadReferrals(); })
+    .catch(function(e){ refMsgB('err','Track change failed: '+e.message); });
+}
 function loadReferrals(){
   if(!document.body.classList.contains('live')||!tsosToken()) return;
-  apiFetch('/referrals/admin/queue?status=REWARD_PENDING_APPROVAL').then(function(j){
+  apiFetch('/referrals/admin/funnel').then(function(j){
+    var f=refUnwrap(j); var a=f.all||{}, cu=f.customer||{}, pa=f.partner||{};
+    var el=document.getElementById('refFunnel'); if(!el) return;
+    function seg(x){ return 'codes '+x.codesIssued+' · invites '+x.invites+' · clicks '+x.linkClicks+' · bookings via referral '+x.bookingsAttributed+' · completions '+x.completions+' · credits issued '+x.creditsIssued+' ('+refMoneyB(x.creditsIssuedCents)+') · available '+x.creditsAvailable+' · redeemed '+x.creditsRedeemed+' · expired '+x.creditsExpired; }
+    el.innerHTML='<b style="color:inherit">Program funnel</b> — '+seg(a)+'<br>Customers — '+seg(cu)+'<br>Partners — '+seg(pa);
+  }).catch(function(){});
+  apiFetch('/referrals/admin/queue?status=REWARD_PENDING_APPROVAL'+(refTrack!=='ALL'?('&track='+refTrack):'')).then(function(j){
     var d=refUnwrap(j);
     var journeys=d.journeys||[];
     var counts=d.counts||{};
@@ -587,12 +603,15 @@ function loadReferrals(){
     if(!el) return;
     if(!journeys.length){ el.innerHTML='<p style="color:var(--mut);font-size:13.5px">Queue clear — no referrals are waiting on approval.</p>'; }
     else{
-      el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referrer</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referee</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Booking ref</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Completed</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Suggested</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Approve amount ($)</th><th style="padding:7px 6px;border-bottom:2px solid var(--line)"></th></tr></thead><tbody>'+
+      el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referrer</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Track</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referee</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Booking ref</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Completed</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Suggested</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Approve amount ($)</th><th style="padding:7px 6px;border-bottom:2px solid var(--line)"></th></tr></thead><tbody>'+
       journeys.map(function(jn){
         var sugg=(jn.suggestedAmountCents!=null?jn.suggestedAmountCents:(jn.rewardAmountCents!=null?jn.rewardAmountCents:null));
         var referrer=jn.referrerName||jn.referrerEmail||jn.referrerId||jn.code||'—';
         var when=jn.updatedAt||jn.createdAt||'';
-        return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')">✓ Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button></td></tr>';
+        var trk=jn.track==='PARTNER'?'PARTNER':'CUSTOMER';
+        var trkBadge='<span style="font-weight:800;font-size:11.5px;padding:3px 8px;border-radius:999px;'+(trk==='PARTNER'?'background:#FEF3C7;color:#92400E':'background:#E0F2FE;color:#075985')+'">'+trk+'</span>';
+        var flagBtn='<button class="btn ghost" title="Move this referrer\'s code to the other track (recorded journeys keep their track)" onclick="refFlagTrack(\''+escH(jn.code||'')+'\',\''+(trk==='PARTNER'?'CUSTOMER':'PARTNER')+'\')">'+(trk==='PARTNER'?'→ customer':'→ partner')+'</button>';
+        return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+trkBadge+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')">✓ Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button> '+flagBtn+'</td></tr>';
       }).join('')+'</tbody></table></div>';
     }
     var credits=d.credits||[];
@@ -644,7 +663,7 @@ document.getElementById('refSettingsForm').addEventListener('submit',function(e)
   var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapPerReferrer:intOrNull('rsCap'), rewardExpiryDays:intOrNull('rsExpiry') };
   if(en!=='') body.enabled=(en==='true');
   apiFetch('/referrals/admin/settings',{method:'PUT',body:JSON.stringify(body)})
-    .then(function(){ refMsgB('ok','Program settings saved. Amounts stay unpublished until set.'); toast('✓ Referral settings saved'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Program settings saved.'); toast('✓ Referral settings saved'); loadReferrals(); })
     .catch(function(err){ refMsgB('err','Settings save failed: '+err.message+' (owner sign-in required)'); });
 });
 setInterval(function(){ if(document.body.classList.contains('live')) loadReferrals(); },60000);

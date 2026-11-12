@@ -170,6 +170,16 @@ footer strong{color:#fff} footer a{color:#cfe0f5}
       </div>
     </div>
   </section>
+
+  <section id="referrals">
+    <div>
+      <h2>Referral Flywheel — ApplianceReferral</h2>
+      <p class="sub">The cheapest channel in the flywheel, counted from live program records: codes issued, invites, link clicks, bookings via referral, completions and credits issued — customers on one track, partners (businesses + property managers) on the other, same approved terms on both. Zero means zero; nothing here is modeled.</p>
+      <div id="mosRefBody" style="background:#fff;border:1px solid #d8e2f2;border-radius:12px;padding:18px;">
+        <p style="color:#5a6b82;">Loading the referral funnel…</p>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -232,6 +242,25 @@ document.getElementById('mosForm').addEventListener('submit',function(ev){
       el.innerHTML=head+'<p style="margin-top:8px;"><strong>Revenue context — P&amp;L '+esc(pnl.periodLabel)+'</strong> (synced '+(pnl.syncedAt?new Date(pnl.syncedAt).toLocaleString():'—')+')</p><pre style="background:#f2f6fb;border:1px solid #d8e2f2;border-radius:10px;padding:12px;font-family:\'Roboto Mono\',monospace;font-size:12.5px;overflow:auto;max-height:260px;white-space:pre-wrap;margin-top:10px;">'+esc(JSON.stringify(pnl.payload,null,2))+'</pre><p style="margin-top:10px;"><a href="/finance" style="color:#1473ff;font-weight:700;">Open Finance — QuickBooks →</a></p>';
     }).catch(function(){ el.innerHTML=head+'<p style="color:#5a6b82;margin-top:8px;">Revenue figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; });
   }).catch(function(){ el.innerHTML='<p style="color:#5a6b82;">Finance status could not be loaded right now.</p>'; });
+})();
+</script>
+
+<script>
+/* Marketing OS referral funnel: staff-gated aggregates from live
+   ApplianceReferral records (GET /referrals/admin/funnel). */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var el=document.getElementById('mosRefBody'); if(!el) return;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  function seg(label,x){
+    return '<p style="margin-top:8px;"><strong>'+esc(label)+'</strong> — codes issued '+x.codesIssued+' · invites '+x.invites+' · link clicks '+x.linkClicks+' · bookings via referral '+x.bookingsAttributed+' · completions '+x.completions+' · credits issued '+x.creditsIssued+' · available '+x.creditsAvailable+' · redeemed '+x.creditsRedeemed+' · expired '+x.creditsExpired+'</p>';
+  }
+  if(!tok()){ el.innerHTML='<p style="color:#5a6b82;">Funnel figures are staff-only — the public program page is <a href="/refer" style="color:#1473ff;font-weight:700;">Refer &amp; Earn →</a>. Staff: sign in and this panel fills with live counts.</p>'; return; }
+  fetch(API+'/referrals/admin/funnel',{headers:{'Authorization':'Bearer '+tok()}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){
+    var f=j.data||{};
+    el.innerHTML=seg('All referrals',f.all||{})+seg('Customers',f.customer||{})+seg('Partners (business + property manager)',f.partner||{})+'<p style="color:#5a6b82;margin-top:10px;">Counted live at '+(f.generatedAt?new Date(f.generatedAt).toLocaleString():'—')+'.</p>';
+  }).catch(function(){ el.innerHTML='<p style="color:#5a6b82;">Funnel figures are staff-only — sign in with a staff account to see live counts.</p>'; });
 })();
 </script>
 

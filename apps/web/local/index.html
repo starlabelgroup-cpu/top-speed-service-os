@@ -300,6 +300,15 @@
       <p style="color:#5a6b82;">Checking the QuickBooks connection…</p>
     </div>
   </section>
+
+  <!-- ============ APPLIANCEREFERRAL FUNNEL (Service OS, live records) ============ -->
+  <section id="referrals">
+    <h2>Referral Funnel — ApplianceReferral</h2>
+    <p>The referral flywheel, counted from live program records on the Service OS: codes issued, invites, link clicks, bookings that arrived via a referral, completions, and credits issued — split between the customer track and the partner track (businesses + property managers), which run on the same approved terms. Counts are real or zero; nothing is projected.</p>
+    <div id="localRefBody" style="background:#fff;border:1px solid #d8e2f2;border-radius:12px;padding:18px;margin-top:14px;">
+      <p style="color:#5a6b82;">Loading the referral funnel…</p>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -417,6 +426,24 @@
       el.innerHTML=head+'<p style="margin-top:8px;"><strong>Latest P&amp;L — '+esc(pnl.periodLabel)+'</strong> (synced '+(pnl.syncedAt?new Date(pnl.syncedAt).toLocaleString():'—')+')</p><pre style="background:#f2f6fb;border:1px solid #d8e2f2;border-radius:10px;padding:12px;font-family:\'Roboto Mono\',monospace;font-size:12.5px;overflow:auto;max-height:260px;white-space:pre-wrap;margin-top:10px;">'+esc(JSON.stringify(pnl.payload,null,2))+'</pre><p style="margin-top:10px;"><a href="/finance" style="color:#1473ff;font-weight:700;">Open Finance — QuickBooks →</a></p>';
     }).catch(function(){ el.innerHTML=head+'<p style="color:#5a6b82;margin-top:8px;">Finance figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; });
   }).catch(function(){ el.innerHTML='<p style="color:#5a6b82;">Finance status could not be loaded right now.</p>'; });
+})();
+</script>
+<script>
+/* Local OS referral funnel: aggregates come from the staff-gated
+   GET /referrals/admin/funnel and render only from real records. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var el=document.getElementById('localRefBody'); if(!el) return;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  function seg(label,x){
+    return '<p style="margin-top:8px;"><strong>'+esc(label)+'</strong> — codes issued '+x.codesIssued+' · invites '+x.invites+' · link clicks '+x.linkClicks+' · bookings via referral '+x.bookingsAttributed+' · completions '+x.completions+' · credits issued '+x.creditsIssued+' · available '+x.creditsAvailable+' · redeemed '+x.creditsRedeemed+' · expired '+x.creditsExpired+'</p>';
+  }
+  if(!tok()){ el.innerHTML='<p style="color:#5a6b82;">Funnel figures are staff-only — the public side of the program (terms + leaderboard) lives on <a href="/refer" style="color:#1473ff;font-weight:700;">the Refer &amp; Earn page →</a>. Staff: sign in on any OS console and this panel fills with live counts.</p>'; return; }
+  fetch(API+'/referrals/admin/funnel',{headers:{'Authorization':'Bearer '+tok()}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(j){
+    var f=j.data||{};
+    el.innerHTML=seg('All referrals',f.all||{})+seg('Customers',f.customer||{})+seg('Partners (business + property manager)',f.partner||{})+'<p style="color:#5a6b82;margin-top:10px;">Counted live at '+(f.generatedAt?new Date(f.generatedAt).toLocaleString():'—')+'. Work the approval queue in <a href="/book-os" style="color:#1473ff;font-weight:700;">Book OS →</a></p>';
+  }).catch(function(){ el.innerHTML='<p style="color:#5a6b82;">Funnel figures are staff-only — sign in with a staff account to see live counts.</p>'; });
 })();
 </script>
 </body>

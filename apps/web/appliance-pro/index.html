@@ -110,6 +110,11 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       <div id="actList"><p>Loading…</p></div>
     </div>
     <div class="card">
+      <h2>🤝 Refer &amp; Earn — partner track</h2>
+      <p>Your business earns on the same ApplianceReferral program as everyone else, tracked on the partner track: a <b>$25 service credit</b> for each referred business or household whose job is completed and paid — rising to <b>$35</b> from your 5th completed referral and <b>$50</b> from your 10th, plus a <b>$100</b> bonus at 10 lifetime referrals and <b>$250</b> at 25. Every credit is staff-approved before it lands and expires 12 months after issue. No separate partner rate — the same approved terms for all.</p>
+      <div id="refBody"><p>Loading your referral code…</p></div>
+    </div>
+    <div class="card">
       <h2>Your account team</h2>
       <p>Commercial accounts are custom-quoted with consolidated monthly invoicing. Questions, or an urgent outage? Call the team.</p>
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -224,7 +229,19 @@ function loadActivity(){
     box.innerHTML=h.length?h.slice(0,8).map(function(b){ return '<div class="item"><b>'+esc(b.referenceCode)+'</b> \u00b7 '+esc(b.appliance)+' \u2014 '+esc(b.issue)+'<br><span style="color:var(--muted)">'+esc(b.city||'')+' \u00b7 '+esc(String(b.createdAt).slice(0,10))+'</span> <span class="pill">'+esc(b.status)+'</span></div>'; }).join(''):'<p>No service activity yet \u2014 your requests and bookings will show here.</p>';
   }).catch(function(){ box.innerHTML='<p>Could not load activity just now.</p>'; });
 }
-function onAppReady(){ loadEquip(); loadActivity(); }
+function loadReferral(){
+  var box=document.getElementById('refBody'); if(!box||!tok()) return;
+  api('/referrals/me').then(function(j){
+    var d=j.data||j;
+    if(!d.code){ box.innerHTML='<p>'+esc(d.explanation||'Your partner referral code is issued when your first job completes.')+'</p>'; return; }
+    var s=d.stats||{}; var avail=(s.creditsAvailable)||{};
+    box.innerHTML='<p>Your referral code: <b style="font-size:17px;">'+esc(d.code)+'</b> <span class="pill">'+(d.track==='PARTNER'?'PARTNER TRACK':'CUSTOMER TRACK')+'</span></p>'
+      +'<p>Share your link: <a href="'+esc(d.link)+'" style="font-weight:700;">'+esc(d.link)+'</a></p>'
+      +'<p style="color:var(--muted)">Link clicks '+(s.clicks||0)+' · invited '+(s.invited||0)+' · booked '+(s.booked||0)+' · completed '+(s.completed||0)+' · credit available: <b>$'+(((avail.totalCents||0)/100)).toFixed(2)+'</b></p>'
+      +'<p style="color:var(--muted)">Program details and the public leaderboard: <a href="/refer" style="font-weight:700;">Refer &amp; Earn →</a></p>';
+  }).catch(function(){ box.innerHTML='<p>Referral details could not be loaded right now.</p>'; });
+}
+function onAppReady(){ loadEquip(); loadActivity(); loadReferral(); }
 </script>
 
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->

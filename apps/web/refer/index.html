@@ -132,6 +132,12 @@ form.invite input:focus{outline:2px solid #1280FF;border-color:#1280FF}
   </form>
 </section>
 
+<section style="padding-top:0">
+  <h2>Top referrers</h2>
+  <p class="sub">The neighbors and partners sending the most completed referrals our way. Names shown as first name + last initial, ranked by completed referrals — credit amounts stay private.</p>
+  <div id="leaderboard"><p class="sub" style="margin:0">The program just launched — no completed referrals yet. Be the first name on this board: finish a job, share your code, and when your friend's repair completes, you're on it.</p></div>
+</section>
+
 <section class="faq" style="padding-top:0">
   <h2>Questions</h2>
   <details><summary>How much is the credit?</summary><p>You earn a $25 service credit for each friend whose job is completed and paid. From your 5th through your 9th completed referral the credit rises to $35 each, and from your 10th on it's $50 each — plus a one-time $100 bonus at 10 lifetime referrals and $250 at 25. Every credit is approved by our team before it lands, and you'll see its exact amount and expiry in Appliance Connect.</p></details>
@@ -139,7 +145,7 @@ form.invite input:focus{outline:2px solid #1280FF;border-color:#1280FF}
   <details><summary>Where is my referral code?</summary><p>Your code is issued automatically when a job completes. Sign in to Appliance Connect and open Refer &amp; Earn to copy your code and your personal link.</p></details>
   <details><summary>What does my friend get?</summary><p>A welcome offer on their first eligible repair: $25 off your first eligible repair — for new registered customers. Minimum service charge and exclusions apply.</p></details>
   <details><summary>Does my credit expire?</summary><p>Yes — each issued credit expires 12 months after the day it's issued. Your dashboard shows the exact date for each credit so nothing surprises you.</p></details>
-  <details><summary>Can I refer a business?</summary><p>ApplianceReferral is built for household-to-household referrals. Businesses and property portfolios are served by our commercial and partner programs — ask Speedy and we'll point you the right way.</p></details>
+  <details><summary>Can I refer a business?</summary><p>Yes — businesses and property managers refer on the same program, on the same approved terms, through the partner track. Your partner referral code and your referral stats live where you already work: Appliance Pro for businesses, Appliance Connect Pro for property managers. Same credit tiers, same staff approval, no separate partner rate.</p></details>
 </section>
 
 <section style="padding-top:0;text-align:center">
@@ -212,6 +218,23 @@ form.invite input:focus{outline:2px solid #1280FF;border-color:#1280FF}
       .catch(function(err){ showMsg('err',err.message+' You can also share your link directly from Appliance Connect — that always works.'); })
       .finally(function(){ btn.disabled=false; btn.textContent='Queue my friend\'s invite'; });
   });
+  // Public leaderboard: first name + last initial, completed counts only.
+  fetch(API+'/referrals/leaderboard')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var leaders=(j&&j.data&&j.data.leaders)||[];
+      if(!leaders.length) return; // honest empty state stays
+      var box=$('leaderboard'); if(!box) return;
+      box.innerHTML='';
+      leaders.forEach(function(l,i){
+        var row=document.createElement('div');
+        row.style.cssText='display:flex;justify-content:space-between;align-items:center;background:var(--light);border-radius:12px;padding:12px 18px;margin-bottom:8px';
+        var name=document.createElement('strong'); name.style.color='var(--navy)'; name.textContent=(i+1)+'. '+l.displayName;
+        var count=document.createElement('span'); count.style.cssText='color:var(--muted);font-weight:700'; count.textContent=l.completedReferrals+(l.completedReferrals===1?' completed referral':' completed referrals');
+        row.appendChild(name); row.appendChild(count); box.appendChild(row);
+      });
+    })
+    .catch(function(){ /* leaderboard is a bonus surface — never break the page */ });
 })();
 </script>
 
