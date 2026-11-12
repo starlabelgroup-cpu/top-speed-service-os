@@ -79,25 +79,28 @@ enum InvoiceStatus {
 }
 
 model Company {
-  id        String      @id @default(uuid()) @db.Uuid
-  name      String
-  slug      String      @unique
-  type      CompanyType
-  isPlatformOwner Boolean @default(false)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id              String      @id @default(uuid()) @db.Uuid
+  name            String
+  slug            String      @unique
+  type            CompanyType
+  isPlatformOwner Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  users               User[]
-  customers           Customer[]
-  serviceRequests     ServiceRequest[]
-  dispatchAssignments DispatchAssignment[]
-  providers           Provider[]
-  invoices            Invoice[]
-  referrals           Referral[]
-  notificationOutbox  NotificationOutbox[]
-  videoRequests       VideoConsultRequest[]
-  payments            Payment[]
-  channelLinks ChannelLink[]
+  users                   User[]
+  customers               Customer[]
+  serviceRequests         ServiceRequest[]
+  dispatchAssignments     DispatchAssignment[]
+  providers               Provider[]
+  invoices                Invoice[]
+  referrals               Referral[]
+  referralJourneys        ReferralJourney[]
+  referralCredits         ReferralCredit[]
+  referralProgramSettings ReferralProgramSetting[]
+  notificationOutbox      NotificationOutbox[]
+  videoRequests           VideoConsultRequest[]
+  payments                Payment[]
+  channelLinks            ChannelLink[]
 
   @@index([type])
 }
@@ -124,18 +127,19 @@ model User {
 }
 
 model Customer {
-  id        String   @id @default(uuid()) @db.Uuid
-  companyId String   @db.Uuid
-  userId    String?  @db.Uuid
-  source    String?
-  name      String
-  phone     String
-  email     String?
-  address   String?
-  city      String
-  zip       String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String   @id @default(uuid()) @db.Uuid
+  companyId      String   @db.Uuid
+  userId         String?  @db.Uuid
+  source         String?
+  referredByCode String?
+  name           String
+  phone          String
+  email          String?
+  address        String?
+  city           String
+  zip            String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   company         Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   serviceRequests ServiceRequest[]
@@ -147,40 +151,46 @@ model Customer {
 
 // The booking record exposed by the API as /bookings.
 model ServiceRequest {
-  id                              String        @id @default(uuid()) @db.Uuid
-  companyId                       String        @db.Uuid
-  customerId                      String        @db.Uuid
-  city                            String
-  zip                             String
-  appliance                       String
-  issue                           String
-  preferredWindow                 String?
-  referenceCode                   String?       @unique
-  source                          String        @default("WEBSITE")
+  id                                String        @id @default(uuid()) @db.Uuid
+  companyId                         String        @db.Uuid
+  customerId                        String        @db.Uuid
+  city                              String
+  zip                               String
+  appliance                         String
+  issue                             String
+  preferredWindow                   String?
+  referenceCode                     String?       @unique
+  source                            String        @default("WEBSITE")
   // Intake attribution (2026-11-12, Fusion absorb Stage 3): the landing
   // page a lead came from, the [via:] surface tag, and the UTM campaign
   // fields. All optional — bookings made before this change (and any
   // client that sends none) simply carry nulls.
-  sourcePage                      String?
-  viaTag                          String?
-  utmSource                       String?
-  utmMedium                       String?
-  utmCampaign                     String?
+  sourcePage                        String?
+  viaTag                            String?
+  utmSource                         String?
+  utmMedium                         String?
+  utmCampaign                       String?
+  // ApplianceReferral attribution (2026-11-12, Phase 1): the personal
+  // TS-REF-XXXX code this booking arrived through, and the referrer's
+  // customer id. Persisted so a referred booking stays attributable
+  // across cold starts (before this, the linkage lived only in memory).
+  referralCode                      String?
+  referredByCustomerId              String?       @db.Uuid
   // Working-state documents the API services operate on. The relational
   // core (customer, status, fee, assignments) stays in columns/tables;
   // these JSON columns carry the booking's event history, its dispatch
   // state, and its Book OS appointment exactly as the services produce them.
-  history                         Json          @default("[]")
-  dispatch                        Json?
-  appointment                     Json?
-  completedAt                     DateTime?
-  completedBy                     String?
-  status                          BookingStatus @default(PENDING_DISPATCH)
-  diagnosticFee                   Decimal       @default(99.00) @db.Decimal(10, 2)
-  diagnosticFeeCreditedTowardRepair Boolean     @default(true)
-  feeStatus                       FeeStatus     @default(COLLECTED_AT_BOOKING)
-  createdAt                       DateTime      @default(now())
-  updatedAt                       DateTime      @updatedAt
+  history                           Json          @default("[]")
+  dispatch                          Json?
+  appointment                       Json?
+  completedAt                       DateTime?
+  completedBy                       String?
+  status                            BookingStatus @default(PENDING_DISPATCH)
+  diagnosticFee                     Decimal       @default(99.00) @db.Decimal(10, 2)
+  diagnosticFeeCreditedTowardRepair Boolean       @default(true)
+  feeStatus                         FeeStatus     @default(COLLECTED_AT_BOOKING)
+  createdAt                         DateTime      @default(now())
+  updatedAt                         DateTime      @updatedAt
 
   company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   customer            Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
@@ -213,25 +223,25 @@ model Provider {
 }
 
 model DispatchAssignment {
-  id              String           @id @default(uuid()) @db.Uuid
-  companyId       String           @db.Uuid
-  serviceRequestId String           @db.Uuid
-  providerId      String           @db.Uuid
-  status          AssignmentStatus @default(PROPOSED)
-  dispatchMode    DispatchMode     @default(HYBRID)
-  approvalRequired Boolean         @default(true)
-  matchScore      Int?
-  providerCompanyId String?        @db.Uuid
-  approvedById    String?
-  approvedByName  String?
-  approvedAt      DateTime?
+  id                String           @id @default(uuid()) @db.Uuid
+  companyId         String           @db.Uuid
+  serviceRequestId  String           @db.Uuid
+  providerId        String           @db.Uuid
+  status            AssignmentStatus @default(PROPOSED)
+  dispatchMode      DispatchMode     @default(HYBRID)
+  approvalRequired  Boolean          @default(true)
+  matchScore        Int?
+  providerCompanyId String?          @db.Uuid
+  approvedById      String?
+  approvedByName    String?
+  approvedAt        DateTime?
   // Track My Tech live GPS: the technician device's latest reported
   // position for this assignment (only ever set by a real device report).
-  lastLat         Float?
-  lastLng         Float?
-  lastLocationAt  DateTime?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  lastLat           Float?
+  lastLng           Float?
+  lastLocationAt    DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
   company        Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
   serviceRequest ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
@@ -279,14 +289,101 @@ model Referral {
   issuedFromBookingId     String?  @db.Uuid
   issuedFromReferenceCode String?
   redemptions             Json     @default("[]")
+  clickCount              Int      @default(0)
   issuedAt                DateTime @default(now())
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company  Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  journeys ReferralJourney[]
 
   @@unique([companyId, code])
   @@index([companyId])
+}
+
+// ApplianceReferral rewards program (2026-11-12, Phase 1): the lifecycle
+// of one referred friend, from invite to reward. status is a free-form
+// String, matching Referral: INVITED | CLICKED | BOOKED | COMPLETED |
+// REWARD_PENDING_APPROVAL | REWARD_APPROVED | CREDIT_ISSUED | REDEEMED |
+// REJECTED | EXPIRED | VOID. rewardAmountCents is a SNAPSHOT copied from
+// the program settings at completion time — null until a figure is
+// configured, and never published from anywhere else.
+model ReferralJourney {
+  id                 String    @id @default(uuid()) @db.Uuid
+  companyId          String    @db.Uuid
+  referralId         String    @db.Uuid
+  code               String
+  referrerCustomerId String?   @db.Uuid
+  refereeName        String?
+  refereePhone       String?
+  refereeEmail       String?
+  bookingId          String?   @db.Uuid
+  bookingReference   String?
+  status             String    @default("INVITED")
+  rewardAmountCents  Int?
+  tierSnapshot       String?
+  staffDecisionBy    String?
+  staffDecisionAt    DateTime?
+  staffNote          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  company  Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  referral Referral         @relation(fields: [referralId], references: [id], onDelete: Cascade)
+  credits  ReferralCredit[]
+
+  @@index([companyId, code])
+  @@index([companyId, status])
+  @@index([companyId, refereePhone])
+}
+
+// A reward credit issued to a referrer after staff approval. The ledger
+// record: credits are real money-equivalents, so issuance is staff-only
+// and every state change is recorded (issuer, redemption booking).
+model ReferralCredit {
+  id                String    @id @default(uuid()) @db.Uuid
+  companyId         String    @db.Uuid
+  customerId        String    @db.Uuid
+  journeyId         String    @db.Uuid
+  amountCents       Int
+  status            String    @default("AVAILABLE")
+  issuedBy          String
+  expiresAt         DateTime?
+  redeemedBookingId String?   @db.Uuid
+  redeemedReference String?
+  redeemedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  company Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  journey ReferralJourney @relation(fields: [journeyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, customerId])
+  @@index([companyId, status])
+  @@index([journeyId])
+}
+
+// Referral program configuration, one row per company. A dedicated typed
+// model — the boolean-only NotificationSetting table cannot hold amounts.
+// rewardAmountCents NULL means UNSET: nothing anywhere may publish or pay
+// a referrer-reward figure until the owner configures one here.
+model ReferralProgramSetting {
+  id                    String   @id @default(uuid()) @db.Uuid
+  companyId             String   @unique @db.Uuid
+  enabled               Boolean  @default(true)
+  rewardAmountCents     Int?
+  tier2Threshold        Int?
+  tier2AmountCents      Int?
+  tier3Threshold        Int?
+  tier3AmountCents      Int?
+  milestoneBonuses      Json?
+  monthlyCapPerReferrer Int?
+  rewardExpiryDays      Int?
+  updatedBy             String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 model NotificationOutbox {

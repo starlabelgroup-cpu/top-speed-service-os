@@ -6,6 +6,7 @@ import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_C
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
+import { attachReferralToBooking } from '../services/referrals.js';
 import { providersStatus } from '../services/senders.js';
 
 /**
@@ -133,6 +134,11 @@ const guestBookingSchema = z.object({
   // Which coordinated booking surface created this: the Speedy chat or
   // the five-step Smart Booking form. Attribution only — same pipeline.
   source: z.enum(['SPEEDY_CHAT', 'WEB_FORM', 'FLAGSHIP_NET']).optional(),
+  // ApplianceReferral: the referrer's personal TS-REF-XXXX code, when the
+  // guest arrived through a referral link/invite. Normalized (trim +
+  // uppercase) and resolved after the booking is created — an unknown
+  // code never blocks a booking.
+  referralCode: z.string().trim().max(32).transform((value) => value.toUpperCase()).optional(),
   // Finer-grained attribution (Fusion absorb Stage 3): landing page,
   // [via:] surface tag, UTM campaign fields. Optional — see
   // services/attribution.js for the accepted shapes.
@@ -201,6 +207,23 @@ router.post('/speedy/book', async (req, res) => {
   });
   notifyBookingConfirmation(booking, booking.source);
   notifyNewBooking(booking, booking.source);
+  // ApplianceReferral attribution: tag the booking + open the reward
+  // track. Wrapped so a referral problem can never fail a booking.
+  if (parsed.data.referralCode) {
+    try {
+      const result = await attachReferralToBooking({
+        code: parsed.data.referralCode,
+        booking,
+        refereeCustomer: customerRecord,
+        source: booking.source,
+      });
+      if (!result.attached) {
+        console.error(JSON.stringify({ level: 'warn', message: 'referral attach skipped', reason: result.reason, code: parsed.data.referralCode }));
+      }
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'referral attach failed', error: String(error?.message || error) }));
+    }
+  }
 
   return res.status(201).json({
     data: {

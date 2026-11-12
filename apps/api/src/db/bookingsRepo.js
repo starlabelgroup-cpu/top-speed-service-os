@@ -12,6 +12,7 @@ import { hydrateMarketingOs } from './marketingOsRepo.js';
 import { hydrateParts } from './partsRepo.js';
 import { hydrateFinance } from './financeRepo.js';
 import { hydrateNotificationSettings } from './notificationsRepo.js';
+import { hydrateReferrals } from './referralsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -53,6 +54,7 @@ function customerToRow(record) {
     companyId: record.companyId,
     userId: record.userId ?? null,
     source: record.source ?? null,
+    referredByCode: record.referredByCode ?? null,
     name: record.name,
     phone: record.phone ?? '',
     email: record.email ?? null,
@@ -68,6 +70,7 @@ function customerFromRow(row) {
     companyId: row.companyId,
     userId: row.userId ?? undefined,
     source: row.source ?? undefined,
+    referredByCode: row.referredByCode ?? undefined,
     name: row.name,
     phone: row.phone,
     email: row.email ?? undefined,
@@ -91,6 +94,8 @@ function bookingToRow(booking) {
     referenceCode: booking.referenceCode ?? null,
     source: booking.source ?? 'WEBSITE',
     ...attributionToColumns(booking.attribution),
+    referralCode: booking.referralCode ?? null,
+    referredByCustomerId: booking.referredByCustomerId ?? null,
     history: booking.history ?? [],
     dispatch: booking.dispatch ?? null,
     appointment: booking.appointment ?? null,
@@ -113,6 +118,8 @@ function bookingFromRow(row, customerRecord) {
     referenceCode: row.referenceCode,
     source: row.source,
     ...(attribution ? { attribution } : {}),
+    referralCode: row.referralCode ?? null,
+    referredByCustomerId: row.referredByCustomerId ?? null,
     city: row.city,
     zip: row.zip,
     appliance: row.appliance,
@@ -245,8 +252,17 @@ export async function hydrateStore() {
   } catch (error) {
     console.error('hydrateNotificationSettings failed (defaults apply, platform continues)', error?.message || error);
   }
+  // ApplianceReferral program is an add-on module too: a missing table
+  // mid-deploy degrades to empty journeys/credits and default (unset)
+  // settings, never blocks hydration.
+  let referralProgram = { journeys: 0, credits: 0, settings: 0 };
+  try {
+    referralProgram = await hydrateReferrals();
+  } catch (error) {
+    console.error('hydrateReferrals failed (referral program degraded, platform continues)', error?.message || error);
+  }
 
-  return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };
+  return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };
 }
 
 export async function persistCustomer(record) {

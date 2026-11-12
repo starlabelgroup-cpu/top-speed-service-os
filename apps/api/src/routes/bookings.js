@@ -17,6 +17,7 @@ import {
   notifyReviewRequest,
 } from '../services/notifications.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
+import { advanceReferralOnCompletion } from '../services/referrals.js';
 
 const router = Router();
 
@@ -293,6 +294,15 @@ router.post(
     // Flywheel "refer" stage: completion also issues the customer their
     // personal referral code (one active code per customer).
     const { referral, created: referralCreated } = issueReferralForBooking(booking, booking.source || null);
+    // ApplianceReferral: if THIS booking was itself a referred booking,
+    // advance its journey (COMPLETED → REWARD_PENDING_APPROVAL when a
+    // payment is recorded) and notify the referrer. Never blocks the
+    // completion response.
+    try {
+      await advanceReferralOnCompletion(booking, booking.source || null);
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'referral completion advance failed', error: String(error?.message || error) }));
+    }
     await persistBooking(booking);
 
     return res.json({

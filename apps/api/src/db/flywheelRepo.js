@@ -37,6 +37,7 @@ function referralToRow(referral) {
     issuedFromBookingId: referral.issuedFromBookingId ?? null,
     issuedFromReferenceCode: referral.issuedFromReferenceCode ?? null,
     redemptions: referral.redemptions ?? [],
+    clickCount: referral.clickCount ?? 0,
     issuedAt: referral.issuedAt ? new Date(referral.issuedAt) : new Date(),
   };
 }
@@ -54,6 +55,7 @@ function referralFromRow(row) {
     issuedFromReferenceCode: row.issuedFromReferenceCode ?? null,
     issuedAt: row.issuedAt?.toISOString?.() ?? row.issuedAt,
     redemptions: Array.isArray(row.redemptions) ? row.redemptions : [],
+    clickCount: row.clickCount ?? 0,
   };
 }
 

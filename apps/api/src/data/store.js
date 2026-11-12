@@ -25,6 +25,14 @@ export const store = {
   // Flywheel: referral codes issued to customers when a job completes.
   // One active code per customer; redemptions link new bookings back to it.
   referrals: new Map(),
+  // ApplianceReferral rewards program (Phase 1): per-friend lifecycle
+  // journeys, issued reward credits, and per-company program settings
+  // (Map keyed by companyId; a missing entry means the all-null-amount
+  // defaults in services/referrals.js). Hydrated from the Referral*
+  // tables via db/referralsRepo.
+  referralJourneys: [],
+  referralCredits: [],
+  referralSettings: new Map(),
   // Speedy Live Video: consultation requests and their rooms.
   videoRequests: new Map(),
   payments: new Map(),

@@ -6,6 +6,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { STAFF_ROLES } from '../config/security.js';
 import { notifySubmission } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
+import { recordReferralLead } from '../services/referrals.js';
 
 /**
  * Public web intake — every surface's form posts here (flagship,
@@ -26,6 +27,12 @@ const connectionSchema = z.object({
   // Landing-page + UTM attribution (Fusion absorb Stage 3) — optional,
   // see services/attribution.js for the accepted shapes.
   ...attributionFields,
+  // ApplianceReferral: a lead that arrived through a personal referral
+  // code. A connection is a LEAD, not a booking — Phase 1 records an
+  // INVITED journey for it (see services/referrals.js recordReferralLead);
+  // it advances to BOOKED only when a real booking is created and
+  // matched by phone/email in attachReferralToBooking.
+  referralCode: z.string().trim().max(32).transform((value) => value.toUpperCase()).optional(),
 });
 
 router.post('/connections', async (req, res) => {
@@ -50,6 +57,22 @@ router.post('/connections', async (req, res) => {
     ],
     source: record.source || 'connections',
   });
+  // ApplianceReferral: record the lead on the referrer's journey track.
+  // Wrapped so a referral problem can never fail a public form.
+  if (parsed.data.referralCode) {
+    try {
+      await recordReferralLead({
+        code: parsed.data.referralCode,
+        name: record.name,
+        phone: record.phone,
+        email: record.email,
+        reference: record.reference,
+        source: record.source || 'connections',
+      });
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'referral lead record failed', error: String(error?.message || error) }));
+    }
+  }
   return res.status(201).json({ data: { reference: record.reference, type: record.type } });
 });
 

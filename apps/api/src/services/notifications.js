@@ -42,6 +42,10 @@ export const NOTIFICATION_TEMPLATES = {
   REVIEW_REQUEST: 'REVIEW_REQUEST',
   APPOINTMENT_REMINDER: 'APPOINTMENT_REMINDER',
   REFERRAL_CODE: 'REFERRAL_CODE',
+  REFERRAL_INVITE: 'REFERRAL_INVITE',
+  REFERRAL_BOOKED: 'REFERRAL_BOOKED',
+  REFERRAL_COMPLETED: 'REFERRAL_COMPLETED',
+  REFERRAL_REWARD_APPROVED: 'REFERRAL_REWARD_APPROVED',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'COMMERCIAL_WORK_ORDER_RECEIVED',
   REFUND_REQUEST: 'REFUND_REQUEST',
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
@@ -492,6 +496,168 @@ export function notifyReferralIssued(booking, referral, source = null) {
         message:
           `Top Speed Appliance: thanks for choosing us! Know a neighbor with a broken appliance? ` +
           `Share your referral code ${referral.code} — when they book, we will know you sent them.`,
+      },
+    }),
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* ApplianceReferral program (Phase 1, 2026-11-12).                    */
+/*                                                                     */
+/* GOVERNANCE: no referrer-reward figure appears in any copy below     */
+/* except a value read from the program settings at runtime (the       */
+/* journey's reward snapshot / an issued credit's amount). The $25 in  */
+/* the invite is the PUBLISHED new-customer welcome offer, not the     */
+/* referrer reward. SMS entries queue through the same outbox as       */
+/* everything else — on the Twilio trial they gate honestly in the     */
+/* sender drain; nothing here claims a text was delivered.             */
+/* ------------------------------------------------------------------ */
+
+function firstNameOf(name) {
+  const first = String(name || '').trim().split(/\s+/)[0];
+  return first || 'Your neighbor';
+}
+
+function formatCents(cents) {
+  return `$${(Number(cents) / 100).toFixed(2)}`;
+}
+
+/** Contact channels for a referral's owner (the referrer). */
+function referrerChannels(referral) {
+  const customer = referral?.customerId ? store.customers.get(referral.customerId) : null;
+  const channels = [];
+  const phone = customer?.phone || referral?.customerPhone || null;
+  const email = customer?.email || null;
+  if (phone) channels.push({ channel: 'sms', to: phone });
+  if (email) channels.push({ channel: 'email', to: email });
+  return channels;
+}
+
+/**
+ * Invite to the friend, one entry per contact channel they provided.
+ * eventKey is per journey + channel, so re-sending an invite for the
+ * same journey never duplicates.
+ */
+export function notifyReferralInvite({ referral, journey, source = null }) {
+  const referrerFirstName = firstNameOf(referral.customerName || store.customers.get(referral.customerId || '')?.name);
+  const link = `https://topspeedserviceos.com/refer?c=${referral.code}`;
+  const message =
+    `${referrerFirstName} invited you to try Top Speed Appliance — new customers get $25 off a first eligible repair. Book: ${link}`;
+  const channels = [];
+  if (journey.refereePhone) channels.push({ channel: 'sms', to: journey.refereePhone });
+  if (journey.refereeEmail) channels.push({ channel: 'email', to: journey.refereeEmail });
+  return channels.map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_INVITE,
+      to,
+      source,
+      eventKey: `referral-invite:${journey.id}:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        journeyId: journey.id,
+        referralCode: referral.code,
+        referrerName: referral.customerName || null,
+        refereeName: journey.refereeName || null,
+        link,
+        message,
+        subject: `${referrerFirstName} invited you to Top Speed Appliance`,
+      },
+    }),
+  );
+}
+
+/** The referrer hears that their friend booked — no amounts, ever. */
+export function notifyReferralBooked(referral, journey, source = null) {
+  const refereeName = journey.refereeName || 'Your friend';
+  return referrerChannels(referral).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_BOOKED,
+      to,
+      source,
+      eventKey: `referral-journey:${journey.id}:booked:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        journeyId: journey.id,
+        referralCode: referral.code,
+        customerName: referral.customerName || null,
+        refereeName: journey.refereeName || null,
+        bookingReference: journey.bookingReference || null,
+        message:
+          `Top Speed Appliance: good news — ${refereeName} booked service with your referral code ${referral.code}` +
+          (journey.bookingReference ? ` (ref ${journey.bookingReference})` : '') +
+          `. We'll keep you posted as their job progresses.`,
+      },
+    }),
+  );
+}
+
+/**
+ * The referrer hears that their friend's job completed. The reward
+ * amount is included ONLY when the journey carries a snapshot copied
+ * from the configured program settings — otherwise the copy says the
+ * reward is under review and states no figure.
+ */
+export function notifyReferralCompleted(referral, journey, source = null) {
+  const refereeName = journey.refereeName || 'Your friend';
+  const amountLine = journey.rewardAmountCents != null
+    ? ` Your referral reward of ${formatCents(journey.rewardAmountCents)} is pending staff approval.`
+    : ' Your referral reward is being reviewed by our team.';
+  return referrerChannels(referral).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_COMPLETED,
+      to,
+      source,
+      eventKey: `referral-journey:${journey.id}:completed:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        journeyId: journey.id,
+        referralCode: referral.code,
+        customerName: referral.customerName || null,
+        refereeName: journey.refereeName || null,
+        bookingReference: journey.bookingReference || null,
+        rewardAmountCents: journey.rewardAmountCents ?? null,
+        message:
+          `Top Speed Appliance: ${refereeName}'s service (booked with your referral code ${referral.code}) is complete.` +
+          amountLine,
+      },
+    }),
+  );
+}
+
+/**
+ * The referrer hears a reward credit was issued. The amount comes from
+ * the issued credit record itself — a real ledger fact, never copy.
+ */
+export function notifyReferralRewardApproved(referral, journey, credit, bonusCredit = null, source = null) {
+  const bonusLine = bonusCredit
+    ? ` Plus a milestone bonus credit of ${formatCents(bonusCredit.amountCents)}.`
+    : '';
+  const expiryLine = credit.expiresAt
+    ? ` Use it by ${String(credit.expiresAt).slice(0, 10)}.`
+    : '';
+  return referrerChannels(referral).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_REWARD_APPROVED,
+      to,
+      source,
+      eventKey: `referral-credit:${credit.id}:approved:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        journeyId: journey.id,
+        creditId: credit.id,
+        referralCode: referral.code,
+        customerName: referral.customerName || null,
+        amountCents: credit.amountCents,
+        bonusAmountCents: bonusCredit?.amountCents ?? null,
+        expiresAt: credit.expiresAt || null,
+        message:
+          `Top Speed Appliance: your referral reward credit of ${formatCents(credit.amountCents)} has been issued ` +
+          `for ${journey.refereeName || 'your friend'}'s completed service.${bonusLine}${expiryLine} ` +
+          `Mention it when you book your next service and we'll apply it.`,
       },
     }),
   );

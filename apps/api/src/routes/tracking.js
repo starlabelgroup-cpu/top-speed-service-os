@@ -11,6 +11,7 @@ import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notif
 import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
+import { advanceReferralOnCompletion } from '../services/referrals.js';
 
 /**
  * Track My Tech — account access + the staff back door (added 2026-11-11
@@ -248,9 +249,19 @@ router.post('/tracking/console/:reference/stage', ...staffOnly, async (req, res)
   }
   if (action === 'COMPLETE') {
     try {
+      // Unify with POST /bookings/:id/complete: a console completion runs
+      // the same completion side-effects — stamp completedAt/completedBy
+      // when unset, issue the customer's own referral code, and advance
+      // the ApplianceReferral journey when this was a referred booking.
+      if (!booking.completedAt) {
+        booking.completedAt = new Date().toISOString();
+        booking.completedBy = req.user.email;
+        await persistBooking(booking);
+      }
       issueReferralForBooking(booking, 'TRACKING_CONSOLE');
+      await advanceReferralOnCompletion(booking, 'TRACKING_CONSOLE');
     } catch {
-      // Referral issuance must never block a completion.
+      // Referral issuance/advancement must never block a completion.
     }
   }
   appendEvent('TRACKING_STAGE', {
