@@ -419,60 +419,15 @@
       </div>
     </section>
 
-    <!-- ============ PORTAL PREVIEW ============ -->
+    <!-- ============ CLIENT PORTAL ============ -->
     <section id="portal" style="padding-top:10px">
       <div class="wrap">
         <p class="kicker">Equipment registry · Client portal</p>
         <h2>Every unit, tagged <span class="bl">&amp; tracked</span></h2>
-        <p class="sub">When your account opens, every appliance in your facility gets an asset tag and a registry record — brand, model, serial, warranty status and full service history. A QR code on the unit opens that record, so anyone on your team can pull its history and request service in one tap. Try the preview: select a unit.</p>
+        <p class="sub">When your account opens, every appliance in your facility gets an asset tag and a registry record — brand, model, serial, warranty status and full service history. A QR code on the unit opens that record, so anyone on your team can pull its history and request service in one tap.</p>
 
-        <div class="portal" aria-label="Client portal preview">
-          <div class="portal-head">
-            <span class="t">APPLIANCE PRO CLIENT PORTAL</span>
-            <span class="demo-badge">Preview · Demo data</span>
-            <span class="fac">Sample facility: “Harbor Bites — Fort Lauderdale” (illustrative)</span>
-          </div>
-          <div class="portal-scroll">
-            <table>
-              <thead>
-                <tr><th>Asset tag</th><th>Unit</th><th>Location</th><th>Health</th><th>Next PM</th></tr>
-              </thead>
-              <tbody id="unitRows"></tbody>
-            </table>
-          </div>
-          <div class="unit-detail">
-            <div>
-              <h3 id="uName">—</h3>
-              <div class="status st-ok" id="uStatus" style="margin-top:8px"><i></i><span>Operational</span></div>
-              <div class="spec">
-                <div><b>Asset tag</b><span id="uTag">—</span></div>
-                <div><b>Brand / Model</b><span id="uModel">—</span></div>
-                <div><b>Serial</b><span id="uSerial">—</span></div>
-                <div><b>Warranty</b><span id="uWarranty">—</span></div>
-                <div><b>Last service</b><span id="uLast">—</span></div>
-                <div><b>Service visits on record</b><span id="uVisits">—</span></div>
-              </div>
-              <p id="uNote" style="color:var(--ink-soft);margin:14px 0 0"></p>
-              <div class="tracker">
-                <b style="font-family:'Barlow Semi Condensed',sans-serif;letter-spacing:.05em;text-transform:uppercase;font-size:14.5px">Work-order tracker — try it</b>
-                <div class="stages" id="woStages"></div>
-                <button class="btn btn-red" id="woBtn" type="button" style="padding:12px 20px;font-size:16px">One-tap service request for this unit</button>
-                <p id="woMsg" style="color:var(--ink-soft);font-size:14.5px;margin:10px 0 0"></p>
-              </div>
-            </div>
-            <div>
-              <div class="qr-box">
-                <div class="qr" aria-hidden="true"></div>
-                <p><b style="color:var(--ink)">Scan-to-service.</b> This code lives on the physical unit. Scanning it opens this exact record — full history, warranty, and the one-tap request button above. No login hunt, no “which fridge is it?” phone calls.</p>
-              </div>
-              <div class="pm-strip" style="flex-direction:column;gap:8px">
-                <div class="pm-chip"><b>Preventive maintenance</b> — scheduled per unit from its registry record, so PM visits land before failures, not after.</div>
-                <div class="pm-chip"><b>Health status</b> — every unit reads <span style="color:var(--ok);font-weight:700">Operational</span>, <span style="color:var(--warn);font-weight:700">Warning</span> or <span style="color:var(--crit);font-weight:700">Critical</span> based on its service record.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p class="fineprint">The registry above is a working preview with sample units. Your real portal is populated when your account opens and your equipment is tagged on the first visit.</p>
+        <div class="portal"><div class="portal-head"><span class="t">APPLIANCE PRO CLIENT PORTAL</span></div><div style="padding:20px"><p style="margin:0 0 10px">Your real registry lives in Appliance Pro: every unit tagged (TS-EQ asset tags), with brand, model, serial, warranty status and full service history. A QR code on the unit opens its record, and anyone on your team can request service in one tap — work orders flow into the same dispatch queue as everything else at Top Speed.</p><p style="margin:0 0 14px">The registry is created from your actual equipment when your account opens.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-red" href="/appliance-pro">Open Appliance Pro — sign in</a><a class="btn" href="#account">Request an account</a></div></div></div>
+        <p class="fineprint">Your registry is populated when your account opens and your equipment is tagged on site.</p>
       </div>
     </section>
 
@@ -574,7 +529,7 @@
             </div>
           </div>
           <p style="margin:20px 0 0"><button class="btn btn-red" type="submit" style="font-size:19px">Request my Appliance Pro Commercial Account</button></p>
-          <p class="fineprint" style="margin-top:14px">This preview form confirms your request on screen with a reference code. Prefer to talk it through? Call <a href="tel:+19549317997">954-931-7997</a> and ask for the commercial team.</p>
+          <p class="fineprint" style="margin-top:14px">This form sends your request to the commercial team — your reference code appears here once it is received. Prefer to talk it through? Call <a href="tel:+19549317997">954-931-7997</a> and ask for the commercial team.</p>
           <div class="form-ok" id="formOk" role="status">
             <h3>Request received</h3>
             <p style="margin:8px 0 4px">Your reference code: <span class="ref" id="okRef">APC-000000</span></p>
@@ -620,7 +575,7 @@
             <h3>The platform</h3>
             <p><a href="/" target="_blank" rel="noopener">topspeedappliance.net</a> — customers, booking &amp; residential service</p>
             <p><a href="/service/" target="_blank" rel="noopener">topspeedapplianceservice.com</a> — provider network &amp; applications</p>
-            <p><a href="#account">Appliance Pro Commercial Accounts</a> · <a href="#agreements">Service agreements</a> · <a href="#portal">Client portal preview</a></p>
+            <p><a href="#account">Appliance Pro Commercial Accounts</a> · <a href="#agreements">Service agreements</a> · <a href="#portal">Client portal</a></p>
           </div>
           <div>
             <h3>Commercial scope</h3>
@@ -690,97 +645,6 @@
       tierBtns.forEach(function(b){ b.addEventListener("click", function(){ showTier(b.getAttribute("data-tier")); }); });
       showTier("essential");
 
-      /* ---------- Portal preview: equipment registry ---------- */
-      var UNITS = [
-        { tag:"TS-C-0142", name:"Walk-in Cooler #1", kind:"Refrigeration", loc:"Main kitchen", status:"ok", statusLabel:"Operational",
-          model:"Kolpak · KXB845", serial:"KP-8841-2207", warranty:"Parts warranty active", last:"Aug 12, 2026 — gasket & seal service", visits:6,
-          next:"Dec 2026", note:"Running steady at target temperature. Door gaskets replaced at last service — the previous warm-spot complaint has not recurred." },
-        { tag:"TS-C-0157", name:"Ice Machine — Bar", kind:"Refrigeration", loc:"Bar station", status:"warn", statusLabel:"Warning",
-          model:"Manitowoc · IDT0450A", serial:"MW-1107-5531", warranty:"Out of manufacturer warranty", last:"Oct 3, 2026 — scale & sanitation clean", visits:9,
-          next:"Nov 2026", note:"Production is trending down between cleans and scale is building faster than the PM cycle. Flagged Warning — a deep clean and water-filter change are recommended at the next visit before it becomes a no-ice night." },
-        { tag:"TS-L-0031", name:"Washer-Extractor #3", kind:"Laundry", loc:"Laundry room", status:"crit", statusLabel:"Critical",
-          model:"Speed Queen · FF7008", serial:"SQ-6630-9914", warranty:"Out of manufacturer warranty", last:"Oct 28, 2026 — drain fault, temporary clear", visits:14,
-          next:"Overdue", note:"Repeat drain faults and a worn bearing set. The last visit cleared the line as a temporary fix — this unit is flagged Critical and a full repair or planned replacement should be scheduled before it stops mid-cycle with a full load." },
-        { tag:"TS-K-0020", name:"Six-Burner Range", kind:"Cooking line", loc:"Hot line", status:"ok", statusLabel:"Operational",
-          model:"Vulcan · 36S-6B", serial:"VU-2290-4418", warranty:"Parts warranty active", last:"Sep 18, 2026 — burner ignition service", visits:5,
-          next:"Jan 2027", note:"All six burners igniting cleanly after the ignition service. Oven thermostat verified in range at the last visit." },
-        { tag:"TS-D-0008", name:"Conveyor Dish Machine", kind:"Sanitation", loc:"Dish pit", status:"ok", statusLabel:"Operational",
-          model:"Hobart · CL44e", serial:"HB-7712-3085", warranty:"Parts warranty active", last:"Oct 21, 2026 — wash-arm & rinse check", visits:7,
-          next:"Dec 2026", note:"Wash and rinse temperatures verified in spec at the last visit. No inspection findings on this unit to date." }
-      ];
-      var rowsEl = document.getElementById("unitRows");
-      var STAGES = ["Request received","Setter dispatch","Provider matched","On site","Photo report","Closed → monthly invoice"];
-      var woStage = -1, selectedUnit = 0;
-
-      function statusClass(s){ return s === "ok" ? "st-ok" : (s === "warn" ? "st-warn" : "st-crit"); }
-
-      UNITS.forEach(function(u, i){
-        var tr = document.createElement("tr");
-        tr.innerHTML = "";
-        var c1 = document.createElement("td"); c1.textContent = u.tag;
-        var c2 = document.createElement("td"); c2.textContent = u.name;
-        var c3 = document.createElement("td"); c3.textContent = u.loc;
-        var c4 = document.createElement("td");
-        var st = document.createElement("span"); st.className = "status " + statusClass(u.status);
-        st.innerHTML = "<i></i>"; st.appendChild(document.createTextNode(u.statusLabel));
-        c4.appendChild(st);
-        var c5 = document.createElement("td"); c5.textContent = u.next;
-        [c1,c2,c3,c4,c5].forEach(function(c){ tr.appendChild(c); });
-        tr.addEventListener("click", function(){ selectUnit(i); });
-        rowsEl.appendChild(tr);
-      });
-
-      function renderStages(){
-        var box = document.getElementById("woStages");
-        box.innerHTML = "";
-        STAGES.forEach(function(s, i){
-          var d = document.createElement("div");
-          d.className = "stg" + (i < woStage ? " done" : (i === woStage ? " now" : ""));
-          d.textContent = s;
-          box.appendChild(d);
-        });
-        var btn = document.getElementById("woBtn");
-        var msg = document.getElementById("woMsg");
-        var u = UNITS[selectedUnit];
-        if (woStage < 0){
-          btn.textContent = "One-tap service request for this unit";
-          msg.textContent = "";
-        } else if (woStage < STAGES.length - 1){
-          btn.textContent = "Advance the work order →";
-          msg.textContent = "Work order open for " + u.name + " (" + u.tag + "). In the live portal this advances on its own as Service Setters and the provider update it — here, tap to walk it through.";
-        } else {
-          btn.textContent = "Start another request";
-          msg.textContent = "Work order closed for " + u.name + ". The photo report filed into its registry record, and the charge lands on the account's single monthly invoice.";
-        }
-      }
-
-      function selectUnit(i){
-        selectedUnit = i;
-        var u = UNITS[i];
-        var trs = rowsEl.querySelectorAll("tr");
-        trs.forEach(function(tr, j){ tr.classList.toggle("sel", j === i); });
-        document.getElementById("uName").textContent = u.name;
-        var st = document.getElementById("uStatus");
-        st.className = "status " + statusClass(u.status);
-        st.innerHTML = "<i></i>";
-        st.appendChild(document.createTextNode(u.statusLabel));
-        document.getElementById("uTag").textContent = u.tag;
-        document.getElementById("uModel").textContent = u.model;
-        document.getElementById("uSerial").textContent = u.serial;
-        document.getElementById("uWarranty").textContent = u.warranty;
-        document.getElementById("uLast").textContent = u.last;
-        document.getElementById("uVisits").textContent = u.visits;
-        document.getElementById("uNote").textContent = u.note;
-        woStage = -1;
-        renderStages();
-      }
-      document.getElementById("woBtn").addEventListener("click", function(){
-        if (woStage >= STAGES.length - 1){ woStage = -1; }
-        else { woStage++; }
-        renderStages();
-      });
-      selectUnit(1);
-
       /* ---------- Account form ---------- */
       var form = document.getElementById("acctForm");
       function setInvalid(id, bad){
@@ -808,15 +672,27 @@
           if (firstBad) firstBad.focus();
           return;
         }
-        var ref = "APC-" + Math.floor(100000 + Math.random() * 900000);
-        document.getElementById("okRef").textContent = ref;
-        document.getElementById("okText").textContent =
-          "Thanks, " + contact.split(" ")[0] + " — the commercial team will reply within one business day about " + company +
-          " (" + type.toLowerCase() + ", " + locs + (locs === "1" ? " location" : " locations") + "). " +
-          "If a unit is down right now, don't wait on email — call the priority line at 954-931-7997 and give them reference " + ref + ".";
+        document.getElementById("okRef").textContent = "Sending\u2026";
         var okBox = document.getElementById("formOk");
         okBox.classList.add("show");
-        okBox.scrollIntoView({ behavior:"smooth", block:"center" });
+        fetch("https://top-speed-service-os.vercel.app/api/v1/connections", { method:"POST", headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify({ type:"COMMERCIAL_ACCOUNT_REQUEST", name: contact, email: email, phone: phone, source:"flagship-commercial",
+            message: "Commercial account request \u2014 " + company + " (" + type + ", " + locs + (locs === "1" ? " location" : " locations") + "). Equipment notes: " + (document.getElementById("fNotes").value.trim() || "none given") })
+        }).then(function(r){ return r.json().then(function(j){ return { s:r.status, j:j }; }); })
+        .then(function(x){
+          if (x.s !== 200 && x.s !== 201) throw new Error("send failed");
+          var ref = (x.j.data && (x.j.data.reference || x.j.data.referenceCode)) || "";
+          document.getElementById("okRef").textContent = ref || "Received";
+          document.getElementById("okText").textContent =
+            "Thanks, " + contact.split(" ")[0] + " \u2014 your request is in. The commercial team will reply within one business day about " + company +
+            " (" + type.toLowerCase() + ", " + locs + (locs === "1" ? " location" : " locations") + "). " +
+            "If a unit is down right now, don't wait on email \u2014 call the priority line at 954-931-7997" + (ref ? " and give them reference " + ref : "") + ".";
+          okBox.scrollIntoView({ behavior:"smooth", block:"center" });
+        }).catch(function(){
+          document.getElementById("okRef").textContent = "\u26a0\ufe0f Not sent";
+          document.getElementById("okText").textContent = "Something went wrong sending that \u2014 please call 954-931-7997 and ask for the commercial team, and we will open your account by phone.";
+          okBox.scrollIntoView({ behavior:"smooth", block:"center" });
+        });
       });
       ["fCompany","fType","fContact","fPhone","fEmail","fLocs"].forEach(function(id){
         document.getElementById(id).addEventListener("input", function(){

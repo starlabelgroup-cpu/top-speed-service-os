@@ -472,7 +472,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
               <img id="photoImg" alt="Your attached appliance photo">
               <span class="pp-tag">Photo attached</span>
             </div>
-            <button class="btn ghost small" style="margin-top:9px;" onclick="useSamplePhoto()">Use a sample photo instead</button>
+            
             <div class="ai-note" id="aiNote"><b>Speedy AI first look:</b> Photo received. Likely a cooling/airflow issue — a setter will confirm the diagnosis and the tech will bring the common parts for this model.</div>
             <div class="btnrow" style="margin-top:16px;">
               <button class="btn ghost" onclick="bookGo(1)">Back</button>
@@ -569,7 +569,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <div id="aspCard"></div>
           <div style="display:flex; gap:8px; margin-top:6px;">
             <input id="aspInput" type="text" placeholder="My fridge stopped cooling… or tap 🎤 and say it" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
-            <button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)">🎤</button>
+            <button class="btn" type="button" id="aspPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;color:var(--navy)">📸</button><input type="file" id="aspFile" accept="image/*" style="display:none"><button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)">🎤</button>
             <button class="btn blue" id="aspSendBtn" onclick="aspSend()">Send</button>
           </div>
           <p class="sub" style="margin-top:12px;">Prefer the classic way? <a href="#" onclick="showTab('book'); return false;" style="color:var(--blue); font-weight:800;">Use the booking form →</a></p>
@@ -577,16 +577,16 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
         <section class="screen" id="scr-track">
           <h2 class="greet">Track your job</h2>
-          <p class="sub" id="trackSub">Refrigerator repair · <span id="trackRef">TS-DEMO42</span></p>
+          <p class="sub" id="trackSub">No job booked yet · <span id="trackRef">—</span></p>
           <div class="stages" id="stages"></div>
-          <button class="btn ghost small" id="advanceBtn" onclick="advanceStage()">Simulate: tech moves to next stage</button>
+          <button class="btn ghost small" id="advanceBtn" style="display:none" onclick="refreshMyBooking(); renderTrack();">↻ Refresh status</button>
 
           <h3 class="sec">Your technician</h3>
           <div class="card techcard">
-            <div class="avatar">MT</div>
+            <div class="avatar">TS</div>
             <div style="flex:1;">
-              <b>Marcus T. <span class="demo-tag">Demo</span></b>
-              <span>Top Speed technician · Refrigeration specialist<br>Background-checked · Insured · 40+ brands</span>
+              <b id="techName">Your technician</b>
+              <span id="techDetail">Assigned by Service Setters — your technician's name appears here once your job is assigned.<br>Background-checked · Insured · 40+ brands</span>
             </div>
             <a class="mini-btn" style="text-decoration:none;" href="tel:+19549317997">Call office</a>
           </div>
@@ -655,7 +655,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <h3 class="sec">Review your last job</h3>
           <div class="card">
             <b style="font-size:15px;">Dishwasher repair — Oct 12</b>
-            <p class="sub" style="margin:4px 0 0;">How did Marcus do? Reviews lift Top Speed's rankings and bring the next neighbor in.</p>
+            <p class="sub" style="margin:4px 0 0;">How did your technician do? Reviews lift Top Speed's rankings and bring the next neighbor in.</p>
             <div class="stars-in" id="starsIn">
               <button onclick="rate(1)" aria-label="1 star"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
               <button onclick="rate(2)" aria-label="2 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
@@ -758,15 +758,11 @@ var STAGES = [
   {t:"Estimate approved", s:"Repair underway at the agreed price"},
   {t:"Repair completed", s:"Work done and tested — review & referral code sent"}
 ]
-var FEED = [
-  {time:"9:02 AM", text:"<b>Top Speed:</b> Booking confirmed for today, 10 AM–12 PM window. Reply Y to confirm."},
-  {time:"9:15 AM", text:"<b>Service Setters:</b> You're matched with Marcus T., refrigeration specialist. Photo diagnosis received — he's bringing the common parts."},
-  {time:"10:04 AM", text:"<b>Top Speed:</b> Marcus is on the way. You'll get a text when he's close."}
-];
+var FEED = [];
 /* ============ state ============ */
 var currentTab = "home";
 var booking = {appliance:null, issue:null, day:null, window:null, photo:false, ref:null};
-var stageIdx = 3; /* en route */
+var stageIdx = 0;
 var deferredPrompt = null;
 
 function svgIcon(paths, size){
@@ -800,40 +796,30 @@ function buildDays(){
 /* ============ home active job ============ */
 function renderActiveJob(){
   var slot = document.getElementById('activeJobSlot');
-  var ref = booking.ref || "TS-DEMO42";
-  var when = booking.ref ? (booking.day+" · "+booking.window) : "Today · 10 AM–12 PM";
-  var appl = booking.ref ? booking.appliance : "Refrigerator";
+  if(!booking.ref){ slot.innerHTML = '<div class="jobcard"><div class="jc-top"><b>No active job</b></div><div class="jc-body"><span>Book a repair and it appears here with live stage tracking.</span></div></div>'; return; }
+  var ref = booking.ref;
+  var when = booking.day+" · "+booking.window;
+  var appl = booking.appliance;
   var pct = Math.round((stageIdx+1)/STAGES.length*100);
   slot.innerHTML = '<div class="jobcard"><div class="jc-top"><b>'+appl+' repair</b><span class="ref">'+ref+'</span></div><div class="jc-body"><span class="pill blue"><span class="dot"></span>'+STAGES[stageIdx].t+'</span><div class="progress"><i style="width:'+pct+'%"></i></div><p class="jc-meta">'+when+' · Marcus T. is your tech.<br>'+STAGES[stageIdx].s+'</p><button class="btn blue small" style="margin-top:10px;" onclick="showTab(\'track\')">Track live</button></div></div>';
 }
 
 /* ============ track ============ */
 function renderTrack(){
-  document.getElementById('trackRef').textContent = booking.ref || "TS-DEMO42";
+  document.getElementById('trackRef').textContent = booking.ref || '—';
+  document.getElementById('trackSub').firstChild.textContent = booking.ref ? (booking.appliance+' repair · ') : 'No job booked yet · ';
   document.getElementById('stages').innerHTML = STAGES.map(function(s,i){
     var cls = i < stageIdx ? "done" : (i === stageIdx ? "now" : "");
     var ic = i < stageIdx ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg>' : (i+1);
     return '<div class="stage '+cls+'"><div class="st-ic">'+ic+'</div><div><b>'+s.t+'</b><span>'+s.s+'</span></div></div>';
   }).join('');
-  document.getElementById('textFeed').innerHTML = FEED.map(function(m){
+  document.getElementById('textFeed').innerHTML = FEED.length ? FEED.map(function(m){
     return '<div class="msg"><div class="m-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0B63CE" stroke-width="2"><path d="M21 12a8 8 0 01-8 8H4l2-3a8 8 0 1115-5z"/></svg></div><div><p>'+m.text+'</p><time>'+m.time+'</time></div></div>';
-  }).join('');
+  }).join('') : '';
+  if(!FEED.length){ document.getElementById('textFeed').innerHTML = '<p class="sub" style="margin:0">Text updates from Service Setters and your technician appear here once you have a live job.</p>'; }
   var btn = document.getElementById('advanceBtn');
-  btn.disabled = stageIdx >= STAGES.length-1;
-  btn.textContent = stageIdx >= STAGES.length-1 ? "Job complete — nice work" : "Simulate: tech moves to next stage";
+  if(btn){ btn.style.display = booking.ref ? '' : 'none'; btn.disabled = false; btn.textContent = '↻ Refresh status'; }
 }
-function advanceStage(){
-  if(stageIdx >= STAGES.length-1) return;
-  stageIdx++;
-  var msgs = {
-    4:"<b>Top Speed:</b> Your technician has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
-    7:"<b>Top Speed:</b> Repair complete and tested. Your review link and referral code are on the More tab. Thanks for choosing Top Speed!"
-  };
-  if(msgs[stageIdx]) FEED.push({time:"Now", text:msgs[stageIdx]});
-  renderTrack(); renderActiveJob();
-  toast("Stage updated: "+STAGES[stageIdx].t);
-}
-
 /* ============ tabs & mode ============ */
 function showTab(tab){
   currentTab = tab;
@@ -893,10 +879,7 @@ function showPhoto(src){
   document.getElementById('photoImg').src = src;
   document.getElementById('aiNote').style.display = 'block';
 }
-function useSamplePhoto(){
-  var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='640' height='400'><rect width='640' height='400' fill='%2310203C'/><rect x='245' y='50' width='150' height='300' rx='10' fill='%233E5C8F'/><line x1='245' y1='150' x2='395' y2='150' stroke='%2310203C' stroke-width='5'/><rect x='262' y='255' width='116' height='58' rx='6' fill='%23F5C542'/><text x='320' y='282' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='21' fill='%2310203C'>E-3 ERROR</text><text x='320' y='302' text-anchor='middle' font-family='Arial' font-size='12' fill='%2310203C'>SAMPLE PHOTO</text></svg>";
-  showPhoto("data:image/svg+xml;charset=utf-8,"+svg);
-}
+
 document.getElementById('photoInput').addEventListener('change', function(e){
   if(e.target.files && e.target.files[0]) showPhoto(URL.createObjectURL(e.target.files[0]));
 });
@@ -1033,7 +1016,7 @@ function refreshMyBooking(){
     booking.appliance=latest.appliance||booking.appliance;
     stageIdx=stageForBooking(latest);
     var btn=document.getElementById('advanceBtn');
-    if(btn){ btn.disabled=false; btn.textContent='\u21bb Refresh status'; btn.onclick=function(){ refreshMyBooking(); renderTrack(); toast('Status updated'); }; }
+    if(btn){ btn.style.display=''; btn.disabled=false; btn.textContent='\u21bb Refresh status'; btn.onclick=function(){ refreshMyBooking(); renderTrack(); toast('Status updated'); }; }
     renderActiveJob();
     if(currentTab==='track') renderTrack();
   }).catch(function(){});
@@ -1223,7 +1206,8 @@ function aspBook(){
   btn.disabled = true; btn.textContent = 'Booking…';
   var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
   var done = function(ref){
-    document.getElementById('aspBookMsg').innerHTML = '✅ <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.';
+    window._aspRef = ref;
+    document.getElementById('aspBookMsg').innerHTML = '✅ <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns();
     btn.style.display = 'none';
   };
   var fail = function(msg){
@@ -1313,7 +1297,7 @@ function wireVoice(btnId, inputId){
   var B=document.getElementById(btnId), I=document.getElementById(inputId);
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.style.display='none'; return; }
+  if(!SR){ B.title='Voice isn\u2019t supported in this browser \u2014 type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t supported in this browser \u2014 type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },2800); }); return; }
   var rec=null, listening=false;
   B.addEventListener('click',function(){
     if(listening){ try{rec.stop();}catch(e){} return; }
@@ -1325,6 +1309,30 @@ function wireVoice(btnId, inputId){
   });
 }
 wireVoice('aspMic','aspInput');
+</script>
+<script>
+function aspReceiptBtns(){ return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" style="background:#0A265C;color:#fff" onclick="aspReceipt(\'email\')">📧 Email me my receipt</button><button type="button" class="btn" style="background:#0A265C;color:#fff" onclick="aspReceipt(\'sms\')">💬 Text me my tracking link</button></div>'; }
+function aspReceipt(channel){ var ref=window._aspRef, d=window._aspData; if(!ref||!d) return;
+ fetch(C_API+'/speedy/send-receipt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:ref,phone:d.phone,channel:channel})})
+ .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not send'); return j; });})
+ .then(function(j){ aspBubble('speedy','🧾 '+((j.data&&j.data.message)||'Done.')); })
+ .catch(function(e){ aspBubble('speedy','🧾 That did not go through: '+e.message+'. Call 954-931-7997 and we will send it by phone.'); });
+}
+(function(){ var B=document.getElementById('aspPhoto'), F=document.getElementById('aspFile'); if(!B||!F) return;
+ B.addEventListener('click',function(){ F.click(); });
+ F.addEventListener('change',function(){ var f=F.files&&F.files[0]; F.value=''; if(!f) return;
+  aspBubble('me','📸 Sent a photo of my appliance');
+  var r=new FileReader(); r.onload=function(ev){ var img=new Image(); img.onload=function(){
+   var mx=1280, sc=Math.min(1,mx/Math.max(img.naturalWidth,img.naturalHeight));
+   var cv=document.createElement('canvas'); cv.width=Math.round(img.naturalWidth*sc); cv.height=Math.round(img.naturalHeight*sc);
+   cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+   fetch(C_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Appliance Connect app chat'})})
+   .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
+   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; aspBubble('speedy', rep?('📸 Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe.'):'📸 I received your photo but could not read it clearly \u2014 a technician will review it in person.'); })
+   .catch(function(){ aspBubble('speedy','📸 Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.'); });
+  }; img.src=ev.target.result; }; r.readAsDataURL(f);
+ });
+})();
 </script>
 </body>
 </html>

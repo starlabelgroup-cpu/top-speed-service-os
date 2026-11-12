@@ -96,25 +96,25 @@ a{color:inherit}
 footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-height:1.6}
 .empty{color:var(--mut);font-size:13px;text-align:center;padding:16px 6px}
 @media(max-width:900px){.metrics{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.windows,.cols,.remgrid,.flygrid{grid-template-columns:1fr}.brand h1{font-size:26px}}
-</style>
+body:not(.live) .gated{display:none!important}</style>
 </head>
 <body>
 <div class="flag"></div>
 <header class="top"><div class="topin">
 <div class="brand"><div class="logo">TS</div><div><h1>Service Setters<br>Book OS</h1><p>Dispatch Console • Top Speed Service OS</p></div></div>
-<div class="pills"><span class="pill live" id="modePill">● PREVIEW / DEMO DATA</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
+<div class="pills"><span class="pill live" id="modePill">● STAFF ONLY</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
 </div></header>
 
 <main class="wrap">
 <!-- METRICS -->
-<section class="metrics" aria-label="Today metrics">
-<div class="metric"><small>Requests Today — Demo</small><b id="mRequests">47</b><span>Across web, ads, form, QR &amp; phone</span></div>
-<div class="metric"><small>Confirmation Rate — Demo</small><b id="mRate">87%</b><span>Setters confirmed / reached</span></div>
-<div class="metric"><small>Jobs Dispatched — Demo</small><b id="mDispatched">31</b><span>Approved &amp; sent to providers</span></div>
+<section class="metrics" aria-label="Today metrics" gated">
+<div class="metric"><small>Requests Today</small><b id="mRequests">—</b><span>Across web, ads, form, QR &amp; phone</span></div>
+<div class="metric"><small>Confirmation Rate</small><b id="mRate">—</b><span>Setters confirmed / reached</span></div>
+<div class="metric"><small>Jobs Dispatched</small><b id="mDispatched">—</b><span>Approved &amp; sent to providers</span></div>
 <div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter ✓</span></div>
 </section>
 <section class="panel" id="scorePanel" style="display:none;margin-bottom:18px"><div class="ph"><div><h2>Launch Scorecard — Live</h2><p>Real numbers from the Service OS database — the launch baseline starts at zero and every booking, confirmation and dispatch moves it. <span id="scoreWhen"></span></p></div><span class="badge">LIVE SCORING</span></div><div id="scoreGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:0 16px 16px"></div></section>
-<div class="notice" id="modeNotice">⚠️ This is an operations <strong>preview</strong> for Top Speed Appliance LLC. All names, jobs and numbers below are realistic demo data — it is <strong>not connected to live bookings</strong>. Buttons work in-page so you can rehearse the real workflow.</div>
+<div class="notice gated" id="modeNotice">🔒 <strong>Staff only.</strong> Book OS runs on live Service OS data. Sign in below with your Service Setters or owner account to work the queue.</div>
 
 
 <!-- STAFF SIGN-IN / LIVE MODE -->
@@ -135,7 +135,7 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
-<section class="panel"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div id="queue"></div></section>
+<section class="panel" gated"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div id="queue"></div></section>
 
 <aside class="panel"><div class="ph"><div><h2>Call Guide</h2><p>The 60-second setter script</p></div><span class="badge">SCRIPT</span></div>
 <div class="quote">“Hi [Name], this is [Setter] with <b>Top Speed Appliance</b> — I’m confirming your appliance appointment…”</div>
@@ -152,21 +152,21 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 </div>
 
 <!-- TODAY -->
-<section class="panel board"><div class="ph"><div><h2>2 · Today’s Appointments</h2><p>Thursday’s confirmed jobs by arrival window. Tap a status chip to advance it.</p></div><span class="badge">12 AREAS • BROWARD</span></div>
+<section class="panel board" gated"><div class="ph"><div><h2>2 · Today’s Appointments</h2><p>Thursday’s confirmed jobs by arrival window. Tap a status chip to advance it.</p></div><span class="badge">12 AREAS • BROWARD</span></div>
 <div class="windows" id="windows"></div></section>
 
 <!-- DISPATCH -->
-<section class="panel dispatch"><div class="ph"><div><h2>3 · Dispatch Board — Hybrid Dispatch</h2><p>AI auto-matches · <b>Service Setters approve every job</b> before a provider rolls. That human check is the quality difference.</p></div><span class="badge">SETTER APPROVAL REQUIRED</span></div>
+<section class="panel dispatch" gated"><div class="ph"><div><h2>3 · Dispatch Board — Hybrid Dispatch</h2><p>AI auto-matches · <b>Service Setters approve every job</b> before a provider rolls. That human check is the quality difference.</p></div><span class="badge">SETTER APPROVAL REQUIRED</span></div>
 <div class="cols" id="dispatchCols"></div></section>
 
 <!-- REMINDERS -->
 <section class="panel"><div class="ph"><div><h2>· Speedy Live Video</h2><p>Customers who asked to show the problem live (from the /video page). Arrange a request to create its room — the customer gets the join link by text, and both sides join on the video page.</p></div><span class="badge" id="vidCount">STAFF</span></div><div id="videoList"><p style="color:var(--muted)">Sign in above to work the live video requests.</p></div></section>
 
-<section class="panel reminders"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
+<section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div class="remgrid" id="rems"></div></section>
 
 <!-- FLYWHEEL -->
-<section class="flywheel"><div class="ph"><div><h2 style="color:#fff">5 · The Flywheel Ad Network</h2><p>How ads stop being an expense and start compounding — every job feeds the next one.</p></div><span class="badge">TOP SPEED ADS</span></div>
+<section class="flywheel" gated"><div class="ph"><div><h2 style="color:#fff">5 · The Flywheel Ad Network</h2><p>How ads stop being an expense and start compounding — every job feeds the next one.</p></div><span class="badge">TOP SPEED ADS</span></div>
 <div class="flygrid">
 <div class="fly"><em>Step 1 · Attract</em><b><br>Ads + QR Everywhere</b><p>Google &amp; Meta ads, flyers, door hangers and truck QR codes all point to one booking flow on topspeedappliance.net.</p></div>
 <div class="fly"><em>Step 2 · Convert</em><b><br>Book OS Sets It</b><p>Service Setters confirm in minutes, collect the $99 diagnostic, and lock a real window — fewer tire-kickers, fewer no-shows.</p></div>
@@ -177,23 +177,18 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 <div class="areas"><b style="color:#fff">One system, two doors:</b> Customers enter at <b style="color:#fff">topspeedappliance.net</b> · Providers join at <b style="color:#fff">topspeedapplianceservice.com</b> · Service Setters run both from this Book OS. &nbsp;|&nbsp; Serving Fort Lauderdale, Sunrise, Plantation, Davie, Hollywood, Pompano Beach, Coral Springs, Tamarac, Lauderdale Lakes, Lauderhill, Weston &amp; Pembroke Pines.</div>
 </section>
 
-<footer>Top Speed Appliance LLC • Service Setters Book OS — Preview • $99 diagnostic collected at booking, credited toward repair • 954-931-7997<br>Demo data only — connect the Service OS backend to run this live.</footer>
+<footer>Top Speed Appliance LLC • Service Setters Book OS • $99 diagnostic collected at booking, credited toward repair • 954-931-7997</footer>
 </main>
 <div class="toast" id="toast"></div>
 
 <script>
 var toastEl=document.getElementById('toast'),toastT;
 function toast(msg){toastEl.textContent=msg;toastEl.style.display='block';clearTimeout(toastT);toastT=setTimeout(function(){toastEl.style.display='none'},3400)}
-var dispatched=31;
+var dispatched=0;
 
 // QUEUE
-var queue=[
-{id:'TS-88424',name:'Priya Shah',appliance:'Dishwasher — leaking',zip:'33328 · Davie',source:'Google Form',window:'Tomorrow 12–2 PM',age:34,issue:'Leak at door seal, photos sent.'},
-{id:'TS-88421',name:'David Kim',appliance:'Dryer — no heat',zip:'33021 · Hollywood',source:'Referral',window:'Tomorrow 10 AM–12 PM',age:27,issue:'Tumbles but cold.'},
-{id:'TS-88418',name:'Elena Rodriguez',appliance:'Oven — not heating',zip:'33321 · Tamarac',source:'Website',window:'Tomorrow 8–10 AM',age:18,issue:'Bake element suspected.'},
-{id:'TS-88415',name:'Marcus Lee',appliance:'Washer — won\'t drain',zip:'33069 · Pompano Beach',source:'Google Ad',window:'Today 4–6 PM',age:12,issue:'Standing water, error code OE.'},
-{id:'TS-88412',name:'Jasmine Thompson',appliance:'Refrigerator — not cooling',zip:'33313 · Sunrise',source:'Flyer QR',window:'Today 2–4 PM',age:6,issue:'Fridge warm, freezer OK. Photo sent.'}
-];
+var queue=[];
+;
 function renderQueue(){
  var el=document.getElementById('queue');
  document.getElementById('qCount').textContent=queue.length+' waiting';
@@ -207,13 +202,7 @@ function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set *
 function reschedQ(i){var wins=['Today 4–6 PM','Tomorrow 8–10 AM','Tomorrow 10 AM–12 PM','Tomorrow 2–4 PM'];var cur=wins.indexOf(queue[i].window);queue[i].window=wins[(cur+1)%wins.length];queue[i].age=0;toast('Rescheduled '+queue[i].name+' → '+queue[i].window);renderQueue()}
 
 // TODAY
-var today={
- '8–10 AM':[{n:'R. Alvarez',a:'Washer · Plantation',s:'Done'},{n:'S. Nguyen',a:'Fridge · Weston',s:'Done'}],
- '10 AM–12 PM':[{n:'T. Brooks',a:'Dryer · Coral Springs',s:'On Site'},{n:'A. Patel',a:'Oven · Sunrise',s:'On Site'}],
- '12–2 PM':[{n:'M. Johnson',a:'Dishwasher · Ft. Lauderdale',s:'En Route'},{n:'L. Garcia',a:'AC/Washer · Davie',s:'Confirmed'}],
- '2–4 PM':[{n:'K. Wright',a:'Fridge · Hollywood',s:'Confirmed'},{n:'N. Brooks',a:'Oven · Lauderhill',s:'Confirmed'}],
- '4–6 PM':[{n:'Open Slot',a:'Same-day hold',s:'Confirmed'}]
-};
+var today={'8–10 AM':[],'10 AM–12 PM':[],'12–2 PM':[],'2–4 PM':[],'4–6 PM':[]};
 var nextSt={'Confirmed':'En Route','En Route':'On Site','On Site':'Done','Done':'Done'};
 var stCls={'Confirmed':'c','En Route':'e','On Site':'o','Done':'d'};
 function renderToday(){
@@ -225,25 +214,8 @@ function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already
 function addToToday(q){if(q.window.indexOf('Today')!==0)return;var key=q.window.indexOf('2–4')>-1?'2–4 PM':q.window.indexOf('4–6')>-1?'4–6 PM':'12–2 PM';if(today[key]){today[key].push({n:q.name.split(' ')[0][0]+'. '+q.name.split(' ')[1],a:q.appliance.split(' —')[0]+' · '+q.zip.split('· ')[1],s:'Confirmed'});renderToday()}}
 
 // DISPATCH
-var cols=[
- {key:'New',jobs:[
-   {id:'TS-88430',title:'Freezer not freezing',loc:'Lauderhill · 33313',diag:'Photo: frost build-up on back wall. AI: likely defrost heater failure. Medium urgency.',prov:'Awaiting match',score:'—'},
-   {id:'TS-88431',title:'Stove burner out',loc:'Lauderdale Lakes · 33319',diag:'Customer video: one burner dead, others fine. AI: likely burner switch.',prov:'Awaiting match',score:'—'}]},
- {key:'Matched',jobs:[
-   {id:'TS-88409',title:'Refrigerator not cooling',loc:'Fort Lauderdale · 33311',diag:'Photo: water under crisper. AI: clogged defrost drain, 82% confidence. Parts: drain kit.',prov:'Carlos M. · Fridge specialist',score:'94%'},
-   {id:'TS-88410',title:'Washer leaking',loc:'Plantation · 33324',diag:'Video: leak at fill cycle. AI: inlet valve likely. Customer has shut-off access noted.',prov:'Andre B. · Laundry pro',score:'91%'},
-   {id:'TS-88411',title:'Dryer squealing',loc:'Pembroke Pines · 33028',diag:'Audio note: loud squeal. AI: idler pulley / belt kit. Same-day parts available.',prov:'Mike D. · 4.9★',score:'89%'}]},
- {key:'Approved',jobs:[
-   {id:'TS-88398',title:'Oven temperature off',loc:'Coral Springs · 33071',diag:'Setter approved 9:42 AM. Provider confirmed window 12–2.',prov:'Sarah L.',score:'92%'},
-   {id:'TS-88402',title:'Dishwasher no drain',loc:'Weston · 33326',diag:'Setter approved 10:05 AM. Access: gate code on file.',prov:'James R.',score:'90%'}]},
- {key:'En Route',jobs:[
-   {id:'TS-88391',title:'Fridge — warm',loc:'Davie · 33328',diag:'En route text sent. ETA 18 min shown to customer.',prov:'Carlos M.',score:'95%'},
-   {id:'TS-88394',title:'Washer — no spin',loc:'Hollywood · 33020',diag:'En route text sent. ETA 24 min.',prov:'Andre B.',score:'88%'}]},
- {key:'Complete',jobs:[
-   {id:'TS-88380',title:'Dryer vent + heat',loc:'Sunrise · 33322',diag:'Done. Repair approved, $99 credited. Review request sent.',prov:'Mike D.',score:'93%'},
-   {id:'TS-88384',title:'Oven igniter',loc:'Tamarac · 33321',diag:'Done. Photo report filed. 5★ review received.',prov:'Sarah L.',score:'96%'}]}
-];
-var altProvs=['Carlos M. · Fridge specialist','Andre B. · Laundry pro','Sarah L. · Cooking pro','James R. · Generalist','Mike D. · 4.9★'];
+var cols=[{key:'New',jobs:[]},{key:'Matched',jobs:[]},{key:'Approved',jobs:[]},{key:'En Route',jobs:[]},{key:'Complete',jobs:[]}];;
+var altProvs=['Unassigned'];
 function renderDispatch(){
  document.getElementById('mAwait').textContent=cols[1].jobs.length;
  document.getElementById('mDispatched').textContent=dispatched;
@@ -276,14 +248,14 @@ var rems=[
  {t:'⭐ After Completion',d:'Thank-you + Google review request at the happiest moment — fuel for the flywheel.',on:true}
 ];
 function renderRems(){document.getElementById('rems').innerHTML=rems.map(function(r,i){return '<div class="rem"><b>'+r.t+'</b><p>'+r.d+'</p><button class="toggle '+(r.on?'':'off')+'" onclick="toggleRem('+i+')">'+(r.on?'● AUTOMATION ON':'○ PAUSED')+'</button></div>'}).join('')}
-function toggleRem(i){rems[i].on=!rems[i].on;toast(rems[i].t+': automation '+(rems[i].on?'ON':'PAUSED')+' (preview only)');renderRems()}
+function toggleRem(i){rems[i].on=!rems[i].on;toast(rems[i].t+': automation '+(rems[i].on?'ON':'PAUSED'));renderRems()}
 
 renderQueue();renderToday();renderDispatch();renderRems();
 </script>
 
 <script>
 /* ================= LIVE MODE — Top Speed Service OS API =================
-   Signed out: the page is the original demo preview (sample data).
+   Signed out: only the staff sign-in shows — the board is gated and empty.
    Signed in as staff: Setter Queue, Today's Appointments and the Dispatch
    Board render REAL data from the Service OS API, and Confirm / Reschedule
    write real appointments. Token lives in localStorage (shared with the other Service OS console pages in this browser; sign out clears it). */
@@ -344,9 +316,9 @@ function cleanupTestData(){
 }
 function staffSignOut(){ localStorage.removeItem('tsos_token'); location.reload(); }
 function enterLive(user){
-  LIVE=true; staffUser=user;
+  LIVE=true; staffUser=user; document.body.classList.add('live');
   document.getElementById('modePill').textContent='\u25cf LIVE \u2014 SERVICE OS CONNECTED';
-  document.getElementById('modeNotice').innerHTML='<strong>Live mode:</strong> the Setter Queue, Today\u2019s Appointments and the Dispatch Board below are reading the real Service OS database right now. Anything still labelled \u201cDemo\u201d is demo.';
+  document.getElementById('modeNotice').innerHTML='<strong>Live mode:</strong> the Setter Queue, Today\u2019s Appointments and the Dispatch Board below are reading the real Service OS database right now. Everything below is live from the Service OS database.';
   document.getElementById('staffState').textContent='\u25cf LIVE';
   document.getElementById('scorePanel').style.display='block';
   document.getElementById('staffLogin').style.display='none';

@@ -274,7 +274,7 @@ function onAppReady(){ loadEquip(); loadActivity(); }
   <div class="sw-body" id="swBody"></div>
   <form class="sw-input" id="swForm">
     <input id="swText" type="text" placeholder="Ask Speedy… or tap 🎤 and say it" autocomplete="off" aria-label="Message Speedy">
-    <button type="button" id="swMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 12px;font-size:16px;cursor:pointer">🎤</button>
+    <button type="button" id="swPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 12px;font-size:16px;cursor:pointer">📸</button><input type="file" id="swFile" accept="image/*" style="display:none"><button type="button" id="swMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 12px;font-size:16px;cursor:pointer">🎤</button>
     <button type="submit">Send</button>
   </form>
 </div>
@@ -338,8 +338,9 @@ function swBookIt(btn){
   fetch(SW_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined})})
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
-      window._swBooked=true;
+      window._swBooked=true; window._swRef=j.data.referenceCode;
       document.getElementById('swBookCard').innerHTML='\u2705 <b>Booked!</b> Your reference is <b>'+swEsc(j.data.referenceCode)+'</b>. A Service Setter will text '+swEsc(d.phone)+' to confirm your window.';
+      document.getElementById('swBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="swReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer">📧 Email me my receipt</button><button type="button" onclick="swReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer">💬 Text me my tracking link</button></div>');
     })
     .catch(function(e){
       btn.disabled=false; btn.textContent='\u2713 Book my visit';
@@ -414,4 +415,27 @@ function swLoadRecs(){
 })();
 </script>
 
+<script>
+function swReceipt(channel){ var ref=window._swRef, d=window._swBook; if(!ref||!d) return;
+ fetch(SW_API+'/speedy/send-receipt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:ref,phone:d.phone,channel:channel})})
+ .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not send'); return j; });})
+ .then(function(j){ swAdd('🧾 '+((j.data&&j.data.message)||'Done.'),false); })
+ .catch(function(e){ swAdd('🧾 That did not go through: '+e.message+'. Call 954-931-7997 and we will send it by phone.',false); });
+}
+(function(){ var B=document.getElementById('swPhoto'), F=document.getElementById('swFile'); if(!B||!F) return;
+ B.addEventListener('click',function(){ F.click(); });
+ F.addEventListener('change',function(){ var f=F.files&&F.files[0]; F.value=''; if(!f) return;
+  swAdd('📸 Sent a photo of my appliance',true);
+  var r=new FileReader(); r.onload=function(ev){ var img=new Image(); img.onload=function(){
+   var mx=1280, sc=Math.min(1,mx/Math.max(img.naturalWidth,img.naturalHeight));
+   var cv=document.createElement('canvas'); cv.width=Math.round(img.naturalWidth*sc); cv.height=Math.round(img.naturalHeight*sc);
+   cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+   fetch(SW_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Speedy chat'})})
+   .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
+   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; swAdd(rep?('📸 Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'):'📸 I received your photo but could not read it clearly \u2014 a technician will review it in person. Want me to book the $99 diagnostic visit?',false); })
+   .catch(function(){ swAdd('📸 Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.',false); });
+  }; img.src=ev.target.result; }; r.readAsDataURL(f);
+ });
+})();
+</script>
 </body></html>

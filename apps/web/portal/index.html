@@ -53,20 +53,20 @@ footer a{color:#cfe0f7;text-decoration:none}
   <nav><a href="/">Customer Site</a><a href="/service/">Provider Site</a><a href="tel:+19549317997">954-931-7997</a></nav>
 </header>
 <div class="hero">
-  <div><span class="chip" id="portalChip">WEB PORTAL · PREVIEW</span></div>
+  <div><span class="chip" id="portalChip">WEB PORTAL</span></div>
   <h1>Every side of the operation. One portal.</h1>
   <p>Dispatch, management, the provider network, commercial accounts, property managers and the growth flywheel — the whole Top Speed Service OS, organized by the job you came to do.</p>
 </div>
 <div class="wrap">
   <h2 class="sec" id="management">Management snapshot</h2>
-  <p class="sub">The owner's view across the whole platform. <span class="demo" id="kpiNote">Preview data — staff sign in on the Book OS page (same browser) and this snapshot goes live.</span></p>
+  <p class="sub">The owner's view across the whole platform. <span class="demo" id="kpiNote">Staff sign in on the Book OS page (same browser) and this snapshot shows live numbers.</span></p>
   <div class="kpis">
-    <div class="kpi"><div class="n" id="k1">14</div><div class="l" id="l1">Jobs booked today</div></div>
-    <div class="kpi"><div class="n" id="k2">9</div><div class="l" id="l2">Completed today</div></div>
-    <div class="kpi"><div class="n" id="k3">6</div><div class="l" id="l3">Techs on the road</div></div>
-    <div class="kpi"><div class="n" id="k4">4.8 ★</div><div class="l" id="l4">Average rating</div></div>
-    <div class="kpi"><div class="n" id="k5">3</div><div class="l" id="l5">Referral bookings</div></div>
-    <div class="kpi"><div class="n" id="k6">7</div><div class="l" id="l6">Commercial accounts</div></div>
+    <div class="kpi"><div class="n" id="k1">—</div><div class="l" id="l1">Jobs booked today</div></div>
+    <div class="kpi"><div class="n" id="k2">—</div><div class="l" id="l2">Completed today</div></div>
+    <div class="kpi"><div class="n" id="k3">—</div><div class="l" id="l3">Techs on the road</div></div>
+    <div class="kpi"><div class="n" id="k4">—</div><div class="l" id="l4">Average rating</div></div>
+    <div class="kpi"><div class="n" id="k5">—</div><div class="l" id="l5">Referral bookings</div></div>
+    <div class="kpi"><div class="n" id="k6">—</div><div class="l" id="l6">Commercial accounts</div></div>
   </div>
   <div class="panel" id="winPanel"><h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today's appointments by window</h3><div class="bars"><div style="height:55%"><span>8–10 AM</span></div><div style="height:85%"><span>10–12 PM</span></div><div style="height:65%"><span>12–2 PM</span></div><div style="height:95%"><span>2–4 PM</span></div><div style="height:45%"><span>4–6 PM</span></div></div><div style="height:22px"></div></div>
 
@@ -111,7 +111,7 @@ footer a{color:#cfe0f7;text-decoration:none}
   </div>
 
   <h2 class="sec">Run the operation</h2>
-  <p class="sub">Pick your desk — each console is a working preview of its part of the Service OS.</p>
+  <p class="sub">Pick your desk — each console is a working part of the Service OS.</p>
   <div class="grid">
     <a class="card" href="/book-os"><div class="ic">🎧</div><h3>Dispatch — Service Setters Book OS</h3><p>The setter queue with its call guide, today's appointments across all five windows, and the hybrid dispatch board: New → Matched → Approve & Dispatch → En Route → Complete.</p><div class="go">Open dispatch →</div></a>
     <a class="card" href="/track-console"><div class="ic">📍</div><h3>Track My Tech Console<span class="new">NEW</span></h3><p>The staff back door for tracking: every active job's live stage, technician and ETA on one board. Assign technicians, advance stages, and send the customer a tracking update. Owners, managers, setters and dispatchers — staff sign-in required.</p><div class="go">Open tracking console →</div></a>
@@ -177,7 +177,7 @@ footer a{color:#cfe0f7;text-decoration:none}
         }
       }
     })
-    .catch(function(){ var n=document.getElementById('kpiNote'); if(n) n.textContent='Preview data \u2014 your staff sign-in has expired; sign in again on the Book OS page.'; });
+    .catch(function(){ var n=document.getElementById('kpiNote'); if(n) n.textContent='Live numbers paused \u2014 your staff sign-in has expired; sign in again on the Book OS page.'; });
 })();
 </script>
 
@@ -284,5 +284,6 @@ footer a{color:#cfe0f7;text-decoration:none}
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Space Grotesk',Inter,Arial,sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Roboto Mono',monospace}</style>
+<script src="/speedy-widget.js" defer></script>
 </body>
 </html>

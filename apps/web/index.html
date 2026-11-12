@@ -687,13 +687,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
               <label class="btn btn-blue" style="padding:11px 20px;font-size:15px" for="fileUp">Choose photo / video</label>
               <input type="file" id="fileUp" accept="image/*,video/*" style="display:none">
               <img id="upPreview" alt="Your uploaded appliance photo preview" style="display:none">
-              <p class="fine" id="upName">No file yet — or try a sample below. A photo you run is sent securely to Speedy AI for analysis; the samples are illustrative examples.</p>
-              <div class="sample-row" role="group" aria-label="Sample cases">
-                <button type="button" onclick="sampleCase('fridge')">🧊 Fridge not cooling</button>
-                <button type="button" onclick="sampleCase('washer')">🌀 Washer won't drain</button>
-                <button type="button" onclick="sampleCase('dryer')">🔥 Dryer no heat</button>
-                <button type="button" onclick="sampleCase('oven')">♨️ Oven error code</button>
-              </div>
+              <p class="fine" id="upName">No file yet. A photo you add is sent securely to Speedy AI for analysis — Speedy reads your actual appliance photo.</p>
+              
             </div>
             <div style="margin-top:16px" class="frow">
               <div><label class="flabel" for="dgAppliance">Appliance</label>
@@ -749,19 +744,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <p>No more four-hour guessing games. Enter the booking reference from your confirmation (it looks like TS-XXXXXX) and the phone number on the booking — your real job status appears here, the same record our dispatch team works from.</p>
     </div>
     <div class="track-grid reveal">
-      <div class="mapbox" aria-label="Demo map showing technician route to a home in Sunrise">
-        <svg viewBox="0 0 600 380" preserveAspectRatio="none" aria-hidden="true">
-          <rect width="600" height="380" fill="transparent"/>
-          <g stroke="#B9CFEA" stroke-width="14"><path d="M0 90 H600"/><path d="M0 210 H600"/><path d="M0 320 H600"/><path d="M110 0 V380"/><path d="M290 0 V380"/><path d="M470 0 V380"/></g>
-          <g stroke="#9FB9DC" stroke-width="5"><path d="M0 150 H600"/><path d="M0 265 H600"/><path d="M200 0 V380"/><path d="M385 0 V380"/></g>
-          <rect x="330" y="225" width="120" height="80" rx="10" fill="#BFE6CF"/>
-          <rect x="30" y="230" width="90" height="60" rx="10" fill="#FFE1A8"/>
-          <path id="routePath" d="M70 320 L70 210 L290 210 L290 110 L505 110" fill="none" stroke="#0B7CFF" stroke-width="6" stroke-linecap="round" stroke-dasharray="10 8"/>
-        </svg>
-        <div class="homeMark" id="homeMark" style="left:84%;top:29%">⌂</div>
-        <div id="vanMark" style="left:12%;top:84%">🚐</div>
-        <div class="eta-pill" id="etaPill">Enter your booking reference to see live status</div>
-      </div>
+      <div class="mapbox" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px;text-align:center"><img src="/assets/flag.jpg" alt="Top Speed Appliance checkered flag" style="width:120px;border-radius:12px" onerror="this.style.display='none'"><b style="font-size:19px">Live tracking, stage by stage</b><p style="margin:0;max-width:340px">When your job is live, this section fills with your technician's real stage updates — and at the en-route stage, a live location link from the technician's phone.</p><div class="eta-pill" id="etaPill">Enter your booking reference to see live status</div></div>
       <div class="card" style="padding:20px">
         <div style="display:grid;gap:10px;margin-bottom:14px">
           <input id="trkRef" placeholder="Booking reference — e.g. TS-AEVEQH" style="padding:12px;border:1px solid #B9CFEA;border-radius:10px;font-size:15px;text-transform:uppercase">
@@ -783,9 +766,9 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <div class="wrap">
     <div class="sec-head"><span class="kicker">Track My Tech</span>
     <h2>Explore the <span>job tracking stages</span></h2>
-    <p>Every Top Speed job moves through the same eight stages. Preview each one here — when your job is live, this exact timeline fills in with your technician's real updates.</p></div>
+    <p>Every Top Speed job moves through the same eight stages. Tap a stage to see what it means — when your job is live, this exact timeline fills in with your technician's real updates.</p></div>
     <div class="card" style="padding:20px; max-width:640px;">
-      <label for="exploreStage" style="font-weight:800;color:var(--navy);font-size:13.5px;">PREVIEW A STAGE</label>
+      <label for="exploreStage" style="font-weight:800;color:var(--navy);font-size:13.5px;">EXPLORE THE 8 STAGES</label>
       <select id="exploreStage" onchange="renderExplore()" style="width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15.5px;margin:8px 0 14px;">
         <option value="0">1. Request received</option>
         <option value="1">2. Appointment confirmed</option>
@@ -798,7 +781,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       </select>
       <div id="exploreEta" style="margin-bottom:12px;"></div>
       <div class="stages" id="exploreList"></div>
-      <p class="fine" style="margin-top:12px;">This interactive example demonstrates the intended interface; it does not display actual customer jobs or locations. ETAs on live jobs are the technician's own estimate, set when they head out.</p>
+      <p class="fine" style="margin-top:12px;">This explorer explains the same 8 stages your live job moves through. ETAs on live jobs are the technician's own estimate, set when they head out.</p>
     </div>
   </div>
 </section>
@@ -1237,16 +1220,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     </div>
     <div class="two reveal" style="align-items:start">
       <div class="card" style="padding:24px">
-        <span class="tag live">● Live job offer — demo</span>
-        <h3 style="font-size:21px;margin:12px 0 6px">🧊 Refrigerator — not cooling</h3>
-        <p style="margin:0 0 6px">📍 Sunrise, 33322 • Window: Today, 2–5 PM<br>📸 Customer photo + AI pre-diagnosis attached: likely condenser fan / coils<br>💲 $99 diagnostic <b>already collected</b> • Customer confirmed by Service Setters</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-          <button type="button" class="btn btn-red" id="offerBtn" style="padding:12px 22px" onclick="acceptOffer()">✓ Accept this job</button>
-          <a class="btn btn-ghost" style="padding:12px 20px" href="/service/" target="_blank" rel="noopener">Visit the live provider site</a>
-        </div>
-        <p class="fine" id="offerMsg" style="margin-top:12px">Demo offer with sample job details. Tap Accept to see how the provider app responds.</p>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px;text-align:center">
-          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">🗺️ Route</b><span style="font-size:13px">Day route, optimized</span></div>
+        <span class="tag live">● Live — real offers in the Tech App</span><h3 style="font-size:21px;margin:12px 0 6px">Real job offers, matched by Service Setters</h3><p style="margin:0 0 6px">Qualified providers get matched, pre-qualified jobs — the $99 diagnostic already collected, the customer confirmed by Service Setters, the diagnosis photos attached. Offers arrive in the Tech App, never as a public demo.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:12px 22px" href="/tech">Open the Tech App</a><a class="btn btn-ghost" style="padding:12px 20px" href="/service/">Visit the live provider site</a></div><p class="fine" style="margin-top:12px">Providers sign in with their provider account to see their real offers and route.</p>
           <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">🧾 Invoice</b><span style="font-size:13px">In-app estimates &amp; pay</span></div>
           <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:12px"><b style="color:var(--ink);display:block;font-size:15px">⭐ Ratings</b><span style="font-size:13px">Build your profile</span></div>
         </div>
@@ -1377,7 +1351,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <div class="sp-body" id="spBody"></div>
   <form class="sp-input" id="spForm">
     <input id="spText" type="text" placeholder="Ask about repairs, pricing, areas… or tap 🎤 and say it" autocomplete="off" aria-label="Message Speedy">
-    <button type="button" id="spMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer">🎤</button>
+    <button type="button" id="spPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer">📸</button><input type="file" id="spFile" accept="image/*" style="display:none"><button type="button" id="spMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer">🎤</button>
     <button type="submit">Send</button>
   </form>
 </div>
@@ -1473,18 +1447,10 @@ document.getElementById('dgAppliance').addEventListener('change',syncSymptoms);
 document.getElementById('estAppliance').addEventListener('change',syncEstIssues);
 syncSymptoms(); syncEstIssues();
 
-var curSample=null;
-function sampleCase(k){
-  curSample=k;
-  document.getElementById('dgAppliance').value=k; syncSymptoms();
-  document.getElementById('upName').textContent='Sample case loaded: '+k+' — run the diagnosis to see an illustrative example.';
-  document.getElementById('upPreview').style.display='none';
-  runDiagnosis();
-}
 var dgPhoto=null;
 document.getElementById('fileUp').addEventListener('change',function(e){
   var f=e.target.files[0]; if(!f)return;
-  curSample=null; dgPhoto=null;
+  dgPhoto=null;
   if(f.type.indexOf('image/')===0){
     var r=new FileReader();
     r.onload=function(ev){
@@ -1507,25 +1473,11 @@ document.getElementById('fileUp').addEventListener('change',function(e){
     document.getElementById('upName').textContent='Loaded: '+f.name+' \u2014 video analysis is coming soon. Add a photo for a live AI diagnosis today, or book and the tech reviews it in person.';
   }
 });
-function resultFor(appliance){
-  var d=DIAG[appliance]; var idx=Math.floor(Math.random()*d.results.length); return d.results[idx];
-}
-function renderSampleDiagnosis(a,sym){
-  var r=resultFor(a);
-  var name=document.querySelector('#dgAppliance option:checked').textContent;
-  document.getElementById('dgResult').innerHTML=
-    '<span class="tag">Sample case \u2014 illustrative example</span>'+
-    '<h3 style="margin-top:10px">'+esc(name)+': '+esc(r.issue)+'</h3>'+
-    '<p style="margin:4px 0">Symptom: <b>'+esc(sym)+'</b></p>'+
-    '<p>'+esc(r.detail)+'</p>'+
-    '<p class="fine">This sample shows the kind of head start Speedy gives. For a live read of YOUR appliance, add a photo above and run the diagnosis.</p>'+
-    '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+19549317997">Call 954-931-7997</a></div>';
-}
 function runDiagnosis(){
   var a=document.getElementById('dgAppliance').value;
   var sym=document.getElementById('dgSymptom').value;
   var name=document.querySelector('#dgAppliance option:checked').textContent;
-  if(!dgPhoto){ renderSampleDiagnosis(a,sym); return; }
+  if(!dgPhoto){ document.getElementById('dgResult').innerHTML='<span class="tag">Add a photo first</span><p style="margin-top:10px">Speedy\'s diagnosis reads your actual appliance photo — add one above and run the diagnosis for a live AI read. No photo? <a href="#book"><b>Book the $99 diagnostic</b></a> and the technician diagnoses on site.</p>'; return; }
   var box=document.getElementById('dgResult');
   box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Reading your photo\u2026</h3><p>Speedy is reviewing your photo with the symptom: <b>'+esc(sym)+'</b>. This takes a few seconds.</p>';
   fetch(SP_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:dgPhoto,note:name+': '+sym})})
@@ -1579,9 +1531,6 @@ function renderTrkStages(active){
     var mark=i<active?'✓':(i+1);
     return '<div class="stage '+cls+'"><span class="dot">'+mark+'</span><span><b>'+st.t+'</b><span>'+st.d+'</span></span></div>';
   }).join('');
-  var pos=TRK_STAGES[Math.max(0,active)]||TRK_STAGES[0];
-  document.getElementById('vanMark').style.left=pos.pos[0]+'%';
-  document.getElementById('vanMark').style.top=pos.pos[1]+'%';
 }
 function trkMsg(html){
   var feed=document.getElementById('smsFeed');
@@ -1700,8 +1649,9 @@ function spBookIt(btn){
   fetch(SP_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined})})
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
-      window._spBooked=true;
+      window._spBooked=true; window._spRef=j.data.referenceCode;
       document.getElementById('spBookCard').innerHTML='\u2705 <b>Booked!</b> Your reference is <b>'+j.data.referenceCode+'</b>. A Service Setter will text '+String(d.phone).replace(/</g,'&lt;')+' to confirm your window. You can track it any time in the Track section below.';
+      document.getElementById('spBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="spReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer">📧 Email me my receipt</button><button type="button" onclick="spReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer">💬 Text me my tracking link</button></div>');
     })
     .catch(function(e){
       btn.disabled=false; btn.textContent='✓ Book my visit';
@@ -1766,11 +1716,6 @@ function spLoadRecs(){
   });
 }
 
-/* ---------- provider demo ---------- */
-function acceptOffer(){
-  var b=document.getElementById('offerBtn'); b.textContent='✓ Job accepted — see you 2–5 PM'; b.disabled=true; b.style.opacity='.75';
-  document.getElementById('offerMsg').innerHTML='<b style="color:var(--green)">That is how one tap does it.</b> Real offers arrive in the <a href="/tech"><b>Tech App</b></a> — the customer gets your name, photo and live tracking automatically, and the job lands on your route with the diagnosis photos attached.';
-}
 document.getElementById('provForm').addEventListener('submit',function(e){
   e.preventDefault();
   var n=document.getElementById('pvName').value.trim();
@@ -1895,7 +1840,7 @@ function wireVoice(btnId, inputId){
   var B=document.getElementById(btnId), I=document.getElementById(inputId);
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.style.display='none'; return; }
+  if(!SR){ B.title='Voice isn\u2019t supported in this browser \u2014 type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t supported in this browser \u2014 type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },2800); }); return; }
   var rec=null, listening=false;
   B.addEventListener('click',function(){
     if(listening){ try{rec.stop();}catch(e){} return; }
@@ -1908,6 +1853,29 @@ function wireVoice(btnId, inputId){
 }
 wireVoice('spMic','spText');
 wireVoice('nhMic','nhAskInput');
+</script>
+<script>
+function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!d) return;
+ fetch(SP_API+'/speedy/send-receipt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:ref,phone:d.phone,channel:channel})})
+ .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not send'); return j; });})
+ .then(function(j){ addMsg('🧾 '+((j.data&&j.data.message)||'Done.'),false); })
+ .catch(function(e){ addMsg('🧾 That did not go through: '+e.message+'. Call 954-931-7997 and we will send it by phone.',false); });
+}
+(function(){ var B=document.getElementById('spPhoto'), F=document.getElementById('spFile'); if(!B||!F) return;
+ B.addEventListener('click',function(){ F.click(); });
+ F.addEventListener('change',function(){ var f=F.files&&F.files[0]; F.value=''; if(!f) return;
+  addMsg('📸 Sent a photo of my appliance',true);
+  var r=new FileReader(); r.onload=function(ev){ var img=new Image(); img.onload=function(){
+   var mx=1280, sc=Math.min(1,mx/Math.max(img.naturalWidth,img.naturalHeight));
+   var cv=document.createElement('canvas'); cv.width=Math.round(img.naturalWidth*sc); cv.height=Math.round(img.naturalHeight*sc);
+   cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+   fetch(SP_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Speedy chat'})})
+   .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
+   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; addMsg(rep?('📸 Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'):'📸 I received your photo but could not read it clearly \u2014 a technician will review it in person. Want me to book the $99 diagnostic visit?',false); })
+   .catch(function(){ addMsg('📸 Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.',false); });
+  }; img.src=ev.target.result; }; r.readAsDataURL(f);
+ });
+})();
 </script>
 </body>
 </html>

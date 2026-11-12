@@ -60,15 +60,15 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy2);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:9}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .demo{font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-</style>
+body.signedout section.screen,body.signedout .tabs{display:none!important}</style>
 </head>
-<body>
+<body class="signedout">
 <div class="phone">
   <header>
     <div class="hrow">
-      <div class="avatar">AR</div>
-      <div><h1>Alex R. — Technician</h1><p>Tech TS-T-014 · ★ 4.9 · Broward County</p></div>
-      <span class="chip" id="techChip">PREVIEW</span>
+      <div class="avatar">TS</div>
+      <div><h1>Tech App</h1><p>Sign in to load your provider profile</p></div>
+      <span class="chip" id="techChip">SIGN IN</span>
     </div>
     <div class="avail"><span class="dot" id="availDot"></span><span id="availTxt">Available for offers</span><button id="availBtn" type="button">Go offline</button></div>
   </header>
@@ -77,7 +77,7 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
     <!-- TECH SIGN-IN / LIVE MODE -->
     <div class="card" id="techAuth" style="margin:12px 12px 0">
       <h3 style="font-size:14px;color:var(--navy)">Technician sign-in \u2014 live jobs</h3>
-      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see real job offers from Service Setters dispatch. Signed out, this app shows a demo schedule.</p>
+      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch.</p>
       <div id="techLogin">
         <input id="techEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <input id="techPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
@@ -90,53 +90,21 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
     </div>
     <!-- TODAY -->
     <section class="screen on" id="s-today">
-      <h2 class="sec">Today — Saturday, Nov 7 <span class="demo">· demo schedule</span></h2>
-      <div id="todayList">
-        <div class="card job" data-open-job><div class="when">8–10 AM</div><div><h3>Refrigerator — not cooling</h3><p>Sunrise · 33322 · Diagnostic $99 collected</p></div><span class="st done">DONE</span></div>
-        <div class="card job" data-open-job><div class="when">10–12 PM</div><div><h3>Washer — won't drain</h3><p>Plantation · 33324 · Gate code in notes</p></div><span class="st prog">IN PROGRESS</span></div>
-        <div class="card job" data-open-job><div class="when">12–2 PM</div><div><h3>Dryer — no heat</h3><p>Lauderhill · 33313</p></div><span class="st next">NEXT</span></div>
-        <div class="card job" data-open-job><div class="when">2–4 PM</div><div><h3>Oven — not heating</h3><p>Fort Lauderdale · 33311</p></div><span class="st wait">QUEUED</span></div>
+      <h2 class="sec">Today</h2>
+      <div id="todayList"><p class="note">No jobs yet — your confirmed jobs for today appear here once Service Setters dispatch assigns them.</p></div>
       </div>
       <p class="note">Jobs are matched by Service Setters dispatch and confirmed here before they land on your day — the hybrid dispatch you already know, in your pocket.</p>
     </section>
     <!-- OFFERS -->
     <section class="screen" id="s-offers">
-      <h2 class="sec">New job offers <span class="demo">· demo</span></h2>
-      <div id="offerList">
-        <div class="card offer"><h3 style="font-size:15px">Dishwasher — leaking</h3><div class="meta"><span>📍 Davie · 3.2 mi</span><span>🕓 Today 4–6 PM</span></div><p style="font-size:12px;color:var(--soft)">Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" data-decline type="button">Decline</button><button class="btn go" data-accept type="button">Accept job</button></div></div>
-        <div class="card offer"><h3 style="font-size:15px">Ice maker — not making ice</h3><div class="meta"><span>📍 Coral Springs · 5.8 mi</span><span>🕓 Tomorrow 8–10 AM</span></div><p style="font-size:12px;color:var(--soft)">Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" data-decline type="button">Decline</button><button class="btn go" data-accept type="button">Accept job</button></div></div>
-      </div>
+      <h2 class="sec">New job offers</h2>
+      <div id="offerList"><p class="note">No open offers right now — sign in and keep availability on; dispatch matches by area, appliance and rating.</p></div>
       <p class="note" id="offerEmpty" style="display:none">No open offers right now. Keep availability on — dispatch matches by area, appliance, and your ratings.</p>
     </section>
     <!-- JOB DETAIL -->
-    <section class="screen" id="s-job">
-      <h2 class="sec">Job detail <span class="demo">· demo</span></h2>
-      <div class="card">
-        <h3 style="font-size:16px">Washer — won't drain</h3>
-        <p style="font-size:12px;color:var(--soft);margin-top:2px">Ref TS-1042 · Window 10 AM – 12 PM</p>
-        <div class="steps" id="steps"><div class="done"><i></i>En route</div><div><i></i>Arrived</div><div><i></i>Working</div><div><i></i>Complete</div></div>
-        <div class="kv"><span>Customer</span><b>Demo Customer — M. Johnson</b></div>
-        <div class="kv"><span>Area</span><b>Plantation · 33324</b></div>
-        <div class="kv"><span>Appliance</span><b>Washer (front-load)</b></div>
-        <div class="kv"><span>Reported issue</span><b>Won't drain; standing water</b></div>
-        <div class="kv"><span>Diagnostic</span><b>$99 collected at booking</b></div>
-        <div class="kv" style="border-bottom:0"><span>Notes</span><b>Gate code in booking notes</b></div>
-        <div class="btnrow"><button class="btn navy" id="callBtn" type="button">📞 Call customer</button><button class="btn red" id="advBtn" type="button">I've arrived</button></div>
-        <p class="note" id="jobDone" style="display:none">✅ Job complete. The $99 diagnostic is credited toward the repair, the customer gets a review request, and a referral code (TS-REF) is issued — the flywheel turns.</p>
-      </div>
-      <p class="note">Status updates flow straight to the customer's live tracking — they see you coming, no phone tag.</p>
-    </section>
+    <section class="screen" id="s-job"><h2 class="sec">Job detail</h2><div class="card"><p class="note" style="margin:0">Select a job from Today or Offers to see its details, update its status, and share your live location for Track My Tech.</p></div></section>
     <!-- EARNINGS -->
-    <section class="screen" id="s-earn">
-      <h2 class="sec">My week <span class="demo">· demo</span></h2>
-      <div class="tiles">
-        <div class="tile"><div class="n" id="jobsToday">1</div><div class="l">Jobs done today</div></div>
-        <div class="tile"><div class="n">12</div><div class="l">Jobs this week</div></div>
-        <div class="tile"><div class="n">4.9 ★</div><div class="l">My rating</div></div>
-        <div class="tile"><div class="n">98%</div><div class="l">On-time arrivals</div></div>
-      </div>
-      <div class="card" style="margin-top:12px"><h3 style="font-size:13px;color:var(--navy)">Jobs per day</h3><div class="bars"><div style="height:45%"><span>Mon</span></div><div style="height:65%"><span>Tue</span></div><div style="height:55%"><span>Wed</span></div><div style="height:80%"><span>Thu</span></div><div style="height:70%"><span>Fri</span></div><div style="height:35%"><span>Sat</span></div></div><p class="note" style="margin-top:26px">Payout amounts follow your provider agreement. When the Service OS backend connects, your live statement appears here and in the provider portal.</p></div>
-    </section>
+    <section class="screen" id="s-earn"><h2 class="sec">My week</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n">—</div><div class="l">Jobs this week</div></div></div><div class="card" style="margin-top:12px"><p class="note" style="margin:0">Payout amounts follow your provider agreement. Your live statement appears here when you are signed in with your provider account.</p></div></section>
     <!-- MORE -->
     <section class="screen" id="s-more">
       <h2 class="sec">More</h2>
@@ -150,7 +118,7 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
         <div class="row">🖥️ Service OS web portal <a href="/portal">Open</a></div>
         <div class="row" style="border-bottom:0">📱 Customer app <a href="/app">Appliance Pro</a></div>
       </div>
-      <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Preview build: demo data only; live jobs flow when your provider account connects.</p>
+      <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Live jobs flow when your provider account is signed in.</p>
     </section>
   </main>
   <nav class="tabs">
@@ -179,15 +147,6 @@ $$('#offerList .offer').forEach(card=>{
   card.querySelector('[data-decline]').addEventListener('click',()=>{card.remove();offers--;syncOffers();toast('Offer declined — dispatch will re-match it')});
 });
 const stages=['I\'ve arrived','Start work','Complete job','Completed ✓'];let stage=0;
-$('#advBtn').addEventListener('click',()=>{
-  if(stage>=3)return;stage++;
-  $$('#steps div').forEach((el,i)=>el.classList.toggle('done',i<=stage));
-  $('#advBtn').textContent=stages[stage]||'Completed ✓';
-  if(stage===1)toast('📍 Arrival shared with the customer');
-  if(stage===2)toast('🔧 Work started — timer running');
-  if(stage>=3){$('#advBtn').disabled=true;$('#jobDone').style.display='';$('#jobsToday').textContent='2';toast('🎉 Job complete — nice work')}
-});
-$('#callBtn').addEventListener('click',()=>toast('Demo build — calling connects in the live app'));
 let avail=true;
 $('#availBtn').addEventListener('click',()=>{avail=!avail;$('#availDot').style.background=avail?'#37d67a':'#e8112d';$('#availTxt').textContent=avail?'Available for offers':'Offline — offers paused';$('#availBtn').textContent=avail?'Go offline':'Go available';toast(avail?'You are available for offers':'You are offline')});
 </script>
@@ -222,6 +181,7 @@ function loadTech(){
     .catch(function(e){ toast('Live jobs unavailable: '+e.message); });
 }
 function renderTech(provider,assignments,user){
+  document.body.classList.remove('signedout');
   document.getElementById('techChip').textContent='\u25cf LIVE';
   document.getElementById('techLogin').style.display='none';
   document.getElementById('techBar').style.display='';
