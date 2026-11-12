@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Studio — Top Speed Marketing OS</title>
+<meta name="description" content="The Top Speed Marketing OS Page Studio: the landing-page CMS on the Service OS — taxonomy, canonical URL generation, draft/review/publish workflow and full version history.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e8322e;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3;--amber:#9a6200}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:14.5px;font-family:inherit}
+.btn.blue{background:var(--blue)} .btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:6px 11px;font-size:13px;border-radius:7px}
+.btn.warn{background:#fff;color:var(--amber);border:1px solid #e5cf9a}
+main{max-width:1180px;margin:0 auto;padding:36px 24px 60px}
+h1{font-size:29px;color:var(--navy)}
+h2{font-size:21px;color:var(--navy);margin-bottom:10px}
+.sub{color:var(--muted);margin:8px 0 22px;line-height:1.55}
+.card{background:var(--light);border-radius:14px;padding:22px;margin-bottom:22px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c9d8ec;border-radius:10px;font-size:15px;font-family:inherit;background:#fff}
+label{font-weight:700;color:var(--navy);font-size:13px;display:block;margin-bottom:6px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:8px 7px}
+td{border-bottom:1px solid var(--line);padding:8px 7px;vertical-align:top}
+.pill{display:inline-block;font-weight:800;font-size:11px;border-radius:99px;padding:3px 9px;letter-spacing:.04em}
+.pill.DRAFT{background:#e6ecf5;color:var(--navy2)} .pill.IN_REVIEW{background:#fdf0d5;color:var(--amber)}
+.pill.PUBLISHED{background:#e2f3ea;color:var(--green)} .pill.UNPUBLISHED{background:#f6e3e3;color:#a12}
+.pill.cov{background:#e2f3ea;color:var(--green)} .pill.exp{background:#fdf0d5;color:var(--amber)}
+.msg{font-weight:600;min-height:22px;margin-top:10px;white-space:pre-wrap}
+.msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+.stat{background:var(--navy);color:#fff;border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:1.45rem;line-height:1.1}
+.stat span{color:#b9cdec;font-size:12.5px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:8px 14px;border-radius:99px;border:1px solid #c9d8ec;background:#fff;font-weight:700;cursor:pointer;font-size:14px;color:var(--navy)}
+.tab.on{background:var(--navy);color:#fff}
+fieldset{border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px;background:#fff}
+legend{font-weight:800;color:var(--navy);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;padding:0 6px}
+.urlprev{font-family:'Roboto Mono',monospace;font-size:13.5px;background:#fff;border:1px dashed #b9cbe4;border-radius:9px;padding:10px 12px;word-break:break-all}
+footer{background:#04122e;color:#9db6d8;padding:32px 24px;text-align:center;font-size:14px}
+footer strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <img class="flag" src="/flag.jpg" alt="Top Speed checkered flag">
+  <div class="brand">TOP <span>SPEED</span> APPLIANCE</div>
+  <nav>
+    <a href="/marketing-os">Agency hub</a>
+    <a href="/local">Local OS</a>
+    <a href="/ads">Top Speed Ads</a>
+    <a href="/portal">Portal</a>
+    <a href="#" id="mosOut" style="display:none;" onclick="mosSignOut(); return false;">Sign out</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Page Studio — Top Speed Marketing OS</h1>
+  <p class="sub">The landing-page CMS on the Service OS backend. Draft → review → publish, a version snapshot on every save, canonical URLs from the blueprint scheme — and a hard rule: pages publish only for service-covered cities. Marketing managers and staff only.</p>
+
+  <div class="card" id="mosLogin">
+    <div class="row">
+      <div><label for="mosEmail">Team email</label><input id="mosEmail" type="email" placeholder="you@topspeedappliance.net"></div>
+      <div><label for="mosPass">Password</label><input id="mosPass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div style="margin-top:14px;"><button class="btn blue" onclick="mosSignIn()">Sign in to the Studio</button></div>
+    <div class="msg" id="mosLoginMsg"></div>
+  </div>
+
+  <div id="mosApp" style="display:none;">
+    <div class="stats">
+      <div class="stat"><b id="stCov">–</b><span>covered cities</span></div>
+      <div class="stat"><b id="stCities">–</b><span>cities (incl. expansion)</span></div>
+      <div class="stat"><b id="stBrands">–</b><span>brands</span></div>
+      <div class="stat"><b id="stServices">–</b><span>services</span></div>
+      <div class="stat"><b id="stSymptoms">–</b><span>symptoms</span></div>
+      <div class="stat"><b id="stPages">–</b><span>pages · <span id="stPub">–</span> published</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Create a landing page</h2>
+      <div class="row">
+        <div><label for="cpType">Page type</label>
+          <select id="cpType" onchange="cpRefresh()">
+            <option value="CITY">City</option>
+            <option value="BRAND">Brand</option>
+            <option value="SERVICE">Service</option>
+            <option value="BRAND_SERVICE">Brand + Service</option>
+            <option value="BRAND_SERVICE_CITY" selected>Brand + Service + City</option>
+          </select></div>
+        <div id="cpCityWrap"><label for="cpCity">City</label><select id="cpCity" onchange="cpPreview()"></select></div>
+        <div id="cpBrandWrap"><label for="cpBrand">Brand</label><select id="cpBrand" onchange="cpPreview()"></select></div>
+        <div id="cpServiceWrap"><label for="cpService">Service</label><select id="cpService" onchange="cpPreview()"></select></div>
+      </div>
+      <label style="margin-top:12px;">Canonical URL (generated, §4 scheme)</label>
+      <div class="urlprev" id="cpUrl">—</div>
+      <div style="margin-top:14px;"><button class="btn" onclick="cpCreate()">Create draft</button></div>
+      <div class="msg" id="cpMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2>Pages</h2>
+      <div class="row" style="margin-bottom:12px;">
+        <div style="grid-column:span 2;"><input id="pgQ" type="text" placeholder="Search title, slug or URL…" onkeydown="if(event.key==='Enter'){pgLoad();}"></div>
+        <div><select id="pgStatus" onchange="pgLoad()"><option value="">Any status</option><option>DRAFT</option><option>IN_REVIEW</option><option>PUBLISHED</option><option>UNPUBLISHED</option></select></div>
+        <div><select id="pgType" onchange="pgLoad()"><option value="">Any type</option><option>CITY</option><option>BRAND</option><option>SERVICE</option><option>BRAND_SERVICE</option><option>BRAND_SERVICE_CITY</option></select></div>
+        <div><button class="btn blue" style="width:100%;" onclick="pgLoad()">Search</button></div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Page</th><th>Type</th><th>Status</th><th>Updated</th><th>Actions</th></tr></thead>
+        <tbody id="pgRows"><tr><td colspan="5">Loading…</td></tr></tbody></table>
+      </div>
+      <div class="msg" id="pgMsg"></div>
+    </div>
+
+    <div class="card" id="edCard" style="display:none;">
+      <h2>Edit page</h2>
+      <p class="sub" id="edUrl" style="margin:0 0 14px;font-family:'Roboto Mono',monospace;font-size:13px;"></p>
+      <label for="edTitle">Title</label><input id="edTitle" type="text">
+      <label for="edMeta" style="margin-top:12px;">Meta description</label><textarea id="edMeta" rows="2"></textarea>
+      <label style="margin-top:14px;">Sections</label>
+      <div id="edSections"></div>
+      <label for="edNote">Version note</label><input id="edNote" type="text" placeholder="What changed in this save?">
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn blue" onclick="edSave()">Save (creates a version)</button>
+        <button class="btn ghost" onclick="document.getElementById('edCard').style.display='none';">Close</button>
+      </div>
+      <div class="msg" id="edMsg"></div>
+    </div>
+
+    <div class="card" id="verCard" style="display:none;">
+      <h2>Version history</h2>
+      <p class="sub" id="verFor" style="margin:0 0 12px;"></p>
+      <div id="verList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Taxonomy</h2>
+      <div class="tabs">
+        <button class="tab on" data-kind="cities" onclick="txTab('cities')">Cities</button>
+        <button class="tab" data-kind="brands" onclick="txTab('brands')">Brands</button>
+        <button class="tab" data-kind="services" onclick="txTab('services')">Services</button>
+        <button class="tab" data-kind="symptoms" onclick="txTab('symptoms')">Symptoms</button>
+      </div>
+      <input id="txQ" type="text" placeholder="Search name or slug…" oninput="txRender()" style="margin-bottom:12px;">
+      <div style="overflow-x:auto;">
+        <table><thead><tr><th>Name</th><th>Slug</th><th id="txExtraHead">Coverage</th><th></th></tr></thead>
+        <tbody id="txRows"></tbody></table>
+      </div>
+      <div class="row" style="margin-top:16px;">
+        <div><label for="txName">Name</label><input id="txName" type="text" placeholder="Record name"></div>
+        <div><label for="txSlug">Slug (optional)</label><input id="txSlug" type="text" placeholder="auto from name"></div>
+        <div id="txCovWrap"><label for="txCovered">Service-covered?</label><select id="txCovered"><option value="false">No — expansion / record only</option><option value="true">Yes — service-covered</option></select></div>
+        <div id="txPartWrap" style="display:none;"><label for="txPartOf">Part of service (slug, optional)</label><input id="txPartOf" type="text" placeholder="e.g. oven-range-repair"></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn blue" onclick="txSave()">Save record</button>
+        <button class="btn ghost" onclick="txClear()">Clear</button>
+      </div>
+      <div class="msg" id="txMsg"></div>
+    </div>
+  </div>
+</main>
+
+<footer><strong>Top Speed Appliance LLC</strong> · Page Studio · Internal — publishing is approval-gated and coverage-checked.</footer>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var SITE='https://topspeedappliance.net';
+var TRANSITIONS={DRAFT:['IN_REVIEW'],IN_REVIEW:['PUBLISHED','DRAFT'],PUBLISHED:['UNPUBLISHED'],UNPUBLISHED:['IN_REVIEW','DRAFT']};
+var TAX={cities:[],brands:[],services:[],symptoms:[]};
+var txKind='cities', txEditId=null, edPage=null, edSections=[];
+
+function tok(){ try{ return localStorage.getItem('tsos_studio_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+function mf(method,path,body){
+  return fetch(API+path,{method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:body?JSON.stringify(body):undefined})
+    .then(function(r){ return r.text().then(function(t){
+      var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(!r.ok){ var m=j.error||('status '+r.status); if(j.guardrail) m+=' ('+j.guardrail+')'; if(j.allowedTransitions) m+=' Allowed: '+j.allowedTransitions.join(', '); throw new Error(m); }
+      return j;
+    }); });
+}
+function mosSignIn(){
+  var email=document.getElementById('mosEmail').value.trim();
+  var pass=document.getElementById('mosPass').value;
+  var msg=document.getElementById('mosLoginMsg');
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      var t=j.token||(j.data&&j.data.token); if(!t) throw new Error('No token returned');
+      try{ localStorage.setItem('tsos_studio_token', t); }catch(e){}
+      mosShow();
+    })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function mosSignOut(){ try{ localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
+function mosShow(){
+  document.getElementById('mosLogin').style.display='none';
+  document.getElementById('mosApp').style.display='';
+  document.getElementById('mosOut').style.display='';
+  txLoad().then(function(){ cpRefresh(); pgLoad(); });
+}
+
+/* ---------- taxonomy ---------- */
+function txLoad(){
+  return mf('GET','/marketing-os/admin/taxonomy').then(function(j){
+    TAX.cities=j.data.cities||[]; TAX.brands=j.data.brands||[]; TAX.services=j.data.services||[]; TAX.symptoms=j.data.symptoms||[];
+    var c=j.data.counts||{};
+    document.getElementById('stCov').textContent=c.coveredCities!=null?c.coveredCities:'–';
+    document.getElementById('stCities').textContent=c.cities!=null?c.cities:'–';
+    document.getElementById('stBrands').textContent=c.brands!=null?c.brands:'–';
+    document.getElementById('stServices').textContent=c.services!=null?c.services:'–';
+    document.getElementById('stSymptoms').textContent=c.symptoms!=null?c.symptoms:'–';
+    document.getElementById('stPages').textContent=c.pages!=null?c.pages:'–';
+    document.getElementById('stPub').textContent=c.publishedPages!=null?c.publishedPages:'–';
+    fillSelect('cpCity',TAX.cities); fillSelect('cpBrand',TAX.brands); fillSelect('cpService',TAX.services);
+    txRender();
+  });
+}
+function fillSelect(id,rows){
+  var el=document.getElementById(id); if(!el) return;
+  el.innerHTML=rows.map(function(r){ return '<option value="'+r.id+'">'+esc(r.name)+(txKind&&id==='cpCity'&&!r.serviceCovered?' (expansion)':'')+'</option>'; }).join('');
+}
+function txTab(kind){
+  txKind=kind; txEditId=null;
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(t){ t.classList.toggle('on',t.getAttribute('data-kind')===kind); });
+  document.getElementById('txCovWrap').style.display=kind==='cities'?'':'none';
+  document.getElementById('txPartWrap').style.display=kind==='services'?'':'none';
+  document.getElementById('txExtraHead').textContent=kind==='cities'?'Coverage':(kind==='services'?'Part of':'—');
+  txClear(); txRender();
+}
+function txRender(){
+  var q=(document.getElementById('txQ').value||'').toLowerCase();
+  var rows=(TAX[txKind]||[]).filter(function(r){ return !q||r.name.toLowerCase().indexOf(q)>-1||r.slug.indexOf(q)>-1; });
+  document.getElementById('txRows').innerHTML=rows.length?rows.map(function(r){
+    var extra='—';
+    if(txKind==='cities') extra=r.serviceCovered?'<span class="pill cov">COVERED</span>':'<span class="pill exp">EXPANSION</span>';
+    if(txKind==='services') extra=r.partOfService?esc(r.partOfService):'standalone';
+    return '<tr><td><b>'+esc(r.name)+'</b></td><td style="font-family:\'Roboto Mono\',monospace;font-size:12.5px;">'+esc(r.slug)+'</td><td>'+extra+'</td>'+
+      '<td style="white-space:nowrap;"><button class="btn ghost small" onclick="txEdit(\''+r.id+'\')">Edit</button> '+
+      '<button class="btn warn small" onclick="txDelete(\''+r.id+'\',\''+esc(r.name)+'\')">Delete</button></td></tr>';
+  }).join(''):'<tr><td colspan="4">No records match.</td></tr>';
+}
+function txEdit(id){
+  var r=(TAX[txKind]||[]).find(function(x){ return x.id===id; }); if(!r) return;
+  txEditId=id;
+  document.getElementById('txName').value=r.name;
+  document.getElementById('txSlug').value=r.slug;
+  if(txKind==='cities') document.getElementById('txCovered').value=String(!!r.serviceCovered);
+  if(txKind==='services') document.getElementById('txPartOf').value=r.partOfService||'';
+  document.getElementById('txMsg').textContent='Editing '+r.name+' — Save writes the change.';
+}
+function txClear(){
+  txEditId=null;
+  document.getElementById('txName').value=''; document.getElementById('txSlug').value='';
+  document.getElementById('txPartOf').value=''; document.getElementById('txMsg').textContent='';
+}
+function txSave(){
+  var msg=document.getElementById('txMsg');
+  var body={name:document.getElementById('txName').value.trim()};
+  var slug=document.getElementById('txSlug').value.trim(); if(slug) body.slug=slug;
+  if(txKind==='cities') body.serviceCovered=document.getElementById('txCovered').value==='true';
+  if(txKind==='services'){ var p=document.getElementById('txPartOf').value.trim(); body.partOfService=p?p:null; }
+  var p=txEditId?mf('PATCH','/marketing-os/admin/taxonomy/'+txKind+'/'+txEditId,body):mf('POST','/marketing-os/admin/taxonomy/'+txKind,body);
+  p.then(function(){ msg.textContent='✅ Saved.'; msg.className='msg ok'; txClear(); return txLoad(); })
+   .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function txDelete(id,name){
+  if(!confirm('Delete '+name+'? Pages referencing it will block the delete.')) return;
+  var msg=document.getElementById('txMsg');
+  mf('DELETE','/marketing-os/admin/taxonomy/'+txKind+'/'+id)
+    .then(function(){ msg.textContent='✅ Deleted.'; msg.className='msg ok'; return txLoad(); })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+
+/* ---------- create page ---------- */
+function needRefs(){
+  var t=document.getElementById('cpType').value;
+  return {city:['CITY','BRAND_SERVICE_CITY'].indexOf(t)>-1, brand:['BRAND','BRAND_SERVICE','BRAND_SERVICE_CITY'].indexOf(t)>-1, service:['SERVICE','BRAND_SERVICE','BRAND_SERVICE_CITY'].indexOf(t)>-1};
+}
+function cpRefresh(){
+  var n=needRefs();
+  document.getElementById('cpCityWrap').style.display=n.city?'':'none';
+  document.getElementById('cpBrandWrap').style.display=n.brand?'':'none';
+  document.getElementById('cpServiceWrap').style.display=n.service?'':'none';
+  cpPreview();
+}
+function byId(list,id){ return list.find(function(r){ return r.id===id; }); }
+function cpSlugPath(){
+  var t=document.getElementById('cpType').value;
+  var city=byId(TAX.cities,document.getElementById('cpCity').value);
+  var brand=byId(TAX.brands,document.getElementById('cpBrand').value);
+  var svc=byId(TAX.services,document.getElementById('cpService').value);
+  if(t==='CITY'&&city) return 'service-areas/'+city.slug;
+  if(t==='BRAND'&&brand) return 'brands/'+brand.slug;
+  if(t==='SERVICE'&&svc) return 'services/'+svc.slug;
+  if(t==='BRAND_SERVICE'&&brand&&svc) return 'brands/'+brand.slug+'/'+svc.slug;
+  if(t==='BRAND_SERVICE_CITY'&&brand&&svc&&city) return 'brands/'+brand.slug+'/'+svc.slug+'/'+city.slug;
+  return null;
+}
+function cpPreview(){
+  var p=cpSlugPath();
+  document.getElementById('cpUrl').textContent=p?SITE+'/'+p+'/':'— pick the full combination —';
+}
+function cpCreate(){
+  var msg=document.getElementById('cpMsg');
+  var n=needRefs();
+  var body={type:document.getElementById('cpType').value};
+  if(n.city) body.cityId=document.getElementById('cpCity').value;
+  if(n.brand) body.brandId=document.getElementById('cpBrand').value;
+  if(n.service) body.serviceId=document.getElementById('cpService').value;
+  mf('POST','/marketing-os/admin/pages',body)
+    .then(function(j){ msg.textContent='✅ Draft created: '+j.data.canonicalUrl; msg.className='msg ok'; pgLoad(); txLoad(); })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+
+/* ---------- pages ---------- */
+function pgLoad(){
+  var q=document.getElementById('pgQ').value.trim();
+  var st=document.getElementById('pgStatus').value;
+  var ty=document.getElementById('pgType').value;
+  var qs=[]; if(q) qs.push('q='+encodeURIComponent(q)); if(st) qs.push('status='+st); if(ty) qs.push('type='+ty);
+  mf('GET','/marketing-os/admin/pages'+(qs.length?'?'+qs.join('&'):''))
+    .then(function(j){
+      var rows=j.data||[];
+      document.getElementById('pgMsg').textContent=rows.length+' page'+(rows.length===1?'':'s');
+      document.getElementById('pgRows').innerHTML=rows.length?rows.map(function(p){
+        var acts=(TRANSITIONS[p.status]||[]).map(function(s){
+          return '<button class="btn blue small" onclick="pgStatus(\''+p.id+'\',\''+s+'\')">'+s.replace('_',' ')+'</button>';
+        }).join(' ');
+        return '<tr><td><b>'+esc(p.title)+'</b><br><span style="font-family:\'Roboto Mono\',monospace;font-size:11.5px;color:var(--muted);">'+esc(p.canonicalUrl)+'</span></td>'+
+          '<td>'+esc(p.type)+'</td><td><span class="pill '+p.status+'">'+p.status+'</span><br><span style="color:var(--muted);font-size:12px;">v'+(p.versionCount||0)+'</span></td>'+
+          '<td>'+esc(String(p.updatedAt||'').slice(0,10))+'</td>'+
+          '<td><div style="display:flex;gap:6px;flex-wrap:wrap;"><button class="btn ghost small" onclick="pgEdit(\''+p.id+'\')">Edit</button>'+
+          '<button class="btn ghost small" onclick="pgVersions(\''+p.id+'\')">Versions</button>'+acts+
+          '<button class="btn warn small" onclick="pgDelete(\''+p.id+'\')">Delete</button></div></td></tr>';
+      }).join(''):'<tr><td colspan="5">No pages yet — create the first draft above.</td></tr>';
+    })
+    .catch(function(e){
+      document.getElementById('pgRows').innerHTML='<tr><td colspan="5">⚠️ '+esc(e.message)+' — marketing/staff accounts only.</td></tr>';
+    });
+}
+function pgStatus(id,status){
+  var msg=document.getElementById('pgMsg');
+  mf('POST','/marketing-os/admin/pages/'+id+'/status',{status:status})
+    .then(function(){ msg.textContent='✅ Moved to '+status+'.'; msg.className='msg ok'; pgLoad(); txLoad(); })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function pgDelete(id){
+  if(!confirm('Delete this page and its version history?')) return;
+  mf('DELETE','/marketing-os/admin/pages/'+id)
+    .then(function(){ pgLoad(); txLoad(); })
+    .catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+}
+
+/* ---------- edit + versions ---------- */
+function pgEdit(id){
+  mf('GET','/marketing-os/admin/pages/'+id).then(function(j){
+    edPage=j.data; edSections=JSON.parse(JSON.stringify(edPage.sections||[]));
+    document.getElementById('edCard').style.display='';
+    document.getElementById('edUrl').textContent=edPage.canonicalUrl+' · '+edPage.status;
+    document.getElementById('edTitle').value=edPage.title||'';
+    document.getElementById('edMeta').value=edPage.metaDescription||'';
+    document.getElementById('edNote').value='';
+    document.getElementById('edMsg').textContent='';
+    edRenderSections();
+    document.getElementById('edCard').scrollIntoView({behavior:'smooth'});
+  }).catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+}
+function edRenderSections(){
+  document.getElementById('edSections').innerHTML=edSections.map(function(b,i){
+    var h='<fieldset><legend>'+esc(b.type)+'</legend>';
+    if('heading' in b) h+='<label>Heading</label><input data-bi="'+i+'" data-bk="heading" value="'+esc(b.heading)+'">';
+    if('body' in b) h+='<label style="margin-top:10px;">Body</label><textarea rows="3" data-bi="'+i+'" data-bk="body">'+esc(b.body)+'</textarea>';
+    if(Array.isArray(b.items)){
+      var val=b.items.map(function(it){ return typeof it==='string'?it:JSON.stringify(it); }).join('\n');
+      h+='<label style="margin-top:10px;">Items (one per line; JSON for Q&amp;A objects)</label><textarea rows="4" data-bi="'+i+'" data-bk="items">'+esc(val)+'</textarea>';
+    }
+    return h+'</fieldset>';
+  }).join('')||'<p class="sub">No sections yet.</p>';
+}
+function edCollect(){
+  Array.prototype.forEach.call(document.querySelectorAll('[data-bi]'),function(el){
+    var i=Number(el.getAttribute('data-bi')), k=el.getAttribute('data-bk');
+    if(k==='items'){
+      edSections[i].items=el.value.split('\n').map(function(line){ line=line.trim(); if(!line) return null;
+        if(line.charAt(0)==='{'){ try{ return JSON.parse(line); }catch(e){ return line; } } return line; }).filter(Boolean);
+    } else { edSections[i][k]=el.value; }
+  });
+}
+function edSave(){
+  if(!edPage) return;
+  edCollect();
+  var msg=document.getElementById('edMsg');
+  var body={title:document.getElementById('edTitle').value.trim(),metaDescription:document.getElementById('edMeta').value.trim()||null,sections:edSections,note:document.getElementById('edNote').value.trim()||undefined};
+  mf('PATCH','/marketing-os/admin/pages/'+edPage.id,body)
+    .then(function(j){ msg.textContent='✅ Saved as version '+(j.data.latestVersion||'')+'.'; msg.className='msg ok'; edPage=j.data; pgLoad(); })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function pgVersions(id){
+  mf('GET','/marketing-os/admin/pages/'+id+'/versions').then(function(j){
+    document.getElementById('verCard').style.display='';
+    document.getElementById('verFor').textContent='Page '+id;
+    var rows=j.data||[];
+    document.getElementById('verList').innerHTML=rows.length?rows.map(function(v){
+      return '<div style="padding:10px 0;border-bottom:1px solid var(--line);"><b>v'+v.version+'</b> · '+esc(v.note||'—')+
+        ' <span style="color:var(--muted);font-size:12.5px;">'+esc(v.createdBy||'')+' · '+esc(String(v.createdAt||'').slice(0,16).replace('T',' '))+' · status at save: '+esc((v.snapshot&&v.snapshot.status)||'')+'</span>'+
+        '<br><span style="color:var(--muted);font-size:13px;">'+esc((v.snapshot&&v.snapshot.title)||'')+'</span></div>';
+    }).join(''):'<p class="sub">No versions yet.</p>';
+    document.getElementById('verCard').scrollIntoView({behavior:'smooth'});
+  }).catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+}
+
+if(tok()){ mf('GET','/marketing-os/admin/taxonomy').then(function(){ mosShow(); }).catch(function(){}); }
+</script>
+
+<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Space Grotesk',Inter,Arial,sans-serif}</style>
+</body>
+</html>
