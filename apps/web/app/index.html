@@ -247,7 +247,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .toast.on{opacity:1; transform:translate(-50%,0);}
 .empty-note{text-align:center; color:var(--mut); font-size:14px; padding:18px 10px; line-height:1.5;}
 </style>
-<script src="/google-tag.js"></script></head>
+<script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
 <div class="page">
 
@@ -306,6 +306,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <label for="laUpEmail">Email</label><input id="laUpEmail" type="email" autocomplete="email" placeholder="you@example.com">
           <label for="laUpPhone">Mobile phone</label><input id="laUpPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
           <label for="laUpPw">Password</label><input id="laUpPw" type="password" autocomplete="new-password" placeholder="At least 10 characters">
+          <div id="laLegal"></div>
           <button class="acct-go" id="laUpBtn" type="submit">Create my account</button>
         </form>
         <div class="acct-err" id="laErr"></div>
@@ -325,6 +326,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
     <script>
     (function(){
       var API='https://top-speed-service-os.vercel.app/api/v1';
+      TSOSLegal.mountSigning('laLegal','la',{buttonId:'laUpBtn'});
       function $(i){return document.getElementById(i)}
       function tok(){ try{ return localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
       function fail(m){ var e=$('laErr'); e.textContent=m; e.style.display='block'; }
@@ -354,8 +356,10 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return fail('Please add a valid email address.');
         if(ph.replace(/\D/g,'').length<7) return fail('Please add your mobile number.');
         if(pw.length<10) return fail('Password needs at least 10 characters.');
+        var acceptance=TSOSLegal.acceptance('la');
+        if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
         var parts=name.split(/\s+/);
-        var body={email:em,password:pw,firstName:parts[0],phone:ph,role:'CUSTOMER'};
+        var body={email:em,password:pw,firstName:parts[0],phone:ph,role:'CUSTOMER',termsAcceptance:acceptance};
         if(parts.length>1) body.lastName=parts.slice(1).join(' ');
         var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
         post('/auth/register',body).then(save).catch(function(x){
@@ -367,6 +371,10 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
       if(tok()){
         fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+tok()}}).then(function(r){ return r.json(); }).then(function(j){
           if(!j.user) return;
+          if(!TSOSLegal.termsComplete(j.terms||j.termsStatus)){
+            TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:function(){ try{ localStorage.removeItem('tsos_cust_token'); localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); },onAccepted:function(){ location.reload(); }});
+            return;
+          }
           var nm=((j.user.firstName||'')+' '+(j.user.lastName||'')).trim()||j.user.email;
           $('laWho').innerHTML='Signed in as <b>'+nm.replace(/</g,'&lt;')+'</b> · '+String(j.user.email||'').replace(/</g,'&lt;');
           $('laOut').style.display='none'; $('laIn').style.display='';
@@ -520,6 +528,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
               <div id="cdNewAcct">
                 <label class="fl">Email</label><input id="cdEmail" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
                 <label class="fl">Create a password (10+ characters)</label><input id="cdPw" type="password" autocomplete="new-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <div id="cdLegal"></div>
                 <p class="sub" style="margin:8px 0 0;">Already have an account? <a href="#" onclick="custToggleLogin(event)">Sign in instead</a></p>
               </div>
               <div id="cdLogin" style="display:none;">
@@ -1034,6 +1043,7 @@ buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack();
    sign-in), posts the booking, and shows the REAL reference code — the
    booking lands straight in the Service Setters queue. */
 var C_API='https://top-speed-service-os.vercel.app/api/v1';
+if(window.TSOSLegal) TSOSLegal.mountSigning('cdLegal','cd',{});
 var cUser=null;
 function cTok(){ try{ return localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function escC(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -1147,15 +1157,23 @@ function confirmBooking(){
   var email=cVal('cdEmail'), pw=cVal('cdPw');
   if(!/.+@.+\..+/.test(email)){ setBtn('Confirm booking',true); return toast('Please add your email to create your account'); }
   if(pw.length<10){ setBtn('Confirm booking',true); return toast('Password needs 10+ characters'); }
+  var acceptance=window.TSOSLegal?TSOSLegal.acceptance('cd'):null;
+  if(!acceptance){ setBtn('Confirm booking',true); return toast('Please review both legal documents, check both agreement boxes, and type your full name as your signature.'); }
   var parts=name.split(' ');
-  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone})})
+  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
     .then(function(j){ setCustSession(j); payload.customer.email=email; doBook(); })
     .catch(function(e){ setBtn('Confirm booking',true); toast(e.message); });
 }
 /* Auto-resume a customer session */
 if(cTok()){
-  cFetch('/auth/me').then(function(j){ custApplyUser(j.user); refreshMyBooking(); }).catch(function(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} });
+  cFetch('/auth/me').then(function(j){
+    if(window.TSOSLegal && !TSOSLegal.termsComplete(j.terms||j.termsStatus)){
+      TSOSLegal.showTermsGate({api:C_API,token:cTok(),onSignOut:custLogout,onAccepted:function(){ location.reload(); }});
+      return;
+    }
+    custApplyUser(j.user); refreshMyBooking();
+  }).catch(function(){ try{ localStorage.removeItem('tsos_cust_token'); }catch(e){} });
 }
 </script>
 

@@ -64,7 +64,7 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.row2{grid-template-columns:1fr}}
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script></head>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
 <div class="topbar">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
@@ -93,7 +93,8 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       </div>
       <label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" placeholder="you@email.com">
       <label for="rgPass">Create a password (10+ characters)</label><input id="rgPass" type="password" placeholder="••••••••••">
-      <div style="margin-top:16px;"><button class="btn blue" onclick="doRegister()">Create account &amp; open the app</button></div>
+      <div id="cpLegal"></div>
+      <div style="margin-top:16px;"><button class="btn blue" id="rgBtn" onclick="doRegister()">Create account &amp; open the app</button></div>
     </div>
   </div>
 
@@ -212,6 +213,7 @@ function showMode(m){
 <script>
 var API='https://top-speed-service-os.vercel.app/api/v1';
 var NEXT_PATH='/connect-pro-app';
+TSOSLegal.mountSigning('cpLegal','cp',{buttonId:'rgBtn'});
 function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function setTok(t){ try{ if(t) localStorage.setItem('tsos_token',t); }catch(e){} }
 function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
@@ -228,7 +230,9 @@ function doLogin(){
 }
 function doRegister(){
   if(document.getElementById('rgPass').value.length<10){ gateErr(new Error('Password must be at least 10 characters.')); return; }
-  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined};
+  var acceptance=TSOSLegal.acceptance('cp');
+  if(!acceptance){ gateErr(new Error('Please review both legal documents, check both agreement boxes, and type your full name as your signature.')); return; }
+  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined,termsAcceptance:acceptance};
   api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); })
     .catch(function(e){ if(e.details&&e.details.fieldErrors&&e.details.fieldErrors.password) e=new Error('Password must be at least 10 characters.'); gateErr(e); });
@@ -243,7 +247,11 @@ function signOut(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} loca
 function boot(){
   if(!tok()){ document.getElementById('gate').style.display=''; return; }
   api('/auth/me').then(function(j){
-    window.CUR=j.user||{};
+    window.CUR=j.user||{}; window.CUR_TERMS=j.terms||j.termsStatus||null;
+    if(!TSOSLegal.termsComplete(window.CUR_TERMS)){
+      TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:signOut,onAccepted:function(){ boot(); }});
+      return;
+    }
     document.getElementById('gate').style.display='none';
     document.getElementById('app').style.display='';
     var w=document.getElementById('who'); if(w) w.textContent=(CUR.email||'');
@@ -362,6 +370,9 @@ body:has(#swPanel.open) #swBtn{opacity:0;visibility:hidden;pointer-events:none}
     <button onclick="swQuick('How much is the diagnostic?')">💲 Diagnostic cost</button>
     <button onclick="swQuick('My fridge is not cooling')">🧊 Fridge help</button>
     <button onclick="swQuick('I want to book')">📅 Book me</button>
+    <button onclick="swAccountAnswer('track')">📍 My job status</button>
+    <button onclick="swAccountAnswer('registry')">🔌 My registry &amp; history</button>
+    <button onclick="swAccountAnswer('offers')">🎁 Offers &amp; referrals</button>
   </div>
   <div class="sw-recs" id="swRecs"></div>
   <div class="sw-body" id="swBody"></div>
@@ -404,6 +415,44 @@ function swAsk(text){
     .catch(function(){ typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 \u2014 or try me again in a moment.'; });
 }
 function swQuick(t){ if(!swOpen) swToggle(); swAsk(t); }
+/* In-app Speedy account answers — read ONLY the signed-in customer's own
+   records through the app API; nothing is guessed or generated. */
+function swAccountAnswer(kind){
+  if(!swOpen) swToggle();
+  if(!tok()){ swAdd('Sign in first and I can pull up your own records right here.',false); return; }
+  if(kind==='track'){
+    swAdd('Show my job status',true);
+    api('/tracking/mine').then(function(j){
+      var d=j.data||{}; var jobs=d.jobs||d.tracking||d.bookings||[];
+      if(!jobs.length){ swAdd('You have no jobs on your account yet. When you book, its live Track My Tech stage shows here.',false); return; }
+      swAdd(jobs.slice(0,3).map(function(x){ return '📍 '+(x.appliance||'Appliance')+' — '+(x.stageLabel8||x.stageLabel||x.status||'Booked')+(x.reference||x.referenceCode? ' · Ref '+(x.reference||x.referenceCode):''); }).join('\n'),false);
+    }).catch(function(e){ swAdd('I could not load your job status just now: '+e.message,false); });
+    return;
+  }
+  if(kind==='registry'){
+    swAdd('Show my registry and history',true);
+    api('/connect/summary').then(function(j){
+      var d=j.data||{}; var apps=d.appliances||d.registeredAppliances||[]; var hist=d.serviceHistory||d.history||[];
+      var lines=['🔌 Registry: '+(apps.length? apps.slice(0,5).map(function(a){ return (a.type||a.applianceType||'Appliance')+(a.brand? ' ('+a.brand+')':''); }).join(', ') : 'no appliances registered yet')+'.'];
+      lines.push('🕘 Service history: '+(hist.length? hist.length+' visit'+(hist.length===1?'':'s')+' on record.' : 'no completed visits on record yet.'));
+      swAdd(lines.join('\n'),false);
+    }).catch(function(e){ swAdd('I could not load your registry just now: '+e.message,false); });
+    return;
+  }
+  swAdd('Show my offers and referrals',true);
+  Promise.all([api('/connect/promotions').catch(function(){ return null; }), api('/referrals/me').catch(function(){ return null; })]).then(function(res){
+    var lines=[];
+    var pd=res[0]&&(res[0].data||{}); var offers=(pd&&(pd.promotions||pd.offers))||[];
+    lines.push(offers.length? '🏷️ Current offers: '+offers.slice(0,3).map(function(o){ return o.title||o.name||o.label; }).filter(Boolean).join('; ') : '🏷️ No published offers are on your account right now.');
+    var rd=res[1]&&(res[1].data||{});
+    if(rd && rd.code){
+      var s=rd.stats||{}; var avail=(rd.credits||[]).filter(function(c){ return c.status==='AVAILABLE'; }).reduce(function(sum,c){ return sum+(c.amountCents||0); },0);
+      var avail2=(s.creditsAvailable&&s.creditsAvailable.totalCents)||avail;
+      lines.push('🎁 Referral code '+rd.code+' — completed referrals: '+((s.completed)||0)+' · credit available: $'+(avail2/100).toFixed(2)+'. Published terms: $25 per completed referral, $35 from the 5th, $50 from the 10th, milestones $100 at 10 and $250 at 25; credits expire 12 months after issue.');
+    } else { lines.push('🎁 Your referral code is issued automatically when your first job completes.'); }
+    swAdd(lines.join('\n'),false);
+  });
+}
 document.getElementById('swForm').addEventListener('submit',function(e){
   e.preventDefault();
   var inp=document.getElementById('swText'); var v=inp.value.trim(); if(!v) return;

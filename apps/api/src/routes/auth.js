@@ -7,6 +7,13 @@ import { PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { signAccessToken } from '../services/tokens.js';
 import { notifyAccountCreated } from '../services/notifications.js';
+import {
+  LEGAL_DOCUMENTS,
+  createUserWithTerms,
+  recordTermsAcceptance,
+  termsStatusForUser,
+  validateTermsAcceptance,
+} from '../services/legalTerms.js';
 
 /**
  * The Service OS login system.
@@ -40,7 +47,20 @@ const registerSchema = z.object({
   // provider's company, so its techs can sign in to the Tech App).
   // Honored only when canGrantStaffRoles(req) — see the handler.
   companyId: z.string().uuid().optional(),
+  // Legal gate: the signup forms send the two document agreements plus
+  // the typed full name used as the signature. Validated for real in
+  // services/legalTerms.js so the error copy stays plain and specific.
+  termsAcceptance: z.object({
+    signatureName: z.string().trim().max(120).optional(),
+    documents: z.array(z.object({
+      document: z.string().trim().max(60),
+      version: z.string().trim().max(20),
+      agreed: z.boolean().optional(),
+    })).max(4).optional(),
+  }).optional(),
 });
+
+const acceptTermsSchema = registerSchema.shape.termsAcceptance;
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email(),
@@ -172,6 +192,30 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       }
       companyId = parsed.data.companyId;
     }
+    // Legal gate: a public signup must arrive WITH a signed acceptance
+    // of both current legal documents — no acceptance, no account.
+    // Administrator-created accounts (staff / provider accounts an admin
+    // provisions) are the one exception: they carry no customer
+    // signature, so their holder signs at first app entry instead,
+    // where the same gate blocks access until POST /auth/accept-terms.
+    const adminCreated = canGrantStaffRoles(req);
+    let validatedTerms = null;
+    if (!adminCreated) {
+      validatedTerms = validateTermsAcceptance(parsed.data.termsAcceptance);
+      if (!validatedTerms.ok) {
+        return res.status(422).json({
+          error: validatedTerms.error,
+          code: 'TERMS_ACCEPTANCE_REQUIRED',
+          documents: LEGAL_DOCUMENTS,
+        });
+      }
+    } else if (parsed.data.termsAcceptance) {
+      validatedTerms = validateTermsAcceptance(parsed.data.termsAcceptance);
+      if (!validatedTerms.ok) {
+        return res.status(422).json({ error: validatedTerms.error, code: 'TERMS_ACCEPTANCE_INVALID', documents: LEGAL_DOCUMENTS });
+      }
+    }
+
     if (await usersRepo.findByEmail(companyId, email)) {
       return res.status(409).json({ error: 'An account with this email already exists' });
     }
@@ -192,7 +236,9 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
 
     let user;
     try {
-      user = await usersRepo.create(draft);
+      // With a signed acceptance, the account and its TermsAcceptance
+      // rows are written in one transaction — never one without the other.
+      user = validatedTerms ? await createUserWithTerms(draft, validatedTerms) : await usersRepo.create(draft);
     } catch (error) {
       // Prisma unique violation on (companyId, email) — a registration race.
       if (error?.code === 'P2002') {
@@ -229,7 +275,8 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       console.error(JSON.stringify({ level: 'error', message: 'account-created notification failed', error: String(error?.message || error) }));
     }
 
-    return res.status(201).json({ user: publicUser(user), ...signAccessToken(user) });
+    const terms = await termsStatusForUser(user.id);
+    return res.status(201).json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
     return next(error);
   }
@@ -264,7 +311,8 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(403).json({ error: 'This account is inactive' });
     }
 
-    return res.json({ user: publicUser(user), ...signAccessToken(user) });
+    const terms = await termsStatusForUser(user.id);
+    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
     return next(error);
   }
@@ -273,9 +321,41 @@ router.post('/auth/login', async (req, res, next) => {
 router.get('/auth/me', authenticate, async (req, res, next) => {
   try {
     const user = await usersRepo.findById(req.user.id);
-    if (user) return res.json({ user: publicUser(user), authMode: req.authMode });
+    if (user) {
+      const terms = await termsStatusForUser(user.id);
+      return res.json({ user: publicUser(user), terms, termsStatus: terms, authMode: req.authMode });
+    }
     // Token is valid but the account is not in the store (e.g. demo context).
-    return res.json({ user: { id: req.user.id, companyId: req.user.companyId, email: req.user.email, roles: req.user.roles }, authMode: req.authMode });
+    const terms = await termsStatusForUser(req.user.id);
+    return res.json({ user: { id: req.user.id, companyId: req.user.companyId, email: req.user.email, roles: req.user.roles }, terms, termsStatus: terms, authMode: req.authMode });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// The current legal documents + versions (public: the signup forms and
+// the /legal page links read their checkbox labels from the same source).
+router.get('/auth/terms', (req, res) => {
+  return res.json({ required: true, documents: LEGAL_DOCUMENTS });
+});
+
+// Existing accounts sign here: records the typed-name acceptance of both
+// current documents and returns the cleared terms status the app gates
+// wait on. A version bump makes this necessary again on its own.
+router.post('/auth/accept-terms', authenticate, async (req, res, next) => {
+  try {
+    const user = await usersRepo.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+    const parsed = acceptTermsSchema.safeParse(req.body?.termsAcceptance ?? req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid terms acceptance', details: parsed.error.flatten() });
+    }
+    const validated = validateTermsAcceptance(parsed.data);
+    if (!validated.ok) {
+      return res.status(422).json({ error: validated.error, code: 'TERMS_ACCEPTANCE_REQUIRED', documents: LEGAL_DOCUMENTS });
+    }
+    const terms = await recordTermsAcceptance(user.id, validated);
+    return res.json({ ok: true, terms, termsStatus: terms });
   } catch (error) {
     return next(error);
   }

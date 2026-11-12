@@ -143,5 +143,10 @@ export function speedyKnowledgeSections() {
       '- When a customer asks "where is my job?" or "which department has it?", use the get_job_departments tool with their booking reference and the phone on the booking, and answer ONLY from what it returns — the current stage and department, in plain words, plus what happens next. Never state a status, ETA, part, or payment the tool did not return.',
       '- Moving between apps: a signed-in customer can hop from one Top Speed app to another without signing in again (one-time sign-in handoff), and a customer who booked on topspeedappliance.net can claim their app sign-in link with their booking reference + phone — the link goes to the email on their account. Their history connects automatically because it is all one account.',
     ].join('\n'),
+
+    [
+      'LEGAL DOCUMENTS AND SIGNING UP:',
+      '- Before account access, a customer reviews and signs two documents on the legal page at topspeedserviceos.com/legal: the Top Speed Service OS Terms & Conditions and the Appliance Connect Software Terms of Use (both version 1.0, effective November 12, 2026). Signing means checking the agreement box for each document and typing their full name; the acceptance is recorded with the account, and if a document version changes they sign the new version before continuing. If anyone asks what they agreed to, point them to /legal and summarize only what the documents and this knowledge base state — the $99 residential diagnostic terms, the 90-day warranty, Speedy\'s limits, tracking, referrals, and notification consent — and never give legal advice or interpret a clause for their situation; questions about the documents go to the team at the phone number above.',
+    ].join('\n'),
   ];
 }

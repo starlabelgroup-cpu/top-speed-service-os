@@ -21,6 +21,10 @@ export const store = {
   // Super Apps sign-in handoffs (skeleton-mode fallback; the database
   // mode uses the AuthHandoff table). Keyed by token SHA-256 hash.
   authHandoffs: new Map(),
+  // Legal gate: signed TermsAcceptance rows in skeleton mode (the
+  // database mode uses the TermsAcceptance table). Plain array of
+  // { id, userId, document, version, signatureName, acceptedAt }.
+  termsAcceptances: [],
   // Connection layer: records that arrive through the universal intake
   // (provider applications and property-manager leads are not bookings).
   providerApplications: new Map(),

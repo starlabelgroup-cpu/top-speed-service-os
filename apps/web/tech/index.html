@@ -61,7 +61,7 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .demo{font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
 body.signedout section.screen,body.signedout .tabs{display:none!important}</style>
-<script src="/google-tag.js"></script></head>
+<script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body class="signedout">
 <div class="phone">
   <header>
@@ -108,6 +108,14 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <!-- MORE -->
     <section class="screen" id="s-more">
       <h2 class="sec">More</h2>
+      <div class="card" id="techSpeedyCard">
+        <h3 style="font-size:14px;color:var(--navy)">💬 Speedy — your in-app assistant</h3>
+        <p class="note" style="margin:4px 0 10px">Ask about your assignments, offers, or today’s jobs. For a job update, Speedy drafts the wording in the job card and <b>you</b> tap “Save to job” — Speedy never submits an update, changes a status, or certifies a repair on its own.</p>
+        <textarea id="techSpeedyQ" rows="2" placeholder="e.g. What jobs do I have today? or: draft an update — replaced the drain pump, tested fine" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:14px;"></textarea>
+        <div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="techSpeedyAsk()">Ask Speedy</button></div>
+        <div class="btnrow" style="margin-top:7px;"><button class="btn no" type="button" onclick="techSpeedyQuick('today')">Today’s jobs</button><button class="btn no" type="button" onclick="techSpeedyQuick('offers')">Open offers</button><button class="btn no" type="button" onclick="techSpeedyQuick('draft')">Draft an update</button></div>
+        <div id="techSpeedyA" style="margin-top:9px;font-size:13.5px;line-height:1.5;"></div>
+      </div>
       <div class="card">
         <div class="row">🗺️ My service areas <span class="r">12 Broward areas</span></div>
         <div class="row">🧰 My appliances <span class="r">All 9 services</span></div>
@@ -177,10 +185,18 @@ function techSignIn(){
 function techSignOut(){ try{ localStorage.removeItem('tsos_tech_token'); }catch(e){} location.reload(); }
 function loadTech(){
   Promise.all([tFetch('/provider/me'),tFetch('/provider/assignments'),tFetch('/auth/me')])
-    .then(function(res){ renderTech(res[0].data.provider,res[1].data.assignments||[],res[2].user); })
+    .then(function(res){
+      var me=res[2]||{};
+      if(window.TSOSLegal && !TSOSLegal.termsComplete(me.terms||me.termsStatus)){
+        TSOSLegal.showTermsGate({api:T_API,token:tTok(),onSignOut:techSignOut,onAccepted:function(){ loadTech(); }});
+        return;
+      }
+      renderTech(res[0].data.provider,res[1].data.assignments||[],me.user);
+    })
     .catch(function(e){ toast('Live jobs unavailable: '+e.message); });
 }
 function renderTech(provider,assignments,user){
+  window._techAssignments=assignments||[]; window._techProvider=provider||null;
   document.body.classList.remove('signedout');
   document.getElementById('techChip').textContent='\u25cf LIVE';
   document.getElementById('techLogin').style.display='none';
@@ -295,6 +311,55 @@ function aiNoteSave(id){
   tFetch('/provider/assignments/'+id+'/ai-note',{method:'POST',body:JSON.stringify({raw:entry.raw,note:st.note,partsUsed:st.parts_used||[],nextStep:st.next_step||null,statusSuggestion:st.status_suggestion||'NONE'})})
     .then(function(){ slot.innerHTML='<p class="note" style="color:#1E9E6A; font-weight:700;">\u2705 Saved to the job record \u2014 it is on the customer history now.</p>'; document.getElementById('ainote-'+id).value=''; })
     .catch(function(e){ slot.innerHTML='<p class="note">\u26a0\ufe0f '+(e.message||'Save failed')+'</p>'; });
+}
+/* ============ SPEEDY TECH ASSISTANT (assignment Q&A + drafting) ============
+   Assignment answers come only from the signed-in tech's loaded
+   assignments. Drafting reuses the per-job ai-note preview above: the
+   tech reviews the structured draft and taps Save — Speedy never saves
+   or submits anything by itself. */
+function techSpeedySay(html){ var box=document.getElementById('techSpeedyA'); if(box) box.innerHTML=html; }
+function techSpeedyList(list){
+  if(!list.length) return '';
+  return list.map(function(a){ var b=a.booking||{}; return '<div style="padding:7px 0;border-bottom:1px dashed var(--line);"><b>'+escT(b.appliance||'Appliance')+'</b> — '+escT(b.issue||'')+'<br><span style="color:var(--soft)">'+escT(b.city||'')+(b.appointment? ' · '+escT(b.appointment.windowLabel||'')+' · '+tDateLabel(b.appointment.date):'')+(b.referenceCode? ' · Ref '+escT(b.referenceCode):'')+'</span></div>'; }).join('');
+}
+function techSpeedyQuick(kind){
+  var all=window._techAssignments||[];
+  var accepted=all.filter(function(a){ return a.status==='ACCEPTED'; });
+  var offers=all.filter(function(a){ return a.status==='APPROVED'; });
+  if(kind==='today'){ techSpeedySay(accepted.length? '<b>Today’s accepted jobs ('+accepted.length+'):</b>'+techSpeedyList(accepted) : 'No accepted jobs yet. Accepted offers land in the Today tab.'); return; }
+  if(kind==='offers'){ techSpeedySay(offers.length? '<b>Open offers ('+offers.length+'):</b>'+techSpeedyList(offers)+'<p class="note">Accept or decline in the Offers tab — those buttons answer dispatch for real.</p>' : 'No open offers right now. Keep availability on — dispatch matches by area, appliance, and rating.'); return; }
+  if(!accepted.length){ techSpeedySay('You need an accepted job before drafting an update. Once you accept an offer, its job card has the “AI job update” box Speedy drafts into.'); return; }
+  go('today');
+  setTimeout(function(){ var first=document.getElementById('ainote-'+accepted[0].id); if(first){ first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus(); } },80);
+  toast('Type the update in the job card — Speedy drafts, you save');
+}
+function techSpeedyAsk(){
+  var input=document.getElementById('techSpeedyQ');
+  var q=(input.value||'').trim();
+  if(q.length<3){ techSpeedySay('Type a question about your assignments, or tap one of the quick buttons.'); return; }
+  var low=q.toLowerCase();
+  if(/today|my jobs|schedule|accepted/.test(low)){ techSpeedyQuick('today'); return; }
+  if(/offer/.test(low)){ techSpeedyQuick('offers'); return; }
+  if(/draft|update|note|write/.test(low)){
+    var text=q.replace(/^(draft|write|update|note)\s*(an\s+update|a\s+note)?\s*[—:-]?\s*/i,'');
+    var accepted=(window._techAssignments||[]).filter(function(a){ return a.status==='ACCEPTED'; });
+    if(!accepted.length){ techSpeedyQuick('draft'); return; }
+    if(text.length<3 || text===q){ techSpeedyQuick('draft'); return; }
+    go('today');
+    setTimeout(function(){
+      var box=document.getElementById('ainote-'+accepted[0].id);
+      if(box){ box.value=text; box.scrollIntoView({behavior:'smooth',block:'center'}); aiNotePreview(accepted[0].id); }
+    },80);
+    techSpeedySay('I put your words in the first accepted job’s update box and asked Speedy to structure them. Review the draft in the job card — nothing saves until you tap “Save to job”.');
+    return;
+  }
+  if(/certif|safe|refund|credential|compliance/.test(low)){ techSpeedySay('That is outside Speedy’s authority: Speedy never certifies repair safety, issues refunds, overrides credentials, or changes compliance status. A human professional or Service Setters handle those — call dispatch at 954-931-7997.'); return; }
+  if(/pay|payout|earn/.test(low)){ techSpeedySay('Payout amounts follow your provider agreement — Speedy does not state or change them. Your Week tab shows job counts; the office can confirm anything about your statement.'); return; }
+  techSpeedySay('Speedy is thinking…');
+  fetch(T_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:[]})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Speedy unavailable'); return j; }); })
+    .then(function(j){ techSpeedySay(escT((j.data&&j.data.reply)||'Speedy had no answer for that one.')); })
+    .catch(function(e){ techSpeedySay('Speedy could not answer just now ('+escT(e.message)+'). For assignment questions, the quick buttons above read your live jobs directly.'); });
 }
 </script>
 

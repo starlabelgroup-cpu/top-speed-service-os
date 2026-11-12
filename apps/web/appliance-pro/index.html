@@ -64,7 +64,7 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:560px){.row2{grid-template-columns:1fr}}
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script></head>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
 <div class="topbar">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
@@ -94,7 +94,8 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       </div>
       <label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" placeholder="you@business.com">
       <label for="rgPass">Create a password (10+ characters)</label><input id="rgPass" type="password" placeholder="••••••••••">
-      <div style="margin-top:16px;"><button class="btn blue" onclick="doRegister()">Create account &amp; open the app</button></div>
+      <div id="apLegal"></div>
+      <div style="margin-top:16px;"><button class="btn blue" id="rgBtn" onclick="doRegister()">Create account &amp; open the app</button></div>
     </div>
   </div>
 
@@ -208,6 +209,7 @@ try{ window.BIZ=localStorage.getItem('ap_business')||undefined; if(window.BIZ){ 
 <script>
 var API='https://top-speed-service-os.vercel.app/api/v1';
 var NEXT_PATH='/appliance-pro';
+TSOSLegal.mountSigning('apLegal','ap',{buttonId:'rgBtn'});
 function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function setTok(t){ try{ if(t) localStorage.setItem('tsos_token',t); }catch(e){} }
 function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
@@ -224,7 +226,9 @@ function doLogin(){
 }
 function doRegister(){
   if(document.getElementById('rgPass').value.length<10){ gateErr(new Error('Password must be at least 10 characters.')); return; }
-  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined};
+  var acceptance=TSOSLegal.acceptance('ap');
+  if(!acceptance){ gateErr(new Error('Please review both legal documents, check both agreement boxes, and type your full name as your signature.')); return; }
+  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined,termsAcceptance:acceptance};
   api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); })
     .catch(function(e){ if(e.details&&e.details.fieldErrors&&e.details.fieldErrors.password) e=new Error('Password must be at least 10 characters.'); gateErr(e); });
@@ -239,7 +243,11 @@ function signOut(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} loca
 function boot(){
   if(!tok()){ document.getElementById('gate').style.display=''; return; }
   api('/auth/me').then(function(j){
-    window.CUR=j.user||{};
+    window.CUR=j.user||{}; window.CUR_TERMS=j.terms||j.termsStatus||null;
+    if(!TSOSLegal.termsComplete(window.CUR_TERMS)){
+      TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:signOut,onAccepted:function(){ boot(); }});
+      return;
+    }
     document.getElementById('gate').style.display='none';
     document.getElementById('app').style.display='';
     var w=document.getElementById('who'); if(w) w.textContent=(CUR.email||'');
@@ -352,9 +360,11 @@ body:has(#swPanel.open) #swBtn{opacity:0;visibility:hidden;pointer-events:none}
     <button onclick="swToggle()" aria-label="Close chat">×</button>
   </div>
   <div class="sw-quick">
-    <button onclick="swQuick('How much is the diagnostic?')">💲 Diagnostic cost</button>
+    <button onclick="swQuick('How does commercial pricing work?')">💲 Commercial pricing</button>
     <button onclick="swQuick('My fridge is not cooling')">🧊 Fridge help</button>
-    <button onclick="swQuick('I want to book')">📅 Book me</button>
+    <button onclick="swBulkFocus()">📋 Draft a bulk request</button>
+    <button onclick="swAccountAnswer('registry')">🔧 My equipment registry</button>
+    <button onclick="swAccountAnswer('activity')">🔔 My activity summary</button>
   </div>
   <div class="sw-recs" id="swRecs"></div>
   <div class="sw-body" id="swBody"></div>
@@ -371,7 +381,7 @@ function swEsc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
 function swToggle(){
   swOpen=!swOpen;
   document.getElementById('swPanel').classList.toggle('open',swOpen);
-  if(swOpen&&!swGreeted){ swGreeted=true; swBot('Hey, I\u2019m Speedy 🏎️ — Top Speed\u2019s assistant. Ask me about a repair, the $99 diagnostic, or type "book" and I\u2019ll walk you to an appointment.'); }
+  if(swOpen&&!swGreeted){ swGreeted=true; swBot('Hey, I\u2019m Speedy 🏎️ — your commercial account assistant. Ask me about equipment, service requests, or your account. Commercial service is custom-quoted under your account terms — use “Draft a bulk request” and I\u2019ll help you prepare it for review before anything is sent.'); }
   if(swOpen){ swLoadRecs(); setTimeout(function(){ var i=document.getElementById('swText'); if(i) i.focus(); },80); }
 }
 function swAdd(text,me){
@@ -397,13 +407,48 @@ function swAsk(text){
     .catch(function(){ typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 \u2014 or try me again in a moment.'; });
 }
 function swQuick(t){ if(!swOpen) swToggle(); swAsk(t); }
+/* Commercial in-app Speedy: drafting happens in the New service requests
+   section, where the account reviews every sorted line before sending.
+   The chat panel itself never submits a commercial request. */
+function swBulkFocus(){
+  swAdd('Use the New service requests section in this app: paste one line per unit or location, tap “Sort with Speedy”, review every work order, and only then send it to Service Setters. Pricing follows your custom-quoted account terms.',false);
+  setTimeout(function(){
+    if(swOpen) swToggle();
+    var card=document.getElementById('secBulk'); if(card) card.scrollIntoView({behavior:'smooth',block:'start'});
+    var text=document.getElementById('bkText'); if(text) text.focus();
+  },650);
+}
+function swAccountAnswer(kind){
+  if(!swOpen) swToggle();
+  if(!tok()){ swAdd('Sign in first and I can pull up your commercial account records right here.',false); return; }
+  if(kind==='registry'){
+    swAdd('Show my equipment registry',true);
+    api('/connect/commercial').then(function(j){
+      var d=j.data||{};
+      if(!d.account){ swAdd('No commercial account file is linked to this sign-in yet. When the office opens your account, your facilities and equipment registry appear here.',false); return; }
+      var units=(d.equipment||d.units||[]).slice(0,5).map(function(x){ return (x.type||'Unit')+(x.brand? ' ('+x.brand+')':'')+(x.assetTag? ' · '+x.assetTag:''); });
+      swAdd('🔧 '+(d.account.companyName||'Your account')+' — '+(d.equipmentCount||units.length||0)+' units registered'+(units.length? ': '+units.join(', ') : '')+'. Open work orders: '+((d.workOrders||[]).filter(function(w){ return w.status==='OPEN'; }).length)+'.',false);
+    }).catch(function(e){ swAdd('I could not load your equipment registry just now: '+e.message,false); });
+    return;
+  }
+  swAdd('Summarize my recent activity',true);
+  api('/connect/activity').then(function(j){
+    var events=(j.data&&j.data.events)||[];
+    if(!events.length){ swAdd('No account activity yet. Bookings, dispatch updates, field service, parts, billing, and referrals will summarize here as they happen.',false); return; }
+    swAdd(events.slice(0,4).map(function(e){ return '🔔 '+(e.department||'Update')+' — '+(e.title||'')+(e.detail? ': '+e.detail:''); }).join('\n'),false);
+  }).catch(function(e){ swAdd('I could not load your activity just now: '+e.message,false); });
+}
 document.getElementById('swForm').addEventListener('submit',function(e){
   e.preventDefault();
   var inp=document.getElementById('swText'); var v=inp.value.trim(); if(!v) return;
   inp.value=''; swAsk(v);
 });
 function swMaybeBook(){
-  if(window._swBooked) return;
+  // Commercial audience guard: this panel NEVER builds the residential
+  // booking card or calls the residential booking endpoint. Commercial
+  // requests are drafted in the New service requests section, reviewed
+  // line by line, and priced under the account's custom-quoted terms.
+  return;
   var text=swHistory.map(function(h){return (h.role==='user'?'Customer: ':'Speedy: ')+h.content;}).join('\n');
   fetch(SW_API+'/speedy/extract-booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})})
     .then(function(r){return r.json();})
@@ -413,12 +458,14 @@ function swMaybeBook(){
       window._swBookShown=true; window._swBook=d;
       var rows=[['Name',d.name],['Phone',d.phone],['City',d.city],['ZIP',d.zip],['Appliance',d.appliance],['Problem',d.issue],['Window',d.preferred_window||'First available']];
       var card=document.createElement('div'); card.className='sw-msg bot'; card.id='swBookCard';
-      card.innerHTML='<b>Ready to book \u2014 does this look right?</b><br>'+rows.map(function(r){return r[0]+': <b>'+swEsc(r[1])+'</b>';}).join('<br>')+'<br><span style="font-size:12.5px;">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button onclick="swBookIt(this)" style="margin-top:8px; background:#0B7CFF; color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; padding:9px 16px; cursor:pointer;">\u2713 Book my visit</button>';
+      card.innerHTML='<b>Ready to book \u2014 does this look right?</b><br>'+rows.map(function(r){return r[0]+': <b>'+swEsc(r[1])+'</b>';}).join('<br>')+'<br><span style="font-size:12.5px;">Commercial requests are custom-quoted under your account terms and confirmed by a Service Setter.</span>';
       var body=document.getElementById('swBody'); body.appendChild(card); body.scrollTop=body.scrollHeight;
     })
     .catch(function(){});
 }
 function swBookIt(btn){
+  // Disabled for the commercial audience — see swMaybeBook above.
+  swBulkFocus(); return;
   var d=window._swBook; if(!d) return;
   btn.disabled=true; btn.textContent='Booking\u2026';
   fetch(SW_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined})})
@@ -518,8 +565,8 @@ function swReceipt(channel){ var ref=window._swRef, d=window._swBook; if(!ref||!
    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
    fetch(SW_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Speedy chat'})})
    .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
-   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; swAdd(rep?('📸 Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'):'📸 I received your photo but could not read it clearly \u2014 a technician will review it in person. Want me to book the $99 diagnostic visit?',false); })
-   .catch(function(){ swAdd('📸 Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.',false); });
+   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; swAdd(rep?('📸 Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe. Add it to a service request in the app — you review every line before it sends, under your custom-quoted account terms.'):'📸 I received your photo but could not read it clearly \u2014 a technician will review it in person. Add it to a service request in the app — you review every line before it sends, under your custom-quoted account terms.',false); })
+   .catch(function(){ swAdd('📸 Speedy could not read that photo just now \u2014 add it to a service request in the app and the technician will diagnose on site, or call 954-931-7997.',false); });
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
 })();

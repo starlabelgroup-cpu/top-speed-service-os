@@ -64,6 +64,8 @@
     <input type="password" id="fPass" autocomplete="new-password" placeholder="Create a secure password">
     <p class="hint">At least 10 characters. This one account signs you in everywhere — booking, tracking, your garage, and the apps.</p>
 
+    <div id="suLegal"></div>
+
     <div class="benefits">
       <b>✦ Your account benefits</b>
       <p>Register your appliances, request repairs, track appointments, access your service history, and receive maintenance reminders.</p>
@@ -78,9 +80,11 @@
   <p class="fine">One Top Speed account is your identity across the Service OS — the same sign-in works for booking, Track My Tech, My Appliances, and both apps.</p>
 </div>
 
+<script src="/legal-gate.js"></script>
 <script>
 (function(){
   var API='https://top-speed-service-os.vercel.app/api/v1';
+  TSOSLegal.mountSigning('suLegal','su',{buttonId:'createBtn'});
   var $=function(id){return document.getElementById(id)};
   var DEST={homeowner:'/garage',business:'/appliance-pro',pm:'/connect-pro-app'};
 
@@ -101,8 +105,10 @@
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Please add a valid email address — it is your sign-in.');
     if(phone.replace(/\D/g,'').length<7) return fail('Please add your phone number — booking confirmations and updates go there.');
     if(pass.length<10) return fail('Password needs at least 10 characters.');
+    var acceptance=TSOSLegal.acceptance('su');
+    if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
     var parts=name.split(/\s+/);
-    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER'};
+    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',termsAcceptance:acceptance};
     if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
     var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
     fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
@@ -120,7 +126,7 @@
       location.href=DEST[type];
     })
     .catch(function(ex){ fail(ex.message); })
-    .finally(function(){ btn.disabled=false; btn.textContent='Create Account'; });
+    .finally(function(){ btn.disabled=!TSOSLegal.complete('su'); btn.textContent='Create Account'; });
   });
 })();
 </script>

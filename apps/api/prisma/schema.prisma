@@ -124,6 +124,8 @@ model User {
 
   authHandoffs AuthHandoff[]
 
+  termsAcceptances TermsAcceptance[]
+
   @@unique([companyId, email])
   @@index([companyId])
 }
@@ -597,6 +599,26 @@ model AuthHandoff {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Legal gate (2026-11-12): one row per document version a user has
+// signed with a typed full name before account access. Current versions
+// live in src/services/legalTerms.js (both documents at v1.0, effective
+// 2026-11-12); a version bump makes old rows stop satisfying the gate,
+// so re-acceptance is enforced by the status check, not by deleting rows.
+model TermsAcceptance {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  document      String
+  version       String
+  signatureName String
+  acceptedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, document, version])
+  @@index([userId])
 }
 
 // ─── Top Speed Marketing OS (Phase 1 Foundation, 2026-11-11) ───

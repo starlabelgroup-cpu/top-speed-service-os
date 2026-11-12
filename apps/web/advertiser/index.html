@@ -44,7 +44,7 @@ input,select,textarea{width:100%;padding:10px 12px;border:1px solid #b9cbe4;bord
 footer{background:#04122e;color:#9db6d8;padding:28px 20px;text-align:center;font-size:14px}
 footer strong{color:#fff}
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script></head>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
 <header>
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
@@ -78,7 +78,8 @@ footer strong{color:#fff}
         <label>Email</label><input id="suEmail" type="email" autocomplete="email">
         <label>Phone (optional)</label><input id="suPhone" autocomplete="tel">
         <label>Password (10+ characters)</label><input id="suPass" type="password" autocomplete="new-password">
-        <div style="margin-top:14px"><button class="btn red" onclick="advSignup()">Create my account</button></div>
+        <div id="adLegal"></div>
+        <div style="margin-top:14px"><button class="btn red" id="adBtn" onclick="advSignup()">Create my account</button></div>
       </div>
     </div>
     <div id="authMsg" class="msg"></div>
@@ -152,6 +153,7 @@ footer strong{color:#fff}
 
 <script>
 var API='https://top-speed-service-os.vercel.app/api/v1';
+TSOSLegal.mountSigning('adLegal','ad',{buttonId:'adBtn'});
 var SERVICES=['Refrigerator','Washer','Dryer','Oven / Range','Dishwasher','Freezer / Ice Maker','Microwave','Garbage Disposal','Installation'];
 var CITIES=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
 function tok(){ try{return localStorage.getItem('tsos_adv_token')||'';}catch(e){return '';} }
@@ -166,12 +168,16 @@ function msg(id,text,ok){ var el=document.getElementById(id); el.textContent=tex
 function advLogin(){ var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPass').value;
   if(!email||!pw) return msg('authMsg','Enter your email and password.');
   api('/auth/login',{method:'POST',body:JSON.stringify({email:email,password:pw})}).then(function(x){
-    if(x.status===200&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken); showConsole(x.j.user); }
+    if(x.status===200&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken);
+      if(!TSOSLegal.termsComplete(x.j.terms||x.j.termsStatus)){ TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:advLogout,onAccepted:function(){ showConsole(x.j.user); }}); return; }
+      showConsole(x.j.user); }
     else msg('authMsg',(x.j&&x.j.error)||'Sign-in failed.'); }); }
 function advSignup(){ var role=document.getElementById('suRole').value;
+  var acceptance=TSOSLegal.acceptance('ad');
+  if(!acceptance) return msg('authMsg','Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
   var body={email:document.getElementById('suEmail').value.trim(),password:document.getElementById('suPass').value,
     firstName:document.getElementById('suFirst').value.trim(),lastName:document.getElementById('suLast').value.trim(),
-    phone:document.getElementById('suPhone').value.trim()||undefined,role:role};
+    phone:document.getElementById('suPhone').value.trim()||undefined,role:role,termsAcceptance:acceptance};
   if(!body.email||!body.password||!body.firstName) return msg('authMsg','First name, email, and a 10+ character password are required.');
   if(body.password.length<10) return msg('authMsg','Password must be at least 10 characters.');
   api('/auth/register',{method:'POST',body:JSON.stringify(body)}).then(function(x){
@@ -246,7 +252,7 @@ function advScore(){ var total=0,next=null;
   document.getElementById('scoreNum').textContent=total+'%';
   document.getElementById('scoreNext').innerHTML='<b>Next fix:</b> '+(next?next:'all ten live — this account compounds. Keep the weekly pacing check sacred.');
 }
-if(tok()){ api('/auth/me').then(function(x){ if(x.status===200) showConsole(x.j.user||x.j.data); else setTok(''); }); }
+if(tok()){ api('/auth/me').then(function(x){ if(x.status===200){ if(!TSOSLegal.termsComplete(x.j.terms||x.j.termsStatus)){ TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:advLogout,onAccepted:function(){ showConsole(x.j.user||x.j.data); }}); return; } showConsole(x.j.user||x.j.data); } else setTok(''); }); }
 </script>
 
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->

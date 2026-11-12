@@ -62,7 +62,7 @@
   footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
   footer a{color:#fff;font-weight:600;text-decoration:none}
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script></head>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
 <header>
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
@@ -96,6 +96,7 @@
         <div><label for="rPhone">Phone</label><input id="rPhone" type="tel" placeholder="(954) 000-0000"></div>
       </div>
       <label for="rPass">Password (10+ characters)</label><input id="rPass" type="password" minlength="10" required>
+      <div id="grLegal"></div>
       <button class="btn btn-red" id="registerBtn" type="submit" style="width:100%;margin-top:16px">Create my account</button>
       <div class="err" id="registerErr"></div>
     </form>
@@ -162,6 +163,7 @@
 const API = 'https://top-speed-service-os.vercel.app/api/v1';
 const token = () => localStorage.getItem('tsos_token');
 const $ = (id) => document.getElementById(id);
+TSOSLegal.mountSigning('grLegal','gr',{buttonId:'registerBtn'});
 
 async function api(path, opts = {}) {
   const res = await fetch(API + path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token(), ...(opts.headers || {}) } });
@@ -172,6 +174,10 @@ async function api(path, opts = {}) {
 
 async function loadGarage() {
   const me = await fetch(API + '/auth/me', { headers: { Authorization: 'Bearer ' + token() } }).then((r) => r.json());
+  if (!TSOSLegal.termsComplete(me.terms || me.termsStatus)) {
+    TSOSLegal.showTermsGate({ api: API, token: token(), onSignOut: () => { localStorage.removeItem('tsos_token'); location.reload(); }, onAccepted: () => { loadGarage(); } });
+    return;
+  }
   $('who').textContent = 'Signed in as ' + ((me.user && me.user.email) || 'your account');
   const [appliances, summary, promos] = await Promise.all([
     api('/connect/appliances'), api('/connect/summary'), api('/connect/promotions'),
@@ -230,9 +236,11 @@ $('registerForm').addEventListener('submit', async (e) => {
   const err = $('registerErr'), btn = $('registerBtn');
   err.style.display = 'none';
   if ($('rPass').value.length < 10) { err.textContent = 'Password must be at least 10 characters.'; err.style.display = 'block'; return; }
+  const acceptance = TSOSLegal.acceptance('gr');
+  if (!acceptance) { err.textContent = 'Please review both legal documents, check both agreement boxes, and type your full name as your signature.'; err.style.display = 'block'; return; }
   btn.disabled = true;
   try {
-    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value }) });
+    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value, termsAcceptance: acceptance }) });
     const body = await res.json();
     if (!res.ok || !body.token) {
       let m = body.error || 'Registration failed';
