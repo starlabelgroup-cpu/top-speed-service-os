@@ -8,6 +8,22 @@ import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { notifyBookingConfirmation, notifyNewBooking, notifySubmission } from '../services/notifications.js';
 import { drainOutbox, providersStatus } from '../services/senders.js';
+import { sweepReferralCreditExpiry } from '../services/referrals.js';
+
+/**
+ * Referral credit expiry enforcement rides the outbox drains (Phase 2):
+ * every staff drain and every cron drain first lapses stale referral
+ * credits and queues their expiry/reminder notices, so the drain that
+ * follows delivers them. A sweep failure never blocks the drain.
+ */
+async function sweepReferralExpiryQuietly() {
+  try {
+    return await sweepReferralCreditExpiry();
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'referral expiry sweep failed', error: String(error?.message || error) }));
+    return null;
+  }
+}
 
 const router = Router();
 
@@ -369,8 +385,9 @@ router.post(
   requireCompany,
   requireRole(...STAFF_ROLES),
   async (req, res) => {
+    const referralExpiry = await sweepReferralExpiryQuietly();
     const summary = await drainOutbox();
-    return res.json({ data: { ...summary, providers: providersStatus() } });
+    return res.json({ data: { ...summary, referralExpiry, providers: providersStatus() } });
   },
 );
 
@@ -385,8 +402,9 @@ router.get('/notifications/cron-drain', async (req, res) => {
   if (req.get('authorization') !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'Invalid cron secret' });
   }
+  const referralExpiry = await sweepReferralExpiryQuietly();
   const summary = await drainOutbox();
-  return res.json({ data: summary });
+  return res.json({ data: { ...summary, referralExpiry } });
 });
 
 export default router;

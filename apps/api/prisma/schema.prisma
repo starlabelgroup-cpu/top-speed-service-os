@@ -282,6 +282,11 @@ model Referral {
   id                      String   @id @default(uuid()) @db.Uuid
   companyId               String   @db.Uuid
   code                    String
+  // Referral track (Phase 2, 2026-11-12): CUSTOMER for household
+  // referrers, PARTNER for business / property-manager referrers (codes
+  // issued from commercial bookings, or staff-flagged in Book OS). One
+  // program, one settings row — the track only separates reporting.
+  track                   String   @default("CUSTOMER")
   customerId              String?  @db.Uuid
   customerName            String?
   customerPhone           String?
@@ -319,6 +324,10 @@ model ReferralJourney {
   refereeEmail       String?
   bookingId          String?   @db.Uuid
   bookingReference   String?
+  // Track snapshot copied from the referral code when the journey is
+  // created (Phase 2) — staff reporting filters on this, so re-flagging
+  // a code never rewrites history.
+  track              String    @default("CUSTOMER")
   status             String    @default("INVITED")
   rewardAmountCents  Int?
   tierSnapshot       String?
@@ -335,6 +344,7 @@ model ReferralJourney {
   @@index([companyId, code])
   @@index([companyId, status])
   @@index([companyId, refereePhone])
+  @@index([companyId, track, status])
 }
 
 // A reward credit issued to a referrer after staff approval. The ledger

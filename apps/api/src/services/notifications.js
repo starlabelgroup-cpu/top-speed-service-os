@@ -46,6 +46,8 @@ export const NOTIFICATION_TEMPLATES = {
   REFERRAL_BOOKED: 'REFERRAL_BOOKED',
   REFERRAL_COMPLETED: 'REFERRAL_COMPLETED',
   REFERRAL_REWARD_APPROVED: 'REFERRAL_REWARD_APPROVED',
+  REFERRAL_CREDIT_EXPIRING: 'REFERRAL_CREDIT_EXPIRING',
+  REFERRAL_CREDIT_EXPIRED: 'REFERRAL_CREDIT_EXPIRED',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'COMMERCIAL_WORK_ORDER_RECEIVED',
   REFUND_REQUEST: 'REFUND_REQUEST',
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
@@ -658,6 +660,73 @@ export function notifyReferralRewardApproved(referral, journey, credit, bonusCre
           `Top Speed Appliance: your referral reward credit of ${formatCents(credit.amountCents)} has been issued ` +
           `for ${journey.refereeName || 'your friend'}'s completed service.${bonusLine}${expiryLine} ` +
           `Mention it when you book your next service and we'll apply it.`,
+      },
+    }),
+  );
+}
+
+/** Contact channels for a credit's owner, resolved by customer id. */
+function creditOwnerChannels(credit) {
+  const customer = credit?.customerId ? store.customers.get(credit.customerId) : null;
+  const channels = [];
+  if (customer?.phone) channels.push({ channel: 'sms', to: customer.phone });
+  if (customer?.email) channels.push({ channel: 'email', to: customer.email });
+  return { customer, channels };
+}
+
+/**
+ * Pre-expiry reminder (Phase 2): an AVAILABLE credit inside its final
+ * 30 days. The eventKey is per credit + channel, and queueNotification
+ * dedupes on it — the reminder is queued exactly once, however often
+ * the expiry sweep runs. The amount and date come from the credit
+ * record itself (a real issued ledger fact).
+ */
+export function notifyReferralCreditExpiring(credit, source = null) {
+  const { customer, channels } = creditOwnerChannels(credit);
+  if (!channels.length) return [];
+  const expiryDate = String(credit.expiresAt || '').slice(0, 10);
+  return channels.map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_CREDIT_EXPIRING,
+      to,
+      source,
+      eventKey: `referral-credit:${credit.id}:expiring:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        creditId: credit.id,
+        customerName: customer?.name || null,
+        amountCents: credit.amountCents,
+        expiresAt: credit.expiresAt || null,
+        message:
+          `Top Speed Appliance: a quick heads-up — your referral reward credit of ${formatCents(credit.amountCents)} ` +
+          `expires on ${expiryDate}. Book your next service before then and mention the credit so we can apply it.`,
+      },
+    }),
+  );
+}
+
+/** Sent when the expiry sweep lapses an AVAILABLE credit (Phase 2). */
+export function notifyReferralCreditExpired(credit, source = null) {
+  const { customer, channels } = creditOwnerChannels(credit);
+  if (!channels.length) return [];
+  const expiryDate = String(credit.expiresAt || '').slice(0, 10);
+  return channels.map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REFERRAL_CREDIT_EXPIRED,
+      to,
+      source,
+      eventKey: `referral-credit:${credit.id}:expired:${channel}`,
+      eventType: 'REFERRAL',
+      payload: {
+        creditId: credit.id,
+        customerName: customer?.name || null,
+        amountCents: credit.amountCents,
+        expiresAt: credit.expiresAt || null,
+        message:
+          `Top Speed Appliance: your referral reward credit of ${formatCents(credit.amountCents)} expired on ${expiryDate} ` +
+          `before it was used. Your referral code still works — friends you send us can still earn you new credit.`,
       },
     }),
   );

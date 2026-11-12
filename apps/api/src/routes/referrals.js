@@ -7,11 +7,15 @@ import {
   approveReward,
   createInvite,
   getCustomerDashboard,
+  getLeaderboard,
   getProgramSettings,
+  getReferralFunnel,
   recordClick,
   redeemCredit,
   rejectReward,
   resolveCode,
+  setReferralTrack,
+  sweepReferralCreditExpiry,
   updateProgramSettings,
 } from '../services/referrals.js';
 
@@ -80,8 +84,29 @@ function customerRecordForUser(user) {
 }
 
 router.get('/referrals/me', authenticate, (req, res) => {
+  // Lazy expiry enforcement: a dashboard read is a natural moment to
+  // lapse stale credits (the drains sweep too). Fire-and-forget — the
+  // read never waits on it.
+  void sweepReferralCreditExpiry().catch((error) => {
+    console.error(JSON.stringify({ level: 'error', message: 'referral expiry sweep failed', error: String(error?.message || error) }));
+  });
   const customer = customerRecordForUser(req.user);
   return res.json({ data: getCustomerDashboard(customer) });
+});
+
+/* ------------------------------------------------------------------ */
+/* Public: leaderboard (Phase 2)                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Top referrers by completed referrals. The service masks display
+ * names to first name + last initial and returns counts only — no
+ * amounts, no referee data. An empty program returns an empty list
+ * (the /refer page renders its "program just launched" state).
+ */
+router.get('/referrals/leaderboard', (req, res) => {
+  const limit = Number.parseInt(String(req.query.limit || '10'), 10);
+  return res.json({ data: getLeaderboard(Number.isFinite(limit) ? limit : 10) });
 });
 
 /* ------------------------------------------------------------------ */
@@ -140,10 +165,15 @@ router.post('/referrals/invite', async (req, res) => {
 /* ------------------------------------------------------------------ */
 
 router.get('/referrals/admin/queue', ...staffOnly, (req, res) => {
+  void sweepReferralCreditExpiry().catch((error) => {
+    console.error(JSON.stringify({ level: 'error', message: 'referral expiry sweep failed', error: String(error?.message || error) }));
+  });
   const status = String(req.query.status || 'REWARD_PENDING_APPROVAL').trim().toUpperCase();
+  const track = String(req.query.track || 'ALL').trim().toUpperCase();
   const journeys = store.referralJourneys
     .filter((journey) => companyScoped(req, journey))
     .filter((journey) => status === 'ALL' || journey.status === status)
+    .filter((journey) => track === 'ALL' || (journey.track || 'CUSTOMER') === track)
     .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
     .map((journey) => {
       const referral = [...store.referrals.values()].find((candidate) => candidate.code === journey.code) || null;
@@ -163,7 +193,47 @@ router.get('/referrals/admin/queue', ...staffOnly, (req, res) => {
   }
   counts.creditsAvailable = credits.filter((credit) => credit.status === 'AVAILABLE').length;
   counts.creditsRedeemed = credits.filter((credit) => credit.status === 'REDEEMED').length;
-  return res.json({ data: { status, journeys, credits, counts } });
+  counts.creditsExpired = credits.filter((credit) => credit.status === 'EXPIRED').length;
+  return res.json({ data: { status, track, journeys, credits, counts } });
+});
+
+/* ------------------------------------------------------------------ */
+/* Staff: funnel aggregates + partner-track flag (Phase 2)             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Referral funnel for Marketing OS / flywheel reporting — codes,
+ * clicks, invites, attributed bookings, completions, credit ledger,
+ * split by track (all / customer / partner). Real records only.
+ */
+router.get('/referrals/admin/funnel', ...staffOnly, (req, res) => {
+  return res.json({ data: getReferralFunnel(req.companyId) });
+});
+
+const trackSchema = z.object({
+  track: z.enum(['CUSTOMER', 'PARTNER']),
+});
+
+/**
+ * Flag a referral code as a partner-track (or back to customer-track)
+ * code. New journeys inherit the code's track; existing journeys keep
+ * the snapshot they were created with.
+ */
+router.post('/referrals/admin/codes/:code/track', ...staffOnly, async (req, res) => {
+  const parsed = trackSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid track', details: parsed.error.flatten() });
+  }
+  try {
+    const existing = resolveCode(req.params.code);
+    if (!existing || !companyScoped(req, existing)) {
+      return res.status(404).json({ error: 'Referral code not found' });
+    }
+    const referral = await setReferralTrack(req.params.code, parsed.data.track, req.user);
+    return res.json({ data: { code: referral.code, track: referral.track || 'CUSTOMER' } });
+  } catch (error) {
+    return sendServiceError(res, error);
+  }
 });
 
 const approveSchema = z.object({

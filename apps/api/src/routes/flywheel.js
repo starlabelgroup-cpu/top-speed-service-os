@@ -9,6 +9,7 @@ import { persistReferral } from '../db/flywheelRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { NOTIFICATION_TEMPLATES, notifyBookingConfirmation, notifyNewBooking } from '../services/notifications.js';
 import { findReferralByCode } from '../services/flywheel.js';
+import { getReferralFunnel } from '../services/referrals.js';
 
 const router = Router();
 
@@ -48,6 +49,7 @@ router.get('/flywheel/referrals', ...staffOnly, (req, res) => {
     .sort((a, b) => a.issuedAt.localeCompare(b.issuedAt))
     .map((referral) => ({
       code: referral.code,
+      track: referral.track || 'CUSTOMER',
       status: referral.status,
       customerName: referral.customerName,
       issuedFromReferenceCode: referral.issuedFromReferenceCode,
@@ -203,6 +205,7 @@ router.get('/flywheel/metrics', ...staffOnly, (req, res) => {
     (entry) => entry.template === NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
   ).length;
   const codesIssued = store.referrals.size;
+  const referralFunnel = getReferralFunnel();
   const redemptions = [...store.referrals.values()].reduce((sum, referral) => sum + referral.redemptions.length, 0);
   // Real PWA installs only (download-page views are tracked separately
   // in GET /app/installs and never counted as installs).
@@ -214,7 +217,11 @@ router.get('/flywheel/metrics', ...staffOnly, (req, res) => {
       book: { totalBookings: bookings.length },
       serve: { completed: bookings.filter((booking) => booking.status === 'COMPLETED').length },
       review: { requestsQueued: reviewRequests },
-      refer: { codesIssued, redemptions },
+      // Phase 2: the ApplianceReferral program funnel (codes, clicks,
+      // invites, attributed bookings, completions, credit ledger),
+      // split by customer / partner track — same live records the
+      // /referrals/admin/funnel endpoint reports.
+      refer: { codesIssued, redemptions, program: referralFunnel.all, programByTrack: { customer: referralFunnel.customer, partner: referralFunnel.partner } },
       appInstalls,
       generatedAt: new Date().toISOString(),
     },

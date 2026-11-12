@@ -35,8 +35,16 @@ export function issueReferralForBooking(booking, source = null) {
     }
   }
 
+  // Partner track (Phase 2): a code issued from a commercial booking —
+  // a business account or a property manager's work — belongs to the
+  // PARTNER track. Same program, same settings; the track only
+  // separates reporting. Staff can also flag a code either way in
+  // Book OS (POST /referrals/admin/codes/:code/track).
+  const track = booking.source === 'COMMERCIAL' || booking.commercialAccountId ? 'PARTNER' : 'CUSTOMER';
+
   const referral = {
     code: createReferralCode(),
+    track,
     customerId,
     customerName: booking.customer?.name || null,
     customerPhone: booking.customer?.phone || null,

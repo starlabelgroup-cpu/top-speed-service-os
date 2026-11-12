@@ -7,6 +7,8 @@ import { paymentSummary } from '../db/paymentsRepo.js';
 import {
   notifyReferralBooked,
   notifyReferralCompleted,
+  notifyReferralCreditExpired,
+  notifyReferralCreditExpiring,
   notifyReferralInvite,
   notifyReferralRewardApproved,
   notifyStaffAlert,
@@ -162,6 +164,8 @@ async function createJourneyRecord({ referral, refereeName = null, refereePhone 
     refereeEmail: refereeEmail || null,
     bookingId: booking?.id ?? null,
     bookingReference: booking?.referenceCode ?? null,
+    // Track snapshot from the code (Phase 2 partner track).
+    track: referral.track || 'CUSTOMER',
     status,
     rewardAmountCents: null,
     tierSnapshot: null,
@@ -670,6 +674,7 @@ function safeJourney(journey) {
   return {
     id: journey.id,
     code: journey.code,
+    track: journey.track || 'CUSTOMER',
     refereeName: journey.refereeName || null,
     status: journey.status,
     bookingReference: journey.bookingReference || null,
@@ -704,6 +709,7 @@ export function getCustomerDashboard(customer) {
   const empty = {
     code: null,
     link: null,
+    track: null,
     explanation: 'Your personal referral code is issued when your first repair is completed.',
     stats: { clicks: 0, invited: 0, booked: 0, completed: 0, creditsAvailable: { count: 0, totalCents: 0 } },
     journeys: [],
@@ -748,6 +754,7 @@ export function getCustomerDashboard(customer) {
   return {
     code: referral.code,
     link: `https://topspeedserviceos.com/refer?c=${referral.code}`,
+    track: referral.track || 'CUSTOMER',
     explanation: null,
     stats: {
       clicks: referral.clickCount || 0,
@@ -762,4 +769,179 @@ export function getCustomerDashboard(customer) {
     journeys: journeys.map(safeJourney),
     credits: credits.map(safeCredit),
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* Phase 2 (2026-11-12): partner track, leaderboard, funnel, expiry    */
+/* ------------------------------------------------------------------ */
+
+export const REFERRAL_TRACKS = ['CUSTOMER', 'PARTNER'];
+
+/**
+ * Staff flag: move a referral CODE between the customer and partner
+ * tracks (Book OS). Journeys already created keep their snapshot; new
+ * journeys inherit the code's new track. Same program and settings —
+ * the track only separates reporting.
+ */
+export async function setReferralTrack(code, track, staffUser = null) {
+  const referral = resolveCode(code);
+  if (!referral) throw referralError('CODE_NOT_FOUND', 404, 'Referral code not found');
+  const next = String(track || '').trim().toUpperCase();
+  if (!REFERRAL_TRACKS.includes(next)) {
+    throw referralError('INVALID_TRACK', 422, 'Track must be CUSTOMER or PARTNER');
+  }
+  referral.track = next;
+  await persistQuietly('referral track persist failed', () => persistReferral(referral));
+  appendEvent('REFERRAL_TRACK_SET', {
+    actor: staffActor(staffUser),
+    entityType: 'REFERRAL',
+    entityId: referral.code,
+    details: { code: referral.code, track: next },
+  });
+  return referral;
+}
+
+/** "Maria G." — first name + last initial, nothing more, ever. */
+function maskedDisplayName(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return null;
+  const first = parts[0];
+  const lastInitial = parts.length > 1 ? `${parts[parts.length - 1][0].toUpperCase()}.` : '';
+  return lastInitial ? `${first} ${lastInitial}` : first;
+}
+
+/**
+ * Public leaderboard: referrers ranked by COMPLETED referrals.
+ * Privacy-safe by construction — display names are masked to first
+ * name + last initial, and only counts are exposed (never credit
+ * amounts, never referee details, never contact data).
+ */
+export function getLeaderboard(limit = 10) {
+  const byReferrer = new Map();
+  for (const journey of store.referralJourneys) {
+    if (!COMPLETED_STATUSES.includes(journey.status)) continue;
+    if (!journey.referrerCustomerId) continue;
+    const key = journey.referrerCustomerId;
+    const entry = byReferrer.get(key) || { customerId: key, code: journey.code, completed: 0, firstCompletedAt: journey.updatedAt || journey.createdAt };
+    entry.completed += 1;
+    if (String(journey.updatedAt || journey.createdAt) < String(entry.firstCompletedAt)) {
+      entry.firstCompletedAt = journey.updatedAt || journey.createdAt;
+    }
+    byReferrer.set(key, entry);
+  }
+  const leaders = [...byReferrer.values()]
+    .map((entry) => {
+      const referral = resolveCode(entry.code);
+      const customer = store.customers.get(entry.customerId) || null;
+      const displayName = maskedDisplayName(referral?.customerName || customer?.name);
+      return displayName ? { displayName, completedReferrals: entry.completed, firstCompletedAt: entry.firstCompletedAt } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.completedReferrals - a.completedReferrals || String(a.firstCompletedAt).localeCompare(String(b.firstCompletedAt)))
+    .slice(0, Math.max(1, Math.min(limit, 50)))
+    .map(({ displayName, completedReferrals }) => ({ displayName, completedReferrals }));
+  return { leaders, totalReferrers: byReferrer.size };
+}
+
+/**
+ * The referral funnel for Marketing OS / flywheel reporting — every
+ * number computed from live records: codes issued, link clicks,
+ * invites, attributed bookings, completions, and the credit ledger
+ * (issued / redeemed / expired), split by track. Zero-state honest:
+ * an empty program reports zeros, never placeholders.
+ */
+export function getReferralFunnel(companyId = null) {
+  const inCompany = (record) => !companyId || record.companyId === companyId;
+  const funnelFor = (trackFilter) => {
+    const journeys = store.referralJourneys.filter(
+      (journey) => inCompany(journey) && (!trackFilter || (journey.track || 'CUSTOMER') === trackFilter),
+    );
+    const codes = [...store.referrals.values()].filter(
+      (referral) => inCompany(referral) && (!trackFilter || (referral.track || 'CUSTOMER') === trackFilter),
+    );
+    const journeyIds = new Set(journeys.map((journey) => journey.id));
+    const credits = store.referralCredits.filter(
+      (credit) => inCompany(credit) && (!trackFilter || journeyIds.has(credit.journeyId)),
+    );
+    const count = (...statuses) => journeys.filter((journey) => statuses.includes(journey.status)).length;
+    return {
+      codesIssued: codes.length,
+      linkClicks: codes.reduce((sum, referral) => sum + (referral.clickCount || 0), 0),
+      invites: count('INVITED', 'CLICKED'),
+      journeysTotal: journeys.length,
+      bookingsAttributed: count('BOOKED', ...COMPLETED_STATUSES),
+      completions: count(...COMPLETED_STATUSES),
+      pendingApproval: count('REWARD_PENDING_APPROVAL'),
+      creditsIssued: credits.filter((credit) => credit.status !== 'VOIDED').length,
+      creditsIssuedCents: credits.filter((credit) => credit.status !== 'VOIDED').reduce((sum, credit) => sum + (credit.amountCents || 0), 0),
+      creditsAvailable: credits.filter((credit) => credit.status === 'AVAILABLE').length,
+      creditsRedeemed: credits.filter((credit) => credit.status === 'REDEEMED').length,
+      creditsExpired: credits.filter((credit) => credit.status === 'EXPIRED').length,
+      bookingsViaReferral: [...store.bookings.values()].filter(
+        (booking) => inCompany(booking) && (booking.referralCode || booking.attribution?.via === 'REFERRAL')
+          && (!trackFilter || journeys.some((journey) => journey.bookingId === booking.id)),
+      ).length,
+    };
+  };
+  return {
+    all: funnelFor(null),
+    customer: funnelFor('CUSTOMER'),
+    partner: funnelFor('PARTNER'),
+    generatedAt: new Date().toISOString(),
+  };
+}
+
+const EXPIRY_REMINDER_WINDOW_MS = 30 * 24 * 3600 * 1000;
+
+/**
+ * Credit expiry enforcement (Phase 2). Phase 1 stamped expiresAt on
+ * every issued credit (approved terms: 365 days) but only the redeem
+ * path noticed a lapsed date. This sweep is the enforcer:
+ *  - AVAILABLE credits past expiresAt become EXPIRED (persisted), the
+ *    customer is notified through the outbox, and the parent journey
+ *    moves CREDIT_ISSUED → EXPIRED when no live credit remains on it.
+ *  - AVAILABLE credits inside their final 30 days get ONE reminder
+ *    (the outbox eventKey makes it exactly-once per channel).
+ * Called opportunistically: from the staff/cron outbox drains and
+ * lazily from the customer dashboard + staff queue reads. Cheap
+ * in-memory scan; safe to call often.
+ */
+export async function sweepReferralCreditExpiry() {
+  const now = Date.now();
+  let expired = 0;
+  let reminded = 0;
+  for (const credit of store.referralCredits) {
+    if (credit.status !== 'AVAILABLE' || !credit.expiresAt) continue;
+    const expiresMs = new Date(credit.expiresAt).getTime();
+    if (Number.isNaN(expiresMs)) continue;
+    if (expiresMs < now) {
+      credit.status = 'EXPIRED';
+      credit.updatedAt = new Date().toISOString();
+      await persistQuietly('referral credit expiry persist failed', () => persistReferralCredit(credit));
+      expired += 1;
+      notifyReferralCreditExpired(credit);
+      const journey = store.referralJourneys.find((candidate) => candidate.id === credit.journeyId) || null;
+      if (journey && journey.status === 'CREDIT_ISSUED') {
+        const anyLive = store.referralCredits.some(
+          (candidate) => candidate.journeyId === journey.id && candidate.status === 'AVAILABLE',
+        );
+        if (!anyLive) {
+          journey.status = 'EXPIRED';
+          await persistQuietly('referral journey expiry persist failed', () => persistReferralJourney(journey));
+        }
+      }
+      appendEvent('REFERRAL_CREDIT_EXPIRED', {
+        actor: 'referral-program',
+        entityType: 'REFERRAL_CREDIT',
+        entityId: credit.id,
+        details: { journeyId: credit.journeyId, amountCents: credit.amountCents, expiresAt: credit.expiresAt },
+      });
+    } else if (expiresMs - now <= EXPIRY_REMINDER_WINDOW_MS) {
+      // queueNotification dedupes on the eventKey, so repeat sweeps
+      // never re-send the reminder — it is queued exactly once.
+      const queued = notifyReferralCreditExpiring(credit);
+      if (Array.isArray(queued) && queued.length) reminded += 1;
+    }
+  }
+  return { expired, reminded, scannedAt: new Date(now).toISOString() };
 }

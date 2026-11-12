@@ -32,6 +32,8 @@ const SUBJECTS = {
   REFERRAL_BOOKED: 'Your friend booked with your Top Speed referral code',
   REFERRAL_COMPLETED: 'Your referral completed their Top Speed service',
   REFERRAL_REWARD_APPROVED: 'Your Top Speed referral reward credit is ready',
+  REFERRAL_CREDIT_EXPIRING: 'Your Top Speed referral credit expires soon',
+  REFERRAL_CREDIT_EXPIRED: 'Your Top Speed referral credit has expired',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'Top Speed commercial work order received',
   PAYMENT_RECEIVED: 'Payment received — Top Speed Appliance',
   BOOKING_RECEIPT: 'Your Top Speed Appliance receipt',
