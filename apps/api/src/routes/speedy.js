@@ -4,7 +4,8 @@ import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, sp
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
-import { notifyBookingConfirmation } from '../services/notifications.js';
+import { notifyBookingConfirmation, notifyBookingReceipt } from '../services/notifications.js';
+import { providersStatus } from '../services/senders.js';
 
 /**
  * Speedy AI endpoints — public on purpose: the website's Ask Speedy chat
@@ -201,6 +202,58 @@ router.post('/speedy/book', async (req, res) => {
       appliance: booking.appliance,
       preferredWindow: booking.preferredWindow,
       diagnosticFee: 99,
+    },
+  });
+});
+
+/* ------------- Booking receipt / details by message (Phase D+) -------------
+ * Verified exactly like public tracking: reference + the phone on the
+ * booking. Email is real today (Resend via the outbox). SMS queues
+ * through Twilio, but the account is a limited trial — the response
+ * NEVER claims a text was sent; it says queued + not-guaranteed, or
+ * plainly unavailable when Twilio is not configured.
+ */
+const receiptSchema = z.object({
+  reference: z.string().trim().min(4).max(24),
+  phone: z.string().trim().min(7).max(24),
+  channel: z.enum(['email', 'sms']),
+});
+
+router.post('/speedy/send-receipt', async (req, res) => {
+  const parsed = receiptSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid receipt request', details: parsed.error.flatten() });
+  }
+  const ref = parsed.data.reference.toUpperCase();
+  const digits = (v) => String(v || '').replace(/\D/g, '').slice(-10);
+  const booking = [...store.bookings.values()].find((b) => String(b.referenceCode || '').toUpperCase() === ref);
+  if (!booking || digits(booking.customer?.phone) !== digits(parsed.data.phone)) {
+    return res.status(404).json({ error: 'No booking found for that reference and phone number' });
+  }
+  const { channel } = parsed.data;
+  if (channel === 'email') {
+    if (!booking.customer?.email) {
+      return res.status(422).json({ error: 'No email address is on file for this booking', canSms: Boolean(booking.customer?.phone) });
+    }
+    const entry = notifyBookingReceipt(booking, 'email', 'speedy-receipt');
+    const masked = booking.customer.email.replace(/^(.).*(@.*)$/, '$1***$2');
+    return res.status(202).json({
+      data: { queued: Boolean(entry), channel: 'email', to: masked, status: 'queued', message: `Receipt queued to ${masked} \u2014 it should arrive within a few minutes.` },
+    });
+  }
+  // SMS
+  if (!providersStatus().sms.configured) {
+    return res.status(200).json({
+      data: { queued: false, channel: 'sms', unavailable: true, message: 'Texting isn\'t available yet \u2014 email is the reliable option for your receipt and tracking details.' },
+    });
+  }
+  const entry = notifyBookingReceipt(booking, 'sms', 'speedy-receipt');
+  return res.status(202).json({
+    data: {
+      queued: Boolean(entry),
+      channel: 'sms',
+      status: 'queued',
+      message: 'Your text is queued \u2014 texting is still in limited trial mode, so delivery isn\'t guaranteed yet. If it doesn\'t arrive shortly, email always works.',
     },
   });
 });

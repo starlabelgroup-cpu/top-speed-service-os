@@ -27,6 +27,7 @@ export const NOTIFICATION_TEMPLATES = {
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
   VIDEO_REQUEST: 'VIDEO_REQUEST',
   PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
+  BOOKING_RECEIPT: 'BOOKING_RECEIPT',
 };
 
 export function queueNotification({ channel, template, to, payload = {}, source = null }) {
@@ -270,4 +271,48 @@ export function notifyReviewRequest(booking, source = null) {
       },
     }),
   );
+}
+
+/**
+ * Customer-requested booking receipt (Phase D+, via Speedy): composed
+ * ONLY from recorded booking fields. If a payment is recorded PAID it
+ * says so; otherwise it states the $99 diagnostic terms as booked —
+ * never an invented paid state. One channel per call, queued through
+ * the same outbox as every other platform message.
+ */
+export function notifyBookingReceipt(booking, channel, source = null) {
+  const paid = booking.payment?.status === 'PAID';
+  const diagnosticLine = paid
+    ? 'Diagnostic: $99 \u2014 PAID.'
+    : 'Diagnostic: $99 \u2014 collected at booking, credited toward your repair.';
+  const appointment = booking.appointment?.status === 'SET' ? booking.appointment : null;
+  const when = appointment
+    ? `${appointment.date}, ${appointment.windowLabel || appointment.window}`
+    : booking.preferredWindow || 'Window to be confirmed by Service Setters';
+  const trackingUrl = 'https://topspeedserviceos.com/track';
+  const to = channel === 'email' ? booking.customer?.email : booking.customer?.phone;
+  if (!to) return null;
+  const message =
+    channel === 'email'
+      ? `Top Speed Appliance \u2014 booking receipt\nReference: ${booking.referenceCode}\nService: ${booking.appliance} \u2014 ${booking.issue}\nCity: ${booking.city}\nWhen: ${when}\nStatus: ${booking.status}\n${diagnosticLine}\nTrack your job live: ${trackingUrl} (use your reference + phone).\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`
+      : `Top Speed Appliance receipt: ${booking.appliance} in ${booking.city}, ref ${booking.referenceCode}. ${diagnosticLine} Track live: ${trackingUrl} (ref + this phone).`;
+  return queueNotification({
+    channel,
+    template: NOTIFICATION_TEMPLATES.BOOKING_RECEIPT,
+    to,
+    source,
+    payload: {
+      bookingId: booking.id,
+      referenceCode: booking.referenceCode || null,
+      customerName: booking.customer?.name,
+      appliance: booking.appliance,
+      city: booking.city,
+      when,
+      paid,
+      diagnosticLine,
+      trackingUrl,
+      businessPhone: PLATFORM_CONSTANTS.phone,
+      message,
+    },
+  });
 }
