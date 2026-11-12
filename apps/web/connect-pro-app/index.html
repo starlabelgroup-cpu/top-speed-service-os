@@ -141,7 +141,7 @@ function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
 function api(path, opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'}, opts.headers||{});
   if(tok()) opts.headers['Authorization']='Bearer '+tok();
-  return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
+  return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.details=j.details; throw e; } return j; }); });
 }
 (function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); history.replaceState(null,'',location.pathname); } })();
 function gateErr(e){ var m=document.getElementById('gateMsg'); m.textContent='\u26a0\ufe0f '+e.message; m.className='msg err'; }
@@ -150,9 +150,11 @@ function doLogin(){
     .then(function(j){ setTok(j.token); boot(); }).catch(gateErr);
 }
 function doRegister(){
+  if(document.getElementById('rgPass').value.length<10){ gateErr(new Error('Password must be at least 10 characters.')); return; }
   var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined};
   api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
-    .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); }).catch(gateErr);
+    .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); })
+    .catch(function(e){ if(e.details&&e.details.fieldErrors&&e.details.fieldErrors.password) e=new Error('Password must be at least 10 characters.'); gateErr(e); });
 }
 function googleGo(){
   fetch(API+'/auth/google/status').then(function(r){return r.json();}).then(function(j){

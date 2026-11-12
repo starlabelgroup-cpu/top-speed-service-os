@@ -338,7 +338,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
       function save(j){ try{ localStorage.setItem('tsos_cust_token',j.token); localStorage.setItem('tsos_token',j.token); }catch(e){} location.reload(); }
       function post(path,body){
         return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-        .then(function(r){ return r.json().then(function(j){ if(!r.ok||!j.token) throw new Error(j.error||'Something went wrong'); return j; }); });
+        .then(function(r){ return r.json().then(function(j){ if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; throw e; } return j; }); });
       }
       $('laInForm').addEventListener('submit',function(e){
         e.preventDefault();
@@ -359,7 +359,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         if(parts.length>1) body.lastName=parts.slice(1).join(' ');
         var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
         post('/auth/register',body).then(save).catch(function(x){
-          var m=x.message; if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
+          var m=x.message; if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.password) m='Password must be at least 10 characters.'; else if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
           fail(m);
         }).finally(function(){ b.disabled=false; b.textContent='Create my account'; });
       });
@@ -1142,7 +1142,7 @@ function confirmBooking(){
   if(pw.length<10){ setBtn('Confirm booking',true); return toast('Password needs 10+ characters'); }
   var parts=name.split(' ');
   fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone})})
-    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':(j.error||'Could not create your account')); return j; }); })
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
     .then(function(j){ setCustSession(j); payload.customer.email=email; doBook(); })
     .catch(function(e){ setBtn('Confirm booking',true); toast(e.message); });
 }

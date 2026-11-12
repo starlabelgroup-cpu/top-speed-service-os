@@ -95,7 +95,7 @@
         <div><label for="rEmail">Email</label><input id="rEmail" type="email" required></div>
         <div><label for="rPhone">Phone</label><input id="rPhone" type="tel" placeholder="(954) 000-0000"></div>
       </div>
-      <label for="rPass">Password (8+ characters)</label><input id="rPass" type="password" minlength="8" required>
+      <label for="rPass">Password (10+ characters)</label><input id="rPass" type="password" minlength="10" required>
       <button class="btn btn-red" id="registerBtn" type="submit" style="width:100%;margin-top:16px">Create my account</button>
       <div class="err" id="registerErr"></div>
     </form>
@@ -228,11 +228,18 @@ $('loginForm').addEventListener('submit', (e) => { e.preventDefault(); doLogin($
 $('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const err = $('registerErr'), btn = $('registerBtn');
-  btn.disabled = true; err.style.display = 'none';
+  err.style.display = 'none';
+  if ($('rPass').value.length < 10) { err.textContent = 'Password must be at least 10 characters.'; err.style.display = 'block'; return; }
+  btn.disabled = true;
   try {
     const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value }) });
     const body = await res.json();
-    if (!res.ok || !body.token) throw new Error(body.error || 'Registration failed');
+    if (!res.ok || !body.token) {
+      let m = body.error || 'Registration failed';
+      const fe = body.details && body.details.fieldErrors;
+      if (fe) { if (fe.password) m = 'Password must be at least 10 characters.'; else { const k = Object.keys(fe)[0]; if (k && fe[k][0]) m = fe[k][0]; } }
+      throw new Error(m);
+    }
     localStorage.setItem('tsos_token', body.token);
     await loadGarage();
   } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }

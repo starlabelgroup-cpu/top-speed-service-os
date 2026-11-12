@@ -173,9 +173,10 @@ function advSignup(){ var role=document.getElementById('suRole').value;
     firstName:document.getElementById('suFirst').value.trim(),lastName:document.getElementById('suLast').value.trim(),
     phone:document.getElementById('suPhone').value.trim()||undefined,role:role};
   if(!body.email||!body.password||!body.firstName) return msg('authMsg','First name, email, and a 10+ character password are required.');
+  if(body.password.length<10) return msg('authMsg','Password must be at least 10 characters.');
   api('/auth/register',{method:'POST',body:JSON.stringify(body)}).then(function(x){
     if(x.status===201&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken); showConsole(x.j.user); }
-    else msg('authMsg',(x.j&&x.j.error)||'Could not create the account.'); }); }
+    else { var m=(x.j&&x.j.error)||'Could not create the account.'; var fe=x.j&&x.j.details&&x.j.details.fieldErrors; if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } } msg('authMsg',m); } }); }
 function advLogout(){ setTok(''); location.reload(); }
 
 function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Marketing Manager',DEVELOPER:'Developer',COMPANY_OWNER:'Owner',DISPATCHER:'Service Setter / Dispatcher',PLATFORM_ADMIN:'Platform Admin'}[r]||r; }
