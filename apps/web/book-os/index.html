@@ -136,6 +136,7 @@ body:not(.live) .gated{display:none!important}</style>
 <!-- PARTS + FINANCE STRIPS (live staff only; hidden until real API data returns) -->
 <div id="partsStrip" style="display:none;margin:0 0 14px;background:#fff;border:1px solid #d8e2f2;border-left:5px solid #1473ff;border-radius:10px;padding:12px 16px;font-size:14.5px;"></div>
 <div id="finStrip" style="display:none;margin:0 0 14px;background:#fff;border:1px solid #d8e2f2;border-left:5px solid #0f7a3d;border-radius:10px;padding:12px 16px;font-size:14.5px;"></div>
+<div id="notifStrip" style="display:none;margin:0 0 14px;background:#fff;border:1px solid #d8e2f2;border-left:5px solid #e01a22;border-radius:10px;padding:12px 16px;font-size:14.5px;"></div>
 
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
@@ -587,6 +588,11 @@ if(vTok()) loadVideoRequests();
         el.innerHTML='💵 <strong>Finance — QuickBooks:</strong> not connected yet — no figures until the first real sync. <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
       }
     }).catch(function(){ var el=document.getElementById('finStrip'); if(el) el.style.display='none'; });
+    get('/notifications/summary').then(function(j){
+      var d=j.data||{}; var el=document.getElementById('notifStrip'); if(!el) return;
+      el.style.display='block';
+      el.innerHTML='🔔 <strong>Notifications:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.queued||0)+'</span> queued · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.sent||0)+'</span> sent · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.gated||0)+'</span> gated · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.failed||0)+'</span> failed · <a href="/notifications" style="color:#e01a22;font-weight:700;">Open Notifications console →</a>';
+    }).catch(function(){ var el=document.getElementById('notifStrip'); if(el) el.style.display='none'; });
     loaded=true;
   }
   setInterval(load,60000);
