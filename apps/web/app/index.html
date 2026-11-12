@@ -10,8 +10,8 @@
     <meta name="theme-color" content="#0A265C" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
-<title>Appliance Pro App — PWA</title>
+    <meta name="apple-mobile-web-app-title" content="Appliance Connect" />
+<title>Appliance Connect — Customer App | Top Speed Appliance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -82,9 +82,6 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 .brandrow .bn span{font-size:11.5px; color:#BFD4F5; font-weight:600; letter-spacing:.06em; text-transform:uppercase;}
 .callbtn{margin-left:auto; background:#fff; color:var(--navy); border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; padding:9px 13px; display:flex; align-items:center; gap:6px; cursor:pointer; text-decoration:none;}
 .preview-note{margin-top:10px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#DCE9FF; font-size:11.5px; font-weight:600; border-radius:8px; padding:6px 9px; display:flex; gap:6px; align-items:center;}
-.mode-toggle{margin-top:11px; background:rgba(255,255,255,.13); border-radius:99px; padding:4px; display:flex; gap:4px;}
-.mode-toggle button{flex:1; border:none; background:transparent; color:#C9DBF8; font:inherit; font-weight:700; font-size:13.5px; padding:8px; border-radius:99px; cursor:pointer;}
-.mode-toggle button.on{background:#fff; color:var(--navy);}
 
 /* install banner */
 .install-banner{flex:none; margin:12px 14px 0; background:var(--navy); color:#fff; border-radius:14px; padding:12px 13px; display:flex; gap:11px; align-items:center; box-shadow:0 8px 18px -8px rgba(10,38,92,.5);}
@@ -227,21 +224,6 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .tgl.on{background:var(--blue);}
 .tgl.on::after{left:23px;}
 
-/* provider */
-.offer{border:1px solid var(--line); border-radius:16px; background:#fff; padding:14px; margin-bottom:11px;}
-.offer .o-top{display:flex; align-items:center; gap:8px; margin-bottom:6px;}
-.offer b{font-size:16px;}
-.offer p{margin:0 0 10px; font-size:13.5px; color:var(--mut); line-height:1.5;}
-.pay{margin-left:auto; font-family:"Barlow Condensed"; font-size:21px; font-weight:700; color:var(--green);}
-.route-stop{display:flex; gap:12px; padding:11px 0; border-bottom:1px solid var(--line);}
-.route-stop:last-child{border-bottom:none;}
-.route-stop .rs-n{width:28px; height:28px; border-radius:50%; background:var(--navy); color:#fff; font-weight:800; font-size:13px; display:grid; place-items:center; flex:none;}
-.route-stop b{font-size:14.5px; display:block;}
-.route-stop span{font-size:12.5px; color:var(--mut); display:block;}
-.earn-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
-.earn{background:#fff; border:1px solid var(--line); border-radius:14px; padding:13px;}
-.earn b{font-family:"Barlow Condensed"; font-size:26px; color:var(--navy); display:block; line-height:1;}
-.earn span{font-size:12px; color:var(--mut); font-weight:700; text-transform:uppercase; letter-spacing:.05em;}
 .demo-tag{font-size:10.5px; font-weight:800; letter-spacing:.06em; background:var(--amber-bg); color:var(--amber); padding:3px 7px; border-radius:99px; text-transform:uppercase;}
 
 /* bottom nav */
@@ -270,11 +252,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 <div class="page">
 
   <!-- ===== Desktop download / promo panel (the download page) ===== -->
-  <aside class="promo" aria-label="About the Appliance Pro app">
-    <span class="flag"><span class="checkers"></span> Appliance Pro App · by Top Speed Appliance</span>
-    <h1>Appliance Pro <em>App</em></h1>
+  <aside class="promo" aria-label="About the Appliance Connect app">
+    <span class="flag"><span class="checkers"></span> Appliance Connect App · by Top Speed Appliance</span>
+    <h1>Appliance Connect <em>App</em></h1>
     <p class="tag">The Faster, The Better.</p>
-    <p>Book a repair in under a minute, send a photo for AI triage, track your technician live, and keep every appliance you own in one garage. Providers get the same app — offers, route, and earnings in their pocket.</p>
+    <p>Book a repair in under a minute, send a photo for AI triage, track your technician live, and keep every appliance you own in one garage. This is the customer app — service providers have their own separate Tech App, with its own login.</p>
     <p><span class="stars">★ 4.8</span> from 2,500 reviews · Serving 12 Broward County areas · <b>$99 diagnostic</b>, collected at booking and credited toward your repair.</p>
     <div class="dl-grid">
       <button class="dl-card" data-platform="ios" onclick="openInstall('ios')"><b>iPhone</b><span>Share → Add to Home Screen</span></button>
@@ -283,7 +265,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
     </div>
     <ul class="feat">
       <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> No app store, no download wait — it installs from the browser</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> One app, two sides — customers and the provider network</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> One customer account — bookings, garage, live tracking and referrals</li>
       <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Every booking flows into Service Setters &amp; the Book OS dispatch board</li>
       <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M4 12.5l5 5L20 6.5"/></svg> Try the phone on the right — every screen and button works</li>
     </ul>
@@ -394,7 +376,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
     </script>
     <div class="comm-promo">
       <b style="display:block; font-size:16px; margin-bottom:4px;">Appliance Pro Commercial Accounts</b>
-      <span style="font-size:14px; color:var(--page-mut); line-height:1.5; display:block;">For restaurants, hotels, laundromats, healthcare, offices and facilities — equipment registry, priority dispatch, preventive maintenance, and one consolidated monthly invoice, all inside the Appliance Pro App.</span>
+      <span style="font-size:14px; color:var(--page-mut); line-height:1.5; display:block;">For restaurants, hotels, laundromats, healthcare, offices and facilities — equipment registry, priority dispatch, preventive maintenance, and one consolidated monthly invoice — inside Appliance Pro, the separate commercial app.</span>
+      <a href="/appliance-pro" style="display:inline-block; margin-top:10px; font-weight:800; color:var(--blue);">Commercial login → Appliance Pro</a>
     </div>
     <p class="fine">Questions? Call <a href="tel:+19549317997">954-931-7997</a> — a real person at Top Speed Appliance answers.</p>
   </aside>
@@ -406,20 +389,16 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
         <header class="ahead">
           <div class="brandrow">
-            <div class="logo">AP</div>
-            <div class="bn"><b>APPLIANCE PRO</b><span>Appliance Pro App</span></div>
+            <div class="logo">AC</div>
+            <div class="bn"><b>APPLIANCE CONNECT</b><span>Customer App</span></div>
             <a class="callbtn" href="tel:+19549317997"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>954-931-7997</a>
           </div>
-          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Live Service OS app — sign in and your bookings save for real. Provider Mode earnings are a preview.</div>
-          <div class="mode-toggle" role="tablist" aria-label="App mode">
-            <button id="mode-customer" class="on" onclick="setMode('customer')">Customer</button>
-            <button id="mode-provider" onclick="setMode('provider')">Provider Mode</button>
-          </div>
+          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Live Service OS customer app — sign in and your bookings save for real.</div>
         </header>
 
         <div class="install-banner" id="installBanner">
           <div class="ib-ic"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 19h16"/></svg></div>
-          <div style="flex:1; min-width:0;"><b>Add Appliance Pro to your home screen</b><span id="installHint">No app store needed — installs in seconds.</span></div>
+          <div style="flex:1; min-width:0;"><b>Add Appliance Connect to your home screen</b><span id="installHint">No app store needed — installs in seconds.</span></div>
           <button class="ib-go" onclick="openInstall()">Install</button>
           <button class="ib-x" onclick="document.getElementById('installBanner').style.display='none'" aria-label="Dismiss install banner">×</button>
         </div>
@@ -446,7 +425,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <div id="activeJobSlot"></div>
           <div id="payBar"></div>
 
-          <h3 class="sec">Why Appliance Pro</h3>
+          <h3 class="sec">Why Appliance Connect</h3>
           <div class="card" style="display:grid; gap:10px;">
             <div style="display:flex; gap:10px; font-size:14px;"><span class="pill blue">★ 4.8</span><span style="align-self:center;">Rated by <b>2,500 Broward customers</b></span></div>
             <div style="display:flex; gap:10px; font-size:14px;"><span class="pill green">90-DAY</span><span style="align-self:center;">Warranty on parts &amp; labor</span></div>
@@ -457,7 +436,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <div class="card">
             <b style="font-size:15px;">For businesses &amp; facilities</b>
             <p class="sub" style="margin:5px 0 10px;">Restaurants, hotels, laundromats and facilities get an equipment registry, priority dispatch, and one monthly invoice with an Appliance Pro Commercial Account.</p>
-            <button class="btn ghost small" onclick="showTab('more')">See commercial accounts</button>
+            <a class="btn ghost small" href="/appliance-pro" style="text-decoration:none;">See commercial accounts →</a>
           </div>
         </section>
 
@@ -607,7 +586,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <div class="avatar">MT</div>
             <div style="flex:1;">
               <b>Marcus T. <span class="demo-tag">Demo</span></b>
-              <span>Appliance Pro provider · Refrigeration specialist<br>Background-checked · Insured · 40+ brands</span>
+              <span>Top Speed technician · Refrigeration specialist<br>Background-checked · Insured · 40+ brands</span>
             </div>
             <a class="mini-btn" style="text-decoration:none;" href="tel:+19549317997">Call office</a>
           </div>
@@ -676,7 +655,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <h3 class="sec">Review your last job</h3>
           <div class="card">
             <b style="font-size:15px;">Dishwasher repair — Oct 12</b>
-            <p class="sub" style="margin:4px 0 0;">How did Marcus do? Reviews lift Appliance Pro's rankings and bring the next neighbor in.</p>
+            <p class="sub" style="margin:4px 0 0;">How did Marcus do? Reviews lift Top Speed's rankings and bring the next neighbor in.</p>
             <div class="stars-in" id="starsIn">
               <button onclick="rate(1)" aria-label="1 star"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
               <button onclick="rate(2)" aria-label="2 stars"><svg width="30" height="30" viewBox="0 0 24 24" fill="#D8E1EE"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4l-5.9 3.1 1.2-6.5L2.5 9.4l6.6-.9z"/></svg></button>
@@ -706,40 +685,18 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <div class="card">
             <b style="font-size:15.5px;">Running a business? Open a commercial account</b>
             <p class="sub" style="margin:5px 0 10px;">Appliance Pro Commercial Accounts are for restaurants, hotels, laundromats, healthcare, offices, retail and facilities. Every unit goes in an equipment registry with asset tag, brand, serial and service history, critical equipment gets priority dispatch through Service Setters, and all work rolls into one consolidated monthly invoice — no pile of tickets. Commercial work is quoted per facility; the residential $99 diagnostic terms don't apply.</p>
-            <a class="btn blue small" style="text-decoration:none;" href="tel:+19549317997">Call about a commercial account — 954-931-7997</a>
+            <a class="btn blue small" style="text-decoration:none;" href="/appliance-pro">Open Appliance Pro — commercial login →</a>
           </div>
 
           <h3 class="sec">Get the app</h3>
           <div class="card">
-            <b style="font-size:15.5px;">Install Appliance Pro App — free</b>
-            <p class="sub" style="margin:5px 0 10px;" id="getAppText">This preview is the app. Install it to your home screen and it opens full-screen, works offline for your garage and history, and keeps your bookings one tap away.</p>
+            <b style="font-size:15.5px;">Install Appliance Connect App — free</b>
+            <p class="sub" style="margin:5px 0 10px;" id="getAppText">This is the app. Install it to your home screen and it opens full-screen, works offline for your garage and history, and keeps your bookings one tap away.</p>
             <button class="btn primary small" onclick="openInstall()">How to install</button>
           </div>
 
-          <a class="btn primary" style="margin-top:16px;" href="tel:+19549317997">Call Appliance Pro — 954-931-7997</a>
-          <p class="sub" style="text-align:center; margin-top:14px;">Appliance Pro App · Top Speed Appliance · Broward County, FL<br>The Faster, The Better. · App v1.0 preview</p>
-        </section>
-
-        <!-- ================= PROVIDER ================= -->
-        <section class="screen" id="scr-provider">
-          <h2 class="greet">Provider day</h2>
-          <p class="sub">Offers, your route, and earnings — the same app, network side. <span class="demo-tag">Demo data</span></p>
-
-          <h3 class="sec" style="margin-top:0;">New offers <span class="pill blue" id="offerCount">3 waiting</span></h3>
-          <div id="offerList"></div>
-
-          <h3 class="sec">Today's route</h3>
-          <div class="card" id="routeList" style="padding-top:6px; padding-bottom:6px;"></div>
-
-          <h3 class="sec">Earnings <span class="demo-tag">Demo</span></h3>
-          <div class="earn-grid">
-            <div class="earn"><b>$386</b><span>Today</span></div>
-            <div class="earn"><b>$1,940</b><span>This week</span></div>
-            <div class="earn"><b>4.9</b><span>Job rating (demo)</span></div>
-            <div class="earn"><b>96%</b><span>On-time (demo)</span></div>
-          </div>
-          <p class="sub" style="margin-top:10px;">Earnings figures are placeholders in this preview. In the live network, payouts settle through the Service OS after job completion and customer approval.</p>
-          <a class="btn ghost" style="margin-top:6px;" href="tel:+19549317997">Call dispatch — 954-931-7997</a>
+          <a class="btn primary" style="margin-top:16px;" href="tel:+19549317997">Call Top Speed — 954-931-7997</a>
+          <p class="sub" style="text-align:center; margin-top:14px;">Appliance Connect App · Top Speed Appliance · Broward County, FL<br>The Faster, The Better.</p>
         </section>
 
         </main>
@@ -756,8 +713,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <!-- install sheet -->
         <div class="sheet" id="installSheet" onclick="if(event.target===this) closeInstall()">
           <div class="sh-card">
-            <h4 id="installTitle">Install Appliance Pro App</h4>
-            <p id="installIntro">Appliance Pro is a PWA — a real app that installs straight from your browser. No app store, no big download.</p>
+            <h4 id="installTitle">Install Appliance Connect App</h4>
+            <p id="installIntro">Appliance Connect is a PWA — a real app that installs straight from your browser. No app store, no big download.</p>
             <div id="installSteps"></div>
             <button class="btn primary" style="margin-top:14px;" onclick="closeInstall()">Got it</button>
             <button class="btn ghost" style="margin-top:9px;" onclick="closeInstall()">Maybe later</button>
@@ -787,8 +744,8 @@ var APPLIANCES = [
 var GARAGE = [
   {name:"Refrigerator", detail:"Samsung RF28R7351SR · French door", warranty:"Parts warranty to Mar 2027", wpill:"green", icon:0},
   {name:"Washer", detail:"LG WM4000HWA · Front load", warranty:"Warranty expired Aug 2026", wpill:"amber", icon:1},
-  {name:"Dryer", detail:"LG DLEX4000W · Electric", warranty:"Appliance Pro 90-day to Dec 2026", wpill:"green", icon:2},
-  {name:"Dishwasher", detail:"Bosch SHS843AF5N · Built-in", warranty:"Appliance Pro 90-day to Jan 2027", wpill:"green", icon:4},
+  {name:"Dryer", detail:"LG DLEX4000W · Electric", warranty:"Top Speed 90-day to Dec 2026", wpill:"green", icon:2},
+  {name:"Dishwasher", detail:"Bosch SHS843AF5N · Built-in", warranty:"Top Speed 90-day to Jan 2027", wpill:"green", icon:4},
   {name:"Oven & Range", detail:"GE JB645RKSS · Electric range", warranty:"No active warranty", wpill:"gray", icon:3}
 ];
 var STAGES = [
@@ -802,23 +759,12 @@ var STAGES = [
   {t:"Repair completed", s:"Work done and tested — review & referral code sent"}
 ]
 var FEED = [
-  {time:"9:02 AM", text:"<b>Appliance Pro:</b> Booking confirmed for today, 10 AM–12 PM window. Reply Y to confirm."},
+  {time:"9:02 AM", text:"<b>Top Speed:</b> Booking confirmed for today, 10 AM–12 PM window. Reply Y to confirm."},
   {time:"9:15 AM", text:"<b>Service Setters:</b> You're matched with Marcus T., refrigeration specialist. Photo diagnosis received — he's bringing the common parts."},
-  {time:"10:04 AM", text:"<b>Appliance Pro:</b> Marcus is on the way. You'll get a text when he's close."}
+  {time:"10:04 AM", text:"<b>Top Speed:</b> Marcus is on the way. You'll get a text when he's close."}
 ];
-var OFFERS = [
-  {id:1, title:"Refrigerator — not cooling", meta:"Fort Lauderdale · 2.1 mi · Today 12–2 PM window", note:"Photo triage: likely fan/airflow. Customer approved $99 diagnostic.", pay:"$145"},
-  {id:2, title:"Washer — won't drain", meta:"Sunrise · 4.8 mi · Today 2–4 PM window", note:"Returning customer. Model on file: LG WM4000HWA.", pay:"$120"},
-  {id:3, title:"Dishwasher — leaking", meta:"Plantation · 3.3 mi · Tomorrow 8–10 AM window", note:"Residential account — not an Appliance Pro Commercial Accounts job. Gate access notes attached.", pay:"$110"}
-];
-var ROUTE = [
-  {n:1, title:"Washer repair — Sunrise", meta:"8–10 AM · In progress · Job TS-DEMO18"},
-  {n:2, title:"Oven diagnostic — Davie", meta:"10 AM–12 PM · Confirmed"},
-  {n:3, title:"Fridge repair — Fort Lauderdale", meta:"12–2 PM · Matched, awaiting your accept"}
-];
-
 /* ============ state ============ */
-var mode = "customer", currentTab = "home";
+var currentTab = "home";
 var booking = {appliance:null, issue:null, day:null, window:null, photo:false, ref:null};
 var stageIdx = 3; /* en route */
 var deferredPrompt = null;
@@ -880,8 +826,8 @@ function advanceStage(){
   if(stageIdx >= STAGES.length-1) return;
   stageIdx++;
   var msgs = {
-    4:"<b>Appliance Pro:</b> Your technician has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
-    7:"<b>Appliance Pro:</b> Repair complete and tested. Your review link and referral code are on the More tab. Thanks for choosing Top Speed!"
+    4:"<b>Top Speed:</b> Your technician has arrived and started the diagnosis. We'll text the repair quote for your approval before any work begins.",
+    7:"<b>Top Speed:</b> Repair complete and tested. Your review link and referral code are on the More tab. Thanks for choosing Top Speed!"
   };
   if(msgs[stageIdx]) FEED.push({time:"Now", text:msgs[stageIdx]});
   renderTrack(); renderActiveJob();
@@ -890,24 +836,14 @@ function advanceStage(){
 
 /* ============ tabs & mode ============ */
 function showTab(tab){
-  if(mode === "provider" && tab !== "home" && tab !== "more"){ tab = "home"; }
   currentTab = tab;
-  var target = (mode === "provider" && tab === "home") ? "provider" : tab;
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('on'); });
-  document.getElementById('scr-'+target).classList.add('on');
+  document.getElementById('scr-'+tab).classList.add('on');
   document.querySelectorAll('#bnav button[data-tab]').forEach(function(b){ b.classList.toggle('on', b.dataset.tab === tab); });
   document.getElementById('screens').scrollTop = 0;
   if(tab === 'track') renderTrack();
   if(tab === 'garage') loadGarage();
 }
-function setMode(m){
-  mode = m;
-  document.getElementById('mode-customer').classList.toggle('on', m==='customer');
-  document.getElementById('mode-provider').classList.toggle('on', m==='provider');
-  toast(m === 'provider' ? "Provider Mode — network side of the app" : "Customer view");
-  showTab('home');
-}
-
 /* ============ booking flow ============ */
 function startBooking(i){
   booking.appliance = APPLIANCES[i].name;
@@ -970,7 +906,7 @@ function confirmBooking(){
   booking.ref = code;
   document.getElementById('refCode').textContent = code;
   stageIdx = 1;
-  FEED.push({time:"Now", text:"<b>Appliance Pro:</b> New booking "+code+" received. A Service Setter will confirm by text shortly."});
+  FEED.push({time:"Now", text:"<b>Top Speed:</b> New booking "+code+" received. A Service Setter will confirm by text shortly."});
   bookGo(5); renderActiveJob();
 }
 function resetBooking(){
@@ -995,29 +931,6 @@ function rate(n){
     : "Thanks for the honesty — a Service Setter will reach out to make it right.";
 }
 
-/* ============ provider ============ */
-function renderOffers(){
-  var list = document.getElementById('offerList');
-  if(!OFFERS.length){ list.innerHTML = '<div class="card empty-note">No new offers right now.<br>Accepted jobs appear on your route below.</div>'; }
-  else list.innerHTML = OFFERS.map(function(o){
-    return '<div class="offer"><div class="o-top"><b>'+o.title+'</b><span class="pay">'+o.pay+'</span></div><p>'+o.meta+'<br>'+o.note+'</p><div class="btnrow"><button class="btn ghost small" onclick="declineOffer('+o.id+')">Decline</button><button class="btn blue small" onclick="acceptOffer('+o.id+')">Accept job</button></div></div>';
-  }).join('');
-  document.getElementById('offerCount').textContent = OFFERS.length ? OFFERS.length+" waiting" : "All caught up";
-  document.getElementById('routeList').innerHTML = ROUTE.map(function(r){
-    return '<div class="route-stop"><div class="rs-n">'+r.n+'</div><div><b>'+r.title+'</b><span>'+r.meta+'</span></div></div>';
-  }).join('');
-}
-function acceptOffer(id){
-  var o = OFFERS.filter(function(x){ return x.id===id; })[0];
-  OFFERS = OFFERS.filter(function(x){ return x.id!==id; });
-  ROUTE.push({n:ROUTE.length+1, title:o.title.split(" — ")[0]+" — "+o.meta.split(" · ")[0], meta:o.meta.split(" · ").slice(1).join(" · ")+" · Accepted just now"});
-  renderOffers(); toast("Accepted — added to your route");
-}
-function declineOffer(id){
-  OFFERS = OFFERS.filter(function(x){ return x.id!==id; });
-  renderOffers(); toast("Declined — offer returns to dispatch");
-}
-
 /* ============ install / PWA ============ */
 function detectPlatform(){
   var ua = navigator.userAgent || "";
@@ -1026,8 +939,8 @@ function detectPlatform(){
   return "web";
 }
 var INSTALL_COPY = {
-  ios:{title:"Install on iPhone", steps:["Open this page in <b>Safari</b>.","Tap the <b>Share</b> button at the bottom of the screen.","Scroll and tap <b>Add to Home Screen</b>.","Tap <b>Add</b> — Appliance Pro now lives on your home screen like any app."]},
-  android:{title:"Install on Android", steps:["Open this page in <b>Chrome</b>.","If an <b>Install Appliance Pro</b> prompt appears, tap Install.","No prompt? Tap the <b>⋮ menu</b> → <b>Install app</b> / <b>Add to Home screen</b>.","Launch Appliance Pro from your home screen — full-screen, no browser bars."]},
+  ios:{title:"Install on iPhone", steps:["Open this page in <b>Safari</b>.","Tap the <b>Share</b> button at the bottom of the screen.","Scroll and tap <b>Add to Home Screen</b>.","Tap <b>Add</b> — Appliance Connect now lives on your home screen like any app."]},
+  android:{title:"Install on Android", steps:["Open this page in <b>Chrome</b>.","If an <b>Install Appliance Connect</b> prompt appears, tap Install.","No prompt? Tap the <b>⋮ menu</b> → <b>Install app</b> / <b>Add to Home screen</b>.","Launch Appliance Connect from your home screen — full-screen, no browser bars."]},
   web:{title:"Use the Web App", steps:["No install needed — the app runs right in this tab.","On a computer, most browsers show an <b>install icon</b> in the address bar to pin it as a desktop app.","Bookmark it and you're one tap from booking, tracking, and your garage."]}
 };
 function openInstall(platform){
@@ -1053,7 +966,7 @@ window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); 
 })();
 
 /* ============ init ============ */
-buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack(); renderOffers();
+buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack();
 </script>
 
 <script>
@@ -1166,7 +1079,7 @@ function confirmBooking(){
         booking.ref=j.data.referenceCode; booking.id=j.data.id; booking.payment=j.data.payment||null;
         document.getElementById('refCode').textContent=booking.ref;
         stageIdx=stageForBooking(j.data);
-        FEED.push({time:'Now',text:'<b>Appliance Pro:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
+        FEED.push({time:'Now',text:'<b>Top Speed:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
         setBtn('Confirm booking',true);
         bookGo(5); renderActiveJob();
       })
@@ -1228,7 +1141,7 @@ if(cTok()){
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
           navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
-            console.warn('Appliance Pro service worker registration failed:', err);
+            console.warn('Appliance Connect service worker registration failed:', err);
           });
         });
       }

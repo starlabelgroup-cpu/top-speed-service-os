@@ -229,4 +229,190 @@ function onAppReady(){ loadEquip(); loadActivity(); }
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Archivo',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Archivo',Inter,Arial,sans-serif}</style>
+
+<!-- ===== SPEEDY FLOATING ASSISTANT (Phase D) — waits on the customer, opens in place ===== -->
+<style>
+#swBtn{position:fixed;right:16px;bottom:20px;z-index:120;background:#E31E24;color:#fff;border:none;border-radius:999px;padding:14px 20px;font:inherit;font-weight:800;font-size:15.5px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center;cursor:pointer;animation:swPulse 2.8s ease-in-out infinite}
+@keyframes swPulse{0%,100%{box-shadow:0 14px 34px rgba(227,30,36,.4)}50%{box-shadow:0 14px 42px rgba(227,30,36,.75)}}
+#swPanel{position:fixed;right:16px;bottom:84px;z-index:121;width:min(384px,calc(100vw - 24px));background:#fff;border:1px solid #D9E3F2;border-radius:20px;box-shadow:0 18px 44px rgba(10,38,92,.22);display:none;overflow:hidden}
+#swPanel.open{display:block}
+.sw-head{background:#0A265C;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:11px}
+.sw-head .sw-av{width:36px;height:36px;border-radius:50%;background:#E31E24;display:flex;align-items:center;justify-content:center;font-size:18px}
+.sw-head b{font-size:16px}
+.sw-head small{display:block;color:#B9CFF2;font-size:12px}
+.sw-head button{margin-left:auto;background:none;border:none;color:#fff;font-size:22px;line-height:1;cursor:pointer}
+.sw-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px 0}
+.sw-quick button{border:1.5px solid #D9E3F2;background:#fff;color:#0C1B33;border-radius:999px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer}
+.sw-recs{padding:10px 12px 2px;display:none;flex-direction:column;gap:7px}
+.sw-recs .sw-rec-h{font-size:11px;font-weight:800;letter-spacing:.07em;color:#71809A;text-transform:uppercase}
+.sw-rec{background:#FFF7E8;border:1px solid #F0DFAE;border-radius:12px;padding:8px 11px;font-size:13px;line-height:1.4}
+.sw-rec b{color:#0A265C}
+.sw-rec a{font-weight:800;color:#0B7CFF;white-space:nowrap}
+.sw-rec.upd{background:#EAF6EF;border-color:#BFE6CF}
+.sw-body{height:290px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#F3F6FB}
+.sw-msg{max-width:86%;padding:9px 12px;border-radius:14px;font-size:14.5px;line-height:1.45}
+.sw-msg.bot{background:#fff;border:1px solid #D9E3F2;color:#0C1B33;border-bottom-left-radius:4px;align-self:flex-start}
+.sw-msg.me{background:#0B7CFF;color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.sw-input{display:flex;gap:8px;padding:11px}
+.sw-input input{flex:1;padding:11px 13px;border:1.5px solid #D9E3F2;border-radius:12px;font:inherit;font-size:14.5px;min-width:0}
+.sw-input button[type=submit]{background:#E31E24;color:#fff;border:none;border-radius:11px;padding:0 16px;font-weight:700;cursor:pointer}
+#swMic.rec{background:#fdecec !important;animation:swVp 1s infinite}
+@keyframes swVp{50%{opacity:.55}}
+</style>
+<button id="swBtn" onclick="swToggle()" aria-haspopup="dialog">💬 Ask Speedy</button>
+<div id="swPanel" role="dialog" aria-label="Ask Speedy chat assistant">
+  <div class="sw-head">
+    <div class="sw-av">🏎️</div>
+    <div><b>Speedy</b><small>Top Speed AI assistant • Live</small></div>
+    <button onclick="swToggle()" aria-label="Close chat">×</button>
+  </div>
+  <div class="sw-quick">
+    <button onclick="swQuick('How much is the diagnostic?')">💲 Diagnostic cost</button>
+    <button onclick="swQuick('My fridge is not cooling')">🧊 Fridge help</button>
+    <button onclick="swQuick('I want to book')">📅 Book me</button>
+  </div>
+  <div class="sw-recs" id="swRecs"></div>
+  <div class="sw-body" id="swBody"></div>
+  <form class="sw-input" id="swForm">
+    <input id="swText" type="text" placeholder="Ask Speedy… or tap 🎤 and say it" autocomplete="off" aria-label="Message Speedy">
+    <button type="button" id="swMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 12px;font-size:16px;cursor:pointer">🎤</button>
+    <button type="submit">Send</button>
+  </form>
+</div>
+<script>
+var SW_API='https://top-speed-service-os.vercel.app/api/v1';
+var swOpen=false, swGreeted=false, swHistory=[];
+function swEsc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
+function swToggle(){
+  swOpen=!swOpen;
+  document.getElementById('swPanel').classList.toggle('open',swOpen);
+  if(swOpen&&!swGreeted){ swGreeted=true; swBot('Hey, I\u2019m Speedy 🏎️ — Top Speed\u2019s assistant. Ask me about a repair, the $99 diagnostic, or type "book" and I\u2019ll walk you to an appointment.'); }
+  if(swOpen){ swLoadRecs(); setTimeout(function(){ var i=document.getElementById('swText'); if(i) i.focus(); },80); }
+}
+function swAdd(text,me){
+  var d=document.createElement('div'); d.className='sw-msg '+(me?'me':'bot'); d.textContent=text;
+  var body=document.getElementById('swBody'); body.appendChild(d); body.scrollTop=body.scrollHeight;
+  return d;
+}
+function swBot(t){ setTimeout(function(){ swAdd(t,false); },240); }
+function swAsk(text){
+  swAdd(text,true);
+  swHistory.push({role:'user',content:text});
+  var typing=swAdd('Speedy is typing\u2026',false);
+  fetch(SW_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:swHistory.slice(-10)})})
+    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+    .then(function(j){
+      var reply=(j.data&&j.data.reply)||'';
+      if(!reply) throw new Error('empty reply');
+      typing.textContent=reply;
+      swHistory.push({role:'assistant',content:reply});
+      document.getElementById('swBody').scrollTop=document.getElementById('swBody').scrollHeight;
+      swMaybeBook();
+    })
+    .catch(function(){ typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 \u2014 or try me again in a moment.'; });
+}
+function swQuick(t){ if(!swOpen) swToggle(); swAsk(t); }
+document.getElementById('swForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  var inp=document.getElementById('swText'); var v=inp.value.trim(); if(!v) return;
+  inp.value=''; swAsk(v);
+});
+function swMaybeBook(){
+  if(window._swBooked) return;
+  var text=swHistory.map(function(h){return (h.role==='user'?'Customer: ':'Speedy: ')+h.content;}).join('\n');
+  fetch(SW_API+'/speedy/extract-booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:text})})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      var d=j.data||{};
+      if(!d.ready||window._swBookShown) return;
+      window._swBookShown=true; window._swBook=d;
+      var rows=[['Name',d.name],['Phone',d.phone],['City',d.city],['ZIP',d.zip],['Appliance',d.appliance],['Problem',d.issue],['Window',d.preferred_window||'First available']];
+      var card=document.createElement('div'); card.className='sw-msg bot'; card.id='swBookCard';
+      card.innerHTML='<b>Ready to book \u2014 does this look right?</b><br>'+rows.map(function(r){return r[0]+': <b>'+swEsc(r[1])+'</b>';}).join('<br>')+'<br><span style="font-size:12.5px;">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button onclick="swBookIt(this)" style="margin-top:8px; background:#0B7CFF; color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; padding:9px 16px; cursor:pointer;">\u2713 Book my visit</button>';
+      var body=document.getElementById('swBody'); body.appendChild(card); body.scrollTop=body.scrollHeight;
+    })
+    .catch(function(){});
+}
+function swBookIt(btn){
+  var d=window._swBook; if(!d) return;
+  btn.disabled=true; btn.textContent='Booking\u2026';
+  fetch(SW_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined})})
+    .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
+    .then(function(j){
+      window._swBooked=true;
+      document.getElementById('swBookCard').innerHTML='\u2705 <b>Booked!</b> Your reference is <b>'+swEsc(j.data.referenceCode)+'</b>. A Service Setter will text '+swEsc(d.phone)+' to confirm your window.';
+    })
+    .catch(function(e){
+      btn.disabled=false; btn.textContent='\u2713 Book my visit';
+      swAdd('That booking did not go through ('+e.message+'). You can book from the main site, or call 954-931-7997.',false);
+    });
+}
+/* Speedy recommends + updates \u2014 signed-in derivations come ONLY from the
+   customer's real records (/tracking/mine, /connect/promotions,
+   /connect/summary); guests get the standing suggestions below. */
+var SW_GUEST_RECS=[
+    {t:'Speedy-sorted bulk requests', d:'In your workspace, paste facility or tenant requests in plain words \u2014 Speedy AI sorts them into separate work orders under one batch reference.', a:'', c:''},
+    {t:'Preventive maintenance rhythm', d:'Critical equipment lasts longer on a check-up cycle. Ask Speedy what to watch on each unit in your registry.', a:'', c:''},
+    {t:'Priority dispatch for critical equipment', d:'Mark a unit critical and Service Setters prioritize it \u2014 commercial work is quoted per facility.', a:'', c:''}
+  ];
+function swLoadRecs(){
+  var box=document.getElementById('swRecs'); if(!box) return;
+  function render(updates, recs, mine){
+    var h='';
+    if(updates.length){ h+='<div class="sw-rec-h">\uD83D\uDD14 Your updates</div>'+updates.map(function(u){return '<div class="sw-rec upd"><b>'+swEsc(u.t)+'</b> \u2014 '+swEsc(u.d)+'</div>';}).join(''); }
+    h+='<div class="sw-rec-h">\u2726 Speedy recommends'+(mine?' for you':'')+'</div>';
+    h+=recs.map(function(r){ return '<div class="sw-rec"><b>'+swEsc(r.t)+'</b> \u2014 '+swEsc(r.d)+(r.a?' <a href="'+r.a+'">'+swEsc(r.c||'Open')+' \u2192</a>':'')+'</div>'; }).join('');
+    box.innerHTML=h; box.style.display='flex';
+  }
+  var tok=''; try{ tok=(window.tok?tok():'')||localStorage.getItem('tsos_token')||''; }catch(e){}
+  if(!tok){ render([], SW_GUEST_RECS, false); return; }
+  var H={headers:{'Authorization':'Bearer '+tok}};
+  function jf(p){ return fetch(SW_API+p,H).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;}); }
+  Promise.all([jf('/tracking/mine'), jf('/connect/promotions'), jf('/connect/summary')]).then(function(res){
+    var updates=[], recs=[];
+    var jd=res[0]&&res[0].data; var jobs=jd&&(jd.jobs||jd.tracking||jd.bookings);
+    if(Array.isArray(jobs)) jobs.slice(0,2).forEach(function(j){
+      var stage=j.stageLabel8||j.stageLabel||j.status||'';
+      if(stage) updates.push({t:(j.appliance||'Your job')+' update', d:'Current stage: '+stage+(j.reference?' \u00B7 Ref '+j.reference:'')});
+    });
+    var pd=res[1]&&res[1].data;
+    if(pd){
+      var list=Array.isArray(pd.promotions)?pd.promotions:(Array.isArray(pd.offers)?pd.offers:[]);
+      list.slice(0,3).forEach(function(p){
+        var t=p.title||p.name||p.label; if(t) recs.push({t:t, d:p.description||p.detail||p.terms||'Available on your account \u2014 see the terms.', a:'/offers-rewards', c:'See offer'});
+      });
+      if(pd.referralCode) updates.push({t:'Your referral code is ready', d:'Share '+pd.referralCode+' from the customer app.'});
+    }
+    var sd=res[2]&&res[2].data;
+    if(sd){
+      var apps=sd.appliances||sd.registeredAppliances||[]; var hist=sd.serviceHistory||sd.history||[];
+      var lastByType={};
+      if(Array.isArray(hist)) hist.forEach(function(h){ var k=String(h.applianceType||h.type||'').toLowerCase(); var dt=h.date||h.createdAt||h.completedAt; if(k&&dt&&(!lastByType[k]||dt>lastByType[k])) lastByType[k]=dt; });
+      if(Array.isArray(apps)) apps.slice(0,4).forEach(function(a){
+        var type=a.type||a.applianceType||'Appliance'; var last=lastByType[String(type).toLowerCase()];
+        if(!last || (Date.now()-new Date(last).getTime() > 365*24*3600*1000)) recs.push({t:'Maintenance check \u2014 '+type, d:'No service on record in the last 12 months. A check-up catches small issues early.', a:'', c:''});
+      });
+    }
+    if(!updates.length && !recs.length){ render([], SW_GUEST_RECS, false); return; }
+    if(!recs.length) recs=SW_GUEST_RECS.slice(0,1);
+    render(updates, recs, true);
+  });
+}
+(function(){
+  var B=document.getElementById('swMic'), I=document.getElementById('swText');
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!B||!I) return;
+  if(!SR){ B.style.display='none'; return; }
+  var rec=null, listening=false;
+  B.addEventListener('click',function(){
+    if(listening){ try{rec.stop();}catch(e){} return; }
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
+    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onerror=rec.onend;
+    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+  });
+})();
+</script>
+
 </body></html>
