@@ -30,6 +30,11 @@ const SUBJECTS = {
   REFERRAL_CODE: 'Your Top Speed Appliance referral code',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'Top Speed commercial work order received',
   PAYMENT_RECEIVED: 'Payment received — Top Speed Appliance',
+  BOOKING_RECEIPT: 'Your Top Speed Appliance receipt',
+  VIDEO_REQUEST: 'Your Top Speed video consultation',
+  SUBMISSION_CONFIRMATION: 'Top Speed Appliance — we received your submission',
+  STAFF_SUBMISSION_ALERT: 'Top Speed Appliance — new submission alert',
+  ACCOUNT_WELCOME: 'Welcome to Top Speed Appliance',
 };
 
 function resendConfig() {
@@ -69,7 +74,7 @@ export function normalizePhone(to) {
 
 async function sendEmail(entry) {
   const config = resendConfig();
-  const subject = SUBJECTS[entry.template] || 'Top Speed Appliance';
+  const subject = entry.payload?.subject || SUBJECTS[entry.template] || 'Top Speed Appliance';
   const text = entry.payload?.message || '';
   const response = await fetch(`${config.base}/emails`, {
     method: 'POST',
@@ -111,8 +116,21 @@ async function sendSms(entry) {
 /** Attempt delivery of one outbox entry. Mutates the entry's status fields. */
 export async function deliverEntry(entry) {
   const isEmail = entry.channel === 'email';
+  const isSms = entry.channel === 'sms';
+  if (!isEmail && !isSms) {
+    // Internal feed entries (Service Setters' in-platform queue) are
+    // never routed to a provider — they exist only in the outbox.
+    return { result: 'skipped', reason: `channel ${entry.channel} is an internal feed entry` };
+  }
   const configured = isEmail ? resendConfig().configured : twilioConfig().configured;
-  if (!configured) return { result: 'skipped', reason: `${isEmail ? 'Resend' : 'Twilio'} not configured` };
+  if (!configured) {
+    // Truthful gating: the entry stays on record as GATED with the
+    // machine-readable reason — never marked sent, never dropped.
+    entry.status = 'GATED';
+    entry.reason = isEmail ? 'RESEND_NOT_CONFIGURED' : 'TWILIO_NOT_CONFIGURED';
+    entry.error = null;
+    return { result: 'gated', reason: entry.reason };
+  }
 
   entry.attempts = (entry.attempts || 0) + 1;
   try {
@@ -121,6 +139,7 @@ export async function deliverEntry(entry) {
     entry.sentAt = new Date().toISOString();
     entry.providerId = providerId;
     entry.error = null;
+    entry.reason = null;
     return { result: 'sent', providerId };
   } catch (error) {
     entry.status = 'FAILED';
@@ -133,7 +152,7 @@ const QUEUED_STATUSES = new Set(['QUEUED_SIMULATED', 'QUEUED']);
 
 /** Deliver every queued outbox entry whose provider is configured. */
 export async function drainOutbox() {
-  const summary = { sent: 0, failed: 0, skipped: 0 };
+  const summary = { sent: 0, failed: 0, skipped: 0, gated: 0 };
   for (const entry of store.notificationOutbox) {
     if (!QUEUED_STATUSES.has(entry.status)) continue;
     const outcome = await deliverEntry(entry);
@@ -143,4 +162,50 @@ export async function drainOutbox() {
     summary[outcome.result] = (summary[outcome.result] || 0) + 1;
   }
   return summary;
+}
+
+/**
+ * Deliver a specific batch of entries — used by the opportunistic
+ * on-queue drain in services/notifications.js so alerts follow new
+ * submissions immediately, without touching the historical backlog.
+ */
+export async function drainEntries(entries) {
+  const summary = { sent: 0, failed: 0, skipped: 0, gated: 0 };
+  for (const entry of entries || []) {
+    if (!QUEUED_STATUSES.has(entry.status)) continue;
+    const outcome = await deliverEntry(entry);
+    await persistNotification(entry).catch(() => {});
+    summary[outcome.result] = (summary[outcome.result] || 0) + 1;
+  }
+  return summary;
+}
+
+/**
+ * Channel health for the staff Notifications console: configuration
+ * PRESENCE only — no secret values ever leave the server. The email
+ * `from` address is public sender identity, so it is reported as-is;
+ * `fromVerifiedDomain` flags whether sends originate from the
+ * SPF/DKIM-verified updates subdomain (the .net domain failed
+ * verification, so a From on it means Resend will reject the send).
+ * The SMS trial flag reflects the known account state: Ramone's
+ * Twilio account is a trial (sends only reach verified numbers) until
+ * he upgrades it — presence of credentials does not change that.
+ */
+export function channelHealth() {
+  const email = resendConfig();
+  const sms = twilioConfig();
+  return {
+    email: {
+      provider: 'resend',
+      configured: email.configured,
+      from: email.from,
+      fromVerifiedDomain: /@updates\.topspeedapplianceservice\.com>?\s*$/.test(email.from || ''),
+    },
+    sms: {
+      provider: 'twilio',
+      configured: sms.configured,
+      from: sms.from || null,
+      trial: true,
+    },
+  };
 }

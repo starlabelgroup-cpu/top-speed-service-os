@@ -66,6 +66,9 @@ function notificationToRow(entry) {
     to: entry.to,
     payload: entry.payload ?? {},
     status: entry.status || 'QUEUED_SIMULATED',
+    eventKey: entry.eventKey ?? null,
+    eventType: entry.eventType ?? null,
+    reason: entry.reason ?? null,
     attempts: entry.attempts ?? 0,
     providerId: entry.providerId ?? null,
     error: entry.error ?? null,
@@ -86,6 +89,9 @@ function notificationFromRow(row) {
   if (row.attempts) entry.attempts = row.attempts;
   if (row.providerId) entry.providerId = row.providerId;
   if (row.error) entry.error = row.error;
+  if (row.eventKey) entry.eventKey = row.eventKey;
+  if (row.eventType) entry.eventType = row.eventType;
+  if (row.reason) entry.reason = row.reason;
   if (row.sentAt) entry.sentAt = row.sentAt?.toISOString?.() ?? row.sentAt;
   return entry;
 }

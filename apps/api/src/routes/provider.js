@@ -5,6 +5,8 @@ import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
+import { notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
+import { computeTracking } from '../services/tracking.js';
 import { speedyStatus, speedyStructureNote } from '../services/speedy.js';
 
 /**
@@ -334,6 +336,13 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   }
   booking.updatedAt = new Date().toISOString();
   await persistBooking(booking);
+  // Lifecycle updates: when the tech reports a stage, the customer is
+  // notified through the same outbox as every other platform message.
+  if (parsed.data.action === 'EN_ROUTE') {
+    notifyTechEnRoute(booking, 'TECH_APP');
+  } else {
+    notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:${type}:${booking.updatedAt}`);
+  }
   appendEvent(type, {
     source: 'TECH_APP',
     actor: req.user.email,

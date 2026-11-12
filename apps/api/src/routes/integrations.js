@@ -6,7 +6,7 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { notifyBookingConfirmation } from '../services/notifications.js';
+import { notifyBookingConfirmation, notifyNewBooking, notifySubmission } from '../services/notifications.js';
 import { drainOutbox, providersStatus } from '../services/senders.js';
 
 const router = Router();
@@ -174,6 +174,7 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
       details: { appliance: booking.appliance, city: booking.city, status: booking.status },
     });
     notifyBookingConfirmation(booking, data.source);
+    notifyNewBooking(booking, data.source);
     return res.status(201).json({
       data: { recordType, referenceCode, booking },
     });
@@ -215,6 +216,18 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
       referenceCode,
       details: { businessName, serviceAreas, appliances },
     });
+    notifySubmission({
+      kind: 'PROVIDER_APPLICATION',
+      reference: referenceCode,
+      submitter: { name: data.name, phone: data.phone, email: data.email },
+      lines: [
+        `Business: ${businessName}`,
+        `Service areas: ${serviceAreas.join(', ')}`,
+        `Appliances: ${appliances.join(', ')}`,
+        ...(data.yearsInBusiness ? [`Years in business: ${data.yearsInBusiness}`] : []),
+      ],
+      source: data.source,
+    });
     return res.status(201).json({
       data: { recordType, referenceCode, application },
     });
@@ -254,6 +267,17 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
     entityId: lead.id,
     referenceCode,
     details: { company: lead.company, units },
+  });
+  notifySubmission({
+    kind: 'PM_LEAD',
+    reference: referenceCode,
+    submitter: { name: data.name, phone: data.phone, email: data.email },
+    lines: [
+      `Company: ${lead.company}`,
+      `Units: ${units}`,
+      ...(data.message ? [`Message: ${String(data.message).slice(0, 240)}`] : []),
+    ],
+    source: data.source,
   });
   return res.status(201).json({
     data: { recordType, referenceCode, lead },

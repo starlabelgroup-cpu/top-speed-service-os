@@ -9,9 +9,11 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { computeTracking } from '../services/tracking.js';
 import {
+  notifyBookingAssigned,
   notifyBookingConfirmation,
   notifyDispatchApproved,
   notifyDispatchMatched,
+  notifyNewBooking,
   notifyReviewRequest,
 } from '../services/notifications.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
@@ -118,6 +120,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     details: { appliance: booking.appliance, city: booking.city, status: booking.status },
   });
   notifyBookingConfirmation(booking, booking.source);
+  notifyNewBooking(booking, booking.source);
 
   return res.status(201).json({ data: publicBooking(booking) });
 });
@@ -236,6 +239,7 @@ router.post(
       details: { assignmentId: assignment.id, providerId: parsed.data.providerId, status: booking.status },
     });
     notifyDispatchApproved(booking, assignment, booking.source || null);
+    notifyBookingAssigned(booking, assignment, booking.source || null);
     await persistBooking(booking);
     await persistAssignmentsForBooking(booking.id);
     return res.json({

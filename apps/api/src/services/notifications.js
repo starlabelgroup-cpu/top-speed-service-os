@@ -1,17 +1,37 @@
 import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { persistNotification } from '../db/flywheelRepo.js';
+import { drainEntries } from './senders.js';
 
 /**
- * Notification pipeline.
+ * Notification pipeline — ONE system for every email/SMS alert and
+ * update on the network and platform (Ramone's directive, 2026-11-11:
+ * "a system for Top Speed service OS email and sms messages alerts and
+ * updates following any submissions from network and platform").
  *
- * Every message the platform sends is appended to the notification
- * outbox (GET /api/v1/notifications/outbox) with its channel, template,
- * recipient, and payload — and written through to the database
- * (db/flywheelRepo) so queued messages survive cold starts. The live
- * drain in services/senders.js delivers them through Resend (email)
- * and Twilio (SMS) when those providers are configured; entries for an
- * unconfigured provider stay queued with status QUEUED_SIMULATED.
+ * How it works:
+ *  - Every entry point calls one of the notify* functions below with an
+ *    EVENT (a submission, a booking lifecycle change, a payment…). The
+ *    event fans out into outbox entries: customer confirmation/update
+ *    (email + SMS), and staff alerts (email to the business inbox + SMS
+ *    to the business line).
+ *  - Every entry lands in the notification outbox (GET
+ *    /api/v1/notifications) and is written through to the database
+ *    (db/flywheelRepo) so messages survive cold starts.
+ *  - Delivery runs through services/senders.js (Resend email, Twilio
+ *    SMS): opportunistically right after queueing (this process, new
+ *    entries only), plus the staff-triggered POST /notifications/send
+ *    and the CRON_SECRET-guarded GET /notifications/cron-drain.
+ *  - TRUTHFUL STATUSES: QUEUED → SENT / FAILED / GATED. GATED carries a
+ *    machine-readable `reason` (RESEND_NOT_CONFIGURED,
+ *    TWILIO_NOT_CONFIGURED, NO_RECIPIENT, SETTING_DISABLED). An entry
+ *    is only SENT when the provider accepted it — nothing pretends.
+ *  - IDEMPOTENCY: one-shot events carry an `eventKey`; queueing the
+ *    same key twice returns the existing entry instead of a duplicate.
+ *  - GOVERNANCE: messages are composed ONLY from recorded data —
+ *    references, names, service, city, windows, real statuses. No
+ *    invented prices, ETAs, or statuses; a receipt states paid only
+ *    when the recorded payment status is PAID.
  */
 export const NOTIFICATION_TEMPLATES = {
   BOOKING_CONFIRMATION: 'BOOKING_CONFIRMATION',
@@ -28,18 +48,73 @@ export const NOTIFICATION_TEMPLATES = {
   VIDEO_REQUEST: 'VIDEO_REQUEST',
   PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
   BOOKING_RECEIPT: 'BOOKING_RECEIPT',
+  SUBMISSION_CONFIRMATION: 'SUBMISSION_CONFIRMATION',
+  STAFF_SUBMISSION_ALERT: 'STAFF_SUBMISSION_ALERT',
+  ACCOUNT_WELCOME: 'ACCOUNT_WELCOME',
 };
 
-export function queueNotification({ channel, template, to, payload = {}, source = null }) {
+/* ------------------------------------------------------------------ */
+/* Settings — staff toggles, persisted via db/notificationsRepo.       */
+/* Defaults are ALL ON; the store copy is hydrated at cold start.      */
+/* ------------------------------------------------------------------ */
+export const NOTIFICATION_SETTING_DEFAULTS = {
+  staffEmailAlerts: true,
+  staffSmsAlerts: true,
+  customerEmailConfirmations: true,
+  customerSmsConfirmations: true,
+};
+export const NOTIFICATION_SETTING_KEYS = Object.keys(NOTIFICATION_SETTING_DEFAULTS);
+
+export function getNotificationSettings() {
+  return { ...NOTIFICATION_SETTING_DEFAULTS, ...(store.notificationSettings || {}) };
+}
+
+/* ------------------------------------------------------------------ */
+/* Outbox core                                                         */
+/* ------------------------------------------------------------------ */
+
+const pendingDrain = new Set();
+let drainTimer = null;
+
+/**
+ * Opportunistic delivery: entries queued by THIS process get one drain
+ * attempt shortly after queueing, so alerts follow submissions without
+ * waiting for a staff member to press "send". Only the new entries are
+ * attempted — the historical backlog is never touched implicitly; the
+ * staff drain (POST /notifications/send) and the cron drain remain the
+ * explicit full-queue processors.
+ */
+function scheduleEntryDrain(entry) {
+  pendingDrain.add(entry);
+  if (drainTimer) return;
+  drainTimer = setTimeout(() => {
+    drainTimer = null;
+    const batch = [...pendingDrain];
+    pendingDrain.clear();
+    void drainEntries(batch).catch((error) => {
+      console.error(JSON.stringify({ level: 'error', message: 'opportunistic drain failed', error: String(error?.message || error) }));
+    });
+  }, 1200);
+  if (typeof drainTimer.unref === 'function') drainTimer.unref();
+}
+
+export function queueNotification({ channel, template, to, payload = {}, source = null, eventKey = null, eventType = null, status = null, reason = null }) {
+  if (eventKey) {
+    const existing = store.notificationOutbox.find((entry) => entry.eventKey === eventKey);
+    if (existing) return existing;
+  }
   const entry = {
     id: createId(),
     channel,
     template,
     to,
     payload,
-    status: 'QUEUED_SIMULATED',
+    status: status || 'QUEUED',
     createdAt: new Date().toISOString(),
   };
+  if (eventKey) entry.eventKey = eventKey;
+  if (eventType) entry.eventType = eventType;
+  if (reason) entry.reason = reason;
   store.notificationOutbox.push(entry);
   // Write-through so the outbox survives cold starts. Fire-and-forget:
   // the in-memory push above is what this response is built from.
@@ -52,7 +127,15 @@ export function queueNotification({ channel, template, to, payload = {}, source 
     entityId: entry.id,
     details: { channel, template, to },
   });
+  if ((channel === 'email' || channel === 'sms') && entry.status === 'QUEUED') {
+    scheduleEntryDrain(entry);
+  }
   return entry;
+}
+
+/** A notification that cannot be attempted, recorded honestly as GATED. */
+function queueGated({ channel, template, to, payload, source, eventKey, eventType, reason }) {
+  return queueNotification({ channel, template, to, payload, source, eventKey, eventType, status: 'GATED', reason });
 }
 
 function customerChannels(booking) {
@@ -62,17 +145,260 @@ function customerChannels(booking) {
   return channels;
 }
 
+/* ------------------------------------------------------------------ */
+/* Staff alerts — real email + SMS to the business, per submission.    */
+/* ------------------------------------------------------------------ */
+
+export const STAFF_ALERT_EMAIL = 'service@topspeedappliance.net';
+export const STAFF_ALERT_PHONE = PLATFORM_CONSTANTS.phone; // 954-931-7997, the business line
+
+/**
+ * Alert the business about a submission. Respects the staff toggles:
+ * when a channel is off, a GATED (SETTING_DISABLED) entry is recorded
+ * instead so the console shows what was suppressed and why.
+ */
+export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = null, city = null, lines = [], consolePath = '/portal', source = null, eventKeyBase = null }) {
+  const settings = getNotificationSettings();
+  const label = kindLabel || kind;
+  const keyBase = eventKeyBase || `submission:${reference || kind}`;
+  const emailBody =
+    `New ${label} submission on the Top Speed platform.\n` +
+    `Reference: ${reference || '(none)'}\n` +
+    (submitterName ? `From: ${submitterName}\n` : '') +
+    (city ? `City: ${city}\n` : '') +
+    lines.map((line) => `${line}\n`).join('') +
+    `Review it here: https://topspeedserviceos.com${consolePath}\n` +
+    `— Top Speed Service OS notifications`;
+  const smsBody =
+    `Top Speed alert: new ${label} ${reference || ''}`.trimEnd() +
+    (submitterName ? ` — ${submitterName}` : '') +
+    (city ? `, ${city}` : '') +
+    '. Details in the console.';
+  const entries = [];
+  const emailPayload = { kind, reference: reference || null, message: emailBody, subject: `New ${label} — ${reference || 'submission'}` };
+  if (settings.staffEmailAlerts) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_EMAIL, payload: emailPayload, source, eventKey: `${keyBase}:staff:email`, eventType: 'SUBMISSION' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_EMAIL, payload: emailPayload, source, eventKey: `${keyBase}:staff:email`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
+  }
+  const smsPayload = { kind, reference: reference || null, message: smsBody };
+  if (settings.staffSmsAlerts) {
+    entries.push(queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_PHONE, payload: smsPayload, source, eventKey: `${keyBase}:staff:sms`, eventType: 'SUBMISSION' }));
+  } else {
+    entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_PHONE, payload: smsPayload, source, eventKey: `${keyBase}:staff:sms`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/* ------------------------------------------------------------------ */
+/* Submission confirmations — every public intake, one event API.      */
+/* ------------------------------------------------------------------ */
+
+/**
+ * How each submission type is presented to the person who sent it.
+ * Copy is written from the type alone — never from invented facts.
+ */
+export const SUBMISSION_TYPES = {
+  SERVICE_REQUEST: {
+    label: 'service request',
+    next: 'A Service Setter will review your request and reach out to confirm your appointment window.',
+    consolePath: '/crm',
+  },
+  PROVIDER_APPLICATION: {
+    label: 'provider application',
+    next: 'Our network team reviews every application and will contact you about the next steps to join the Top Speed network.',
+    consolePath: '/crm',
+  },
+  COMMERCIAL_ACCOUNT_REQUEST: {
+    label: 'commercial account request',
+    next: 'Our commercial team will contact you to set up your Appliance Pro Commercial account.',
+    consolePath: '/crm',
+  },
+  COMMERCIAL_WORK_ORDER: {
+    label: 'commercial work order',
+    next: 'Your work order is in the Service Setters queue; we will update you as it is scheduled.',
+    consolePath: '/crm',
+  },
+  PM_WALKTHROUGH_REQUEST: {
+    label: 'property walkthrough request',
+    next: 'Our property team will contact you to schedule the walkthrough.',
+    consolePath: '/crm',
+  },
+  PM_LEAD: {
+    label: 'property manager inquiry',
+    next: 'Our property team will contact you to talk through your portfolio and how Top Speed can help.',
+    consolePath: '/crm',
+  },
+  PM_SERVICE_REQUEST: {
+    label: 'property service request batch',
+    next: 'Your requests are with the Service Setters. Each unit problem carries its own reference, and we will update you as they are scheduled.',
+    consolePath: '/crm',
+  },
+  ADVERTISER_CONTACT: {
+    label: 'advertiser inquiry',
+    next: 'Our advertising team will reach out shortly about placements on the Top Speed network.',
+    consolePath: '/crm',
+  },
+  MARKETING_AGENCY_INTAKE: {
+    label: 'marketing agency intake',
+    next: 'The Top Speed Marketing OS agency team will review your intake and reach out.',
+    consolePath: '/crm',
+  },
+  VIDEO_REQUEST: {
+    label: 'Speedy Live Video request',
+    next: 'Service Setters will arrange your video consultation and text you the join link when the room is ready.',
+    consolePath: '/book-os',
+  },
+  ACCOUNT_REGISTRATION: {
+    label: 'account registration',
+    next: 'Your account is ready — sign in any time to book service, track your technician, and manage your appliances.',
+    consolePath: '/portal',
+  },
+};
+
+function submissionPresentation(kind) {
+  return SUBMISSION_TYPES[kind] || {
+    label: 'submission',
+    next: 'We have your submission and the team will follow up.',
+    consolePath: '/crm',
+  };
+}
+
+/**
+ * The single event entry point for submissions. Fans out to:
+ *  - customer confirmation email + SMS (when the contact details were
+ *    provided; a GATED/NO_RECIPIENT entry is recorded when they were
+ *    not, so staff can see the gap),
+ *  - staff alerts (email + SMS to the business) via notifyStaffAlert.
+ *
+ * `lines` are extra recorded facts (service, property, unit count…)
+ * rendered verbatim into the confirmation — pass only real data.
+ */
+export function notifySubmission({ kind, reference, submitter = {}, lines = [], source = null, consolePath = null }) {
+  const presentation = submissionPresentation(kind);
+  const label = presentation.label;
+  const path = consolePath || presentation.consolePath;
+  const keyBase = `submission:${reference || `${kind}:${submitter.phone || submitter.email || 'unknown'}`}`;
+  // UUIDs key the event but never print in customer copy.
+  const displayRef = reference && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(reference) ? reference : null;
+  const settings = getNotificationSettings();
+  const entries = [];
+
+  const detailLines = (lines || []).filter(Boolean);
+  const emailBody =
+    `Hi ${submitter.name || 'there'},\n\n` +
+    `Thank you — Top Speed Appliance received your ${label}.\n` +
+    `Your reference: ${displayRef || 'on file'}\n` +
+    (detailLines.length ? `\n${detailLines.join('\n')}\n` : '') +
+    `\nWhat happens next: ${presentation.next}\n` +
+    `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+    `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
+  const smsBody =
+    `Top Speed Appliance: we received your ${label} — ref ${displayRef || 'on file'}. ${presentation.next} ` +
+    `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`;
+
+  const emailPayload = {
+    kind,
+    reference: reference || null,
+    customerName: submitter.name || null,
+    message: emailBody,
+    subject: displayRef ? `We received your ${label} — ref ${displayRef}` : `We received your ${label}`,
+  };
+  if (submitter.email) {
+    if (settings.customerEmailConfirmations) {
+      entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: submitter.email, payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'SUBMISSION' }));
+    } else {
+      entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: submitter.email, payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
+    }
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: '(no email on file)', payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'SUBMISSION', reason: 'NO_RECIPIENT' }));
+  }
+
+  const smsPayload = { kind, reference: reference || null, customerName: submitter.name || null, message: smsBody };
+  if (submitter.phone) {
+    if (settings.customerSmsConfirmations) {
+      entries.push(queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: submitter.phone, payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'SUBMISSION' }));
+    } else {
+      entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: submitter.phone, payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
+    }
+  } else {
+    entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION, to: '(no phone on file)', payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'SUBMISSION', reason: 'NO_RECIPIENT' }));
+  }
+
+  entries.push(...notifyStaffAlert({
+    kind,
+    kindLabel: label,
+    reference,
+    submitterName: submitter.name || null,
+    lines: [
+      ...(submitter.phone ? [`Phone: ${submitter.phone}`] : []),
+      ...(submitter.email ? [`Email: ${submitter.email}`] : []),
+      ...detailLines,
+    ],
+    consolePath: path,
+    source,
+    eventKeyBase: keyBase,
+  }));
+  return entries;
+}
+
+/** Welcome message for a newly registered account (+ staff alert). */
+export function notifyAccountCreated(user, source = null) {
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const entries = [];
+  if (user.email) {
+    const settings = getNotificationSettings();
+    const payload = {
+      userId: user.id,
+      customerName: name,
+      message:
+        `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+        `Welcome to Top Speed Appliance — your account is ready. Sign in any time to book service, ` +
+        `track your technician live, and keep your appliances and service history in one place.\n` +
+        `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+        `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+      subject: 'Welcome to Top Speed Appliance',
+    };
+    if (settings.customerEmailConfirmations) {
+      entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.ACCOUNT_WELCOME, to: user.email, payload, source, eventKey: `account:${user.id}:welcome:email`, eventType: 'ACCOUNT' }));
+    } else {
+      entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.ACCOUNT_WELCOME, to: user.email, payload, source, eventKey: `account:${user.id}:welcome:email`, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+    }
+  }
+  entries.push(...notifyStaffAlert({
+    kind: 'ACCOUNT_REGISTRATION',
+    kindLabel: 'account registration',
+    reference: user.email,
+    submitterName: name,
+    lines: [`Email: ${user.email}`, ...(user.phone ? [`Phone: ${user.phone}`] : []), `Role: ${(user.roles || []).join(', ') || 'CUSTOMER'}`],
+    consolePath: '/portal',
+    source,
+    eventKeyBase: `account:${user.id}`,
+  }));
+  return entries;
+}
+
+/* ------------------------------------------------------------------ */
+/* Booking lifecycle (existing pipeline, now with event keys).         */
+/* ------------------------------------------------------------------ */
+
 export function notifyBookingConfirmation(booking, source = null) {
   const appointment = booking.appointment?.status === 'SET' ? booking.appointment : null;
   const appointmentText = appointment
     ? ` Your appointment is ${appointment.date}, ${appointment.windowLabel || appointment.window}.`
     : '';
+  // The confirmation legitimately re-sends when an appointment is set
+  // or moved, so the key carries the appointment's setAt stamp; the
+  // initial booking confirmation keys on the booking itself.
+  const keyStamp = appointment?.setAt || 'initial';
   return customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.BOOKING_CONFIRMATION,
       to,
       source,
+      eventKey: `booking:${booking.id}:confirmation:${channel}:${keyStamp}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -92,6 +418,29 @@ export function notifyBookingConfirmation(booking, source = null) {
 }
 
 /**
+ * Staff alert for a new booking, fired beside the customer
+ * confirmation at every booking creation path.
+ */
+export function notifyNewBooking(booking, source = null) {
+  return notifyStaffAlert({
+    kind: 'BOOKING',
+    kindLabel: 'booking',
+    reference: booking.referenceCode,
+    submitterName: booking.customer?.name || null,
+    city: booking.city || null,
+    lines: [
+      `Service: ${booking.appliance}${booking.issue ? ` — ${booking.issue}` : ''}`,
+      ...(booking.customer?.phone ? [`Phone: ${booking.customer.phone}`] : []),
+      ...(booking.preferredWindow ? [`Preferred window: ${booking.preferredWindow}`] : []),
+      `Status: ${booking.status}`,
+    ],
+    consolePath: '/book-os',
+    source,
+    eventKeyBase: `booking:${booking.id}`,
+  });
+}
+
+/**
  * Day-before reminder queued by the Book OS reminder run for every
  * booking with an appointment set on the target date.
  */
@@ -103,6 +452,8 @@ export function notifyAppointmentReminder(booking, source = null) {
       template: NOTIFICATION_TEMPLATES.APPOINTMENT_REMINDER,
       to,
       source,
+      eventKey: `booking:${booking.id}:reminder:${channel}:${appointment.date || 'unset'}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -131,6 +482,8 @@ export function notifyReferralIssued(booking, referral, source = null) {
       template: NOTIFICATION_TEMPLATES.REFERRAL_CODE,
       to,
       source,
+      eventKey: `referral:${referral.code}:${channel}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -151,6 +504,8 @@ export function notifyTechEnRoute(booking, source = null) {
       template: NOTIFICATION_TEMPLATES.TECH_EN_ROUTE,
       to,
       source,
+      eventKey: `booking:${booking.id}:enroute:${channel}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -161,17 +516,45 @@ export function notifyTechEnRoute(booking, source = null) {
 }
 
 /** A Track My Tech status update, queued from the staff tracking console. */
-export function notifyTrackingUpdate(booking, stageLabel, source = null) {
+export function notifyTrackingUpdate(booking, stageLabel, source = null, eventKey = null) {
   return customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.TRACKING_UPDATE,
       to,
       source,
+      eventKey: eventKey ? `${eventKey}:${channel}` : null,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
         message: `Top Speed Appliance: update on your service visit (${booking.referenceCode || ''}) — current status: ${stageLabel}. Track your technician any time at topspeedserviceos.com/track.`,
+      },
+    }),
+  );
+}
+
+/** Customer notice that a technician has been assigned to their job. */
+export function notifyBookingAssigned(booking, assignment, source = null) {
+  return customerChannels(booking).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
+      to,
+      source,
+      eventKey: `booking:${booking.id}:assigned:${assignment?.id || 'none'}:${channel}`,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        customerName: booking.customer?.name,
+        appliance: booking.appliance,
+        city: booking.city,
+        assignmentId: assignment?.id || null,
+        message:
+          `Top Speed Appliance: a technician has been assigned to your ${booking.appliance} service in ${booking.city} ` +
+          `(ref ${booking.referenceCode || ''}). We will update you as the visit progresses — track any time at topspeedserviceos.com/track. ` +
+          `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`,
       },
     }),
   );
@@ -203,6 +586,8 @@ export function notifyDispatchApproved(booking, assignment, source = null) {
       template: NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
       to: 'service-setters',
       source,
+      eventKey: `booking:${booking.id}:dispatch-approved:${assignment?.id || 'none'}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -228,6 +613,8 @@ export function notifyCommercialWorkOrderReceived(workOrder, booking, account, f
       template: NOTIFICATION_TEMPLATES.COMMERCIAL_WORK_ORDER_RECEIVED,
       to: 'service-setters',
       source,
+      eventKey: `workorder:${workOrder.referenceCode}:received`,
+      eventType: 'COMMERCIAL',
       payload: {
         workOrderId: workOrder.id,
         workOrderReference: workOrder.referenceCode,
@@ -259,6 +646,8 @@ export function notifyReviewRequest(booking, source = null) {
       template: NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
       to,
       source,
+      eventKey: `booking:${booking.id}:review:${channel}`,
+      eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
@@ -283,8 +672,8 @@ export function notifyReviewRequest(booking, source = null) {
 export function notifyBookingReceipt(booking, channel, source = null) {
   const paid = booking.payment?.status === 'PAID';
   const diagnosticLine = paid
-    ? 'Diagnostic: $99 \u2014 PAID.'
-    : 'Diagnostic: $99 \u2014 collected at booking, credited toward your repair.';
+    ? 'Diagnostic: $99 — PAID.'
+    : 'Diagnostic: $99 — collected at booking, credited toward your repair.';
   const appointment = booking.appointment?.status === 'SET' ? booking.appointment : null;
   const when = appointment
     ? `${appointment.date}, ${appointment.windowLabel || appointment.window}`
@@ -294,7 +683,7 @@ export function notifyBookingReceipt(booking, channel, source = null) {
   if (!to) return null;
   const message =
     channel === 'email'
-      ? `Top Speed Appliance \u2014 booking receipt\nReference: ${booking.referenceCode}\nService: ${booking.appliance} \u2014 ${booking.issue}\nCity: ${booking.city}\nWhen: ${when}\nStatus: ${booking.status}\n${diagnosticLine}\nTrack your job live: ${trackingUrl} (use your reference + phone).\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`
+      ? `Top Speed Appliance — booking receipt\nReference: ${booking.referenceCode}\nService: ${booking.appliance} — ${booking.issue}\nCity: ${booking.city}\nWhen: ${when}\nStatus: ${booking.status}\n${diagnosticLine}\nTrack your job live: ${trackingUrl} (use your reference + phone).\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`
       : `Top Speed Appliance receipt: ${booking.appliance} in ${booking.city}, ref ${booking.referenceCode}. ${diagnosticLine} Track live: ${trackingUrl} (ref + this phone).`;
   return queueNotification({
     channel,

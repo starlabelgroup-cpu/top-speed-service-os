@@ -7,7 +7,7 @@ import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { activeAssignmentFor, computeTracking, providerById } from '../services/tracking.js';
-import { notifyDispatchApproved, notifyTrackingUpdate } from '../services/notifications.js';
+import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
@@ -182,6 +182,7 @@ router.post('/tracking/console/:reference/assign', ...staffOnly, async (req, res
   await persistBooking(booking);
   await persistAssignmentsForBooking(booking.id);
   notifyDispatchApproved(booking, assignment, 'TRACKING_CONSOLE');
+  notifyBookingAssigned(booking, assignment, 'TRACKING_CONSOLE');
   appendEvent('TRACKING_ASSIGN', {
     source: 'TRACKING_CONSOLE',
     actor: req.user.email,
@@ -237,6 +238,14 @@ router.post('/tracking/console/:reference/stage', ...staffOnly, async (req, res)
 
   booking.updatedAt = new Date().toISOString();
   await persistBooking(booking);
+  // Lifecycle updates: the customer hears about stage changes as they
+  // happen (en route / arrived / diagnosis / estimate), not only when
+  // a setter presses the manual notify button.
+  if (action === 'EN_ROUTE') {
+    notifyTechEnRoute(booking, 'TRACKING_CONSOLE');
+  } else if (action === 'ARRIVED' || action === 'DIAGNOSIS' || action === 'ESTIMATE') {
+    notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TRACKING_CONSOLE', `booking:${booking.id}:stage:${action}:${booking.updatedAt}`);
+  }
   if (action === 'COMPLETE') {
     try {
       issueReferralForBooking(booking, 'TRACKING_CONSOLE');

@@ -6,6 +6,7 @@ import { authenticate, optionalAuthenticate, requireRole } from '../middleware/a
 import { PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { signAccessToken } from '../services/tokens.js';
+import { notifyAccountCreated } from '../services/notifications.js';
 
 /**
  * The Service OS login system.
@@ -217,6 +218,15 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
         createdAt: new Date().toISOString(),
       };
       store.customers.set(customerRecord.id, customerRecord);
+    }
+
+    // Unified notifications: welcome email for the new account holder
+    // + an instant staff alert. Notification queueing must never fail
+    // a registration, so it is guarded.
+    try {
+      notifyAccountCreated(user, 'ACCOUNT_SIGNUP');
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'account-created notification failed', error: String(error?.message || error) }));
     }
 
     return res.status(201).json({ user: publicUser(user), ...signAccessToken(user) });

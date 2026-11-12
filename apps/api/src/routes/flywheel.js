@@ -7,7 +7,7 @@ import { addBookingEvent, appendEvent, createId, createReferenceCode, store } fr
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { persistReferral } from '../db/flywheelRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { NOTIFICATION_TEMPLATES, notifyBookingConfirmation } from '../services/notifications.js';
+import { NOTIFICATION_TEMPLATES, notifyBookingConfirmation, notifyNewBooking } from '../services/notifications.js';
 import { findReferralByCode } from '../services/flywheel.js';
 
 const router = Router();
@@ -161,6 +161,7 @@ router.post('/flywheel/referrals/redeem', authenticate, requireCompany, async (r
     details: { appliance: booking.appliance, city: booking.city, status: booking.status, referralCode: referral.code },
   });
   notifyBookingConfirmation(booking, 'REFERRAL');
+  notifyNewBooking(booking, 'REFERRAL');
 
   return res.status(201).json({
     data: {

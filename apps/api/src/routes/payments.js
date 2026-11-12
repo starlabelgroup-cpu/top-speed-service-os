@@ -134,8 +134,8 @@ router.post('/payments/webhook', async (req, res) => {
             });
             const firstName = (booking.customer?.name || 'there').split(' ')[0];
             const message = 'Hi ' + firstName + ' — payment received: $99 diagnostic for booking ' + (booking.referenceCode || '') + '. It is credited in full toward your repair when you approve it. Thank you! — Top Speed Appliance';
-            if (booking.customer?.phone) queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.phone, payload: { message, bookingId: booking.id }, source: booking.source || null });
-            if (booking.customer?.email) queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.email, payload: { message, bookingId: booking.id }, source: booking.source || null });
+            if (booking.customer?.phone) queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.phone, payload: { message, bookingId: booking.id }, source: booking.source || null, eventKey: `payment:${payment.id}:received:sms`, eventType: 'PAYMENT' });
+            if (booking.customer?.email) queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.email, payload: { message, bookingId: booking.id }, source: booking.source || null, eventKey: `payment:${payment.id}:received:email`, eventType: 'PAYMENT' });
           }
         } else if (event.type === 'checkout.session.expired' && payment.status === 'PENDING') {
           payment.status = 'EXPIRED';

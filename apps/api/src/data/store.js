@@ -42,8 +42,12 @@ export const store = {
   // produced an install. Store listings are NOT tracked here — the app
   // is not published to Apple/Google yet (see routes/app.js).
   appInstalls: [],
-  // Simulated notification outbox (no real Twilio/Resend sends in Phase 1).
+  // Notification outbox: every email/SMS alert and update on the
+  // platform, hydrated from the NotificationOutbox table.
   notificationOutbox: [],
+  // Notification settings (staff toggles). null = not hydrated yet;
+  // services/notifications.js merges over ALL-ON defaults.
+  notificationSettings: null,
   // Public web intake records (forms + Speedy-assisted flows), hydrated from the Connection table.
   connections: [],
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.

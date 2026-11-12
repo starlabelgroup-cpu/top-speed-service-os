@@ -5,7 +5,7 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistVideoRequest } from '../db/videoRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { queueNotification } from '../services/notifications.js';
+import { notifySubmission, queueNotification } from '../services/notifications.js';
 
 /**
  * Speedy Live Video — the live-video consultation engine (Module 1).
@@ -96,6 +96,18 @@ router.post('/video/requests', async (req, res) => {
       message: `New Speedy Live Video request: ${request.customerName} wants to show their ${request.appliance} live. Arrange it in the Book OS video panel.`,
     },
   });
+  // Unified notifications: customer confirmation + real staff alerts.
+  notifySubmission({
+    kind: 'VIDEO_REQUEST',
+    reference: request.id,
+    submitter: { name: request.customerName, phone: request.phone },
+    lines: [
+      `Appliance: ${request.appliance}`,
+      ...(request.bookingReference ? [`Booking reference: ${request.bookingReference}`] : []),
+      ...(request.note ? [`Note: ${request.note.slice(0, 200)}`] : []),
+    ],
+    source: 'SPEEDY_LIVE_VIDEO',
+  });
   return res.status(201).json({
     data: {
       id: request.id,
@@ -144,6 +156,8 @@ router.post('/video/requests/:id/arrange', ...staffOnly, async (req, res) => {
     template: 'VIDEO_REQUEST',
     to: request.phone,
     source: 'SPEEDY_LIVE_VIDEO',
+    eventKey: `video:${request.id}:arranged:sms`,
+    eventType: 'VIDEO',
     payload: {
       videoRequestId: request.id,
       joinUrl,

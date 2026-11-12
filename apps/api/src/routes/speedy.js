@@ -4,7 +4,7 @@ import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, sp
 import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
-import { notifyBookingConfirmation, notifyBookingReceipt } from '../services/notifications.js';
+import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } from '../services/notifications.js';
 import { providersStatus } from '../services/senders.js';
 
 /**
@@ -193,6 +193,7 @@ router.post('/speedy/book', async (req, res) => {
     details: { appliance: booking.appliance, city: booking.city, status: booking.status },
   });
   notifyBookingConfirmation(booking, booking.source);
+  notifyNewBooking(booking, booking.source);
 
   return res.status(201).json({
     data: {

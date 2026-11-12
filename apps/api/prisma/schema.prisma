@@ -288,6 +288,9 @@ model NotificationOutbox {
   to         String
   payload    Json      @default("{}")
   status     String    @default("QUEUED_SIMULATED")
+  eventKey   String?   @unique
+  eventType  String?
+  reason     String?
   attempts   Int       @default(0)
   providerId String?
   error      String?
@@ -299,6 +302,19 @@ model NotificationOutbox {
 
   @@index([companyId, status])
   @@index([createdAt])
+}
+
+// Unified notifications system (2026-11-11): staff toggles for the
+// alerts pipeline — staff email alerts, staff SMS alerts, customer
+// email/SMS confirmations. Key/value rows; a missing row means the
+// ALL-ON default in services/notifications.js.
+model NotificationSetting {
+  id        String   @id @default(uuid()) @db.Uuid
+  key       String   @unique
+  enabled   Boolean  @default(true)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Speedy Live Video (2026-11-09): a customer asks to show the problem

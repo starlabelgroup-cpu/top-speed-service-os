@@ -22,7 +22,7 @@ import {
   isWorkOrderOpen,
   workOrderEffectiveStatus,
 } from '../services/commercial.js';
-import { notifyCommercialWorkOrderReceived } from '../services/notifications.js';
+import { notifyCommercialWorkOrderReceived, notifySubmission } from '../services/notifications.js';
 
 const router = Router();
 
@@ -539,5 +539,19 @@ router.post('/commercial/bulk-requests', async (req, res) => {
     });
     references.push(record.reference);
   }
+  // Unified notifications: ONE confirmation + staff alert per batch
+  // (not one per unit), carrying every recorded reference.
+  notifySubmission({
+    kind: 'PM_SERVICE_REQUEST',
+    reference: batchReference,
+    submitter: { name: manager.name, phone: manager.phone },
+    lines: [
+      `Property: ${property}`,
+      ...(manager.company ? [`Manager company: ${manager.company}`] : []),
+      `Requests in batch: ${references.length}`,
+      `References: ${references.join(', ')}`,
+    ],
+    source: 'pm-bulk-speedy',
+  });
   return res.status(201).json({ data: { batchReference, count: references.length, references } });
 });

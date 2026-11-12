@@ -10,6 +10,7 @@ import { hydrateTrackingTokens } from './trackingRepo.js';
 import { hydrateMarketingOs } from './marketingOsRepo.js';
 import { hydrateParts } from './partsRepo.js';
 import { hydrateFinance } from './financeRepo.js';
+import { hydrateNotificationSettings } from './notificationsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -232,6 +233,13 @@ export async function hydrateStore() {
     await hydrateFinance();
   } catch (error) {
     console.error('hydrateFinance failed (module degraded, platform continues)', error?.message || error);
+  }
+  // Notification settings are an add-on too: missing table mid-deploy
+  // degrades to the ALL-ON defaults, never blocks hydration.
+  try {
+    await hydrateNotificationSettings();
+  } catch (error) {
+    console.error('hydrateNotificationSettings failed (defaults apply, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };
