@@ -24,6 +24,7 @@ import marketingOsRouter from './routes/marketingOs.js';
 import partsRouter from './routes/parts.js';
 import financeRouter from './routes/finance.js';
 import notificationsRouter from './routes/notifications.js';
+import twilioVoiceRouter from './routes/twilioVoice.js';
 import referralsRouter from './routes/referrals.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
@@ -63,6 +64,9 @@ app.use(cors({ origin: corsOrigin, credentials: false }));
 // so this path gets a raw parser BEFORE any JSON parser runs.
 app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json', limit: '1mb' }));
 app.use('/api/v1/speedy/diagnose', express.json({ limit: '6mb' }));
+// Twilio voice webhooks post application/x-www-form-urlencoded, which the
+// JSON parsers below would leave unparsed; give that path its own parser.
+app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));
 app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);
@@ -137,6 +141,7 @@ app.use('/api/v1', marketingOsRouter);
 app.use('/api/v1', partsRouter);
 app.use('/api/v1', financeRouter);
 app.use('/api/v1', notificationsRouter);
+app.use('/api/v1', twilioVoiceRouter);
 app.use('/api/v1', referralsRouter);
 
 app.use((req, res) => {

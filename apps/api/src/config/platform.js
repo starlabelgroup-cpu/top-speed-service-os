@@ -23,6 +23,33 @@ export const PLATFORM_CONSTANTS = {
   serviceAreas: SERVICE_AREAS,
 };
 
+/** Normalize a US phone number to E.164 (+1XXXXXXXXXX); fallback when unusable. */
+function toE164(raw, fallback) {
+  const digits = String(raw || '').replace(/\D/g, '');
+  if (!digits) return fallback;
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return `+${digits}`;
+}
+
+/**
+ * Voice forwarding (Twilio): calls to the toll-free business number ring
+ * through to the owner's phone; unanswered calls land in a voicemail box
+ * served by routes/twilioVoice.js. Both numbers are env-overridable so
+ * they never drift as scattered literals:
+ *   TWILIO_PHONE_NUMBER — the toll-free number on the Twilio account
+ *                         (the same number SMS sends from; default below)
+ *   VOICE_FORWARD_TO    — where inbound calls ring (default: the
+ *                         business line, 954-931-7997)
+ */
+export function voiceConfig() {
+  return {
+    tollFreeNumber: toE164(process.env.TWILIO_PHONE_NUMBER, '+18444607038'),
+    forwardTo: toE164(process.env.VOICE_FORWARD_TO, '+19549317997'),
+    dialTimeoutSeconds: 30,
+  };
+}
+
 export const INTAKE_SOURCES = [
   'NET_SITE',
   'COM_SITE',
