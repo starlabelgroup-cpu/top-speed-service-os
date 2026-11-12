@@ -142,7 +142,7 @@ const SPEEDY_TOOLS = [
     type: 'function',
     name: 'send_referral_invite',
     description:
-      'Send an ApplianceReferral invite to a friend on behalf of a customer, using the customer\'s personal referral code (TS-REF-XXXX). Call ONLY after collecting the friend\'s name plus a phone number or email, reading back exactly what will be sent, asking "Should I send it?", and getting an explicit yes — set customerConfirmed to true only then. Speedy never states a referrer-reward amount for the program; the friend-facing offer is the published New Customer Welcome.',
+      'Send an ApplianceReferral invite to a friend on behalf of a customer, using the customer\'s personal referral code (TS-REF-XXXX). Call ONLY after collecting the friend\'s name plus a phone number or email, reading back exactly what will be sent, asking "Should I send it?", and getting an explicit yes — set customerConfirmed to true only then. The friend-facing offer in the invite is the published New Customer Welcome; the referrer-reward terms Speedy may state are the approved program terms in the knowledge base.',
     strict: true,
     parameters: {
       type: 'object',
@@ -161,7 +161,7 @@ const SPEEDY_TOOLS = [
     type: 'function',
     name: 'get_referral_status',
     description:
-      'Look up aggregate ApplianceReferral status for a customer\'s personal referral code (TS-REF-XXXX): journey counts by stage and how many issued credits are available. Returns no friend contact details and no program reward amounts — an available-credit total appears only when a credit was actually issued to this customer by human approval. Report only what it returns.',
+      'Look up aggregate ApplianceReferral status for a customer\'s personal referral code (TS-REF-XXXX): journey counts by stage and how many issued credits are available. Returns no friend contact details — an available-credit total appears only when a credit was actually issued to this customer by human approval. Report only what it returns; program terms (amounts, tiers, milestones) come from the knowledge base, not from this tool.',
     strict: true,
     parameters: {
       type: 'object',
@@ -234,7 +234,7 @@ async function executeSpeedyTool(call) {
         referralCode: referral.code,
         referralLink: `https://topspeedserviceos.com/refer?c=${referral.code}`,
         message: created
-          ? 'The invite was recorded and queued to send to the friend through the referral program. Tell the customer it is on its way; do not claim a delivery confirmation you do not have, and do not state any referrer-reward amount.'
+          ? 'The invite was recorded and queued to send to the friend through the referral program. Tell the customer it is on its way; do not claim a delivery confirmation you do not have, and do not promise that any credit has been issued.'
           : 'This friend already has an invite on this code, so no duplicate was sent. Tell the customer the earlier invite stands.',
       };
     } catch (error) {
