@@ -39,8 +39,8 @@ h1{font-family:"Archivo";font-size:clamp(28px,5vw,40px);margin:6px 0 8px;color:v
 .sp-head b{font-family:"Archivo";font-size:17px}
 .sp-head small{display:block;color:#B9CFF2;font-size:12.5px}
 .sp-head a{margin-left:auto;color:#fff;text-decoration:none;font-weight:700;font-size:14px;border:1.5px solid rgba(255,255,255,.4);padding:6px 12px;border-radius:99px}
-.sp-body{height:400px;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px;background:var(--bg)}
-@media(max-width:640px){.sp-body{height:52vh}}
+.sp-body{height:400px;height:min(400px,58vh);height:min(400px,58dvh);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:14px;display:flex;flex-direction:column;gap:9px;background:var(--bg)}
+@media(max-width:640px){.sp-body{height:52vh;height:52dvh}}
 .msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:15px;line-height:1.45}
 .msg.bot{background:var(--surface);border:1px solid var(--line);color:var(--ink);border-bottom-left-radius:4px;align-self:flex-start}
 .msg.me{background:var(--blue);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}

@@ -231,28 +231,34 @@ function onAppReady(){ loadEquip(); loadActivity(); }
 
 <!-- ===== SPEEDY FLOATING ASSISTANT (Phase D) — waits on the customer, opens in place ===== -->
 <style>
-#swBtn{position:fixed;right:16px;bottom:20px;z-index:120;background:#E31E24;color:#fff;border:none;border-radius:999px;padding:14px 20px;font:inherit;font-weight:800;font-size:15.5px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center;cursor:pointer;animation:swPulse 2.8s ease-in-out infinite}
+#swBtn{position:fixed;right:16px;bottom:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:1190;background:#E31E24;color:#fff;border:none;border-radius:999px;padding:14px 20px;font:inherit;font-weight:800;font-size:15.5px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center;cursor:pointer;animation:swPulse 2.8s ease-in-out infinite;transition:opacity .18s ease,visibility .18s ease}
+body:has(#swPanel.open) #swBtn{opacity:0;visibility:hidden;pointer-events:none}
 @keyframes swPulse{0%,100%{box-shadow:0 14px 34px rgba(227,30,36,.4)}50%{box-shadow:0 14px 42px rgba(227,30,36,.75)}}
-#swPanel{position:fixed;right:16px;bottom:84px;z-index:121;width:min(384px,calc(100vw - 24px));background:#fff;border:1px solid #D9E3F2;border-radius:20px;box-shadow:0 18px 44px rgba(10,38,92,.22);display:none;overflow:hidden}
-#swPanel.open{display:block}
-.sw-head{background:#0A265C;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:11px}
+#swPanel{position:fixed;right:16px;bottom:84px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:1200;width:min(400px,calc(100vw - 24px));max-height:min(78vh,720px);max-height:min(720px,calc(100dvh - 108px));background:#fff;border:1px solid #D9E3F2;border-radius:20px;box-shadow:0 18px 44px rgba(10,38,92,.22);display:flex;flex-direction:column;overflow:hidden;visibility:hidden;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}
+#swPanel.open{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .18s ease}
+.sw-grab{display:none}
+@media(max-width:640px){#swPanel{left:0;right:0;bottom:0;width:auto;height:min(620px,calc(100vh - 40px));height:min(620px,calc(100dvh - 40px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}.sw-grab{display:block;width:44px;height:5px;border-radius:99px;background:#c9d6ea;margin:8px auto 2px;flex:none}}
+@media(max-height:500px){#swPanel{bottom:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-height:calc(100vh - 20px);max-height:calc(100dvh - 20px)}}
+@media(max-width:640px) and (max-height:500px){#swPanel{left:0;right:0;bottom:0;height:auto;border-radius:24px 24px 0 0}}
+@media(prefers-reduced-motion:reduce){#swPanel,#swBtn{transition:none}}
+.sw-head{background:#0A265C;color:#fff;padding:14px 16px;display:flex;align-items:center;gap:11px;flex:none}
 .sw-head .sw-av{width:36px;height:36px;border-radius:50%;background:#E31E24;display:flex;align-items:center;justify-content:center;font-size:18px}
 .sw-head b{font-size:16px}
 .sw-head small{display:block;color:#B9CFF2;font-size:12px}
 .sw-head button{margin-left:auto;background:none;border:none;color:#fff;font-size:22px;line-height:1;cursor:pointer}
-.sw-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px 0}
+.sw-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px 0;flex:none}
 .sw-quick button{border:1.5px solid #D9E3F2;background:#fff;color:#0C1B33;border-radius:999px;padding:6px 11px;font-size:13px;font-weight:600;cursor:pointer}
-.sw-recs{padding:10px 12px 2px;display:none;flex-direction:column;gap:7px}
+.sw-recs{padding:10px 12px 2px;display:none;flex-direction:column;gap:7px;flex:none;max-height:170px;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sw-recs .sw-rec-h{font-size:11px;font-weight:800;letter-spacing:.07em;color:#71809A;text-transform:uppercase}
 .sw-rec{background:#FFF7E8;border:1px solid #F0DFAE;border-radius:12px;padding:8px 11px;font-size:13px;line-height:1.4}
 .sw-rec b{color:#0A265C}
 .sw-rec a{font-weight:800;color:#0B7CFF;white-space:nowrap}
 .sw-rec.upd{background:#EAF6EF;border-color:#BFE6CF}
-.sw-body{height:290px;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#F3F6FB}
+.sw-body{height:min(290px,38vh);height:min(290px,38dvh);flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:12px;display:flex;flex-direction:column;gap:8px;background:#F3F6FB}
 .sw-msg{max-width:86%;padding:9px 12px;border-radius:14px;font-size:14.5px;line-height:1.45}
 .sw-msg.bot{background:#fff;border:1px solid #D9E3F2;color:#0C1B33;border-bottom-left-radius:4px;align-self:flex-start}
 .sw-msg.me{background:#0B7CFF;color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
-.sw-input{display:flex;gap:8px;padding:11px}
+.sw-input{display:flex;gap:8px;padding:11px;flex:none}
 .sw-input input{flex:1;padding:11px 13px;border:1.5px solid #D9E3F2;border-radius:12px;font:inherit;font-size:14.5px;min-width:0}
 .sw-input button[type=submit]{background:#E31E24;color:#fff;border:none;border-radius:11px;padding:0 16px;font-weight:700;cursor:pointer}
 #swMic.rec{background:#fdecec !important;animation:swVp 1s infinite}
@@ -260,6 +266,7 @@ function onAppReady(){ loadEquip(); loadActivity(); }
 </style>
 <button id="swBtn" onclick="swToggle()" aria-haspopup="dialog">💬 Ask Speedy</button>
 <div id="swPanel" role="dialog" aria-label="Ask Speedy chat assistant">
+  <div class="sw-grab" aria-hidden="true"></div>
   <div class="sw-head">
     <div class="sw-av">🏎️</div>
     <div><b>Speedy</b><small>Top Speed AI assistant • Live</small></div>
