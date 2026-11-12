@@ -160,6 +160,16 @@ footer strong{color:#fff} footer a{color:#cfe0f5}
       </form>
     </div>
   </section>
+
+  <section id="finance">
+    <div>
+      <h2>Agency Finance — QuickBooks</h2>
+      <p class="sub">Marketing spend only makes sense against real revenue. QuickBooks mirrors into the Service OS, and this panel shows the revenue context from the latest synced P&amp;L — no estimates, no invented numbers: if it hasn't synced, it says so.</p>
+      <div id="mosFinBody" style="background:#fff;border:1px solid #d8e2f2;border-radius:12px;padding:18px;">
+        <p style="color:#5a6b82;">Checking the QuickBooks connection…</p>
+      </div>
+    </div>
+  </section>
 </main>
 
 <footer>
@@ -198,6 +208,31 @@ document.getElementById('mosForm').addEventListener('submit',function(ev){
     })
     .catch(function(e){ msg.textContent='⚠️ '+e.message+' — or call 954-931-7997.'; msg.className='msg err'; });
 });
+</script>
+
+<script>
+/* Marketing OS finance panel: revenue context ONLY from a real synced
+   P&L snapshot; otherwise a one-line not-connected / not-synced note. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var el=document.getElementById('mosFinBody'); if(!el) return;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  fetch(API+'/finance/status').then(function(r){ return r.json(); }).then(function(j){
+    var qb=(j.data&&j.data.quickbooks)||{status:'not_connected'};
+    if(qb.status!=='connected'){
+      el.innerHTML='<p style="color:#5a6b82;">QuickBooks isn\'t connected yet — revenue context appears here after the first real sync.</p>';
+      return;
+    }
+    var head='<p><strong>'+esc(qb.companyName||'QuickBooks company')+'</strong> · last synced '+(qb.lastSyncAt?new Date(qb.lastSyncAt).toLocaleString():'—')+'</p>';
+    if(!tok()){ el.innerHTML=head+'<p style="color:#5a6b82;margin-top:8px;">Revenue figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; return; }
+    fetch(API+'/finance/overview',{headers:{'Authorization':'Bearer '+tok()}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(oj){
+      var pnl=oj.data&&oj.data.snapshots&&oj.data.snapshots.pnl;
+      if(!pnl){ el.innerHTML=head+'<p style="color:#5a6b82;margin-top:8px;">Connected — no P&amp;L snapshot has synced yet, so there is no revenue context to show.</p>'; return; }
+      el.innerHTML=head+'<p style="margin-top:8px;"><strong>Revenue context — P&amp;L '+esc(pnl.periodLabel)+'</strong> (synced '+(pnl.syncedAt?new Date(pnl.syncedAt).toLocaleString():'—')+')</p><pre style="background:#f2f6fb;border:1px solid #d8e2f2;border-radius:10px;padding:12px;font-family:\'Roboto Mono\',monospace;font-size:12.5px;overflow:auto;max-height:260px;white-space:pre-wrap;margin-top:10px;">'+esc(JSON.stringify(pnl.payload,null,2))+'</pre><p style="margin-top:10px;"><a href="/finance" style="color:#1473ff;font-weight:700;">Open Finance — QuickBooks →</a></p>';
+    }).catch(function(){ el.innerHTML=head+'<p style="color:#5a6b82;margin-top:8px;">Revenue figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; });
+  }).catch(function(){ el.innerHTML='<p style="color:#5a6b82;">Finance status could not be loaded right now.</p>'; });
+})();
 </script>
 
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->

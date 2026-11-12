@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parts Supply OS — Top Speed Service OS</title>
+<meta name="description" content="Parts Supply OS: suppliers, parts inventory, purchase orders and per-job parts usage for Top Speed Appliance — staff console on the Top Speed Service OS.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:780px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Roboto Mono',monospace;font-size:22px;color:var(--navy)}
+.num{font-family:'Roboto Mono',monospace}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{background:#fff;border:1px solid var(--line);color:var(--navy);font-weight:700;padding:10px 16px;border-radius:99px;cursor:pointer;font-family:inherit;font-size:14.5px}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.low td{background:#fff4f4}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+form.grid .wide{grid-column:1/-1}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.ok{color:var(--green);font-weight:700}
+.msg.err{color:var(--red);font-weight:700}
+.empty{color:var(--muted);padding:18px 4px;font-size:15px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:99px;font-weight:700;font-size:14.5px;display:none;z-index:50;max-width:92vw;text-align:center}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style>
+</head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/software">Software</a>
+    <a href="/book-os">Book OS</a>
+    <a href="/finance">Finance</a>
+    <a href="/portal">Portal</a>
+    <a class="tse-call" href="tel:+19549317997">📞 Call</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>🔩 Parts Supply OS</h1>
+  <p class="sub">Suppliers, parts inventory, purchase orders and per-job parts usage — one supply chain on the Top Speed Service OS. Stock moves only three ways: a purchase order is received, a part is recorded against a job, or a counted adjustment is made. <span id="whoLine"></span></p>
+
+  <!-- Signed-out gate -->
+  <div class="panel" id="gatePanel">
+    <h2>Staff sign-in required</h2>
+    <p class="note">Parts Supply OS is operations data — suppliers, costs and stock are staff-only. Sign in with your Service OS staff account. Nothing here is visible signed out.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- Console -->
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:12px;"><button class="btn ghost small" id="signOutBtn">Sign out</button></div>
+    <div class="stats" id="statGrid">
+      <div class="stat"><small>Inventory value (at cost)</small><b id="stInvValue">—</b></div>
+      <div class="stat"><small>Units on hand</small><b id="stUnits">—</b></div>
+      <div class="stat"><small>Parts / SKUs</small><b id="stParts">—</b></div>
+      <div class="stat"><small>Low stock</small><b id="stLow">—</b></div>
+      <div class="stat"><small>Open purchase orders</small><b id="stPOs">—</b></div>
+      <div class="stat"><small>Parts cost this month</small><b id="stMonthCost">—</b></div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="inventory" class="on">Inventory</button>
+      <button data-tab="suppliers">Suppliers</button>
+      <button data-tab="pos">Purchase Orders</button>
+      <button data-tab="usage">Job Usage</button>
+      <button data-tab="low">Low Stock</button>
+    </div>
+
+    <section class="panel" id="tab-inventory">
+      <h2>Inventory</h2>
+      <p class="note">Every part on the shelf, its cost and its reorder point. Rows in red are at or below the reorder point.</p>
+      <div id="partsTable"></div>
+      <form class="grid" id="partForm">
+        <div><label>SKU *</label><input id="pfSku" required maxlength="60" placeholder="e.g. WPW10675028"></div>
+        <div><label>Part name *</label><input id="pfName" required maxlength="160"></div>
+        <div><label>Category *</label><input id="pfCategory" required maxlength="80" placeholder="Refrigeration, Laundry…"></div>
+        <div><label>Brand</label><input id="pfBrand" maxlength="80"></div>
+        <div><label>Unit cost ($) *</label><input id="pfCost" type="number" min="0" step="0.01" required></div>
+        <div><label>Sell price ($)</label><input id="pfSell" type="number" min="0" step="0.01"></div>
+        <div><label>Opening stock</label><input id="pfStock" type="number" min="0" step="1" value="0"></div>
+        <div><label>Reorder point</label><input id="pfReorder" type="number" min="0" step="1" value="0"></div>
+        <div><label>Supplier</label><select id="pfSupplier"><option value="">— none —</option></select></div>
+        <div><label>Location</label><input id="pfLocation" maxlength="80" placeholder="Van 1, Shelf B…"></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Add part</button></div>
+      </form>
+      <div class="msg" id="partMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-suppliers" style="display:none;">
+      <h2>Suppliers</h2>
+      <p class="note">The vendors Parts Supply OS buys from.</p>
+      <div id="suppliersTable"></div>
+      <form class="grid" id="supplierForm">
+        <div><label>Supplier name *</label><input id="sfName" required maxlength="120"></div>
+        <div><label>Contact person</label><input id="sfContact" maxlength="120"></div>
+        <div><label>Phone</label><input id="sfPhone" maxlength="30"></div>
+        <div><label>Email</label><input id="sfEmail" type="email" maxlength="120"></div>
+        <div><label>Terms</label><input id="sfTerms" maxlength="200" placeholder="Net 30, COD…"></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Add supplier</button></div>
+      </form>
+      <div class="msg" id="supplierMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-pos" style="display:none;">
+      <h2>Purchase Orders</h2>
+      <p class="note">Totals are computed by the server from the lines. Receiving a PO adds its line quantities to stock.</p>
+      <div id="poTable"></div>
+      <form class="grid" id="poForm">
+        <div><label>Supplier *</label><select id="poSupplier" required><option value="">— pick a supplier —</option></select></div>
+        <div><label>Status</label><select id="poStatus"><option value="DRAFT">Draft</option><option value="ORDERED">Ordered</option></select></div>
+        <div><label>Notes</label><input id="poNotes" maxlength="500"></div>
+        <div class="wide"><label>Lines — one per row: SKU, quantity, unit cost $ (blank = part's current cost)</label><textarea id="poLines" rows="4" placeholder="WPW10675028, 4, 62.50&#10;DA97-07365G, 2,"></textarea></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Create purchase order</button></div>
+      </form>
+      <div class="msg" id="poMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-usage" style="display:none;">
+      <h2>Job Usage</h2>
+      <p class="note">Parts charged to a job, by booking reference. Recording usage takes the part out of stock at its current unit cost — the server refuses if there isn't enough on hand.</p>
+      <div id="usageTable"></div>
+      <form class="grid" id="usageForm">
+        <div><label>Booking reference *</label><input id="ufRef" required maxlength="60" placeholder="TS-XXXXXX"></div>
+        <div><label>Part *</label><select id="ufPart" required><option value="">— pick a part —</option></select></div>
+        <div><label>Qty *</label><input id="ufQty" type="number" min="1" step="1" value="1" required></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Record usage</button></div>
+      </form>
+      <div class="msg" id="usageMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-low" style="display:none;">
+      <h2>Low Stock</h2>
+      <p class="note">Parts at or below their reorder point — the reorder list.</p>
+      <div id="lowTable"></div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <strong>Top Speed Appliance LLC</strong> · Parts Supply OS — part of the Top Speed Service OS · <strong>954-931-7997</strong>
+</footer>
+<div id="toast"></div>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var suppliers=[], parts=[], pos=[], usages=[];
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3400); }
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function setMsg(id,ok,text){ var el=document.getElementById(id); el.className='msg '+(ok?'ok':'err'); el.textContent=text; }
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPw').value;
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){ try{ localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ setMsg('loginMsg',false,'Sign-in failed: '+e.message); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return STAFF.indexOf(r)>-1; })){
+    setMsg('loginMsg',false,'That account is not a staff account — Parts Supply OS is staff-only.');
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  document.getElementById('whoLine').textContent='Signed in as '+user.email+'.';
+  loadAll();
+}
+
+function loadAll(){
+  return Promise.all([
+    apiFetch('/parts/summary').then(function(j){ renderSummary(j.data); }),
+    apiFetch('/parts/suppliers').then(function(j){ suppliers=j.data||[]; renderSuppliers(); fillSupplierSelects(); }),
+    apiFetch('/parts/parts').then(function(j){ parts=j.data||[]; renderParts(); renderLow(); fillPartSelects(); }),
+    apiFetch('/parts/purchase-orders').then(function(j){ pos=j.data||[]; renderPOs(); }),
+    apiFetch('/parts/usage').then(function(j){ usages=j.data||[]; renderUsage(); })
+  ]).catch(function(e){ toast('Load failed: '+e.message); });
+}
+
+function renderSummary(d){
+  if(!d) return;
+  document.getElementById('stInvValue').textContent=money(d.inventoryValueCents);
+  document.getElementById('stUnits').textContent=d.inventoryUnits;
+  document.getElementById('stParts').textContent=d.parts;
+  document.getElementById('stLow').textContent=d.lowStockCount;
+  document.getElementById('stPOs').textContent=d.openPurchaseOrders;
+  document.getElementById('stMonthCost').textContent=money(d.partsCostThisMonthCents);
+}
+
+function emptyRow(cols,text){ return '<tr><td colspan="'+cols+'" class="empty">'+esc(text)+'</td></tr>'; }
+
+function renderParts(){
+  var el=document.getElementById('partsTable');
+  if(!parts.length){ el.innerHTML='<div class="empty">No parts yet. Add the first part below — inventory starts empty on purpose.</div>'; return; }
+  var rows=parts.map(function(p){
+    return '<tr class="'+(p.lowStock?'low':'')+'"><td class="num">'+esc(p.sku)+'</td><td>'+esc(p.name)+(p.brand?' <span style="color:var(--muted)">· '+esc(p.brand)+'</span>':'')+'</td><td>'+esc(p.category)+'</td><td class="num">'+p.stockOnHand+'</td><td class="num">'+p.reorderPoint+'</td><td class="num">'+money(p.unitCostCents)+'</td><td class="num">'+(p.sellPriceCents==null?'—':money(p.sellPriceCents))+'</td><td>'+esc(p.supplierName||'—')+'</td><td>'+esc(p.location||'—')+'</td><td>'+(p.lowStock?'<span class="tag red">LOW</span> ':'')+'<button class="btn ghost small" data-adj="'+p.id+'">Adjust</button></td></tr>';
+  }).join('');
+  el.innerHTML='<table><thead><tr><th>SKU</th><th>Part</th><th>Category</th><th>On hand</th><th>Reorder</th><th>Unit cost</th><th>Sell</th><th>Supplier</th><th>Location</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  el.querySelectorAll('[data-adj]').forEach(function(b){ b.addEventListener('click',function(){ adjustStock(b.getAttribute('data-adj')); }); });
+}
+function adjustStock(id){
+  var part=parts.find(function(p){ return p.id===id; }); if(!part) return;
+  var d=window.prompt('Adjust stock for '+part.sku+' ('+part.stockOnHand+' on hand). Enter a signed change, e.g. 3 or -1:');
+  if(d===null) return;
+  var delta=parseInt(d,10);
+  if(!delta){ toast('Enter a non-zero whole number.'); return; }
+  var reason=window.prompt('Reason for the adjustment (count correction, damage, return…):')||'';
+  apiFetch('/parts/parts/'+id+'/adjust-stock',{method:'POST',body:JSON.stringify({delta:delta,reason:reason})})
+    .then(function(){ toast('Stock adjusted for '+part.sku); loadAll(); })
+    .catch(function(e){ toast('Adjustment failed: '+e.message); });
+}
+function renderLow(){
+  var el=document.getElementById('lowTable');
+  var low=parts.filter(function(p){ return p.lowStock && p.active; });
+  if(!low.length){ el.innerHTML='<div class="empty">Nothing is at its reorder point. Good shelf.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>SKU</th><th>Part</th><th>On hand</th><th>Reorder point</th><th>Supplier</th></tr></thead><tbody>'+low.map(function(p){
+    return '<tr class="low"><td class="num">'+esc(p.sku)+'</td><td>'+esc(p.name)+'</td><td class="num">'+p.stockOnHand+'</td><td class="num">'+p.reorderPoint+'</td><td>'+esc(p.supplierName||'—')+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function renderSuppliers(){
+  var el=document.getElementById('suppliersTable');
+  if(!suppliers.length){ el.innerHTML='<div class="empty">No suppliers yet. Add the first vendor below.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>Supplier</th><th>Contact</th><th>Phone</th><th>Email</th><th>Terms</th><th>Status</th></tr></thead><tbody>'+suppliers.map(function(s){
+    return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.contact||'—')+'</td><td>'+esc(s.phone||'—')+'</td><td>'+esc(s.email||'—')+'</td><td>'+esc(s.terms||'—')+'</td><td>'+(s.active?'<span class="tag green">ACTIVE</span>':'<span class="tag">INACTIVE</span>')+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function renderPOs(){
+  var el=document.getElementById('poTable');
+  if(!pos.length){ el.innerHTML='<div class="empty">No purchase orders yet.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>Reference</th><th>Supplier</th><th>Lines</th><th>Total</th><th>Status</th><th>Ordered</th><th>Received</th><th></th></tr></thead><tbody>'+pos.map(function(po){
+    var lines=po.lines.map(function(l){ return esc(l.sku||'')+' × '+l.qty; }).join('<br>');
+    var recv=(po.status==='DRAFT'||po.status==='ORDERED')?'<button class="btn blue small" data-recv="'+po.id+'">Receive</button>':'';
+    var tagCls=po.status==='RECEIVED'?'green':(po.status==='ORDERED'?'':'red');
+    return '<tr><td class="num">'+esc(po.reference)+'</td><td>'+esc(po.supplierName||'—')+'</td><td>'+lines+'</td><td class="num">'+money(po.totalCents)+'</td><td><span class="tag '+tagCls+'">'+esc(po.status)+'</span></td><td>'+(po.orderedAt?new Date(po.orderedAt).toLocaleDateString():'—')+'</td><td>'+(po.receivedAt?new Date(po.receivedAt).toLocaleDateString():'—')+'</td><td>'+recv+'</td></tr>';
+  }).join('')+'</tbody></table>';
+  el.querySelectorAll('[data-recv]').forEach(function(b){ b.addEventListener('click',function(){
+    apiFetch('/parts/purchase-orders/'+b.getAttribute('data-recv')+'/receive',{method:'POST',body:JSON.stringify({})})
+      .then(function(){ toast('Purchase order received — stock updated.'); loadAll(); })
+      .catch(function(e){ toast('Receive failed: '+e.message); });
+  }); });
+}
+function renderUsage(){
+  var el=document.getElementById('usageTable');
+  if(!usages.length){ el.innerHTML='<div class="empty">No parts recorded against jobs yet.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>When</th><th>Booking</th><th>Part</th><th>Qty</th><th>Unit cost</th><th>Line cost</th></tr></thead><tbody>'+usages.map(function(u){
+    return '<tr><td>'+new Date(u.createdAt).toLocaleString()+'</td><td class="num">'+esc(u.bookingReference)+'</td><td>'+esc(u.sku||'')+' '+esc(u.partName||'')+'</td><td class="num">'+u.qty+'</td><td class="num">'+money(u.unitCostCents)+'</td><td class="num">'+money(u.qty*u.unitCostCents)+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function fillSupplierSelects(){
+  var opts='<option value="">— none —</option>'+suppliers.filter(function(s){ return s.active; }).map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+'</option>'; }).join('');
+  document.getElementById('pfSupplier').innerHTML=opts;
+  document.getElementById('poSupplier').innerHTML='<option value="">— pick a supplier —</option>'+suppliers.filter(function(s){ return s.active; }).map(function(s){ return '<option value="'+s.id+'">'+esc(s.name)+'</option>'; }).join('');
+}
+function fillPartSelects(){
+  document.getElementById('ufPart').innerHTML='<option value="">— pick a part —</option>'+parts.map(function(p){ return '<option value="'+p.id+'">'+esc(p.sku)+' — '+esc(p.name)+' ('+p.stockOnHand+' on hand)</option>'; }).join('');
+}
+
+document.getElementById('tabs').addEventListener('click',function(ev){
+  var b=ev.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#tabs button').forEach(function(x){ x.classList.toggle('on',x===b); });
+  ['inventory','suppliers','pos','usage','low'].forEach(function(t){ document.getElementById('tab-'+t).style.display=(t===b.getAttribute('data-tab'))?'block':'none'; });
+});
+
+document.getElementById('supplierForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={name:document.getElementById('sfName').value.trim()};
+  ['Contact','Phone','Email','Terms'].forEach(function(k){ var v=document.getElementById('sf'+k).value.trim(); if(v) body[k.toLowerCase()]=v; });
+  apiFetch('/parts/suppliers',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('supplierMsg',true,'Supplier added.'); ev.target.reset(); loadAll(); })
+    .catch(function(e){ setMsg('supplierMsg',false,e.message); });
+});
+document.getElementById('partForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  function cents(id){ var v=document.getElementById(id).value; return v===''?null:Math.round(parseFloat(v)*100); }
+  var body={sku:document.getElementById('pfSku').value.trim(),name:document.getElementById('pfName').value.trim(),category:document.getElementById('pfCategory').value.trim(),unitCostCents:cents('pfCost')||0,stockOnHand:parseInt(document.getElementById('pfStock').value||'0',10),reorderPoint:parseInt(document.getElementById('pfReorder').value||'0',10)};
+  var brand=document.getElementById('pfBrand').value.trim(); if(brand) body.brand=brand;
+  var sell=cents('pfSell'); if(sell!==null) body.sellPriceCents=sell;
+  var sup=document.getElementById('pfSupplier').value; if(sup) body.supplierId=sup;
+  var loc=document.getElementById('pfLocation').value.trim(); if(loc) body.location=loc;
+  apiFetch('/parts/parts',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('partMsg',true,'Part added to inventory.'); ev.target.reset(); loadAll(); })
+    .catch(function(e){ setMsg('partMsg',false,e.message); });
+});
+document.getElementById('poForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var bySku={}; parts.forEach(function(p){ bySku[p.sku.toLowerCase()]=p; });
+  var lines=[], bad=null;
+  document.getElementById('poLines').value.split('\n').forEach(function(raw){
+    raw=raw.trim(); if(!raw) return;
+    var bits=raw.split(',').map(function(x){ return x.trim(); });
+    var part=bySku[(bits[0]||'').toLowerCase()];
+    if(!part){ bad='Unknown SKU: '+(bits[0]||'(blank)'); return; }
+    var line={partId:part.id,qty:parseInt(bits[1]||'1',10)||1};
+    if(bits[2]) line.unitCostCents=Math.round(parseFloat(bits[2])*100);
+    lines.push(line);
+  });
+  if(bad){ setMsg('poMsg',false,bad+' — add the part in Inventory first.'); return; }
+  if(!lines.length){ setMsg('poMsg',false,'Add at least one line.'); return; }
+  var body={supplierId:document.getElementById('poSupplier').value,status:document.getElementById('poStatus').value,lines:lines};
+  var notes=document.getElementById('poNotes').value.trim(); if(notes) body.notes=notes;
+  if(!body.supplierId){ setMsg('poMsg',false,'Pick a supplier.'); return; }
+  apiFetch('/parts/purchase-orders',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){ setMsg('poMsg',true,'Purchase order '+(j.data&&j.data.reference||'')+' created — total '+money(j.data&&j.data.totalCents)+'.'); ev.target.reset(); loadAll(); })
+    .catch(function(e){ setMsg('poMsg',false,e.message); });
+});
+document.getElementById('usageForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={bookingReference:document.getElementById('ufRef').value.trim(),partId:document.getElementById('ufPart').value,qty:parseInt(document.getElementById('ufQty').value||'1',10)};
+  if(!body.partId){ setMsg('usageMsg',false,'Pick a part.'); return; }
+  apiFetch('/parts/usage',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('usageMsg',true,'Usage recorded — stock updated.'); ev.target.reset(); loadAll(); })
+    .catch(function(e){ setMsg('usageMsg',false,e.message); });
+});
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Space Grotesk',Inter,Arial,sans-serif}</style>
+</body>
+</html>

@@ -163,6 +163,30 @@ footer a{color:#DCE8FF;font-weight:600;font-size:13px;margin-right:14px}
   <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:#0A265C;">12 Broward Cities</b></figcaption>
 </figure>
 </div></section>
+<section><h2 class="sec">Finance Snapshot — QuickBooks</h2><p style="color:#42557A; max-width:720px;">Media OS runs on the same Service OS as the books. QuickBooks mirrors into the platform; this card shows the connection and, for staff, the latest synced figures — real data only, stamped with its sync time.</p><div id="mediaFinBody" style="background:#fff;border:1.5px solid #D8E2F2;border-radius:14px;padding:18px;margin-top:16px;max-width:720px;"><p style="color:#42557A;">Checking the QuickBooks connection…</p></div></section>
 <footer><div class="wrap"><div><a href="/">Platform Home</a><a href="/media">Media OS</a><a href="/videos">Videos</a><a href="/live">Live</a><a href="/publishing">Publishing</a><a href="/news">News</a><a href="/social">Social</a><a href="/local">Local OS</a><a href="/ads">Top Speed Ads</a></div><div style="font-size:12.5px">Top Speed Appliance LLC · Top Speed Media Network · Part of Top Speed 360 — Powered by Speedy AI</div></div></footer>
 <script src="/speedy-widget.js" defer></script>
+<script>
+/* Media OS finance snapshot card: real synced data only, staff-gated. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var el=document.getElementById('mediaFinBody'); if(!el) return;
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  fetch(API+'/finance/status').then(function(r){ return r.json(); }).then(function(j){
+    var qb=(j.data&&j.data.quickbooks)||{status:'not_connected'};
+    if(qb.status!=='connected'){
+      el.innerHTML='<p style="color:#42557A;">QuickBooks isn\'t connected yet — the first real sync fills this card in.</p>';
+      return;
+    }
+    var head='<p><strong>'+esc(qb.companyName||'QuickBooks company')+'</strong> · last synced '+(qb.lastSyncAt?new Date(qb.lastSyncAt).toLocaleString():'—')+'</p>';
+    if(!tok()){ el.innerHTML=head+'<p style="color:#42557A;margin-top:8px;">Figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; return; }
+    fetch(API+'/finance/overview',{headers:{'Authorization':'Bearer '+tok()}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }).then(function(oj){
+      var d=oj.data||{}; var inv=d.invoices||{};
+      el.innerHTML=head+'<p style="margin-top:8px;">AR outstanding <b style="font-family:\'Roboto Mono\',monospace;">'+money(inv.outstandingCents)+'</b> · '+(inv.openCount||0)+' open invoice(s) · <a href="/finance" style="color:#1473ff;font-weight:700;">Open Finance — QuickBooks →</a></p>';
+    }).catch(function(){ el.innerHTML=head+'<p style="color:#42557A;margin-top:8px;">Figures are staff-only — <a href="/finance" style="color:#1473ff;font-weight:700;">sign in on the Finance page →</a></p>'; });
+  }).catch(function(){ el.innerHTML='<p style="color:#42557A;">Finance status could not be loaded right now.</p>'; });
+})();
+</script>
 </body></html>

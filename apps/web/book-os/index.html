@@ -133,6 +133,10 @@ body:not(.live) .gated{display:none!important}</style>
 </div>
 </section>
 
+<!-- PARTS + FINANCE STRIPS (live staff only; hidden until real API data returns) -->
+<div id="partsStrip" style="display:none;margin:0 0 14px;background:#fff;border:1px solid #d8e2f2;border-left:5px solid #1473ff;border-radius:10px;padding:12px 16px;font-size:14.5px;"></div>
+<div id="finStrip" style="display:none;margin:0 0 14px;background:#fff;border:1px solid #d8e2f2;border-left:5px solid #0f7a3d;border-radius:10px;padding:12px 16px;font-size:14.5px;"></div>
+
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
 <section class="panel" gated"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div id="queue"></div></section>
@@ -557,5 +561,37 @@ if(vTok()) loadVideoRequests();
 
 <!-- TYPE SYSTEM V2 — POSTER GUIDELINES + MICHROMA HOME -->
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500}</style>
+<script>
+/* Parts Supply OS + QuickBooks finance strips: appear only in live staff
+   mode and only with real API data. Any guard failure hides them — this
+   board never shows invented numbers. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function get(path){ return fetch(API+path,{headers:{'Authorization':'Bearer '+tok()}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
+  var loaded=false;
+  function load(){
+    if(!document.body.classList.contains('live')||!tok()) return;
+    get('/parts/summary').then(function(j){
+      var d=j.data||{}; var el=document.getElementById('partsStrip'); if(!el) return;
+      el.style.display='block';
+      el.innerHTML='🔩 <strong>Parts Supply OS:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.lowStockCount||0)+'</span> part(s) at reorder point · inventory value <span style="font-family:\'Roboto Mono\',monospace;">'+money(d.inventoryValueCents)+'</span> · <a href="/parts" style="color:#1473ff;font-weight:700;">Open Parts Supply OS →</a>';
+    }).catch(function(){ var el=document.getElementById('partsStrip'); if(el) el.style.display='none'; });
+    get('/finance/overview').then(function(j){
+      var d=j.data||{}; var el=document.getElementById('finStrip'); if(!el) return;
+      el.style.display='block';
+      if(d.quickbooks&&d.quickbooks.status==='connected'){
+        el.innerHTML='💵 <strong>Finance — QuickBooks:</strong> AR outstanding <span style="font-family:\'Roboto Mono\',monospace;">'+money((d.invoices||{}).outstandingCents)+'</span> across '+((d.invoices||{}).openCount||0)+' open invoice(s) · synced '+(d.syncedAt?new Date(d.syncedAt).toLocaleString():'—')+' · <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
+      }else{
+        el.innerHTML='💵 <strong>Finance — QuickBooks:</strong> not connected yet — no figures until the first real sync. <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
+      }
+    }).catch(function(){ var el=document.getElementById('finStrip'); if(el) el.style.display='none'; });
+    loaded=true;
+  }
+  setInterval(load,60000);
+  var watcher=setInterval(function(){ if(document.body.classList.contains('live')){ load(); if(loaded) clearInterval(watcher); } },2500);
+})();
+</script>
 </body>
 </html>
