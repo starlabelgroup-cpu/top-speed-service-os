@@ -5,6 +5,7 @@ import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceArea
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } from '../services/notifications.js';
+import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { providersStatus } from '../services/senders.js';
 
 /**
@@ -132,6 +133,10 @@ const guestBookingSchema = z.object({
   // Which coordinated booking surface created this: the Speedy chat or
   // the five-step Smart Booking form. Attribution only — same pipeline.
   source: z.enum(['SPEEDY_CHAT', 'WEB_FORM', 'FLAGSHIP_NET']).optional(),
+  // Finer-grained attribution (Fusion absorb Stage 3): landing page,
+  // [via:] surface tag, UTM campaign fields. Optional — see
+  // services/attribution.js for the accepted shapes.
+  ...attributionFields,
 });
 
 router.post('/speedy/book', async (req, res) => {
@@ -140,6 +145,7 @@ router.post('/speedy/book', async (req, res) => {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
   }
   const { customer, city, zip, appliance, issue, preferredWindow, source } = parsed.data;
+  const attribution = normalizeAttribution(parsed.data);
   const canonicalCity = SERVICE_CITIES.find((c) => c.toLowerCase() === city.toLowerCase());
   if (!canonicalCity) {
     return res.status(422).json({ error: 'City is outside the current service area', serviceCities: SERVICE_CITIES });
@@ -165,6 +171,7 @@ router.post('/speedy/book', async (req, res) => {
     customer: customerRecord,
     referenceCode: createReferenceCode(),
     source: source || 'SPEEDY_CHAT',
+    ...(attribution ? { attribution } : {}),
     city: canonicalCity,
     zip,
     appliance,

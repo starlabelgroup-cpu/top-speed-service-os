@@ -13,6 +13,7 @@ import {
   MARKETING_SERVICES,
   MARKETING_SYMPTOMS,
 } from '../src/data/marketingTaxonomy.js';
+import { buildPhase2DraftPages } from '../src/data/phase2DraftPages.js';
 
 const prisma = new PrismaClient();
 
@@ -85,8 +86,68 @@ for (const [model, rows] of marketingTaxonomy) {
   }
 }
 
+// Top Speed Marketing OS — Phase 2 draft landing pages (Fusion absorb,
+// 2026-11-12). Create-only: a page is inserted the first time its
+// canonicalUrl is seen and NEVER modified by reseeding afterwards, so
+// Studio edits, reviews and status changes are safe. Every seeded page
+// starts IN_REVIEW — the seed cannot publish — with a v1 PageVersion
+// snapshot in the same shape the Studio writes (routes/marketingOs.js).
+const citiesBySlug = new Map((await prisma.marketingCity.findMany()).map((c) => [c.slug, c]));
+const servicesBySlug = new Map((await prisma.marketingService.findMany()).map((s) => [s.slug, s]));
+let phase2Created = 0;
+let phase2Skipped = 0;
+for (const spec of buildPhase2DraftPages()) {
+  const existing = await prisma.landingPage.findUnique({ where: { canonicalUrl: spec.canonicalUrl } });
+  if (existing) continue;
+  const city = spec.citySlug ? citiesBySlug.get(spec.citySlug) : null;
+  const service = spec.serviceSlug ? servicesBySlug.get(spec.serviceSlug) : null;
+  if ((spec.citySlug && !city) || (spec.serviceSlug && !service)) {
+    phase2Skipped += 1;
+    console.warn(`Phase 2 seed: skipping ${spec.canonicalUrl} — taxonomy record missing.`);
+    continue;
+  }
+  const page = await prisma.landingPage.create({
+    data: {
+      type: spec.type,
+      cityId: city ? city.id : null,
+      brandId: null,
+      serviceId: service ? service.id : null,
+      slug: spec.slug,
+      canonicalUrl: spec.canonicalUrl,
+      title: spec.title,
+      metaDescription: spec.metaDescription,
+      status: 'IN_REVIEW',
+      sections: spec.sections,
+      createdBy: 'phase2-seed',
+      updatedBy: 'phase2-seed',
+    },
+  });
+  await prisma.pageVersion.create({
+    data: {
+      pageId: page.id,
+      version: 1,
+      snapshot: {
+        type: page.type,
+        cityId: page.cityId,
+        brandId: null,
+        serviceId: page.serviceId,
+        slug: page.slug,
+        canonicalUrl: page.canonicalUrl,
+        title: page.title,
+        metaDescription: page.metaDescription,
+        status: page.status,
+        sections: spec.sections,
+      },
+      note: 'Phase 2 draft — Fusion absorb (2026-11-12). Awaiting Studio review; not published.',
+      createdBy: 'phase2-seed',
+    },
+  });
+  phase2Created += 1;
+}
+
 const companyCount = await prisma.company.count();
 const providerCount = await prisma.provider.count();
 const marketingCityCount = await prisma.marketingCity.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities.`);
+const landingPageCount = await prisma.landingPage.count();
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped).`);
 await prisma.$disconnect();

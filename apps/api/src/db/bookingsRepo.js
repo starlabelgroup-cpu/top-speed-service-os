@@ -1,5 +1,6 @@
 import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
+import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
 import { hydrateVideoRequests } from './videoRepo.js';
 import { hydratePayments } from './paymentsRepo.js';
@@ -89,6 +90,7 @@ function bookingToRow(booking) {
     preferredWindow: booking.preferredWindow ?? null,
     referenceCode: booking.referenceCode ?? null,
     source: booking.source ?? 'WEBSITE',
+    ...attributionToColumns(booking.attribution),
     history: booking.history ?? [],
     dispatch: booking.dispatch ?? null,
     appointment: booking.appointment ?? null,
@@ -102,6 +104,7 @@ function bookingToRow(booking) {
 }
 
 function bookingFromRow(row, customerRecord) {
+  const attribution = attributionFromColumns(row);
   return {
     id: row.id,
     companyId: row.companyId,
@@ -109,6 +112,7 @@ function bookingFromRow(row, customerRecord) {
     customer: customerRecord,
     referenceCode: row.referenceCode,
     source: row.source,
+    ...(attribution ? { attribution } : {}),
     city: row.city,
     zip: row.zip,
     appliance: row.appliance,

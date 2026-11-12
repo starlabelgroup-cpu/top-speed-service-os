@@ -157,6 +157,15 @@ model ServiceRequest {
   preferredWindow                 String?
   referenceCode                   String?       @unique
   source                          String        @default("WEBSITE")
+  // Intake attribution (2026-11-12, Fusion absorb Stage 3): the landing
+  // page a lead came from, the [via:] surface tag, and the UTM campaign
+  // fields. All optional — bookings made before this change (and any
+  // client that sends none) simply carry nulls.
+  sourcePage                      String?
+  viaTag                          String?
+  utmSource                       String?
+  utmMedium                       String?
+  utmCampaign                     String?
   // Working-state documents the API services operate on. The relational
   // core (customer, status, fee, assignments) stays in columns/tables;
   // these JSON columns carry the booking's event history, its dispatch
@@ -396,15 +405,22 @@ model ChannelLink {
 }
 
 model Connection {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  phone     String
-  email     String?
-  type      String
-  source    String?
-  message   String?
-  reference String   @unique
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  phone       String
+  email       String?
+  type        String
+  source      String?
+  message     String?
+  // Intake attribution (2026-11-12, Fusion absorb Stage 3) — same
+  // capture as ServiceRequest: landing page, [via:] tag, UTM fields.
+  sourcePage  String?
+  viaTag      String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  reference   String   @unique
+  createdAt   DateTime @default(now())
 }
 
 model CustomerAppliance {

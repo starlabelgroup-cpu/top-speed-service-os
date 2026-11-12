@@ -1,5 +1,6 @@
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
+import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 
 /**
  * Connection records — the public web intake (forms + Speedy-assisted
@@ -15,6 +16,7 @@ function iso(value) {
 }
 
 function toStoreConnection(row) {
+  const attribution = attributionFromColumns(row);
   return {
     id: row.id,
     name: row.name,
@@ -23,6 +25,7 @@ function toStoreConnection(row) {
     type: row.type,
     source: row.source || null,
     message: row.message || null,
+    ...(attribution ? { attribution } : {}),
     reference: row.reference,
     createdAt: iso(row.createdAt),
   };
@@ -39,6 +42,7 @@ export async function persistConnection(record) {
       type: record.type,
       source: record.source || null,
       message: record.message || null,
+      ...attributionToColumns(record.attribution),
       reference: record.reference,
       createdAt: new Date(record.createdAt),
     };
@@ -50,7 +54,7 @@ export async function persistConnection(record) {
   }
 }
 
-export async function createConnectionRecord({ name, phone, email = null, type, source = null, message = null }) {
+export async function createConnectionRecord({ name, phone, email = null, type, source = null, message = null, attribution = null }) {
   const record = {
     id: createId(),
     name,
@@ -59,6 +63,7 @@ export async function createConnectionRecord({ name, phone, email = null, type, 
     type,
     source: source || null,
     message: message || null,
+    ...(attribution ? { attribution } : {}),
     reference: createReferenceCode(),
     createdAt: new Date().toISOString(),
   };

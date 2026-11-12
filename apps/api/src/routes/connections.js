@@ -5,6 +5,7 @@ import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { notifySubmission } from '../services/notifications.js';
+import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 
 /**
  * Public web intake — every surface's form posts here (flagship,
@@ -22,6 +23,9 @@ const connectionSchema = z.object({
   type: z.string().trim().min(2).max(48),
   source: z.string().trim().max(60).optional(),
   message: z.string().trim().max(3000).optional(),
+  // Landing-page + UTM attribution (Fusion absorb Stage 3) — optional,
+  // see services/attribution.js for the accepted shapes.
+  ...attributionFields,
 });
 
 router.post('/connections', async (req, res) => {
@@ -29,7 +33,7 @@ router.post('/connections', async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid connection request', details: parsed.error.flatten() });
   }
-  const record = await createConnectionRecord(parsed.data);
+  const record = await createConnectionRecord({ ...parsed.data, attribution: normalizeAttribution(parsed.data) });
   // Unified notifications: the submitter gets a confirmation and the
   // business gets an instant alert for EVERY form on every surface.
   notifySubmission({
@@ -39,6 +43,10 @@ router.post('/connections', async (req, res) => {
     lines: [
       ...(record.message ? [`Message: ${record.message.slice(0, 240)}`] : []),
       ...(record.source ? [`Submitted via: ${record.source}`] : []),
+      ...(record.attribution?.page ? [`Landing page: ${record.attribution.page}`] : []),
+      ...(record.attribution?.utmSource
+        ? [`Campaign: ${record.attribution.utmSource}${record.attribution.utmMedium ? ` / ${record.attribution.utmMedium}` : ''}${record.attribution.utmCampaign ? ` / ${record.attribution.utmCampaign}` : ''}`]
+        : []),
     ],
     source: record.source || 'connections',
   });
