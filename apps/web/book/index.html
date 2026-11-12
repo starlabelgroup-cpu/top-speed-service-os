@@ -237,6 +237,7 @@
     var win=document.querySelector('input[name="wwin"]:checked').value;
     var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
     var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
+    try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
     var em=val('wEmail'); if(em) payload.customer.email=em;
     busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Booking…';
     fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})

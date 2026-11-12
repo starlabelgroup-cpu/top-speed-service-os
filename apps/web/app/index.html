@@ -647,9 +647,10 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
           <div class="ref-card">
             <span class="pill" style="background:rgba(255,255,255,.16); color:#fff;">REFERRAL CODE</span>
-            <div class="rc-code" id="refCodeCard">TS-REF-7K2P</div>
-            <p>Give your code, neighbors book with it. Their booking lands tagged to you — and completed jobs send the next code out automatically. That's the flywheel working.</p>
+            <div class="rc-code" id="refCodeCard">—</div>
+            <p id="refCardNote">Your referral code is issued automatically when a job completes. Share it and earn service credit when a friend's job is done — that's the flywheel working.</p>
             <button class="copy-btn" onclick="copyRef()">Copy my code</button>
+            <button class="copy-btn" style="margin-left:8px;" onclick="showTab('refer')">Refer &amp; Earn →</button>
           </div>
 
           <h3 class="sec">Review your last job</h3>
@@ -697,6 +698,71 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
           <a class="btn primary" style="margin-top:16px;" href="tel:+19549317997">Call Top Speed — 954-931-7997</a>
           <p class="sub" style="text-align:center; margin-top:14px;">Appliance Connect App · Top Speed Appliance · Broward County, FL<br>The Faster, The Better.</p>
+        </section>
+
+        <!-- ================= REFER & EARN ================= -->
+        <section class="screen" id="scr-refer">
+          <h2 class="greet">Refer &amp; Earn</h2>
+          <p class="sub">ApplianceReferral by Top Speed — share your link, your friend books and completes a repair, and you earn service credit after staff approval.</p>
+
+          <div id="refSignedOut" style="display:none;">
+            <div class="card">
+              <b style="font-size:15.5px;">Sign in to see your referral code</b>
+              <p class="sub" style="margin:5px 0 10px;">Your code, your credit balance, and every referral's stage live on your account. Sign in on the More tab, or learn how the program works first.</p>
+              <div class="btnrow"><button class="btn blue" onclick="showTab('more')">Sign in</button><a class="btn ghost" style="text-decoration:none;" href="/refer">How it works</a></div>
+            </div>
+          </div>
+
+          <div id="refNoCode" style="display:none;">
+            <div class="card">
+              <b style="font-size:15.5px;">Your code is on its way</b>
+              <p class="sub" style="margin:5px 0 10px;">Your referral code is issued automatically when a job completes. Book your first repair — or if a job just finished, check back shortly and your code will be here.</p>
+              <div class="btnrow"><button class="btn blue" onclick="showTab('book')">Book a repair</button><a class="btn ghost" style="text-decoration:none;" href="/refer">Program details</a></div>
+            </div>
+          </div>
+
+          <div id="refMain" style="display:none;">
+            <div class="ref-card">
+              <span class="pill" style="background:rgba(255,255,255,.16); color:#fff;">YOUR REFERRAL CODE</span>
+              <div class="rc-code" id="refCodeBig">—</div>
+              <p id="refLinkText" style="word-break:break-all;">Your personal link appears here.</p>
+              <button class="copy-btn" onclick="copyRefLink()">Copy my link</button>
+              <button class="copy-btn" style="margin-left:8px;" onclick="copyRef()">Copy code</button>
+            </div>
+
+            <h3 class="sec">Share it</h3>
+            <div class="btnrow">
+              <a class="btn blue" id="rfShareSms" href="#" style="text-decoration:none;">💬 Text</a>
+              <a class="btn" id="rfShareWa" href="#" target="_blank" rel="noopener" style="text-decoration:none;background:var(--green);color:#fff;">WhatsApp</a>
+              <a class="btn ghost" id="rfShareMail" href="#" style="text-decoration:none;">✉️ Email</a>
+            </div>
+
+            <h3 class="sec">Your numbers</h3>
+            <div class="card" id="refStats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;">
+              <div><b style="font-size:20px;color:var(--navy);" id="rsClicks">0</b><span style="display:block;font-size:11.5px;color:var(--mut);">Clicks</span></div>
+              <div><b style="font-size:20px;color:var(--navy);" id="rsInvited">0</b><span style="display:block;font-size:11.5px;color:var(--mut);">Invited</span></div>
+              <div><b style="font-size:20px;color:var(--navy);" id="rsBooked">0</b><span style="display:block;font-size:11.5px;color:var(--mut);">Booked</span></div>
+              <div><b style="font-size:20px;color:var(--navy);" id="rsCompleted">0</b><span style="display:block;font-size:11.5px;color:var(--mut);">Completed</span></div>
+            </div>
+
+            <h3 class="sec">My service credit</h3>
+            <div class="card" id="refCredits"><p class="sub" style="margin:4px 0;">Loading your credits…</p></div>
+
+            <h3 class="sec">My referrals</h3>
+            <div class="card" id="refJourneys"><p class="sub" style="margin:4px 0;">Loading your referrals…</p></div>
+
+            <h3 class="sec">Invite a friend directly</h3>
+            <div class="card">
+              <label class="fl">Friend's name</label><input id="rfName" type="text" placeholder="Your friend's name" style="width:100%;padding:11px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:15px;">
+              <label class="fl">Friend's mobile phone (optional)</label><input id="rfPhone" type="tel" placeholder="(954) 000-0000" style="width:100%;padding:11px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:15px;">
+              <label class="fl">Friend's email (optional)</label><input id="rfEmail" type="email" placeholder="friend@example.com" style="width:100%;padding:11px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:15px;">
+              <label style="display:flex;gap:9px;align-items:flex-start;margin:14px 0 4px;font-size:14px;line-height:1.45;color:var(--mut);"><input type="checkbox" id="rfConsent" style="margin-top:2px;width:17px;height:17px;flex:none;"><span>Yes, send my friend an invite</span></label>
+              <div id="rfMsg" style="font-size:14px;margin:8px 0;"></div>
+              <button class="btn blue" id="rfBtn" onclick="refInvite()">Queue invite</button>
+              <p class="sub" style="margin:10px 0 0;">Queued means we have it in line — text invites can be delayed while our texting is in trial, so sharing your link above is always fastest.</p>
+            </div>
+          </div>
+          <button class="btn ghost" style="margin-top:14px;" onclick="showTab('more')">← Back to Account</button>
         </section>
 
         </main>
@@ -829,6 +895,7 @@ function showTab(tab){
   document.getElementById('screens').scrollTop = 0;
   if(tab === 'track') renderTrack();
   if(tab === 'garage') loadGarage();
+  if(tab === 'refer' && window.refLoad) window.refLoad();
 }
 /* ============ booking flow ============ */
 function startBooking(i){
@@ -903,7 +970,8 @@ function resetBooking(){
 
 /* ============ more ============ */
 function copyRef(){
-  var code = document.getElementById('refCodeCard').textContent;
+  var code = window._refCode || '';
+  if(!code){ toast('Your code is issued automatically when a job completes'); return; }
   if(navigator.clipboard) navigator.clipboard.writeText(code).catch(function(){});
   toast("Referral code "+code+" copied");
 }
@@ -1333,6 +1401,84 @@ function aspReceipt(channel){ var ref=window._aspRef, d=window._aspData; if(!ref
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
 })();
+</script>
+
+<script>
+/* ============ REFER & EARN — ApplianceReferral (live) ============
+   Real data only, from GET /referrals/me on the signed-in customer's
+   token. Credit amounts render only from issued-credit API data —
+   nothing is hard-coded here. */
+window._refCode=''; window._refLink='';
+function refMoney(cents){ return '$'+((cents||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function refShow(which){
+  ['refSignedOut','refNoCode','refMain'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(id===which)?'':'none'; });
+}
+window.refLoad=function(){
+  if(!cTok()){ refShow('refSignedOut'); return; }
+  cFetch('/referrals/me').then(function(j){
+    var d=j.data||j||{};
+    var code=d.code||null;
+    window._refCode=code||'';
+    var link=d.link||(code?('https://topspeedserviceos.com/refer?c='+encodeURIComponent(code)):'');
+    window._refLink=link;
+    var card=document.getElementById('refCodeCard'); if(card) card.textContent=code||'—';
+    if(!code){ refShow('refNoCode'); return; }
+    refShow('refMain');
+    document.getElementById('refCodeBig').textContent=code;
+    document.getElementById('refLinkText').textContent=link;
+    var shareText='Hi! I used Top Speed Appliance for a repair and thought of you — book through my referral link and you will get a welcome offer on your first eligible repair: '+link;
+    var sms=document.getElementById('rfShareSms'); if(sms) sms.href='sms:?&body='+encodeURIComponent(shareText);
+    var wa=document.getElementById('rfShareWa'); if(wa) wa.href='https://wa.me/?text='+encodeURIComponent(shareText);
+    var mail=document.getElementById('rfShareMail'); if(mail) mail.href='mailto:?subject='+encodeURIComponent('A referral for Top Speed Appliance')+'&body='+encodeURIComponent(shareText);
+    var s=d.stats||{};
+    document.getElementById('rsClicks').textContent=s.clicks||0;
+    document.getElementById('rsInvited').textContent=s.invited||0;
+    document.getElementById('rsBooked').textContent=s.booked||0;
+    document.getElementById('rsCompleted').textContent=s.completed||0;
+    var credits=d.credits||[];
+    var cEl=document.getElementById('refCredits');
+    if(cEl){
+      var head='<p class="sub" style="margin:2px 0 8px;">Available now: <b style="color:var(--navy);">'+(s.creditsAvailableCount||0)+' credit(s) · '+refMoney(s.creditsAvailableCents)+'</b></p>';
+      cEl.innerHTML=head+(credits.length?credits.map(function(c){
+        return '<div class="hist"><div><b>'+refMoney(c.amountCents)+' service credit</b><span>'+escC(c.status||'')+(c.expiresAt?(' · expires '+escC(String(c.expiresAt).slice(0,10))):'')+'</span></div></div>';
+      }).join(''):'<p class="sub" style="margin:4px 0;">No credits yet — when a friend\'s job completes and is approved, your credit lands here.</p>');
+    }
+    var journeys=d.journeys||[];
+    var jEl=document.getElementById('refJourneys');
+    if(jEl){
+      jEl.innerHTML=journeys.length?journeys.map(function(jn){
+        return '<div class="hist"><div><b>'+escC(jn.refereeName||'Friend')+'</b><span>'+(jn.bookingReference?('Ref '+escC(jn.bookingReference)+' · '):'')+escC(String(jn.createdAt||'').slice(0,10))+'</span></div><span class="pill blue">'+escC(String(jn.status||'').replace(/_/g,' '))+'</span></div>';
+      }).join(''):'<p class="sub" style="margin:4px 0;">No referrals yet — share your link and your first one appears here.</p>';
+    }
+  }).catch(function(){ refShow(cTok()?'refNoCode':'refSignedOut'); });
+};
+function copyRefLink(){
+  if(!window._refLink){ toast('Your link is issued automatically when a job completes'); return; }
+  if(navigator.clipboard) navigator.clipboard.writeText(window._refLink).catch(function(){});
+  toast('Referral link copied');
+}
+function refInvite(){
+  var msg=document.getElementById('rfMsg');
+  function fail(t){ if(msg){ msg.style.color='#B3261E'; msg.textContent=t; } }
+  if(!window._refCode) return fail('Your referral code has not been issued yet.');
+  var name=document.getElementById('rfName').value.trim();
+  var phone=document.getElementById('rfPhone').value.trim();
+  var email=document.getElementById('rfEmail').value.trim();
+  if(name.length<2) return fail('Add your friend\'s name.');
+  if(!phone&&!email) return fail('Add your friend\'s phone or email.');
+  if(!document.getElementById('rfConsent').checked) return fail('Tick "Yes, send my friend an invite" first.');
+  var body={code:window._refCode,friendName:name,consent:true};
+  if(phone) body.phone=phone;
+  if(email) body.email=email;
+  var btn=document.getElementById('rfBtn'); btn.disabled=true; btn.textContent='Queueing…';
+  fetch(C_API+'/referrals/invite',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Invite failed'); return j; }); })
+    .then(function(){ if(msg){ msg.style.color='#12805C'; msg.textContent='Invite queued for '+name+' — sharing your link directly is still the fastest route.'; } document.getElementById('rfName').value=''; document.getElementById('rfPhone').value=''; document.getElementById('rfEmail').value=''; document.getElementById('rfConsent').checked=false; })
+    .catch(function(e){ fail(e.message); })
+    .finally(function(){ btn.disabled=false; btn.textContent='Queue invite'; });
+}
+/* Keep the More-tab referral card honest on load */
+if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
 </script>
 </body>
 </html>

@@ -217,11 +217,13 @@
     if (!d) return;
     pendingBook = null;
     addMsg('Booking your visit…', false);
-    post('/speedy/book', {
+    var bookPayload = {
       customer: { name: d.name, phone: d.phone },
       city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue,
       preferredWindow: d.preferred_window || undefined, source: 'SPEEDY_CHAT'
-    }).then(function (j) {
+    };
+    try { var refCode = sessionStorage.getItem('tsos_referral_code'); if (refCode) bookPayload.referralCode = refCode; } catch (e) {}
+    post('/speedy/book', bookPayload).then(function (j) {
       bookedRef = j.data.referenceCode;
       bookedPhone = d.phone;
       var card = document.createElement('div');

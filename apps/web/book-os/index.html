@@ -167,6 +167,28 @@ body:not(.live) .gated{display:none!important}</style>
 <!-- REMINDERS -->
 <section class="panel"><div class="ph"><div><h2>· Speedy Live Video</h2><p>Customers who asked to show the problem live (from the /video page). Arrange a request to create its room — the customer gets the join link by text, and both sides join on the video page.</p></div><span class="badge" id="vidCount">STAFF</span></div><div id="videoList"><p style="color:var(--muted)">Sign in above to work the live video requests.</p></div></section>
 
+<!-- REFERRALS — ApplianceReferral (staff only, live data) -->
+<section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human ✓ before credit is issued. Amounts stay unpublished until set in Program Settings below.</p></div><span class="badge" id="refCount">STAFF</span></div>
+<div style="padding:14px 16px">
+<div id="refMsg" style="font-size:13.5px;margin-bottom:10px"></div>
+<h3 style="margin:0 0 8px;font-size:16px">Pending approval queue</h3>
+<div id="refQueue"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the referral queue.</p></div>
+<h3 style="margin:18px 0 8px;font-size:16px">Issued credits</h3>
+<div id="refCredits"><p style="color:var(--mut);font-size:13.5px">Issued credits appear here once referrals are approved.</p></div>
+<h3 style="margin:18px 0 8px;font-size:16px">Program Settings <span style="font-weight:600;color:var(--mut);font-size:12.5px">— owner only to save · amounts stay unpublished until set</span></h3>
+<form id="refSettingsForm" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end">
+<label style="font-size:13px;font-weight:700">Program enabled<br><select id="rsEnabled" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"><option value="">— unset —</option><option value="true">Enabled</option><option value="false">Disabled</option></select></label>
+<label style="font-size:13px;font-weight:700">Reward amount ($)<br><input id="rsReward" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Tier 2 threshold (referrals)<br><input id="rsT2Thresh" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Tier 2 amount ($)<br><input id="rsT2Amt" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Tier 3 threshold (referrals)<br><input id="rsT3Thresh" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Tier 3 amount ($)<br><input id="rsT3Amt" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Monthly cap ($)<br><input id="rsCap" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Credit expiry (days)<br><input id="rsExpiry" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<div><button class="btn navy" type="submit" style="width:100%">Save settings</button></div>
+</form>
+</div></section>
+
 <section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div class="remgrid" id="rems"></div></section>
 
@@ -543,6 +565,90 @@ function completeVideo(id){
 }
 setInterval(function(){ if(vTok()) loadVideoRequests(); }, 30000);
 if(vTok()) loadVideoRequests();
+</script>
+
+<script>
+/* ============ BOOK OS — REFERRALS / ApplianceReferral (LIVE, staff) ============
+   Pending-approval queue, issued credits + redeem, and program settings.
+   Uses the same TSOS_API / apiFetch / tsosToken helpers as Live Mode above.
+   Renders only in live staff mode and only from real API data. */
+function refMoneyB(cents){ return '$'+((cents||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function refMsgB(kind,text){ var m=document.getElementById('refMsg'); if(!m) return; m.innerHTML=text?('<span style="font-weight:700;color:'+(kind==='err'?'#B3261E':'#0E7A3D')+'">'+escH(text)+'</span>'):''; }
+function refUnwrap(j){ return (j&&(j.data||j))||{}; }
+function loadReferrals(){
+  if(!document.body.classList.contains('live')||!tsosToken()) return;
+  apiFetch('/referrals/admin/queue?status=PENDING_APPROVAL').then(function(j){
+    var d=refUnwrap(j);
+    var journeys=d.journeys||[];
+    var counts=d.counts||{};
+    var badge=document.getElementById('refCount');
+    if(badge) badge.textContent=(counts.pendingApproval!=null?counts.pendingApproval:journeys.length)+' awaiting approval';
+    var el=document.getElementById('refQueue');
+    if(!el) return;
+    if(!journeys.length){ el.innerHTML='<p style="color:var(--mut);font-size:13.5px">Queue clear — no referrals are waiting on approval.</p>'; }
+    else{
+      el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referrer</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referee</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Booking ref</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Completed</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Suggested</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Approve amount ($)</th><th style="padding:7px 6px;border-bottom:2px solid var(--line)"></th></tr></thead><tbody>'+
+      journeys.map(function(jn){
+        var sugg=(jn.suggestedAmountCents!=null?jn.suggestedAmountCents:(jn.rewardAmountCents!=null?jn.rewardAmountCents:null));
+        var referrer=jn.referrerName||jn.referrerEmail||jn.referrerId||'—';
+        var when=jn.completedAt||jn.createdAt||'';
+        return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')">✓ Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button></td></tr>';
+      }).join('')+'</tbody></table></div>';
+    }
+    var credits=d.credits||[];
+    var cEl=document.getElementById('refCredits');
+    if(cEl){
+      cEl.innerHTML=credits.length?credits.map(function(c){
+        return '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)"><span><b>'+refMoneyB(c.amountCents)+'</b> · '+escH(c.status||'')+(c.expiresAt?(' · expires '+escH(String(c.expiresAt).slice(0,10))):'')+(c.ownerName||c.ownerEmail?(' · '+escH(c.ownerName||c.ownerEmail)):'')+'</span>'+(c.status==='AVAILABLE'?'<span style="margin-left:auto;display:flex;gap:7px;align-items:center"><input id="refRedeem-'+c.id+'" type="text" placeholder="Booking reference" style="padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px;width:150px"><button class="btn navy" onclick="refRedeem(\''+c.id+'\')">Redeem</button></span>':'')+'</div>';
+      }).join(''):'<p style="color:var(--mut);font-size:13.5px">No credits issued yet.</p>';
+    }
+  }).catch(function(e){ refMsgB('err','Referrals queue: '+e.message); });
+  apiFetch('/referrals/admin/settings').then(function(j){
+    var s=refUnwrap(j); var st=s.settings||s;
+    function dollars(centsKey,dollarKey){ if(st[centsKey]!=null) return (st[centsKey]/100); if(st[dollarKey]!=null) return st[dollarKey]; return ''; }
+    var en=document.getElementById('rsEnabled'); if(en&&st.enabled!=null) en.value=String(!!st.enabled);
+    var map=[['rsReward',dollars('rewardAmountCents','rewardAmount')],['rsT2Thresh',st.tier2Threshold!=null?st.tier2Threshold:''],['rsT2Amt',dollars('tier2AmountCents','tier2Amount')],['rsT3Thresh',st.tier3Threshold!=null?st.tier3Threshold:''],['rsT3Amt',dollars('tier3AmountCents','tier3Amount')],['rsCap',dollars('monthlyCapCents','monthlyCap')],['rsExpiry',st.expiryDays!=null?st.expiryDays:'']];
+    map.forEach(function(m){ var el=document.getElementById(m[0]); if(el&&document.activeElement!==el) el.value=m[1]; });
+  }).catch(function(){});
+}
+function refApprove(id){
+  var inp=document.getElementById('refAmt-'+id);
+  var body={};
+  if(inp&&inp.value.trim()!==''){ var cents=Math.round(parseFloat(inp.value)*100); if(!(cents>=0)) { refMsgB('err','Approval amount must be a valid dollar amount.'); return; } body.amountCents=cents; }
+  apiFetch('/referrals/admin/journeys/'+id+'/approve',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ refMsgB('ok','Referral approved — credit issued.'); toast('✓ Referral approved — credit issued'); loadReferrals(); })
+    .catch(function(e){ refMsgB('err','Approve failed: '+e.message); });
+}
+function refReject(id){
+  var note=prompt('Reject this referral? Optional note for the record (leave blank for none):','');
+  if(note===null) return;
+  var body={}; if(note.trim()) body.note=note.trim();
+  apiFetch('/referrals/admin/journeys/'+id+'/reject',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ refMsgB('ok','Referral rejected.'); loadReferrals(); })
+    .catch(function(e){ refMsgB('err','Reject failed: '+e.message); });
+}
+function refRedeem(id){
+  var inp=document.getElementById('refRedeem-'+id);
+  var ref=inp?inp.value.trim():'';
+  if(!ref){ refMsgB('err','Enter the booking reference to redeem this credit against.'); return; }
+  apiFetch('/referrals/admin/credits/'+id+'/redeem',{method:'POST',body:JSON.stringify({bookingReference:ref})})
+    .then(function(){ refMsgB('ok','Credit redeemed against '+ref+'.'); toast('✓ Credit redeemed'); loadReferrals(); })
+    .catch(function(e){ refMsgB('err','Redeem failed: '+e.message); });
+}
+document.getElementById('refSettingsForm').addEventListener('submit',function(e){
+  e.preventDefault();
+  function num(id){ var v=document.getElementById(id).value.trim(); return v===''?null:parseFloat(v); }
+  function cents(id){ var v=num(id); return v==null?null:Math.round(v*100); }
+  function intOrNull(id){ var v=num(id); return v==null?null:Math.round(v); }
+  var en=document.getElementById('rsEnabled').value;
+  var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapCents:cents('rsCap'), expiryDays:intOrNull('rsExpiry') };
+  if(en!=='') body.enabled=(en==='true');
+  apiFetch('/referrals/admin/settings',{method:'PUT',body:JSON.stringify(body)})
+    .then(function(){ refMsgB('ok','Program settings saved. Amounts stay unpublished until set.'); toast('✓ Referral settings saved'); loadReferrals(); })
+    .catch(function(err){ refMsgB('err','Settings save failed: '+err.message+' (owner sign-in required)'); });
+});
+setInterval(function(){ if(document.body.classList.contains('live')) loadReferrals(); },60000);
+var refWatcher=setInterval(function(){ if(document.body.classList.contains('live')){ loadReferrals(); clearInterval(refWatcher); } },2500);
 </script>
 
 <script src="/install.js"></script>
