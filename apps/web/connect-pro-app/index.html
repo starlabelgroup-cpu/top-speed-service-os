@@ -22,6 +22,30 @@ a{text-decoration:none}
 .hero-card{background:linear-gradient(160deg,#071a3d,#0a265c);color:#fff;border-radius:18px;padding:30px 28px;margin-bottom:18px}
 .hero-card h1{font-size:clamp(26px,4.5vw,36px);margin-bottom:8px}
 .hero-card p{color:#b9cdf0;line-height:1.55;font-size:16px}
+.sa-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
+.sa-tile{display:block;background:#f4f7fd;border:1.5px solid #d8e1ee;border-radius:14px;padding:14px 12px;text-decoration:none;color:#0a265c}
+.sa-tile:hover{border-color:#1280ff}
+.sa-tile .sa-ic{font-size:22px;display:block;margin-bottom:6px}
+.sa-tile b{display:block;font-size:14.5px}
+.sa-tile small{color:#5a6c8a;font-size:12.5px}
+.sa-depts{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.sa-dept{background:#0a265c;color:#fff;border-radius:12px;padding:12px 14px}
+.sa-dept b{display:block;font-size:14px;margin-bottom:3px}
+.sa-dept span{color:#b9cdf0;font-size:13px;line-height:1.45;display:block}
+.sa-item{padding:10px 0;border-bottom:1px solid #e4eaf4}
+.sa-item:last-child{border-bottom:none}
+.sa-item .sa-deptchip{display:inline-block;background:#e8effc;color:#0a265c;border-radius:999px;padding:1px 9px;font-size:11.5px;font-weight:700;margin-right:8px}
+.sa-item b{font-size:14.5px}
+.sa-item p{margin:3px 0 0;color:#43597a;font-size:13.5px;line-height:1.5}
+.sa-item time{color:#8494ad;font-size:12px}
+.sa-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #e4eaf4}
+.sa-step:last-child{border-bottom:none}
+.sa-dot{flex:none;width:26px;height:26px;border-radius:50%;background:#dbe5f5;color:#0a265c;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center}
+.sa-step.done .sa-dot{background:#1280ff;color:#fff}
+.sa-step.current .sa-dot{background:#e8322e;color:#fff}
+.sa-step b{font-size:14.5px}
+.sa-step p{margin:2px 0 0;color:#43597a;font-size:13.5px;line-height:1.5}
+.sa-step .sa-st{font-size:11.5px;font-weight:700;color:#8494ad;text-transform:uppercase;letter-spacing:.04em}
 .card{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 10px rgba(10,38,92,.06)}
 .card h2{color:var(--navy);font-size:21px;margin-bottom:8px}
 .card p{color:var(--muted);line-height:1.55;font-size:15px}
@@ -78,12 +102,60 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       <h1>Your workspace</h1>
       <p>Signed in as <b id="who" style="color:#fff;"></b> · <a href="#" onclick="signOut(); return false;" style="color:#ffb3b6; font-weight:700;">Sign out</a></p>
     </div>
+    <!-- SUPER APP HOME — department-store directory (Super Apps build) -->
+    <div class="card" id="secHome">
+      <h2>🏬 Your Top Speed store</h2>
+      <p>One account, every department. Your job moves through the store — Booking, Service Setters Dispatch, Field Service, Parts Supply, Billing, Referrals &amp; Rewards — and you can watch every step right here.</p>
+      <div class="sa-grid">
+        <a class="sa-tile" href="/speedy"><span class="sa-ic">💬</span><b>Book with Speedy</b><small>Book, ask, diagnose</small></a>
+        <a class="sa-tile" href="/track"><span class="sa-ic">📍</span><b>Track My Tech</b><small id="saCountTrack">Your live jobs</small></a>
+        <a class="sa-tile" href="#secEquip"><span class="sa-ic">🔌</span><b>My Appliances</b><small id="saCountEquip">Your registry</small></a>
+        <a class="sa-tile" href="#secHistory"><span class="sa-ic">🕘</span><b>Service History</b><small id="saCountHistory">Past visits</small></a>
+        <a class="sa-tile" href="#secRefer"><span class="sa-ic">🎁</span><b>Refer &amp; Earn</b><small id="saCountRefer">Your rewards</small></a>
+        <a class="sa-tile" href="#secOffers"><span class="sa-ic">🏷️</span><b>Offers &amp; Memberships</b><small>Current offers</small></a>
+        <a class="sa-tile" href="#secReceipts"><span class="sa-ic">🧾</span><b>Receipts</b><small id="saCountReceipts">Recorded payments</small></a>
+        <a class="sa-tile" href="#secActivity"><span class="sa-ic">🔔</span><b>Activity</b><small>Everything, in order</small></a>
+        <a class="sa-tile" href="#secAccount"><span class="sa-ic">👤</span><b>Account &amp; Legal</b><small>Terms &amp; your apps</small></a>
+      </div>
+      <h3 style="margin:20px 0 8px;">How Top Speed works — the departments, live</h3>
+      <div class="sa-depts" id="saDepts"><p>Loading department status…</p></div>
+    </div>
+    <div class="card" id="secActivity">
+      <h2>🔔 Activity</h2>
+      <p>Every department's work on your account, newest first. Tap a job to see its full department trail.</p>
+      <div id="saFeed"><p>Loading…</p></div>
+    </div>
+    <div class="card" id="secTrail" style="display:none;">
+      <h2 id="saTrailTitle">Order trail</h2>
+      <div id="saTrailBody"></div>
+    </div>
+    <div class="card" id="secRefer">
+      <h2>🎁 Refer &amp; Earn</h2>
+      <div id="saReferBody"><p>Loading…</p></div>
+    </div>
+    <div class="card" id="secOffers">
+      <h2>🏷️ Offers &amp; Memberships</h2>
+      <div id="saOffersBody"><p>Loading…</p></div>
+    </div>
+    <div class="card" id="secReceipts">
+      <h2>🧾 Receipts</h2>
+      <p>Receipts for payments recorded on your jobs. Online card payment opens when Stripe live keys are connected — until then the office records your payment and the receipt appears here.</p>
+      <div id="saReceiptsBody"><p>Loading…</p></div>
+    </div>
+    <div class="card" id="secAccount">
+      <h2>👤 Account &amp; Legal</h2>
+      <div id="saAccountBody"><p>Loading…</p></div>
+      <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn ghost" href="/legal">Terms &amp; Conditions</a>
+        <button class="btn ghost" type="button" onclick="saGoApp('appliance-pro')">Open Appliance Pro — commercial</button>
+      </div>
+    </div>
     <div class="tabs">
       <button class="tab on" id="tabHome" onclick="showMode('home')">🏠 My Home</button>
       <button class="tab" id="tabPm" onclick="showMode('pm')">🏢 Property Manager</button>
     </div>
     <div id="modeHome">
-      <div class="card">
+      <div class="card" id="secEquip">
         <h2>🔌 My appliances</h2>
         <p>Your Appliance Connect registry — Speedy and your techs work from this record.</p>
         <div id="eqList"><p>Loading…</p></div>
@@ -95,18 +167,18 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
         <div class="msg" id="eqMsg"></div>
         <button class="btn blue" onclick="addEquip()">Add appliance</button>
       </div>
-      <div class="card">
+      <div class="card" id="secBook">
         <h2>💬 Book with Speedy</h2>
         <p>Talk to Speedy in the customer app — book, track your tech live, and pay the $99 diagnostic online there.</p>
         <div style="margin-top:12px;"><a class="btn" href="/app">Open the Customer App</a></div>
       </div>
-      <div class="card">
+      <div class="card" id="secHistory">
         <h2>🕘 Service history</h2>
         <div id="actList"><p>Loading…</p></div>
       </div>
     </div>
     <div id="modePm" style="display:none;">
-      <div class="card">
+      <div class="card" id="secBulk">
         <h2>📋 Bulk service requests</h2>
         <p>Paste the day's tenant requests in plain words. Speedy AI sorts them into separate work orders under one batch reference — a Service Setter confirms each by text.</p>
         <label for="bkProperty">Property</label><input id="bkProperty" type="text" placeholder="e.g. Coral Palms Apartments — 2200 NW 39th St">
@@ -120,11 +192,6 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
         <div class="msg" id="bkMsg"></div>
         <div id="bkItems"></div>
       </div>
-    </div>
-    <div class="card">
-      <h2>🤝 Refer &amp; Earn</h2>
-      <p>Share Top Speed with neighbors, tenants, and fellow businesses and earn a <b>$25 service credit</b> for each referral whose job is completed and paid — rising to <b>$35</b> from your 5th completed referral and <b>$50</b> from your 10th, plus a <b>$100</b> bonus at 10 lifetime referrals and <b>$250</b> at 25. Credits are staff-approved and expire 12 months after issue. Property managers refer on the <b>partner track</b> — the same approved terms, tracked separately, no separate partner rate.</p>
-      <div id="refBody"><p>Loading your referral code…</p></div>
     </div>
   </div>
 </div>
@@ -233,19 +300,7 @@ function loadActivity(){
     box.innerHTML=h.length?h.slice(0,8).map(function(b){ return '<div class="item"><b>'+esc(b.referenceCode)+'</b> \u00b7 '+esc(b.appliance)+' \u2014 '+esc(b.issue)+'<br><span style="color:var(--muted)">'+esc(b.city||'')+' \u00b7 '+esc(String(b.createdAt).slice(0,10))+'</span> <span class="pill">'+esc(b.status)+'</span></div>'; }).join(''):'<p>No service activity yet \u2014 your requests and bookings will show here.</p>';
   }).catch(function(){ box.innerHTML='<p>Could not load activity just now.</p>'; });
 }
-function loadReferral(){
-  var box=document.getElementById('refBody'); if(!box||!tok()) return;
-  api('/referrals/me').then(function(j){
-    var d=j.data||j;
-    if(!d.code){ box.innerHTML='<p>'+esc(d.explanation||'Your referral code is issued when your first job completes.')+'</p>'; return; }
-    var s=d.stats||{}; var avail=(s.creditsAvailable)||{};
-    box.innerHTML='<p>Your referral code: <b style="font-size:17px;">'+esc(d.code)+'</b> <span class="pill">'+(d.track==='PARTNER'?'PARTNER TRACK':'CUSTOMER TRACK')+'</span></p>'
-      +'<p>Share your link: <a href="'+esc(d.link)+'" style="font-weight:700;">'+esc(d.link)+'</a></p>'
-      +'<p style="color:var(--muted)">Link clicks '+(s.clicks||0)+' · invited '+(s.invited||0)+' · booked '+(s.booked||0)+' · completed '+(s.completed||0)+' · credit available: <b>$'+(((avail.totalCents||0)/100)).toFixed(2)+'</b></p>'
-      +'<p style="color:var(--muted)">Program details and the public leaderboard: <a href="/refer" style="font-weight:700;">Refer &amp; Earn →</a></p>';
-  }).catch(function(){ box.innerHTML='<p>Referral details could not be loaded right now.</p>'; });
-}
-function onAppReady(){ loadEquip(); loadActivity(); loadReferral(); }
+function onAppReady(){ loadEquip(); loadActivity(); }
 </script>
 
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
@@ -470,5 +525,140 @@ function swReceipt(channel){ var ref=window._swRef, d=window._swBook; if(!ref||!
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
 })();
+</script>
+<script>
+/* ===== SUPER APP layer (Super Apps build) =====
+   Department directory data, unified activity feed, order trail,
+   live department board, and cross-app sign-in handoff. */
+var SA_AUD='connect-pro'; var SA_MODE='home';
+(function(){
+  var q=new URLSearchParams(location.search); var h=q.get('handoff'); if(!h) return;
+  fetch(API+'/auth/handoff/consume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:h,audience:SA_AUD})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if(j&&j.token) setTok(j.token); history.replaceState(null,'',location.pathname); if(window.boot) boot(); })
+    .catch(function(){ history.replaceState(null,'',location.pathname); });
+})();
+function saMoney(c){ return '$'+(Number(c||0)/100).toFixed(2); }
+function saWhen(t){ try{ return new Date(t).toLocaleString(); }catch(e){ return ''; } }
+function saSet(id, txt){ var el=document.getElementById(id); if(el) el.textContent=txt; }
+function saGoApp(aud){
+  api('/auth/handoff',{method:'POST',body:JSON.stringify({audience:aud})})
+    .then(function(j){ if(j.data&&j.data.url){ location.href=j.data.url; return; } throw new Error('no url'); })
+    .catch(function(){ location.href=(aud==='appliance-pro'?'/appliance-pro':'/connect-pro-app'); });
+}
+function saOpenTrail(ref){
+  var card=document.getElementById('secTrail'); if(!card) return;
+  card.style.display='';
+  document.getElementById('saTrailTitle').textContent='Order trail — '+ref;
+  var body=document.getElementById('saTrailBody'); body.innerHTML='<p>Loading…</p>';
+  card.scrollIntoView({behavior:'smooth',block:'start'});
+  api('/connect/jobs/'+encodeURIComponent(ref)).then(function(j){
+    var d=j.data||{}; var steps=d.trail||[];
+    var head='<p style="margin-bottom:6px;"><b>'+esc(d.appliance||'Appliance')+'</b> · '+esc(d.city||'')+' · Stage: <b>'+esc((d.tracking&&d.tracking.stageLabel8)||'')+'</b></p>';
+    body.innerHTML=head+(steps.length? steps.map(function(s,i){
+      return '<div class="sa-step '+esc(s.state)+'"><div class="sa-dot">'+(i+1)+'</div><div><span class="sa-st">'+esc(s.department)+' · '+esc(s.state)+'</span><br><b>'+esc(s.title)+'</b><p>'+esc(s.detail||'')+'</p></div></div>';
+    }).join('') : '<p>No trail recorded for this job yet.</p>');
+  }).catch(function(e){ body.innerHTML='<p>Could not load the trail: '+esc(e.message)+'</p>'; });
+}
+function saEmailReceipt(ref, btn){
+  btn.disabled=true; btn.textContent='Requesting…';
+  api('/speedy/send-receipt',{method:'POST',body:JSON.stringify({reference:ref,phone:(window.CUR&&CUR.phone)||'',channel:'email'})})
+    .then(function(){ btn.textContent='Receipt requested ✓'; })
+    .catch(function(e){ btn.disabled=false; btn.textContent='Email my receipt'; alert(e.message||'Could not request the receipt.'); });
+}
+function saLoad(){
+  fetch(API+'/platform/departments').then(function(r){ return r.json(); }).then(function(j){
+    var box=document.getElementById('saDepts'); if(!box) return;
+    var deps=(j.data&&j.data.departments)||[];
+    box.innerHTML=deps.length? deps.map(function(d){ return '<div class="sa-dept"><b>'+esc(d.icon||'')+' '+esc(d.name)+'</b><span>'+esc(d.statusLine)+'</span></div>'; }).join('') : '<p>Department status is unavailable right now.</p>';
+  }).catch(function(){ var box=document.getElementById('saDepts'); if(box) box.innerHTML='<p>Department status is unavailable right now.</p>'; });
+
+  api('/connect/jobs').then(function(j){
+    var jobs=(j.data&&j.data.jobs)||[]; window.SA_JOBS=jobs;
+    var active=jobs.filter(function(x){ return x.status!=='COMPLETED'; }).length;
+    saSet('saCountTrack', active? (active+' active job'+(active===1?'':'s')) : 'No active jobs');
+    saSet('saCountHistory', jobs.length? (jobs.length+' job'+(jobs.length===1?'':'s')+' on your account') : 'No jobs yet');
+    saSet('saCountWork', jobs.length? (jobs.length+' work order'+(jobs.length===1?'':'s')) : 'No work orders yet');
+    var withPay=jobs.filter(function(x){ return x.payments&&x.payments.length; });
+    var receiptCount=jobs.filter(function(x){ return x.hasReceipt; }).length;
+    saSet('saCountReceipts', receiptCount? (receiptCount+' receipt'+(receiptCount===1?'':'s')+' on file') : 'No payments recorded yet');
+    saSet('saCountBilling', withPay.length? (withPay.length+' job'+(withPay.length===1?'':'s')+' with payments') : 'No payments recorded yet');
+    var rows=withPay.map(function(x){
+      return x.payments.map(function(p){
+        return '<div class="sa-item"><b>'+esc(x.reference)+'</b> — '+esc(p.purpose||'Payment')+' · '+saMoney(p.amountCents)+' · '+esc(p.status)+(p.paidAt? ' · '+saWhen(p.paidAt):'')+(p.status==='PAID'? ' <button class="btn ghost" type="button" onclick="saEmailReceipt(\''+esc(x.reference)+'\', this)">Email my receipt</button>':'')+'</div>';
+      }).join('');
+    }).join('');
+    var rb=document.getElementById('saReceiptsBody'); if(rb) rb.innerHTML=rows||'<p>No payments recorded yet. When the office records a payment on one of your jobs, it shows up here with its receipt.</p>';
+    var bb=document.getElementById('saBillingBody'); if(bb) bb.innerHTML=rows||'<p>No payments recorded yet against your work orders.</p>';
+  }).catch(function(){});
+
+  api('/connect/activity').then(function(j){
+    var box=document.getElementById('saFeed'); if(!box) return;
+    var events=(j.data&&j.data.events)||[];
+    box.innerHTML=events.length? events.map(function(e){
+      var click=e.reference? ' onclick="saOpenTrail(\''+esc(e.reference)+'\')" style="cursor:pointer;"' : '';
+      return '<div class="sa-item"'+click+'><span class="sa-deptchip">'+esc(e.department)+'</span><b>'+esc(e.title)+'</b>'+(e.detail? '<p>'+esc(e.detail)+'</p>':'')+'<time>'+saWhen(e.at)+'</time></div>';
+    }).join('') : '<p>Nothing yet — when you book a job, refer a friend, or a department updates your job, it appears here.</p>';
+  }).catch(function(){ var box=document.getElementById('saFeed'); if(box) box.innerHTML='<p>Activity is unavailable right now.</p>'; });
+
+  api('/referrals/me').then(function(j){
+    var box=document.getElementById('saReferBody'); if(!box) return;
+    var d=j.data||{};
+    var avail=(d.credits||[]).filter(function(c){ return c.status==='AVAILABLE'; });
+    var total=avail.reduce(function(s,c){ return s+(c.amountCents||0); },0);
+    saSet('saCountRefer', total? (saMoney(total)+' credit available') : 'Share & earn credit');
+    var terms=(d.terms&&d.terms.published)? '<p>'+esc(d.terms.summary||'')+'</p>' : '';
+    if(d.code){
+      box.innerHTML='<p>Your referral code: <b style="font-size:17px;">'+esc(d.code)+'</b></p>'
+        +'<p>Share your link: <b>https://topspeedserviceos.com/refer?c='+esc(d.code)+'</b></p>'
+        +terms
+        +'<p>Referrals completed: <b>'+((d.stats&&d.stats.completed)||0)+'</b> · Credit available: <b>'+saMoney(total)+'</b></p>';
+    } else {
+      box.innerHTML='<p>Your referral code is issued automatically when your first job is completed. '+(SA_MODE==='commercial'? 'Businesses you refer earn you the same published program credits.':'')+'</p>'+terms;
+    }
+  }).catch(function(){ var box=document.getElementById('saReferBody'); if(box) box.innerHTML='<p>Referral details are unavailable right now.</p>'; });
+
+  if(SA_MODE==='home'){
+    api('/connect/summary').then(function(j){
+      var n=((j.data&&j.data.appliances)||[]).length;
+      saSet('saCountEquip', n? (n+' appliance'+(n===1?'':'s')+' registered') : 'Your registry');
+    }).catch(function(){});
+    api('/connect/promotions').then(function(j){
+      var box=document.getElementById('saOffersBody'); if(!box) return;
+      var offers=(j.data&&(j.data.offers||j.data.promotions))||[];
+      box.innerHTML=offers.length? offers.map(function(o){ return '<div class="sa-item"><b>'+esc(o.title||o.name||'Offer')+'</b>'+(o.description||o.detail? '<p>'+esc(o.description||o.detail)+'</p>':'')+'</div>'; }).join('') : '<p>No offers are published right now.</p>';
+    }).catch(function(){ var box=document.getElementById('saOffersBody'); if(box) box.innerHTML='<p>Offers are unavailable right now.</p>'; });
+  }
+
+  if(SA_MODE==='commercial'){
+    api('/connect/commercial').then(function(j){
+      var box=document.getElementById('saAgreementsBody'); if(!box) return;
+      var d=j.data||{};
+      if(!d.account){
+        saSet('saCountAgreements','No agreement on file yet');
+        box.innerHTML='<p>No commercial account file is linked to this sign-in yet. When the office opens your commercial account (custom quote, service agreement tier, facilities and equipment), it appears here. Call <a href="tel:+19549317997">954-931-7997</a> to open one.</p>';
+        return;
+      }
+      var a=d.account;
+      var tierName={'ESSENTIAL':'Essential','PRIORITY':'Priority','TOTAL_CARE':'Total Care'}[a.serviceAgreement]||a.serviceAgreement||'—';
+      saSet('saCountAgreements', tierName+' agreement');
+      saSet('saCountEquip', (d.equipmentCount||0)+' units registered');
+      box.innerHTML='<p><b>'+esc(a.companyName||'')+'</b> · Account '+esc(a.referenceCode||'')+' · '+esc(a.accountType||'')+'</p>'
+        +'<p>Service agreement: <b>'+esc(tierName)+'</b> · Status: <b>'+esc(a.status||'')+'</b></p>'
+        +((d.facilities&&d.facilities.length)? '<p>Facilities: '+d.facilities.map(function(f){ return esc(f.name)+(f.city? ' ('+esc(f.city)+')':''); }).join(', ')+'</p>':'')
+        +'<p>Equipment registered: <b>'+(d.equipmentCount||0)+'</b> · Open work orders: <b>'+((d.workOrders||[]).filter(function(w){ return w.status==='OPEN'; }).length)+'</b></p>';
+      var ba=document.getElementById('saBillingAcct');
+      if(ba) ba.innerHTML='<p>Account <b>'+esc(a.referenceCode||'')+'</b> — '+esc(a.companyName||'')+'</p>';
+    }).catch(function(){ var box=document.getElementById('saAgreementsBody'); if(box) box.innerHTML='<p>Agreement details are unavailable right now.</p>'; });
+  }
+
+  var ab=document.getElementById('saAccountBody');
+  if(ab && window.CUR){
+    ab.innerHTML='<p>Signed in as <b>'+esc(CUR.email||'')+'</b>'+(CUR.phone? ' · '+esc(CUR.phone):'')+'</p>'
+      +'<p>One Top Speed account works on every Top Speed site and app — the flagship, Appliance Connect Pro, Appliance Pro, and the customer app. Use the cross-app button below and you land signed in, no password re-entry.</p>'
+      +'<p>By using this app you agreed to the Top Speed Service OS Terms &amp; Conditions and the Appliance Connect Software Terms of Use.</p>';
+  }
+}
+(function(){ var prev=window.onAppReady; window.onAppReady=function(){ if(prev) prev(); saLoad(); }; })();
 </script>
 </body></html>

@@ -122,6 +122,8 @@ model User {
 
   channelLinks ChannelLink[]
 
+  authHandoffs AuthHandoff[]
+
   @@unique([companyId, email])
   @@index([companyId])
 }
@@ -574,6 +576,27 @@ model TrackingToken {
   booking ServiceRequest @relation(fields: [bookingId], references: [id], onDelete: Cascade)
 
   @@index([bookingId])
+}
+
+// Super Apps cross-site sign-in handoff (2026-11-12): a signed-in customer
+// moving between surfaces (flagship ↔ Connect Pro ↔ Appliance Pro ↔ the
+// customer app) exchanges a one-time token instead of signing in again.
+// Only the SHA-256 hash is stored; tokens are single-use, audience-bound,
+// and expire five minutes after issue. Also backs the emailed sign-in
+// link a .net booking customer can claim (audience-checked the same way).
+model AuthHandoff {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
+  audience  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ─── Top Speed Marketing OS (Phase 1 Foundation, 2026-11-11) ───

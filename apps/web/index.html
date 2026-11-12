@@ -1263,8 +1263,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <h2>Open your <span>working app</span></h2>
     <p>Every account starts at a login — then the real app. Commercial accounts run on Appliance Pro; homeowners and property managers run on the Appliance Connect Pro app. Email or Google sign-in, free account creation.</p></div>
     <div class="cards">
-      <article class="card"><div class="icon">🏢</div><h3>Appliance Pro — Commercial Accounts</h3><p>For businesses, facilities and commercial accounts: sign in to send service requests, keep your equipment registry, and see every visit. New here? Create the account on the same page.</p><a class="btn btn-red" href="/appliance-pro">Commercial login → Appliance Pro</a></article>
-      <article class="card"><div class="icon">🏠</div><h3>Appliance Connect Pro App — Home &amp; Property Managers</h3><p>For residential customers and property managers: your appliance registry, service history and Speedy booking — plus bulk tenant requests for managers. One free account.</p><a class="btn btn-blue" href="/connect-pro-app">Customer / PM login → Connect Pro App</a></article>
+      <article class="card"><div class="icon">🏢</div><h3>Appliance Pro — Commercial Accounts</h3><p>For businesses, facilities and commercial accounts: sign in to send service requests, keep your equipment registry, and see every visit. New here? Create the account on the same page.</p><a class="btn btn-red" data-handoff="appliance-pro" href="/appliance-pro">Commercial login → Appliance Pro</a></article>
+      <article class="card"><div class="icon">🏠</div><h3>Appliance Connect Pro App — Home &amp; Property Managers</h3><p>For residential customers and property managers: your appliance registry, service history and Speedy booking — plus bulk tenant requests for managers. One free account.</p><a class="btn btn-blue" data-handoff="connect-pro" href="/connect-pro-app">Customer / PM login → Connect Pro App</a></article>
     </div>
   </div>
 </section>
@@ -1880,6 +1880,31 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
    .catch(function(){ addMsg('📸 Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.',false); });
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
+})();
+</script>
+<script>
+/* SUPER APP handoff (Super Apps build): signed-in visitors jump from the
+   flagship into either app already signed in (one-time handoff link). */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+  var q=new URLSearchParams(location.search); var h=q.get('handoff');
+  if(h){
+    fetch(API+'/auth/handoff/consume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:h,audience:'flagship'})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if(j&&j.token){ try{ localStorage.setItem('tsos_token',j.token); }catch(e){} } history.replaceState(null,'',location.pathname); })
+    .catch(function(){});
+  }
+  document.querySelectorAll('[data-handoff]').forEach(function(a){
+    a.addEventListener('click',function(ev){
+      var t=tok(); if(!t) return;
+      ev.preventDefault();
+      fetch(API+'/auth/handoff',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({audience:a.getAttribute('data-handoff')})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ location.href=(j.data&&j.data.url)||a.getAttribute('href'); })
+      .catch(function(){ location.href=a.getAttribute('href'); });
+    });
+  });
 })();
 </script>
 </body>

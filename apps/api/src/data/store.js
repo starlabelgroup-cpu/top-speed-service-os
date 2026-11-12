@@ -18,6 +18,9 @@ export const store = {
   dispatchAssignments: new Map(),
   // Track My Tech secure tracking links, keyed by token SHA-256 hash.
   trackingTokens: new Map(),
+  // Super Apps sign-in handoffs (skeleton-mode fallback; the database
+  // mode uses the AuthHandoff table). Keyed by token SHA-256 hash.
+  authHandoffs: new Map(),
   // Connection layer: records that arrive through the universal intake
   // (provider applications and property-manager leads are not bookings).
   providerApplications: new Map(),

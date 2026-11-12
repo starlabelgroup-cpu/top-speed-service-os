@@ -26,6 +26,8 @@ import financeRouter from './routes/finance.js';
 import notificationsRouter from './routes/notifications.js';
 import twilioVoiceRouter from './routes/twilioVoice.js';
 import referralsRouter from './routes/referrals.js';
+import superappRouter from './routes/superapp.js';
+import handoffRouter from './routes/handoff.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
@@ -143,6 +145,8 @@ app.use('/api/v1', financeRouter);
 app.use('/api/v1', notificationsRouter);
 app.use('/api/v1', twilioVoiceRouter);
 app.use('/api/v1', referralsRouter);
+app.use('/api/v1', superappRouter);
+app.use('/api/v1', handoffRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

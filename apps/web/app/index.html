@@ -645,6 +645,12 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             </div>
           </div>
 
+          <div class="card" style="margin-bottom:12px;">
+            <b style="font-size:15px;">Your other Top Speed apps</b>
+            <p class="sub" style="margin:4px 0 10px;">One account across the whole store — jump straight in, no password re-entry. Homeowners &amp; property managers live in Connect Pro; businesses in Appliance Pro.</p>
+            <div class="btnrow"><button class="btn ghost" onclick="saGoApp('connect-pro')">Appliance Connect Pro</button><button class="btn ghost" onclick="saGoApp('appliance-pro')">Appliance Pro — commercial</button></div>
+          </div>
+
           <div class="ref-card">
             <span class="pill" style="background:rgba(255,255,255,.16); color:#fff;">REFERRAL CODE</span>
             <div class="rc-code" id="refCodeCard">—</div>
@@ -1480,6 +1486,30 @@ function refInvite(){
 }
 /* Keep the More-tab referral card honest on load */
 if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
+</script>
+<script>
+/* SUPER APP handoff (Super Apps build): land signed in from another Top
+   Speed surface; jump to the other apps without re-typing a password. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var q=new URLSearchParams(location.search); var h=q.get('handoff');
+  if(h){
+    fetch(API+'/auth/handoff/consume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:h,audience:'customer-app'})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ if(j&&j.token){ try{ localStorage.setItem('tsos_cust_token',j.token); localStorage.setItem('tsos_token',j.token); }catch(e){} } location.replace(location.pathname); })
+    .catch(function(){ history.replaceState(null,'',location.pathname); });
+    return;
+  }
+  window.saGoApp=function(aud){
+    var t=''; try{ t=localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){}
+    var dest=(aud==='appliance-pro'?'/appliance-pro':'/connect-pro-app');
+    if(!t){ location.href=dest; return; }
+    fetch(API+'/auth/handoff',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({audience:aud})})
+    .then(function(r){ return r.json(); })
+    .then(function(j){ location.href=(j.data&&j.data.url)||dest; })
+    .catch(function(){ location.href=dest; });
+  };
+})();
 </script>
 </body>
 </html>

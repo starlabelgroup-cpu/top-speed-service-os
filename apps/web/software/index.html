@@ -107,5 +107,19 @@ footer strong{color:#fff}
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Outfit',Inter,Arial,sans-serif} .brand,.logo-text,.wordmark{font-family:'Space Grotesk',Inter,sans-serif;letter-spacing:.2px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Roboto Mono',monospace}</style>
 <script src="/speedy-widget.js" defer></script>
+<section>
+  <h2>How Top Speed works — one store, live departments</h2>
+  <p>Every Top Speed site and app — this flagship, topspeedappliance.net, Appliance Connect Pro, Appliance Pro, and the referral program — processes through the same departments on the one Service OS, like departments in a department store sharing one stockroom and one register. These status lines are live from the platform's real records:</p>
+  <div id="swDepts" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; margin-top:16px;"><p>Loading department status…</p></div>
+</section>
+<script>
+(function(){
+  function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+  fetch('https://top-speed-service-os.vercel.app/api/v1/platform/departments').then(function(r){ return r.json(); }).then(function(j){
+    var box=document.getElementById('swDepts'); var deps=(j.data&&j.data.departments)||[];
+    box.innerHTML=deps.length? deps.map(function(d){ return '<div style="background:#0a265c; color:#fff; border-radius:14px; padding:16px;"><b style="display:block; font-size:15px; margin-bottom:4px;">'+esc(d.icon||'')+' '+esc(d.name)+'</b><span style="color:#b9cdf0; font-size:13.5px; line-height:1.5;">'+esc(d.statusLine)+'</span></div>'; }).join('') : '<p>Department status is unavailable right now.</p>';
+  }).catch(function(){ var box=document.getElementById('swDepts'); if(box) box.innerHTML='<p>Department status is unavailable right now.</p>'; });
+})();
+</script>
 </body>
 </html>

@@ -8,6 +8,8 @@ import {
 } from './speedyPolicy.js';
 import { speedyKnowledgeSections } from './speedyKnowledge.js';
 import { createInvite, getReferralStatusForCode, resolveCode } from './referrals.js';
+import { buildOrderTrail } from './superapp.js';
+import { store } from '../data/store.js';
 
 /**
  * Speedy — the Top Speed AI customer assistant, powered by OpenAI.
@@ -174,6 +176,22 @@ const SPEEDY_TOOLS = [
   },
   {
     type: 'function',
+    name: 'get_job_departments',
+    description:
+      'Look up where a customer\'s job is right now, department by department (Booking → Service Setters dispatch → Field Service → Parts Supply → Billing → Referrals). Requires the booking reference (TS-XXXXXX) AND the phone number on the booking — the same check as public tracking. Report only what it returns: the current stage, which department holds the job, and recorded facts. Never invent a status, an ETA, a part, or a payment it does not return.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        reference: { type: 'string', description: 'The booking reference code, e.g. TS-XXXXXX.' },
+        phone: { type: 'string', description: 'The phone number on the booking, for verification.' },
+      },
+      required: ['reference', 'phone'],
+    },
+  },
+  {
+    type: 'function',
     name: 'escalate_to_human_professional',
     description:
       'Escalate the conversation to the human team. Mandatory for safety-critical conditions (gas, carbon monoxide, sparking, fire, flooding, electric shock, refrigerant leaks); also right whenever a human professional should take over.',
@@ -242,6 +260,35 @@ async function executeSpeedyTool(call) {
       // back as plain tool results the model can explain to the customer.
       return { sent: false, error: error?.code || 'INVITE_FAILED', message: error?.message || 'The invite could not be sent.' };
     }
+  }
+  if (call.name === 'get_job_departments') {
+    const reference = String(args.reference || '').trim().toUpperCase();
+    const phoneDigits = String(args.phone || '').replace(/\D/g, '').slice(-10);
+    const booking = [...store.bookings.values()].find(
+      (b) => String(b.referenceCode || '').toUpperCase() === reference,
+    );
+    if (!booking || !phoneDigits || String(booking.customer?.phone || '').replace(/\D/g, '').slice(-10) !== phoneDigits) {
+      return {
+        found: false,
+        message: 'No job matched that reference and phone number. Ask the customer to check the reference on their booking confirmation and the phone they booked with — do not guess a status.',
+      };
+    }
+    const context = { bookings: [booking], customerIds: new Set([booking.customerId].filter(Boolean)) };
+    const trail = buildOrderTrail(context, booking.referenceCode);
+    return {
+      found: true,
+      reference: trail.reference,
+      appliance: trail.appliance,
+      currentStage: trail.tracking.stageLabel8,
+      stageNumber: trail.tracking.stageIndex + 1,
+      ofStages: 8,
+      technician: trail.tracking.technician,
+      etaMinutes: trail.tracking.etaMinutes,
+      departments: trail.trail.map((step) => ({
+        department: step.department, title: step.title, detail: step.detail, state: step.state,
+      })),
+      message: 'Explain in plain words which department holds the job now and what happens next, using only these returned facts.',
+    };
   }
   if (call.name === 'get_referral_status') {
     try {

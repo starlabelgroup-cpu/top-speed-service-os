@@ -41,6 +41,7 @@ const SUBJECTS = {
   SUBMISSION_CONFIRMATION: 'Top Speed Appliance — we received your submission',
   STAFF_SUBMISSION_ALERT: 'Top Speed Appliance — new submission alert',
   ACCOUNT_WELCOME: 'Welcome to Top Speed Appliance',
+  SIGNIN_LINK: 'Your Top Speed sign-in link',
 };
 
 function resendConfig() {
