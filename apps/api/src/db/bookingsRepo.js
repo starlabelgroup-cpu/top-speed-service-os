@@ -7,6 +7,7 @@ import { hydrateConnections } from './connectionsRepo.js';
 import { hydrateAppliances } from './appliancesRepo.js';
 import { hydrateBanners } from './bannersRepo.js';
 import { hydrateTrackingTokens } from './trackingRepo.js';
+import { hydrateMarketingOs } from './marketingOsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -210,6 +211,14 @@ export async function hydrateStore() {
   await hydrateAppliances();
   await hydrateBanners();
   await hydrateTrackingTokens();
+  // Marketing OS is an add-on module: if its tables are ever unavailable
+  // (e.g. mid-deploy before its migration lands), the rest of the
+  // platform must still hydrate and serve. Degrade to an empty module.
+  try {
+    await hydrateMarketingOs();
+  } catch (error) {
+    console.error('hydrateMarketingOs failed (module degraded, platform continues)', error?.message || error);
+  }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };
 }

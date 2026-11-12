@@ -7,6 +7,12 @@
 //
 // Run:  DATABASE_URL=... node prisma/seed.mjs     (or: npm run db:seed)
 import { PrismaClient } from '@prisma/client';
+import {
+  MARKETING_BRANDS,
+  MARKETING_CITIES,
+  MARKETING_SERVICES,
+  MARKETING_SYMPTOMS,
+} from '../src/data/marketingTaxonomy.js';
 
 const prisma = new PrismaClient();
 
@@ -64,7 +70,23 @@ for (const provider of providers) {
   await prisma.provider.upsert({ where: { id: provider.id }, update: {}, create: provider });
 }
 
+// Top Speed Marketing OS taxonomy (blueprint §3). Idempotent: upsert by
+// slug with an empty update, so Studio edits survive redeploys. The API's
+// cold-start hydrator runs the same seed-if-missing pass.
+const marketingTaxonomy = [
+  ['marketingCity', MARKETING_CITIES.map((c, i) => ({ name: c.name, slug: c.slug, state: 'FL', serviceCovered: c.serviceCovered, sortOrder: i }))],
+  ['marketingBrand', MARKETING_BRANDS.map((b, i) => ({ name: b.name, slug: b.slug, sortOrder: i }))],
+  ['marketingService', MARKETING_SERVICES.map((s, i) => ({ name: s.name, slug: s.slug, partOfService: s.partOfService, sortOrder: i }))],
+  ['marketingSymptom', MARKETING_SYMPTOMS.map((s, i) => ({ name: s.name, slug: s.slug, sortOrder: i }))],
+];
+for (const [model, rows] of marketingTaxonomy) {
+  for (const row of rows) {
+    await prisma[model].upsert({ where: { slug: row.slug }, update: {}, create: row });
+  }
+}
+
 const companyCount = await prisma.company.count();
 const providerCount = await prisma.provider.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers.`);
+const marketingCityCount = await prisma.marketingCity.count();
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities.`);
 await prisma.$disconnect();

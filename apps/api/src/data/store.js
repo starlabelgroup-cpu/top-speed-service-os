@@ -50,6 +50,15 @@ export const store = {
   appliances: new Map(),
   // Advertiser banner creatives, hydrated from the Banner table.
   banners: [],
+  // Top Speed Marketing OS (agency, Phase 1): §3 taxonomy + Page Studio
+  // landing pages and their version snapshots, hydrated from the
+  // Marketing* / LandingPage / PageVersion tables.
+  marketingCities: [],
+  marketingBrands: [],
+  marketingServices: [],
+  marketingSymptoms: [],
+  landingPages: [],
+  pageVersions: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [

@@ -436,3 +436,116 @@ model TrackingToken {
 
   @@index([bookingId])
 }
+
+// ─── Top Speed Marketing OS (Phase 1 Foundation, 2026-11-11) ───
+// The agency's data layer on the Service OS backend: the §3 taxonomy
+// (cities / brands / services / symptoms), the Page Studio landing
+// pages (§4 URL scheme), and a full version snapshot per content save
+// (§12 draft/preview/publish workflow + revisions). Expansion cities
+// are records only — the publish path refuses non-covered cities.
+
+enum LandingPageType {
+  CITY
+  BRAND
+  SERVICE
+  BRAND_SERVICE
+  BRAND_SERVICE_CITY
+}
+
+enum LandingPageStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  UNPUBLISHED
+}
+
+model MarketingCity {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String   @unique
+  slug           String   @unique
+  state          String   @default("FL")
+  serviceCovered Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  pages LandingPage[]
+}
+
+model MarketingBrand {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  pages LandingPage[]
+}
+
+model MarketingService {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @unique
+  slug          String   @unique
+  // Slug of the canonical service this entry is scoped inside
+  // (Cooktop -> oven-range-repair); null for standalone services.
+  partOfService String?
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  pages LandingPage[]
+}
+
+model MarketingSymptom {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @unique
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LandingPage {
+  id              String            @id @default(uuid()) @db.Uuid
+  type            LandingPageType
+  cityId          String?           @db.Uuid
+  brandId         String?           @db.Uuid
+  serviceId       String?           @db.Uuid
+  slug            String
+  canonicalUrl    String            @unique
+  title           String
+  metaDescription String?
+  status          LandingPageStatus @default(DRAFT)
+  sections        Json              @default("[]")
+  createdBy       String?
+  updatedBy       String?
+  publishedAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  city     MarketingCity?    @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  brand    MarketingBrand?   @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  service  MarketingService? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  versions PageVersion[]
+
+  @@index([status, type])
+  @@index([cityId])
+  @@index([brandId])
+  @@index([serviceId])
+}
+
+model PageVersion {
+  id        String   @id @default(uuid()) @db.Uuid
+  pageId    String   @db.Uuid
+  version   Int
+  snapshot  Json
+  note      String?
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  page LandingPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@unique([pageId, version])
+  @@index([pageId])
+}
