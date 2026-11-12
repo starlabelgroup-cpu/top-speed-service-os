@@ -8,6 +8,8 @@ import { hydrateAppliances } from './appliancesRepo.js';
 import { hydrateBanners } from './bannersRepo.js';
 import { hydrateTrackingTokens } from './trackingRepo.js';
 import { hydrateMarketingOs } from './marketingOsRepo.js';
+import { hydrateParts } from './partsRepo.js';
+import { hydrateFinance } from './financeRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -218,6 +220,18 @@ export async function hydrateStore() {
     await hydrateMarketingOs();
   } catch (error) {
     console.error('hydrateMarketingOs failed (module degraded, platform continues)', error?.message || error);
+  }
+  // Parts Supply OS + QuickBooks finance are add-on modules too: a
+  // missing table mid-deploy must degrade the module, never the platform.
+  try {
+    await hydrateParts();
+  } catch (error) {
+    console.error('hydrateParts failed (module degraded, platform continues)', error?.message || error);
+  }
+  try {
+    await hydrateFinance();
+  } catch (error) {
+    console.error('hydrateFinance failed (module degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0 };

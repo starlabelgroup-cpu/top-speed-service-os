@@ -549,3 +549,139 @@ model PageVersion {
   @@unique([pageId, version])
   @@index([pageId])
 }
+
+// Parts Supply OS (2026-11-11): suppliers, parts inventory, purchase
+// orders and per-job parts usage. Operations data — staff only at the
+// API. Usage snapshots the part's unit cost at the moment of use so job
+// costing survives later price changes.
+model Supplier {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  contact   String?
+  phone     String?
+  email     String?
+  terms     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parts          Part[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Part {
+  id             String   @id @default(uuid()) @db.Uuid
+  sku            String   @unique
+  name           String
+  category       String
+  brand          String?
+  unitCostCents  Int      @default(0)
+  sellPriceCents Int?
+  stockOnHand    Int      @default(0)
+  reorderPoint   Int      @default(0)
+  supplierId     String?  @db.Uuid
+  location       String?
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  supplier Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  poLines  PurchaseOrderLine[]
+  usages   PartUsage[]
+
+  @@index([supplierId])
+}
+
+model PurchaseOrder {
+  id         String    @id @default(uuid()) @db.Uuid
+  reference  String    @unique
+  supplierId String    @db.Uuid
+  status     String    @default("DRAFT")
+  totalCents Int       @default(0)
+  notes      String?
+  orderedAt  DateTime?
+  receivedAt DateTime?
+  createdBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  lines    PurchaseOrderLine[]
+
+  @@index([supplierId])
+  @@index([status])
+}
+
+model PurchaseOrderLine {
+  id              String @id @default(uuid()) @db.Uuid
+  purchaseOrderId String @db.Uuid
+  partId          String @db.Uuid
+  qty             Int
+  unitCostCents   Int
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  part          Part          @relation(fields: [partId], references: [id])
+
+  @@index([purchaseOrderId])
+  @@index([partId])
+}
+
+model PartUsage {
+  id               String   @id @default(uuid()) @db.Uuid
+  bookingReference String
+  partId           String   @db.Uuid
+  qty              Int
+  unitCostCents    Int
+  recordedBy       String?
+  createdAt        DateTime @default(now())
+
+  part Part @relation(fields: [partId], references: [id])
+
+  @@index([partId])
+  @@index([createdAt])
+}
+
+// QuickBooks finance integration (2026-11-11), BUILT DARK: the deployed
+// API holds no Intuit credentials and cannot call QuickBooks itself.
+// Pepper's QuickBooks connector syncs real company data through the
+// owner-only POST /finance/sync into these mirror tables; every finance
+// surface reads them and stamps the sync time. Until a first sync lands,
+// FinanceConnection has no row and the honest status is not_connected.
+model FinanceConnection {
+  id          String    @id @default(uuid()) @db.Uuid
+  provider    String    @unique @default("quickbooks")
+  status      String    @default("not_connected")
+  companyName String?
+  realmHint   String?
+  lastSyncAt  DateTime?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model FinanceSnapshot {
+  id          String   @id @default(uuid()) @db.Uuid
+  kind        String
+  periodLabel String
+  payload     Json
+  source      String   @default("quickbooks-connector")
+  syncedAt    DateTime @default(now())
+
+  @@unique([kind, periodLabel])
+  @@index([kind])
+}
+
+model FinanceInvoiceMirror {
+  id           String    @id @default(uuid()) @db.Uuid
+  qbId         String    @unique
+  number       String?
+  customerName String?
+  totalCents   Int       @default(0)
+  balanceCents Int       @default(0)
+  status       String?
+  dueDate      DateTime?
+  qbUrl        String?
+  syncedAt     DateTime  @default(now())
+
+  @@index([balanceCents])
+}

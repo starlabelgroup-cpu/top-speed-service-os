@@ -53,6 +53,20 @@ export const store = {
   // Top Speed Marketing OS (agency, Phase 1): §3 taxonomy + Page Studio
   // landing pages and their version snapshots, hydrated from the
   // Marketing* / LandingPage / PageVersion tables.
+  // Parts Supply OS: suppliers, parts inventory, purchase orders and
+  // per-job parts usage, hydrated from the Supplier / Part /
+  // PurchaseOrder(+Line) / PartUsage tables.
+  suppliers: [],
+  parts: [],
+  purchaseOrders: [],
+  partUsages: [],
+  // QuickBooks finance integration (built dark): connection state +
+  // synced snapshots + invoice mirror, hydrated from the Finance*
+  // tables. financeConnection stays null until the first real sync —
+  // null IS the honest not_connected state.
+  financeConnection: null,
+  financeSnapshots: [],
+  financeInvoices: [],
   marketingCities: [],
   marketingBrands: [],
   marketingServices: [],

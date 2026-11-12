@@ -21,6 +21,8 @@ import appRouter from './routes/app.js';
 import trackingRouter from './routes/tracking.js';
 import adminRouter from './routes/admin.js';
 import marketingOsRouter from './routes/marketingOs.js';
+import partsRouter from './routes/parts.js';
+import financeRouter from './routes/finance.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
@@ -130,6 +132,8 @@ app.use('/api/v1', appRouter);
 app.use('/api/v1', trackingRouter);
 app.use('/api/v1', adminRouter);
 app.use('/api/v1', marketingOsRouter);
+app.use('/api/v1', partsRouter);
+app.use('/api/v1', financeRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
