@@ -183,7 +183,7 @@ body:not(.live) .gated{display:none!important}</style>
 <label style="font-size:13px;font-weight:700">Tier 2 amount ($)<br><input id="rsT2Amt" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
 <label style="font-size:13px;font-weight:700">Tier 3 threshold (referrals)<br><input id="rsT3Thresh" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
 <label style="font-size:13px;font-weight:700">Tier 3 amount ($)<br><input id="rsT3Amt" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
-<label style="font-size:13px;font-weight:700">Monthly cap ($)<br><input id="rsCap" type="number" min="0" step="0.01" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
+<label style="font-size:13px;font-weight:700">Monthly cap (credits per referrer / month)<br><input id="rsCap" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
 <label style="font-size:13px;font-weight:700">Credit expiry (days)<br><input id="rsExpiry" type="number" min="0" step="1" placeholder="blank = unset" style="width:100%;padding:9px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:14.5px"></label>
 <div><button class="btn navy" type="submit" style="width:100%">Save settings</button></div>
 </form>
@@ -577,12 +577,12 @@ function refMsgB(kind,text){ var m=document.getElementById('refMsg'); if(!m) ret
 function refUnwrap(j){ return (j&&(j.data||j))||{}; }
 function loadReferrals(){
   if(!document.body.classList.contains('live')||!tsosToken()) return;
-  apiFetch('/referrals/admin/queue?status=PENDING_APPROVAL').then(function(j){
+  apiFetch('/referrals/admin/queue?status=REWARD_PENDING_APPROVAL').then(function(j){
     var d=refUnwrap(j);
     var journeys=d.journeys||[];
     var counts=d.counts||{};
     var badge=document.getElementById('refCount');
-    if(badge) badge.textContent=(counts.pendingApproval!=null?counts.pendingApproval:journeys.length)+' awaiting approval';
+    if(badge) badge.textContent=(counts.REWARD_PENDING_APPROVAL ?? journeys.length)+' awaiting approval';
     var el=document.getElementById('refQueue');
     if(!el) return;
     if(!journeys.length){ el.innerHTML='<p style="color:var(--mut);font-size:13.5px">Queue clear — no referrals are waiting on approval.</p>'; }
@@ -590,8 +590,8 @@ function loadReferrals(){
       el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13.5px"><thead><tr><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referrer</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Referee</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Booking ref</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Completed</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Suggested</th><th style="text-align:left;padding:7px 6px;border-bottom:2px solid var(--line)">Approve amount ($)</th><th style="padding:7px 6px;border-bottom:2px solid var(--line)"></th></tr></thead><tbody>'+
       journeys.map(function(jn){
         var sugg=(jn.suggestedAmountCents!=null?jn.suggestedAmountCents:(jn.rewardAmountCents!=null?jn.rewardAmountCents:null));
-        var referrer=jn.referrerName||jn.referrerEmail||jn.referrerId||'—';
-        var when=jn.completedAt||jn.createdAt||'';
+        var referrer=jn.referrerName||jn.referrerEmail||jn.referrerId||jn.code||'—';
+        var when=jn.updatedAt||jn.createdAt||'';
         return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')">✓ Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button></td></tr>';
       }).join('')+'</tbody></table></div>';
     }
@@ -607,7 +607,7 @@ function loadReferrals(){
     var s=refUnwrap(j); var st=s.settings||s;
     function dollars(centsKey,dollarKey){ if(st[centsKey]!=null) return (st[centsKey]/100); if(st[dollarKey]!=null) return st[dollarKey]; return ''; }
     var en=document.getElementById('rsEnabled'); if(en&&st.enabled!=null) en.value=String(!!st.enabled);
-    var map=[['rsReward',dollars('rewardAmountCents','rewardAmount')],['rsT2Thresh',st.tier2Threshold!=null?st.tier2Threshold:''],['rsT2Amt',dollars('tier2AmountCents','tier2Amount')],['rsT3Thresh',st.tier3Threshold!=null?st.tier3Threshold:''],['rsT3Amt',dollars('tier3AmountCents','tier3Amount')],['rsCap',dollars('monthlyCapCents','monthlyCap')],['rsExpiry',st.expiryDays!=null?st.expiryDays:'']];
+    var map=[['rsReward',dollars('rewardAmountCents','rewardAmount')],['rsT2Thresh',st.tier2Threshold!=null?st.tier2Threshold:''],['rsT2Amt',dollars('tier2AmountCents','tier2Amount')],['rsT3Thresh',st.tier3Threshold!=null?st.tier3Threshold:''],['rsT3Amt',dollars('tier3AmountCents','tier3Amount')],['rsCap',st.monthlyCapPerReferrer!=null?st.monthlyCapPerReferrer:''],['rsExpiry',st.rewardExpiryDays!=null?st.rewardExpiryDays:'']];
     map.forEach(function(m){ var el=document.getElementById(m[0]); if(el&&document.activeElement!==el) el.value=m[1]; });
   }).catch(function(){});
 }
@@ -641,7 +641,7 @@ document.getElementById('refSettingsForm').addEventListener('submit',function(e)
   function cents(id){ var v=num(id); return v==null?null:Math.round(v*100); }
   function intOrNull(id){ var v=num(id); return v==null?null:Math.round(v); }
   var en=document.getElementById('rsEnabled').value;
-  var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapCents:cents('rsCap'), expiryDays:intOrNull('rsExpiry') };
+  var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapPerReferrer:intOrNull('rsCap'), rewardExpiryDays:intOrNull('rsExpiry') };
   if(en!=='') body.enabled=(en==='true');
   apiFetch('/referrals/admin/settings',{method:'PUT',body:JSON.stringify(body)})
     .then(function(){ refMsgB('ok','Program settings saved. Amounts stay unpublished until set.'); toast('✓ Referral settings saved'); loadReferrals(); })

@@ -144,10 +144,18 @@ router.get('/referrals/admin/queue', ...staffOnly, (req, res) => {
   const journeys = store.referralJourneys
     .filter((journey) => companyScoped(req, journey))
     .filter((journey) => status === 'ALL' || journey.status === status)
-    .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+    .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+    .map((journey) => {
+      const referral = [...store.referrals.values()].find((candidate) => candidate.code === journey.code) || null;
+      return { ...journey, referrerName: referral?.customerName || null };
+    });
   const credits = store.referralCredits
     .filter((credit) => companyScoped(req, credit))
-    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    .map((credit) => {
+      const owner = credit.customerId ? store.customers.get(credit.customerId) : null;
+      return { ...credit, ownerName: owner?.name || null };
+    });
   const counts = {};
   for (const journey of store.referralJourneys) {
     if (!companyScoped(req, journey)) continue;
