@@ -145,9 +145,113 @@ for (const spec of buildPhase2DraftPages()) {
   phase2Created += 1;
 }
 
+// ─── Phase 2 draft correction: Coral Springs office wording ─────────────
+// The Phase 2 drafts were first seeded (commit 35185f0) with the Coral
+// Springs city page claiming the office is IN Coral Springs. The source
+// text was corrected in commit e69e371 — the office is 6810 N State Rd 7,
+// Suite 341, Coconut Creek, FL 33073 — but the create-only seed above never
+// rewrites existing records, so the already-seeded draft still carries the
+// old wording. This step repairs ONLY records that are still exactly the
+// seed's own output:
+//   - created by the phase2 seed (createdBy 'phase2-seed'),
+//   - still unpublished drafts (status DRAFT/IN_REVIEW, publishedAt null),
+//   - whose version history contains NO non-seed edit — a Studio save by a
+//     human writes a PageVersion under another createdBy, and any record
+//     with one is skipped ENTIRELY, even if the old strings remain, and
+//   - whose field values still EXACTLY equal the pre-fix seeded strings
+//     (full-value match per field; diverged content is never rewritten).
+// Replacement values are read from the CURRENT buildPhase2DraftPages()
+// source, and the correction itself is recorded as a new PageVersion.
+// Idempotent: once corrected, the old strings no longer match, so re-runs
+// change nothing.
+const PHASE2_SEED_AUTHORS = ['phase2-seed', 'phase2-seed-correction'];
+let phase2Corrected = 0;
+{
+  const csSpec = buildPhase2DraftPages().find((s) => s.citySlug === 'coral-springs');
+  const csHero = csSpec ? csSpec.sections.find((s) => s.type === 'hero') : null;
+  const csFaq = csSpec ? csSpec.sections.find((s) => s.type === 'faq') : null;
+  // [pre-fix seeded string, current source string] — full-value pairs.
+  const correctionPairs = csSpec
+    ? [
+        [
+          'Appliance repair in Coral Springs, FL, from the locally based Top Speed Appliance team. Online booking, Service Setter confirmation, live tracking — $99 diagnostic credited toward your repair.',
+          csSpec.metaDescription,
+        ],
+        [
+          'Coral Springs is a master-planned city of family neighborhoods, and many of its homes are reaching the age where the original washer, dryer, and refrigerator all start asking for attention at once. Top Speed Appliance is based right here — our office is in Coral Springs — so local bookings get the full platform: online booking, a Service Setter confirmation call, and live job tracking.',
+          csHero ? csHero.body : null,
+        ],
+        ['Are you actually based in Coral Springs?', csFaq ? csFaq.items[0].q : null],
+        [
+          'Yes. Top Speed Appliance LLC operates from Coconut Creek / Coral Springs, and Coral Springs is one of our twelve covered Broward service cities.',
+          csFaq ? csFaq.items[0].a : null,
+        ],
+      ].filter(([, next]) => typeof next === 'string')
+    : [];
+  const correctionMap = new Map(correctionPairs);
+  const applyCorrections = (value, state) => {
+    if (typeof value === 'string') {
+      const next = correctionMap.get(value);
+      if (next !== undefined) {
+        state.hits += 1;
+        return next;
+      }
+      return value;
+    }
+    if (Array.isArray(value)) return value.map((v) => applyCorrections(v, state));
+    if (value && typeof value === 'object') {
+      const out = {};
+      for (const [k, v] of Object.entries(value)) out[k] = applyCorrections(v, state);
+      return out;
+    }
+    return value;
+  };
+  if (correctionMap.size) {
+    const candidates = await prisma.landingPage.findMany({
+      where: { createdBy: 'phase2-seed', status: { in: ['DRAFT', 'IN_REVIEW'] }, publishedAt: null },
+      include: { versions: { select: { version: true, createdBy: true } } },
+    });
+    for (const page of candidates) {
+      const hasNonSeedEdit = page.versions.some((v) => !PHASE2_SEED_AUTHORS.includes(v.createdBy));
+      if (hasNonSeedEdit) continue;
+      const state = { hits: 0 };
+      const nextMeta = applyCorrections(page.metaDescription, state);
+      const nextSections = applyCorrections(page.sections, state);
+      if (!state.hits) continue;
+      const nextVersion = Math.max(0, ...page.versions.map((v) => v.version)) + 1;
+      await prisma.landingPage.update({
+        where: { id: page.id },
+        data: { metaDescription: nextMeta, sections: nextSections, updatedBy: 'phase2-seed-correction' },
+      });
+      await prisma.pageVersion.create({
+        data: {
+          pageId: page.id,
+          version: nextVersion,
+          snapshot: {
+            type: page.type,
+            cityId: page.cityId,
+            brandId: page.brandId,
+            serviceId: page.serviceId,
+            slug: page.slug,
+            canonicalUrl: page.canonicalUrl,
+            title: page.title,
+            metaDescription: nextMeta,
+            status: page.status,
+            sections: nextSections,
+          },
+          note: 'Seed correction (2026-11-12): Coral Springs office wording — the office is 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073 (source fix e69e371). Exact-match repair of an unedited phase2-seed draft.',
+          createdBy: 'phase2-seed-correction',
+        },
+      });
+      phase2Corrected += 1;
+      console.log(`Phase 2 correction: updated office wording on ${page.canonicalUrl} (${state.hits} field(s) replaced).`);
+    }
+  }
+}
+
 const companyCount = await prisma.company.count();
 const providerCount = await prisma.provider.count();
 const marketingCityCount = await prisma.marketingCity.count();
 const landingPageCount = await prisma.landingPage.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped).`);
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected).`);
 await prisma.$disconnect();
