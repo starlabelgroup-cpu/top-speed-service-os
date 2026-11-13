@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speedy Chat Insights · Top Speed Service OS</title>
+<meta name="description" content="Chat Insights: every customer conversation with Speedy, analyzed for the team — top topics, booking conversion, photo diagnoses, and the questions Speedy could not answer. Staff only.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--amber:#9a6a00;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:820px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Roboto Mono',monospace;font-size:22px;color:var(--navy)}
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tbody tr.clickable{cursor:pointer}
+tbody tr.clickable:hover td{background:#f2f7ff}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.amber{background:#fdf0d5;color:#7a5200}
+.tag.grey{background:#e8edf5;color:#43536b}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+input,select{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.ok{color:var(--green);font-weight:700}
+.msg.err{color:var(--red);font-weight:700}
+.empty{color:var(--muted);padding:18px 4px;font-size:15px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:12px}
+.cols .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--light)}
+.cols .card h3{color:var(--navy);font-size:16px;margin-bottom:8px}
+.rank{list-style:none}
+.rank li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.rank li:last-child{border-bottom:none}
+.rank b{font-family:'Roboto Mono',monospace;color:var(--navy)}
+.uq{list-style:none;margin-top:8px}
+.uq li{padding:10px 0;border-bottom:1px solid var(--line)}
+.uq li:last-child{border-bottom:none}
+.uq .q{font-size:15px;line-height:1.5}
+.uq .meta{margin-top:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
+.uq a{color:var(--blue);font-weight:700}
+.thread{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.thread .m{max-width:88%;padding:9px 12px;border-radius:13px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.thread .m.bot{background:#eef3fb;border:1px solid #dbe7fa;align-self:flex-start}
+.thread .m.me{background:#0B63CE;color:#fff;align-self:flex-end}
+.thread .m.flagged{outline:2px solid #f0b429;outline-offset:1px}
+.thread .who{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;opacity:.65;margin-bottom:3px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:99px;font-weight:700;font-size:14.5px;display:none;z-index:50;max-width:92vw;text-align:center}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+.mono{font-family:'Roboto Mono',monospace;font-size:13px}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style>
+<script src="/google-tag.js"></script></head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/crm">CRM</a>
+    <a href="/book-os">Book OS</a>
+    <a href="/notifications">Notifications</a>
+    <a href="/portal">Portal</a>
+    <a class="tse-call" href="tel:+19549317997">📞 Call</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>💬 Speedy Chat Insights</h1>
+  <p class="sub">Every customer conversation with Speedy is recorded here for the team — what customers ask, which surfaces they ask it on, what turns into a booking, and the exact questions Speedy could not answer, so the knowledge base and the product keep getting better. Transcripts are staff-only and never leave this console. <span id="whoLine"></span></p>
+
+  <!-- Signed-out gate -->
+  <div class="panel" id="gatePanel">
+    <h2>Staff sign-in required</h2>
+    <p class="note">Chat Insights contains full customer conversations — staff-only. Sign in with your Service OS staff account. Nothing here is visible signed out.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <!-- Console -->
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <label style="margin:0;align-self:center;">Range
+        <select id="rangeDays" style="width:auto;padding:7px 10px;font-size:14px;">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+        </select>
+      </label>
+      <button class="btn ghost small" id="refreshBtn">Refresh</button>
+      <button class="btn ghost small" id="signOutBtn">Sign out</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><small>Conversations</small><b id="stSessions">—</b></div>
+      <div class="stat"><small>Messages</small><b id="stMessages">—</b></div>
+      <div class="stat"><small>Booked from chat</small><b id="stConverted">—</b></div>
+      <div class="stat"><small>Photo diagnoses</small><b id="stDiagnoses">—</b></div>
+      <div class="stat"><small>Unanswered</small><b id="stUnanswered">—</b></div>
+    </div>
+
+    <section class="panel">
+      <h2>Where customers chat &amp; what they talk about</h2>
+      <p class="note">Surfaces are the doors into Speedy (the website widget, the Speedy page, the .net float, the apps). Topics are mined from the customer's own words against the Marketing OS taxonomy — a conversation counts once per topic.</p>
+      <div class="cols">
+        <div class="card"><h3>By surface</h3><ul class="rank" id="bySurface"><li>No data yet</li></ul></div>
+        <div class="card"><h3>Top services / appliances</h3><ul class="rank" id="topServices"><li>No data yet</li></ul></div>
+        <div class="card"><h3>Top brands</h3><ul class="rank" id="topBrands"><li>No data yet</li></ul></div>
+        <div class="card"><h3>Top symptoms</h3><ul class="rank" id="topSymptoms"><li>No data yet</li></ul></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>❓ Questions Speedy couldn't answer</h2>
+      <p class="note">Speedy's knowledge is deliberately closed — when a question falls outside it, Speedy says it doesn't have that detail and offers a human. Those moments are gold: each one is a knowledge gap or a feature idea. This list is the exact customer wording, newest first.</p>
+      <ul class="uq" id="unansweredList"><li class="empty">Loading…</li></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Conversations</h2>
+      <p class="note">Browse every recorded conversation. Click one to read the full transcript.</p>
+      <form class="grid" id="filterForm" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+        <div><label for="fSurface">Surface</label><select id="fSurface"><option value="">All surfaces</option></select></div>
+        <div><label for="fConverted">Outcome</label><select id="fConverted"><option value="">All conversations</option><option value="true">Booked</option><option value="false">Did not book</option></select></div>
+        <div><label for="fQ">Search words</label><input id="fQ" type="text" placeholder="e.g. leaking, Samsung"></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Filter</button></div>
+      </form>
+      <div class="tblwrap" style="margin-top:14px;"><table>
+        <thead><tr><th>Started</th><th>Surface</th><th>First question</th><th>Msgs</th><th>Signals</th></tr></thead>
+        <tbody id="sessionRows"></tbody>
+      </table></div>
+      <div id="sessionEmpty" class="empty" style="display:none;">No conversations match — yet. New Speedy chats appear here as customers have them.</div>
+      <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+        <button class="btn ghost small" id="prevPage" type="button">← Newer</button>
+        <span class="mono" id="pageInfo"></span>
+        <button class="btn ghost small" id="nextPage" type="button">Older →</button>
+      </div>
+    </section>
+
+    <section class="panel" id="transcriptPanel" style="display:none;">
+      <h2>Transcript</h2>
+      <p class="note" id="transcriptMeta"></p>
+      <div class="thread" id="thread"></div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <strong>Top Speed Appliance LLC</strong> · Fort Lauderdale &amp; Broward County · <strong>954-931-7997</strong><br>
+  Top Speed Service OS — Speedy Chat Insights. The Faster, The Better.
+</footer>
+<div id="toast"></div>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3400); }
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({}, {'Content-Type':'application/json','Authorization':'Bearer '+tok()}, opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function setMsg(id,ok,text){ var el=document.getElementById(id); el.className='msg '+(ok?'ok':'err'); el.textContent=text; }
+function when(ts){ if(!ts) return '—'; var d=new Date(ts); return d.toLocaleDateString()+' '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPw').value;
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){ try{ localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ setMsg('loginMsg',false,'Sign-in failed: '+e.message); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+document.getElementById('refreshBtn').addEventListener('click',function(){ loadAll(); });
+document.getElementById('rangeDays').addEventListener('change',function(){ page=1; loadAll(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return STAFF.indexOf(r)>-1; })){
+    setMsg('loginMsg',false,'That account is not a staff account — Chat Insights is staff-only.');
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  document.getElementById('whoLine').textContent='Signed in as '+user.email+'.';
+  loadAll();
+}
+
+function rankInto(id, items, label){
+  var el=document.getElementById(id);
+  if(!items||!items.length){ el.innerHTML='<li>No data yet</li>'; return; }
+  el.innerHTML=items.map(function(x){ return '<li><span>'+esc(x.name||x.source)+'</span><b>'+(x.sessions)+'</b></li>'; }).join('');
+}
+
+function loadInsights(){
+  var days=Number(document.getElementById('rangeDays').value||30);
+  var from=new Date(Date.now()-days*24*60*60*1000).toISOString();
+  return apiFetch('/chats/insights?from='+encodeURIComponent(from)).then(function(j){
+    var d=j.data||{}, t=d.totals||{};
+    document.getElementById('stSessions').textContent=t.sessions!=null?t.sessions:'—';
+    document.getElementById('stMessages').textContent=t.messages!=null?t.messages:'—';
+    document.getElementById('stConverted').textContent=(t.convertedSessions!=null?t.convertedSessions:'—')+(t.conversionRate!=null?' · '+t.conversionRate+'%':'');
+    document.getElementById('stDiagnoses').textContent=t.diagnosisSessions!=null?t.diagnosisSessions:'—';
+    document.getElementById('stUnanswered').textContent=t.unansweredSessions!=null?t.unansweredSessions:'—';
+    rankInto('bySurface', d.bySurface);
+    rankInto('topServices', d.topics&&d.topics.services);
+    rankInto('topBrands', d.topics&&d.topics.brands);
+    rankInto('topSymptoms', d.topics&&d.topics.symptoms);
+    // Surface filter options follow the real data.
+    var sel=document.getElementById('fSurface'), cur=sel.value;
+    sel.innerHTML='<option value="">All surfaces</option>'+(d.bySurface||[]).map(function(x){ return '<option value="'+esc(x.source)+'">'+esc(x.source)+'</option>'; }).join('');
+    sel.value=cur;
+    var uq=document.getElementById('unansweredList');
+    var samples=(d.unanswered&&d.unanswered.samples)||[];
+    if(!samples.length){ uq.innerHTML='<li class="empty">Nothing unanswered in this range — Speedy covered every question it was asked.</li>'; }
+    else{
+      uq.innerHTML=samples.map(function(s){
+        return '<li><div class="q">'+esc(s.question)+'</div><div class="meta"><span class="tag grey">'+esc(s.surface)+'</span><span>'+when(s.at)+'</span><a href="#" data-open="'+esc(s.sessionId)+'">Open conversation →</a></div></li>';
+      }).join('');
+      uq.querySelectorAll('[data-open]').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault(); openSession(a.getAttribute('data-open')); }); });
+    }
+  });
+}
+
+var page=1, pages=1;
+function loadSessions(){
+  var qs=new URLSearchParams();
+  qs.set('page', String(page)); qs.set('pageSize','15');
+  var surface=document.getElementById('fSurface').value; if(surface) qs.set('surface', surface);
+  var conv=document.getElementById('fConverted').value; if(conv) qs.set('converted', conv);
+  var q=document.getElementById('fQ').value.trim(); if(q) qs.set('q', q);
+  return apiFetch('/chats/sessions?'+qs.toString()).then(function(j){
+    var d=j.data||{}; pages=d.pages||1;
+    document.getElementById('pageInfo').textContent='Page '+(d.page||1)+' of '+pages+' · '+(d.total||0)+' conversations';
+    document.getElementById('sessionEmpty').style.display=(d.total? 'none':'block');
+    var rows=document.getElementById('sessionRows');
+    rows.innerHTML=(d.items||[]).map(function(s){
+      var signals='';
+      if(s.convertedBookingReference) signals+='<span class="tag green">Booked '+esc(s.convertedBookingReference)+'</span> ';
+      if(s.hadDiagnosis) signals+='<span class="tag">Photo diagnosis</span> ';
+      if(s.hasUnanswered) signals+='<span class="tag amber">Unanswered</span>';
+      return '<tr class="clickable" data-id="'+esc(s.id)+'"><td style="white-space:nowrap;">'+when(s.startedAt)+'</td><td><span class="tag grey">'+esc(s.source)+'</span></td><td>'+esc(s.preview||'—')+'</td><td class="mono">'+s.messageCount+'</td><td>'+(signals||'<span style="color:var(--muted)">—</span>')+'</td></tr>';
+    }).join('');
+    rows.querySelectorAll('tr.clickable').forEach(function(tr){ tr.addEventListener('click',function(){ openSession(tr.getAttribute('data-id')); }); });
+  });
+}
+document.getElementById('filterForm').addEventListener('submit',function(ev){ ev.preventDefault(); page=1; loadSessions().catch(function(e){ toast('Could not load conversations: '+e.message); }); });
+document.getElementById('prevPage').addEventListener('click',function(){ if(page>1){ page-=1; loadSessions(); } });
+document.getElementById('nextPage').addEventListener('click',function(){ if(page<pages){ page+=1; loadSessions(); } });
+
+function openSession(id){
+  return apiFetch('/chats/sessions/'+encodeURIComponent(id)).then(function(j){
+    var s=j.data||{};
+    var panel=document.getElementById('transcriptPanel');
+    panel.style.display='block';
+    var meta='Started '+when(s.startedAt)+' · Surface '+s.source+' · '+s.messageCount+' messages';
+    if(s.convertedBookingReference) meta+=' · Booked as '+s.convertedBookingReference;
+    if(s.hadDiagnosis) meta+=' · Photo diagnosis';
+    if(s.hasUnanswered) meta+=' · Contains unanswered question(s)';
+    document.getElementById('transcriptMeta').textContent=meta;
+    document.getElementById('thread').innerHTML=(s.messages||[]).map(function(m){
+      var who=m.role==='user'?'Customer':'Speedy';
+      return '<div class="m '+(m.role==='user'?'me':'bot')+(m.flagged?' flagged':'')+'"><div class="who">'+who+(m.flagged?' · unanswered':'')+'</div>'+esc(m.content)+'</div>';
+    }).join('');
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
+  }).catch(function(e){ toast('Could not open that conversation: '+e.message); });
+}
+
+function loadAll(){
+  loadInsights().catch(function(e){ toast('Insights failed: '+e.message); });
+  loadSessions().catch(function(e){ toast('Could not load conversations: '+e.message); });
+}
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
+}
+</script>
+<script src="/speedy-widget.js" defer></script>
+</body>
+</html>

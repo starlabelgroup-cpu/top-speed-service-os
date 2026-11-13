@@ -40,7 +40,9 @@
     '.tsw-quick button{background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:999px;padding:6px 11px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}',
     '.tsw-input{display:flex;gap:7px;padding:11px;border-top:1px solid #e3eaf3;align-items:stretch;flex:none}',
     '.tsw-input input[type=text]{flex:1;border:1.5px solid #dbe4f0;border-radius:12px;padding:11px 12px;font:400 14.5px Inter,system-ui,sans-serif;min-width:0}',
-    '.tsw-input .ic{background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 11px;font-size:16px;cursor:pointer}',
+    '.tsw-input .ic{background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 11px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+    '.tsw-input .ic svg{width:21px;height:21px;display:block;filter:drop-shadow(0 0 3px rgba(18,128,255,.5))}',
+    '.tsw-input .ic.rec svg{filter:drop-shadow(0 0 5px rgba(232,50,46,.65))}',
     '.tsw-input .ic.rec{background:#fdecec;animation:tswBlink 1s infinite}',
     '@keyframes tswBlink{50%{opacity:.55}}',
     '.tsw-input .send{background:#1280FF;color:#fff;border:none;border-radius:12px;padding:0 16px;font:800 14.5px Inter,system-ui,sans-serif;cursor:pointer}',
@@ -76,8 +78,8 @@
     '<div class="tsw-body" id="tswBody"></div>' +
     '<form class="tsw-input" id="tswForm">' +
     '<input type="file" id="tswFile" accept="image/*" style="display:none">' +
-    '<button type="button" class="ic" id="tswPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis">📸</button>' +
-    '<button type="button" class="ic" id="tswMic" title="Speak instead of typing" aria-label="Speak to Speedy">🎤</button>' +
+    '<button type="button" class="ic" id="tswPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7" stroke="#1280FF" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="#0A265C" stroke-width="1.9"/><circle cx="12" cy="12" r="1.15" fill="#E8322E"/></svg></button>' +
+    '<button type="button" class="ic" id="tswMic" title="Speak instead of typing" aria-label="Speak to Speedy"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6" stroke="#0A265C" stroke-width="2.1" stroke-linecap="round"/><path d="M12 4.8v14.4" stroke="#E8322E" stroke-width="2.1" stroke-linecap="round"/></svg></button>' +
     '<input type="text" id="tswText" placeholder="Ask about repairs, pricing, areas…" autocomplete="off" aria-label="Message Speedy">' +
     '<button type="submit" class="send">Send</button></form>' +
     '<p class="tsw-fine">Speedy books real jobs into Book OS. It never invents prices or certifies a repair is safe — a technician diagnoses on site.</p>';
@@ -97,6 +99,33 @@
 
   function esc(t) {
     return String(t == null ? '' : t).replace(/</g, '&lt;');
+  }
+  // Bot bubbles render Speedy's **bold** markdown as real bold:
+  // escape first, then apply the transform, so model output can
+  // never inject markup of its own.
+  function fmtBot(t) {
+    return esc(t).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  }
+  // Chat capture: one stable session id per visit + a surface tag, so
+  // the conversation lands in the database for staff Chat Insights.
+  function chatSessionId() {
+    try {
+      var k = 'tsos_speedy_session';
+      var v = sessionStorage.getItem(k);
+      if (!v) {
+        v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'sess-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem(k, v);
+      }
+      return v;
+    } catch (e) { return undefined; }
+  }
+  function chatSource() {
+    var p = location.pathname;
+    if (p.indexOf('/connect-pro-app') === 0) return 'connect-pro';
+    if (p.indexOf('/appliance-pro') === 0) return 'appliance-pro';
+    if (p.indexOf('/app') === 0) return 'app';
+    if (p.indexOf('/tech') === 0) return 'tech';
+    return 'flagship-widget';
   }
   function addMsg(text, me) {
     var d = document.createElement('div');
@@ -220,7 +249,8 @@
     var bookPayload = {
       customer: { name: d.name, phone: d.phone },
       city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue,
-      preferredWindow: d.preferred_window || undefined, source: 'SPEEDY_CHAT'
+      preferredWindow: d.preferred_window || undefined, source: 'SPEEDY_CHAT',
+      sessionId: chatSessionId()
     };
     try { var refCode = sessionStorage.getItem('tsos_referral_code'); if (refCode) bookPayload.referralCode = refCode; } catch (e) {}
     post('/speedy/book', bookPayload).then(function (j) {
@@ -256,12 +286,12 @@
     history.push({ role: 'user', content: text });
     typing = true;
     var t = addMsg('Speedy is typing…', false);
-    post('/speedy/chat', { message: text, history: history.slice(-10) }).then(function (j) {
+    post('/speedy/chat', { message: text, history: history.slice(-10), sessionId: chatSessionId(), source: chatSource() }, true).then(function (j) {
       var reply = (j.data && j.data.reply) || '';
       t.remove();
       typing = false;
       if (!reply) throw new Error('empty');
-      addMsg(esc(reply), false);
+      addMsg(fmtBot(reply), false);
       history.push({ role: 'assistant', content: reply });
       maybeBook();
     }).catch(function () {
@@ -289,10 +319,10 @@
         cv.width = Math.round(img.naturalWidth * sc);
         cv.height = Math.round(img.naturalHeight * sc);
         cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-        post('/speedy/diagnose', { imageDataUrl: cv.toDataURL('image/jpeg', 0.82), note: 'Photo sent by a customer in the Speedy chat' }).then(function (j) {
+        post('/speedy/diagnose', { imageDataUrl: cv.toDataURL('image/jpeg', 0.82), note: 'Photo sent by a customer in the Speedy chat', sessionId: chatSessionId(), source: chatSource() }, true).then(function (j) {
           var rep = (j.data && (j.data.reply || j.data.summary || j.data.text)) || '';
           addMsg(rep
-            ? '📸 Speedy\'s first look: ' + esc(rep) + ' A technician confirms the diagnosis on site — Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'
+            ? '📸 Speedy\'s first look: ' + fmtBot(rep) + ' A technician confirms the diagnosis on site — Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'
             : '📸 I received your photo but could not read it clearly — a technician will review it in person. Want me to book the $99 diagnostic visit?', false);
         }).catch(function () {
           addMsg('📸 Speedy could not read that photo just now — book the visit and the technician will diagnose on site, or call 954-931-7997.', false);
@@ -325,9 +355,9 @@
         input.focus();
         send(input.value);
       };
-      rec.onend = function () { listening = false; mic.textContent = '🎤'; mic.classList.remove('rec'); };
+      rec.onend = function () { listening = false; mic.classList.remove('rec'); };
       rec.onerror = rec.onend;
-      try { rec.start(); listening = true; mic.textContent = '🔴'; mic.classList.add('rec'); } catch (e) {}
+      try { rec.start(); listening = true; mic.classList.add('rec'); } catch (e) {}
     });
   }
 

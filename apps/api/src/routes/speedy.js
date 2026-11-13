@@ -8,6 +8,14 @@ import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } fro
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { attachReferralToBooking } from '../services/referrals.js';
 import { providersStatus } from '../services/senders.js';
+import { optionalAuthenticate } from '../middleware/auth.js';
+import {
+  captureBookingConversion,
+  captureChatDiagnosis,
+  captureChatExchange,
+  captureSafely,
+  normalizeChatSessionId,
+} from '../services/chatCapture.js';
 
 /**
  * Speedy AI endpoints — public on purpose: the website's Ask Speedy chat
@@ -26,6 +34,11 @@ const historyTurn = z.object({
 const chatSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(2000),
   history: z.array(historyTurn).max(10).optional(),
+  // Chat capture (services/chatCapture.js): a client-issued session id
+  // + surface tag so the conversation lands in the database for staff
+  // analysis. Both optional — a chat is never rejected over them.
+  sessionId: z.string().trim().max(64).optional(),
+  source: z.string().trim().max(40).optional(),
 });
 
 const diagnoseSchema = z.object({
@@ -36,6 +49,8 @@ const diagnoseSchema = z.object({
     .optional(),
   imageUrl: z.string().url().max(2000).optional(),
   note: z.string().trim().max(500).optional(),
+  sessionId: z.string().trim().max(64).optional(),
+  source: z.string().trim().max(40).optional(),
 }).refine((data) => data.imageDataUrl || data.imageUrl, {
   message: 'Provide imageDataUrl or imageUrl',
 });
@@ -51,21 +66,34 @@ router.get('/speedy/status', (req, res) => {
   return res.json({ data: speedyStatus() });
 });
 
-router.post('/speedy/chat', async (req, res) => {
+router.post('/speedy/chat', optionalAuthenticate, async (req, res) => {
   if (!speedyStatus().configured) return notConfigured(res);
   const parsed = chatSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid chat message', details: parsed.error.flatten() });
   }
+  const { message, sessionId, source } = parsed.data;
+  const userId = req.user?.id || null;
   try {
     const result = await speedyChat(parsed.data);
-    return res.json({ data: result });
+    // Capture AFTER the reply is composed, bounded + error-swallowed:
+    // a capture failure can never break or noticeably slow the chat.
+    const session = await captureSafely(() =>
+      captureChatExchange({ sessionId, source, userId, userMessage: message, assistantReply: result.reply }),
+    );
+    return res.json({
+      data: { ...result, sessionId: session?.id || normalizeChatSessionId(sessionId) || undefined },
+    });
   } catch (error) {
+    // The snag is itself analysis data (an unanswered exchange).
+    await captureSafely(() =>
+      captureChatExchange({ sessionId, source, userId, userMessage: message, error: true }),
+    );
     return res.status(502).json({ error: 'Speedy had a hiccup — try again, or call (954) 931-7997', detail: String(error?.message || error) });
   }
 });
 
-router.post('/speedy/diagnose', async (req, res) => {
+router.post('/speedy/diagnose', optionalAuthenticate, async (req, res) => {
   if (!speedyStatus().configured) return notConfigured(res);
   const parsed = diagnoseSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -76,7 +104,20 @@ router.post('/speedy/diagnose', async (req, res) => {
       imageUrl: parsed.data.imageDataUrl || parsed.data.imageUrl,
       note: parsed.data.note || '',
     });
-    return res.json({ data: result });
+    // Record that a diagnosis happened in this chat session (+ the
+    // note text). The image itself is never stored.
+    const session = await captureSafely(() =>
+      captureChatDiagnosis({
+        sessionId: parsed.data.sessionId,
+        source: parsed.data.source,
+        userId: req.user?.id || null,
+        note: parsed.data.note || '',
+        reply: result.reply,
+      }),
+    );
+    return res.json({
+      data: { ...result, sessionId: session?.id || normalizeChatSessionId(parsed.data.sessionId) || undefined },
+    });
   } catch (error) {
     return res.status(502).json({ error: 'Speedy could not read that photo — try again, or call (954) 931-7997', detail: String(error?.message || error) });
   }
@@ -139,6 +180,10 @@ const guestBookingSchema = z.object({
   // uppercase) and resolved after the booking is created — an unknown
   // code never blocks a booking.
   referralCode: z.string().trim().max(32).transform((value) => value.toUpperCase()).optional(),
+  // Chat capture: when this booking came out of a Speedy conversation,
+  // the client passes the chat sessionId so the session is marked
+  // converted in Chat Insights. Optional; never blocks a booking.
+  sessionId: z.string().trim().max(64).optional(),
   // Finer-grained attribution (Fusion absorb Stage 3): landing page,
   // [via:] surface tag, UTM campaign fields. Optional — see
   // services/attribution.js for the accepted shapes.
@@ -234,6 +279,14 @@ router.post('/speedy/book', async (req, res) => {
     } catch (error) {
       console.error(JSON.stringify({ level: 'error', message: 'referral attach failed', error: String(error?.message || error) }));
     }
+  }
+
+  // Chat Insights conversion: mark the originating Speedy session as
+  // converted to this booking. Best-effort like every capture step.
+  if (parsed.data.sessionId) {
+    await captureSafely(() =>
+      captureBookingConversion({ sessionId: parsed.data.sessionId, referenceCode: booking.referenceCode }),
+    );
   }
 
   return res.status(201).json({

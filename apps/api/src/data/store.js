@@ -72,6 +72,11 @@ export const store = {
   // Top Speed CRM staff notes on customer records (CrmNote table),
   // newest appended last; the CRM 360 sorts when it renders.
   crmNotes: [],
+  // Speedy chat capture: every customer conversation with Speedy,
+  // keyed by session id; messages ride inside the session record
+  // (oldest first), mirroring the booking-history pattern. Hydrated
+  // from the SpeedyChatSession / SpeedyChatMessage tables.
+  chatSessions: new Map(),
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
   // Advertiser banner creatives, hydrated from the Banner table.

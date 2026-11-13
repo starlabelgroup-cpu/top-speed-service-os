@@ -934,3 +934,47 @@ model FinanceInvoiceMirror {
 
   @@index([balanceCents])
 }
+
+// Speedy chat capture (2026-11-12): every customer conversation with
+// Speedy lands here for staff analysis (Chat Insights) — Ramone's
+// direction: every customer chat is valuable information for developing
+// new features and methods of operations. Capture is passive and
+// best-effort: a capture failure never breaks or blocks the chat.
+// Transcripts are staff-only data — no public endpoint ever returns
+// them. Photo diagnoses record that a diagnosis happened plus the
+// customer's note text; the image itself is never stored.
+model SpeedyChatSession {
+  id                        String   @id @default(uuid()) @db.Uuid
+  companyId                 String   @db.Uuid
+  userId                    String?  @db.Uuid
+  source                    String   @default("unknown")
+  startedAt                 DateTime @default(now())
+  lastMessageAt             DateTime @default(now())
+  messageCount              Int      @default(0)
+  hadDiagnosis              Boolean  @default(false)
+  convertedBookingReference String?
+  hasUnanswered             Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  messages SpeedyChatMessage[]
+
+  @@index([companyId, startedAt])
+  @@index([companyId, source, startedAt])
+}
+
+model SpeedyChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  sessionId String   @db.Uuid
+  role      String
+  content   String
+  // flagged = this row is evidence for the unanswered mining: an
+  // assistant reply that hit the knowledge boundary, or a customer
+  // message whose exchange errored out (the client-side snag path).
+  flagged   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  session SpeedyChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+}

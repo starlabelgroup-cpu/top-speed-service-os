@@ -2,6 +2,7 @@ import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { hydrateCrmNotes } from './crmRepo.js';
+import { hydrateChatSessions } from './chatsRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
 import { hydrateVideoRequests } from './videoRepo.js';
@@ -278,6 +279,13 @@ export async function hydrateStore() {
     await hydrateCrmNotes();
   } catch (error) {
     console.error('hydrateCrmNotes failed (CRM notes degraded, platform continues)', error?.message || error);
+  }
+  // Speedy chat capture is an add-on too: a missing chat table
+  // mid-deploy degrades to no transcripts, never blocks hydration.
+  try {
+    await hydrateChatSessions();
+  } catch (error) {
+    console.error('hydrateChatSessions failed (chat insights degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };
