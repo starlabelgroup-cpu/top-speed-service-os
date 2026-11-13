@@ -36,7 +36,9 @@ function publicEntry(entry) {
     subject: entry.payload?.subject || null,
     message: entry.payload?.message || null,
     attempts: entry.attempts || 0,
+    provider: entry.provider || null,
     providerId: entry.providerId || null,
+    providerAttempts: entry.providerAttempts || null,
     error: entry.error || null,
     sentAt: entry.sentAt || null,
     createdAt: entry.createdAt,
@@ -89,21 +91,33 @@ router.get('/notifications/summary', ...staffOnly, (req, res) => {
 
 router.get('/notifications/health', ...staffOnly, (req, res) => {
   const health = channelHealth();
+  // Fallback sentence per channel, from the live provider chain: a
+  // configured fallback delivers when the primary hard-fails; an
+  // unconfigured one is stated plainly so nobody assumes it exists.
+  const chainNote = (chain, fallbackProvider, fallbackKeys) => {
+    const fallback = (chain || []).find((p) => p.provider === fallbackProvider);
+    if (!fallback) return '';
+    return fallback.configured
+      ? ` ${fallbackProvider} fallback is configured — it delivers when the primary provider hard-fails (provider-side errors only, never for a bad recipient).`
+      : ` ${fallbackProvider} fallback is NOT configured (no ${fallbackKeys} in the API environment) — the primary is the only route on this channel.`;
+  };
   return res.json({
     data: {
       email: {
         ...health.email,
-        note: health.email.configured
+        note: (health.email.configured
           ? (health.email.fromVerifiedDomain
             ? 'Sends from the verified updates subdomain.'
             : 'WARNING: the From address is not on the verified updates subdomain — Resend rejects sends from unverified domains (topspeedappliance.net failed SPF/DKIM). Set EMAIL_FROM to service@updates.topspeedapplianceservice.com in the API environment.')
-          : 'RESEND_API_KEY is not set in the API environment — email entries gate as RESEND_NOT_CONFIGURED.',
+          : 'RESEND_API_KEY is not set in the API environment — email entries gate as RESEND_NOT_CONFIGURED.')
+          + chainNote(health.email.chain, 'sendgrid', 'SENDGRID_API_KEY'),
       },
       sms: {
         ...health.sms,
-        note: health.sms.configured
+        note: (health.sms.configured
           ? 'Credentials are present, but the Twilio account is on a TRIAL plan: texts only reach verified recipient numbers, and the account balance must be positive. Trial/failed sends are recorded as FAILED with the provider error — never as sent. Full SMS goes live when the account is upgraded.'
-          : 'Twilio credentials are not set in the API environment — SMS entries gate as TWILIO_NOT_CONFIGURED.',
+          : 'Twilio credentials are not set in the API environment — SMS entries gate as TWILIO_NOT_CONFIGURED.')
+          + chainNote(health.sms.chain, 'vonage', 'VONAGE_API_KEY + VONAGE_API_SECRET'),
       },
       settings: getNotificationSettings(),
       processing: {

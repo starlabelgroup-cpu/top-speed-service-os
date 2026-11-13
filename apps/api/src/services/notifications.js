@@ -59,6 +59,7 @@ export const NOTIFICATION_TEMPLATES = {
   ACCOUNT_WELCOME: 'ACCOUNT_WELCOME',
   SIGNIN_LINK: 'SIGNIN_LINK',
   EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
+  PHOTO_DIAGNOSIS: 'PHOTO_DIAGNOSIS',
 };
 
 /* ------------------------------------------------------------------ */
@@ -421,6 +422,105 @@ export function notifyEmailVerification(user, { tokenId, verifyUrl, expiresAt },
   } else {
     entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
   }
+  return entries;
+}
+
+/**
+ * Photo diagnosis fan-out (Speedy photo requests & diagnostics).
+ *
+ * Fired after every successful POST /speedy/diagnose:
+ *  - customer copy of their diagnosis result — email carries the full
+ *    rendered read; SMS carries the short summary — on whichever
+ *    channels the request provided contact details for. When a channel
+ *    has no recipient, an honest GATED/NO_RECIPIENT entry is recorded
+ *    (exactly like submissions), so the gap is visible, never silent.
+ *  - staff alert (email + SMS to the business) with the diagnosis
+ *    essentials and the booking linkage: the reference of the booking
+ *    the diagnosis is attached to, or "not linked" when it is not.
+ *
+ * Copy is composed ONLY from the recorded diagnosis output — the
+ * structured read Speedy returned (appliance, findings, likely
+ * causes, safety flag) and the rendered reply verbatim for email.
+ */
+export function notifyPhotoDiagnosis({ submitter = {}, diagnosis = null, reply = null, note = null, bookingReference = null, source = null }) {
+  const settings = getNotificationSettings();
+  const entries = [];
+  const keyBase = `photo-diagnosis:${createId()}`;
+  const appliance = diagnosis?.appliance || 'appliance (photo read)';
+  const findings = (diagnosis?.visible_findings || []).filter(Boolean);
+  const causes = (diagnosis?.likely_causes || []).filter(Boolean);
+  const safetyCritical = Boolean(diagnosis?.safety_critical);
+  const safetyActions = (diagnosis?.safety_actions || []).filter(Boolean);
+
+  const summaryLines = [
+    `Appliance: ${appliance}`,
+    ...(findings.length ? [`Visible findings: ${findings.slice(0, 4).join('; ')}`] : []),
+    ...(causes.length ? [`Most likely causes: ${causes.slice(0, 3).join('; ')}`] : []),
+    ...(safetyCritical ? ['SAFETY-CRITICAL: flagged for a human professional'] : []),
+    ...(bookingReference ? [`Booking: ${bookingReference}`] : ['Booking: not linked yet']),
+  ];
+
+  const emailBody =
+    `Hi ${submitter.name || 'there'},\n\n` +
+    `Here is the photo diagnosis Speedy gave you, kept for your records:\n\n` +
+    `${reply || summaryLines.join('\n')}\n\n` +
+    (bookingReference
+      ? `This diagnosis is attached to your booking ${bookingReference}.\n`
+      : `Want a technician to confirm it in person? The $99 diagnostic visit is credited toward your repair — book any time at topspeedserviceos.com/book or just reply to Speedy.\n`) +
+    `\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+    `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
+  const smsBody =
+    `Top Speed Appliance photo diagnosis: ${appliance}` +
+    (causes.length ? ` — most likely: ${causes[0]}` : '') +
+    (safetyCritical ? '. SAFETY: follow the safety steps Speedy gave you and do not use the appliance.' : '.') +
+    (bookingReference ? ` Attached to booking ${bookingReference}.` : ' Book the $99 diagnostic (credited toward repair): topspeedserviceos.com/book') +
+    ` Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`;
+
+  const emailPayload = {
+    kind: 'PHOTO_DIAGNOSIS',
+    reference: bookingReference || null,
+    customerName: submitter.name || null,
+    appliance,
+    safetyCritical,
+    message: emailBody,
+    subject: 'Your Top Speed photo diagnosis',
+  };
+  if (submitter.email) {
+    if (settings.customerEmailConfirmations) {
+      entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: submitter.email, payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'DIAGNOSIS' }));
+    } else {
+      entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: submitter.email, payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'DIAGNOSIS', reason: 'SETTING_DISABLED' }));
+    }
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: '(no email on file)', payload: emailPayload, source, eventKey: `${keyBase}:customer:email`, eventType: 'DIAGNOSIS', reason: 'NO_RECIPIENT' }));
+  }
+
+  const smsPayload = { kind: 'PHOTO_DIAGNOSIS', reference: bookingReference || null, customerName: submitter.name || null, appliance, message: smsBody };
+  if (submitter.phone) {
+    if (settings.customerSmsConfirmations) {
+      entries.push(queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: submitter.phone, payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'DIAGNOSIS' }));
+    } else {
+      entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: submitter.phone, payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'DIAGNOSIS', reason: 'SETTING_DISABLED' }));
+    }
+  } else {
+    entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS, to: '(no phone on file)', payload: smsPayload, source, eventKey: `${keyBase}:customer:sms`, eventType: 'DIAGNOSIS', reason: 'NO_RECIPIENT' }));
+  }
+
+  entries.push(...notifyStaffAlert({
+    kind: 'PHOTO_DIAGNOSIS',
+    kindLabel: 'photo diagnosis',
+    reference: bookingReference,
+    submitterName: submitter.name || null,
+    lines: [
+      ...(submitter.phone ? [`Phone: ${submitter.phone}`] : []),
+      ...(submitter.email ? [`Email: ${submitter.email}`] : []),
+      ...summaryLines,
+      ...(note ? [`Customer note: ${String(note).slice(0, 200)}`] : []),
+    ],
+    consolePath: '/book-os',
+    source,
+    eventKeyBase: keyBase,
+  }));
   return entries;
 }
 

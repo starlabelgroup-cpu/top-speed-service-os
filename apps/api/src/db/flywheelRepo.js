@@ -74,6 +74,7 @@ function notificationToRow(entry) {
     eventType: entry.eventType ?? null,
     reason: entry.reason ?? null,
     attempts: entry.attempts ?? 0,
+    provider: entry.provider ?? null,
     providerId: entry.providerId ?? null,
     error: entry.error ?? null,
     sentAt: entry.sentAt ? new Date(entry.sentAt) : null,
@@ -91,6 +92,7 @@ function notificationFromRow(row) {
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
   };
   if (row.attempts) entry.attempts = row.attempts;
+  if (row.provider) entry.provider = row.provider;
   if (row.providerId) entry.providerId = row.providerId;
   if (row.error) entry.error = row.error;
   if (row.eventKey) entry.eventKey = row.eventKey;

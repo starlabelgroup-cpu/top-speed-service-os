@@ -84,7 +84,7 @@ footer strong{color:#fff}
 
 <div class="wrap">
   <h1>🔔 Notifications — Email &amp; SMS Alerts</h1>
-  <p class="sub">One system for every alert and update on the network and platform: when any submission lands — a booking, a form, a video request, a bulk property request, a new account — the customer gets a confirmation and the business gets an instant alert. Booking updates follow the job. Every entry below carries its true delivery state: <b>SENT</b> only when the provider accepted it, <b>GATED</b> with the reason when it could not be attempted. <span id="whoLine"></span></p>
+  <p class="sub">One system for every alert and update on the network and platform: when any submission lands — a booking, a form, a video request, a photo diagnosis, a bulk property request, a new account — the customer gets a confirmation and the business gets an instant alert. Booking updates follow the job. Every entry below carries its true delivery state: <b>SENT</b> only when the provider accepted it, <b>GATED</b> with the reason when it could not be attempted. <span id="whoLine"></span></p>
 
   <!-- Signed-out gate -->
   <div class="panel" id="gatePanel">
@@ -120,8 +120,8 @@ footer strong{color:#fff}
       <h2>Channel health</h2>
       <p class="note">The real configuration state of the two delivery channels, read from the API server. Configuration presence is all that is ever shown — no keys, no secrets.</p>
       <div class="health" style="margin-top:14px;">
-        <div class="card" id="healthEmail"><h3>✉️ Email — Resend</h3><p>Loading…</p></div>
-        <div class="card" id="healthSms"><h3>💬 SMS — Twilio</h3><p>Loading…</p></div>
+        <div class="card" id="healthEmail"><h3>✉️ Email — Resend → SendGrid</h3><p>Loading…</p></div>
+        <div class="card" id="healthSms"><h3>💬 SMS — Twilio → Vonage</h3><p>Loading…</p></div>
       </div>
       <p class="note" id="healthProcessing" style="margin-top:12px;"></p>
     </section>
@@ -216,11 +216,15 @@ function loadSummary(){
 function loadHealth(){
   return apiFetch('/notifications/health').then(function(j){
     var d=j.data||{}, em=d.email||{}, sm=d.sms||{};
-    document.getElementById('healthEmail').innerHTML='<h3>✉️ Email — Resend</h3>'
-      +'<p>Status: <b>'+(em.configured?'Configured':'Not configured')+'</b><br>From: '+esc(em.from||'—')+'</p>'
+    var chainLine=function(chain){
+      if(!chain||!chain.length) return '';
+      return '<br>Route: '+chain.map(function(p,i){ return (i? ' → fallback: ' : '')+esc(p.provider)+' <b>'+(p.configured?'configured':'not configured')+'</b>'; }).join('');
+    };
+    document.getElementById('healthEmail').innerHTML='<h3>✉️ Email — Resend → SendGrid</h3>'
+      +'<p>Status: <b>'+(em.configured?'Configured':'Not configured')+'</b><br>From: '+esc(em.from||'—')+chainLine(em.chain)+'</p>'
       +(em.configured && !em.fromVerifiedDomain ? '<p class="warn">'+esc(em.note||'')+'</p>' : '<p>'+esc(em.note||'')+'</p>');
-    document.getElementById('healthSms').innerHTML='<h3>💬 SMS — Twilio</h3>'
-      +'<p>Status: <b>'+(sm.configured?'Configured':'Not configured')+'</b>'+(sm.trial?' · <b>Trial account</b>':'')+'<br>From: '+esc(sm.from||'—')+'</p>'
+    document.getElementById('healthSms').innerHTML='<h3>💬 SMS — Twilio → Vonage</h3>'
+      +'<p>Status: <b>'+(sm.configured?'Configured':'Not configured')+'</b>'+(sm.trial?' · <b>Trial account</b>':'')+'<br>From: '+esc(sm.from||'—')+chainLine(sm.chain)+'</p>'
       +'<p>'+esc(sm.note||'')+'</p>';
     document.getElementById('healthProcessing').textContent=(d.processing&&d.processing.model)||'';
     var s=d.settings||{};
@@ -252,7 +256,7 @@ function loadOutbox(){
         +'<td>'+esc(e.template)+(e.eventType?' <span class="mono" style="color:var(--muted);">'+esc(e.eventType)+'</span>':'')+'</td>'
         +'<td>'+esc(e.channel)+'</td><td>'+esc(e.to)+'</td><td class="mono">'+esc(e.reference||'—')+'</td>'
         +'<td>'+statusTag(e)+(e.reason?' <span class="mono">'+esc(e.reason)+'</span>':'')+(e.error?' <span class="mono" style="color:var(--red);">'+esc(String(e.error).slice(0,60))+'</span>':'')+'</td></tr>'
-        +'<tr class="detail" id="detail-'+i+'" style="display:none;"><td colspan="6">'+esc(e.subject?('Subject: '+e.subject+'\n\n'):'')+esc(e.message||'(no message body)')+(e.providerId?'\n\nProvider ID: '+esc(e.providerId):'')+(e.sentAt?'\nSent: '+esc(when(e.sentAt)):'')+'</td></tr>';
+        +'<tr class="detail" id="detail-'+i+'" style="display:none;"><td colspan="6">'+esc(e.subject?('Subject: '+e.subject+'\n\n'):'')+esc(e.message||'(no message body)')+(e.provider?'\n\nProvider: '+esc(e.provider):'')+(e.providerId?'\nProvider ID: '+esc(e.providerId):'')+(e.sentAt?'\nSent: '+esc(when(e.sentAt)):'')+'</td></tr>';
     });
     html+='</tbody></table>';
     box.innerHTML=html;

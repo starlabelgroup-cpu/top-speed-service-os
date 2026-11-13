@@ -459,6 +459,7 @@ model NotificationOutbox {
   eventType  String?
   reason     String?
   attempts   Int       @default(0)
+  provider   String?
   providerId String?
   error      String?
   sentAt     DateTime?

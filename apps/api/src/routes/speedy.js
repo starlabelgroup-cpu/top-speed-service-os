@@ -4,10 +4,10 @@ import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, sp
 import { normalizeCityName, resolveArea } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
-import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } from '../services/notifications.js';
+import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { attachReferralToBooking } from '../services/referrals.js';
-import { providersStatus } from '../services/senders.js';
+import { channelConfigured } from '../services/senders.js';
 import { optionalAuthenticate } from '../middleware/auth.js';
 import {
   captureBookingConversion,
@@ -51,6 +51,14 @@ const diagnoseSchema = z.object({
   note: z.string().trim().max(500).optional(),
   sessionId: z.string().trim().max(64).optional(),
   source: z.string().trim().max(40).optional(),
+  // Optional customer contact + booking linkage, supplied when the
+  // diagnosis is invoked from a signed-in or booking-linked context.
+  // The diagnosis alerts fan out to these contacts; without them the
+  // customer entries record honestly as NO_RECIPIENT.
+  customerName: z.string().trim().max(120).optional(),
+  phone: z.string().trim().max(40).optional(),
+  email: z.string().email().max(200).optional(),
+  bookingReference: z.string().trim().max(40).optional(),
 }).refine((data) => data.imageDataUrl || data.imageUrl, {
   message: 'Provide imageDataUrl or imageUrl',
 });
@@ -115,6 +123,31 @@ router.post('/speedy/diagnose', optionalAuthenticate, async (req, res) => {
         reply: result.reply,
       }),
     );
+    // Automated alerts (Ramone's matrix): staff alert + the customer's
+    // own copy of the diagnosis result. Contact details come from the
+    // payload (signed-in / booking-linked contexts) or the caller's
+    // account token; absent details record as NO_RECIPIENT. Alert
+    // failures must NEVER affect the diagnosis response.
+    try {
+      const bookingReference = parsed.data.bookingReference || null;
+      const linkedBooking = bookingReference
+        ? [...store.bookings.values()].find((b) => String(b.referenceCode || '').toUpperCase() === bookingReference.toUpperCase())
+        : null;
+      notifyPhotoDiagnosis({
+        submitter: {
+          name: parsed.data.customerName || linkedBooking?.customer?.name || null,
+          phone: parsed.data.phone || linkedBooking?.customer?.phone || null,
+          email: parsed.data.email || linkedBooking?.customer?.email || req.user?.email || null,
+        },
+        diagnosis: result.diagnosis || null,
+        reply: result.reply || null,
+        note: parsed.data.note || null,
+        bookingReference: linkedBooking ? linkedBooking.referenceCode : bookingReference,
+        source: 'SPEEDY_PHOTO_DIAGNOSIS',
+      });
+    } catch (notifyError) {
+      console.error(JSON.stringify({ level: 'error', message: 'photo diagnosis notify failed', error: String(notifyError?.message || notifyError) }));
+    }
     return res.json({
       data: { ...result, sessionId: session?.id || normalizeChatSessionId(parsed.data.sessionId) || undefined },
     });
@@ -351,7 +384,7 @@ router.post('/speedy/send-receipt', async (req, res) => {
     });
   }
   // SMS
-  if (!providersStatus().sms.configured) {
+  if (!channelConfigured('sms')) {
     return res.status(200).json({
       data: { queued: false, channel: 'sms', unavailable: true, message: 'Texting isn\'t available yet \u2014 email is the reliable option for your receipt and tracking details.' },
     });

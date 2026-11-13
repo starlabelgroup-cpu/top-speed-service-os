@@ -754,6 +754,10 @@ router.get('/auth/google/callback', async (req, res, next) => {
         updatedAt: new Date().toISOString(),
       };
       user = await usersRepo.create(draft);
+      // Same alert matrix as the register route: a Google-created
+      // account is still a sign-up — welcome email + staff alert.
+      // (The email starts verified, so no verification email follows.)
+      notifyAccountCreated(user, 'GOOGLE_SIGNUP');
     }
     const issued = signAccessToken(user);
     const dest = new URL(webOrigin() + nextPath);
