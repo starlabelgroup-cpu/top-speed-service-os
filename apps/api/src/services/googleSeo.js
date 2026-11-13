@@ -37,24 +37,29 @@ const SC_BASE = ENV['GOOGLE_SEO_' + 'SC_BASE'] || 'https://www.googleapis.com/we
 const GA4_BASE = ENV['GOOGLE_SEO_' + 'GA4_BASE'] || 'https://analyticsdata.googleapis.com/v1beta';
 const SCOPES = 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly';
 
-/** The two Search Console properties the dashboard reports on — the
- *  URL-prefix properties the service account was granted on
- *  (Restricted) on 2026-11-13. If the sc-domain: variants are granted
- *  later they show up in /status as other visible properties; the
- *  dashboard does not depend on them. `flagship` marks the property
- *  GA4 measures, for the page-path session join. */
+/** The Search Console properties the dashboard reports on — the
+ *  three URL-prefix properties the service account holds Restricted
+ *  access on (granted 2026-11-13): the flagship plus BOTH forms of
+ *  the .net property, which Search Console treats as separate
+ *  properties. The sc-domain: variants are not grantable here (the
+ *  flagship domain property does not exist in the account; the .net
+ *  one is unverified) — if they ever appear in the sites list they
+ *  show up in /status as other visible properties. `flagship` marks
+ *  the property GA4 measures, for the page-path session join. */
 export const EXPECTED_PROPERTIES = [
   { siteUrl: 'https://topspeedserviceos.com/', label: 'topspeedserviceos.com', kind: 'url-prefix', flagship: true },
   { siteUrl: 'https://topspeedappliance.net/', label: 'topspeedappliance.net', kind: 'url-prefix', flagship: false },
+  { siteUrl: 'https://www.topspeedappliance.net/', label: 'topspeedappliance.net (www)', kind: 'url-prefix', flagship: false },
 ];
 
 /**
  * Search Console registers URL-prefix properties exactly — the www
- * and non-www forms are different properties. Grants were confirmed
- * for the forms above, but matching against the sites list tolerates
- * a www difference and always queries with the registered form
- * Google actually returns, so a registration-form surprise can never
- * silently zero the dashboard.
+ * and non-www forms are different properties. Matching prefers the
+ * exact registered form (both .net forms above are granted, and each
+ * must resolve to its own property); only when no exact form is
+ * granted does it fall back to a www-tolerant match and query with
+ * the registered form Google actually returns, so a
+ * registration-form surprise can never silently zero the dashboard.
  */
 function normalizeSiteUrl(siteUrl) {
   if (!siteUrl || siteUrl.startsWith('sc-domain:')) return siteUrl;
@@ -67,8 +72,11 @@ function normalizeSiteUrl(siteUrl) {
 }
 
 export function findGrantedSite(sites, expectedSiteUrl) {
+  const list = sites || [];
+  const exact = list.find((s) => s.siteUrl === expectedSiteUrl);
+  if (exact) return exact;
   const target = normalizeSiteUrl(expectedSiteUrl);
-  return (sites || []).find((s) => normalizeSiteUrl(s.siteUrl) === target) || null;
+  return list.find((s) => normalizeSiteUrl(s.siteUrl) === target) || null;
 }
 
 export function seoConfigured() {
@@ -85,7 +93,7 @@ export function grantSteps() {
   return [
     'The read-only service account already exists: service-os-seo-reader@top-speed-service-os.iam.gserviceaccount.com — and GOOGLE_SEO_CLIENT_EMAIL is already saved on the API.',
     'Remaining step: in the top-speed-service-os Vercel project (the API), set GOOGLE_SEO_PRIVATE_KEY to the private key from the service account JSON key, then redeploy.',
-    'Already granted on the Google side: Search Console (Restricted user) on https://topspeedserviceos.com/ and https://topspeedappliance.net/, and GA4 Viewer on the "Top Speed Service OS" property (ID 563961824).',
+    'Already granted on the Google side: Search Console (Restricted user) on https://topspeedserviceos.com/, https://topspeedappliance.net/ and https://www.topspeedappliance.net/, and GA4 Viewer on the "Top Speed Service OS" property (ID 563961824).',
   ];
 }
 
