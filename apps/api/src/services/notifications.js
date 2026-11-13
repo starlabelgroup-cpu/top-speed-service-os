@@ -58,6 +58,7 @@ export const NOTIFICATION_TEMPLATES = {
   STAFF_SUBMISSION_ALERT: 'STAFF_SUBMISSION_ALERT',
   ACCOUNT_WELCOME: 'ACCOUNT_WELCOME',
   SIGNIN_LINK: 'SIGNIN_LINK',
+  EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
 };
 
 /* ------------------------------------------------------------------ */
@@ -382,6 +383,44 @@ export function notifyAccountCreated(user, source = null) {
     source,
     eventKeyBase: `account:${user.id}`,
   }));
+  return entries;
+}
+
+/**
+ * The email-verification message for a new (or re-sent) account
+ * verification link. The link carries the one-time token; the outbox
+ * entry is the record of the send and its payload is composed only
+ * from the account's own data. eventKey is unique per issuance (the
+ * token record id), so a resend is its own entry while the register
+ * hook stays idempotent per token.
+ */
+export function notifyEmailVerification(user, { tokenId, verifyUrl, expiresAt }, source = null) {
+  const entries = [];
+  if (!user?.email) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const payload = {
+    userId: user.id,
+    customerName: name,
+    verifyUrl,
+    message:
+      `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+      `Welcome to Top Speed Appliance — one quick step to verify this email address for your account:\n\n` +
+      `${verifyUrl}\n\n` +
+      `The link works once and expires in 24 hours. Verifying confirms that booking confirmations, ` +
+      `tracking updates and receipts reach you. Your account already works — you can book and sign in ` +
+      `before verifying; this just confirms the address.\n` +
+      `If you did not create a Top Speed account, you can ignore this email.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Verify your Top Speed Appliance account email',
+  };
+  const eventKey = `account:${user.id}:email-verify:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
   return entries;
 }
 

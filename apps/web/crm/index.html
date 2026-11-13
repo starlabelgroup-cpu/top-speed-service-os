@@ -280,6 +280,7 @@ function crmDetail(id){
       document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
         '<p class="mut" style="margin:6px 0 4px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
         '<p class="mut">Lead source: <b>'+crmEsc(c.leadSource||'—')+'</b>'+(c.referredByCode?' · referred by code <b>'+crmEsc(c.referredByCode)+'</b>':'')+' · customer since '+crmEsc(String(c.createdAt||'').slice(0,10))+'</p>' +
+        (d.account?'<p class="mut">Account: <b>'+(d.account.emailVerified?'email verified ✓':'email not verified yet')+'</b>'+(d.account.signupOfferSlug?' · signed up via offer <b>'+crmEsc(d.account.signupOfferSlug)+'</b>':'')+(d.account.signupAudience?' · '+crmEsc(d.account.signupAudience):'')+(d.account.serviceArea?' · profile area '+crmEsc(d.account.serviceArea)+(d.account.serviceAreaStatus?' ('+crmEsc(d.account.serviceAreaStatus)+')':''):'')+'</p>':'') +
         '<div class="section"><h3>Properties / service addresses</h3>'+props+'</div>' +
         '<div class="section"><h3>Appliances &amp; equipment on file</h3>'+apps+'</div>' +
         '<div class="section"><h3>Job history</h3>'+bk+'</div>' +

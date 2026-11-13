@@ -155,6 +155,15 @@ export async function createUserWithTerms(draft, validated) {
           passwordHash: draft.passwordHash, firstName: draft.firstName,
           lastName: draft.lastName, phone: draft.phone, roles: draft.roles,
           active: draft.active,
+          emailVerifiedAt: draft.emailVerifiedAt ?? null,
+          signupSource: draft.signupSource ?? null,
+          signupOfferSlug: draft.signupOfferSlug ?? null,
+          signupAudience: draft.signupAudience ?? null,
+          serviceStreet: draft.serviceStreet ?? null,
+          serviceCity: draft.serviceCity ?? null,
+          serviceZip: draft.serviceZip ?? null,
+          serviceArea: draft.serviceArea ?? null,
+          serviceAreaStatus: draft.serviceAreaStatus ?? null,
         },
       });
       await tx.termsAcceptance.createMany({

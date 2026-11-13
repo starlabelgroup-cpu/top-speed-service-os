@@ -21,6 +21,10 @@ export const store = {
   // Super Apps sign-in handoffs (skeleton-mode fallback; the database
   // mode uses the AuthHandoff table). Keyed by token SHA-256 hash.
   authHandoffs: new Map(),
+  // Email verification tokens (skeleton-mode fallback; the database
+  // mode uses the EmailVerificationToken table). Keyed by token
+  // SHA-256 hash, same discipline as authHandoffs.
+  emailVerificationTokens: new Map(),
   // Legal gate: signed TermsAcceptance rows in skeleton mode (the
   // database mode uses the TermsAcceptance table). Plain array of
   // { id, userId, document, version, signatureName, acceptedAt }.

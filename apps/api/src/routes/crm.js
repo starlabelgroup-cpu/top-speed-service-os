@@ -7,6 +7,7 @@ import { effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/se
 import { slotForArea, todayDateString, APPOINTMENT_WINDOWS, CREWS_PER_AREA_WINDOW } from '../services/bookos.js';
 import { suggestProviders } from '../services/dispatch.js';
 import { persistCrmNote } from '../db/crmRepo.js';
+import { findUserById } from '../services/handoff.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -138,7 +139,7 @@ router.get('/crm/customers', ...staffOnly, (req, res) => {
   return res.json({ data: { count: customers.length, customers: customers.slice(0, 200) } });
 });
 
-router.get('/crm/customers/:id', ...staffOnly, (req, res) => {
+router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   const customer = store.customers.get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
   const bookings = customerBookings(customer.id).map(bookingBrief);
@@ -226,6 +227,29 @@ router.get('/crm/customers/:id', ...staffOnly, (req, res) => {
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
     .map((n) => ({ id: n.id, author: n.author, body: n.body, createdAt: n.createdAt }));
 
+  // Account block: signup attribution + email-verification state live
+  // on the linked User record, not the Customer record — surface them
+  // here so an offer sign-up reads as one story in the 360 (which
+  // offer, which audience, verified or still pending). Null when the
+  // customer has no login account.
+  let account = null;
+  if (customer.userId) {
+    const user = await findUserById(customer.userId).catch(() => null);
+    if (user) {
+      const isoOrNull = (value) => (value ? (value instanceof Date ? value.toISOString() : String(value)) : null);
+      account = {
+        emailVerified: Boolean(user.emailVerifiedAt),
+        emailVerifiedAt: isoOrNull(user.emailVerifiedAt),
+        signupSource: user.signupSource || null,
+        signupOfferSlug: user.signupOfferSlug || null,
+        signupAudience: user.signupAudience || null,
+        serviceArea: user.serviceArea || null,
+        serviceAreaStatus: user.serviceAreaStatus || null,
+        memberSince: isoOrNull(user.createdAt),
+      };
+    }
+  }
+
   return res.json({
     data: {
       customer: {
@@ -233,6 +257,7 @@ router.get('/crm/customers/:id', ...staffOnly, (req, res) => {
         leadSource: customer.source || null,
         referredByCode: customer.referredByCode || null,
       },
+      account,
       properties,
       appliances,
       bookings,

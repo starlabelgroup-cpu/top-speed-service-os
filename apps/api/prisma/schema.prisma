@@ -115,6 +115,24 @@ model User {
   phone        String?
   roles        Role[]
   active       Boolean  @default(true)
+  // Email verification (2026-11-12): set when the account holder clicks
+  // the single-use verification link; null means "not verified yet" —
+  // a soft prompt everywhere, never a lockout.
+  emailVerifiedAt DateTime?
+  // Signup attribution: where the account came from. signupSource is
+  // 'OFFER_PAGE' for offer-page sign-ups (signupOfferSlug names the
+  // offer) and 'ACCOUNT_SIGNUP' for the plain register surfaces.
+  // signupAudience is 'homeowner' | 'commercial' | 'property-manager'.
+  signupSource    String?
+  signupOfferSlug String?
+  signupAudience  String?
+  // Profile-completion service address, resolved through the Service
+  // Book area model (config/serviceAreas resolveArea) at save time.
+  serviceStreet     String?
+  serviceCity       String?
+  serviceZip        String?
+  serviceArea       String?
+  serviceAreaStatus String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -123,6 +141,8 @@ model User {
   channelLinks ChannelLink[]
 
   authHandoffs AuthHandoff[]
+
+  emailVerificationTokens EmailVerificationToken[]
 
   termsAcceptances TermsAcceptance[]
 
@@ -618,6 +638,24 @@ model AuthHandoff {
   tokenHash String    @unique
   userId    String    @db.Uuid
   audience  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Email verification (2026-11-12): one live token per account at a
+// time. Same storage discipline as AuthHandoff — random 32-byte
+// secret, only its SHA-256 hash at rest, single-use, expiring (24h).
+// Verifying sets User.emailVerifiedAt; it never gates booking.
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())

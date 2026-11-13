@@ -3,10 +3,15 @@ import { z } from 'zod';
 import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.js';
-import { PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
+import { MARKETING_ROLES, PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { signAccessToken } from '../services/tokens.js';
 import { notifyAccountCreated } from '../services/notifications.js';
+import { OFFER_SIGNUP_TYPES, appPathForAudience, getOffer, OFFERS, publicOffer } from '../config/offers.js';
+import { consumeEmailVerification, emailVerificationState, issueEmailVerification } from '../services/emailVerification.js';
+import { resolveArea } from '../config/serviceAreas.js';
+import { persistCustomer } from '../db/bookingsRepo.js';
+import { persistAppliance } from '../db/appliancesRepo.js';
 import {
   LEGAL_DOCUMENTS,
   createUserWithTerms,
@@ -43,6 +48,11 @@ const registerSchema = z.object({
   lastName: z.string().trim().min(1).max(80).optional(),
   phone: z.string().trim().min(7).max(30).optional(),
   role: z.enum(ALL_ROLES).optional(),
+  // Offer attribution: the offer pages send the slug of the offer the
+  // visitor signed up from. It is validated against config/offers —
+  // an unknown slug is ignored, never fatal — and the audience is
+  // pinned from the catalog, never trusted from the client.
+  offerSlug: z.string().trim().max(60).optional(),
   // Admin-only: create the account inside another company (e.g. a
   // provider's company, so its techs can sign in to the Tech App).
   // Honored only when canGrantStaffRoles(req) — see the handler.
@@ -94,8 +104,20 @@ const usersRepo = DATABASE_ENABLED
             passwordHash: user.passwordHash, firstName: user.firstName,
             lastName: user.lastName, phone: user.phone, roles: user.roles,
             active: user.active,
+            emailVerifiedAt: user.emailVerifiedAt ?? null,
+            signupSource: user.signupSource ?? null,
+            signupOfferSlug: user.signupOfferSlug ?? null,
+            signupAudience: user.signupAudience ?? null,
+            serviceStreet: user.serviceStreet ?? null,
+            serviceCity: user.serviceCity ?? null,
+            serviceZip: user.serviceZip ?? null,
+            serviceArea: user.serviceArea ?? null,
+            serviceAreaStatus: user.serviceAreaStatus ?? null,
           },
         });
+      },
+      async updateProfile(id, fields) {
+        return db().user.update({ where: { id }, data: fields });
       },
       async updatePassword(id, passwordHash) {
         return db().user.update({ where: { id }, data: { passwordHash } });
@@ -129,6 +151,15 @@ const usersRepo = DATABASE_ENABLED
         }
         return user;
       },
+      async updateProfile(id, fields) {
+        const user = store.users.get(id);
+        if (user) {
+          Object.assign(user, fields);
+          user.updatedAt = new Date().toISOString();
+          store.users.set(id, user);
+        }
+        return user;
+      },
       async listForCompany(companyId, includeAll) {
         return [...store.users.values()].filter((user) => includeAll || user.companyId === companyId);
       },
@@ -149,6 +180,15 @@ function publicUser(user) {
     phone: user.phone ?? null,
     roles: user.roles,
     active: user.active,
+    emailVerified: Boolean(user.emailVerifiedAt),
+    emailVerifiedAt: iso(user.emailVerifiedAt),
+    signupSource: user.signupSource ?? null,
+    signupOfferSlug: user.signupOfferSlug ?? null,
+    signupAudience: user.signupAudience ?? null,
+    serviceCity: user.serviceCity ?? null,
+    serviceZip: user.serviceZip ?? null,
+    serviceArea: user.serviceArea ?? null,
+    serviceAreaStatus: user.serviceAreaStatus ?? null,
     createdAt: iso(user.createdAt),
   };
 }
@@ -220,6 +260,13 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       return res.status(409).json({ error: 'An account with this email already exists' });
     }
 
+    // Offer attribution: a known offer slug marks the account as an
+    // offer sign-up and pins its audience from the catalog.
+    const offer = parsed.data.offerSlug ? getOffer(parsed.data.offerSlug) : null;
+    const signupSource = offer ? 'OFFER_PAGE' : 'ACCOUNT_SIGNUP';
+    const signupOfferSlug = offer ? offer.slug : null;
+    const signupAudience = offer ? OFFER_SIGNUP_TYPES[offer.signupType].audience : null;
+
     const draft = {
       id: createId(),
       companyId,
@@ -230,6 +277,10 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       phone: phone ?? null,
       roles: [requestedRole],
       active: true,
+      emailVerifiedAt: null,
+      signupSource,
+      signupOfferSlug,
+      signupAudience,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -260,7 +311,7 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
         name: [firstName, lastName].filter(Boolean).join(' ') || email,
         email,
         phone: phone ?? null,
-        source: 'ACCOUNT_SIGNUP',
+        source: signupSource,
         createdAt: new Date().toISOString(),
       };
       store.customers.set(customerRecord.id, customerRecord);
@@ -275,8 +326,19 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       console.error(JSON.stringify({ level: 'error', message: 'account-created notification failed', error: String(error?.message || error) }));
     }
 
+    // Email verification: EVERY new account gets a single-use
+    // verification link through the outbox (services/
+    // emailVerification.js). Guarded exactly like the welcome
+    // notification — queueing trouble never fails a registration,
+    // and the account works fully while unverified (soft prompt).
+    try {
+      await issueEmailVerification(user, signupSource);
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'email verification issue failed', error: String(error?.message || error) }));
+    }
+
     const terms = await termsStatusForUser(user.id);
-    return res.status(201).json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
+    return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
     return next(error);
   }
@@ -356,6 +418,199 @@ router.post('/auth/accept-terms', authenticate, async (req, res, next) => {
     }
     const terms = await recordTermsAcceptance(user.id, validated);
     return res.json({ ok: true, terms, termsStatus: terms });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Offers catalog (public): the web offer pages and the index render
+// from the same source of truth the register attribution validates
+// against — config/offers.js.
+// ---------------------------------------------------------------------------
+router.get('/offers', (req, res) => {
+  return res.json({ data: OFFERS.map(publicOffer), count: OFFERS.length });
+});
+
+// ---------------------------------------------------------------------------
+// Email verification: the /verify-email page exchanges the emailed
+// token here. Success marks the account verified and names the app
+// the account belongs in (portal separation by signup audience).
+// Verification is a soft state — nothing else in the platform waits
+// on it.
+// ---------------------------------------------------------------------------
+const verifyEmailSchema = z.object({ token: z.string().trim().min(10).max(200) });
+
+function appPathForUser(user) {
+  if (user.signupAudience) return appPathForAudience(user.signupAudience);
+  if ((user.roles || []).some((role) => MARKETING_ROLES.includes(role))) return '/advertiser';
+  return '/app';
+}
+
+router.post('/auth/verify-email', async (req, res, next) => {
+  try {
+    const parsed = verifyEmailSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid verification link', details: parsed.error.flatten() });
+    }
+    const user = await consumeEmailVerification(parsed.data.token);
+    return res.json({
+      ok: true,
+      emailVerification: 'verified',
+      user: publicUser(user),
+      appPath: appPathForUser(user),
+      offerSlug: user.signupOfferSlug ?? null,
+    });
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+    }
+    return next(error);
+  }
+});
+
+// Resend: signed-in, issues a fresh token (superseding any live one)
+// and queues a fresh email. Already-verified accounts get their true
+// status back instead of a pointless email.
+router.post('/auth/email-verification/resend', authenticate, async (req, res, next) => {
+  try {
+    const user = await usersRepo.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+    if (user.emailVerifiedAt) {
+      return res.json({ ok: true, emailVerification: 'verified', emailVerifiedAt: iso(user.emailVerifiedAt) });
+    }
+    await issueEmailVerification(user, 'RESEND');
+    return res.json({ ok: true, emailVerification: 'pending', note: 'A fresh verification link is on its way to your account email. It works once and expires in 24 hours.' });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Profile completion: phone confirm, the service address (resolved
+// through the Service Book area model), and optionally the first
+// appliance. Everything lands on the same account records the apps
+// and the CRM 360 already read — the Customer record is created here
+// in database mode when the signup did not carry enough data for one
+// (see the register handler's note), and the garage appliance joins
+// store.appliances like any Connect garage entry. Skippable by
+// design: the offer pages offer "finish later in your account".
+// ---------------------------------------------------------------------------
+const profileSchema = z.object({
+  phone: z.string().trim().min(7).max(30).optional(),
+  serviceAddress: z.object({
+    street: z.string().trim().max(160).optional(),
+    city: z.string().trim().max(80).optional(),
+    zip: z.string().trim().max(12).optional(),
+  }).optional(),
+  appliance: z.object({
+    type: z.string().trim().min(1).max(60),
+    brand: z.string().trim().max(60).optional(),
+    model: z.string().trim().max(80).optional(),
+  }).optional(),
+});
+
+function areaMessageFor(user) {
+  switch (user.serviceAreaStatus) {
+    case 'IN_AREA':
+      return `You're in our ${user.serviceArea} service area — bookings from this address route to your local team.`;
+    case 'AREA_REVIEW':
+      return 'Your ZIP spans more than one of our service areas — when you book, a Service Setter confirms the exact area for your address. Nothing else is needed from you.';
+    case 'OUT_OF_AREA':
+      return "Your address is outside the 12 areas we serve today. Your account and profile are saved either way, and having your address on file is how new areas get picked — but we haven't promised service at this address.";
+    default:
+      return null;
+  }
+}
+
+router.post('/auth/profile', authenticate, async (req, res, next) => {
+  try {
+    const parsed = profileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid profile', details: parsed.error.flatten() });
+    }
+    const user = await usersRepo.findById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'Account not found' });
+
+    const fields = {};
+    if (parsed.data.phone) fields.phone = parsed.data.phone;
+    const address = parsed.data.serviceAddress;
+    if (address && (address.city || address.zip || address.street)) {
+      const resolved = resolveArea({ city: address.city, zip: address.zip });
+      fields.serviceStreet = address.street ?? user.serviceStreet ?? null;
+      fields.serviceCity = address.city ?? user.serviceCity ?? null;
+      fields.serviceZip = address.zip ?? user.serviceZip ?? null;
+      fields.serviceArea = resolved.area;
+      fields.serviceAreaStatus = resolved.areaStatus;
+    }
+    const updated = Object.keys(fields).length ? await usersRepo.updateProfile(user.id, fields) : user;
+
+    // Sync the CRM Customer record: update the linked one, or create
+    // it when the profile finally carries what the record requires
+    // (name + phone + city + zip). Insufficient data is not an
+    // error — the record is created at first booking instead.
+    let customer = [...store.customers.values()].find((record) => record.userId === user.id) || null;
+    const name = [updated.firstName, updated.lastName].filter(Boolean).join(' ') || updated.email;
+    const city = updated.serviceCity || customer?.city || null;
+    const zip = updated.serviceZip || customer?.zip || null;
+    const phone = updated.phone || customer?.phone || null;
+    if (customer) {
+      customer.name = name;
+      customer.email = updated.email;
+      if (phone) customer.phone = phone;
+      if (updated.serviceStreet) customer.address = updated.serviceStreet;
+      if (city) customer.city = city;
+      if (zip) customer.zip = zip;
+      store.customers.set(customer.id, customer);
+      await persistCustomer(customer).catch(() => {});
+    } else if (phone && city && zip) {
+      customer = {
+        id: createId(),
+        companyId: updated.companyId,
+        userId: updated.id,
+        name,
+        email: updated.email,
+        phone,
+        address: updated.serviceStreet ?? null,
+        city,
+        zip,
+        source: updated.signupSource || 'ACCOUNT_SIGNUP',
+        createdAt: new Date().toISOString(),
+      };
+      store.customers.set(customer.id, customer);
+      await persistCustomer(customer).catch(() => {});
+    }
+
+    let applianceSaved = false;
+    if (parsed.data.appliance) {
+      const appliance = {
+        id: createId(),
+        userId: updated.id,
+        type: parsed.data.appliance.type,
+        brand: parsed.data.appliance.brand ?? null,
+        model: parsed.data.appliance.model ?? null,
+        serial: null,
+        year: null,
+        notes: null,
+        createdAt: new Date().toISOString(),
+      };
+      store.appliances.set(appliance.id, appliance);
+      await persistAppliance(appliance).catch(() => {});
+      applianceSaved = true;
+    }
+
+    return res.json({
+      user: publicUser(updated),
+      emailVerification: emailVerificationState(updated),
+      profile: {
+        complete: Boolean(updated.serviceCity && updated.serviceZip),
+        area: updated.serviceArea ?? null,
+        areaStatus: updated.serviceAreaStatus ?? null,
+        areaMessage: areaMessageFor(updated),
+      },
+      customerId: customer?.id ?? null,
+      applianceSaved,
+    });
   } catch (error) {
     return next(error);
   }
@@ -490,6 +745,11 @@ router.get('/auth/google/callback', async (req, res, next) => {
         phone: null,
         roles: [ROLES.CUSTOMER],
         active: true,
+        // Google already verified this email at sign-in (the callback
+        // refuses unverified Google emails), so the account starts
+        // verified — no outbox link needed.
+        emailVerifiedAt: new Date().toISOString(),
+        signupSource: 'GOOGLE_SIGNIN',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
