@@ -390,12 +390,24 @@ function swAdd(text,me){
   return d;
 }
 function swBot(t){ setTimeout(function(){ swAdd(t,false); },240); }
+/* Chat sends retry ONCE after ~2s on a network error or a 5xx, so a
+   single dropped request reads as "still typing" instead of the
+   connection-snag fallback. 4xx errors are not retried. */
+function swChatFetch(payload){
+  function attempt(){
+    return fetch(SW_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+      .then(function(r){ if(!r.ok){ var e=new Error('status '+r.status); e.status=r.status; throw e; } return r.json(); });
+  }
+  return attempt().catch(function(e){
+    if(e&&e.status&&e.status<500) throw e;
+    return new Promise(function(res){ setTimeout(res,2000); }).then(attempt);
+  });
+}
 function swAsk(text){
   swAdd(text,true);
   swHistory.push({role:'user',content:text});
   var typing=swAdd('Speedy is typing\u2026',false);
-  fetch(SW_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:text,history:swHistory.slice(-10)})})
-    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+  swChatFetch({message:text,history:swHistory.slice(-10)})
     .then(function(j){
       var reply=(j.data&&j.data.reply)||'';
       if(!reply) throw new Error('empty reply');

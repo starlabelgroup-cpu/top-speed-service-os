@@ -312,32 +312,183 @@ async function executeSpeedyTool(call) {
   return { error: `Unknown tool ${call.name}` };
 }
 
+/* --------------------- chat latency: intent routing ----------------------
+ * Measured in production (2026-11-13): a pure-knowledge question ("How
+ * does track my tech works") took 31.4s cold / 12.7s warm because EVERY
+ * chat ran the tool loop — sequential Responses rounds with the full
+ * tool list attached — even though the answer sits in the system-prompt
+ * knowledge base. Long-pending requests die on mobile connections and
+ * the customer sees the "connection snag" fallback.
+ *
+ * Fix: a message with NO action intent is answered with ONE tools-free
+ * Responses call (same system prompt, same KB, same governance block —
+ * only the tools are left off). Anything that could need a tool keeps
+ * the full loop below, untouched. The classifier is deliberately
+ * conservative — every pattern errs toward the full loop, the
+ * governance pre-screen still runs FIRST on every message, and the
+ * governance rules also live in the shared system prompt, so the fast
+ * path can never become a governance bypass.
+ */
+
+// Any ONE of these in the current message sends the chat to the full
+// tool loop. Grouped by the tool/flow the message could plausibly need.
+const ACTION_INTENT_PATTERNS = [
+  // Identifiers: a booking/referral code, a phone number, or an email
+  // address means job- or account-specific territory (tracking with
+  // verification, referral status, receipt/invite sends).
+  /\bTS-[A-Z0-9]{3,}\b/i,
+  /(\+?1[\s.\-]?)?\(?\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}/,
+  /[\w.+-]+@[\w-]+\.[\w.]{2,}/,
+  // (Booking/scheduling words are checked separately below — process
+  // questions like "How does booking work?" are knowledge, not intent.)
+  // Their appliance, or a symptom: a diagnosis/consultation flow, which
+  // the prompt runs as a guided pre-consultation toward a booking.
+  /\bmy (refrigerator|fridge|freezer|ice ?maker|washer|washing machine|dryer|oven|range|stove|dishwasher|microwave|garbage disposal|disposal)\b/i,
+  /\b(not (cooling|heating|draining|spinning|working|turning on|making ice)|stopped working|won't (start|turn|drain|spin|heat|cool|run)|error code|making (a )?(loud )?noise|leaking|is leaking)\b/i,
+  /\bdiagnose\b/i,
+  // Photo / live-video flows.
+  /\b(send|sending|sent|upload|show|look at|check) (a |the |this |my )?(photo|picture|pic|image|video)\b/i,
+  /\b(video (call|consultation|chat)|live video)\b/i,
+  // Receipts, invoices, and "send it to me" sends.
+  /\b(receipt|invoice)\b/i,
+  /\b(send|text|email) (me|us)\b/i,
+  // Referral ACTIONS (program-terms questions stay knowledge: the terms
+  // are in the KB; a code in the message is caught by the TS- pattern).
+  /\bmy referral/i,
+  /\breferral (status|code|credits?)\b/i,
+  /\binvite\b/i,
+  /\brefer (a|my|this) friend\b/i,
+  // Tracking / status of a specific job. The feature name "Track My
+  // Tech" alone is knowledge — these require a job noun, so "How does
+  // track my tech works" does NOT match.
+  /\bwhere('s| is) my\b/i,
+  /\btrack(ing)?\b[^.?!]{0,20}\b(my|the|that|this) (job|booking|appointment|repair|order|visit)\b/i,
+  /\b(job|booking|appointment) status\b/i,
+  /\bmy (job|booking|appointment|repair|technician)\b/i,
+  // A quote or price for THEIR job (generic price questions are KB).
+  /\bquote\b/i,
+  /\b(how much|what) (will|would|is) my\b/i,
+  /\bmy\b[^.?!]{0,20}\b(cost|price)\b/i,
+  // A human, a callback, or anything account-specific.
+  /\b(human|real person|live person|manager|supervisor|representative)\b/i,
+  /\b(call me|speak (to|with)|talk to (a|the|someone))\b/i,
+  /\bmy (account|history|credits?|appliances?|units?|property|properties)\b/i,
+  // First-person service requests.
+  /\bi (need|want|'d like|would like)\b[^.?!]{0,30}\b(repair|service|technician|appointment|visit|someone)\b/i,
+  /\bfix (my|this|the)\b/i,
+  /\b(come out|send someone)\b/i,
+];
+
+// A bare ZIP is usually a booking detail being collected — except when
+// the message is plainly an area-coverage question.
+const ZIP_PATTERN = /\b\d{5}\b/;
+const AREA_QUESTION_PATTERN = /\b(do you|does|is|are|can you)\b[^.?!]{0,40}\b(service|serve|cover|come to|area)\b/i;
+// "How does booking work?" asks about the process (KB), not for a booking.
+const PROCESS_QUESTION_PATTERN = /\bhow (does|do)\b[^.?!]{0,30}\b(book|booking|scheduling|appointments?)\b[^.?!]{0,10}\bwork/i;
+const BOOKING_WORD_PATTERN = /\b(book|booking|schedule|scheduling|reschedule|appointment|cancel)\b/i;
+// The assistant's last turn was collecting booking details or asking
+// for a booking confirmation — a short reply is a continuation of
+// that flow, not a fresh knowledge question.
+const COLLECTION_CUE_PATTERN = /(your (phone|name|city|zip|address)|what('s| is) your|may i have|can i get your|want me to book|shall i book|should i book|confirm)/i;
+
+function messageHasActionIntent(text) {
+  const value = String(text || '');
+  if (ZIP_PATTERN.test(value) && !AREA_QUESTION_PATTERN.test(value)) return true;
+  if (BOOKING_WORD_PATTERN.test(value) && !PROCESS_QUESTION_PATTERN.test(value)) return true;
+  return ACTION_INTENT_PATTERNS.some((pattern) => pattern.test(value));
+}
+
+/**
+ * True when this turn — or the conversation so far — could need a
+ * tool, a record lookup, or a multi-step flow. Sticky on purpose: once
+ * any earlier customer turn carried action intent, the conversation
+ * stays on the full loop (booking collection is exactly the case where
+ * a bare "Coral Springs" or "Tuesday" reply carries no signal itself).
+ */
+export function hasActionIntent(message, history = []) {
+  if (messageHasActionIntent(message)) return true;
+  const turns = Array.isArray(history) ? history.slice(-10) : [];
+  if (turns.some((turn) => turn?.role === 'user' && messageHasActionIntent(turn.content))) return true;
+  const lastAssistant = [...turns].reverse().find((turn) => turn?.role === 'assistant');
+  if (
+    lastAssistant &&
+    COLLECTION_CUE_PATTERN.test(String(lastAssistant.content || '')) &&
+    String(message || '').trim().split(/\s+/).length <= 8
+  ) {
+    return true;
+  }
+  return false;
+}
+
+// If a slow-path round has already produced usable text and the clock
+// passes this, answer with that text instead of starting another round.
+const SLOW_PATH_TEXT_DEADLINE_MS = 25000;
+
+function logChatTiming(path, rounds, startedAt) {
+  // One structured line per chat for the Vercel logs — timing and path
+  // only. No message content, no customer data.
+  console.log(JSON.stringify({ event: 'speedy_chat_timing', path, rounds, elapsedMs: Date.now() - startedAt }));
+}
+
 /* --------------------------------- chat ---------------------------------- */
 
 /** history: prior turns [{ role: 'user'|'assistant', content }], oldest first. */
 export async function speedyChat({ message, history = [] }) {
+  const startedAt = Date.now();
   // Governance layer 1: the deterministic pre-screen. A matched category
   // is answered by policy (and its action performed) without the model.
   const gated = governanceGate(message);
-  if (gated) return gated;
+  if (gated) {
+    logChatTiming('governance', 0, startedAt);
+    return gated;
+  }
 
   const input = [
     ...history.slice(-10).map((turn) => ({ role: turn.role, content: String(turn.content) })),
     { role: 'user', content: message },
   ];
+  const instructions = speedySystemPrompt();
+
+  // Fast path: informational questions are answered from the knowledge
+  // base in the system prompt — one Responses call, NO tools attached,
+  // so no tool-loop rounds can stack up. Same prompt, same temperature
+  // and token caps as the full loop. An empty or failed fast reply
+  // falls through to the full loop rather than failing the customer.
+  if (!hasActionIntent(message, history)) {
+    try {
+      const fastBody = await responsesRequest({
+        instructions,
+        input,
+        temperature: 0.4,
+        max_output_tokens: 500,
+      });
+      const fastReply = extractText(fastBody);
+      if (fastReply) {
+        logChatTiming('fast', 0, startedAt);
+        return { reply: fastReply, model: fastBody.model || openAiConfig().model };
+      }
+    } catch {
+      // Fall through to the full loop; its error surfaces as before.
+    }
+  }
 
   let body = await responsesRequest({
-    instructions: speedySystemPrompt(),
+    instructions,
     input,
     tools: SPEEDY_TOOLS,
     temperature: 0.4,
     max_output_tokens: 500,
   });
 
-  // Tool loop: Speedy's tools only create human-owned requests.
-  for (let round = 0; round < 3; round++) {
+  // Tool loop: Speedy's tools only create human-owned requests. Capped
+  // at 2 rounds (was 3); if a round already produced usable text and
+  // the elapsed time passes ~25s, return that text instead of starting
+  // another round. Never returns an empty reply.
+  let rounds = 0;
+  for (let round = 0; round < 2; round++) {
     const calls = (body.output || []).filter((item) => item?.type === 'function_call');
     if (!calls.length) break;
+    if (Date.now() - startedAt > SLOW_PATH_TEXT_DEADLINE_MS && extractText(body)) break;
     const outputs = [];
     for (const call of calls) {
       outputs.push({
@@ -353,10 +504,12 @@ export async function speedyChat({ message, history = [] }) {
       temperature: 0.4,
       max_output_tokens: 500,
     });
+    rounds++;
   }
 
   const reply = extractText(body);
   if (!reply) throw new Error('OpenAI returned an empty reply');
+  logChatTiming('slow', rounds, startedAt);
   return { reply, model: body.model || openAiConfig().model };
 }
 

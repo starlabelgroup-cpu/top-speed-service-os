@@ -143,8 +143,21 @@
     if (auth && tok()) h.Authorization = 'Bearer ' + tok();
     return fetch(API + path, { method: 'POST', headers: h, body: JSON.stringify(payload) }).then(function (r) {
       return r.json().then(function (j) {
-        if (!r.ok) throw new Error(j.error || 'Request failed');
+        if (!r.ok) { var e = new Error(j.error || 'Request failed'); e.status = r.status; throw e; }
         return j;
+      });
+    });
+  }
+  // Chat sends retry ONCE after ~2s on a network error or a 5xx, so a
+  // single dropped request reads as "still working" (the typing bubble
+  // stays up across the retry) instead of the connection-snag fallback.
+  // The fallback shows only when the retry also fails. 4xx errors are
+  // not retried — the server answered, and the answer was no.
+  function postChat(payload) {
+    return post('/speedy/chat', payload, true).catch(function (e) {
+      if (e && e.status && e.status < 500) throw e;
+      return new Promise(function (resolve) { setTimeout(resolve, 2000); }).then(function () {
+        return post('/speedy/chat', payload, true);
       });
     });
   }
@@ -286,7 +299,7 @@
     history.push({ role: 'user', content: text });
     typing = true;
     var t = addMsg('Speedy is typing…', false);
-    post('/speedy/chat', { message: text, history: history.slice(-10), sessionId: chatSessionId(), source: chatSource() }, true).then(function (j) {
+    postChat({ message: text, history: history.slice(-10), sessionId: chatSessionId(), source: chatSource() }).then(function (j) {
       var reply = (j.data && j.data.reply) || '';
       t.remove();
       typing = false;

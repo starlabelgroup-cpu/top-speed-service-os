@@ -356,8 +356,14 @@ function techSpeedyAsk(){
   if(/certif|safe|refund|credential|compliance/.test(low)){ techSpeedySay('That is outside Speedy’s authority: Speedy never certifies repair safety, issues refunds, overrides credentials, or changes compliance status. A human professional or Service Setters handle those — call dispatch at 954-931-7997.'); return; }
   if(/pay|payout|earn/.test(low)){ techSpeedySay('Payout amounts follow your provider agreement — Speedy does not state or change them. Your Week tab shows job counts; the office can confirm anything about your statement.'); return; }
   techSpeedySay('Speedy is thinking…');
-  fetch(T_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:[]})})
-    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Speedy unavailable'); return j; }); })
+  /* Retry ONCE after ~2s on a network error or a 5xx — a single dropped
+     request should read as "still thinking", not as a failure. */
+  var techChatAttempt=function(){
+    return fetch(T_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:[]})})
+      .then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||'Speedy unavailable'); e.status=r.status; throw e; } return j; }); });
+  };
+  techChatAttempt()
+    .catch(function(e){ if(e&&e.status&&e.status<500) throw e; return new Promise(function(res){ setTimeout(res,2000); }).then(techChatAttempt); })
     .then(function(j){ techSpeedySay(escT((j.data&&j.data.reply)||'Speedy had no answer for that one.')); })
     .catch(function(e){ techSpeedySay('Speedy could not answer just now ('+escT(e.message)+'). For assignment questions, the quick buttons above read your live jobs directly.'); });
 }

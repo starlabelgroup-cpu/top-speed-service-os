@@ -152,12 +152,25 @@ function botSay(t){ setTimeout(function(){addMsg(t,false);},260); }
    so honestly and points to dispatch — no canned answers. */
 var spHistory=[];
 var SP_API='https://top-speed-service-os.vercel.app/api/v1';
+/* Chat sends retry ONCE after ~2s on a network error or a 5xx, so a
+   single dropped request reads as "still typing" instead of the
+   connection-snag fallback. The fallback shows only when the retry
+   also fails. 4xx errors are not retried. */
+function spChatFetch(payload){
+  function attempt(){
+    return fetch(SP_API+'/speedy/chat',{method:'POST',headers:spHeaders(),body:JSON.stringify(payload)})
+      .then(function(r){ if(!r.ok){ var e=new Error('status '+r.status); e.status=r.status; throw e; } return r.json(); });
+  }
+  return attempt().catch(function(e){
+    if(e&&e.status&&e.status<500) throw e;
+    return new Promise(function(res){ setTimeout(res,2000); }).then(attempt);
+  });
+}
 function askSpeedy(text){
   addMsg(text,true);
   spHistory.push({role:'user',content:text});
   var typing=addMsg('Speedy is typing\u2026',false);
-  fetch(SP_API+'/speedy/chat',{method:'POST',headers:spHeaders(),body:JSON.stringify({message:text,history:spHistory.slice(-10),sessionId:spSessionId(),source:'speedy-page'})})
-    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
+  spChatFetch({message:text,history:spHistory.slice(-10),sessionId:spSessionId(),source:'speedy-page'})
     .then(function(j){
       var reply=(j.data&&j.data.reply)||'';
       if(!reply) throw new Error('empty reply');

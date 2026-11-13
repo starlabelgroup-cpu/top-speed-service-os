@@ -1257,8 +1257,14 @@ function aspSend(){
   document.getElementById('aspSendBtn').textContent = '…';
   aspBubble('me', text);
   aspHistory.push({ role: 'user', content: text });
-  fetch(C_API + '/speedy/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: aspHistory.slice(-11, -1) }) })
-    .then(function(r){ return r.json(); })
+  /* Retry ONCE after ~2s on a network error or a 5xx — a single dropped
+     request should not read as a failure while Speedy may just be slow. */
+  var aspChatAttempt = function(){
+    return fetch(C_API + '/speedy/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, history: aspHistory.slice(-11, -1) }) })
+      .then(function(r){ if(r.status >= 500){ var e = new Error('status ' + r.status); e.status = r.status; throw e; } return r.json(); });
+  };
+  aspChatAttempt()
+    .catch(function(e){ if(e && e.status && e.status < 500) throw e; return new Promise(function(res){ setTimeout(res, 2000); }).then(aspChatAttempt); })
     .then(function(j){
       var reply = (j.data && j.data.reply) || 'I hit a snag — call us at (954) 931-7997 and we will take it from there.';
       aspBubble('speedy', reply);
