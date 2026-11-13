@@ -14,6 +14,7 @@ import {
   MARKETING_SYMPTOMS,
 } from '../src/data/marketingTaxonomy.js';
 import { buildPhase2DraftPages } from '../src/data/phase2DraftPages.js';
+import { GOOGLE_ACCOUNT_SEEDS } from '../src/data/googleAccounts.js';
 
 const prisma = new PrismaClient();
 
@@ -249,9 +250,18 @@ let phase2Corrected = 0;
   }
 }
 
+// Multi-account Google manager registry (2026-11-13): the REAL Google
+// accounts in the structure. Idempotent BY EMAIL and create-only
+// (update: {}) — a redeploy must never overwrite edits the owner made
+// in the registry, and statuses never auto-flip here.
+for (const seed of GOOGLE_ACCOUNT_SEEDS) {
+  await prisma.googleAccountLink.upsert({ where: { email: seed.email }, update: {}, create: seed });
+}
+
 const companyCount = await prisma.company.count();
 const providerCount = await prisma.provider.count();
 const marketingCityCount = await prisma.marketingCity.count();
 const landingPageCount = await prisma.landingPage.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected).`);
+const googleAccountCount = await prisma.googleAccountLink.count();
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected), ${googleAccountCount} Google account links.`);
 await prisma.$disconnect();

@@ -16,6 +16,7 @@ import { hydrateParts } from './partsRepo.js';
 import { hydrateFinance } from './financeRepo.js';
 import { hydrateNotificationSettings } from './notificationsRepo.js';
 import { hydrateReferrals } from './referralsRepo.js';
+import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -286,6 +287,13 @@ export async function hydrateStore() {
     await hydrateChatSessions();
   } catch (error) {
     console.error('hydrateChatSessions failed (chat insights degraded, platform continues)', error?.message || error);
+  }
+  // The Google account registry is an add-on too: a missing table
+  // mid-deploy degrades to an empty registry, never blocks hydration.
+  try {
+    await hydrateGoogleAccounts();
+  } catch (error) {
+    console.error('hydrateGoogleAccounts failed (Google account registry degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };

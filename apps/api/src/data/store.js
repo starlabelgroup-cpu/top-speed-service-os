@@ -98,6 +98,13 @@ export const store = {
   financeConnection: null,
   financeSnapshots: [],
   financeInvoices: [],
+  // Multi-account Google manager registry (Marketing OS): one record
+  // per Gmail account in the structure — email, label, role, lifecycle
+  // status (INVITED / ACTIVE / REVOKED) and its structured Google
+  // assets — hydrated from the GoogleAccountLink table via
+  // db/googleAccountsRepo. A registry only: statuses are updated by a
+  // human after Google confirms; nothing auto-flips.
+  googleAccountLinks: [],
   marketingCities: [],
   marketingBrands: [],
   marketingServices: [],

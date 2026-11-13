@@ -979,3 +979,34 @@ model SpeedyChatMessage {
 
   @@index([sessionId, createdAt])
 }
+
+// Multi-account Google manager registry (2026-11-13): Ramone runs the
+// Google presence — Business Profile, Local Services Ads, Google Ads,
+// Search Console — from more than one Gmail account, and directed a
+// registry inside Marketing OS where more Gmail accounts can be added,
+// each with its business profiles and ads accounts, all linked to the
+// Service OS. This table is that registry. It is a RECORD of the
+// structure, not a live Google connection: invites are sent and
+// accepted inside Google's own screens, and a human updates a status
+// here after the Google side confirms it. Statuses stay truthful —
+// nothing auto-flips an INVITED account to ACTIVE.
+model GoogleAccountLink {
+  id     String @id @default(uuid()) @db.Uuid
+  email  String @unique
+  label  String
+  // PRIMARY_OWNER / OWNER / MANAGER / ADMIN
+  role   String @default("MANAGER")
+  // INVITED / ACTIVE / REVOKED
+  status String @default("INVITED")
+  // Structured asset links, kept as JSON so the registry can grow new
+  // asset kinds without a migration each time:
+  // { gbpProfiles: [{ name, verificationStatus }],
+  //   adsAccounts: [{ customerId, name, status }],
+  //   lsaAccounts: [{ id, status }],
+  //   searchConsole: boolean }
+  assets Json   @default("{}")
+
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
