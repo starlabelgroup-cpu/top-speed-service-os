@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEO Dashboard — Search Console + Analytics | Top Speed Marketing OS</title>
+<meta name="description" content="The Top Speed Marketing OS SEO dashboard: Google Search Console rankings and GA4 traffic for topspeedserviceos.com and topspeedappliance.net, read live from Google — nothing estimated, nothing invented.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e8322e;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3;--amber:#9a6200}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:14.5px;font-family:inherit}
+.btn.blue{background:var(--blue)} .btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+main{max-width:1180px;margin:0 auto;padding:36px 24px 60px}
+h1{font-size:29px;color:var(--navy)}
+h2{font-size:21px;color:var(--navy);margin-bottom:10px}
+.sub{color:var(--muted);margin:8px 0 22px;line-height:1.55}
+.card{background:var(--light);border-radius:14px;padding:22px;margin-bottom:22px}
+.card.white{background:#fff;border:1px solid var(--line)}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c9d8ec;border-radius:10px;font-size:15px;font-family:inherit;background:#fff}
+label{font-weight:700;color:var(--navy);font-size:13px;display:block;margin-bottom:6px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:8px 7px}
+td{border-bottom:1px solid var(--line);padding:8px 7px;vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-weight:800;font-size:11px;border-radius:99px;padding:3px 9px;letter-spacing:.04em}
+.pill.ok{background:#e2f3ea;color:var(--green)} .pill.wait{background:#fdf0d5;color:var(--amber)} .pill.off{background:#f6e3e3;color:#a12}
+.msg{font-weight:600;min-height:22px;margin-top:10px;white-space:pre-wrap}
+.msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px}
+.stat{background:var(--navy);color:#fff;border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:1.45rem;line-height:1.1}
+.stat span{color:#b9cdec;font-size:12.5px}
+ol.steps{margin:10px 0 4px 20px;line-height:1.65;color:var(--ink)}
+ol.steps li{margin-bottom:6px}
+.mono{font-family:'Roboto Mono',monospace;font-size:12.5px;word-break:break-all}
+footer{background:#04122e;color:#9db6d8;padding:32px 24px;text-align:center;font-size:14px}
+footer strong{color:#fff}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/speedy-widget.js" defer></script></head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/marketing-os">Agency hub</a>
+    <a href="/marketing-os/studio">Page Studio</a>
+    <a href="/local">Local OS</a>
+    <a href="/portal">Portal</a>
+    <a href="#" id="mosOut" style="display:none;" onclick="seoSignOut(); return false;">Sign out</a>
+  <a class="tse-call" href="tel:+19549317997">📞 Call</a></nav>
+</header>
+
+<main>
+  <h1>SEO Dashboard — Search Console + Analytics</h1>
+  <p class="sub">Google Search Console rankings and GA4 traffic for the Top Speed sites, read live from Google by the Service OS. Real numbers only: when the connection isn't set up — or a property has no data yet — this page says so instead of estimating.</p>
+
+  <div class="card" id="seoLogin">
+    <div class="row">
+      <div><label for="seoEmail">Team email</label><input id="seoEmail" type="email" placeholder="you@topspeedappliance.net"></div>
+      <div><label for="seoPass">Password</label><input id="seoPass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div style="margin-top:14px;"><button class="btn blue" onclick="seoSignIn()">Sign in to the SEO Dashboard</button></div>
+    <div class="msg" id="seoLoginMsg"></div>
+  </div>
+
+  <div id="seoApp" style="display:none;">
+    <div class="card white" id="seoStatusCard">
+      <h2>Connection</h2>
+      <div id="seoStatusBody"><p style="color:var(--muted);">Checking the Google connection…</p></div>
+    </div>
+
+    <div id="seoData" style="display:none;">
+      <div class="row" style="margin-bottom:18px;">
+        <div><label for="seoProp">Property (tables below)</label>
+          <select id="seoProp" onchange="seoLoadTables()">
+            <option value="https://topspeedserviceos.com/">topspeedserviceos.com (Search Console)</option>
+            <option value="https://topspeedappliance.net/">topspeedappliance.net (Search Console)</option>
+          </select></div>
+        <div><label for="seoDays">Date range</label>
+          <select id="seoDays" onchange="seoLoadAll()">
+            <option value="7">Last 7 days</option>
+            <option value="28" selected>Last 28 days</option>
+            <option value="90">Last 90 days</option>
+          </select></div>
+        <div style="display:flex;align-items:flex-end;"><button class="btn blue" style="width:100%;" onclick="seoLoadAll()">Refresh</button></div>
+      </div>
+
+      <div class="card white">
+        <h2>Search Console — by property</h2>
+        <div id="seoProps"><p style="color:var(--muted);">Loading…</p></div>
+      </div>
+
+      <div class="card white">
+        <h2>Google Analytics — topspeedserviceos.com (GA4)</h2>
+        <div id="seoGa4"><p style="color:var(--muted);">Loading…</p></div>
+      </div>
+
+      <div class="card white">
+        <h2>Top search queries</h2>
+        <div id="seoQueries"><p style="color:var(--muted);">Loading…</p></div>
+      </div>
+
+      <div class="card white">
+        <h2>Top pages</h2>
+        <div id="seoPages"><p style="color:var(--muted);">Loading…</p></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer><strong>Top Speed Appliance LLC</strong> · SEO Dashboard · Internal — figures come straight from Google Search Console and GA4; nothing is modeled or estimated.</footer>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+function tok(){ try{ return localStorage.getItem('tsos_token')||localStorage.getItem('tsos_studio_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function num(n){ return n==null?'–':Number(n).toLocaleString('en-US'); }
+function pct(x){ return x==null?'–':(Number(x)*100).toFixed(1)+'%'; }
+function pos(x){ return x==null?'–':Number(x).toFixed(1); }
+function mf(path){
+  return fetch(API+path,{headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()}})
+    .then(function(r){ return r.text().then(function(t){
+      var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(!r.ok) throw new Error(j.error||('status '+r.status));
+      return j;
+    }); });
+}
+function seoSignIn(){
+  var email=document.getElementById('seoEmail').value.trim();
+  var pass=document.getElementById('seoPass').value;
+  var msg=document.getElementById('seoLoginMsg');
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      var t=j.token||(j.data&&j.data.token); if(!t) throw new Error('No token returned');
+      try{ localStorage.setItem('tsos_token', t); }catch(e){}
+      seoShow();
+    })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function seoSignOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
+function seoShow(){
+  document.getElementById('seoLogin').style.display='none';
+  document.getElementById('seoApp').style.display='';
+  document.getElementById('mosOut').style.display='';
+  seoLoadStatus();
+}
+
+function grantStepsHtml(steps){
+  var items=(steps||[]).map(function(s){ return '<li>'+esc(s)+'</li>'; }).join('');
+  return '<p><span class="pill off">NOT CONNECTED YET</span></p>'
+    + '<p style="margin-top:10px;line-height:1.6;">The dashboard is built and live — it needs one read-only Google service account before real numbers can flow. The steps (owner, one time):</p>'
+    + '<ol class="steps">'+items+'</ol>'
+    + '<p style="color:var(--muted);line-height:1.6;">Configuration lives in two API environment variables: <span class="mono">GOOGLE_SEO_CLIENT_EMAIL</span> and <span class="mono">GOOGLE_SEO_PRIVATE_KEY</span>. Until they are set, every figure on this page stays an honest “not connected” — nothing is estimated.</p>';
+}
+
+function seoLoadStatus(){
+  var body=document.getElementById('seoStatusBody');
+  body.innerHTML='<p style="color:var(--muted);">Checking the Google connection…</p>';
+  mf('/marketing-os/seo/status').then(function(j){
+    var d=j.data||{};
+    if(!d.configured){
+      body.innerHTML=grantStepsHtml(d.grantSteps);
+      document.getElementById('seoData').style.display='none';
+      return;
+    }
+    var html='<p><span class="pill ok">CONNECTED</span> <span style="color:var(--muted);">Service account:</span> <span class="mono">'+esc(d.serviceAccountEmail||'—')+'</span> · <span style="color:var(--muted);">GA4 property:</span> '+esc(d.ga4PropertyId||'')+'</p>';
+    if(d.accessError){
+      html+='<p style="margin-top:10px;color:var(--red);font-weight:600;">Google could not be reached with these credentials yet: '+esc(d.accessError)+'</p>';
+    }
+    if(d.properties&&d.properties.length){
+      html+='<div style="margin-top:12px;">'+d.properties.map(function(p){
+        return '<p style="margin:4px 0;">'+(p.granted?'<span class="pill ok">ACCESS GRANTED</span>':'<span class="pill wait">NO ACCESS YET</span>')+' <strong>'+esc(p.label)+'</strong> <span class="mono" style="color:var(--muted);">'+esc(p.siteUrl)+'</span>'+(p.permissionLevel?' · '+esc(p.permissionLevel):'')+'</p>';
+      }).join('')+'</div>';
+      html+='<p style="color:var(--muted);margin-top:8px;">A property with no access yet needs the service account email added as a user on that property in Search Console — the numbers for it appear here automatically once granted.</p>';
+    }
+    body.innerHTML=html;
+    document.getElementById('seoData').style.display='';
+    seoLoadAll();
+  }).catch(function(e){
+    body.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>';
+  });
+}
+
+function days(){ return document.getElementById('seoDays').value||'28'; }
+function prop(){ return document.getElementById('seoProp').value; }
+
+function seoLoadAll(){ seoLoadOverview(); seoLoadTables(); }
+
+function stat(label,value){
+  return '<div class="stat"><b>'+value+'</b><span>'+label+'</span></div>';
+}
+
+function seoLoadOverview(){
+  var propsEl=document.getElementById('seoProps');
+  var ga4El=document.getElementById('seoGa4');
+  propsEl.innerHTML='<p style="color:var(--muted);">Loading…</p>';
+  ga4El.innerHTML='<p style="color:var(--muted);">Loading…</p>';
+  mf('/marketing-os/seo/overview?days='+encodeURIComponent(days())).then(function(j){
+    var d=j.data||{};
+    if(!d.configured){ propsEl.innerHTML='<p style="color:var(--muted);">Not connected yet — see the connection steps above.</p>'; ga4El.innerHTML=''; return; }
+    if(d.accessError){
+      propsEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(d.accessError)+'</p>';
+    } else {
+      propsEl.innerHTML=(d.properties||[]).map(function(p){
+        if(!p.access) return '<div style="margin-bottom:18px;"><h3 style="color:var(--navy);margin-bottom:6px;">'+esc(p.label)+' <span class="pill wait">NO ACCESS YET</span></h3><p style="color:var(--muted);line-height:1.55;">'+esc(p.reason||'No access yet.')+'</p></div>';
+        return '<div style="margin-bottom:18px;"><h3 style="color:var(--navy);margin-bottom:8px;">'+esc(p.label)+'</h3>'
+          +'<div class="stats">'
+          +stat('clicks',num(p.clicks))+stat('impressions',num(p.impressions))+stat('avg. CTR',pct(p.ctr))+stat('avg. position',pos(p.position))
+          +'</div><p style="color:var(--muted);font-size:13px;">Search Console window: '+esc(p.startDate||'')+' → '+esc(p.endDate||'')+' (Google reports with a ~2-day lag).</p></div>';
+      }).join('')||'<p style="color:var(--muted);">No properties yet.</p>';
+    }
+    var g=d.ga4||{};
+    if(!g.access){
+      ga4El.innerHTML='<p style="color:var(--muted);line-height:1.55;">GA4 has not answered for property '+esc(g.propertyId||'')+' yet'+(g.reason?': '+esc(g.reason):'.')+' The service account needs Viewer access on the GA4 property.</p>';
+    } else {
+      ga4El.innerHTML='<div class="stats">'+stat('sessions',num(g.sessions))+stat('users',num(g.users))+stat('conversions',num(g.conversions))+'</div>'
+        +'<p style="color:var(--muted);font-size:13px;">GA4 window: '+esc(g.startDate||'')+' → '+esc(g.endDate||'')+'.</p>';
+    }
+  }).catch(function(e){
+    propsEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>';
+    ga4El.innerHTML='';
+  });
+}
+
+function tableHtml(headers, rowsHtml, emptyText){
+  if(!rowsHtml) return '<p style="color:var(--muted);">'+emptyText+'</p>';
+  return '<div style="overflow-x:auto;"><table><thead><tr>'+headers+'</tr></thead><tbody>'+rowsHtml+'</tbody></table></div>';
+}
+
+function seoLoadTables(){
+  var qEl=document.getElementById('seoQueries');
+  var pEl=document.getElementById('seoPages');
+  qEl.innerHTML='<p style="color:var(--muted);">Loading…</p>';
+  pEl.innerHTML='<p style="color:var(--muted);">Loading…</p>';
+  var base='?property='+encodeURIComponent(prop())+'&days='+encodeURIComponent(days());
+  mf('/marketing-os/seo/queries'+base).then(function(j){
+    var d=j.data||{};
+    if(d.configured&&d.access===false){
+      qEl.innerHTML='<p style="color:var(--muted);line-height:1.55;">'+esc(d.reason||'No access to this property yet.')+'</p>';
+      return;
+    }
+    var rows=(d.rows||[]).map(function(r){
+      return '<tr><td>'+esc(r.query)+'</td><td class="num">'+num(r.clicks)+'</td><td class="num">'+num(r.impressions)+'</td><td class="num">'+pct(r.ctr)+'</td><td class="num">'+pos(r.position)+'</td></tr>';
+    }).join('');
+    qEl.innerHTML=tableHtml('<th>Query</th><th class="num">Clicks</th><th class="num">Impressions</th><th class="num">CTR</th><th class="num">Avg. position</th>', rows, 'No query data in this window yet — normal for a young property; Search Console fills in as Google indexes and ranks the pages.');
+  }).catch(function(e){ qEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>'; });
+
+  mf('/marketing-os/seo/pages'+base).then(function(j){
+    var d=j.data||{};
+    if(d.configured&&d.access===false){
+      pEl.innerHTML='<p style="color:var(--muted);line-height:1.55;">'+esc(d.reason||'No access to this property yet.')+'</p>';
+      return;
+    }
+    var showGa4=(d.rows||[]).some(function(r){ return r.ga4Sessions!=null; });
+    var rows=(d.rows||[]).map(function(r){
+      return '<tr><td class="mono">'+esc(r.page)+'</td><td class="num">'+num(r.clicks)+'</td><td class="num">'+num(r.impressions)+'</td><td class="num">'+pct(r.ctr)+'</td><td class="num">'+pos(r.position)+'</td>'+(showGa4?'<td class="num">'+(r.ga4Sessions==null?'–':num(r.ga4Sessions))+'</td>':'')+'</tr>';
+    }).join('');
+    pEl.innerHTML=tableHtml('<th>Page</th><th class="num">Clicks</th><th class="num">Impressions</th><th class="num">CTR</th><th class="num">Avg. position</th>'+(showGa4?'<th class="num">GA4 sessions</th>':''), rows, 'No page data in this window yet — pages appear here once Google has impressions for them.')
+      +(showGa4?'<p style="color:var(--muted);font-size:13px;margin-top:8px;">GA4 sessions join by page path for the flagship property (GA4 measures topspeedserviceos.com).</p>':'');
+  }).catch(function(e){ pEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>'; });
+}
+
+if(tok()) seoShow();
+</script>
+
+<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1{font-family:'Anton',Impact,sans-serif} h2,h3{font-family:'Space Grotesk',Inter,Arial,sans-serif}</style>
+</body>
+</html>
