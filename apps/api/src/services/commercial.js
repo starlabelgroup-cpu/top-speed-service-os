@@ -80,6 +80,11 @@ export async function createCommercialBooking({ companyId, account, facility, eq
     source: 'COMMERCIAL',
     city: facility.city,
     zip: facility.zip,
+    // Facilities are validated into the covered area model at creation,
+    // so a commercial booking always carries its area explicitly.
+    area: facility.city,
+    areaStatus: 'IN_AREA',
+    serviceAddress: facility.address || null,
     appliance: equipment?.type || 'Commercial Equipment',
     issue: workOrder.issue,
     preferredWindow: null,

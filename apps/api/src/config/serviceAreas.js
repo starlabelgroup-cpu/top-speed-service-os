@@ -26,3 +26,70 @@ export function findServiceArea({ city, zip }) {
 export function areasForZip(zip) {
   return SERVICE_AREAS.filter((area) => area.zips.includes(zip)).map(({ city }) => city);
 }
+
+/**
+ * Top Speed CRM — Service Book area resolution (2026-11-12).
+ *
+ * Every booking resolves its service address into the platform's area
+ * model at intake, and the area rides the record end-to-end (queue,
+ * dispatch board, slot capacity). Resolution is deterministic and
+ * honest — it never invents coverage:
+ *
+ * - A customer-stated city that names one of the 12 covered cities is
+ *   authoritative → that area, IN_AREA, source CITY. (If the ZIP is not
+ *   in that city's known ZIP list the booking still belongs to the
+ *   named city; the mismatch is flagged for the setter, not rejected.)
+ * - No covered city named, but the ZIP maps to exactly one covered
+ *   area → that area, IN_AREA, source ZIP.
+ * - No covered city named and the ZIP is shared by several covered
+ *   areas → no area guessed: AREA_REVIEW, source ZIP_AMBIGUOUS. A
+ *   Service Setter resolves it (POST /bookos/bookings/:id/resolve-area)
+ *   before an appointment can be set.
+ * - Anything else → OUT_OF_AREA. The lead is still recorded (it is the
+ *   expansion/waitlist signal), but it is never promised service, never
+ *   enters the setter queue or slot capacity, and no booking
+ *   confirmation with service terms is sent for it.
+ */
+export const AREA_STATUSES = ['IN_AREA', 'AREA_REVIEW', 'OUT_OF_AREA'];
+
+export function normalizeCityName(city) {
+  const wanted = String(city || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  if (!wanted) return null;
+  return SERVICE_CITIES.find((c) => c.toLowerCase() === wanted) || null;
+}
+
+export function resolveArea({ city, zip } = {}) {
+  const zipAreas = areasForZip(String(zip || '').trim());
+  const canonicalCity = normalizeCityName(city);
+  if (canonicalCity) {
+    return {
+      area: canonicalCity,
+      areaStatus: 'IN_AREA',
+      areaSource: 'CITY',
+      zipAreas,
+      zipMismatch: zipAreas.length > 0 && !zipAreas.includes(canonicalCity),
+    };
+  }
+  if (zipAreas.length === 1) {
+    return { area: zipAreas[0], areaStatus: 'IN_AREA', areaSource: 'ZIP', zipAreas, zipMismatch: false };
+  }
+  if (zipAreas.length > 1) {
+    return { area: null, areaStatus: 'AREA_REVIEW', areaSource: 'ZIP_AMBIGUOUS', zipAreas, zipMismatch: false };
+  }
+  return { area: null, areaStatus: 'OUT_OF_AREA', areaSource: 'NONE', zipAreas, zipMismatch: false };
+}
+
+/**
+ * The area a booking operationally belongs to. New bookings carry an
+ * explicit `area`; records created before the area model hydrate with
+ * one derived from their city, so every surface can rely on this.
+ */
+export function effectiveArea(booking) {
+  if (booking?.area) return booking.area;
+  return normalizeCityName(booking?.city);
+}
+
+export function effectiveAreaStatus(booking) {
+  if (booking?.areaStatus) return booking.areaStatus;
+  return effectiveArea(booking) ? 'IN_AREA' : 'OUT_OF_AREA';
+}

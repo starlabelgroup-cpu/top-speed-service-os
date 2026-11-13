@@ -65,6 +65,9 @@ export const store = {
   notificationSettings: null,
   // Public web intake records (forms + Speedy-assisted flows), hydrated from the Connection table.
   connections: [],
+  // Top Speed CRM staff notes on customer records (CrmNote table),
+  // newest appended last; the CRM 360 sorts when it renders.
+  crmNotes: [],
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
   // Advertiser banner creatives, hydrated from the Banner table.

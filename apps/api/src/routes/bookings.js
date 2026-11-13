@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
-import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
+import { resolveArea, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistAssignment, persistAssignmentsForBooking, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -61,18 +61,19 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   }
 
   const { customer, city, zip, appliance, issue, preferredWindow } = parsed.data;
-  if (!SERVICE_CITIES.includes(city)) {
-    return res.status(422).json({ error: 'City is outside the current service area', serviceCities: SERVICE_CITIES });
-  }
-  if (!SERVICE_ZIPS.has(zip)) {
-    return res.status(422).json({ error: 'ZIP is outside the current service area', serviceCities: areasForZip(zip) });
-  }
+  // Service Book book-by-area: the address resolves into the area model
+  // instead of being rejected at the border. Covered addresses book as
+  // always; out-of-area leads are recorded on the expansion waitlist
+  // (flagged, never promised service, no confirmation with service
+  // terms is sent for them).
+  const resolution = resolveArea({ city, zip });
+  const canonicalCity = SERVICE_CITIES.includes(city) ? city : resolution.area || city;
 
   const customerRecord = {
     id: createId(),
     companyId: req.companyId,
     ...customer,
-    city,
+    city: canonicalCity,
     zip,
     createdAt: new Date().toISOString(),
   };
@@ -85,8 +86,11 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     customer: customerRecord,
     referenceCode: createReferenceCode(),
     source: 'API',
-    city,
+    city: canonicalCity,
     zip,
+    area: resolution.area,
+    areaStatus: resolution.areaStatus,
+    serviceAddress: customer.address || null,
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
@@ -109,6 +113,12 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     diagnosticFee: booking.diagnosticFee,
     feeStatus: booking.feeStatus,
   });
+  addBookingEvent(booking, 'AREA_RESOLVED', 'service-book', {
+    area: resolution.area,
+    areaStatus: resolution.areaStatus,
+    areaSource: resolution.areaSource,
+    zipAreas: resolution.zipAreas,
+  });
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
@@ -118,9 +128,11 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     entityType: 'BOOKING',
     entityId: booking.id,
     referenceCode: booking.referenceCode,
-    details: { appliance: booking.appliance, city: booking.city, status: booking.status },
+    details: { appliance: booking.appliance, city: booking.city, area: booking.area, areaStatus: booking.areaStatus, status: booking.status },
   });
-  notifyBookingConfirmation(booking, booking.source);
+  if (booking.areaStatus !== 'OUT_OF_AREA') {
+    notifyBookingConfirmation(booking, booking.source);
+  }
   notifyNewBooking(booking, booking.source);
 
   return res.status(201).json({ data: publicBooking(booking) });

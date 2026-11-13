@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, speedyStatus } from '../services/speedy.js';
-import { areasForZip, SERVICE_CITIES, SERVICE_ZIPS } from '../config/serviceAreas.js';
+import { normalizeCityName, resolveArea } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking } from '../services/notifications.js';
@@ -152,13 +152,13 @@ router.post('/speedy/book', async (req, res) => {
   }
   const { customer, city, zip, appliance, issue, preferredWindow, source } = parsed.data;
   const attribution = normalizeAttribution(parsed.data);
-  const canonicalCity = SERVICE_CITIES.find((c) => c.toLowerCase() === city.toLowerCase());
-  if (!canonicalCity) {
-    return res.status(422).json({ error: 'City is outside the current service area', serviceCities: SERVICE_CITIES });
-  }
-  if (!SERVICE_ZIPS.has(zip)) {
-    return res.status(422).json({ error: 'ZIP is outside the current service area', serviceCities: areasForZip(zip) });
-  }
+  // Service Book book-by-area: resolve the address into the area model
+  // instead of rejecting at the border. Out-of-area requests are
+  // recorded on the expansion waitlist — flagged, honestly messaged,
+  // never promised service and never sent a booking confirmation with
+  // service terms.
+  const resolution = resolveArea({ city, zip });
+  const canonicalCity = normalizeCityName(city) || resolution.area || city.trim();
 
   const customerRecord = {
     id: createId(),
@@ -180,6 +180,9 @@ router.post('/speedy/book', async (req, res) => {
     ...(attribution ? { attribution } : {}),
     city: canonicalCity,
     zip,
+    area: resolution.area,
+    areaStatus: resolution.areaStatus,
+    serviceAddress: customer.address || null,
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
@@ -194,6 +197,12 @@ router.post('/speedy/book', async (req, res) => {
     updatedAt: new Date().toISOString(),
   };
   addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus });
+  addBookingEvent(booking, 'AREA_RESOLVED', 'service-book', {
+    area: resolution.area,
+    areaStatus: resolution.areaStatus,
+    areaSource: resolution.areaSource,
+    zipAreas: resolution.zipAreas,
+  });
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
@@ -203,9 +212,11 @@ router.post('/speedy/book', async (req, res) => {
     entityType: 'BOOKING',
     entityId: booking.id,
     referenceCode: booking.referenceCode,
-    details: { appliance: booking.appliance, city: booking.city, status: booking.status },
+    details: { appliance: booking.appliance, city: booking.city, area: booking.area, areaStatus: booking.areaStatus, status: booking.status },
   });
-  notifyBookingConfirmation(booking, booking.source);
+  if (booking.areaStatus !== 'OUT_OF_AREA') {
+    notifyBookingConfirmation(booking, booking.source);
+  }
   notifyNewBooking(booking, booking.source);
   // ApplianceReferral attribution: tag the booking + open the reward
   // track. Wrapped so a referral problem can never fail a booking.
@@ -230,9 +241,23 @@ router.post('/speedy/book', async (req, res) => {
       referenceCode: booking.referenceCode,
       status: booking.status,
       city: booking.city,
+      area: booking.area,
+      areaStatus: booking.areaStatus,
       appliance: booking.appliance,
       preferredWindow: booking.preferredWindow,
       diagnosticFee: 99,
+      ...(booking.areaStatus === 'OUT_OF_AREA'
+        ? {
+            areaMessage:
+              'That address is outside our current service area, so we have not booked a visit. We saved your request on our expansion list and will reach out if we start serving your area — no charge and no appointment has been made.',
+          }
+        : {}),
+      ...(booking.areaStatus === 'AREA_REVIEW'
+        ? {
+            areaMessage:
+              'We have your request. A Service Setter will confirm the exact service area for your address when they call to set your appointment.',
+          }
+        : {}),
     },
   });
 });

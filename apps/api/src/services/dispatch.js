@@ -8,8 +8,18 @@ function scoreProvider(provider, booking) {
   return score;
 }
 
-export function matchProviders(booking) {
-  const candidates = store.providers
+/**
+ * Read-only provider suggestions — the same scoring the hybrid matcher
+ * uses, with NO side effects: no assignments are created and the
+ * booking is not touched. This is what Speedy's CRM assist shows a
+ * Service Setter; turning a suggestion into a dispatch still goes
+ * through matchProviders() + a human approval, exactly as before.
+ * The area a provider is scored against is the booking's resolved
+ * Service Book area (falling back to its city for older records).
+ */
+export function suggestProviders(booking, { limit = 5 } = {}) {
+  const area = booking.area || booking.city;
+  return store.providers
     .filter((provider) => provider.active)
     .map((provider) => ({
       providerId: provider.id,
@@ -19,14 +29,19 @@ export function matchProviders(booking) {
       rating: provider.rating,
       specialties: provider.specialties,
       serviceCities: provider.serviceCities,
-      matchScore: scoreProvider(provider, booking),
+      matchScore: scoreProvider(provider, { ...booking, city: area }),
       reasons: [
         provider.specialties.includes(booking.appliance) ? 'Appliance specialty match' : 'General appliance coverage',
-        provider.serviceCities.includes(booking.city) ? 'Service-area match' : 'Service-area review required',
+        provider.serviceCities.includes(area) ? `Serves the ${area} area` : 'Service-area review required',
       ],
     }))
     .filter((candidate) => candidate.matchScore >= 65)
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .sort((a, b) => b.matchScore - a.matchScore)
+    .slice(0, limit);
+}
+
+export function matchProviders(booking) {
+  const candidates = suggestProviders(booking, { limit: Number.POSITIVE_INFINITY });
 
   const assignments = candidates.map((candidate) => {
     const assignment = {

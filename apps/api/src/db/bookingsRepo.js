@@ -1,5 +1,7 @@
 import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
+import { SERVICE_CITIES } from '../config/serviceAreas.js';
+import { hydrateCrmNotes } from './crmRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
 import { hydrateVideoRequests } from './videoRepo.js';
@@ -96,6 +98,9 @@ function bookingToRow(booking) {
     ...attributionToColumns(booking.attribution),
     referralCode: booking.referralCode ?? null,
     referredByCustomerId: booking.referredByCustomerId ?? null,
+    area: booking.area ?? null,
+    areaStatus: booking.areaStatus ?? 'IN_AREA',
+    serviceAddress: booking.serviceAddress ?? null,
     history: booking.history ?? [],
     dispatch: booking.dispatch ?? null,
     appointment: booking.appointment ?? null,
@@ -120,6 +125,12 @@ function bookingFromRow(row, customerRecord) {
     ...(attribution ? { attribution } : {}),
     referralCode: row.referralCode ?? null,
     referredByCustomerId: row.referredByCustomerId ?? null,
+    // Service Book area model: rows written before the area columns
+    // existed carry no area — derive it from the city so every surface
+    // (queue, board, capacity) sees one consistent area per booking.
+    area: row.area ?? (SERVICE_CITIES.includes(row.city) ? row.city : null),
+    areaStatus: row.areaStatus ?? (SERVICE_CITIES.includes(row.city) ? 'IN_AREA' : 'OUT_OF_AREA'),
+    serviceAddress: row.serviceAddress ?? null,
     city: row.city,
     zip: row.zip,
     appliance: row.appliance,
@@ -260,6 +271,13 @@ export async function hydrateStore() {
     referralProgram = await hydrateReferrals();
   } catch (error) {
     console.error('hydrateReferrals failed (referral program degraded, platform continues)', error?.message || error);
+  }
+  // Top Speed CRM notes are an add-on too: a missing CrmNote table
+  // mid-deploy degrades to an empty notes list, never blocks hydration.
+  try {
+    await hydrateCrmNotes();
+  } catch (error) {
+    console.error('hydrateCrmNotes failed (CRM notes degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };

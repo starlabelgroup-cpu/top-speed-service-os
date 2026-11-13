@@ -180,6 +180,16 @@ model ServiceRequest {
   // across cold starts (before this, the linkage lived only in memory).
   referralCode                      String?
   referredByCustomerId              String?       @db.Uuid
+  // Top Speed CRM — Service Book area model (2026-11-12): the booking's
+  // service address resolved into the platform's 12-area model at
+  // intake (see config/serviceAreas.js resolveArea). areaStatus is
+  // IN_AREA / AREA_REVIEW (covered ZIP, ambiguous area — a setter
+  // resolves it) / OUT_OF_AREA (recorded on the expansion waitlist,
+  // never promised service). serviceAddress snapshots the address the
+  // job was booked at, so a customer who moves keeps per-job addresses.
+  area                              String?
+  areaStatus                        String        @default("IN_AREA")
+  serviceAddress                    String?
   // Working-state documents the API services operate on. The relational
   // core (customer, status, fee, assignments) stays in columns/tables;
   // these JSON columns carry the booking's event history, its dispatch
@@ -205,6 +215,23 @@ model ServiceRequest {
 
   @@index([companyId, status])
   @@index([companyId, zip])
+  @@index([companyId, area])
+  @@index([companyId, areaStatus])
+}
+
+// Top Speed CRM staff notes (2026-11-12): free-text notes the team keeps
+// on a customer record, shown in the CRM customer 360. Plain columns in
+// the Connection style — the note's customer/company ids are the record.
+model CrmNote {
+  id         String   @id @default(uuid()) @db.Uuid
+  companyId  String   @db.Uuid
+  customerId String   @db.Uuid
+  author     String
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([companyId])
 }
 
 model Provider {

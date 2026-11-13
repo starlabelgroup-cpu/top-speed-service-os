@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
-import { SERVICE_CITIES } from '../config/serviceAreas.js';
+import { areasForZip, effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
 import { persistBooking } from '../db/bookingsRepo.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
@@ -83,12 +83,17 @@ router.get('/bookos/slots', ...staffOnly, (req, res) => {
 
 /**
  * Setter queue: bookings still PENDING_DISPATCH — new requests a setter
- * has not confirmed with the customer yet — oldest first.
+ * has not confirmed with the customer yet — oldest first. Service Book
+ * area rules: out-of-area requests never enter this queue (they sit on
+ * the expansion waitlist); area-review requests appear flagged so a
+ * setter resolves the area first. ?area=<city> narrows to one area.
  */
 router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
   const now = Date.now();
+  const areaFilter = String(req.query.area || '').trim();
   const queue = visibleBookings(req)
-    .filter((booking) => booking.status === 'PENDING_DISPATCH')
+    .filter((booking) => booking.status === 'PENDING_DISPATCH' && effectiveAreaStatus(booking) !== 'OUT_OF_AREA')
+    .filter((booking) => !areaFilter || effectiveArea(booking) === areaFilter || booking.city === areaFilter)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map((booking) => ({
       bookingId: booking.id,
@@ -100,6 +105,10 @@ router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
       customerPhone: booking.customer?.phone || null,
       city: booking.city,
       zip: booking.zip,
+      area: effectiveArea(booking),
+      areaStatus: effectiveAreaStatus(booking),
+      needsAreaReview: effectiveAreaStatus(booking) === 'AREA_REVIEW',
+      serviceAddress: booking.serviceAddress || booking.customer?.address || null,
       appliance: booking.appliance,
       payment: paymentSummary(booking.id),
       issue: booking.issue,
@@ -126,7 +135,15 @@ router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
   if (booking.appointment?.status === 'SET') {
     return res.status(409).json({ error: 'Appointment already set; use the reschedule endpoint to move it' });
   }
-  const slot = slotForArea({ date, windowId: window, city: booking.city });
+  const areaStatus = effectiveAreaStatus(booking);
+  if (areaStatus === 'OUT_OF_AREA') {
+    return res.status(409).json({ error: 'This request is outside the service area — it is on the expansion waitlist and cannot take an appointment' });
+  }
+  const area = effectiveArea(booking);
+  if (areaStatus !== 'IN_AREA' || !area) {
+    return res.status(409).json({ error: 'Resolve the service area first (POST /bookos/bookings/:id/resolve-area), then set the appointment' });
+  }
+  const slot = slotForArea({ date, windowId: window, city: area });
   if (slot.remaining <= 0) {
     return res.status(409).json({ error: 'That window is full for this service area', slot });
   }
@@ -181,7 +198,7 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (r
   if (booking.appointment?.status !== 'SET') {
     return res.status(409).json({ error: 'No appointment is set yet; use POST /bookos/appointments to set one' });
   }
-  const slot = slotForArea({ date, windowId: window, city: booking.city, excludeBookingId: booking.id });
+  const slot = slotForArea({ date, windowId: window, city: effectiveArea(booking) || booking.city, excludeBookingId: booking.id });
   if (slot.remaining <= 0) {
     return res.status(409).json({ error: 'That window is full for this service area', slot });
   }
@@ -273,10 +290,19 @@ const BOARD_STATUSES = ['PENDING_DISPATCH', 'MATCH_PENDING_APPROVAL', 'CONFIRMED
  */
 router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
   const date = todayDateString();
+  // Service Book Pro area-first working views: ?area=<city> narrows the
+  // whole board to one service area; ?window=<id> narrows to bookings
+  // whose set appointment (or preferred window, before one is set)
+  // falls in that window. Out-of-area requests are never on the board.
+  const areaFilter = String(req.query.area || '').trim();
+  const windowFilter = String(req.query.window || '').trim();
   const todays = visibleBookings(req).filter(
     (booking) =>
       BOARD_STATUSES.includes(booking.status) &&
-      (booking.createdAt.slice(0, 10) === date || booking.appointment?.date === date),
+      effectiveAreaStatus(booking) !== 'OUT_OF_AREA' &&
+      (booking.createdAt.slice(0, 10) === date || booking.appointment?.date === date) &&
+      (!areaFilter || effectiveArea(booking) === areaFilter) &&
+      (!windowFilter || booking.appointment?.window === windowFilter || (!booking.appointment && booking.preferredWindow === windowFilter)),
   );
   const groups = {};
   const counts = {};
@@ -289,6 +315,9 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
         referenceCode: booking.referenceCode || null,
         source: booking.source || null,
         city: booking.city,
+        area: effectiveArea(booking),
+        areaStatus: effectiveAreaStatus(booking),
+        serviceAddress: booking.serviceAddress || booking.customer?.address || null,
         appliance: booking.appliance,
         customerName: booking.customer?.name || null,
         payment: paymentSummary(booking.id),
@@ -299,7 +328,132 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
     groups[status] = items;
     counts[status] = items.length;
   }
-  return res.json({ data: { date, counts, groups } });
+  return res.json({ data: { date, filters: { area: areaFilter || null, window: windowFilter || null }, counts, groups } });
+});
+
+/**
+ * Service Book Pro — area day view. One service area, one day: the jobs
+ * holding appointments in window order (route sanity for the setter
+ * working that area), plus the area's still-unappointed requests.
+ */
+router.get('/bookos/area-day', ...staffOnly, (req, res) => {
+  const parsed = z
+    .object({ date: dateParam, area: z.string().trim().min(2) })
+    .safeParse({ date: req.query.date, area: req.query.area });
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Query ?date=YYYY-MM-DD and ?area=<covered city> are required', details: parsed.error.flatten() });
+  }
+  const { date, area } = parsed.data;
+  if (!SERVICE_CITIES.includes(area)) {
+    return res.status(422).json({ error: 'Unknown service area', serviceAreas: SERVICE_CITIES });
+  }
+  const inArea = visibleBookings(req).filter(
+    (booking) => effectiveArea(booking) === area && effectiveAreaStatus(booking) === 'IN_AREA' && booking.status !== 'CANCELLED',
+  );
+  const brief = (booking) => ({
+    bookingId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    status: booking.status,
+    customerName: booking.customer?.name || null,
+    customerPhone: booking.customer?.phone || null,
+    serviceAddress: booking.serviceAddress || booking.customer?.address || null,
+    zip: booking.zip,
+    appliance: booking.appliance,
+    issue: booking.issue,
+    appointment: appointmentSummary(booking),
+    providerId: booking.dispatch?.providerId || null,
+  });
+  const windows = APPOINTMENT_WINDOWS.map((window) => ({
+    window: window.id,
+    label: window.label,
+    slot: slotForArea({ date, windowId: window.id, city: area }),
+    jobs: inArea
+      .filter((booking) => booking.appointment?.status === 'SET' && booking.appointment.date === date && booking.appointment.window === window.id)
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .map(brief),
+  }));
+  const unappointed = inArea
+    .filter((booking) => booking.appointment?.status !== 'SET' && booking.status === 'PENDING_DISPATCH')
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map(brief);
+  return res.json({ data: { date, area, windows, unappointed } });
+});
+
+/**
+ * Expansion waitlist — every request the area model could not place:
+ * OUT_OF_AREA (outside the covered footprint entirely) and AREA_REVIEW
+ * (covered ZIP, ambiguous area). These are demand signals for expansion
+ * decisions; nobody on this list has been promised service.
+ */
+router.get('/bookos/waitlist', ...staffOnly, (req, res) => {
+  const items = visibleBookings(req)
+    .filter((booking) => ['OUT_OF_AREA', 'AREA_REVIEW'].includes(effectiveAreaStatus(booking)) && booking.status !== 'CANCELLED')
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((booking) => ({
+      bookingId: booking.id,
+      referenceCode: booking.referenceCode || null,
+      source: booking.source || null,
+      createdAt: booking.createdAt,
+      customerName: booking.customer?.name || null,
+      customerPhone: booking.customer?.phone || null,
+      customerEmail: booking.customer?.email || null,
+      city: booking.city,
+      zip: booking.zip,
+      serviceAddress: booking.serviceAddress || booking.customer?.address || null,
+      areaStatus: effectiveAreaStatus(booking),
+      candidateAreas: effectiveAreaStatus(booking) === 'AREA_REVIEW' ? areasForZip(booking.zip) : [],
+      appliance: booking.appliance,
+      issue: booking.issue,
+      status: booking.status,
+    }));
+  return res.json({
+    data: {
+      count: items.length,
+      outOfArea: items.filter((i) => i.areaStatus === 'OUT_OF_AREA').length,
+      needsReview: items.filter((i) => i.areaStatus === 'AREA_REVIEW').length,
+      items,
+    },
+  });
+});
+
+const resolveAreaSchema = z.object({
+  area: z.string().trim().min(2),
+  resolvedBy: z.string().trim().min(2).default('Service Setters'),
+});
+
+/**
+ * A Service Setter resolves an AREA_REVIEW booking into its true area
+ * (the customer confirms the city on the call). Human decision only —
+ * Speedy can flag ambiguity, it never picks the area.
+ */
+router.post('/bookos/bookings/:id/resolve-area', ...staffOnly, async (req, res) => {
+  const parsed = resolveAreaSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid area resolution', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const area = SERVICE_CITIES.find((c) => c.toLowerCase() === parsed.data.area.toLowerCase());
+  if (!area) {
+    return res.status(422).json({ error: 'Area must be one of the covered service areas', serviceAreas: SERVICE_CITIES });
+  }
+  if (effectiveAreaStatus(booking) === 'OUT_OF_AREA') {
+    return res.status(409).json({ error: 'This request is outside the service footprint entirely — it stays on the expansion waitlist' });
+  }
+  booking.area = area;
+  booking.areaStatus = 'IN_AREA';
+  booking.updatedAt = new Date().toISOString();
+  addBookingEvent(booking, 'AREA_RESOLVED_BY_SETTER', parsed.data.resolvedBy, { area, previousStatus: 'AREA_REVIEW' });
+  appendEvent('AREA_RESOLVED_BY_SETTER', {
+    source: booking.source || null,
+    actor: ROLES.DISPATCHER,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { team: 'Service Setters', resolvedBy: parsed.data.resolvedBy, area },
+  });
+  await persistBooking(booking);
+  return res.json({ data: { bookingId: booking.id, referenceCode: booking.referenceCode || null, area: booking.area, areaStatus: booking.areaStatus } });
 });
 
 

@@ -1,4 +1,5 @@
 import { store } from '../data/store.js';
+import { effectiveArea, effectiveAreaStatus } from '../config/serviceAreas.js';
 
 /**
  * Book OS — Service Setters appointment book.
@@ -38,7 +39,12 @@ export function todayDateString(now = new Date()) {
   return now.toISOString().slice(0, 10);
 }
 
-/** Bookings currently holding a SET appointment in one area/window/date. */
+/**
+ * Bookings currently holding a SET appointment in one area/window/date.
+ * Capacity is counted against the booking's resolved Service Book area
+ * (older records derive it from their city). Out-of-area and
+ * area-unresolved bookings can never hold a slot.
+ */
 export function bookedCountForSlot({ date, windowId, city, excludeBookingId = null }) {
   let count = 0;
   for (const booking of store.bookings.values()) {
@@ -48,7 +54,8 @@ export function bookedCountForSlot({ date, windowId, city, excludeBookingId = nu
       appointment?.status === 'SET' &&
       appointment.date === date &&
       appointment.window === windowId &&
-      booking.city === city &&
+      effectiveAreaStatus(booking) === 'IN_AREA' &&
+      effectiveArea(booking) === city &&
       booking.status !== 'COMPLETED'
     ) {
       count += 1;

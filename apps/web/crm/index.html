@@ -3,93 +3,179 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Service OS CRM — Top Speed Appliance</title>
-<meta name="description" content="The Top Speed Service OS CRM: the team's single customer view — every customer, booking and intake record in one searchable place.">
+<title>Top Speed CRM — Top Speed Appliance</title>
+<meta name="description" content="Top Speed CRM: the team's single home for the business — customers, the Service Book, Service Book Pro dispatch by area, and every business tool on the Service OS. Staff only.">
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#0A265C">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Michroma&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3}
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e8322e;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--amber:#b45309;--line:#dbe6f3}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
 a{text-decoration:none}
 header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
-header img.flag{height:44px;width:auto;border-radius:4px}
-.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
-.brand span{color:#ff3b42}
-header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
-header nav a{color:#cfe0f5;font-size:15px}
-.btn{background:var(--red);color:#fff;padding:12px 22px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.wordmark{font-family:Michroma,'Space Grotesk',sans-serif;font-size:19px;letter-spacing:.06em;color:#fff}
+.wordmark span{color:#ff5252}
+.wordsub{font-size:11.5px;color:#b9cff2;letter-spacing:.14em;text-transform:uppercase;margin-top:2px}
+header nav{margin-left:auto;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:14.5px;font-weight:600}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:14.5px;font-family:inherit}
 .btn.blue{background:var(--blue)}
 .btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
-main{max-width:1080px;margin:0 auto;padding:40px 24px 60px}
-h1{font-size:30px;color:var(--navy)}
-.sub{color:var(--muted);margin:8px 0 22px;line-height:1.55}
-.card{background:var(--light);border-radius:14px;padding:24px}
-input,select{width:100%;padding:12px;border:1px solid #c9d8ec;border-radius:10px;font-size:15.5px;font-family:inherit}
-label{font-weight:700;color:var(--navy);font-size:13.5px;display:block;margin-bottom:6px}
+.btn.small{padding:7px 13px;font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:30px 20px 60px}
+h1{font-family:'Space Grotesk',Inter,sans-serif;font-size:28px;color:var(--navy)}
+h2{font-family:'Space Grotesk',Inter,sans-serif}
+.sub{color:var(--muted);margin:8px 0 20px;line-height:1.55}
+.card{background:var(--light);border-radius:14px;padding:22px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c9d8ec;border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:var(--ink)}
+label{font-weight:700;color:var(--navy);font-size:13px;display:block;margin-bottom:6px}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-table{width:100%;border-collapse:collapse;font-size:14.5px}
-th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:9px 8px}
+.tabs{display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:6px;margin-bottom:18px}
+.tab{flex:0 0 auto;background:#eef4fd;color:var(--navy);border:1px solid var(--line);border-radius:99px;padding:9px 18px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+.tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--light);border-radius:14px;padding:16px}
+.kpi small{display:block;color:var(--muted);font-weight:800;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+.kpi b{font-family:'Roboto Mono',monospace;font-size:30px;color:var(--navy)}
+.kpi span{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.sx{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:14.5px;min-width:640px}
+th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:9px 8px;white-space:nowrap}
 td{border-bottom:1px solid var(--line);padding:9px 8px;vertical-align:top}
 tr.cust{cursor:pointer}
 tr.cust:hover{background:#eef4fd}
-.pill{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
-.msg{font-weight:600;min-height:22px;margin-top:12px}
+.pill{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.pill.red{background:#fde3e3;color:#a1121a}
+.pill.amber{background:#fdf0d5;color:#8a5a00}
+.pill.green{background:#dcf2e3;color:#0b5c2e}
+.msg{font-weight:600;min-height:22px;margin:10px 0}
 .msg.err{color:var(--red)} .msg.ok{color:var(--green)}
-footer{background:#04122e;color:#9db6d8;padding:32px 24px;text-align:center;font-size:14px}
+.section{margin-top:18px}
+.section h3{color:var(--navy);font-size:16.5px;margin-bottom:8px}
+.line{padding:9px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:0}
+.mut{color:var(--muted);font-size:13px}
+.bar{height:10px;background:#e3ecf8;border-radius:99px;overflow:hidden;min-width:90px}
+.bar i{display:block;height:100%;background:var(--blue)}
+.tools{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.tool{display:block;background:var(--light);border-radius:14px;padding:18px;color:var(--ink)}
+.tool b{color:var(--navy);font-size:16.5px;display:block;margin-bottom:4px}
+.tool p{color:var(--muted);font-size:13.5px;line-height:1.5}
+.speedy{background:#eaf1fe;border:1px solid #c3d7fb;border-radius:14px;padding:18px;margin-top:18px}
+.speedy h3{color:var(--navy)}
+.speedyBody{max-height:50vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px}
 footer strong{color:#fff}
+@media(max-width:640px){ main{padding:22px 14px 48px} header{padding:12px 16px} .wordmark{font-size:16px} }
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script></head>
+<script src="/google-tag.js"></script>
+</head>
 <body>
 <header>
-  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <div>
+    <div class="wordmark">TOP SPEED <span>CRM</span></div>
+    <div class="wordsub">Service Book · Service Book Pro · Speedy AI</div>
+  </div>
   <nav>
-    <a href="/software">Software</a>
-    <a href="/portal">Portal</a>
-    <a href="/book-os">Book OS</a>
-    <a href="/pro-booking">Speedy Pro Booking</a>
+    <a href="/book-os">Service Book Pro</a>
+    <a href="/pro-booking">Service Book — staff booking</a>
+    <a href="/finance">Finance</a>
+    <a href="/parts">Parts</a>
     <a href="#" id="crmOut" style="display:none;" onclick="crmSignOut(); return false;">Sign out</a>
-  <a class="tse-call" href="tel:+19549317997">📞 Call</a></nav>
+  </nav>
 </header>
 
 <main>
-  <h1>Service OS CRM</h1>
-  <p class="sub">Every customer the platform has taken — bookings, Speedy chats, web forms, PM batches — in one searchable view, with their full history attached. Staff only.</p>
+  <h1>Top Speed CRM</h1>
+  <p class="sub">The team's single home for the business: every customer with their full history, bookings by area through the Service Book, dispatch in Service Book Pro, and Speedy assisting the setters — drafts and suggestions only, a human approves every send and every dispatch. Staff only.</p>
 
   <div class="card" id="crmLogin">
     <div class="row">
       <div><label for="crmEmail">Team email</label><input id="crmEmail" type="email" placeholder="you@topspeedappliance.net"></div>
       <div><label for="crmPass">Password</label><input id="crmPass" type="password" placeholder="••••••••"></div>
     </div>
-    <div style="margin-top:14px;"><button class="btn blue" onclick="crmSignIn()">Sign in to the CRM</button></div>
+    <div style="margin-top:14px;"><button class="btn blue" onclick="crmSignIn()">Sign in to Top Speed CRM</button></div>
     <div class="msg" id="crmLoginMsg"></div>
   </div>
 
   <div id="crmApp" style="display:none;">
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
-      <input id="crmQ" type="text" placeholder="Search name, phone, email or city…" style="flex:1; min-width:220px;" onkeydown="if(event.key==='Enter'){crmLoad();}">
-      <button class="btn blue" onclick="crmLoad()">Search</button>
+    <div class="tabs" role="tablist">
+      <button class="tab on" id="tab-home" onclick="crmTab('home')">Home</button>
+      <button class="tab" id="tab-customers" onclick="crmTab('customers')">Customers</button>
+      <button class="tab" id="tab-waitlist" onclick="crmTab('waitlist')">Expansion Waitlist</button>
+      <button class="tab" id="tab-tools" onclick="crmTab('tools')">Business Tools</button>
     </div>
-    <div class="msg" id="crmMsg"></div>
-    <div style="overflow-x:auto;">
-      <table>
-        <thead><tr><th>Customer</th><th>Contact</th><th>City</th><th>Bookings</th><th>Last booking</th></tr></thead>
-        <tbody id="crmRows"><tr><td colspan="5">Loading…</td></tr></tbody>
-      </table>
-    </div>
-    <div id="crmDetail" style="margin-top:20px;"></div>
+
+    <section id="pane-home">
+      <div class="kpis" id="homeKpis"><div class="kpi"><small>Loading</small><b>…</b></div></div>
+      <div class="card">
+        <h3 style="color:var(--navy);margin-bottom:10px;">Today's load by area — Service Book capacity (booked / crews × windows)</h3>
+        <div class="sx"><table style="min-width:520px;"><thead><tr><th>Area</th><th>Booked today</th><th>Capacity</th><th style="width:34%;">Load</th></tr></thead><tbody id="homeAreas"><tr><td colspan="4">Loading…</td></tr></tbody></table></div>
+        <p class="mut" style="margin-top:10px;">Areas with no bookings today are running open. Full slot grid: <a href="/book-os" style="color:var(--blue);font-weight:700;">Service Book Pro →</a></p>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <h3 style="color:var(--navy);margin-bottom:6px;">Latest platform activity</h3>
+        <div id="homeEvents"><p class="mut">Loading…</p></div>
+      </div>
+    </section>
+
+    <section id="pane-customers" style="display:none;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
+        <input id="crmQ" type="text" placeholder="Search name, phone, email or city…" style="flex:1; min-width:220px; width:auto;" onkeydown="if(event.key==='Enter'){crmLoad();}">
+        <button class="btn blue" onclick="crmLoad()">Search</button>
+      </div>
+      <div class="msg" id="crmMsg"></div>
+      <div class="sx">
+        <table>
+          <thead><tr><th>Customer</th><th>Contact</th><th>Area</th><th>Bookings</th><th>Last booking</th></tr></thead>
+          <tbody id="crmRows"><tr><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div id="crmDetail" style="margin-top:20px;"></div>
+    </section>
+
+    <section id="pane-waitlist" style="display:none;">
+      <p class="sub" style="margin-top:0;">Requests the Service Book could not place in the 12 covered areas. <b>Out-of-area</b> requests sit on the expansion waitlist — no service is promised. <b>Area review</b> requests have a ZIP that spans several covered areas: pick the right area and the booking joins the setter queue.</p>
+      <div class="msg" id="wlMsg"></div>
+      <div class="sx">
+        <table>
+          <thead><tr><th>Request</th><th>Customer</th><th>Address</th><th>Status</th><th>Resolve</th></tr></thead>
+          <tbody id="wlRows"><tr><td colspan="5">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="pane-tools" style="display:none;">
+      <div class="tools">
+        <a class="tool" href="/book-os"><b>Service Book Pro — Dispatch</b><p>The Service Setters board: setter queue, today's appointments, hybrid dispatch (Speedy suggests, setters approve), area day views.</p></a>
+        <a class="tool" href="/pro-booking"><b>Service Book — Staff Booking</b><p>Book a job on a live call, straight into the setter queue with its area resolved from the address.</p></a>
+        <a class="tool" href="/book"><b>Smart Booking</b><p>The customer booking flow the setters support — the same Service Book customers use.</p></a>
+        <a class="tool" href="/finance"><b>Finance — QuickBooks</b><p>The QuickBooks finance layer: synced books, invoices and the money picture. Shows only synced data, with its synced-at stamp.</p></a>
+        <a class="tool" href="/parts"><b>Parts Supply OS</b><p>Purchase orders, stock, low-stock alerts and job usage for the network's parts supply.</p></a>
+        <a class="tool" href="/marketing-os"><b>Marketing OS</b><p>The agency hub and Page Studio — landing pages by city, service and symptom, published only with approval.</p></a>
+        <a class="tool" href="/notifications"><b>Notifications</b><p>The outbox: every customer and staff message with its true status — queued, sent, failed or gated.</p></a>
+        <a class="tool" href="/local"><b>Local OS</b><p>Listings, reviews engine and the local presence across Google, Bing and the directories.</p></a>
+        <a class="tool" href="/media"><b>Media OS</b><p>Top Speed 360 media — content, channels and the public media surfaces.</p></a>
+        <a class="tool" href="/track-console"><b>Track Console</b><p>Live job tracking oversight — en-route techs and customer tracking links.</p></a>
+        <a class="tool" href="/commercial"><b>Commercial — Appliance Pro</b><p>Commercial accounts (APC-), facilities, equipment registry and work orders. Custom-quoted — the residential $99 diagnostic never applies here.</p></a>
+        <a class="tool" href="/book-os"><b>Referrals — ApplianceReferral</b><p>Referral approvals, issued credits and program settings live in the Referrals panel of Service Book Pro. Credits issue only on a human ✓.</p></a>
+      </div>
+    </section>
   </div>
 </main>
 
-<footer><strong>Top Speed Appliance LLC</strong> · Service OS CRM · Internal — customer data stays in the platform.</footer>
+<footer><strong>Top Speed Appliance LLC</strong> · Top Speed CRM · Internal — customer data stays in the platform.</footer>
 
 <script>
 var CRM_API='https://top-speed-service-os.vercel.app/api/v1';
+var AREAS=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
 function crmTok(){ try{ return localStorage.getItem('tsos_crm_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function crmEsc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
-function crmFetch(path){
-  return fetch(CRM_API+path,{headers:{'Content-Type':'application/json','Authorization':'Bearer '+crmTok()}})
+function crmFetch(path,opts){
+  opts=opts||{};
+  return fetch(CRM_API+path,{method:opts.method||'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+crmTok()},body:opts.body?JSON.stringify(opts.body):undefined})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
 }
 function crmSignIn(){
@@ -109,7 +195,45 @@ function crmShow(){
   document.getElementById('crmLogin').style.display='none';
   document.getElementById('crmApp').style.display='';
   document.getElementById('crmOut').style.display='';
-  crmLoad();
+  crmHome(); crmLoad();
+}
+function crmTab(name){
+  ['home','customers','waitlist','tools'].forEach(function(t){
+    document.getElementById('pane-'+t).style.display=(t===name?'':'none');
+    document.getElementById('tab-'+t).className='tab'+(t===name?' on':'');
+  });
+  if(name==='waitlist') crmWaitlist();
+  if(name==='home') crmHome();
+}
+function statusPill(s){
+  if(s==='OUT_OF_AREA') return '<span class="pill red">OUT OF AREA</span>';
+  if(s==='AREA_REVIEW') return '<span class="pill amber">AREA REVIEW</span>';
+  if(s==='COMPLETED') return '<span class="pill green">COMPLETED</span>';
+  return '<span class="pill">'+crmEsc(s||'')+'</span>';
+}
+function crmHome(){
+  crmFetch('/crm/home').then(function(j){
+    var d=j.data, b=d.bookings||{}, w=d.waitlist||{};
+    var byStatus=Object.keys(b.byStatus||{}).map(function(k){ return k+' '+(b.byStatus[k]); }).join(' · ')||'none yet';
+    document.getElementById('homeKpis').innerHTML=
+      '<div class="kpi"><small>Customers</small><b>'+(d.customers?d.customers.total:0)+'</b><span>in Top Speed CRM</span></div>'+
+      '<div class="kpi"><small>Bookings today</small><b>'+(b.today||0)+'</b><span>'+(b.total||0)+' all time</span></div>'+
+      '<div class="kpi"><small>Setter queue</small><b>'+(b.queueDepth||0)+'</b><span>waiting for a confirmation call</span></div>'+
+      '<div class="kpi"><small>Expansion waitlist</small><b>'+(w.total||0)+'</b><span>'+(w.outOfArea||0)+' out of area · '+(w.needsReview||0)+' area review</span></div>'+
+      '<div class="kpi"><small>Referral codes</small><b>'+(d.referralsIssued||0)+'</b><span>issued by ApplianceReferral</span></div>'+
+      '<div class="kpi"><small>Bookings by status</small><b style="font-size:15px;font-family:Inter,sans-serif;">'+crmEsc(byStatus)+'</b><span>live from the Service Book</span></div>';
+    var areas=d.areaLoadToday||[];
+    document.getElementById('homeAreas').innerHTML=areas.length?areas.map(function(a){
+      var pct=a.capacityToday?Math.min(100,Math.round(100*a.bookedToday/a.capacityToday)):0;
+      return '<tr><td><b>'+crmEsc(a.area)+'</b></td><td>'+a.bookedToday+'</td><td>'+a.capacityToday+'</td><td><div class="bar"><i style="width:'+pct+'%"></i></div></td></tr>';
+    }).join(''):'<tr><td colspan="4">No appointments booked yet today — every area is open.</td></tr>';
+    var ev=d.recentEvents||[];
+    document.getElementById('homeEvents').innerHTML=ev.length?ev.map(function(e){
+      return '<div class="line"><b>'+crmEsc(e.type)+'</b>'+(e.referenceCode?' · '+crmEsc(e.referenceCode):'')+' <span class="mut">'+crmEsc(String(e.at||'').replace('T',' ').slice(0,16))+'</span></div>';
+    }).join(''):'<p class="mut">No platform events yet.</p>';
+  }).catch(function(e){
+    document.getElementById('homeKpis').innerHTML='<div class="kpi"><small>CRM home</small><b>⚠️</b><span>'+crmEsc(e.message)+'</span></div>';
+  });
 }
 function crmLoad(){
   var q=document.getElementById('crmQ').value.trim();
@@ -119,7 +243,7 @@ function crmLoad(){
       document.getElementById('crmMsg').textContent=rows.length+' customer'+(rows.length===1?'':'s');
       document.getElementById('crmRows').innerHTML=rows.length?rows.map(function(c){
         var last=c.lastBooking?(crmEsc(c.lastBooking.appliance)+' · '+crmEsc(c.lastBooking.referenceCode)+' · <span class="pill">'+crmEsc(c.lastBooking.status)+'</span>'):'—';
-        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td></tr>';
+        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td></tr>';
       }).join(''):'<tr><td colspan="5">No customers match.</td></tr>';
     })
     .catch(function(e){
@@ -129,25 +253,116 @@ function crmLoad(){
 function crmDetail(id){
   crmFetch('/crm/customers/'+id)
     .then(function(j){
-      var c=j.data.customer;
-      var bk=j.data.bookings.map(function(b){
-        return '<div style="padding:9px 0; border-bottom:1px solid var(--line);"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span style="color:var(--muted); font-size:13px;">'+crmEsc(b.city)+' · '+crmEsc(b.source)+' · '+crmEsc(b.status)+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span></div>';
-      }).join('')||'<p style="color:var(--muted);">No bookings yet.</p>';
-      var intake=j.data.intake.map(function(x){
-        return '<div style="padding:9px 0; border-bottom:1px solid var(--line);"><b>'+crmEsc(x.reference)+'</b> · '+crmEsc(x.type)+' <span style="color:var(--muted); font-size:13px;">('+crmEsc(x.source||'web')+')</span><br>'+crmEsc(x.message||'')+'</div>';
-      }).join('')||'<p style="color:var(--muted);">No form/chat intake on this number.</p>';
+      var d=j.data, c=d.customer;
+      var props=(d.properties||[]).map(function(p){
+        return '<div class="line">📍 '+crmEsc(p.address||'')+(p.city?' · '+crmEsc(p.city):'')+(p.zip?' '+crmEsc(p.zip):'')+(p.area?' · <span class="pill">'+crmEsc(p.area)+'</span>':'')+'</div>';
+      }).join('')||'<p class="mut">No service address on file.</p>';
+      var apps=(d.appliances||[]).map(function(a){
+        return '<div class="line">🔧 <b>'+crmEsc(a.type)+'</b>'+(a.brand?' · '+crmEsc(a.brand):'')+(a.model?' '+crmEsc(a.model):'')+(a.serial?' · SN '+crmEsc(a.serial):'')+(a.assetTag?' · '+crmEsc(a.assetTag):'')+(a.healthStatus?' · '+crmEsc(a.healthStatus):'')+' <span class="mut">('+(a.origin==='COMMERCIAL_REGISTRY'?'commercial registry':'garage')+')</span></div>';
+      }).join('')||'<p class="mut">No appliances on file.</p>';
+      var bk=(d.bookings||[]).map(function(b){
+        var appt=b.appointment?(' · ⏰ '+crmEsc(b.appointment.date)+' '+crmEsc(b.appointment.windowLabel||b.appointment.window)):'';
+        return '<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' · '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' · '+crmEsc(b.source)+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span> '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)+appt+
+        ' <button class="btn ghost small" onclick="crmMatch(\''+b.id+'\',\''+crmEsc(b.referenceCode)+'\')">✦ Speedy match</button></div>';
+      }).join('')||'<p class="mut">No bookings yet.</p>';
+      var intake=(d.intake||[]).map(function(x){
+        return '<div class="line"><b>'+crmEsc(x.reference)+'</b> · '+crmEsc(x.type)+' <span class="mut">('+crmEsc(x.source||'web')+')</span><br>'+crmEsc(x.message||'')+'</div>';
+      }).join('')||'<p class="mut">No form/chat intake on this number.</p>';
+      var comms=(d.communications||[]).map(function(x){
+        return '<div class="line">'+crmEsc(x.channel)+' · '+crmEsc(x.template)+' → '+crmEsc(x.to)+' · '+statusPill(x.status)+(x.reason?' <span class="mut">'+crmEsc(x.reason)+'</span>':'')+'<br><span class="mut">'+crmEsc(String(x.createdAt||'').replace('T',' ').slice(0,16))+(x.sentAt?' · sent '+crmEsc(String(x.sentAt).replace('T',' ').slice(0,16)):'')+'</span></div>';
+      }).join('')||'<p class="mut">No messages recorded for this customer yet.</p>';
+      var refs=d.referrals||{};
+      var refHtml=(refs.ownCode?'<div class="line">Own referral code: <b>'+crmEsc(refs.ownCode.code)+'</b> · '+crmEsc(refs.ownCode.status)+' · '+refs.ownCode.redemptions+' redemption(s)</div>':'<p class="mut">No referral code issued yet — one is issued when their first job completes.</p>')+
+        (refs.journeys||[]).map(function(x){ return '<div class="line">Journey · '+crmEsc(x.status)+(x.code?' · code '+crmEsc(x.code):'')+' <span class="mut">'+crmEsc(String(x.createdAt||'').slice(0,10))+'</span></div>'; }).join('');
+      var notes=(d.notes||[]).map(function(n){
+        return '<div class="line"><b>'+crmEsc(n.author)+'</b> <span class="mut">'+crmEsc(String(n.createdAt||'').replace('T',' ').slice(0,16))+'</span><br>'+crmEsc(n.body)+'</div>';
+      }).join('')||'<p class="mut">No CRM notes yet.</p>';
       document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
-        '<p style="color:var(--muted); margin:6px 0 14px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
-        '<b>Bookings</b>'+bk+'<div style="margin-top:14px;"><b>Intake history</b></div>'+intake+'</div>';
+        '<p class="mut" style="margin:6px 0 4px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
+        '<p class="mut">Lead source: <b>'+crmEsc(c.leadSource||'—')+'</b>'+(c.referredByCode?' · referred by code <b>'+crmEsc(c.referredByCode)+'</b>':'')+' · customer since '+crmEsc(String(c.createdAt||'').slice(0,10))+'</p>' +
+        '<div class="section"><h3>Properties / service addresses</h3>'+props+'</div>' +
+        '<div class="section"><h3>Appliances &amp; equipment on file</h3>'+apps+'</div>' +
+        '<div class="section"><h3>Job history</h3>'+bk+'</div>' +
+        '<div class="section"><h3>Referrals</h3>'+refHtml+'</div>' +
+        '<div class="section"><h3>Communications log — true outbox statuses</h3>'+comms+'</div>' +
+        '<div class="section"><h3>Intake history</h3>'+intake+'</div>' +
+        '<div class="section"><h3>Notes</h3>'+notes+
+        '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><input id="crmNoteBody" type="text" placeholder="Add a note for the team…" style="flex:1;min-width:220px;width:auto;"><button class="btn blue" onclick="crmAddNote(\''+c.id+'\')">Add note</button></div><div class="msg" id="crmNoteMsg"></div></div>' +
+        '<div class="speedy"><h3>✦ Speedy assist — drafts &amp; suggestions only</h3>' +
+        '<p class="mut" style="margin:6px 0 12px;">Speedy assembles these from this customer\'s real records. Nothing is sent and nothing is dispatched from here — you approve every send and every dispatch. Speedy never issues refunds, certifies repair safety, or overrides a technician credential.</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><button class="btn blue" onclick="crmBrief(\''+c.id+'\')">Summarize this customer</button>' +
+        '<select id="crmDraftPurpose" style="width:auto;flex:0 1 220px;"><option value="follow_up">Draft: follow-up</option><option value="appointment_confirm">Draft: confirm appointment</option><option value="review_request">Draft: review request</option><option value="waitlist_update">Draft: waitlist update</option></select>' +
+        '<button class="btn ghost" onclick="crmDraft(\''+c.id+'\')">Draft my next message</button></div>' +
+        '<div class="speedyBody" id="speedyOut"><p class="mut">Speedy output appears here.</p></div></div>' +
+        '</div>';
       window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
     })
     .catch(function(e){ document.getElementById('crmMsg').textContent='⚠️ '+e.message; });
 }
-if(crmTok()){ crmFetch('/crm/customers').then(function(){ crmShow(); }).catch(function(){}); }
+function crmAddNote(id){
+  var body=document.getElementById('crmNoteBody').value.trim();
+  var msg=document.getElementById('crmNoteMsg');
+  if(!body){ msg.textContent='Write the note first.'; msg.className='msg err'; return; }
+  crmFetch('/crm/customers/'+id+'/notes',{method:'POST',body:{body:body}})
+    .then(function(){ msg.textContent='✓ Note saved.'; msg.className='msg ok'; crmDetail(id); })
+    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+}
+function speedyRender(html){
+  var el=document.getElementById('speedyOut');
+  if(el) el.innerHTML=html;
+}
+function crmBrief(id){
+  speedyRender('<p class="mut">Speedy is reading the record…</p>');
+  crmFetch('/crm/customers/'+id+'/speedy-brief').then(function(j){
+    var b=j.data.brief;
+    speedyRender('<p><b>'+crmEsc(b.headline)+'</b></p>'+(b.lines||[]).map(function(l){ return '<p style="margin-top:6px;">'+crmEsc(l)+'</p>'; }).join('')+
+      ((b.openItems||[]).length?'<p style="margin-top:8px;"><b>Open items</b></p>'+b.openItems.map(function(l){ return '<p style="margin-top:4px;">• '+crmEsc(l)+'</p>'; }).join(''):'')+
+      '<p class="mut" style="margin-top:10px;">'+crmEsc(j.data.assembledFrom)+'</p>');
+  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+}
+function crmDraft(id){
+  var purpose=document.getElementById('crmDraftPurpose').value;
+  speedyRender('<p class="mut">Speedy is drafting…</p>');
+  crmFetch('/crm/customers/'+id+'/speedy-draft',{method:'POST',body:{purpose:purpose}}).then(function(j){
+    speedyRender('<label>Draft — review &amp; edit, then send it yourself through the normal channel. Nothing was sent.</label><textarea rows="4" style="width:100%;">'+crmEsc(j.data.draft)+'</textarea><p class="mut" style="margin-top:8px;">'+crmEsc(j.data.note)+'</p>');
+  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+}
+function crmMatch(bookingId, ref){
+  speedyRender('<p class="mut">Speedy is scoring the network for '+crmEsc(ref||'this booking')+'…</p>');
+  crmFetch('/crm/bookings/'+bookingId+'/speedy-match').then(function(j){
+    var s=j.data.suggestions||[];
+    speedyRender('<p><b>Provider suggestions for '+crmEsc(j.data.bookingReference||ref||'')+'</b>'+(j.data.area?' · area '+crmEsc(j.data.area):'')+'</p>'+
+      (s.length?s.map(function(x){ return '<p style="margin-top:6px;">• <b>'+crmEsc(x.businessName)+'</b> — score '+x.matchScore+' · '+crmEsc((x.reasons||[]).join('; '))+'</p>'; }).join(''):'<p style="margin-top:6px;">No provider clears the match threshold yet.</p>')+
+      '<p class="mut" style="margin-top:10px;">'+crmEsc(j.data.note)+'</p>');
+    document.getElementById('crmDetail').scrollIntoView({behavior:'smooth',block:'start'});
+  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+}
+function crmWaitlist(){
+  crmFetch('/bookos/waitlist').then(function(j){
+    var d=j.data, items=d.items||[];
+    document.getElementById('wlMsg').textContent=items.length+' waiting — '+d.outOfArea+' out of area · '+d.needsReview+' need an area decision';
+    document.getElementById('wlRows').innerHTML=items.length?items.map(function(it){
+      var resolve='—';
+      if(it.areaStatus==='AREA_REVIEW'){
+        var opts=(it.candidateAreas&&it.candidateAreas.length?it.candidateAreas:AREAS).map(function(a){ return '<option value="'+crmEsc(a)+'">'+crmEsc(a)+'</option>'; }).join('');
+        resolve='<div style="display:flex;gap:6px;flex-wrap:wrap;"><select id="wlArea-'+it.bookingId+'" style="width:auto;flex:1;min-width:150px;">'+opts+'</select><button class="btn blue small" onclick="crmResolveArea(\''+it.bookingId+'\')">Set area</button></div>';
+      } else {
+        resolve='<span class="mut">Expansion waitlist — no service promised</span>';
+      }
+      return '<tr><td><b>'+crmEsc(it.referenceCode)+'</b><br><span class="mut">'+crmEsc(it.appliance||'')+' · '+crmEsc(String(it.createdAt||'').slice(0,10))+'</span></td><td>'+crmEsc(it.customerName||'')+'<br><span class="mut">'+crmEsc(it.customerPhone||'')+'</span></td><td>'+crmEsc(it.serviceAddress||'')+'<br><span class="mut">'+crmEsc(it.city||'')+' '+crmEsc(it.zip||'')+'</span></td><td>'+statusPill(it.areaStatus)+'</td><td>'+resolve+'</td></tr>';
+    }).join(''):'<tr><td colspan="5">Waitlist is clear — every request is inside the covered areas.</td></tr>';
+  }).catch(function(e){
+    document.getElementById('wlRows').innerHTML='<tr><td colspan="5">⚠️ '+crmEsc(e.message)+'</td></tr>';
+  });
+}
+function crmResolveArea(bookingId){
+  var sel=document.getElementById('wlArea-'+bookingId);
+  var area=sel?sel.value:'';
+  crmFetch('/bookos/bookings/'+bookingId+'/resolve-area',{method:'POST',body:{area:area}})
+    .then(function(){ document.getElementById('wlMsg').textContent='✓ Area set to '+area+' — the booking is in the setter queue now.'; document.getElementById('wlMsg').className='msg ok'; crmWaitlist(); })
+    .catch(function(e){ document.getElementById('wlMsg').textContent='⚠️ '+e.message; document.getElementById('wlMsg').className='msg err'; });
+}
+if(crmTok()){ crmFetch('/crm/home').then(function(){ crmShow(); }).catch(function(){}); }
 </script>
-
-<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-<style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Space Grotesk',Inter,Arial,sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Roboto Mono',monospace}</style>
 </body>
 </html>
