@@ -1,5 +1,6 @@
 import { PLATFORM_COMPANY_ID, createId, store } from '../data/store.js';
 import { persistChatMessage, persistChatSession } from '../db/chatsRepo.js';
+import { emitReport } from './managementReports.js';
 import {
   MARKETING_BRANDS,
   MARKETING_SERVICES,
@@ -128,6 +129,20 @@ export function getOrCreateChatSession({ sessionId, source, userId } = {}) {
     };
     store.chatSessions.set(id, session);
     created = true;
+    // Management reporting (2026-11-14): a Speedy Class session is a
+    // training activity — report its start to the Training department.
+    // emitReport is failure-proof, so capture stays passive.
+    if (session.source === 'speedy_class') {
+      emitReport({
+        department: 'training',
+        type: 'SPEEDY_CLASS_SESSION_STARTED',
+        title: 'Speedy Class session started',
+        detail: { sessionId: session.id, source: session.source, startedAt: session.startedAt, signedIn: Boolean(userId) },
+        source: 'SPEEDY_CLASS',
+        reference: null,
+        eventKey: `speedy-class:${session.id}:started:report`,
+      });
+    }
   } else if (!session.userId && userId) {
     // A signed-in user joined a thread that started anonymously.
     session.userId = userId;

@@ -6,6 +6,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
 import { notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
+import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
 import { speedyStatus, speedyStructureNote } from '../services/speedy.js';
 
@@ -343,6 +344,15 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   } else {
     notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:${type}:${booking.updatedAt}`);
   }
+  emitReport({
+    department: 'field',
+    type: 'JOB_STAGE_UPDATE',
+    title: `Job stage: ${parsed.data.action} — ${booking.referenceCode || booking.id}`,
+    detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, service: booking.appliance || null, city: booking.city || null, action: parsed.data.action, stage: computeTracking(booking).stageLabel8 || null, actor: req.user.email },
+    source: 'TECH_APP',
+    reference: booking.referenceCode || null,
+    eventKey: `booking:${booking.id}:stage:${type}:${booking.updatedAt}:report`,
+  });
   appendEvent(type, {
     source: 'TECH_APP',
     actor: req.user.email,

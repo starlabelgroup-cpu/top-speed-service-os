@@ -11,6 +11,7 @@ import {
   persistPageVersion,
   persistTaxonomyRecord,
 } from '../db/marketingOsRepo.js';
+import { emitReport } from '../services/managementReports.js';
 
 /**
  * Top Speed Marketing OS — the agency's API on the Service OS backend.
@@ -547,6 +548,17 @@ router.post('/marketing-os/admin/pages/:id/status', ...marketingOnly, async (req
     entityId: page.id,
     details: { canonicalUrl: page.canonicalUrl },
   });
+  if (target === 'PUBLISHED') {
+    emitReport({
+      department: 'marketing',
+      type: 'MARKETING_PAGE_PUBLISHED',
+      title: `Landing page published — ${page.title || page.canonicalUrl}`,
+      detail: { pageId: page.id, title: page.title || null, canonicalUrl: page.canonicalUrl, type: page.type || null, actor: actorOf(req) },
+      source: 'page-studio',
+      reference: page.canonicalUrl,
+      eventKey: `marketing-page:${page.id}:published:${page.updatedAt}`,
+    });
+  }
   return res.json({ data: pageAdmin(page) });
 });
 

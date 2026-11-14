@@ -8,6 +8,7 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { activeAssignmentFor, computeTracking, providerById } from '../services/tracking.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
+import { emitReport } from '../services/managementReports.js';
 import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
@@ -247,7 +248,27 @@ router.post('/tracking/console/:reference/stage', ...staffOnly, async (req, res)
   } else if (action === 'ARRIVED' || action === 'DIAGNOSIS' || action === 'ESTIMATE') {
     notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TRACKING_CONSOLE', `booking:${booking.id}:stage:${action}:${booking.updatedAt}`);
   }
+  if (action !== 'COMPLETE') {
+    emitReport({
+      department: 'field',
+      type: 'JOB_STAGE_UPDATE',
+      title: `Job stage: ${action} — ${booking.referenceCode || booking.id}`,
+      detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, service: booking.appliance || null, city: booking.city || null, action, stage: computeTracking(booking).stageLabel8 || null },
+      source: 'TRACKING_CONSOLE',
+      reference: booking.referenceCode || null,
+      eventKey: `booking:${booking.id}:stage:${action}:${booking.updatedAt}:report`,
+    });
+  }
   if (action === 'COMPLETE') {
+    emitReport({
+      department: 'field',
+      type: 'JOB_COMPLETED',
+      title: `Job completed — ${booking.referenceCode || booking.id}`,
+      detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, service: booking.appliance || null, city: booking.city || null, completedBy: req.user.email, completedAt: booking.completedAt || null },
+      source: 'TRACKING_CONSOLE',
+      reference: booking.referenceCode || null,
+      eventKey: `booking:${booking.id}:completed:report`,
+    });
     try {
       // Unify with POST /bookings/:id/complete: a console completion runs
       // the same completion side-effects — stamp completedAt/completedBy

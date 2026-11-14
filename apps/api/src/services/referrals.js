@@ -13,6 +13,7 @@ import {
   notifyReferralRewardApproved,
   notifyStaffAlert,
 } from './notifications.js';
+import { emitReport } from './managementReports.js';
 
 /**
  * ApplianceReferral rewards program — service layer (Phase 1, 2026-11-12).
@@ -223,6 +224,15 @@ export async function createInvite({ code, friendName, phone = null, email = nul
     details: { code: referral.code, status: journey.status, via: 'INVITE' },
   });
   const notifications = notifyReferralInvite({ referral, journey, source });
+  emitReport({
+    department: 'referrals',
+    type: 'REFERRAL_INVITE_SENT',
+    title: `Referral invite sent — code ${referral.code}`,
+    detail: { referralCode: referral.code, referrerName: referral.customerName || null, refereeName: journey.refereeName || null, refereePhone: journey.refereePhone || null, refereeEmail: journey.refereeEmail || null, journeyId: journey.id },
+    source,
+    reference: referral.code,
+    eventKey: `referral-invite:${journey.id}:report`,
+  });
   return { journey, created: true, notifications };
 }
 
@@ -538,6 +548,14 @@ export async function approveReward(journeyId, staffUser, amountCentsOverride = 
     referenceCode: journey.bookingReference || null,
     details: { creditId: credit.id, amountCents, bonusCreditId: bonusCredit?.id ?? null, bonusAmountCents: bonusCredit?.amountCents ?? null },
   });
+  emitReport({
+    department: 'referrals',
+    type: 'REFERRAL_CREDIT_APPROVED',
+    title: `Referral credit approved — ${journey.code}`,
+    detail: { referralCode: journey.code, journeyId: journey.id, creditId: credit.id, amountCents, bonusAmountCents: bonusCredit?.amountCents ?? null, decidedBy: staffActor(staffUser), refereeName: journey.refereeName || null },
+    reference: journey.bookingReference || journey.code,
+    eventKey: `referral-credit:${credit.id}:approved:report`,
+  });
   return { journey, credit, bonusCredit };
 }
 
@@ -612,6 +630,14 @@ export async function redeemCredit(creditId, bookingReference = null, staffUser 
     entityId: credit.id,
     referenceCode: credit.redeemedReference,
     details: { journeyId: credit.journeyId, amountCents: credit.amountCents },
+  });
+  emitReport({
+    department: 'referrals',
+    type: 'REFERRAL_CREDIT_REDEEMED',
+    title: `Referral credit redeemed — ${credit.redeemedReference || credit.id}`,
+    detail: { creditId: credit.id, journeyId: credit.journeyId, amountCents: credit.amountCents, redeemedReference: credit.redeemedReference, decidedBy: staffActor(staffUser) },
+    reference: credit.redeemedReference || null,
+    eventKey: `referral-credit:${credit.id}:redeemed:report`,
   });
   return { credit, journey };
 }

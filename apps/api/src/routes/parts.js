@@ -9,6 +9,7 @@ import {
 } from '../db/partsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
+import { emitReport } from '../services/managementReports.js';
 
 /**
  * Parts Supply OS — suppliers, parts inventory, purchase orders and
@@ -234,6 +235,15 @@ router.post('/parts/purchase-orders', ...staff, async (req, res) => {
   };
   store.purchaseOrders.push(po);
   await persistPurchaseOrder(po);
+  emitReport({
+    department: 'parts',
+    type: 'PART_PURCHASE_ORDER_CREATED',
+    title: `Parts purchase order ${po.reference} created`,
+    detail: { purchaseOrderId: po.id, reference: po.reference, supplierId: po.supplierId, status: po.status, totalCents: po.totalCents, lineCount: po.lines.length, createdBy: po.createdBy },
+    source: 'parts-console',
+    reference: po.reference,
+    eventKey: `purchase-order:${po.id}:created:report`,
+  });
   return res.status(201).json({ data: poView(po) });
 });
 
@@ -255,6 +265,15 @@ router.post('/parts/purchase-orders/:id/receive', ...staff, async (req, res) => 
   po.receivedAt = t;
   po.updatedAt = t;
   await persistPurchaseOrder(po);
+  emitReport({
+    department: 'parts',
+    type: 'PART_PURCHASE_ORDER_RECEIVED',
+    title: `Parts purchase order ${po.reference} received`,
+    detail: { purchaseOrderId: po.id, reference: po.reference, supplierId: po.supplierId, totalCents: po.totalCents, receivedAt: po.receivedAt },
+    source: 'parts-console',
+    reference: po.reference,
+    eventKey: `purchase-order:${po.id}:received:report`,
+  });
   return res.json({ data: poView(po) });
 });
 

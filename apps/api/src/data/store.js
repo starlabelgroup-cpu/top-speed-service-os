@@ -117,6 +117,11 @@ export const store = {
   // approved by the owner. Hydrated from the AdCampaign table via
   // db/adStudioRepo; degrades to an empty list like the Media OS.
   adCampaigns: [],
+  // Management department reports (2026-11-14): every feature request
+  // on every platform, routed to its head department for management to
+  // read + acknowledge. Hydrated from the DepartmentReport table via
+  // db/managementReportsRepo; degrades to an empty list like the rest.
+  departmentReports: [],
   marketingCities: [],
   marketingBrands: [],
   marketingServices: [],

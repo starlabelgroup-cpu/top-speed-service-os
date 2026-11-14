@@ -5,6 +5,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { findPaymentBySessionId, latestPaymentForBooking, persistPayment } from '../db/paymentsRepo.js';
 import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notifications.js';
+import { emitReport } from '../services/managementReports.js';
 import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, verifyWebhookSignature, webhookConfigured } from '../services/stripe.js';
 
 /**
@@ -86,6 +87,15 @@ router.post('/payments/diagnostic/checkout', authenticate, requireCompany, async
       referenceCode: booking.referenceCode || null,
       details: { bookingId: booking.id, amountCents: payment.amountCents, purpose: payment.purpose },
     });
+    emitReport({
+      department: 'billing',
+      type: 'PAYMENT_CHECKOUT_CREATED',
+      title: `Diagnostic checkout created — ${booking.referenceCode || booking.id}`,
+      detail: { paymentId: payment.id, bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, amountCents: payment.amountCents, purpose: payment.purpose, status: payment.status },
+      source: booking.source || null,
+      reference: booking.referenceCode || null,
+      eventKey: `payment:${payment.id}:checkout:report`,
+    });
     return res.status(201).json({ data: { url: session.url, paymentId: payment.id } });
   } catch (error) {
     if (error?.code === 'stripe_error') return res.status(502).json({ error: 'stripe_error', message: error.message });
@@ -134,6 +144,15 @@ router.post('/payments/webhook', async (req, res) => {
             });
             const firstName = (booking.customer?.name || 'there').split(' ')[0];
             const message = 'Hi ' + firstName + ' — payment received: $99 diagnostic for booking ' + (booking.referenceCode || '') + '. It is credited in full toward your repair when you approve it. Thank you! — Top Speed Appliance';
+            emitReport({
+              department: 'billing',
+              type: 'PAYMENT_RECEIVED',
+              title: `Payment received — ${booking.referenceCode || booking.id}`,
+              detail: { paymentId: payment.id, bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, amountCents: payment.amountCents, purpose: payment.purpose, paidAt: payment.paidAt },
+              source: booking.source || null,
+              reference: booking.referenceCode || null,
+              eventKey: `payment:${payment.id}:received:report`,
+            });
             if (booking.customer?.phone) queueNotification({ channel: 'sms', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.phone, payload: { message, bookingId: booking.id }, source: booking.source || null, eventKey: `payment:${payment.id}:received:sms`, eventType: 'PAYMENT' });
             if (booking.customer?.email) queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED, to: booking.customer.email, payload: { message, bookingId: booking.id }, source: booking.source || null, eventKey: `payment:${payment.id}:received:email`, eventType: 'PAYMENT' });
           }
@@ -141,6 +160,14 @@ router.post('/payments/webhook', async (req, res) => {
           payment.status = 'EXPIRED';
           payment.updatedAt = new Date().toISOString();
           await persistPayment(payment).catch(() => {});
+          emitReport({
+            department: 'billing',
+            type: 'PAYMENT_CHECKOUT_EXPIRED',
+            title: `Diagnostic checkout expired — payment ${payment.id}`,
+            detail: { paymentId: payment.id, bookingId: payment.bookingId, amountCents: payment.amountCents, purpose: payment.purpose },
+            reference: null,
+            eventKey: `payment:${payment.id}:expired:report`,
+          });
         }
       }
     }

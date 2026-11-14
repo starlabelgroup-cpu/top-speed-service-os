@@ -17,6 +17,7 @@ import {
   windowById,
 } from '../services/bookos.js';
 import { notifyAppointmentReminder, notifyBookingConfirmation } from '../services/notifications.js';
+import { emitReport } from '../services/managementReports.js';
 
 const router = Router();
 
@@ -169,6 +170,15 @@ router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
     details: { team: 'Service Setters', setBy, date, window, city: booking.city, status: booking.status },
   });
   const confirmations = notifyBookingConfirmation(booking, booking.source || null);
+  emitReport({
+    department: 'dispatch',
+    type: 'JOB_APPOINTMENT_SET',
+    title: `Appointment set — ${booking.referenceCode || booking.id}`,
+    detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, service: booking.appliance || null, city: booking.city || null, date, window, setBy },
+    source: booking.source || null,
+    reference: booking.referenceCode || null,
+    eventKey: `booking:${booking.id}:appointment-set:${booking.appointment.setAt}:report`,
+  });
   await persistBooking(booking);
 
   return res.status(201).json({
@@ -451,6 +461,15 @@ router.post('/bookos/bookings/:id/resolve-area', ...staffOnly, async (req, res) 
     entityId: booking.id,
     referenceCode: booking.referenceCode || null,
     details: { team: 'Service Setters', resolvedBy: parsed.data.resolvedBy, area },
+  });
+  emitReport({
+    department: 'dispatch',
+    type: 'JOB_AREA_RESOLVED',
+    title: `Service area resolved — ${booking.referenceCode || booking.id}`,
+    detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, service: booking.appliance || null, city: booking.city || null, area, resolvedBy: parsed.data.resolvedBy },
+    source: booking.source || null,
+    reference: booking.referenceCode || null,
+    eventKey: `booking:${booking.id}:area-resolved:${booking.updatedAt}:report`,
   });
   await persistBooking(booking);
   return res.json({ data: { bookingId: booking.id, referenceCode: booking.referenceCode || null, area: booking.area, areaStatus: booking.areaStatus } });

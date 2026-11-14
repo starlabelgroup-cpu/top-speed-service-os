@@ -19,6 +19,7 @@ import { hydrateReferrals } from './referralsRepo.js';
 import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
 import { hydrateMedia } from './mediaOsRepo.js';
 import { hydrateAdCampaigns } from './adStudioRepo.js';
+import { hydrateDepartmentReports } from './managementReportsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -310,6 +311,13 @@ export async function hydrateStore() {
     await hydrateAdCampaigns();
   } catch (error) {
     console.error('hydrateAdCampaigns failed (Ad Studio degraded, platform continues)', error?.message || error);
+  }
+  // Management department reports are an add-on too: a missing table
+  // mid-deploy degrades to an empty feed, never blocks hydration.
+  try {
+    await hydrateDepartmentReports();
+  } catch (error) {
+    console.error('hydrateDepartmentReports failed (management reports degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };

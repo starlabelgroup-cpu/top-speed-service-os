@@ -1145,3 +1145,28 @@ model AdCampaign {
   @@index([status])
   @@index([businessLine, status])
 }
+
+// Management department reports (2026-11-14): every request any platform
+// feature produces — booking, referral, subscription/offer sign-up,
+// account, job event, payment, training, publish, campaign action —
+// lands here as ONE report routed to the head department that owns it,
+// with the exact request detail, for management to read + acknowledge.
+// Emitted failure-proof from services/managementReports.js; the
+// in-memory store is the working set, this table is the durable record.
+model DepartmentReport {
+  id         String   @id @default(uuid()) @db.Uuid
+  department String
+  type       String
+  title      String
+  detail     Json     @default("{}")
+  source     String?
+  reference  String?
+  eventKey   String?  @unique
+  status     String   @default("NEW")
+  ackById    String?  @db.Uuid
+  ackAt      DateTime?
+  createdAt  DateTime @default(now())
+
+  @@index([department, status])
+  @@index([createdAt])
+}

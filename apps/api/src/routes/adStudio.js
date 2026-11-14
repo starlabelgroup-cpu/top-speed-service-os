@@ -5,6 +5,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import { persistAdCampaign } from '../db/adStudioRepo.js';
+import { emitReport } from '../services/managementReports.js';
 import { persistBanner } from '../db/bannersRepo.js';
 
 /**
@@ -322,6 +323,17 @@ async function transition(req, res, target, { owner = false } = {}) {
     entityId: record.id,
     details: { sourceTag: record.sourceTag, ownerAction: owner },
   });
+  if (target === 'PENDING_APPROVAL' || target === 'ACTIVE') {
+    emitReport({
+      department: 'marketing',
+      type: target === 'ACTIVE' ? 'AD_CAMPAIGN_APPROVED' : 'AD_CAMPAIGN_SUBMITTED',
+      title: target === 'ACTIVE' ? `Ad campaign approved & live — ${record.name}` : `Ad campaign submitted for approval — ${record.name}`,
+      detail: { campaignId: record.id, name: record.name, businessLine: record.businessLine, sourceTag: record.sourceTag, destinationUrl: record.destinationUrl, placement: record.placement, actor: actorOf(req) },
+      source: 'ad-studio-console',
+      reference: record.sourceTag,
+      eventKey: `ad-campaign:${record.id}:${target}:${record.updatedAt}`,
+    });
+  }
   return res.json({ data: publicCampaign(record) });
 }
 

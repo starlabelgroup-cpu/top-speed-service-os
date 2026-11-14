@@ -10,6 +10,7 @@ import {
 import { partsSummary } from './parts.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
+import { emitReport } from '../services/managementReports.js';
 
 /**
  * QuickBooks finance integration — BUILT DARK, by design.
@@ -118,6 +119,15 @@ router.post('/finance/sync', authenticate, requireCompany, requireRole(ROLES.COM
     invoicesStored += 1;
   }
 
+  emitReport({
+    department: 'billing',
+    type: 'FINANCE_SYNC_RUN',
+    title: `QuickBooks finance sync — ${connection.companyName || 'company'}`,
+    detail: { companyName: connection.companyName, snapshotsStored, invoicesStored, syncedAt: t, syncedBy: req.user?.id || null },
+    source: 'finance-console',
+    reference: null,
+    eventKey: `finance-sync:${t}`,
+  });
   return res.json({
     data: {
       status: 'connected',

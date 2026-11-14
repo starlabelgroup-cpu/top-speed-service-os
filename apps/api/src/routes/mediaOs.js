@@ -5,6 +5,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import { persistMediaAsset, persistMediaContent } from '../db/mediaOsRepo.js';
+import { emitReport } from '../services/managementReports.js';
 
 /**
  * Top Speed Media OS — Phase 1 API on the Service OS backend
@@ -266,6 +267,17 @@ router.post('/media-os/admin/content/:id/status', ...mediaOnly, async (req, res)
     entityId: record.id,
     details: { slug: record.slug },
   });
+  if (target === 'PUBLISHED') {
+    emitReport({
+      department: 'marketing',
+      type: 'MEDIA_PUBLISHED',
+      title: `Media published — ${record.title || record.slug}`,
+      detail: { contentId: record.id, title: record.title || null, slug: record.slug, type: record.type || null, division: record.division || null, actor: actorOf(req) },
+      source: 'media-os-console',
+      reference: record.slug,
+      eventKey: `media-content:${record.id}:published:${record.updatedAt}`,
+    });
+  }
   return res.json({ data: adminContent(record) });
 });
 

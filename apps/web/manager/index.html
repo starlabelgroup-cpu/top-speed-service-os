@@ -88,6 +88,19 @@ h2.sec:first-child{margin-top:2px}
 footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-size:12px;line-height:1.6}
 .spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.tabbadge{background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Inter}
+.chip.on{color:#fff;border-color:var(--blue)}
+.chip .n{color:var(--red);font-weight:700}
+.rep{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+.rep .rt{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.rep .rt b{font-family:"Space Grotesk";font-size:14.5px;line-height:1.35}
+.rep .meta{font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.6}
+.rep .det{font-size:13px;line-height:1.6;margin-top:9px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+.rep .det .k{color:var(--mut);font-weight:600}
+.rep .ack{margin-top:11px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter}
+.rep .acked{font-size:12px;color:var(--grn);font-weight:600;margin-top:11px}
 @media(min-width:760px){body{padding-bottom:26px}nav.tabs{position:sticky;bottom:auto;top:57px;border-top:0;border-bottom:1px solid var(--line)}.tabs-in{justify-content:flex-start;gap:6px}.tab{flex-direction:row;font-size:13px;padding:9px 14px}}
 </style>
 </head>
@@ -113,6 +126,7 @@ footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-si
 <div id="portal" style="display:none">
 <nav class="tabs"><div class="tabs-in">
   <button class="tab on" data-tab="overview" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10.5M10 20V4.8M16 20v-8.4M21 20H3" stroke="#E8322E"/><path d="M4 20v-6.5M9.5 20V7M15 20v-5.5M20 20v-9.5"/></svg>Overview</button>
+  <button class="tab" data-tab="reports" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16M4 12h16M4 18.5h10" /><path d="M17.5 16.2l1.8 1.8 3-3.4" stroke="#E8322E"/></svg>Reports<span class="tabbadge" id="repBadge" style="display:none"></span></button>
   <button class="tab" data-tab="analytics" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg>Analytics</button>
   <button class="tab" data-tab="platforms" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" stroke="#E8322E"/></svg>Platforms</button>
   <button class="tab" data-tab="automate" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1" stroke="#E8322E"/></svg>Automate</button>
@@ -131,6 +145,14 @@ footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-si
     <div class="grid" id="kpiGrid"></div>
     <h2 class="sec">Departments</h2>
     <div class="grid"><div class="card wide"><div class="rows" id="deptRows"><span class="mut small"><span class="spin"></span> Loading departments…</span></div></div></div>
+    <h2 class="sec">Management reports</h2>
+    <div class="grid"><div class="card wide"><div class="rows" id="repStrip"><span class="mut small"><span class="spin"></span> Loading reports…</span></div></div></div>
+  </section>
+
+  <section class="page" id="page-reports">
+    <h2 class="sec">Department reports — every request, routed to its head department</h2>
+    <div class="chips" id="repChips"></div>
+    <div id="repFeed"><span class="mut small"><span class="spin"></span> Loading reports…</span></div>
   </section>
 
   <section class="page" id="page-analytics">
@@ -320,9 +342,74 @@ function boot(){
   });
 }
 
+var repDept = '';
+function repDetailHtml(d){
+  if (!d || typeof d !== 'object') return '';
+  var parts = [];
+  Object.keys(d).forEach(function(k){
+    var v = d[k];
+    if (v == null || v === '') return;
+    if (k === 'lines' && Array.isArray(v)){ v.forEach(function(line){ parts.push('<div>' + esc(line) + '</div>'); }); return; }
+    var label = k.replace(/([A-Z])/g, ' $1'); label = label.charAt(0).toUpperCase() + label.slice(1);
+    if (Array.isArray(v)) parts.push('<div><span class="k">' + esc(label) + ':</span> ' + esc(v.join(', ')) + '</div>');
+    else if (typeof v === 'object') parts.push('<div><span class="k">' + esc(label) + ':</span> ' + esc(Object.keys(v).map(function(ik){ return v[ik] != null && v[ik] !== '' ? ik + ': ' + v[ik] : ''; }).filter(Boolean).join(' · ')) + '</div>');
+    else parts.push('<div><span class="k">' + esc(label) + ':</span> ' + esc(v) + '</div>');
+  });
+  return parts.length ? '<div class="det">' + parts.join('') + '</div>' : '';
+}
+function loadReports(){
+  get('/management/reports/summary', true).then(function(res){
+    var strip = document.getElementById('repStrip');
+    var badge = document.getElementById('repBadge');
+    if (!res.ok){ strip.innerHTML = '<span class="mut small">Reports need a staff session — if you just signed in, tap Refresh.</span>'; return; }
+    var s = data(res.j) || {}; var deps = s.departments || [];
+    if (badge){ if (s.totalNew > 0){ badge.textContent = s.totalNew; badge.style.display = ''; } else badge.style.display = 'none'; }
+    var names = {};
+    var chips = '<button class="chip' + (repDept === '' ? ' on' : '') + '" data-dept="" type="button">All departments</button>';
+    var stripRows = row(s.totalNew > 0 ? 'y' : 'g', '<b>' + esc(s.totalNew != null ? s.totalNew : 0) + ' unacknowledged</b> report(s) across all departments · ' + esc(s.totalToday != null ? s.totalToday : 0) + ' received today.');
+    deps.forEach(function(d){
+      names[d.id] = d.name;
+      chips += '<button class="chip' + (repDept === d.id ? ' on' : '') + '" data-dept="' + esc(d.id) + '" type="button">' + esc(d.name) + (d.newCount ? ' <span class="n">' + esc(d.newCount) + ' new</span>' : '') + '</button>';
+      if (d.newCount > 0) stripRows += row('y', '<b>' + esc(d.name) + '</b> — ' + esc(d.newCount) + ' waiting for acknowledgment.');
+    });
+    window._repNames = names;
+    document.getElementById('repChips').innerHTML = chips;
+    strip.innerHTML = stripRows + '<div class="row"><div><a class="small" href="#" id="repOpen" style="color:var(--blue);font-weight:600">Open the Reports tab →</a></div></div>';
+    var open = document.getElementById('repOpen');
+    if (open) open.addEventListener('click', function(ev){ ev.preventDefault(); document.querySelector('.tab[data-tab="reports"]').click(); });
+    document.querySelectorAll('#repChips .chip').forEach(function(ch){
+      ch.addEventListener('click', function(){ repDept = ch.getAttribute('data-dept') || ''; loadReports(); });
+    });
+  });
+  get('/management/reports?limit=100' + (repDept ? '&department=' + encodeURIComponent(repDept) : ''), true).then(function(res){
+    var feed = document.getElementById('repFeed');
+    if (!res.ok){ feed.innerHTML = '<span class="mut small">The report feed could not be loaded — tap Refresh.</span>'; return; }
+    var d = data(res.j) || {}; var reports = d.reports || [];
+    if (!reports.length){ feed.innerHTML = '<div class="card"><span class="mut small">No reports' + (repDept ? ' for this department' : '') + ' yet. Every booking, referral, account, payment, training session and publish lands here the moment it happens.</span></div>'; return; }
+    var names = window._repNames || {};
+    feed.innerHTML = reports.map(function(r){
+      var when = r.createdAt ? new Date(r.createdAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+      var meta = [names[r.department] || r.department, r.type, r.reference ? 'Ref ' + r.reference : '', r.source ? 'via ' + r.source : '', when].filter(Boolean).join(' · ');
+      var tail = r.status === 'NEW'
+        ? '<button class="ack" data-ack="' + esc(r.id) + '" type="button">Acknowledge</button>'
+        : '<div class="acked">Acknowledged' + (r.ackAt ? ' — ' + new Date(r.ackAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '') + '</div>';
+      return '<div class="rep"><div class="rt"><b>' + esc(r.title) + '</b><span class="pill ' + (r.status === 'NEW' ? 'warn' : 'ok') + '">' + esc(r.status) + '</span></div><div class="meta">' + esc(meta) + '</div>' + repDetailHtml(r.detail) + tail + '</div>';
+    }).join('');
+    feed.querySelectorAll('[data-ack]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        btn.disabled = true; btn.textContent = 'Acknowledging…';
+        fetch(API + '/management/reports/' + btn.getAttribute('data-ack') + '/ack', { method: 'POST', headers: hdr(), body: '{}' })
+          .then(function(){ loadReports(); })
+          .catch(function(){ btn.disabled = false; btn.textContent = 'Acknowledge'; });
+      });
+    });
+  });
+}
+
 function loadAll(){
   document.getElementById('updatedLine').innerHTML = '<span class="spin"></span> Refreshing live data…';
   var done = 0; function tick(){ done++; if (done >= 6){ document.getElementById('updatedLine').textContent = 'Live — updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + '. Tap Refresh anytime.'; } }
+  loadReports();
 
   get('/platform/departments', false).then(function(res){
     var d = data(res.j); var counts = {};
@@ -431,6 +518,7 @@ document.querySelectorAll('.tab').forEach(function(btn){
     document.querySelectorAll('section.page').forEach(function(s){ s.classList.remove('on'); });
     btn.classList.add('on');
     document.getElementById('page-' + btn.getAttribute('data-tab')).classList.add('on');
+    if (btn.getAttribute('data-tab') === 'reports' && token()) loadReports();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });

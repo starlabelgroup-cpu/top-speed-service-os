@@ -18,6 +18,7 @@ import {
 } from '../services/notifications.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
+import { emitReport } from '../services/managementReports.js';
 
 const router = Router();
 
@@ -301,6 +302,15 @@ router.post(
       entityId: booking.id,
       referenceCode: booking.referenceCode || null,
       details: { status: booking.status },
+    });
+    emitReport({
+      department: 'field',
+      type: 'JOB_COMPLETED',
+      title: `Job completed — ${booking.referenceCode || booking.id}`,
+      detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, service: booking.appliance || null, city: booking.city || null, completedBy: parsed.data.completedBy, completedAt: booking.completedAt, notes: parsed.data.notes || null },
+      source: booking.source || null,
+      reference: booking.referenceCode || null,
+      eventKey: `booking:${booking.id}:completed:report`,
     });
     const reviewRequests = notifyReviewRequest(booking, booking.source || null);
     // Flywheel "refer" stage: completion also issues the customer their

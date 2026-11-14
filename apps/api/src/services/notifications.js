@@ -2,6 +2,7 @@ import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { persistNotification } from '../db/flywheelRepo.js';
 import { drainEntries } from './senders.js';
+import { DEPARTMENT_FOR_INTERNAL_TEMPLATE, DEPARTMENT_FOR_STAFF_KIND, emitReport } from './managementReports.js';
 
 /**
  * Notification pipeline — ONE system for every email/SMS alert and
@@ -136,6 +137,21 @@ export function queueNotification({ channel, template, to, payload = {}, source 
     entityId: entry.id,
     details: { channel, template, to },
   });
+  // Management reporting (2026-11-14): internal notices ARE management
+  // events (dispatch matched/approved, commercial work orders). They
+  // emit exactly one department report, deduped on the outbox eventKey
+  // when one exists, else on template + booking.
+  if (channel === 'internal' && DEPARTMENT_FOR_INTERNAL_TEMPLATE[template]) {
+    emitReport({
+      department: DEPARTMENT_FOR_INTERNAL_TEMPLATE[template],
+      type: template,
+      title: payload?.message ? String(payload.message).slice(0, 300) : template,
+      detail: { ...(payload || {}) },
+      source,
+      reference: payload?.referenceCode || payload?.workOrderReference || null,
+      eventKey: eventKey || `internal:${template}:${payload?.bookingId || entry.id}`,
+    });
+  }
   if ((channel === 'email' || channel === 'sms') && entry.status === 'QUEUED') {
     scheduleEntryDrain(entry);
   }
@@ -166,7 +182,7 @@ export const STAFF_ALERT_PHONE = PLATFORM_CONSTANTS.phone; // 954-931-7997, the 
  * when a channel is off, a GATED (SETTING_DISABLED) entry is recorded
  * instead so the console shows what was suppressed and why.
  */
-export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = null, city = null, lines = [], consolePath = '/portal', source = null, eventKeyBase = null }) {
+export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = null, city = null, lines = [], consolePath = '/portal', source = null, eventKeyBase = null, reportDetail = null, reportTitle = null }) {
   const settings = getNotificationSettings();
   const label = kindLabel || kind;
   const keyBase = eventKeyBase || `submission:${reference || kind}`;
@@ -196,6 +212,27 @@ export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = n
   } else {
     entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_PHONE, payload: smsPayload, source, eventKey: `${keyBase}:staff:sms`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
   }
+  // Management reporting (2026-11-14): this staff alert is the central
+  // choke point — EVERY event that alerts staff emits exactly ONE
+  // department report here, routed by kind, carrying the exact facts
+  // staff were told (plus any structured reportDetail the caller had).
+  // Deduped on the same keyBase as the alert entries themselves.
+  emitReport({
+    department: DEPARTMENT_FOR_STAFF_KIND[kind] || undefined,
+    type: kind,
+    title: reportTitle || `New ${label}${reference ? ` — ${reference}` : ''}`,
+    detail: {
+      kind,
+      reference: reference || null,
+      submitterName: submitterName || null,
+      city: city || null,
+      lines: (lines || []).filter(Boolean),
+      ...(reportDetail || {}),
+    },
+    source,
+    reference: reference || null,
+    eventKey: `${keyBase}:report`,
+  });
   return entries;
 }
 
@@ -347,6 +384,9 @@ export function notifySubmission({ kind, reference, submitter = {}, lines = [], 
     consolePath: path,
     source,
     eventKeyBase: keyBase,
+    reportDetail: {
+      submitter: { name: submitter.name || null, phone: submitter.phone || null, email: submitter.email || null },
+    },
   }));
   return entries;
 }
@@ -383,6 +423,14 @@ export function notifyAccountCreated(user, source = null) {
     consolePath: '/portal',
     source,
     eventKeyBase: `account:${user.id}`,
+    reportDetail: {
+      email: user.email || null,
+      phone: user.phone || null,
+      roles: user.roles || [],
+      signupSource: user.signupSource || null,
+      signupOfferSlug: user.signupOfferSlug || null,
+      signupAudience: user.signupAudience || null,
+    },
   }));
   return entries;
 }
@@ -583,6 +631,15 @@ export function notifyNewBooking(booking, source = null) {
     consolePath: '/book-os',
     source,
     eventKeyBase: `booking:${booking.id}`,
+    reportDetail: {
+      bookingId: booking.id,
+      customer: { name: booking.customer?.name || null, phone: booking.customer?.phone || null, email: booking.customer?.email || null },
+      service: booking.appliance || null,
+      issue: booking.issue || null,
+      areaStatus: booking.areaStatus || null,
+      preferredWindow: booking.preferredWindow || null,
+      bookingStatus: booking.status || null,
+    },
   });
 }
 
