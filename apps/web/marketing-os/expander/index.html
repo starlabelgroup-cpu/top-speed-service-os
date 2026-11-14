@@ -41,6 +41,7 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink
     <button id="btnCats">Run Phase 2 — Categories (20)</button>
     <button id="btnProblems">Run Phase 3 — Problem Pages (31)</button>
     <button id="btnCore">Run Phase 4 — Core Service Pages (8)</button>
+    <button id="btnDrafts">Publish All Draft / In-Review Pages</button>
     <button id="btnCounts" class="ghost">Refresh Counts</button>
   </div>
   <div id="log">Log ready.</div>
@@ -359,6 +360,28 @@ function runCore(btn){
   chain.then(function(){ log('PHASE 4 DONE — published '+done+', already existed '+existed+', failed '+failed); btn.disabled=false; refreshCounts(); });
 }
 
+function runPublishDrafts(btn){
+  btn.disabled = true; log('\n=== PUBLISH DRAFTS: finding every unpublished page ===');
+  api('GET','/marketing-os/admin/pages').then(function(r){
+    var pages = (r.json && r.json.data) || [];
+    var todo = pages.filter(function(p){ return p.status !== 'PUBLISHED'; });
+    log('Unpublished pages found: '+todo.length);
+    var done=0, failed=0, chain=Promise.resolve();
+    todo.forEach(function(p){
+      chain = chain.then(function(){
+        var steps = (p.status==='DRAFT')
+          ? api('POST','/marketing-os/admin/pages/'+p.id+'/status',{status:'IN_REVIEW'}).then(function(){ return api('POST','/marketing-os/admin/pages/'+p.id+'/status',{status:'PUBLISHED'}); })
+          : api('POST','/marketing-os/admin/pages/'+p.id+'/status',{status:'PUBLISHED'});
+        return steps.then(function(r2){
+          if(r2.status<300){ done++; log('  published ✓ '+p.canonicalUrl); }
+          else { failed++; log('  ! publish failed for '+p.canonicalUrl+' ('+r2.status+'): '+(r2.text||'').slice(0,140)); }
+        }).then(function(){ return sleep(150); });
+      });
+    });
+    return chain.then(function(){ log('PUBLISH DRAFTS DONE — published '+done+', failed '+failed); btn.disabled=false; refreshCounts(); });
+  });
+}
+
 function refreshCounts(){
   taxonomy().then(function(t){
     if(!t){ log('counts unavailable'); return; }
@@ -379,6 +402,7 @@ function refreshCounts(){
   document.getElementById('btnCats').onclick = function(){ runCats(this); };
   document.getElementById('btnProblems').onclick = function(){ runProblems(this); };
   document.getElementById('btnCore').onclick = function(){ runCore(this); };
+  document.getElementById('btnDrafts').onclick = function(){ runPublishDrafts(this); };
   document.getElementById('btnCounts').onclick = function(){ refreshCounts(); };
 })();
 </script>
