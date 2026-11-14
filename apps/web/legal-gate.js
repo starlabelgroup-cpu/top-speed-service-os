@@ -56,7 +56,7 @@
     if (!box) return;
     box.innerHTML =
       '<div class="tsos-legal">' +
-      '<b class="t">📜 Review &amp; sign — required before account access</b>' +
+      '<b class="t"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h11a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7M7 4a2.4 2.4 0 0 0 0 4.8M7 20a2.4 2.4 0 0 0 0-4.8V8.8" transform="translate(-.6 0)"/><path d="M10.4 9h6M10.4 12.4h6M10.4 15.8h4" stroke="#E8322E"/></svg> Review &amp; sign — required before account access</b>' +
       '<p>Read both documents on the <a href="/legal" target="_blank" rel="noopener"><b>Legal Documents page</b></a>, check each agreement box, and type your full name as your signature. We record the versions you signed with your account.</p>' +
       DOCS.map(function (d) {
         return '<label class="t"><input type="checkbox" id="' + prefix + 'Terms' + d.suffix + '"><span>I agree to the <a href="/legal#' + d.anchor + '" target="_blank" rel="noopener">' + d.title + '</a> (v' + d.version + ')</span></label>';
@@ -87,7 +87,7 @@
     gate.setAttribute('aria-label', 'Sign the legal documents to continue');
     gate.innerHTML =
       '<div class="tg-card">' +
-      '<h2>✍️ Sign to continue</h2>' +
+      '<h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20l1-4.2L16.4 4.4a2.1 2.1 0 0 1 3 3L8 18.8z"/><path d="M14.6 6.2l3 3" stroke="#E8322E"/></svg> Sign to continue</h2>' +
       '<p>Before you use this app, please review and sign the current Top Speed legal documents. This takes a moment and is recorded with your account' + (opts.reason ? ' — ' + opts.reason : '') + '.</p>' +
       '<div id="tsosGateSign"></div>' +
       '<div class="tg-err" id="tsosGateErr"></div>' +

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Page Studio — Top Speed Marketing OS</title>
@@ -205,7 +205,7 @@ function mosSignIn(){
       try{ localStorage.setItem('tsos_studio_token', t); }catch(e){}
       mosShow();
     })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function mosSignOut(){ try{ localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
 function mosShow(){
@@ -276,15 +276,15 @@ function txSave(){
   if(txKind==='cities') body.serviceCovered=document.getElementById('txCovered').value==='true';
   if(txKind==='services'){ var p=document.getElementById('txPartOf').value.trim(); body.partOfService=p?p:null; }
   var p=txEditId?mf('PATCH','/marketing-os/admin/taxonomy/'+txKind+'/'+txEditId,body):mf('POST','/marketing-os/admin/taxonomy/'+txKind,body);
-  p.then(function(){ msg.textContent='✅ Saved.'; msg.className='msg ok'; txClear(); return txLoad(); })
-   .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+  p.then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> Saved.'; msg.className='msg ok'; txClear(); return txLoad(); })
+   .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function txDelete(id,name){
   if(!confirm('Delete '+name+'? Pages referencing it will block the delete.')) return;
   var msg=document.getElementById('txMsg');
   mf('DELETE','/marketing-os/admin/taxonomy/'+txKind+'/'+id)
-    .then(function(){ msg.textContent='✅ Deleted.'; msg.className='msg ok'; return txLoad(); })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> Deleted.'; msg.className='msg ok'; return txLoad(); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 
 /* ---------- create page ---------- */
@@ -324,8 +324,8 @@ function cpCreate(){
   if(n.brand) body.brandId=document.getElementById('cpBrand').value;
   if(n.service) body.serviceId=document.getElementById('cpService').value;
   mf('POST','/marketing-os/admin/pages',body)
-    .then(function(j){ msg.textContent='✅ Draft created: '+j.data.canonicalUrl; msg.className='msg ok'; pgLoad(); txLoad(); })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .then(function(j){ msg.textContent='Draft created: '+j.data.canonicalUrl; msg.className='msg ok'; pgLoad(); txLoad(); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 
 /* ---------- pages ---------- */
@@ -351,20 +351,20 @@ function pgLoad(){
       }).join(''):'<tr><td colspan="5">No pages yet — create the first draft above.</td></tr>';
     })
     .catch(function(e){
-      document.getElementById('pgRows').innerHTML='<tr><td colspan="5">⚠️ '+esc(e.message)+' — marketing/staff accounts only.</td></tr>';
+      document.getElementById('pgRows').innerHTML='<tr><td colspan="5"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(e.message)+' — marketing/staff accounts only.</td></tr>';
     });
 }
 function pgStatus(id,status){
   var msg=document.getElementById('pgMsg');
   mf('POST','/marketing-os/admin/pages/'+id+'/status',{status:status})
-    .then(function(){ msg.textContent='✅ Moved to '+status+'.'; msg.className='msg ok'; pgLoad(); txLoad(); })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .then(function(){ msg.textContent='Moved to '+status+'.'; msg.className='msg ok'; pgLoad(); txLoad(); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function pgDelete(id){
   if(!confirm('Delete this page and its version history?')) return;
   mf('DELETE','/marketing-os/admin/pages/'+id)
     .then(function(){ pgLoad(); txLoad(); })
-    .catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+    .catch(function(e){ document.getElementById('pgMsg').textContent=' '+e.message; });
 }
 
 /* ---------- edit + versions ---------- */
@@ -379,7 +379,7 @@ function pgEdit(id){
     document.getElementById('edMsg').textContent='';
     edRenderSections();
     document.getElementById('edCard').scrollIntoView({behavior:'smooth'});
-  }).catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+  }).catch(function(e){ document.getElementById('pgMsg').textContent=' '+e.message; });
 }
 function edRenderSections(){
   document.getElementById('edSections').innerHTML=edSections.map(function(b,i){
@@ -408,8 +408,8 @@ function edSave(){
   var msg=document.getElementById('edMsg');
   var body={title:document.getElementById('edTitle').value.trim(),metaDescription:document.getElementById('edMeta').value.trim()||null,sections:edSections,note:document.getElementById('edNote').value.trim()||undefined};
   mf('PATCH','/marketing-os/admin/pages/'+edPage.id,body)
-    .then(function(j){ msg.textContent='✅ Saved as version '+(j.data.latestVersion||'')+'.'; msg.className='msg ok'; edPage=j.data; pgLoad(); })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .then(function(j){ msg.textContent='Saved as version '+(j.data.latestVersion||'')+'.'; msg.className='msg ok'; edPage=j.data; pgLoad(); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function pgVersions(id){
   mf('GET','/marketing-os/admin/pages/'+id+'/versions').then(function(j){
@@ -422,7 +422,7 @@ function pgVersions(id){
         '<br><span style="color:var(--muted);font-size:13px;">'+esc((v.snapshot&&v.snapshot.title)||'')+'</span></div>';
     }).join(''):'<p class="sub">No versions yet.</p>';
     document.getElementById('verCard').scrollIntoView({behavior:'smooth'});
-  }).catch(function(e){ document.getElementById('pgMsg').textContent='⚠️ '+e.message; });
+  }).catch(function(e){ document.getElementById('pgMsg').textContent=' '+e.message; });
 }
 
 if(tok()){ mf('GET','/marketing-os/admin/taxonomy').then(function(){ mosShow(); }).catch(function(){}); }

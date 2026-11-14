@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track My Tech — Top Speed Service OS</title>
@@ -132,13 +132,13 @@ const $ = (id) => document.getElementById(id);
 function timelineHTML(t) {
   const items = t.stageLabels.map((label, i) => {
     const cls = i < t.stageIndex ? 'done' : (i === t.stageIndex ? (t.stageIndex >= 7 ? 'done' : 'now') : '');
-    const mark = i < t.stageIndex || t.stageIndex >= 7 && i === 7 ? '✓' : (i + 1);
+    const mark = i < t.stageIndex || t.stageIndex >= 7 && i === 7 ? '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>' : (i + 1);
     return `<li class="${cls}"><span class="n">${mark}</span><span>${label}</span></li>`;
   }).join('');
   const dots = t.stageLabels.map((_, i) => `<i class="${i < t.stageIndex ? 'done' : (i === t.stageIndex ? 'on' : '')}"></i>`).join('');
   const eta = t.stageIndex === 3 && t.etaMinutes ? `<span class="pill pill-eta">ETA ~${t.etaMinutes} min</span>` : '';
   const tech = t.technician && t.technician.assigned
-    ? `<div class="techline">🔧 Your technician: <strong>${t.technician.name}</strong></div>`
+    ? `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> Your technician: <strong>${t.technician.name}</strong></div>`
     : `<div class="techline">Technician details appear here once your Service Setter assigns your visit.</div>`;
   return `<div class="dots">${dots}</div>
     <div class="stage-now">${t.stageLabel8} ${eta}</div>
@@ -159,7 +159,7 @@ function locLine(t) {
   const embed = mapsKey
     ? `<div class="mapembed"><iframe title="Technician live location map" src="https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(mapsKey)}&q=${L.lat},${L.lng}&zoom=14" style="width:100%;height:220px;border:0;border-radius:12px;margin-top:8px;display:block" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>`
     : '';
-  return `<div class="techline">📍 <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>${embed}`;
+  return `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>${embed}`;
 }
 
 function jobCard(t, extra) {

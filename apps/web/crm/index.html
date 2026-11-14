@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Top Speed CRM — Top Speed Appliance</title>
@@ -161,7 +161,7 @@ footer strong{color:#fff}
         <a class="tool" href="/media"><b>Media OS</b><p>Top Speed 360 media — content, channels and the public media surfaces.</p></a>
         <a class="tool" href="/track-console"><b>Track Console</b><p>Live job tracking oversight — en-route techs and customer tracking links.</p></a>
         <a class="tool" href="/commercial"><b>Commercial — Appliance Pro</b><p>Commercial accounts (APC-), facilities, equipment registry and work orders. Custom-quoted — the residential $99 diagnostic never applies here.</p></a>
-        <a class="tool" href="/book-os"><b>Referrals — ApplianceReferral</b><p>Referral approvals, issued credits and program settings live in the Referrals panel of Service Book Pro. Credits issue only on a human ✓.</p></a>
+        <a class="tool" href="/book-os"><b>Referrals — ApplianceReferral</b><p>Referral approvals, issued credits and program settings live in the Referrals panel of Service Book Pro. Credits issue only on a human <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>.</p></a>
       </div>
     </section>
   </div>
@@ -189,7 +189,7 @@ function crmSignIn(){
       try{ localStorage.setItem('tsos_crm_token', j.data.token); }catch(e){}
       crmShow();
     })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function crmSignOut(){ try{ localStorage.removeItem('tsos_crm_token'); }catch(e){} location.reload(); }
 function crmShow(){
@@ -233,7 +233,7 @@ function crmHome(){
       return '<div class="line"><b>'+crmEsc(e.type)+'</b>'+(e.referenceCode?' · '+crmEsc(e.referenceCode):'')+' <span class="mut">'+crmEsc(String(e.at||'').replace('T',' ').slice(0,16))+'</span></div>';
     }).join(''):'<p class="mut">No platform events yet.</p>';
   }).catch(function(e){
-    document.getElementById('homeKpis').innerHTML='<div class="kpi"><small>CRM home</small><b>⚠️</b><span>'+crmEsc(e.message)+'</span></div>';
+    document.getElementById('homeKpis').innerHTML='<div class="kpi"><small>CRM home</small><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg></b><span>'+crmEsc(e.message)+'</span></div>';
   });
 }
 function crmLoad(){
@@ -248,7 +248,7 @@ function crmLoad(){
       }).join(''):'<tr><td colspan="5">No customers match.</td></tr>';
     })
     .catch(function(e){
-      document.getElementById('crmRows').innerHTML='<tr><td colspan="5">⚠️ '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
+      document.getElementById('crmRows').innerHTML='<tr><td colspan="5"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
     });
 }
 function crmDetail(id){
@@ -256,15 +256,15 @@ function crmDetail(id){
     .then(function(j){
       var d=j.data, c=d.customer;
       var props=(d.properties||[]).map(function(p){
-        return '<div class="line">📍 '+crmEsc(p.address||'')+(p.city?' · '+crmEsc(p.city):'')+(p.zip?' '+crmEsc(p.zip):'')+(p.area?' · <span class="pill">'+crmEsc(p.area)+'</span>':'')+'</div>';
+        return '<div class="line"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+crmEsc(p.address||'')+(p.city?' · '+crmEsc(p.city):'')+(p.zip?' '+crmEsc(p.zip):'')+(p.area?' · <span class="pill">'+crmEsc(p.area)+'</span>':'')+'</div>';
       }).join('')||'<p class="mut">No service address on file.</p>';
       var apps=(d.appliances||[]).map(function(a){
-        return '<div class="line">🔧 <b>'+crmEsc(a.type)+'</b>'+(a.brand?' · '+crmEsc(a.brand):'')+(a.model?' '+crmEsc(a.model):'')+(a.serial?' · SN '+crmEsc(a.serial):'')+(a.assetTag?' · '+crmEsc(a.assetTag):'')+(a.healthStatus?' · '+crmEsc(a.healthStatus):'')+' <span class="mut">('+(a.origin==='COMMERCIAL_REGISTRY'?'commercial registry':'garage')+')</span></div>';
+        return '<div class="line"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> <b>'+crmEsc(a.type)+'</b>'+(a.brand?' · '+crmEsc(a.brand):'')+(a.model?' '+crmEsc(a.model):'')+(a.serial?' · SN '+crmEsc(a.serial):'')+(a.assetTag?' · '+crmEsc(a.assetTag):'')+(a.healthStatus?' · '+crmEsc(a.healthStatus):'')+' <span class="mut">('+(a.origin==='COMMERCIAL_REGISTRY'?'commercial registry':'garage')+')</span></div>';
       }).join('')||'<p class="mut">No appliances on file.</p>';
       var bk=(d.bookings||[]).map(function(b){
         var appt=b.appointment?(' · ⏰ '+crmEsc(b.appointment.date)+' '+crmEsc(b.appointment.windowLabel||b.appointment.window)):'';
         return '<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' · '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' · '+crmEsc(b.source)+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span> '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)+appt+
-        ' <button class="btn ghost small" onclick="crmMatch(\''+b.id+'\',\''+crmEsc(b.referenceCode)+'\')">✦ Speedy match</button></div>';
+        ' <button class="btn ghost small" onclick="crmMatch(\''+b.id+'\',\''+crmEsc(b.referenceCode)+'\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy match</button></div>';
       }).join('')||'<p class="mut">No bookings yet.</p>';
       var intake=(d.intake||[]).map(function(x){
         return '<div class="line"><b>'+crmEsc(x.reference)+'</b> · '+crmEsc(x.type)+' <span class="mut">('+crmEsc(x.source||'web')+')</span><br>'+crmEsc(x.message||'')+'</div>';
@@ -281,7 +281,7 @@ function crmDetail(id){
       document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
         '<p class="mut" style="margin:6px 0 4px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
         '<p class="mut">Lead source: <b>'+crmEsc(c.leadSource||'—')+'</b>'+(c.referredByCode?' · referred by code <b>'+crmEsc(c.referredByCode)+'</b>':'')+' · customer since '+crmEsc(String(c.createdAt||'').slice(0,10))+'</p>' +
-        (d.account?'<p class="mut">Account: <b>'+(d.account.emailVerified?'email verified ✓':'email not verified yet')+'</b>'+(d.account.signupOfferSlug?' · signed up via offer <b>'+crmEsc(d.account.signupOfferSlug)+'</b>':'')+(d.account.signupAudience?' · '+crmEsc(d.account.signupAudience):'')+(d.account.serviceArea?' · profile area '+crmEsc(d.account.serviceArea)+(d.account.serviceAreaStatus?' ('+crmEsc(d.account.serviceAreaStatus)+')':''):'')+'</p>':'') +
+        (d.account?'<p class="mut">Account: <b>'+(d.account.emailVerified?'email verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>':'email not verified yet')+'</b>'+(d.account.signupOfferSlug?' · signed up via offer <b>'+crmEsc(d.account.signupOfferSlug)+'</b>':'')+(d.account.signupAudience?' · '+crmEsc(d.account.signupAudience):'')+(d.account.serviceArea?' · profile area '+crmEsc(d.account.serviceArea)+(d.account.serviceAreaStatus?' ('+crmEsc(d.account.serviceAreaStatus)+')':''):'')+'</p>':'') +
         '<div class="section"><h3>Properties / service addresses</h3>'+props+'</div>' +
         '<div class="section"><h3>Appliances &amp; equipment on file</h3>'+apps+'</div>' +
         '<div class="section"><h3>Job history</h3>'+bk+'</div>' +
@@ -290,7 +290,7 @@ function crmDetail(id){
         '<div class="section"><h3>Intake history</h3>'+intake+'</div>' +
         '<div class="section"><h3>Notes</h3>'+notes+
         '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><input id="crmNoteBody" type="text" placeholder="Add a note for the team…" style="flex:1;min-width:220px;width:auto;"><button class="btn blue" onclick="crmAddNote(\''+c.id+'\')">Add note</button></div><div class="msg" id="crmNoteMsg"></div></div>' +
-        '<div class="speedy"><h3>✦ Speedy assist — drafts &amp; suggestions only</h3>' +
+        '<div class="speedy"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy assist — drafts &amp; suggestions only</h3>' +
         '<p class="mut" style="margin:6px 0 12px;">Speedy assembles these from this customer\'s real records. Nothing is sent and nothing is dispatched from here — you approve every send and every dispatch. Speedy never issues refunds, certifies repair safety, or overrides a technician credential.</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><button class="btn blue" onclick="crmBrief(\''+c.id+'\')">Summarize this customer</button>' +
         '<select id="crmDraftPurpose" style="width:auto;flex:0 1 220px;"><option value="follow_up">Draft: follow-up</option><option value="appointment_confirm">Draft: confirm appointment</option><option value="review_request">Draft: review request</option><option value="waitlist_update">Draft: waitlist update</option></select>' +
@@ -299,15 +299,15 @@ function crmDetail(id){
         '</div>';
       window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
     })
-    .catch(function(e){ document.getElementById('crmMsg').textContent='⚠️ '+e.message; });
+    .catch(function(e){ document.getElementById('crmMsg').textContent=' '+e.message; });
 }
 function crmAddNote(id){
   var body=document.getElementById('crmNoteBody').value.trim();
   var msg=document.getElementById('crmNoteMsg');
   if(!body){ msg.textContent='Write the note first.'; msg.className='msg err'; return; }
   crmFetch('/crm/customers/'+id+'/notes',{method:'POST',body:{body:body}})
-    .then(function(){ msg.textContent='✓ Note saved.'; msg.className='msg ok'; crmDetail(id); })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Note saved.'; msg.className='msg ok'; crmDetail(id); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function speedyRender(html){
   var el=document.getElementById('speedyOut');
@@ -320,14 +320,14 @@ function crmBrief(id){
     speedyRender('<p><b>'+crmEsc(b.headline)+'</b></p>'+(b.lines||[]).map(function(l){ return '<p style="margin-top:6px;">'+crmEsc(l)+'</p>'; }).join('')+
       ((b.openItems||[]).length?'<p style="margin-top:8px;"><b>Open items</b></p>'+b.openItems.map(function(l){ return '<p style="margin-top:4px;">• '+crmEsc(l)+'</p>'; }).join(''):'')+
       '<p class="mut" style="margin-top:10px;">'+crmEsc(j.data.assembledFrom)+'</p>');
-  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+  }).catch(function(e){ speedyRender('<p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+'</p>'); });
 }
 function crmDraft(id){
   var purpose=document.getElementById('crmDraftPurpose').value;
   speedyRender('<p class="mut">Speedy is drafting…</p>');
   crmFetch('/crm/customers/'+id+'/speedy-draft',{method:'POST',body:{purpose:purpose}}).then(function(j){
     speedyRender('<label>Draft — review &amp; edit, then send it yourself through the normal channel. Nothing was sent.</label><textarea rows="4" style="width:100%;">'+crmEsc(j.data.draft)+'</textarea><p class="mut" style="margin-top:8px;">'+crmEsc(j.data.note)+'</p>');
-  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+  }).catch(function(e){ speedyRender('<p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+'</p>'); });
 }
 function crmMatch(bookingId, ref){
   speedyRender('<p class="mut">Speedy is scoring the network for '+crmEsc(ref||'this booking')+'…</p>');
@@ -337,7 +337,7 @@ function crmMatch(bookingId, ref){
       (s.length?s.map(function(x){ return '<p style="margin-top:6px;">• <b>'+crmEsc(x.businessName)+'</b> — score '+x.matchScore+' · '+crmEsc((x.reasons||[]).join('; '))+'</p>'; }).join(''):'<p style="margin-top:6px;">No provider clears the match threshold yet.</p>')+
       '<p class="mut" style="margin-top:10px;">'+crmEsc(j.data.note)+'</p>');
     document.getElementById('crmDetail').scrollIntoView({behavior:'smooth',block:'start'});
-  }).catch(function(e){ speedyRender('<p>⚠️ '+crmEsc(e.message)+'</p>'); });
+  }).catch(function(e){ speedyRender('<p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+'</p>'); });
 }
 function crmWaitlist(){
   crmFetch('/bookos/waitlist').then(function(j){
@@ -354,15 +354,15 @@ function crmWaitlist(){
       return '<tr><td><b>'+crmEsc(it.referenceCode)+'</b><br><span class="mut">'+crmEsc(it.appliance||'')+' · '+crmEsc(String(it.createdAt||'').slice(0,10))+'</span></td><td>'+crmEsc(it.customerName||'')+'<br><span class="mut">'+crmEsc(it.customerPhone||'')+'</span></td><td>'+crmEsc(it.serviceAddress||'')+'<br><span class="mut">'+crmEsc(it.city||'')+' '+crmEsc(it.zip||'')+'</span></td><td>'+statusPill(it.areaStatus)+'</td><td>'+resolve+'</td></tr>';
     }).join(''):'<tr><td colspan="5">Waitlist is clear — every request is inside the covered areas.</td></tr>';
   }).catch(function(e){
-    document.getElementById('wlRows').innerHTML='<tr><td colspan="5">⚠️ '+crmEsc(e.message)+'</td></tr>';
+    document.getElementById('wlRows').innerHTML='<tr><td colspan="5"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+'</td></tr>';
   });
 }
 function crmResolveArea(bookingId){
   var sel=document.getElementById('wlArea-'+bookingId);
   var area=sel?sel.value:'';
   crmFetch('/bookos/bookings/'+bookingId+'/resolve-area',{method:'POST',body:{area:area}})
-    .then(function(){ document.getElementById('wlMsg').textContent='✓ Area set to '+area+' — the booking is in the setter queue now.'; document.getElementById('wlMsg').className='msg ok'; crmWaitlist(); })
-    .catch(function(e){ document.getElementById('wlMsg').textContent='⚠️ '+e.message; document.getElementById('wlMsg').className='msg err'; });
+    .then(function(){ document.getElementById('wlMsg').textContent='Area set to '+area+'— the booking is in the setter queue now.'; document.getElementById('wlMsg').className='msg ok'; crmWaitlist(); })
+    .catch(function(e){ document.getElementById('wlMsg').textContent=' '+e.message; document.getElementById('wlMsg').className='msg err'; });
 }
 if(crmTok()){ crmFetch('/crm/home').then(function(){ crmShow(); }).catch(function(){}); }
 </script>

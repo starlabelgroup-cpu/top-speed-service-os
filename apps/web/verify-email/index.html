@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Verify Your Email — Top Speed Appliance</title>
@@ -42,7 +42,7 @@ footer strong{color:#fff}
     <a href="/offers-rewards">Offers</a>
     <a href="/app">My Account</a>
     <a class="btn" style="padding:10px 18px;" href="/#book">Book Service</a>
-  <a class="tse-call" href="tel:+19549317997">📞 Call</a></nav>
+  <a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
 </header>
 <div class="hero"><h1>Verify Your Email</h1></div>
 <section>
@@ -70,7 +70,7 @@ footer strong{color:#fff}
       cont = document.getElementById('veContinue'), prof = document.getElementById('veProfile'),
       signin = document.getElementById('veSignin');
   function fail(message) {
-    icon.textContent = '⚠️';
+    icon.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg>';
     msg.textContent = 'That link could not be verified.';
     err.textContent = message;
     err.style.display = 'block';
@@ -85,7 +85,7 @@ footer strong{color:#fff}
     return r.json().then(function (j) { return { ok: r.ok, j: j }; });
   }).then(function (x) {
     if (!x.ok) throw new Error((x.j && x.j.error) || 'Verification did not go through.');
-    icon.textContent = '✅';
+    icon.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg>';
     msg.innerHTML = 'Email verified for <b></b> — your booking confirmations, tracking updates and receipts will reach you. Your account is ready.';
     msg.querySelector('b').textContent = (x.j.user && x.j.user.email) || '';
     cont.href = x.j.appPath || '/app';

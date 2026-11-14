@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SEO Dashboard — Search Console + Analytics | Top Speed Marketing OS</title>
@@ -58,7 +58,7 @@ footer strong{color:#fff}
     <a href="/local">Local OS</a>
     <a href="/portal">Portal</a>
     <a href="#" id="mosOut" style="display:none;" onclick="seoSignOut(); return false;">Sign out</a>
-  <a class="tse-call" href="tel:+19549317997">📞 Call</a></nav>
+  <a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
 </header>
 
 <main>
@@ -148,7 +148,7 @@ function seoSignIn(){
       try{ localStorage.setItem('tsos_token', t); }catch(e){}
       seoShow();
     })
-    .catch(function(e){ msg.textContent='⚠️ '+e.message; msg.className='msg err'; });
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function seoSignOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
 function seoShow(){
@@ -190,7 +190,7 @@ function seoLoadStatus(){
     document.getElementById('seoData').style.display='';
     seoLoadAll();
   }).catch(function(e){
-    body.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>';
+    body.innerHTML='<p style="color:var(--red);font-weight:600;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(e.message)+'</p>';
   });
 }
 
@@ -212,7 +212,7 @@ function seoLoadOverview(){
     var d=j.data||{};
     if(!d.configured){ propsEl.innerHTML='<p style="color:var(--muted);">Not connected yet — see the connection steps above.</p>'; ga4El.innerHTML=''; return; }
     if(d.accessError){
-      propsEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(d.accessError)+'</p>';
+      propsEl.innerHTML='<p style="color:var(--red);font-weight:600;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(d.accessError)+'</p>';
     } else {
       propsEl.innerHTML=(d.properties||[]).map(function(p){
         if(!p.access) return '<div style="margin-bottom:18px;"><h3 style="color:var(--navy);margin-bottom:6px;">'+esc(p.label)+' <span class="pill wait">NO ACCESS YET</span></h3><p style="color:var(--muted);line-height:1.55;">'+esc(p.reason||'No access yet.')+'</p></div>';
@@ -230,7 +230,7 @@ function seoLoadOverview(){
         +'<p style="color:var(--muted);font-size:13px;">GA4 window: '+esc(g.startDate||'')+' → '+esc(g.endDate||'')+'.</p>';
     }
   }).catch(function(e){
-    propsEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>';
+    propsEl.innerHTML='<p style="color:var(--red);font-weight:600;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(e.message)+'</p>';
     ga4El.innerHTML='';
   });
 }
@@ -256,7 +256,7 @@ function seoLoadTables(){
       return '<tr><td>'+esc(r.query)+'</td><td class="num">'+num(r.clicks)+'</td><td class="num">'+num(r.impressions)+'</td><td class="num">'+pct(r.ctr)+'</td><td class="num">'+pos(r.position)+'</td></tr>';
     }).join('');
     qEl.innerHTML=tableHtml('<th>Query</th><th class="num">Clicks</th><th class="num">Impressions</th><th class="num">CTR</th><th class="num">Avg. position</th>', rows, 'No query data in this window yet — normal for a young property; Search Console fills in as Google indexes and ranks the pages.');
-  }).catch(function(e){ qEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>'; });
+  }).catch(function(e){ qEl.innerHTML='<p style="color:var(--red);font-weight:600;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(e.message)+'</p>'; });
 
   mf('/marketing-os/seo/pages'+base).then(function(j){
     var d=j.data||{};
@@ -270,7 +270,7 @@ function seoLoadTables(){
     }).join('');
     pEl.innerHTML=tableHtml('<th>Page</th><th class="num">Clicks</th><th class="num">Impressions</th><th class="num">CTR</th><th class="num">Avg. position</th>'+(showGa4?'<th class="num">GA4 sessions</th>':''), rows, 'No page data in this window yet — pages appear here once Google has impressions for them.')
       +(showGa4?'<p style="color:var(--muted);font-size:13px;margin-top:8px;">GA4 sessions join by page path for the flagship property (GA4 measures topspeedserviceos.com).</p>':'');
-  }).catch(function(e){ pEl.innerHTML='<p style="color:var(--red);font-weight:600;">⚠️ '+esc(e.message)+'</p>'; });
+  }).catch(function(e){ pEl.innerHTML='<p style="color:var(--red);font-weight:600;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+esc(e.message)+'</p>'; });
 }
 
 if(tok()) seoShow();

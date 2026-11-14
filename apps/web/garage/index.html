@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Appliances — Your Garage · Top Speed Service OS</title>
@@ -108,10 +108,10 @@
       <h2>Your Client Portal</h2>
       <p class="sub" style="margin-bottom:2px">Everything for your service, in one place.</p>
       <div class="portalGrid">
-        <a href="/book"><b>📝 Request Service</b><span>Book a new repair in under a minute.</span></a>
-        <a href="/track"><b>📅 Manage Appointments</b><span>See upcoming visits and follow your tech live.</span></a>
-        <a href="#appliances"><b>🧊 My Appliances</b><span>Your registered units, just below.</span></a>
-        <a href="#offers"><b>🎁 Promotions &amp; Rewards</b><span>Your offers and referral code.</span></a>
+        <a href="/book"><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20.5l.8-3.8L16.9 5.6a2 2 0 0 1 2.9 2.9L8.7 19.6z"/><path d="M15 7.5l2.9 2.9M3.8 21.2h6.4" stroke="#E8322E"/></svg> Request Service</b><span>Book a new repair in under a minute.</span></a>
+        <a href="/track"><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> Manage Appointments</b><span>See upcoming visits and follow your tech live.</span></a>
+        <a href="#appliances"><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg> My Appliances</b><span>Your registered units, just below.</span></a>
+        <a href="#offers"><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="1.5"/><path d="M12 10v10M4 14.5h16M12 10a2.6 2.6 0 1 1 2.6-2.6c0 1.7-2.6 2.6-2.6 2.6zm0 0a2.6 2.6 0 1 0-2.6-2.6c0 1.7 2.6 2.6 2.6 2.6z" stroke="#E8322E"/></svg> Promotions &amp; Rewards</b><span>Your offers and referral code.</span></a>
       </div>
     </div>
     <section class="card">
@@ -124,7 +124,7 @@
     </section>
 
     <section class="card">
-      <h2>🏠 Your appliances</h2>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Your appliances</h2>
       <p class="sub">Registered to your account — Speedy and your Service Setters see these when you book, so diagnosis starts faster.</p>
       <div class="grid" id="appliances"></div>
       <form id="addForm" style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
@@ -143,14 +143,14 @@
     </section>
 
     <section class="card">
-      <h2>🎁 Promotions on your account</h2>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="1.5"/><path d="M12 10v10M4 14.5h16M12 10a2.6 2.6 0 1 1 2.6-2.6c0 1.7-2.6 2.6-2.6 2.6zm0 0a2.6 2.6 0 1 0-2.6-2.6c0 1.7 2.6 2.6 2.6 2.6z" stroke="#E8322E"/></svg> Promotions on your account</h2>
       <p class="sub">The offers published for Top Speed customers, with what's actually available on your account right now.</p>
       <div class="grid" id="offers"></div>
       <div id="referral" style="margin-top:16px"></div>
     </section>
 
     <section class="card">
-      <h2>🧾 Service history</h2>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> Service history</h2>
       <p class="sub">Your real bookings with Top Speed, newest first.</p>
       <div class="hist" id="history"></div>
     </section>
@@ -190,7 +190,7 @@ async function loadGarage() {
     </div>`).join('') : '<p class="empty">No appliances yet — add your first one below and it\'s on your account for every future visit.</p>';
   $('offers').innerHTML = (promos.offers || []).map((o) => `
     <div class="offer ${o.eligible ? 'avail' : ''}"><b>${o.title}</b><p>${o.detail}</p>
-      <div class="note ${o.eligible ? 'yes' : 'no'}">${o.eligible ? '✓ ' : ''}${o.eligibilityNote}</div>
+      <div class="note ${o.eligible ? 'yes' : 'no'}">${o.eligible ? '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> ' : ''}${o.eligibilityNote}</div>
       ${o.url ? `<div style="margin-top:8px"><a href="${o.url}" style="color:var(--blue);font-weight:700;font-size:14px">See plans →</a></div>` : ''}
     </div>`).join('');
   $('referral').innerHTML = promos.referral && promos.referral.code

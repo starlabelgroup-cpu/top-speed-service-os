@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notifications — Email & SMS Alerts · Top Speed Service OS</title>
@@ -78,12 +78,12 @@ footer strong{color:#fff}
     <a href="/parts">Parts</a>
     <a href="/finance">Finance</a>
     <a href="/portal">Portal</a>
-    <a class="tse-call" href="tel:+19549317997">📞 Call</a>
+    <a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a>
   </nav>
 </header>
 
 <div class="wrap">
-  <h1>🔔 Notifications — Email &amp; SMS Alerts</h1>
+  <h1><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5.2a6 6 0 0 1 12 0V16l1.2 2.8H4.8z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/><path d="M12 3.4a2 2 0 0 1 2 2" opacity=".7"/></svg> Notifications — Email &amp; SMS Alerts</h1>
   <p class="sub">One system for every alert and update on the network and platform: when any submission lands — a booking, a form, a video request, a photo diagnosis, a bulk property request, a new account — the customer gets a confirmation and the business gets an instant alert. Booking updates follow the job. Every entry below carries its true delivery state: <b>SENT</b> only when the provider accepted it, <b>GATED</b> with the reason when it could not be attempted. <span id="whoLine"></span></p>
 
   <!-- Signed-out gate -->
@@ -120,8 +120,8 @@ footer strong{color:#fff}
       <h2>Channel health</h2>
       <p class="note">The real configuration state of the two delivery channels, read from the API server. Configuration presence is all that is ever shown — no keys, no secrets.</p>
       <div class="health" style="margin-top:14px;">
-        <div class="card" id="healthEmail"><h3>✉️ Email — Resend → SendGrid</h3><p>Loading…</p></div>
-        <div class="card" id="healthSms"><h3>💬 SMS — Twilio → Vonage</h3><p>Loading…</p></div>
+        <div class="card" id="healthEmail"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email — Resend → SendGrid</h3><p>Loading…</p></div>
+        <div class="card" id="healthSms"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> SMS — Twilio → Vonage</h3><p>Loading…</p></div>
       </div>
       <p class="note" id="healthProcessing" style="margin-top:12px;"></p>
     </section>
@@ -220,10 +220,10 @@ function loadHealth(){
       if(!chain||!chain.length) return '';
       return '<br>Route: '+chain.map(function(p,i){ return (i? ' → fallback: ' : '')+esc(p.provider)+' <b>'+(p.configured?'configured':'not configured')+'</b>'; }).join('');
     };
-    document.getElementById('healthEmail').innerHTML='<h3>✉️ Email — Resend → SendGrid</h3>'
+    document.getElementById('healthEmail').innerHTML='<h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email — Resend → SendGrid</h3>'
       +'<p>Status: <b>'+(em.configured?'Configured':'Not configured')+'</b><br>From: '+esc(em.from||'—')+chainLine(em.chain)+'</p>'
       +(em.configured && !em.fromVerifiedDomain ? '<p class="warn">'+esc(em.note||'')+'</p>' : '<p>'+esc(em.note||'')+'</p>');
-    document.getElementById('healthSms').innerHTML='<h3>💬 SMS — Twilio → Vonage</h3>'
+    document.getElementById('healthSms').innerHTML='<h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> SMS — Twilio → Vonage</h3>'
       +'<p>Status: <b>'+(sm.configured?'Configured':'Not configured')+'</b>'+(sm.trial?' · <b>Trial account</b>':'')+'<br>From: '+esc(sm.from||'—')+chainLine(sm.chain)+'</p>'
       +'<p>'+esc(sm.note||'')+'</p>';
     document.getElementById('healthProcessing').textContent=(d.processing&&d.processing.model)||'';

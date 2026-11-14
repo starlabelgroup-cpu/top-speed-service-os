@@ -59,7 +59,7 @@
   var btn = document.createElement('button');
   btn.className = 'tsw-btn';
   btn.type = 'button';
-  btn.textContent = '💬 Ask Speedy';
+  btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Ask Speedy';
   btn.setAttribute('aria-haspopup', 'dialog');
 
   var panel = document.createElement('div');
@@ -68,12 +68,12 @@
   panel.setAttribute('aria-label', 'Ask Speedy chat assistant');
   panel.innerHTML =
     '<div class="tsw-grab" aria-hidden="true"></div>' +
-    '<div class="tsw-head"><span style="font-size:22px">🏎️</span><span><b>Speedy</b><small>Top Speed AI assistant • Live</small></span>' +
+    '<div class="tsw-head"><span style="font-size:22px"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg></span><span><b>Speedy</b><small>Top Speed AI assistant • Live</small></span>' +
     '<button class="x" type="button" aria-label="Close chat">×</button></div>' +
     '<div class="tsw-quick">' +
-    '<button type="button" data-q="How much is the diagnostic?">💲 Diagnostic cost</button>' +
-    '<button type="button" data-q="My fridge is not cooling">🧊 Fridge help</button>' +
-    '<button type="button" data-q="I want to book">📅 Book me</button></div>' +
+    '<button type="button" data-q="How much is the diagnostic?"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg> Diagnostic cost</button>' +
+    '<button type="button" data-q="My fridge is not cooling"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg> Fridge help</button>' +
+    '<button type="button" data-q="I want to book"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> Book me</button></div>' +
     '<div class="tsw-recs" id="tswRecs"></div>' +
     '<div class="tsw-body" id="tswBody"></div>' +
     '<form class="tsw-input" id="tswForm">' +
@@ -182,12 +182,12 @@
   function renderRecs(updates, recs) {
     var h = '';
     if (updates.length) {
-      h += '<h5>🔔 Updates</h5>' + updates.map(function (u) {
+      h += '<h5><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5.2a6 6 0 0 1 12 0V16l1.2 2.8H4.8z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/><path d="M12 3.4a2 2 0 0 1 2 2" opacity=".7"/></svg> Updates</h5>' + updates.map(function (u) {
         return '<p class="r"><b>' + esc(u.t) + '</b> — ' + esc(u.d) + (u.href ? ' <a href="' + u.href + '">' + esc(u.c || 'Open') + ' →</a>' : '') + '</p>';
       }).join('');
     }
     if (recs.length) {
-      h += '<h5>✦ Speedy recommends</h5>' + recs.map(function (u) {
+      h += '<h5><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy recommends</h5>' + recs.map(function (u) {
         return '<p class="r"><b>' + esc(u.t) + '</b> — ' + esc(u.d) + (u.href ? ' <a href="' + u.href + '">' + esc(u.c || 'Open') + ' →</a>' : '') + '</p>';
       }).join('');
     }
@@ -246,7 +246,7 @@
         card.className = 'tsw-msg bot tsw-book';
         card.innerHTML = '<b>Ready to book — does this look right?</b><br>' + rows.map(function (r) {
           return r[0] + ': <b>' + esc(r[1]) + '</b>';
-        }).join('<br>') + '<br><span style="font-size:12.5px">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button type="button" id="tswBookBtn">✓ Book my visit</button>';
+        }).join('<br>') + '<br><span style="font-size:12.5px">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button type="button" id="tswBookBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit</button>';
         body.appendChild(card);
         body.scrollTop = body.scrollHeight;
         card.querySelector('#tswBookBtn').addEventListener('click', bookIt);
@@ -271,8 +271,8 @@
       bookedPhone = d.phone;
       var card = document.createElement('div');
       card.className = 'tsw-msg bot tsw-book';
-      card.innerHTML = '✅ <b>Booked!</b> Your reference is <b>' + esc(bookedRef) + '</b>. A Service Setter will text ' + esc(d.phone) + ' to confirm your window.' +
-        '<div class="tsw-tools"><button type="button" data-r="email">📧 Email me my receipt</button><button type="button" data-r="sms">💬 Text me my tracking link</button></div>';
+      card.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> <b>Booked!</b> Your reference is <b>' + esc(bookedRef) + '</b>. A Service Setter will text ' + esc(d.phone) + ' to confirm your window.' +
+        '<div class="tsw-tools"><button type="button" data-r="email"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" data-r="sms"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>';
       body.appendChild(card);
       body.scrollTop = body.scrollHeight;
       card.querySelector('[data-r="email"]').addEventListener('click', function () { sendReceipt('email'); });
@@ -285,9 +285,9 @@
   function sendReceipt(channel) {
     if (!bookedRef || !bookedPhone) return;
     post('/speedy/send-receipt', { reference: bookedRef, phone: bookedPhone, channel: channel }).then(function (j) {
-      addMsg('🧾 ' + esc((j.data && j.data.message) || 'Done.'), false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> ' + esc((j.data && j.data.message) || 'Done.'), false);
     }).catch(function (e) {
-      addMsg('🧾 That did not go through: ' + esc(e.message) + '. Call 954-931-7997 and we will send it by phone.', false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: ' + esc(e.message) + '. Call 954-931-7997 and we will send it by phone.', false);
     });
   }
 
@@ -321,7 +321,7 @@
     var f = file.files && file.files[0];
     file.value = '';
     if (!f) return;
-    addMsg('📸 Sent a photo of my appliance', true);
+    addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Sent a photo of my appliance', true);
     var r = new FileReader();
     r.onload = function (ev) {
       var img = new Image();
@@ -335,10 +335,10 @@
         post('/speedy/diagnose', { imageDataUrl: cv.toDataURL('image/jpeg', 0.82), note: 'Photo sent by a customer in the Speedy chat', sessionId: chatSessionId(), source: chatSource() }, true).then(function (j) {
           var rep = (j.data && (j.data.reply || j.data.summary || j.data.text)) || '';
           addMsg(rep
-            ? '📸 Speedy\'s first look: ' + fmtBot(rep) + ' A technician confirms the diagnosis on site — Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'
-            : '📸 I received your photo but could not read it clearly — a technician will review it in person. Want me to book the $99 diagnostic visit?', false);
+            ? '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy\'s first look: ' + fmtBot(rep) + ' A technician confirms the diagnosis on site — Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'
+            : '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> I received your photo but could not read it clearly — a technician will review it in person. Want me to book the $99 diagnostic visit?', false);
         }).catch(function () {
-          addMsg('📸 Speedy could not read that photo just now — book the visit and the technician will diagnose on site, or call 954-931-7997.', false);
+          addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now — book the visit and the technician will diagnose on site, or call 954-931-7997.', false);
         });
       };
       img.src = ev.target.result;
@@ -352,7 +352,7 @@
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     mic.addEventListener('click', function () {
-      addMsg('🎤 Voice isn\'t supported in this browser — type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.)', false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> Voice isn\'t supported in this browser — type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.)', false);
     });
   } else {
     var rec = null, listening = false;
@@ -387,7 +387,7 @@
     panel.classList.add('open');
     if (!greeted) {
       greeted = true;
-      addMsg('Hey, I\'m Speedy 🏎️ — Top Speed\'s assistant. Ask me about the $99 diagnostic, your city, or a broken appliance — or say "book" and I\'ll walk you to an appointment. You can type, talk (🎤), or send a photo (📸).', false);
+      addMsg('Hey, I\'m Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg> — Top Speed\'s assistant. Ask me about the $99 diagnostic, your city, or a broken appliance — or say "book" and I\'ll walk you to an appointment. You can type, talk (<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg>), or send a photo (<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg>).', false);
       loadRecs();
     }
     setTimeout(function () { input.focus(); }, 80);

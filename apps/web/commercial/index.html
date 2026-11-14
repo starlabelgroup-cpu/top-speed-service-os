@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <head>
+  <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
@@ -242,7 +242,7 @@
           <a href="#agreements">Agreements</a>
           <a href="#portal">Client Portal</a>
           <a href="#providers">For Providers</a>
-          <a class="topcall" href="tel:+19549317997">☎ 954-931-7997</a>
+          <a class="topcall" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg> 954-931-7997</a>
         </nav>
       </div>
     </div>
@@ -257,7 +257,7 @@
         <h1>When a cooler goes down, <span class="rd">revenue stops.</span> <span class="bl">We move first.</span></h1>
         <p class="lede">The Appliance Pro App is the repair &amp; service network built for businesses that can't afford downtime — restaurants, hotels, laundromats, clinics, offices and facilities across Broward County. One Appliance Pro Commercial Account, one priority line, one monthly invoice.</p>
         <div class="cta-row">
-          <a class="btn btn-red" href="tel:+19549317997">☎ Priority Line — 954-931-7997</a>
+          <a class="btn btn-red" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg> Priority Line — 954-931-7997</a>
           <a class="btn btn-ghost" href="#account">Open an Appliance Pro Commercial Account</a>
         <a class="btn btn-blue" href="/appliance-pro">Commercial account login → Appliance Pro App</a>
         </div>
@@ -689,7 +689,7 @@
             "If a unit is down right now, don't wait on email \u2014 call the priority line at 954-931-7997" + (ref ? " and give them reference " + ref : "") + ".";
           okBox.scrollIntoView({ behavior:"smooth", block:"center" });
         }).catch(function(){
-          document.getElementById("okRef").textContent = "\u26a0\ufe0f Not sent";
+          document.getElementById("okRef").innerHTML = "\u26a0\ufe0f Not sent";
           document.getElementById("okText").textContent = "Something went wrong sending that \u2014 please call 954-931-7997 and ask for the commercial team, and we will open your account by phone.";
           okBox.scrollIntoView({ behavior:"smooth", block:"center" });
         });

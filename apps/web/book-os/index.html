@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head>
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <meta name="color-scheme" content="light dark"/>
@@ -102,7 +102,7 @@ body:not(.live) .gated{display:none!important}</style>
 <div class="flag"></div>
 <header class="top"><div class="topin">
 <div class="brand"><div class="logo">TS</div><div><h1>Service Book Pro</h1><p>Dispatch Console • Top Speed CRM • Service Setters</p></div></div>
-<div class="pills"><span class="pill live" id="modePill">● STAFF ONLY</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none">☎ 954-931-7997</a></div>
+<div class="pills"><span class="pill live" id="modePill">● STAFF ONLY</span><span class="pill">Thu, Nov 5, 2026 • Broward</span><a class="pill red" href="tel:9549317997" style="text-decoration:none"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg> 954-931-7997</a></div>
 </div></header>
 
 <main class="wrap">
@@ -111,10 +111,10 @@ body:not(.live) .gated{display:none!important}</style>
 <div class="metric"><small>Requests Today</small><b id="mRequests">—</b><span>Across web, ads, form, QR &amp; phone</span></div>
 <div class="metric"><small>Confirmation Rate</small><b id="mRate">—</b><span>Setters confirmed / reached</span></div>
 <div class="metric"><small>Jobs Dispatched</small><b id="mDispatched">—</b><span>Approved &amp; sent to providers</span></div>
-<div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter ✓</span></div>
+<div class="metric"><small>Awaiting Approval</small><b id="mAwait">3</b><span>Matched jobs need a setter <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg></span></div>
 </section>
 <section class="panel" id="scorePanel" style="display:none;margin-bottom:18px"><div class="ph"><div><h2>Launch Scorecard — Live</h2><p>Real numbers from the Service OS database — the launch baseline starts at zero and every booking, confirmation and dispatch moves it. <span id="scoreWhen"></span></p></div><span class="badge">LIVE SCORING</span></div><div id="scoreGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;padding:0 16px 16px"></div></section>
-<div class="notice gated" id="modeNotice">🔒 <strong>Staff only.</strong> Book OS runs on live Service OS data. Sign in below with your Service Setters or owner account to work the queue.</div>
+<div class="notice gated" id="modeNotice"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7"/><circle cx="12" cy="15" r="1.5" fill="#E8322E" stroke="none"/></svg> <strong>Staff only.</strong> Book OS runs on live Service OS data. Sign in below with your Service Setters or owner account to work the queue.</div>
 
 
 <!-- STAFF SIGN-IN / LIVE MODE -->
@@ -128,7 +128,7 @@ body:not(.live) .gated{display:none!important}</style>
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
 <button class="btn navy" onclick="loadLive()">\u21bb Refresh live data</button>
-<button class="btn ghost" id="cleanupBtn" onclick="cleanupTestData()">🧹 Clear test data</button>
+<button class="btn ghost" id="cleanupBtn" onclick="cleanupTestData()"> <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data</button>
 <button class="btn ghost" onclick="staffSignOut()">Sign out</button>
 </div>
 </section>
@@ -172,7 +172,7 @@ body:not(.live) .gated{display:none!important}</style>
 <section class="panel"><div class="ph"><div><h2>· Speedy Live Video</h2><p>Customers who asked to show the problem live (from the /video page). Arrange a request to create its room — the customer gets the join link by text, and both sides join on the video page.</p></div><span class="badge" id="vidCount">STAFF</span></div><div id="videoList"><p style="color:var(--muted)">Sign in above to work the live video requests.</p></div></section>
 
 <!-- REFERRALS — ApplianceReferral (staff only, live data) -->
-<section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human ✓ before credit is issued. Approved terms (both tracks): $25 base credit · $35 from the 5th completed referral · $50 from the 10th · milestone bonuses $100 @ 10 / $250 @ 25 · credits expire 12 months after issue. Customer and partner (business / property manager) referrals run on the same terms.</p></div><span class="badge" id="refCount">STAFF</span></div>
+<section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> before credit is issued. Approved terms (both tracks): $25 base credit · $35 from the 5th completed referral · $50 from the 10th · milestone bonuses $100 @ 10 / $250 @ 25 · credits expire 12 months after issue. Customer and partner (business / property manager) referrals run on the same terms.</p></div><span class="badge" id="refCount">STAFF</span></div>
 <div style="padding:14px 16px">
 <div id="refMsg" style="font-size:13.5px;margin-bottom:10px"></div>
 <div id="refFunnel" style="font-size:13.5px;margin-bottom:12px;color:var(--mut)"></div>
@@ -204,7 +204,7 @@ body:not(.live) .gated{display:none!important}</style>
 <div class="fly"><em>Step 1 · Attract</em><b><br>Ads + QR Everywhere</b><p>Google &amp; Meta ads, flyers, door hangers and truck QR codes all point to one booking flow on topspeedappliance.net.</p></div>
 <div class="fly"><em>Step 2 · Convert</em><b><br>Book OS Sets It</b><p>Service Setters confirm in minutes, collect the $99 diagnostic, and lock a real window — fewer tire-kickers, fewer no-shows.</p></div>
 <div class="fly"><em>Step 3 · Deliver</em><b><br>Network Does the Job</b><p>Approved providers on topspeedapplianceservice.com get matched jobs — not leads to fight over — with photos &amp; diagnosis upfront.</p></div>
-<div class="fly"><em>Step 4 · Delight</em><b><br>Texts + Review Engine</b><p>Live updates during the job, then an automatic review request at the happiest moment. 4.8★ becomes the ad.</p></div>
+<div class="fly"><em>Step 4 · Delight</em><b><br>Texts + Review Engine</b><p>Live updates during the job, then an automatic review request at the happiest moment. 4.8<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/><circle cx="12" cy="11.4" r="1" fill="#E8322E" stroke="none"/></svg> becomes the ad.</p></div>
 <div class="fly"><em>Step 5 · Compound</em><b><br>Reviews → Cheaper Jobs</b><p>More reviews + repeat &amp; property-manager volume lower cost per booking, so the next ad dollar buys more than the last. ↻ Repeat.</p></div>
 </div>
 <div class="areas"><b style="color:#fff">One system, two doors:</b> Customers enter at <b style="color:#fff">topspeedappliance.net</b> · Providers join at <b style="color:#fff">topspeedapplianceservice.com</b> · Service Setters run both from this Book OS. &nbsp;|&nbsp; Serving Fort Lauderdale, Sunrise, Plantation, Davie, Hollywood, Pompano Beach, Coral Springs, Tamarac, Lauderdale Lakes, Lauderhill, Weston &amp; Pembroke Pines.</div>
@@ -225,13 +225,13 @@ var queue=[];
 function renderQueue(){
  var el=document.getElementById('queue');
  document.getElementById('qCount').textContent=queue.length+' waiting';
- if(!queue.length){el.innerHTML='<div class="empty">🎉 Queue clear — every request has been called. New requests will appear here.</div>';return}
+ if(!queue.length){el.innerHTML='<div class="empty"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 20.5L9 11l6 4.5zM9 11l-1.8-4.6L13.5 4l1 4.2M15 15.5l3.2-1.4-1 3.4M17.8 8.6l2.6-.8-1.2 2.6" stroke="#E8322E"/><circle cx="19" cy="15.4" r=".9" fill="#E8322E" stroke="none"/></svg> Queue clear — every request has been called. New requests will appear here.</div>';return}
  el.innerHTML=queue.map(function(q,i){
-  return '<article class="qcard"><div class="qtop"><b>'+q.name+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+q.id+'</span></b><span class="age">'+q.age+' MIN AGO</span></div><div class="meta">🔧 '+q.appliance+'<br>📍 '+q.zip+' &nbsp;•&nbsp; '+q.issue+'</div><div class="tags"><span class="tag src">'+q.source+'</span><span class="tag win">⏰ '+q.window+'</span><span class="tag">$99 DIAG · AT BOOKING</span></div><div class="actions"><button class="btn red" onclick="callQ('+i+')">☎ Call</button><button class="btn primary" onclick="confirmQ('+i+')">✓ Confirm Appointment</button><button class="btn ghost" onclick="reschedQ('+i+')">Reschedule</button></div></article>'
+  return '<article class="qcard"><div class="qtop"><b>'+q.name+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+q.id+'</span></b><span class="age">'+q.age+' MIN AGO</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+q.appliance+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+q.zip+' &nbsp;•&nbsp; '+q.issue+'</div><div class="tags"><span class="tag src">'+q.source+'</span><span class="tag win">⏰ '+q.window+'</span><span class="tag">$99 DIAG · AT BOOKING</span></div><div class="actions"><button class="btn red" onclick="callQ('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg> Call</button><button class="btn primary" onclick="confirmQ('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirm Appointment</button><button class="btn ghost" onclick="reschedQ('+i+')">Reschedule</button></div></article>'
  }).join('');
 }
 function callQ(i){toast('Calling '+queue[i].name+'… Follow the Call Guide on the right →')}
-function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set */ toast('✓ '+q.name+' confirmed for '+q.window+' — confirmation text sent · '+q.id);renderQueue();addToToday(q)}
+function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set */ toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+q.name+' confirmed for '+q.window+' — confirmation text sent · '+q.id);renderQueue();addToToday(q)}
 function reschedQ(i){var wins=['Today 4–6 PM','Tomorrow 8–10 AM','Tomorrow 10 AM–12 PM','Tomorrow 2–4 PM'];var cur=wins.indexOf(queue[i].window);queue[i].window=wins[(cur+1)%wins.length];queue[i].age=0;toast('Rescheduled '+queue[i].name+' → '+queue[i].window);renderQueue()}
 
 // TODAY
@@ -243,7 +243,7 @@ function renderToday(){
   return '<div class="win"><h3>⏰ '+w+'</h3>'+today[w].map(function(j,idx){return '<div class="job"><b>'+j.n+'</b><br>'+j.a+'<br><button class="st '+stCls[j.s]+'" style="border:0;cursor:pointer" onclick="advToday(\''+w+'\','+idx+')">'+j.s+' →</button></div>'}).join('')+'</div>'
  }).join('');
 }
-function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already Done');return}j.s=nextSt[j.s];if(j.s==='Done'){toast('✓ '+j.n+' complete — review request text queued')}else{toast(j.n+' → '+j.s)}renderToday()}
+function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already Done');return}j.s=nextSt[j.s];if(j.s==='Done'){toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+j.n+' complete — review request text queued')}else{toast(j.n+' → '+j.s)}renderToday()}
 function addToToday(q){if(q.window.indexOf('Today')!==0)return;var key=q.window.indexOf('2–4')>-1?'2–4 PM':q.window.indexOf('4–6')>-1?'4–6 PM':'12–2 PM';if(today[key]){today[key].push({n:q.name.split(' ')[0][0]+'. '+q.name.split(' ')[1],a:q.appliance.split(' —')[0]+' · '+q.zip.split('· ')[1],s:'Confirmed'});renderToday()}}
 
 // DISPATCH
@@ -257,28 +257,28 @@ function renderDispatch(){
   return '<div class="col"><h3>'+c.key+' <span>'+c.jobs.length+'</span></h3>'+(c.jobs.length?c.jobs.map(function(j,ji){
    var actions='';
    if(ci===0)actions='<button class="btn primary" onclick="moveJob(0,'+ji+')">Auto-Match →</button>';
-   if(ci===1)actions='<button class="btn primary" onclick="moveJob(1,'+ji+')">✓ Approve &amp; Dispatch</button><button class="btn ghost" onclick="reassign(1,'+ji+')">Reassign</button>';
+   if(ci===1)actions='<button class="btn primary" onclick="moveJob(1,'+ji+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Approve &amp; Dispatch</button><button class="btn ghost" onclick="reassign(1,'+ji+')">Reassign</button>';
    if(ci===2)actions='<button class="btn navy" onclick="moveJob(2,'+ji+')">Mark En Route →</button><button class="btn ghost" onclick="reassign(2,'+ji+')">Reassign</button>';
-   if(ci===3)actions='<button class="btn primary" onclick="moveJob(3,'+ji+')">Complete Job ✓</button>';
-   if(ci===4)actions='<span style="font-size:12px;color:var(--green);font-weight:800">★ Review engine fired</span>';
-   return '<article class="dcard"><b>'+j.title+'</b> <span style="color:var(--mut);font-size:11px">'+j.id+'</span><p>📍 '+j.loc+'</p><p>'+j.diag+'</p><div class="score"><span>👨‍🔧 '+j.prov+'</span><strong>'+j.score+'</strong></div><div class="actions">'+actions+'</div></article>'
+   if(ci===3)actions='<button class="btn primary" onclick="moveJob(3,'+ji+')">Complete Job <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg></button>';
+   if(ci===4)actions='<span style="font-size:12px;color:var(--green);font-weight:800"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/><circle cx="12" cy="11.4" r="1" fill="#E8322E" stroke="none"/></svg> Review engine fired</span>';
+   return '<article class="dcard"><b>'+j.title+'</b> <span style="color:var(--mut);font-size:11px">'+j.id+'</span><p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+j.loc+'</p><p>'+j.diag+'</p><div class="score"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0" stroke="#E8322E"/></svg>‍<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+j.prov+'</span><strong>'+j.score+'</strong></div><div class="actions">'+actions+'</div></article>'
   }).join(''):'<div class="empty">No jobs</div>')+'</div>'
  }).join('');
 }
 function moveJob(ci,ji){var job=cols[ci].jobs.splice(ji,1)[0];
  if(ci===0){job.prov=altProvs[Math.floor(Math.random()*altProvs.length)];job.score=(88+Math.floor(Math.random()*8))+'%';toast('AI matched '+job.id+' → '+job.prov+' ('+job.score+') — needs setter approval')}
- if(ci===1){dispatched++;toast('✓ Dispatched '+job.id+' to '+job.prov+' — customer + provider texted')}
+ if(ci===1){dispatched++;toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Dispatched '+job.id+' to '+job.prov+' — customer + provider texted')}
  if(ci===2){toast(job.id+' en route — live tracking + ETA text sent to customer')}
- if(ci===3){toast('✓ '+job.id+' complete — $99 credited, photo report + review request sent')}
+ if(ci===3){toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+job.id+' complete — $99 credited, photo report + review request sent')}
  cols[ci+1].jobs.unshift(job);renderDispatch();renderQueue()}
 function reassign(ci,ji){var j=cols[ci].jobs[ji];var idx=altProvs.indexOf(j.prov);j.prov=altProvs[(idx+1)%altProvs.length];j.score=(86+Math.floor(Math.random()*10))+'%';toast('Reassigned '+j.id+' → '+j.prov);renderDispatch()}
 
 // REMINDERS
 var rems=[
- {t:'✓ At Booking',d:'Instant confirmation text with window, tech info placeholder & the $99 diagnostic receipt.',on:true},
- {t:'📅 Day Before',d:'Reminder text with one-tap confirm / reschedule — cuts no-shows before they happen.',on:true},
- {t:'🚐 En Route',d:'“Your tech is on the way” with name, photo & live ETA when the provider marks En Route.',on:true},
- {t:'⭐ After Completion',d:'Thank-you + Google review request at the happiest moment — fuel for the flywheel.',on:true}
+ {t:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> At Booking',d:'Instant confirmation text with window, tech info placeholder & the $99 diagnostic receipt.',on:true},
+ {t:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> Day Before',d:'Reminder text with one-tap confirm / reschedule — cuts no-shows before they happen.',on:true},
+ {t:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5V8.8A1.8 1.8 0 0 1 4.8 7h9.4a3 3 0 0 1 2.4 1.2L20 12.4a2 2 0 0 1 .6 1.4v2.7"/><path d="M3 16.5h18"/><circle cx="7.2" cy="18" r="1.9"/><circle cx="16.8" cy="18" r="1.9"/><path d="M14.5 7.2v5h5.4" stroke="#E8322E"/></svg> En Route',d:'“Your tech is on the way” with name, photo & live ETA when the provider marks En Route.',on:true},
+ {t:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/><circle cx="12" cy="11.4" r="1" fill="#E8322E" stroke="none"/></svg> After Completion',d:'Thank-you + Google review request at the happiest moment — fuel for the flywheel.',on:true}
 ];
 function renderRems(){document.getElementById('rems').innerHTML=rems.map(function(r,i){return '<div class="rem"><b>'+r.t+'</b><p>'+r.d+'</p><button class="toggle '+(r.on?'':'off')+'" onclick="toggleRem('+i+')">'+(r.on?'● AUTOMATION ON':'○ PAUSED')+'</button></div>'}).join('')}
 function toggleRem(i){rems[i].on=!rems[i].on;toast(rems[i].t+': automation '+(rems[i].on?'ON':'PAUSED'));renderRems()}
@@ -333,18 +333,18 @@ function cleanupTestData(){
   if(window.__cleanupArm){
     window.__cleanupArm=false;
     apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:false})}).then(function(x){
-      if(b){ b.textContent='🧹 Clear test data'; b.style.background=''; b.style.color=''; }
+      if(b){ b.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data'; b.style.background=''; b.style.color=''; }
       toast('Test data cleared. '+(x.remainingBookings!=null?x.remainingBookings:'')+' booking(s) remain \u2014 Aldo kept: '+((x.kept&&x.kept.present)?'yes':'CHECK NOW'));
       loadLive();
-    }).catch(function(e){ if(b){ b.textContent='🧹 Clear test data'; b.style.background=''; b.style.color=''; } toast('Cleanup failed: '+e.message); });
+    }).catch(function(e){ if(b){ b.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data'; b.style.background=''; b.style.color=''; } toast('Cleanup failed: '+e.message); });
     return;
   }
   apiFetch('/admin/cleanup-test-data',{method:'POST',body:JSON.stringify({dryRun:true})}).then(function(j){
     var r=j.removed||{}; var parts=Object.keys(r).filter(function(k){return r[k]>0}).map(function(k){return r[k]+' '+k}).join(', ')||'nothing found';
     window.__cleanupArm=true;
-    if(b){ b.textContent='\u26a0\ufe0f Tap again to DELETE: '+parts+' (Aldo kept)'; b.style.background='#E8322E'; b.style.color='#fff'; }
+    if(b){ b.textContent='Tap again to DELETE: '+parts+'(Aldo kept)'; b.style.background='#E8322E'; b.style.color='#fff'; }
     toast('Will remove: '+parts+'. Aldo Alay TS-BRWT9Y is kept untouched. Tap the red button again within 30s to delete.');
-    setTimeout(function(){ if(window.__cleanupArm){ window.__cleanupArm=false; var b2=document.getElementById('cleanupBtn'); if(b2){ b2.textContent='🧹 Clear test data'; b2.style.background=''; b2.style.color=''; } } },30000);
+    setTimeout(function(){ if(window.__cleanupArm){ window.__cleanupArm=false; var b2=document.getElementById('cleanupBtn'); if(b2){ b2.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data'; b2.style.background=''; b2.style.color=''; } } },30000);
   }).catch(function(e){ toast('Cleanup check failed: '+e.message+' (owner sign-in required)'); });
 }
 function staffSignOut(){ localStorage.removeItem('tsos_token'); location.reload(); }
@@ -417,7 +417,7 @@ function liveRemove(i){
   var b=document.getElementById('rm-'+i);
   if(!rmArm[q.referenceCode]){
     rmArm[q.referenceCode]=true;
-    if(b){ b.textContent='\u26a0\ufe0f Tap again to DELETE '+q.referenceCode; b.style.background='#E8322E'; b.style.color='#fff'; }
+    if(b){ b.textContent='Tap again to DELETE '+q.referenceCode; b.style.background='#E8322E'; b.style.color='#fff'; }
     toast('This permanently deletes '+(q.customerName||'this booking')+' '+q.referenceCode+' (owner action). Tap again within 20s to delete.');
     setTimeout(function(){ rmArm[q.referenceCode]=false; if(LIVE) loadLive(); },20000);
     return;
@@ -466,7 +466,7 @@ function renderLiveBoard(board){
       var prov=b.providerId?'Provider assigned':'Awaiting match';
       var actions='';
       if(col[0]==='PENDING_DISPATCH'){
-        actions='<button class="btn primary" onclick="liveMatch(\''+b.bookingId+'\')">Auto-Match \u2192</button>' + '<button class="btn ghost" onclick="liveSpeedySuggest(\''+b.bookingId+'\')">✦ Speedy Suggest</button>';
+        actions='<button class="btn primary" onclick="liveMatch(\''+b.bookingId+'\')">Auto-Match \u2192</button>' + '<button class="btn ghost" onclick="liveSpeedySuggest(\''+b.bookingId+'\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy Suggest</button>';
       } else if(col[0]==='MATCH_PENDING_APPROVAL'){
         var cands=liveCandidates[b.bookingId];
         if(cands&&cands.length){
@@ -530,14 +530,14 @@ function sbpClearFilters(){ var a=document.getElementById('sbpArea'), w=document
 function sbpInitSelects(){ var a=document.getElementById('sbpArea'), d=document.getElementById('adArea'); SBP_AREAS.forEach(function(x){ if(a){ var o=document.createElement('option'); o.value=x; o.textContent=x; a.appendChild(o); } if(d){ var o2=document.createElement('option'); o2.value=x; o2.textContent=x; d.appendChild(o2); } }); var dt=document.getElementById('adDate'); if(dt&&!dt.value) dt.value=todayStr(); }
 function liveSpeedySuggest(bookingId){
   var el=document.getElementById('sbpSuggest'); if(!el) return;
-  el.style.display=''; el.innerHTML='✦ Speedy is scoring the network for this job…';
+  el.style.display=''; el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy is scoring the network for this job…';
   apiFetch('/crm/bookings/'+bookingId+'/speedy-match').then(function(j){
     var s=j.data.suggestions||[];
-    el.innerHTML='<b>✦ Speedy match suggestion'+(j.data.area?' · area '+escH(j.data.area):'')+'</b>'+
+    el.innerHTML='<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy match suggestion'+(j.data.area?' · area '+escH(j.data.area):'')+'</b>'+
       (s.length?s.map(function(x){ return '<div style="margin-top:6px">• <b>'+escH(x.businessName)+'</b> — score '+x.matchScore+' · '+escH((x.reasons||[]).join('; '))+'</div>'; }).join(''):'<div style="margin-top:6px">No provider clears the match threshold for this booking yet.</div>')+
       '<div style="color:var(--mut);margin-top:8px">'+escH(j.data.note||'')+'</div>';
     el.scrollIntoView({behavior:'smooth',block:'nearest'});
-  }).catch(function(e){ el.innerHTML='⚠️ Speedy suggest failed: '+escH(e.message); });
+  }).catch(function(e){ el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Speedy suggest failed: '+escH(e.message); });
 }
 function loadAreaDay(){
   var dEl=document.getElementById('adDate'), aEl=document.getElementById('adArea'), out=document.getElementById('areaDayOut');
@@ -554,7 +554,7 @@ function loadAreaDay(){
     var un=j.data.unappointed||[];
     if(un.length){ html+='<div style="margin-top:14px"><b>Unappointed in '+escH(a)+'</b>'+un.map(function(x){ return '<div style="font-size:13px;margin-top:4px">• '+escH(x.appliance||'')+' · '+escH(x.customerName||'')+' ('+escH(x.referenceCode||'')+')</div>'; }).join('')+'</div>'; }
     out.innerHTML=html||'<p style="color:var(--mut);font-size:13.5px">Nothing booked in this area for that day.</p>';
-  }).catch(function(e){ out.innerHTML='<p style="font-size:13.5px">⚠️ '+escH(e.message)+'</p>'; });
+  }).catch(function(e){ out.innerHTML='<p style="font-size:13.5px"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+escH(e.message)+'</p>'; });
 }
 sbpInitSelects();
 
@@ -651,7 +651,7 @@ function loadReferrals(){
         var trk=jn.track==='PARTNER'?'PARTNER':'CUSTOMER';
         var trkBadge='<span style="font-weight:800;font-size:11.5px;padding:3px 8px;border-radius:999px;'+(trk==='PARTNER'?'background:#FEF3C7;color:#92400E':'background:#E0F2FE;color:#075985')+'">'+trk+'</span>';
         var flagBtn='<button class="btn ghost" title="Move this referrer\'s code to the other track (recorded journeys keep their track)" onclick="refFlagTrack(\''+escH(jn.code||'')+'\',\''+(trk==='PARTNER'?'CUSTOMER':'PARTNER')+'\')">'+(trk==='PARTNER'?'→ customer':'→ partner')+'</button>';
-        return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+trkBadge+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')">✓ Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button> '+flagBtn+'</td></tr>';
+        return '<tr><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(referrer)+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+trkBadge+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.refereeName||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(jn.bookingReference||'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+escH(when?String(when).slice(0,10):'—')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)">'+(sugg!=null?refMoneyB(sugg):'not set')+'</td><td style="padding:8px 6px;border-bottom:1px solid var(--line)"><input id="refAmt-'+jn.id+'" type="number" min="0" step="0.01" placeholder="optional" style="width:110px;padding:7px;border:1px solid var(--line);border-radius:8px;font-size:13.5px"></td><td style="padding:8px 6px;border-bottom:1px solid var(--line);white-space:nowrap"><button class="btn primary" onclick="refApprove(\''+jn.id+'\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Approve</button> <button class="btn ghost" onclick="refReject(\''+jn.id+'\')">Reject</button> '+flagBtn+'</td></tr>';
       }).join('')+'</tbody></table></div>';
     }
     var credits=d.credits||[];
@@ -675,7 +675,7 @@ function refApprove(id){
   var body={};
   if(inp&&inp.value.trim()!==''){ var cents=Math.round(parseFloat(inp.value)*100); if(!(cents>=0)) { refMsgB('err','Approval amount must be a valid dollar amount.'); return; } body.amountCents=cents; }
   apiFetch('/referrals/admin/journeys/'+id+'/approve',{method:'POST',body:JSON.stringify(body)})
-    .then(function(){ refMsgB('ok','Referral approved — credit issued.'); toast('✓ Referral approved — credit issued'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Referral approved — credit issued.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Referral approved — credit issued'); loadReferrals(); })
     .catch(function(e){ refMsgB('err','Approve failed: '+e.message); });
 }
 function refReject(id){
@@ -691,7 +691,7 @@ function refRedeem(id){
   var ref=inp?inp.value.trim():'';
   if(!ref){ refMsgB('err','Enter the booking reference to redeem this credit against.'); return; }
   apiFetch('/referrals/admin/credits/'+id+'/redeem',{method:'POST',body:JSON.stringify({bookingReference:ref})})
-    .then(function(){ refMsgB('ok','Credit redeemed against '+ref+'.'); toast('✓ Credit redeemed'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Credit redeemed against '+ref+'.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Credit redeemed'); loadReferrals(); })
     .catch(function(e){ refMsgB('err','Redeem failed: '+e.message); });
 }
 document.getElementById('refSettingsForm').addEventListener('submit',function(e){
@@ -703,7 +703,7 @@ document.getElementById('refSettingsForm').addEventListener('submit',function(e)
   var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapPerReferrer:intOrNull('rsCap'), rewardExpiryDays:intOrNull('rsExpiry') };
   if(en!=='') body.enabled=(en==='true');
   apiFetch('/referrals/admin/settings',{method:'PUT',body:JSON.stringify(body)})
-    .then(function(){ refMsgB('ok','Program settings saved.'); toast('✓ Referral settings saved'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Program settings saved.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Referral settings saved'); loadReferrals(); })
     .catch(function(err){ refMsgB('err','Settings save failed: '+err.message+' (owner sign-in required)'); });
 });
 setInterval(function(){ if(document.body.classList.contains('live')) loadReferrals(); },60000);
@@ -742,21 +742,21 @@ var refWatcher=setInterval(function(){ if(document.body.classList.contains('live
     get('/parts/summary').then(function(j){
       var d=j.data||{}; var el=document.getElementById('partsStrip'); if(!el) return;
       el.style.display='block';
-      el.innerHTML='🔩 <strong>Parts Supply OS:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.lowStockCount||0)+'</span> part(s) at reorder point · inventory value <span style="font-family:\'Roboto Mono\',monospace;">'+money(d.inventoryValueCents)+'</span> · <a href="/parts" style="color:#1473ff;font-weight:700;">Open Parts Supply OS →</a>';
+      el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 3.5l6 6-2.6 2.6-6-6zM11.9 6.1l6 6-8.6 8.6H4.6v-4.7z" transform="rotate(8 12 12)"/><circle cx="7" cy="17" r="1.1" fill="#E8322E" stroke="none"/></svg> <strong>Parts Supply OS:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.lowStockCount||0)+'</span> part(s) at reorder point · inventory value <span style="font-family:\'Roboto Mono\',monospace;">'+money(d.inventoryValueCents)+'</span> · <a href="/parts" style="color:#1473ff;font-weight:700;">Open Parts Supply OS →</a>';
     }).catch(function(){ var el=document.getElementById('partsStrip'); if(el) el.style.display='none'; });
     get('/finance/overview').then(function(j){
       var d=j.data||{}; var el=document.getElementById('finStrip'); if(!el) return;
       el.style.display='block';
       if(d.quickbooks&&d.quickbooks.status==='connected'){
-        el.innerHTML='💵 <strong>Finance — QuickBooks:</strong> AR outstanding <span style="font-family:\'Roboto Mono\',monospace;">'+money((d.invoices||{}).outstandingCents)+'</span> across '+((d.invoices||{}).openCount||0)+' open invoice(s) · synced '+(d.syncedAt?new Date(d.syncedAt).toLocaleString():'—')+' · <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
+        el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.8" y="7" width="18.4" height="10.5" rx="2"/><circle cx="12" cy="12.2" r="2.6" stroke="#E8322E"/><path d="M6 10.2h.01M18 14.2h.01" stroke-width="2.4"/></svg> <strong>Finance — QuickBooks:</strong> AR outstanding <span style="font-family:\'Roboto Mono\',monospace;">'+money((d.invoices||{}).outstandingCents)+'</span> across '+((d.invoices||{}).openCount||0)+' open invoice(s) · synced '+(d.syncedAt?new Date(d.syncedAt).toLocaleString():'—')+' · <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
       }else{
-        el.innerHTML='💵 <strong>Finance — QuickBooks:</strong> not connected yet — no figures until the first real sync. <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
+        el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.8" y="7" width="18.4" height="10.5" rx="2"/><circle cx="12" cy="12.2" r="2.6" stroke="#E8322E"/><path d="M6 10.2h.01M18 14.2h.01" stroke-width="2.4"/></svg> <strong>Finance — QuickBooks:</strong> not connected yet — no figures until the first real sync. <a href="/finance" style="color:#0f7a3d;font-weight:700;">Open Finance →</a>';
       }
     }).catch(function(){ var el=document.getElementById('finStrip'); if(el) el.style.display='none'; });
     get('/notifications/summary').then(function(j){
       var d=j.data||{}; var el=document.getElementById('notifStrip'); if(!el) return;
       el.style.display='block';
-      el.innerHTML='🔔 <strong>Notifications:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.queued||0)+'</span> queued · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.sent||0)+'</span> sent · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.gated||0)+'</span> gated · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.failed||0)+'</span> failed · <a href="/notifications" style="color:#e01a22;font-weight:700;">Open Notifications console →</a>';
+      el.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5.2a6 6 0 0 1 12 0V16l1.2 2.8H4.8z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/><path d="M12 3.4a2 2 0 0 1 2 2" opacity=".7"/></svg> <strong>Notifications:</strong> <span style="font-family:\'Roboto Mono\',monospace;">'+(d.queued||0)+'</span> queued · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.sent||0)+'</span> sent · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.gated||0)+'</span> gated · <span style="font-family:\'Roboto Mono\',monospace;">'+(d.failed||0)+'</span> failed · <a href="/notifications" style="color:#e01a22;font-weight:700;">Open Notifications console →</a>';
     }).catch(function(){ var el=document.getElementById('notifStrip'); if(el) el.style.display='none'; });
     loaded=true;
   }

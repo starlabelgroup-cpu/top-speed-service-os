@@ -58,7 +58,7 @@
       save.disabled = true; save.textContent = 'Saving…';
       api('/auth/profile', { method: 'POST', auth: true, body: body }).then(function (x) {
         if (!x.ok) throw new Error((x.j && x.j.error) || 'Profile did not save.');
-        var lines = ['✓ Profile saved to your account.'];
+        var lines = ['Profile saved to your account.'];
         if (x.j.profile && x.j.profile.areaMessage) lines.push(x.j.profile.areaMessage);
         if (x.j.applianceSaved) lines.push('Your appliance is in your garage.');
         msg.innerHTML = lines.map(esc).join('<br>');
@@ -85,8 +85,8 @@
       btn.disabled = true; btn.textContent = 'Sending…';
       api('/auth/email-verification/resend', { method: 'POST', auth: true, body: {} }).then(function (x) {
         if (!x.ok) throw new Error((x.j && x.j.error) || 'Resend did not go through.');
-        btn.textContent = x.j.emailVerification === 'verified' ? 'Already verified ✓' : 'Sent — check your inbox';
-        if (x.j.emailVerification === 'verified') { var n = el('ofVerifyNote'); if (n) n.textContent = 'Your email is verified ✓ — you are all set.'; }
+        btn.innerHTML = x.j.emailVerification === 'verified' ? 'Already verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>' : 'Sent — check your inbox';
+        if (x.j.emailVerification === 'verified') { var n = el('ofVerifyNote'); if (n) n.innerHTML = 'Your email is verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> — you are all set.'; }
       }).catch(function (e) {
         btn.disabled = false; btn.textContent = 'Resend verification email';
         var n = el('ofVerifyNote'); if (n) n.textContent = e.message;
@@ -109,7 +109,7 @@
     el('ofDoneTitle').textContent = 'You\u2019re signed in';
     var note = el('ofVerifyNote');
     if (user.emailVerified) {
-      note.innerHTML = 'Signed in as <b>' + esc(user.email) + '</b> — your email is verified ✓. This offer applies through your account; the team confirms eligibility at booking.';
+      note.innerHTML = 'Signed in as <b>' + esc(user.email) + '</b> — your email is verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>. This offer applies through your account; the team confirms eligibility at booking.';
       el('ofResend').style.display = 'none';
     } else {
       note.innerHTML = 'Signed in as <b>' + esc(user.email) + '</b> — your email isn\u2019t verified yet. We sent a verification link when you registered; it works once and lasts 24 hours.';

@@ -28,7 +28,7 @@
     var bar = document.createElement('div');
     bar.setAttribute('role', 'status');
     bar.style.cssText = 'background:#fff8e1;border-bottom:2px solid #f3d27a;color:#5c4a12;padding:10px 16px;font:14px/1.5 Inter,Arial,sans-serif;display:flex;gap:12px;align-items:center;flex-wrap:wrap;position:relative;z-index:60';
-    bar.innerHTML = '<span>📧 <b>Your email isn\u2019t verified yet.</b> Your account works fully — but booking confirmations and receipts go to your email, so verify it with the link we sent you.</span>';
+    bar.innerHTML = '<span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> <b>Your email isn\u2019t verified yet.</b> Your account works fully — but booking confirmations and receipts go to your email, so verify it with the link we sent you.</span>';
     var resend = document.createElement('button');
     resend.type = 'button';
     resend.textContent = 'Resend verification email';
@@ -37,14 +37,14 @@
       resend.disabled = true; resend.textContent = 'Sending…';
       api('/auth/email-verification/resend', { method: 'POST', body: {} }).then(function (y) {
         if (!y.ok) throw new Error((y.j && y.j.error) || 'Resend did not go through.');
-        resend.textContent = y.j.emailVerification === 'verified' ? 'Already verified ✓' : 'Sent — check your inbox';
+        resend.innerHTML = y.j.emailVerification === 'verified' ? 'Already verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>' : 'Sent — check your inbox';
       }).catch(function () {
         resend.disabled = false; resend.textContent = 'Resend verification email';
       });
     });
     var close = document.createElement('button');
     close.type = 'button';
-    close.textContent = '✕';
+    close.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/><path d="M4 4h3M4 4v3M20 20h-3M20 20v-3" stroke="#E8322E"/></svg>';
     close.setAttribute('aria-label', 'Dismiss');
     close.style.cssText = 'background:none;border:none;font:inherit;cursor:pointer;color:#5c4a12;margin-left:auto;padding:4px 6px';
     close.addEventListener('click', function () {
