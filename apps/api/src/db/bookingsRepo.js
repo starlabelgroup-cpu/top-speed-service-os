@@ -17,6 +17,7 @@ import { hydrateFinance } from './financeRepo.js';
 import { hydrateNotificationSettings } from './notificationsRepo.js';
 import { hydrateReferrals } from './referralsRepo.js';
 import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
+import { hydrateMedia } from './mediaOsRepo.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -294,6 +295,13 @@ export async function hydrateStore() {
     await hydrateGoogleAccounts();
   } catch (error) {
     console.error('hydrateGoogleAccounts failed (Google account registry degraded, platform continues)', error?.message || error);
+  }
+  // The Media OS content library is an add-on too: a missing table
+  // mid-deploy degrades to an empty library, never blocks hydration.
+  try {
+    await hydrateMedia();
+  } catch (error) {
+    console.error('hydrateMedia failed (Media OS library degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };

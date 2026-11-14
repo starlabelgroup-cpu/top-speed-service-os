@@ -15,6 +15,7 @@ import {
 } from '../src/data/marketingTaxonomy.js';
 import { buildPhase2DraftPages } from '../src/data/phase2DraftPages.js';
 import { GOOGLE_ACCOUNT_SEEDS } from '../src/data/googleAccounts.js';
+import { MEDIA_CONTENT_SEEDS } from '../src/data/mediaOsSeed.js';
 
 const prisma = new PrismaClient();
 
@@ -250,6 +251,41 @@ let phase2Corrected = 0;
   }
 }
 
+// Top Speed Media OS — Phase 1 content library (2026-11-14).
+// Create-only by slug, exactly like the Phase 2 pages above: a record
+// is inserted the first time its slug is seen and NEVER modified by
+// reseeding afterwards, so console edits, reviews and status changes
+// are safe. Seeded statuses are the records' true starting states:
+// Flywheel Ad 01 is genuinely posted on Facebook (PUBLISHED, with the
+// real post URL); the other 24 ads and all 29 Training Academy modules
+// are unpublished drafts.
+let mediaCreated = 0;
+for (const seed of MEDIA_CONTENT_SEEDS) {
+  const existing = await prisma.mediaContent.findUnique({ where: { slug: seed.slug } });
+  if (existing) continue;
+  await prisma.mediaContent.create({
+    data: {
+      slug: seed.slug,
+      type: seed.type,
+      division: seed.division,
+      title: seed.title,
+      description: seed.description,
+      assetUrl: seed.assetUrl,
+      thumbnailUrl: seed.thumbnailUrl,
+      durationSec: seed.durationSec,
+      transcript: seed.transcript,
+      destinationUrl: seed.destinationUrl,
+      status: seed.status,
+      publishAt: seed.publishAt ? new Date(seed.publishAt) : null,
+      publishedAt: seed.publishedAt ? new Date(seed.publishedAt) : null,
+      tags: seed.tags,
+      createdBy: 'media-os-seed',
+      updatedBy: 'media-os-seed',
+    },
+  });
+  mediaCreated += 1;
+}
+
 // Multi-account Google manager registry (2026-11-13): the REAL Google
 // accounts in the structure. Idempotent BY EMAIL and create-only
 // (update: {}) — a redeploy must never overwrite edits the owner made
@@ -263,5 +299,6 @@ const providerCount = await prisma.provider.count();
 const marketingCityCount = await prisma.marketingCity.count();
 const landingPageCount = await prisma.landingPage.count();
 const googleAccountCount = await prisma.googleAccountLink.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected), ${googleAccountCount} Google account links.`);
+const mediaContentCount = await prisma.mediaContent.count();
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected), ${googleAccountCount} Google account links, ${mediaContentCount} media content records (${mediaCreated} created).`);
 await prisma.$disconnect();

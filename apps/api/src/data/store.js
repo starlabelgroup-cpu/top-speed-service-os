@@ -105,6 +105,13 @@ export const store = {
   // db/googleAccountsRepo. A registry only: statuses are updated by a
   // human after Google confirms; nothing auto-flips.
   googleAccountLinks: [],
+  // Top Speed Media OS — Phase 1 (2026-11-14): the content library and
+  // its asset/rights registry, hydrated from the MediaContent /
+  // MediaAsset tables via db/mediaOsRepo. An add-on like the Google
+  // account registry: a missing table mid-deploy degrades to an empty
+  // library, never blocks hydration.
+  mediaContent: [],
+  mediaAssets: [],
   marketingCities: [],
   marketingBrands: [],
   marketingServices: [],

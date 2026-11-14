@@ -709,6 +709,37 @@ enum LandingPageStatus {
   UNPUBLISHED
 }
 
+enum MediaContentType {
+  VIDEO
+  ARTICLE
+  SOCIAL_POST
+  LIVE
+  IMAGE
+}
+
+enum MediaContentStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MediaDivision {
+  VIDEOS
+  PUBLISHING
+  NEWS
+  SOCIAL
+  LIVE
+}
+
+enum MediaAssetRightsStatus {
+  OWNED
+  LICENSED
+  PENDING_REVIEW
+}
+
 model MarketingCity {
   id             String   @id @default(uuid()) @db.Uuid
   name           String   @unique
@@ -1009,4 +1040,55 @@ model GoogleAccountLink {
   notes     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Top Speed Media OS — Phase 1 (2026-11-14, blueprint
+// Top_Speed_Media_OS_Expanded_Blueprint, built on the existing Service
+// OS stack per the approved digest). The content library behind
+// /media: five divisions (Videos, Publishing, News, Social, Live), one
+// editorial workflow (DRAFT → IN_REVIEW → APPROVED → SCHEDULED →
+// PUBLISHED → ARCHIVED, enforced in routes/mediaOs.js), and an asset
+// registry carrying rights status. Hydrated from these tables via
+// db/mediaOsRepo into the in-memory store, like the Marketing OS
+// add-ons; a missing table mid-deploy degrades to an empty library.
+model MediaContent {
+  id             String             @id @default(uuid()) @db.Uuid
+  slug           String             @unique
+  type           MediaContentType
+  division       MediaDivision
+  title          String
+  description    String?
+  assetUrl       String?
+  thumbnailUrl   String?
+  durationSec    Int?
+  transcript     String?            @db.Text
+  destinationUrl String?
+  status         MediaContentStatus @default(DRAFT)
+  publishAt      DateTime?
+  publishedAt    DateTime?
+  tags           String[]           @default([])
+  createdBy      String
+  updatedBy      String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  assets MediaAsset[]
+
+  @@index([status, division])
+  @@index([division, publishedAt])
+}
+
+model MediaAsset {
+  id          String                 @id @default(uuid()) @db.Uuid
+  contentId   String?                @db.Uuid
+  kind        String
+  name        String
+  url         String?
+  rightsStatus MediaAssetRightsStatus @default(PENDING_REVIEW)
+  rightsNote  String?
+  createdAt   DateTime               @default(now())
+
+  content MediaContent? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+
+  @@index([contentId])
 }
