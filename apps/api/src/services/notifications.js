@@ -627,6 +627,11 @@ export function notifyNewBooking(booking, source = null) {
       ...(booking.customer?.phone ? [`Phone: ${booking.customer.phone}`] : []),
       ...(booking.preferredWindow ? [`Preferred window: ${booking.preferredWindow}`] : []),
       `Status: ${booking.status}`,
+      ...(booking.attribution?.page ? [`Landing page: ${booking.attribution.page}`] : []),
+      ...(booking.attribution?.via ? [`Arrived via: ${booking.attribution.via}`] : []),
+      ...(booking.attribution?.utmSource
+        ? [`Campaign: ${booking.attribution.utmSource}${booking.attribution.utmMedium ? ` / ${booking.attribution.utmMedium}` : ''}${booking.attribution.utmCampaign ? ` / ${booking.attribution.utmCampaign}` : ''}`]
+        : []),
     ],
     consolePath: '/book-os',
     source,
@@ -639,6 +644,7 @@ export function notifyNewBooking(booking, source = null) {
       areaStatus: booking.areaStatus || null,
       preferredWindow: booking.preferredWindow || null,
       bookingStatus: booking.status || null,
+      attribution: booking.attribution || null,
     },
   });
 }

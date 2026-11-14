@@ -238,6 +238,16 @@
     var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
     var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
     try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
+    try{
+      var q=new URLSearchParams(location.search);
+      var src=q.get('source'); if(src==='FLAGSHIP_NET'||src==='SPEEDY_CHAT') payload.source=src;
+      var via=q.get('via'); if(via) payload.via=via;
+      var sc=q.get('src'); if(sc && !payload.via) payload.via=sc;
+      var pg=q.get('page'); if(pg) payload.page=pg;
+      var us=q.get('utm_source'); if(us) payload.utmSource=us;
+      var um=q.get('utm_medium'); if(um) payload.utmMedium=um;
+      var uc=q.get('utm_campaign'); if(uc) payload.utmCampaign=uc;
+    }catch(e){}
     var em=val('wEmail'); if(em) payload.customer.email=em;
     busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Booking…';
     fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
