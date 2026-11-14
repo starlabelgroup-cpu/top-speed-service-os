@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remote Manager — Top Speed Appliance</title>
+<meta name="description" content="Top Speed Remote Manager: one secure portal for every platform — live analytics, automations and integrations. Pepper manages, Ramone is Master.">
+<link rel="manifest" href="/manager/manifest.webmanifest">
+<meta name="theme-color" content="#060B18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TS Manager">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:86px}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid var(--line)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{width:40px;height:40px;border-radius:9px;object-fit:cover}
+.htitle{font-family:"Space Grotesk";font-weight:700;font-size:17px;line-height:1.15}
+.hsub{font-size:11.5px;color:var(--mut)}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+.badge.master{color:#fff;background:linear-gradient(135deg,var(--red2),var(--red));border-color:transparent}
+.badge.live{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.badge.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 8px var(--grn)}
+.iconbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:8px 11px;font-size:13px;font-weight:600;cursor:pointer}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:8px 2px 4px}
+.hero h1{font-family:"Space Grotesk";font-size:clamp(24px,5.4vw,38px);line-height:1.08;font-weight:700}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:14.5px;margin-top:8px;max-width:640px}
+.updated{font-size:12px;color:var(--mut);margin-top:10px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(4,8,18,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
+.tabs-in{max-width:1060px;margin:0 auto;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--mut);padding:6px 10px;border-radius:12px;border:0;background:none;cursor:pointer;font-family:Inter}
+.tab svg{width:21px;height:21px}
+.tab.on{color:#fff;background:var(--panel2)}
+section.page{display:none;padding-top:16px}
+section.page.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:15px}
+.kpi .n{font-family:"Space Grotesk";font-size:30px;font-weight:700;margin-top:6px}
+.kpi .l{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.02em}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.45}
+.card h3{font-family:"Space Grotesk";font-size:15.5px;display:flex;align-items:center;gap:8px}
+.card h3 .fxi{width:19px;height:19px}
+.wide{grid-column:1/-1}
+.rows{margin-top:10px;display:flex;flex-direction:column;gap:9px}
+.row{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5}
+.row .dot{margin-top:5px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none}
+.dot.g{background:var(--grn);box-shadow:0 0 7px rgba(34,197,94,.8)}
+.dot.y{background:var(--yel);box-shadow:0 0 7px rgba(234,179,8,.8)}
+.dot.r{background:var(--red);box-shadow:0 0 7px rgba(232,50,46,.8)}
+.dot.b{background:var(--blue);box-shadow:0 0 7px rgba(18,128,255,.8)}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill.ok{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.pill.warn{color:var(--yel);border-color:rgba(234,179,8,.4)}
+.pill.off{color:#F08A88;border-color:rgba(232,50,46,.4)}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+.link{display:flex;flex-direction:column;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;transition:border-color .15s}
+.link:hover{border-color:var(--blue)}
+.link b{font-size:14px;display:flex;align-items:center;gap:8px}
+.link span{font-size:12px;color:var(--mut);line-height:1.45}
+h2.sec{font-family:"Space Grotesk";font-size:18px;margin:20px 0 11px;display:flex;align-items:center;gap:9px}
+h2.sec:first-child{margin-top:2px}
+.gate{max-width:430px;margin:26px auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px}
+.gate h2{font-family:"Space Grotesk";font-size:20px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.55}
+.gate label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:14px 0 6px;letter-spacing:.03em}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:12px;font-size:15px;font-family:Inter}
+.gate button{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:11px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter}
+.err{display:none;margin-top:12px;background:rgba(232,50,46,.12);border:1px solid rgba(232,50,46,.45);color:#FFB4B1;font-size:13px;border-radius:10px;padding:10px 12px;line-height:1.5}
+.queue{display:flex;flex-direction:column;gap:10px}
+.qitem{display:flex;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;font-size:13.5px;line-height:1.55}
+.qitem b{font-family:"Space Grotesk";font-size:14.5px}
+.num{width:24px;height:24px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;margin-top:1px}
+footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-size:12px;line-height:1.6}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(min-width:760px){body{padding-bottom:26px}nav.tabs{position:sticky;bottom:auto;top:57px;border-top:0;border-bottom:1px solid var(--line)}.tabs-in{justify-content:flex-start;gap:6px}.tab{flex-direction:row;font-size:13px;padding:9px 14px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/flag.jpg" alt="Top Speed Appliance">
+    <div>
+      <div class="htitle">Remote Manager</div>
+      <div class="hsub">Top Speed Appliance — all platforms, one login</div>
+    </div>
+    <div class="hright">
+      <span class="badge live" id="liveBadge" style="display:none"><i></i>LIVE</span>
+      <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
+      <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+      <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div id="gate"></div>
+
+<div id="portal" style="display:none">
+<nav class="tabs"><div class="tabs-in">
+  <button class="tab on" data-tab="overview" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10.5M10 20V4.8M16 20v-8.4M21 20H3" stroke="#E8322E"/><path d="M4 20v-6.5M9.5 20V7M15 20v-5.5M20 20v-9.5"/></svg>Overview</button>
+  <button class="tab" data-tab="analytics" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg>Analytics</button>
+  <button class="tab" data-tab="platforms" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" stroke="#E8322E"/></svg>Platforms</button>
+  <button class="tab" data-tab="automate" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1" stroke="#E8322E"/></svg>Automate</button>
+  <button class="tab" data-tab="manager" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V4.8M12 4.8h.01" stroke="#E8322E" stroke-width="2.2"/><path d="M9.3 13h.01M14.7 13h.01" stroke-width="2.4"/><path d="M9.5 16.2h5"/></svg>Manager</button>
+</div></nav>
+
+<main>
+  <div class="hero">
+    <h1>Every platform. <span>One manager.</span></h1>
+    <p>Live operations, analytics and automations for the whole Top Speed ecosystem — checked from anywhere. Pepper runs the day-to-day as manager; you hold the master keys: approvals, money and terms.</p>
+    <div class="updated" id="updatedLine">Loading live data…</div>
+  </div>
+
+  <section class="page on" id="page-overview">
+    <h2 class="sec">Right now</h2>
+    <div class="grid" id="kpiGrid"></div>
+    <h2 class="sec">Departments</h2>
+    <div class="grid"><div class="card wide"><div class="rows" id="deptRows"><span class="mut small"><span class="spin"></span> Loading departments…</span></div></div></div>
+  </section>
+
+  <section class="page" id="page-analytics">
+    <h2 class="sec">Analytics reports</h2>
+    <div class="grid">
+      <div class="card wide">
+        <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg>Speedy AI chats — last 30 days</h3>
+        <div class="rows" id="chatRows"><span class="mut small"><span class="spin"></span> Loading chat insights…</span></div>
+        <div class="rows"><a class="small" href="/chats" style="color:var(--blue);font-weight:600">Open Chat Insights console →</a></div>
+      </div>
+      <div class="card wide">
+        <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg>Google search &amp; traffic (SEO)</h3>
+        <div class="rows" id="seoRows"><span class="mut small"><span class="spin"></span> Checking SEO connection…</span></div>
+        <div class="rows"><a class="small" href="/marketing-os/seo" style="color:var(--blue);font-weight:600">Open SEO dashboard →</a></div>
+      </div>
+      <div class="card wide">
+        <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0" /><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3" stroke="#E8322E"/></svg>Google accounts registry</h3>
+        <div class="rows" id="acctRows"><span class="mut small"><span class="spin"></span> Loading registry…</span></div>
+        <div class="rows"><a class="small" href="/marketing-os/google-accounts" style="color:var(--blue);font-weight:600">Open registry →</a></div>
+      </div>
+      <div class="card">
+        <h3>Referrals</h3>
+        <div class="rows" id="refRows"><span class="mut small">Loading…</span></div>
+      </div>
+      <div class="card">
+        <h3>Website tracking</h3>
+        <div class="rows">
+          <div class="row"><span class="dot g"></span><div>Google Analytics (GA4) is <b>live</b> on every flagship page — property “Top Speed Service OS”.</div></div>
+          <div class="row"><span class="dot g"></span><div>Search Console: topspeedserviceos.com verified, sitemap accepted; topspeedappliance.net verified.</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" id="page-platforms">
+    <h2 class="sec">Staff consoles</h2>
+    <div class="links">
+      <a class="link" href="/book-os"><b>Service Book Pro</b><span>Setter queue, dispatch board, area &amp; window filters.</span></a>
+      <a class="link" href="/crm"><b>Top Speed CRM</b><span>Customer 360, communications log, Speedy briefs.</span></a>
+      <a class="link" href="/chats"><b>Chat Insights</b><span>Every Speedy conversation, mined for topics &amp; gaps.</span></a>
+      <a class="link" href="/notifications"><b>Notifications</b><span>Email &amp; SMS outbox with truthful delivery status.</span></a>
+      <a class="link" href="/finance"><b>Finance OS</b><span>QuickBooks sync layer for the whole ecosystem.</span></a>
+      <a class="link" href="/parts"><b>Parts Supply OS</b><span>Purchase orders, stock and suppliers.</span></a>
+      <a class="link" href="/marketing-os"><b>Marketing OS</b><span>Agency hub — Pepper manages, you approve.</span></a>
+      <a class="link" href="/marketing-os/studio"><b>Page Studio</b><span>Landing pages: 131 published across 3 counties.</span></a>
+      <a class="link" href="/marketing-os/seo"><b>SEO Dashboard</b><span>Search Console + GA4 reporting inside the OS.</span></a>
+      <a class="link" href="/local"><b>Local OS</b><span>Listings, reviews engine and the flywheel.</span></a>
+      <a class="link" href="/media"><b>Media OS</b><span>House ads, creatives and placements.</span></a>
+      <a class="link" href="/advertiser"><b>Advertiser Console</b><span>Advertiser accounts, banners and campaigns.</span></a>
+    </div>
+    <h2 class="sec">Customer doors</h2>
+    <div class="links">
+      <a class="link" href="/"><b>Flagship — topspeedserviceos.com</b><span>Main site, Smart Booking and Speedy everywhere.</span></a>
+      <a class="link" href="https://topspeedappliance.net"><b>topspeedappliance.net</b><span>Customer site — bookings flow into the same Service OS.</span></a>
+      <a class="link" href="/app"><b>Appliance Connect — Customer App</b><span>Homeowner portal: bookings, tracking, referrals.</span></a>
+      <a class="link" href="/connect-pro-site"><b>Appliance Connect Pro</b><span>Homeowners &amp; property managers front door.</span></a>
+      <a class="link" href="/appliance-pro-site"><b>Appliance Pro</b><span>Commercial accounts front door.</span></a>
+      <a class="link" href="/tech"><b>Tech App</b><span>Provider offers, job status and GPS sharing.</span></a>
+      <a class="link" href="/network-site"><b>Service Network</b><span>topspeedapplianceservice.com — provider network home.</span></a>
+      <a class="link" href="/refer"><b>Refer &amp; Earn</b><span>ApplianceReferral — $25 credit per completed referral.</span></a>
+      <a class="link" href="/book"><b>Speedy Booking</b><span>The booking form every page points to.</span></a>
+      <a class="link" href="/speedy"><b>Talk to Speedy</b><span>Speedy AI: questions, photo diagnosis, requests.</span></a>
+    </div>
+    <h2 class="sec">Outside accounts</h2>
+    <div class="links">
+      <a class="link" href="https://facebook.com/profile.php?id=61596590488055" target="_blank" rel="noopener"><b>Facebook — Repair &amp; Installation</b><span>Main Top Speed Page for repair leads.</span></a>
+      <a class="link" href="https://facebook.com/profile.php?id=61596712102831" target="_blank" rel="noopener"><b>Facebook — Sales &amp; Delivery</b><span>Appliance sales Page + Shop catalog (10 products).</span></a>
+      <a class="link" href="https://facebook.com/profile.php?id=61596212109545" target="_blank" rel="noopener"><b>Facebook — Cleanout Vents</b><span>Dryer vent cleaning (rename still pending your password).</span></a>
+      <a class="link" href="https://ads.google.com" target="_blank" rel="noopener"><b>Google Ads</b><span>13 campaigns built &amp; paused at $0 — funding is your call.</span></a>
+      <a class="link" href="https://business.facebook.com/adsmanager" target="_blank" rel="noopener"><b>Meta Ads Manager</b><span>Starter Lead Ads built in draft — terms + publish are your clicks.</span></a>
+      <a class="link" href="https://vercel.com" target="_blank" rel="noopener"><b>Vercel</b><span>Hosting &amp; deployments for every site.</span></a>
+    </div>
+  </section>
+
+  <section class="page" id="page-automate">
+    <h2 class="sec">Integrations — live status</h2>
+    <div class="grid" id="intGrid"></div>
+    <h2 class="sec">Automations running</h2>
+    <div class="grid"><div class="card wide"><div class="rows">
+      <div class="row"><span class="dot g"></span><div><b>Booking alerts</b> — every booking fires customer confirmation + staff alerts through the notification outbox (email live; SMS waits on the Twilio upgrade).</div></div>
+      <div class="row"><span class="dot g"></span><div><b>Speedy chat capture</b> — every customer chat is stored and mined in Chat Insights for new features and unanswered questions.</div></div>
+      <div class="row"><span class="dot g"></span><div><b>Referral lifecycle</b> — shares, bookings and completed jobs move referral credit automatically; staff approve in Book OS.</div></div>
+      <div class="row"><span class="dot g"></span><div><b>Photo diagnosis alerts</b> — diagnosis results email the customer and alert staff, with honest “no contact on file” states.</div></div>
+      <div class="row"><span class="dot g"></span><div><b>Fallback routing</b> — if Resend or Twilio ever fail, email falls back to SendGrid and SMS to Vonage automatically (activates when you add their keys).</div></div>
+      <div class="row"><span class="dot y"></span><div><b>Flywheel ad rotation</b> — 25 creatives built; Ad 01 is posted on the Repair Page. Posting the rest is a daily tap — ask Pepper to run the rotation.</div></div>
+    </div></div></div>
+  </section>
+
+  <section class="page" id="page-manager">
+    <h2 class="sec">How we work</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Ramone — MASTER</h3>
+        <div class="rows">
+          <div class="row"><span class="dot r"></span><div>You own every account, password, payment method and approval. Money, ad spend, terms and legal signatures are always your clicks.</div></div>
+          <div class="row"><span class="dot r"></span><div>Only your owner account (COMPANY_OWNER) sees the MASTER view of this portal.</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Pepper (Muse AI) — Manager</h3>
+        <div class="rows">
+          <div class="row"><span class="dot b"></span><div>I build and run the platforms: pages, campaigns in draft, listings, reports and monitoring — and I flag every blocker with the one move that clears it.</div></div>
+          <div class="row"><span class="dot b"></span><div>I never spend, sign, or publish ads without your go. Anything I can't verify, I label honestly instead of guessing.</div></div>
+        </div>
+      </div>
+    </div>
+    <h2 class="sec">Waiting on you — one move each</h2>
+    <div class="queue">
+      <div class="qitem"><span class="num">1</span><div><b>Promote the .net icon update</b><div class="mut">Vercel → top-speed-appliance-ai → newest Preview (62a2a42) → Promote to Production. Puts the futuristic icons live on topspeedappliance.net.</div></div></div>
+      <div class="qitem"><span class="num">2</span><div><b>Launch Facebook Lead Ads</b><div class="mut">Accept Meta's Lead Ads Terms for the Repair Page, then “Review and publish” — the $20/day Starter is built and waiting in draft.</div></div></div>
+      <div class="qitem"><span class="num">3</span><div><b>Open the Facebook Shop</b><div class="mut">Catalog is live with 10 products. Re-run the short Shop setup and tick the Seller Agreement → Submit for review.</div></div></div>
+      <div class="qitem"><span class="num">4</span><div><b>Paste two keys in Vercel (one sitting)</b><div class="mut">GOOGLE_SEO_PRIVATE_KEY turns the SEO dashboard on; a new Google client secret turns on Google sign-in. One redeploy activates both.</div></div></div>
+      <div class="qitem"><span class="num">5</span><div><b>Accept the Google Business invite</b><div class="mut">The topspeedrepairs@gmail.com inbox holds an Owner invite for the Business Profile — accept it so that account fully manages the listing.</div></div></div>
+      <div class="qitem"><span class="num">6</span><div><b>Cleanout Vents rename</b><div class="mut">Save your current Facebook password in the secure card I sent — then I submit the name change (Facebook reviews it, up to 3 days).</div></div></div>
+    </div>
+    <p class="small mut" style="margin-top:14px">Queue as of Nov 13, 2026. Tell Pepper in chat when one is done and she'll verify it and clear it from this list.</p>
+  </section>
+</main>
+
+<footer>
+  Top Speed Appliance LLC — Remote Manager. Data on this page is pulled live from the Service OS; anything that can't be reached says so instead of guessing.<br>
+  Add this portal to your phone's home screen (browser menu → “Add to Home screen”) and it opens like an app — no app store needed.
+</footer>
+</div>
+
+<script src="/speedy-widget.js"></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function hdr(){ var h = {'Content-Type':'application/json'}; var t = token(); if (t) h['Authorization'] = 'Bearer ' + t; return h; }
+function get(path, auth){
+  return fetch(API + path, { headers: auth ? hdr() : {'Content-Type':'application/json'} })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function data(j){ return (j && j.data) ? j.data : j; }
+function dot(cls){ return '<span class="dot ' + cls + '"></span>'; }
+function row(cls, html){ return '<div class="row">' + dot(cls) + '<div>' + html + '</div></div>'; }
+function kpi(n, l, s){ return '<div class="card kpi"><div class="l">' + esc(l) + '</div><div class="n">' + esc(n) + '</div>' + (s ? '<div class="s">' + esc(s) + '</div>' : '') + '</div>'; }
+
+function showGate(html){ document.getElementById('gate').innerHTML = html; document.getElementById('portal').style.display = 'none'; }
+function loginGate(msg){
+  showGate('<div class="gate"><h2>Manager sign-in</h2><p>This portal is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.</p>' +
+  '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
+  '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+  '<div class="err" id="liErr"></div><button type="submit">Sign in to Remote Manager</button></form>' +
+  (msg ? '<p style="margin-top:12px">' + esc(msg) + '</p>' : '') + '</div>');
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr'); err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+function boot(){
+  var t = token();
+  if (!t){ loginGate(''); return; }
+  get('/auth/me', true).then(function(res){
+    var me = data(res.j);
+    if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
+    var role = me.user.role || '';
+    if (STAFF.indexOf(role) === -1){
+      showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Remote Manager is restricted to Top Speed staff and the owner.</p></div>');
+      return;
+    }
+    document.getElementById('gate').innerHTML = '';
+    document.getElementById('portal').style.display = 'block';
+    document.getElementById('liveBadge').style.display = '';
+    document.getElementById('refreshBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    var rb = document.getElementById('roleBadge');
+    if (role === 'COMPANY_OWNER'){ rb.textContent = 'MASTER'; rb.style.display = ''; }
+    else if (role === 'PLATFORM_ADMIN'){ rb.textContent = 'ADMIN'; rb.style.display = ''; }
+    loadAll();
+  });
+}
+
+function loadAll(){
+  document.getElementById('updatedLine').innerHTML = '<span class="spin"></span> Refreshing live data…';
+  var done = 0; function tick(){ done++; if (done >= 6){ document.getElementById('updatedLine').textContent = 'Live — updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + '. Tap Refresh anytime.'; } }
+
+  get('/platform/departments', false).then(function(res){
+    var d = data(res.j); var counts = {};
+    if (res.ok && d && d.departments){
+      var rowsHtml = '';
+      d.departments.forEach(function(dep){
+        var c = dep.counts || {};
+        Object.keys(c).forEach(function(k){ counts[k] = (counts[k] || 0) + (Number(c[k]) || 0); });
+        rowsHtml += row('b', '<b>' + esc(dep.name) + '</b><br><span class="mut">' + esc(dep.statusLine || '') + '</span>');
+      });
+      document.getElementById('deptRows').innerHTML = rowsHtml || '<span class="mut small">No department data returned.</span>';
+    } else {
+      document.getElementById('deptRows').innerHTML = '<span class="mut small">Departments could not be reached just now.</span>';
+    }
+    window._counts = counts;
+    tick();
+  });
+
+  get('/referrals/leaderboard', false).then(function(res){
+    var d = data(res.j) || {};
+    document.getElementById('refRows').innerHTML = row('g', '<b>' + esc(d.totalReferrers != null ? d.totalReferrers : 0) + ' referrers</b> on the public leaderboard. Program: $25 credit per completed referral, tiered up to $50.');
+    tick();
+  });
+
+  get('/chats/insights', true).then(function(res){
+    var el = document.getElementById('chatRows');
+    if (!res.ok){ el.innerHTML = '<span class="mut small">Chat Insights needs a staff session — if you just signed in, tap Refresh.</span>'; tick(); return; }
+    var d = data(res.j) || {}; var t = d.totals || d;
+    var sessions = t.sessions != null ? t.sessions : (t.totalSessions != null ? t.totalSessions : null);
+    var conv = d.conversion || {};
+    var rate = conv.rate != null ? conv.rate : (d.conversionRate != null ? d.conversionRate : null);
+    var diag = t.diagnoses != null ? t.diagnoses : (d.diagnoses != null ? d.diagnoses : null);
+    var html = '';
+    if (sessions != null) html += row('g', '<b>' + esc(sessions) + '</b>&nbsp;Speedy conversations captured in the last 30 days.');
+    if (diag != null) html += row('b', '<b>' + esc(diag) + '</b>&nbsp;photo diagnoses run through Speedy.');
+    if (rate != null) html += row('b', 'Chat → booking conversion: <b>' + esc(typeof rate === 'number' && rate <= 1 ? Math.round(rate * 100) + '%' : rate) + '</b>.');
+    el.innerHTML = html || '<span class="mut small">No chat data in the last 30 days yet — it builds as customers talk to Speedy.</span>';
+    tick();
+  });
+
+  get('/marketing-os/seo/status', true).then(function(res){
+    var el = document.getElementById('seoRows');
+    var d = data(res.j) || {};
+    var configured = d.configured === true || (d.google && d.google.configured === true);
+    if (res.ok && configured){
+      el.innerHTML = row('g', 'SEO data is <b>connected</b> — Search Console + GA4 numbers flow into the dashboard.') + row('b', 'Open the SEO dashboard for queries, pages and clicks.');
+    } else if (res.ok){
+      el.innerHTML = row('y', 'Dashboard is built and live, but Google data is <b>not connected yet</b>.') + row('y', 'One move turns it on: create the service-account key and paste GOOGLE_SEO_PRIVATE_KEY in Vercel, then redeploy.');
+    } else {
+      el.innerHTML = '<span class="mut small">SEO status could not be reached just now — open the SEO dashboard to check directly.</span>';
+    }
+    tick();
+  });
+
+  get('/marketing-os/google-accounts/checklist', true).then(function(res){
+    var el = document.getElementById('acctRows');
+    if (!res.ok){ el.innerHTML = '<span class="mut small">Registry checklist needs a staff session — if you just signed in, tap Refresh.</span>'; tick(); return; }
+    var d = data(res.j) || {};
+    var items = d.outstanding || d.items || d.steps || [];
+    var html = '';
+    if (Array.isArray(items) && items.length){
+      items.slice(0, 5).forEach(function(it){
+        var label = typeof it === 'string' ? it : (it.label || it.title || it.text || 'Outstanding step');
+        html += row('y', esc(label));
+      });
+    }
+    if (!html) html = row('g', 'starlabelgroup@gmail.com (primary owner) + topspeedrepairs@gmail.com (admin) are registered. The Business Profile Owner invite for topspeedrepairs is still pending acceptance in that inbox.');
+    el.innerHTML = html;
+    tick();
+  });
+
+  Promise.all([ get('/payments/status', false), get('/finance/status', false), get('/auth/google/status', false) ]).then(function(rs){
+    var pay = data(rs[0].j) || {}; var fin = (data(rs[1].j) || {}).quickbooks || {}; var g = data(rs[2].j) || {};
+    var ints = '';
+    ints += intCard('Speedy AI (OpenAI)', 'g', 'LIVE', 'Bookings, diagnosis and knowledge on every page, under your human-approval rules.');
+    ints += intCard('Email — Resend', 'g', 'LIVE', 'Verified sending domain; booking, invoice and alert emails flow through the outbox.');
+    ints += intCard('SMS &amp; Voice — Twilio', 'y', 'TRIAL', 'Voice forwarding to 954-931-7997 is built. Real SMS + ringing wait on upgrading the trial account.');
+    ints += intCard('Card payments — Stripe', pay.configured ? 'g' : 'y', pay.configured ? 'LIVE' : 'NOT CONNECTED', pay.configured ? 'In-platform card payments are on.' : 'Checkout code is live but dark — paste the live Stripe keys in Vercel to turn payments on.');
+    ints += intCard('QuickBooks', fin.status === 'synced' || fin.lastSyncAt ? 'g' : 'y', fin.lastSyncAt ? 'SYNCED' : 'NOT SYNCED', 'Finance layer is built into Book OS, Local, Marketing and Media. First sync needs your industry pick + an owner sign-in moment.');
+    ints += intCard('Google sign-in', g.configured ? 'g' : 'y', g.configured ? 'LIVE' : 'ALMOST', g.configured ? 'Customers can sign in with Google.' : 'Built and waiting on one paste: the client secret in Vercel.');
+    ints += intCard('Google Analytics + Search Console', 'g', 'LIVE', 'Tags firing on all pages; both properties verified.');
+    ints += intCard('Meta (Facebook) Ads', 'y', 'DRAFT READY', 'Starter Lead Ads built at $20/day. Pepper can read the account; publishing is your click after the Lead Ads Terms.');
+    ints += intCard('Google Ads', 'y', 'PAUSED $0', '13 campaigns built and paused. Launch = pause the 2 old ones, then fund the $50/day main campaign.');
+    document.getElementById('intGrid').innerHTML = ints;
+
+    var c = window._counts || {};
+    var kpis = '';
+    kpis += kpi(c.bookedToday != null ? c.bookedToday : 0, 'JOBS BOOKED TODAY', 'Across every door — one backend.');
+    kpis += kpi(c.waitingReview != null ? c.waitingReview : 0, 'WAITING FOR REVIEW', 'Requests a Service Setter needs to look at.');
+    kpis += kpi(c.enRoute != null ? c.enRoute : 0, 'TECHS EN ROUTE', 'Live GPS — customer pins show only while en route.');
+    kpis += kpi(c.completedToday != null ? c.completedToday : 0, 'COMPLETED TODAY', 'Finished jobs across the network.');
+    kpis += kpi('131', 'LANDING PAGES LIVE', '65 cities · 31 services · tri-county.');
+    kpis += kpi(pay.configured ? 'ON' : '$99', 'DIAGNOSTIC', pay.configured ? 'Card payment is on.' : 'Collected at booking — card checkout turns on with Stripe keys.');
+    document.getElementById('kpiGrid').innerHTML = kpis;
+    tick();
+  });
+}
+function intCard(name, cls, pill, body){
+  var pcls = cls === 'g' ? 'ok' : (cls === 'y' ? 'warn' : 'off');
+  return '<div class="card"><h3>' + name + '</h3><div class="rows"><div class="row"><span class="pill ' + pcls + '">' + pill + '</span></div><div class="small mut" style="line-height:1.55">' + body + '</div></div></div>';
+}
+
+document.querySelectorAll('.tab').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab').forEach(function(b){ b.classList.remove('on'); });
+    document.querySelectorAll('section.page').forEach(function(s){ s.classList.remove('on'); });
+    btn.classList.add('on');
+    document.getElementById('page-' + btn.getAttribute('data-tab')).classList.add('on');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+document.getElementById('logoutBtn').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+</body>
+</html>
