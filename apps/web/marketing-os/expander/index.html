@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing OS Expander — Staff Tool | Top Speed Appliance</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--bg:#060d1f;--panel:#0b1730;--line:#1d3260;--ink:#eef3fb;--muted:#9db1d0;--red:#e8322e;--green:#2fbf71;--amber:#f5b921}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--ink);padding:26px 18px 60px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:26px;margin-bottom:6px}
+p.sub{color:var(--muted);line-height:1.6;margin-bottom:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px}
+.panel h2{font-size:17px;margin-bottom:8px}
+.panel p{color:var(--muted);line-height:1.6;font-size:14.5px;margin-bottom:12px}
+button{background:var(--red);color:#fff;border:none;padding:12px 20px;border-radius:10px;font-weight:800;font-size:14.5px;cursor:pointer;font-family:inherit;margin-right:8px;margin-bottom:8px}
+button:disabled{opacity:.45;cursor:wait}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+#status{font-weight:700;margin-bottom:14px}
+#status .ok{color:#7fe6ab}#status .bad{color:#ffb3b0}
+#log{background:#020610;border:1px solid var(--line);border-radius:12px;padding:16px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.65;white-space:pre-wrap;word-break:break-word;max-height:60vh;overflow:auto}
+.warn{border:1px dashed var(--amber);border-radius:12px;padding:12px 14px;color:#ffd97a;font-size:13.5px;line-height:1.6;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Marketing OS — Tri-County Expander</h1>
+  <p class="sub">Staff tool. Builds and publishes the owner-directed expansion: 53 tri-county city pages, 5 commercial repair categories, problem pages for every service, and 15 installation categories. Runs from your signed-in staff session — every step is logged below, existing pages are never modified, and duplicates are skipped automatically.</p>
+  <div id="status">Checking session…</div>
+  <div class="warn">Run one phase at a time and let it finish. If a phase reports errors, copy the log and send it to Pepper — do not re-run blindly; the tool is idempotent, so a re-run safely skips what already exists.</div>
+  <div class="panel">
+    <h2>Phases</h2>
+    <p>1) Cities — seeds each city as service-covered, creates and publishes its landing page.<br>
+       2) Categories — commercial repair (5), residential installation (9), commercial installation (6).<br>
+       3) Problem pages — symptom pages for all residential services and commercial categories (runs a recon check on the existing problem pages first).</p>
+    <button id="btnCities">Run Phase 1 — Cities (53)</button>
+    <button id="btnCats">Run Phase 2 — Categories (20)</button>
+    <button id="btnProblems">Run Phase 3 — Problem Pages (31)</button>
+    <button id="btnCounts" class="ghost">Refresh Counts</button>
+  </div>
+  <div id="log">Log ready.</div>
+</div>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var TOKEN = localStorage.getItem('tsos_token') || '';
+var COMMERCIAL_TERMS = {type:'service-terms',heading:'Commercial terms',body:'Commercial work is priced by custom quote under a service agreement. The residential diagnostic fee does not apply to commercial accounts.'};
+var INSTALL_TERMS = {type:'service-terms',heading:'Flat-rate installation',body:'Installation is a flat $150 per appliance — parts and materials extra, quoted and approved in writing before work begins. Installed, leveled and tested before we leave.'};
+var GEO = 'Broward, Palm Beach & Miami-Dade';
+
+var CITIES = ['Hollywood','Pembroke Pines','Miramar','Deerfield Beach','Coconut Creek','Dania Beach','Cooper City','Weston','Parkland','Hallandale Beach','Wilton Manors','Lighthouse Point','Lauderdale-by-the-Sea','Southwest Ranches','West Park','Pembroke Park','Hillsboro Beach','Sea Ranch Lakes','Lazy Lake',
+'West Palm Beach','Boca Raton','Boynton Beach','Delray Beach','Wellington','Jupiter','Palm Beach Gardens','Lake Worth Beach','Riviera Beach','Greenacres','Royal Palm Beach','Palm Beach','Belle Glade','Palm Springs','North Palm Beach','Lake Park',
+'Miami','Hialeah','Miami Gardens','Miami Beach','North Miami','Homestead','Doral','Coral Gables','Aventura','Cutler Bay','Hialeah Gardens','Sunny Isles Beach','North Miami Beach','Sweetwater','Florida City','Key Biscayne','Surfside','Bal Harbour'];
+
+var CAT_SERVICES = [
+ // kind 'com' — under Commercial Appliance Repair
+ {kind:'com', name:'Commercial Refrigeration', slug:'commercial-refrigeration-repair', parent:'commercial-appliance-repair'},
+ {kind:'com', name:'Commercial Cooking Equipment', slug:'commercial-cooking-equipment-repair', parent:'commercial-appliance-repair'},
+ {kind:'com', name:'Commercial Dishwashing', slug:'commercial-dishwashing-repair', parent:'commercial-appliance-repair'},
+ {kind:'com', name:'Commercial Laundry', slug:'commercial-laundry-repair', parent:'commercial-appliance-repair'},
+ {kind:'com', name:'Commercial Trash & Beverage Equipment', slug:'commercial-trash-beverage-equipment-repair', parent:'commercial-appliance-repair'},
+ // kind 'ins' — residential installation, $150 flat
+ {kind:'ins', name:'Refrigerator Installation', slug:'refrigerator-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Washer Installation', slug:'washer-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Dryer Installation', slug:'dryer-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Oven & Range Installation', slug:'oven-range-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Cooktop Installation', slug:'cooktop-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Dishwasher Installation', slug:'dishwasher-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Microwave Installation', slug:'microwave-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Freezer & Ice Maker Installation', slug:'freezer-ice-maker-installation', parent:'appliance-installation'},
+ {kind:'ins', name:'Garbage Disposal Installation', slug:'garbage-disposal-installation', parent:'appliance-installation'},
+ // kind 'comins' — commercial installation, custom quote
+ {kind:'comins', name:'Commercial Appliance Installation', slug:'commercial-appliance-installation', parent:'appliance-installation'},
+ {kind:'comins', name:'Commercial Refrigeration Installation', slug:'commercial-refrigeration-installation', parent:'commercial-appliance-installation'},
+ {kind:'comins', name:'Commercial Cooking Equipment Installation', slug:'commercial-cooking-equipment-installation', parent:'commercial-appliance-installation'},
+ {kind:'comins', name:'Commercial Dishwashing Installation', slug:'commercial-dishwashing-installation', parent:'commercial-appliance-installation'},
+ {kind:'comins', name:'Commercial Laundry Installation', slug:'commercial-laundry-installation', parent:'commercial-appliance-installation'},
+ {kind:'comins', name:'Commercial Trash & Beverage Equipment Installation', slug:'commercial-trash-and-beverage-equipment-installation', parent:'commercial-appliance-installation'}
+];
+
+var SYMPTOM_NAMES = {'not-cooling':'Not Cooling','not-draining':'Not Draining','not-heating':'Not Heating','leaking':'Leaking','error-codes':'Error Codes','unusual-noises':'Unusual Noises','no-ice':'No Ice'};
+var PROBLEMS_RES = {
+ 'refrigerator-repair':['leaking','unusual-noises','error-codes'],
+ 'washer-repair':['leaking','unusual-noises','error-codes'],
+ 'dryer-repair':['unusual-noises','error-codes'],
+ 'oven-range-repair':['not-heating','error-codes'],
+ 'dishwasher-repair':['not-draining','error-codes','unusual-noises'],
+ 'freezer-ice-maker-repair':['not-cooling','leaking'],
+ 'microwave-repair':['not-heating','error-codes','unusual-noises'],
+ 'garbage-disposal-repair':['unusual-noises','leaking','not-draining']
+};
+var PROBLEMS_COM = {
+ 'commercial-refrigeration-repair':['not-cooling','leaking'],
+ 'commercial-cooking-equipment-repair':['not-heating','error-codes'],
+ 'commercial-dishwashing-repair':['not-draining','leaking'],
+ 'commercial-laundry-repair':['not-draining','not-heating'],
+ 'commercial-trash-beverage-equipment-repair':['not-cooling','leaking']
+};
+
+function log(msg){ var el=document.getElementById('log'); el.textContent += '\n' + msg; el.scrollTop = el.scrollHeight; }
+function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function api(method, path, body){
+  var opts = {method: method, headers: {'Content-Type':'application/json','Authorization':'Bearer ' + TOKEN}};
+  if(body) opts.body = JSON.stringify(body);
+  return fetch(API + path, opts).then(function(r){
+    return r.text().then(function(t){ var j=null; try{ j=JSON.parse(t); }catch(e){} return {status:r.status, json:j, text:t}; });
+  });
+}
+function taxonomy(){ return api('GET','/marketing-os/admin/taxonomy').then(function(r){ return r.json && r.json.data; }); }
+
+function publish(pageId){
+  return api('POST','/marketing-os/admin/pages/'+pageId+'/status',{status:'IN_REVIEW'}).then(function(r1){
+    if(r1.status>=300 && !(r1.json && r1.json.data && r1.json.data.status==='IN_REVIEW')) log('  ! IN_REVIEW failed ('+r1.status+'): '+(r1.text||'').slice(0,160));
+    return api('POST','/marketing-os/admin/pages/'+pageId+'/status',{status:'PUBLISHED'});
+  }).then(function(r2){
+    if(r2.status<300) return true;
+    log('  ! PUBLISH failed ('+r2.status+'): '+(r2.text||'').slice(0,160)); return false;
+  });
+}
+
+function patchTitleMeta(pageId, title, meta){
+  return api('GET','/marketing-os/admin/pages/'+pageId).then(function(r){
+    var page = r.json && r.json.data; if(!page) return false;
+    return api('PATCH','/marketing-os/admin/pages/'+pageId,{title:title, metaDescription:meta, sections:page.sections||[], note:'Expander build 2026-11-13'}).then(function(r2){ return r2.status<300; });
+  });
+}
+
+function swapTermsAndPatch(pageId, termsBlock, title, meta){
+  return api('GET','/marketing-os/admin/pages/'+pageId).then(function(r){
+    var page = r.json && r.json.data; if(!page) { log('  ! could not read page '+pageId); return false; }
+    var sections = (page.sections||[]).map(function(b){ return b.type==='service-terms' ? termsBlock : b; });
+    if(!sections.some(function(b){ return b.type==='service-terms'; })) sections.push(termsBlock);
+    return api('PATCH','/marketing-os/admin/pages/'+pageId,{title:title, metaDescription:meta, sections:sections, note:'Expander build 2026-11-13'}).then(function(r2){ return r2.status<300; });
+  });
+}
+function runCities(btn){
+  btn.disabled = true; log('\n=== PHASE 1: CITIES ('+CITIES.length+') ===');
+  var done=0, existed=0, failed=0;
+  var chain = Promise.resolve();
+  CITIES.forEach(function(name){
+    chain = chain.then(function(){
+      return api('POST','/marketing-os/admin/taxonomy/cities',{name:name, serviceCovered:true, state:'FL'}).then(function(r){
+        var cityId = null;
+        if(r.status===201){ cityId = r.json.data.id; log('city + '+name); }
+        else if(r.status===409){
+          return taxonomy().then(function(t){
+            var c = (t.cities||[]).filter(function(x){ return x.name===name; })[0];
+            if(!c){ log('  ! '+name+': 409 but not found in taxonomy'); failed++; return null; }
+            cityId = c.id;
+            return api('PATCH','/marketing-os/admin/taxonomy/cities/'+cityId,{serviceCovered:true}).then(function(){ log('city = '+name+' (existed, marked covered)'); return cityId; });
+          });
+        } else { log('  ! '+name+': taxonomy create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return null; }
+        return cityId;
+      }).then(function(cityId){
+        if(!cityId) return;
+        return api('POST','/marketing-os/admin/pages',{type:'CITY', cityId:cityId, note:'Tri-county expansion 2026-11-13'}).then(function(r){
+          if(r.status===409){ log('  page = '+name+' (already exists)'); existed++; return; }
+          if(r.status>=300){ log('  ! '+name+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
+          var pid = r.json.data.id;
+          return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+name+' → '+r.json.data.canonicalUrl); } else failed++; });
+        });
+      }).then(function(){ return sleep(120); });
+    });
+  });
+  chain.then(function(){ log('PHASE 1 DONE — published '+done+', already existed '+existed+', failed '+failed); btn.disabled=false; refreshCounts(); });
+}
+
+function catTitleMeta(s){
+  if(s.kind==='com'){
+    return {title: s.name+' Repair — '+GEO+' | Top Speed Appliance',
+            meta: s.name+' repair for restaurants, hotels, laundromats and facilities across Broward, Palm Beach and Miami-Dade — registered equipment, priority dispatch for critical machines, custom-quote service agreements, one monthly invoice. Top Speed Appliance.',
+            terms: COMMERCIAL_TERMS};
+  }
+  if(s.kind==='ins'){
+    return {title: s.name+' — '+GEO+' | Top Speed Appliance',
+            meta: s.name+' across Broward, Palm Beach and Miami-Dade — flat $150 installation, parts and materials extra, written quote before work, installed level and tested. Book online with Top Speed Appliance.',
+            terms: INSTALL_TERMS};
+  }
+  return {title: s.name+' — '+GEO+' | Top Speed Appliance',
+          meta: s.name+' for restaurants, hotels, laundromats and facilities across Broward, Palm Beach and Miami-Dade — custom-quote service agreements, registered equipment, installed level and tested. Top Speed Appliance.',
+          terms: COMMERCIAL_TERMS};
+}
+
+function runCats(btn){
+  btn.disabled = true; log('\n=== PHASE 2: CATEGORIES ('+CAT_SERVICES.length+') ===');
+  var done=0, existed=0, failed=0;
+  var chain = Promise.resolve();
+  CAT_SERVICES.forEach(function(s){
+    chain = chain.then(function(){
+      return api('POST','/marketing-os/admin/taxonomy/services',{name:s.name, slug:s.slug, partOfService:s.parent}).then(function(r){
+        if(r.status===201){ log('service + '+s.slug); return r.json.data.id; }
+        if(r.status===409){
+          return taxonomy().then(function(t){
+            var sv = (t.services||[]).filter(function(x){ return x.slug===s.slug; })[0];
+            if(sv){ log('service = '+s.slug+' (existed)'); return sv.id; }
+            log('  ! '+s.slug+': 409 but not found'); failed++; return null;
+          });
+        }
+        log('  ! '+s.slug+': service create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return null;
+      }).then(function(sid){
+        if(!sid) return;
+        return api('POST','/marketing-os/admin/pages',{type:'SERVICE', serviceId:sid, note:'Category build 2026-11-13'}).then(function(r){
+          if(r.status===409){ log('  page = '+s.slug+' (already exists)'); existed++; return; }
+          if(r.status>=300){ log('  ! '+s.slug+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
+          var pid = r.json.data.id, tm = catTitleMeta(s);
+          return swapTermsAndPatch(pid, tm.terms, tm.title, tm.meta).then(function(){
+            return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+s.slug+' → '+r.json.data.canonicalUrl); } else failed++; });
+          });
+        });
+      }).then(function(){ return sleep(120); });
+    });
+  });
+  chain.then(function(){ log('PHASE 2 DONE — published '+done+', already existed '+existed+', failed '+failed); btn.disabled=false; refreshCounts(); });
+}
+
+function runProblems(btn){
+  btn.disabled = true; log('\n=== PHASE 3: PROBLEM PAGES ===');
+  api('GET','/marketing-os/admin/pages?q=not-draining').then(function(r){
+    var pages = (r.json && r.json.data) || [];
+    var sample = pages.filter(function(p){ return p.slug==='services/washer-repair/not-draining'; })[0] || pages[0];
+    if(!sample){ log('RECON FAIL: no existing problem page found — stopping Phase 3.'); btn.disabled=false; return; }
+    return api('GET','/marketing-os/admin/pages/'+sample.id).then(function(r2){
+      var rec = (r2.json && r2.json.data) || {};
+      var keys = Object.keys(rec);
+      var symKey = keys.filter(function(k){ return /symptom/i.test(k); })[0];
+      log('RECON: sample page keys: '+keys.join(', '));
+      if(!symKey){ log('RECON RESULT: no symptom field on the page record — problem pages were seed-only. Phase 3 cannot run via the API; stopping. (Phases 1–2 unaffected.)'); btn.disabled=false; return; }
+      log('RECON: symptom field = "'+symKey+'" (value: '+rec[symKey]+')');
+      buildProblems(btn, symKey);
+    });
+  });
+}
+
+function buildProblems(btn, symKey){
+  taxonomy().then(function(t){
+    var svcBySlug = {}; (t.services||[]).forEach(function(s){ svcBySlug[s.slug]=s; });
+    var symBySlug = {}; (t.symptoms||[]).forEach(function(s){ symBySlug[s.slug]=s; });
+    var jobs = [];
+    Object.keys(PROBLEMS_RES).forEach(function(svc){ PROBLEMS_RES[svc].forEach(function(sym){ jobs.push({svc:svc, sym:sym, com:false}); }); });
+    Object.keys(PROBLEMS_COM).forEach(function(svc){ PROBLEMS_COM[svc].forEach(function(sym){ jobs.push({svc:svc, sym:sym, com:true}); }); });
+    log('Building '+jobs.length+' problem pages…');
+    var done=0, existed=0, failed=0, stopped=false;
+    var chain = Promise.resolve();
+    jobs.forEach(function(j){
+      chain = chain.then(function(){
+        if(stopped) return;
+        var sv = svcBySlug[j.svc], sy = symBySlug[j.sym];
+        if(!sv || !sy){ log('  ! missing taxonomy for '+j.svc+' / '+j.sym); failed++; return; }
+        var body = {type:'SERVICE', serviceId:sv.id, note:'Problem page build 2026-11-13'};
+        body[symKey] = sy.id;
+        return api('POST','/marketing-os/admin/pages', body).then(function(r){
+          if(r.status===409){ existed++; log('  page = '+j.svc+'/'+j.sym+' (already exists)'); return; }
+          if(r.status>=300){ log('  ! '+j.svc+'/'+j.sym+': create '+r.status+' '+(r.text||'').slice(0,180)); failed++; return; }
+          var page = r.json.data;
+          if(!page.canonicalUrl || page.canonicalUrl.indexOf('/'+j.sym+'/')===-1){
+            log('  ! '+j.svc+'/'+j.sym+': created page canonical is '+page.canonicalUrl+' — symptom segment missing. Mechanism differs; STOPPING Phase 3.'); stopped=true; failed++; return;
+          }
+          var prob = SYMPTOM_NAMES[j.sym];
+          var title, meta;
+          if(!j.com){
+            title = sv.name+' '+prob+' — Diagnosis & Repair in South Florida | Top Speed Appliance';
+            meta = sv.name+' '+prob.toLowerCase()+'? What it usually means, what our technician checks, and how to book an on-site diagnosis in South Florida — $99 diagnostic credited toward your repair.';
+            return patchTitleMeta(page.id, title, meta).then(function(){
+              return publish(page.id).then(function(ok){ if(ok){ done++; log('  page ✓ '+page.canonicalUrl); } else failed++; });
+            });
+          }
+          title = sv.name+' '+prob+' — Diagnosis & Repair in South Florida | Top Speed Appliance';
+          meta = sv.name+' '+prob.toLowerCase()+'? What it usually means, what our technician checks, and how to book an on-site assessment — commercial work is priced by custom quote under a service agreement.';
+          return swapTermsAndPatch(page.id, COMMERCIAL_TERMS, title, meta).then(function(){
+            return publish(page.id).then(function(ok){ if(ok){ done++; log('  page ✓ '+page.canonicalUrl); } else failed++; });
+          });
+        }).then(function(){ return sleep(120); });
+      });
+    });
+    chain.then(function(){ log('PHASE 3 DONE — published '+done+', already existed '+existed+', failed '+failed+(stopped?' (stopped early — see log)':'')); btn.disabled=false; refreshCounts(); });
+  });
+}
+
+function refreshCounts(){
+  taxonomy().then(function(t){
+    if(!t){ log('counts unavailable'); return; }
+    log('COUNTS — cities: '+t.counts.cities+' (covered '+t.counts.coveredCities+') · services: '+t.counts.services+' · pages: '+t.counts.pages+' (published '+t.counts.publishedPages+')');
+  });
+}
+
+(function init(){
+  var st = document.getElementById('status');
+  if(!TOKEN){ st.innerHTML = '<span class="bad">No staff session found on this origin.</span> Sign in to the Service OS first, then reload this page.'; }
+  else {
+    api('GET','/marketing-os/admin/taxonomy').then(function(r){
+      if(r.status<300){ st.innerHTML = '<span class="ok">Staff session active.</span> Ready to run.'; refreshCounts(); }
+      else st.innerHTML = '<span class="bad">Session found but the admin API returned '+r.status+'.</span> The account may lack a marketing/staff role — send the log to Pepper.';
+    });
+  }
+  document.getElementById('btnCities').onclick = function(){ runCities(this); };
+  document.getElementById('btnCats').onclick = function(){ runCats(this); };
+  document.getElementById('btnProblems').onclick = function(){ runProblems(this); };
+  document.getElementById('btnCounts').onclick = function(){ refreshCounts(); };
+})();
+</script>
+</body>
+</html>
