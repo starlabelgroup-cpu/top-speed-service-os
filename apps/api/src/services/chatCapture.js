@@ -28,7 +28,7 @@ import {
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const SOURCE_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
+const SOURCE_RE = /^[a-z0-9][a-z0-9_-]{0,39}$/;
 const CAPTURE_TIMEOUT_MS = 1500;
 const MAX_MESSAGE_CHARS = 4000;
 

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Top Speed Academy — Staff University | Top Speed Appliance</title>
+<meta name="description" content="Top Speed Academy: the staff university of the Top Speed Service OS — 29 training modules in 8 role tracks, with Speedy Class, the AI instructor built on Speedy.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Space Grotesk";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:14px 2px 4px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Space Grotesk";font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:700px;line-height:1.6}
+h2.sec{font-family:"Space Grotesk";font-size:20px;margin:28px 0 6px;display:flex;align-items:center;gap:9px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:780px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:14px}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Space Grotesk";font-size:16px;display:flex;align-items:flex-start;gap:8px;line-height:1.3}
+.card h3 .fxi{width:20px;height:20px;margin-top:1px}
+.card p{color:var(--mut);font-size:13px;line-height:1.55}
+.mnum{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);font-family:"Space Grotesk";font-weight:700;font-size:14px;color:#fff;flex:none}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase}
+.pill.pub{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.pill.draft{color:var(--mut)}
+.pill.rev{color:var(--yel);border-color:rgba(234,179,8,.4)}
+.pill.arch{color:#F08A88;border-color:rgba(232,50,46,.4)}
+.hosting{border:1px dashed var(--line);border-radius:10px;padding:12px;color:var(--mut);font-size:12.5px;line-height:1.55;display:flex;gap:9px;align-items:flex-start}
+.hosting .fxi{width:17px;height:17px;margin-top:1px}
+.card video{width:100%;border-radius:10px;border:1px solid var(--line);background:#000}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:14px}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+.console h3{font-family:"Space Grotesk";font-size:16px;margin-bottom:4px}
+.btn{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.gate{max-width:460px;margin:26px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px}
+.gate h2{font-family:"Space Grotesk";font-size:19px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.6}
+.gate label{display:block;font-size:11px;font-weight:700;color:var(--mut);letter-spacing:.05em;margin:14px 0 5px;text-transform:uppercase}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+.gate .btn{width:100%;margin-top:16px;padding:11px}
+.gerr{display:none;color:#F08A88;font-size:13px;margin-top:10px;line-height:1.5}
+.msg{font-size:13px;margin-top:10px;line-height:1.5}
+.msg.ok{color:var(--grn)}
+.msg.err{color:#F08A88}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.chatlog{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding:6px 2px;margin-top:12px}
+.bubble{max-width:86%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.bubble.me{align-self:flex-end;background:rgba(18,128,255,.18);border:1px solid rgba(18,128,255,.45);border-bottom-right-radius:4px}
+.bubble.sp{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bubble .who{display:block;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.chatform{display:flex;gap:8px;margin-top:12px}
+.chatform input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:11px 13px;font-size:14px;font-family:Inter;min-width:0}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+.trackhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.trackhead .count{margin-left:auto}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Serving South Florida</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+19549317997">Call 954-931-7997</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Top Speed University — Education OS</div>
+    <h1>Top Speed <span>Academy</span></h1>
+    <p>The staff university of the Top Speed Service OS: 29 training modules in 8 role tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works.</p>
+  </div>
+
+  <div id="gateZone"></div>
+
+  <div id="staffZone" style="display:none">
+    <div class="console" id="classPanel">
+      <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-3-.4-4.2-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 10.5h7M8.5 13.5h4.5" stroke="#E8322E"/></svg>Speedy Class</h3>
+      <p class="small mut">Your instructor is Speedy, teaching from the Academy curriculum. Ask about any module, your track, or how the platform works.</p>
+      <div class="chatlog" id="chatLog"></div>
+      <form class="chatform" id="chatForm">
+        <input id="chatInput" type="text" maxlength="2000" placeholder="Ask about a module, your track, or the platform…" autocomplete="off">
+        <button class="btn" id="chatSend" type="submit">Ask</button>
+      </form>
+      <div class="msg" id="chatMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.5 9 12 14l9.5-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" stroke="#E8322E"/><path d="M21.5 9v5" stroke="#E8322E"/></svg>The curriculum</h2>
+    <p class="sub" id="currSummary"><span class="spin"></span> Loading the Academy library from Media OS…</p>
+    <div style="margin-top:10px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
+    <div id="tracksZone"></div>
+  </div>
+</main>
+
+<footer>
+  <a href="/">Platform Home</a><a href="/academy">Academy</a><a href="/media">Media OS</a><a href="/manager">Remote Manager</a><a href="/book-os">Service Book Pro</a><a href="/crm">Top Speed CRM</a><a href="/speedy">Talk to Speedy</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Top Speed Academy — the University of the Service OS · Powered by Speedy AI</div>
+</footer>
+
+<script src="/speedy-widget.js" defer></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+var STATUS_LABEL = { DRAFT:'Draft', IN_REVIEW:'In review', APPROVED:'Approved', SCHEDULED:'Scheduled', PUBLISHED:'Published', ARCHIVED:'Archived' };
+function statusPill(s){
+  var cls = s === 'PUBLISHED' ? 'pub' : (s === 'IN_REVIEW' || s === 'SCHEDULED' || s === 'APPROVED') ? 'rev' : s === 'ARCHIVED' ? 'arch' : 'draft';
+  return '<span class="pill ' + cls + '">' + esc(STATUS_LABEL[s] || s) + '</span>';
+}
+var PLAY_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10.2 9.4l4.8 2.6-4.8 2.6z" fill="#E8322E" stroke="none"/></svg>';
+var CLOCK_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.6V12l3 2" stroke="#E8322E"/></svg>';
+var BOOK_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.4A1.6 1.6 0 0 1 5.6 3.8H20v14.4H5.6A1.6 1.6 0 0 0 4 19.8z"/><path d="M20 15.8H5.8A1.8 1.8 0 0 0 4 17.6" stroke="#E8322E"/><path d="M8 7.4h8" opacity=".85"/></svg>';
+
+var TRACKS = [
+  { name: 'Foundation', sub: 'Every role — start here', lo: 1, hi: 3 },
+  { name: 'Owner Track', sub: 'The owner', lo: 4, hi: 7 },
+  { name: 'Manager Track', sub: 'Managers', lo: 8, hi: 11 },
+  { name: 'Technician Track', sub: 'Technicians & field providers', lo: 12, hi: 15 },
+  { name: 'Setter Track', sub: 'Service Setters — the dispatch team', lo: 16, hi: 19 },
+  { name: 'Dispatcher Track', sub: 'Dispatchers', lo: 20, hi: 22 },
+  { name: 'Ad Specialist Track', sub: 'Ads & marketing', lo: 23, hi: 26 },
+  { name: 'Customer-Facing', sub: 'Everyone who talks to customers', lo: 27, hi: 29 }
+];
+var TITLES = {
+  1: 'Welcome to Top Speed Service OS', 2: 'The Job Journey & Track My Tech', 3: 'Working With Speedy AI',
+  4: 'The Owner Command Center', 5: 'Money: Finance OS & QuickBooks', 6: 'Your Google Empire', 7: 'People, Roles & Legal Terms',
+  8: 'Marketing OS Studio', 9: 'Local OS, Listings & Reviews', 10: 'Chat Insights', 11: 'Notifications & Alerts',
+  12: 'Tech App: Offers & Accepting Jobs', 13: 'In the Field: Status & GPS', 14: 'Photo Diagnosis & AI Notes', 15: 'Parts, Completion & The Review Ask',
+  16: 'Service Book Pro: The Setter Queue', 17: 'Taking Bookings', 18: 'Areas, Windows & The Waitlist', 19: 'CRM 360 & Speedy Drafts',
+  20: 'The Dispatch Board', 21: 'Live Tracking & Exceptions', 22: 'Escalations & Out-of-Area',
+  23: 'Advertiser Console & Media OS', 24: 'Google Ads', 25: 'Facebook Ads & Lead Ads', 26: 'Attribution & Offline Conversions',
+  27: 'The Four Front Doors, In Depth', 28: 'Offers & The Referral Program', 29: 'Pricing, Terms & The $99 Diagnostic'
+};
+var TEACHES = {
+  1: 'The platform map: one backend, four front doors, how every job flows — plus the standing rules and numbers.',
+  2: 'The 8 job stages, who owns each, and why a stage only changes when the work really happened.',
+  3: "What Speedy does, Speedy's five hard limits, and your side of the partnership.",
+  4: 'The owner dashboards, reading the live board, and the owner account as the safe.',
+  5: 'The Finance OS layer, QuickBooks as the book of record, trusted syncs, and the money gates.',
+  6: 'The Google Accounts Registry, adding accounts safely, and the SEO dashboard.',
+  7: 'Roles as access keys, the legal signing gate, and owner-only doors.',
+  8: 'The Studio and taxonomy, publishing rules that protect the business, draft to review to publish to verify.',
+  9: 'One business identity on every listing, the reviews engine, and real reviews only.',
+  10: 'Chats are data: reading unanswered questions and the weekly insights habit.',
+  11: 'One outbox with truthful statuses, the alert matrix, and provider fallbacks.',
+  12: 'Your offers, what accepting commits you to, and the three checks before you accept.',
+  13: 'Status updates as promises, GPS shared only en route, and running late the right way.',
+  14: 'Photo diagnosis as a head start, AI notes with your signature, and the safety line.',
+  15: 'Recording every part, closing on the agreed numbers, and the review + referral ask.',
+  16: 'The setter queue, reviewing a request, and approving the dispatch.',
+  17: 'Two doors into the same queue, conversation first, and closing the booking right.',
+  18: 'The area map and windows, how area decisions work, and the honest waitlist.',
+  19: 'The customer 360, Speedy assist drafts, and speed to lead.',
+  20: 'Reading the dispatch board, judging a match, windows and capacity.',
+  21: 'Reading the live board, handling exceptions, tracking links and privacy.',
+  22: 'Priority by rule, hard stops on area states, and escalations.',
+  23: 'The advertiser console, claims discipline, and message match.',
+  24: 'The Google Ads account as it stands, launch gates, and the account safety rule.',
+  25: 'Two Pages, one manager, the Starter Lead Ads, and speed to lead.',
+  26: 'Attribution on every booking, offline conversions and the gclid, the weekly rhythm.',
+  27: 'Routing every customer in one sentence and the navigation promises.',
+  28: 'The twelve offers and the referral economics, exactly as published.',
+  29: 'The $99 diagnostic word for word, flat labor and installation, the standing terms.'
+};
+function moduleNum(rec){
+  var m = /training-module-(\d+)-/.exec(rec.slug || '');
+  if (m) return parseInt(m[1], 10);
+  m = /^Module\s+(\d+)\s*:/.exec(rec.title || '');
+  return m ? parseInt(m[1], 10) : 0;
+}
+function trackOf(n){
+  for (var i = 0; i < TRACKS.length; i++){ if (n >= TRACKS[i].lo && n <= TRACKS[i].hi) return TRACKS[i]; }
+  return null;
+}
+
+/* ── Sign-in gate ──────────────────────────────────────── */
+function showGate(note){
+  document.getElementById('staffZone').style.display = 'none';
+  var zone = document.getElementById('gateZone');
+  zone.innerHTML = '<div class="gate"><h2>Staff sign-in</h2>' +
+    '<p>The Academy is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
+    (note ? ' ' + esc(note) : '') + '</p>' +
+    '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
+    '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">Sign in to the Academy</button><div class="gerr" id="liErr"></div></form></div>';
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr');
+    err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+/* ── Curriculum (from the Media OS admin library) ──────── */
+function renderTracks(records){
+  var mods = records.filter(function(r){
+    return Array.isArray(r.tags) && r.tags.indexOf('training-academy') !== -1;
+  }).map(function(r){ return { rec: r, n: moduleNum(r) }; })
+    .filter(function(x){ return x.n > 0; })
+    .sort(function(a, b){ return a.n - b.n; });
+  var withVideo = mods.filter(function(x){ return !!x.rec.assetUrl; }).length;
+  document.getElementById('currSummary').textContent =
+    mods.length + ' modules · 8 tracks · ' + withVideo + ' with video attached' +
+    (withVideo < mods.length ? ' — the rest attach the moment permanent video hosting is set up.' : '.');
+  var zone = document.getElementById('tracksZone');
+  if (!mods.length){
+    zone.innerHTML = '<div class="empty">No training modules are registered in Media OS yet.</div>';
+    return;
+  }
+  zone.innerHTML = TRACKS.map(function(tr){
+    var inTrack = mods.filter(function(x){ return x.n >= tr.lo && x.n <= tr.hi; });
+    if (!inTrack.length) return '';
+    var cards = inTrack.map(function(x){
+      var r = x.rec;
+      var title = TITLES[x.n] || String(r.title || '').replace(/^Module\s+\d+\s*:\s*/, '');
+      var media = r.assetUrl
+        ? '<video controls preload="metadata" src="' + esc(r.assetUrl) + '"></video>'
+        : '<div class="hosting">' + CLOCK_ICON + '<div>Video hosting is being set up — this module\'s video is ready to attach.</div></div>';
+      return '<div class="card"><h3><span class="mnum">' + x.n + '</span><span>' + esc(title) + '</span></h3>' +
+        '<div>' + statusPill(r.status) + ' <span class="pill">Video</span></div>' +
+        (TEACHES[x.n] ? '<p>' + esc(TEACHES[x.n]) + '</p>' : '') + media + '</div>';
+    }).join('');
+    return '<h2 class="sec">' + BOOK_ICON + esc(tr.name) + '<span class="count pill">' + inTrack.length + ' modules</span></h2>' +
+      '<p class="sub">' + esc(tr.sub) + ' · Modules ' + tr.lo + '–' + tr.hi + '</p>' +
+      '<div class="mgrid">' + cards + '</div>';
+  }).join('');
+}
+
+/* ── Speedy Class ──────────────────────────────────────── */
+var classHistory = [];
+var classWelcomed = false;
+function classSessionId(){
+  try {
+    var id = sessionStorage.getItem('tsos_speedy_session');
+    if (!id || !/^[0-9a-f-]{36}$/i.test(id)){
+      id = (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
+      sessionStorage.setItem('tsos_speedy_session', id);
+    }
+    return id;
+  } catch(e){ return undefined; }
+}
+function addBubble(who, text, mine){
+  var log = document.getElementById('chatLog');
+  var div = document.createElement('div');
+  div.className = 'bubble ' + (mine ? 'me' : 'sp');
+  div.innerHTML = '<span class="who">' + esc(who) + '</span>' + esc(text);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+function postClass(message, attempt){
+  var body = { message: message, sessionId: classSessionId(), source: 'SPEEDY_CLASS', history: classHistory.slice(-10) };
+  var headers = { 'Content-Type': 'application/json' };
+  if (tok()) headers['Authorization'] = 'Bearer ' + tok();
+  return fetch(API + '/speedy/chat', { method: 'POST', headers: headers, body: JSON.stringify(body) })
+    .then(function(r){
+      return r.json().then(function(j){ return { status: r.status, j: j }; });
+    })
+    .then(function(res){
+      if (res.status >= 500 && attempt < 1){
+        return new Promise(function(resolve){ setTimeout(resolve, 1500); }).then(function(){ return postClass(message, attempt + 1); });
+      }
+      if (res.status !== 200 || !res.j || !res.j.data || !res.j.data.reply){
+        throw new Error((res.j && res.j.error) || ('HTTP ' + res.status));
+      }
+      return res.j.data.reply;
+    });
+}
+document.getElementById('chatForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var input = document.getElementById('chatInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var sendBtn = document.getElementById('chatSend');
+  sendBtn.disabled = true;
+  addBubble('You', msg, true);
+  classHistory.push({ role: 'user', content: msg });
+  var pending = addBubble('Speedy Class', 'Thinking…', false);
+  postClass(msg, 0).then(function(reply){
+    pending.innerHTML = '<span class="who">Speedy Class</span>' + esc(reply);
+    classHistory.push({ role: 'assistant', content: reply });
+    var log = document.getElementById('chatLog');
+    log.scrollTop = log.scrollHeight;
+  }).catch(function(){
+    pending.innerHTML = '<span class="who">Speedy Class</span>' + esc('Speedy had a hiccup — try again, or call 954-931-7997 and a Service Setter will help.');
+  }).then(function(){ sendBtn.disabled = false; input.focus(); });
+});
+
+/* ── Boot: the staff zone opens only on a real staff session ── */
+function boot(){
+  if (!tok()){ showGate(); return; }
+  authFetch('/media-os/admin/content?q=' + encodeURIComponent('training-academy')).then(function(r){
+    if (r.status === 401){ showGate('Your session has expired — sign in again.'); return null; }
+    if (r.status === 403){ showGate('That account is not a staff account, so the Academy stays closed for it.'); return null; }
+    if (!r.ok){ showGate('The Academy library could not be checked just now — try signing in again.'); return null; }
+    return r.json();
+  }).then(function(j){
+    if (!j) return;
+    document.getElementById('gateZone').innerHTML = '';
+    document.getElementById('staffZone').style.display = '';
+    if (!classWelcomed){
+      classWelcomed = true;
+      addBubble('Speedy Class', 'Welcome to Speedy Class. Ask about any module, your track, or how the platform works — I teach from the Academy curriculum and will point you to the right module.', false);
+    }
+    renderTracks(j.data || []);
+  }).catch(function(){ showGate('The Academy library could not be reached — check your connection and try again.'); });
+}
+document.getElementById('btnSignOut').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+</body>
+</html>
