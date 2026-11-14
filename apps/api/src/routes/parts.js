@@ -16,8 +16,10 @@ import { emitReport } from '../services/managementReports.js';
  * per-job parts usage. Operations data: every route is staff-gated.
  * Stock moves only through three doors: adjust-stock (manual, with a
  * reason on the event), PO receive (adds line quantities), and usage
- * (removes for a job, refuses to go negative). No seed data — an empty
- * warehouse is the honest starting state.
+ * (removes for a job, refuses to go negative). Inventory starts empty;
+ * suppliers include owner-registered partnership vendor distributors
+ * (vendorType PARTNER_DISTRIBUTOR — see src/data/partsPartners.js),
+ * which staff can also flag on any supplier they create here.
  */
 const router = Router();
 const staff = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
@@ -53,6 +55,7 @@ const supplierSchema = z.object({
   phone: z.string().trim().max(30).optional(),
   email: z.string().email().optional(),
   terms: z.string().trim().max(200).optional(),
+  vendorType: z.enum(['STANDARD', 'PARTNER_DISTRIBUTOR']).optional(),
   active: z.boolean().optional(),
 });
 
@@ -73,6 +76,7 @@ router.post('/parts/suppliers', ...staff, async (req, res) => {
     phone: parsed.data.phone || null,
     email: parsed.data.email || null,
     terms: parsed.data.terms || null,
+    vendorType: parsed.data.vendorType || 'STANDARD',
     active: parsed.data.active !== false,
     createdAt: t,
     updatedAt: t,

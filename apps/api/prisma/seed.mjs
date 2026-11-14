@@ -17,6 +17,7 @@ import { buildPhase2DraftPages } from '../src/data/phase2DraftPages.js';
 import { GOOGLE_ACCOUNT_SEEDS } from '../src/data/googleAccounts.js';
 import { MEDIA_CONTENT_SEEDS } from '../src/data/mediaOsSeed.js';
 import { NETWORK_PARTNER_COMPANIES, NETWORK_PARTNER_PROVIDERS } from '../src/data/networkPartners.js';
+import { PARTNER_VENDOR_SUPPLIERS } from '../src/data/partsPartners.js';
 
 const prisma = new PrismaClient();
 
@@ -85,6 +86,16 @@ for (const company of NETWORK_PARTNER_COMPANIES) {
 }
 for (const provider of NETWORK_PARTNER_PROVIDERS) {
   await prisma.provider.upsert({ where: { id: provider.id }, update: {}, create: provider });
+}
+
+// Parts Supply OS partnership vendor distributors (2026-11-14):
+// Appliance Plus Parts Supply, the first supplier record in Parts
+// Supply OS, registered as a partner distributor. Create-only by id
+// (empty update); the API's boot hydrator runs the same ensure pass —
+// see src/data/partsPartners.js for the full fact sheet. No contact
+// details exist for this vendor; none are seeded.
+for (const supplier of PARTNER_VENDOR_SUPPLIERS) {
+  await prisma.supplier.upsert({ where: { id: supplier.id }, update: {}, create: supplier });
 }
 
 // Top Speed Marketing OS taxonomy (blueprint §3). Idempotent: upsert by

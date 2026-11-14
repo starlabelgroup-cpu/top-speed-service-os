@@ -1,3 +1,4 @@
+import { PARTNER_VENDOR_SUPPLIERS } from '../data/partsPartners.js';
 import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
 
@@ -6,8 +7,10 @@ import { DATABASE_ENABLED, db } from './client.js';
  * orders (with lines) and per-job parts usage. Same house pattern as
  * the other modules: the in-memory store is the working shape, these
  * persist* helpers write through to Postgres, and hydrateParts() loads
- * everything at cold start. No seed data — an empty warehouse is the
- * honest starting state.
+ * everything at cold start. No inventory seed data — the warehouse
+ * starts empty. The one seeded record is the owner-registered
+ * partnership vendor directory (src/data/partsPartners.js), ensured
+ * create-only at the top of hydrateParts().
  */
 
 function iso(value) {
@@ -23,6 +26,7 @@ function toStoreSupplier(row) {
     phone: row.phone || null,
     email: row.email || null,
     terms: row.terms || null,
+    vendorType: row.vendorType || 'STANDARD',
     active: row.active !== false,
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
@@ -91,6 +95,7 @@ export async function persistSupplier(supplier) {
       phone: supplier.phone || null,
       email: supplier.email || null,
       terms: supplier.terms || null,
+      vendorType: supplier.vendorType || 'STANDARD',
       active: supplier.active !== false,
       createdAt: new Date(supplier.createdAt),
       updatedAt: new Date(supplier.updatedAt || supplier.createdAt),
@@ -180,9 +185,29 @@ export async function persistPartUsage(usage) {
   }
 }
 
+/**
+ * Partnership vendor distributors registered by the owner (see
+ * src/data/partsPartners.js) are ensured at boot, create-only by id —
+ * the same pattern as the network vendor partners in bookingsRepo.
+ * The Prisma seed at deploy time creates them too; this pass makes
+ * the partner directory correct even on an instance whose seed has
+ * not run. Failures degrade to "partners not ensured", never block
+ * the rest of parts hydration.
+ */
+async function ensurePartnerVendors(prisma) {
+  for (const supplier of PARTNER_VENDOR_SUPPLIERS) {
+    await prisma.supplier.upsert({ where: { id: supplier.id }, update: {}, create: supplier });
+  }
+}
+
 export async function hydrateParts() {
   if (!DATABASE_ENABLED) return 0;
   const prisma = db();
+  try {
+    await ensurePartnerVendors(prisma);
+  } catch (error) {
+    console.error('ensurePartnerVendors failed (partner vendors degraded, parts hydration continues)', error?.message || error);
+  }
   const [supplierRows, partRows, poRows, lineRows, usageRows] = await Promise.all([
     prisma.supplier.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.part.findMany({ orderBy: { createdAt: 'asc' } }),

@@ -124,8 +124,8 @@ footer strong{color:#fff}
     </section>
 
     <section class="panel" id="tab-suppliers" style="display:none;">
-      <h2>Suppliers</h2>
-      <p class="note">The vendors Parts Supply OS buys from.</p>
+      <h2>Suppliers &amp; Distributors</h2>
+      <p class="note">The vendors Parts Supply OS buys from. Partnership vendors are badged <strong>Partner Distributor</strong> — register any independent distributor here and set its vendor type.</p>
       <div id="suppliersTable"></div>
       <form class="grid" id="supplierForm">
         <div><label>Supplier name *</label><input id="sfName" required maxlength="120"></div>
@@ -133,6 +133,7 @@ footer strong{color:#fff}
         <div><label>Phone</label><input id="sfPhone" maxlength="30"></div>
         <div><label>Email</label><input id="sfEmail" type="email" maxlength="120"></div>
         <div><label>Terms</label><input id="sfTerms" maxlength="200" placeholder="Net 30, COD…"></div>
+        <div><label>Vendor type</label><select id="sfType"><option value="STANDARD">Standard supplier</option><option value="PARTNER_DISTRIBUTOR">Partner distributor</option></select></div>
         <div style="align-self:end;"><button class="btn blue" type="submit">Add supplier</button></div>
       </form>
       <div class="msg" id="supplierMsg"></div>
@@ -269,7 +270,7 @@ function renderSuppliers(){
   var el=document.getElementById('suppliersTable');
   if(!suppliers.length){ el.innerHTML='<div class="empty">No suppliers yet. Add the first vendor below.</div>'; return; }
   el.innerHTML='<table><thead><tr><th>Supplier</th><th>Contact</th><th>Phone</th><th>Email</th><th>Terms</th><th>Status</th></tr></thead><tbody>'+suppliers.map(function(s){
-    return '<tr><td>'+esc(s.name)+'</td><td>'+esc(s.contact||'—')+'</td><td>'+esc(s.phone||'—')+'</td><td>'+esc(s.email||'—')+'</td><td>'+esc(s.terms||'—')+'</td><td>'+(s.active?'<span class="tag green">ACTIVE</span>':'<span class="tag">INACTIVE</span>')+'</td></tr>';
+    return '<tr><td>'+esc(s.name)+(s.vendorType==='PARTNER_DISTRIBUTOR'?' <span class="tag">PARTNER DISTRIBUTOR</span>':'')+'</td><td>'+esc(s.contact||'—')+'</td><td>'+esc(s.phone||'—')+'</td><td>'+esc(s.email||'—')+'</td><td>'+esc(s.terms||'—')+'</td><td>'+(s.active?'<span class="tag green">ACTIVE</span>':'<span class="tag">INACTIVE</span>')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
 function renderPOs(){
@@ -313,6 +314,7 @@ document.getElementById('supplierForm').addEventListener('submit',function(ev){
   ev.preventDefault();
   var body={name:document.getElementById('sfName').value.trim()};
   ['Contact','Phone','Email','Terms'].forEach(function(k){ var v=document.getElementById('sf'+k).value.trim(); if(v) body[k.toLowerCase()]=v; });
+  var sfType=document.getElementById('sfType').value; if(sfType) body.vendorType=sfType;
   apiFetch('/parts/suppliers',{method:'POST',body:JSON.stringify(body)})
     .then(function(){ setMsg('supplierMsg',true,'Supplier added.'); ev.target.reset(); loadAll(); })
     .catch(function(e){ setMsg('supplierMsg',false,e.message); });

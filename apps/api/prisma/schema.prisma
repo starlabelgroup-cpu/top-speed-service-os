@@ -835,14 +835,20 @@ model PageVersion {
 // orders and per-job parts usage. Operations data — staff only at the
 // API. Usage snapshots the part's unit cost at the moment of use so job
 // costing survives later price changes.
+enum SupplierVendorType {
+  STANDARD
+  PARTNER_DISTRIBUTOR
+}
+
 model Supplier {
-  id        String   @id @default(uuid()) @db.Uuid
-  name      String
-  contact   String?
-  phone     String?
-  email     String?
-  terms     String?
-  active    Boolean  @default(true)
+  id         String             @id @default(uuid()) @db.Uuid
+  name       String
+  contact    String?
+  phone      String?
+  email      String?
+  terms      String?
+  vendorType SupplierVendorType @default(STANDARD)
+  active     Boolean            @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
