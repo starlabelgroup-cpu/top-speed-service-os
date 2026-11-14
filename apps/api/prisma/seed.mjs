@@ -16,6 +16,7 @@ import {
 import { buildPhase2DraftPages } from '../src/data/phase2DraftPages.js';
 import { GOOGLE_ACCOUNT_SEEDS } from '../src/data/googleAccounts.js';
 import { MEDIA_CONTENT_SEEDS } from '../src/data/mediaOsSeed.js';
+import { NETWORK_PARTNER_COMPANIES, NETWORK_PARTNER_PROVIDERS } from '../src/data/networkPartners.js';
 
 const prisma = new PrismaClient();
 
@@ -70,6 +71,19 @@ for (const company of companies) {
   await prisma.company.upsert({ where: { id: company.id }, update: {}, create: company });
 }
 for (const provider of providers) {
+  await prisma.provider.upsert({ where: { id: provider.id }, update: {}, create: provider });
+}
+
+// Vendor partner businesses (2026-11-14): Cleanout Vents, the network's
+// dryer-vent-cleaning partner, registered in the same Company/Provider
+// tables as the trio above. Create-only by id (empty update), and the
+// API's boot hydrator runs the same ensure pass — see
+// src/data/networkPartners.js for the full fact sheet. No vent-cleaning
+// prices and no rating exist; neither is ever seeded.
+for (const company of NETWORK_PARTNER_COMPANIES) {
+  await prisma.company.upsert({ where: { id: company.id }, update: {}, create: company });
+}
+for (const provider of NETWORK_PARTNER_PROVIDERS) {
   await prisma.provider.upsert({ where: { id: provider.id }, update: {}, create: provider });
 }
 

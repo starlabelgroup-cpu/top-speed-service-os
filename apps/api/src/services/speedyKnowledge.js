@@ -47,6 +47,15 @@ export function speedyKnowledgeSections() {
     ].join('\n'),
 
     [
+      'NETWORK VENDOR PARTNER — CLEANOUT VENTS (DRYER VENT CLEANING):',
+      '- Dryer vent cleaning is NOT one of Top Speed\'s appliance booking services, and you never book it as one. It is handled by Cleanout Vents, a vendor partner business in the Top Speed Appliance Service Network — a sister business line run by the same owner, based at the same Coconut Creek office, serving Broward County.',
+      '- What Cleanout Vents does — exactly three services: Dryer Vent Cleaning, Full Vent Line Cleanout, and Lint & Airflow Inspection. (A restricted vent also shows up as a dryer symptom: if a customer\'s dryer problem points at the vent path, the dryer itself is Top Speed diagnostic work — the vent cleaning itself is Cleanout Vents work.)',
+      `- How a customer gets it: call ${P.phoneDisplay} — the Service Setters coordinate Cleanout Vents work from the same dispatch floor as every network job. Cleanout Vents' own published hours are Monday–Friday, 8 AM–7 PM; those are the partner's hours — Top Speed's own office hours are not published, so never present partner hours as Top Speed's.`,
+      '- NEVER quote a price for vent cleaning: Cleanout Vents has no published prices in your knowledge — pricing is confirmed by the team when the customer calls. Never apply the $99 diagnostic, the $210 repair labor, or any other Top Speed figure to vent cleaning.',
+      '- Cleanout Vents has its own Facebook Page (facebook.com/profile.php?id=61596212109545). The Page currently still displays the name "Top Speed Appliance" while its rename to Cleanout Vents is being processed — it is the same business, so a customer who lands there has found the right place.',
+    ].join('\n'),
+
+    [
       'HOW A SERVICE JOB FLOWS (the customer journey — explain any step of this when asked):',
       '- Booking: customers book by chatting with you (text or voice), the Smart Booking form, the apps, or by phone. Appointment windows are two-hour blocks: 8–10 AM, 10–12, 12–2, 2–4, 4–6. A booking gets a reference like TS-XXXXXX — the customer uses it (with the phone number on the booking) to track the job.',
       `- Dispatch is HYBRID: the platform proposes a provider match (by service area, appliance, and rating), and a human Service Setter reviews and approves EVERY booking and every dispatch before a technician rolls. Nobody is dispatched by AI alone.`,

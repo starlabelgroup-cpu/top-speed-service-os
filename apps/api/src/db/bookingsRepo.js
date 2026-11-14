@@ -20,6 +20,7 @@ import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
 import { hydrateMedia } from './mediaOsRepo.js';
 import { hydrateAdCampaigns } from './adStudioRepo.js';
 import { hydrateDepartmentReports } from './managementReportsRepo.js';
+import { NETWORK_PARTNER_COMPANIES, NETWORK_PARTNER_PROVIDERS } from '../data/networkPartners.js';
 
 /**
  * Bookings persistence for the Service OS (database mode).
@@ -195,9 +196,31 @@ function assignmentFromRow(row) {
   };
 }
 
+/**
+ * Vendor partner businesses (data/networkPartners.js — Cleanout Vents
+ * is the first) are create-only by id, at Prisma seed time and again
+ * here at boot, so the partner is a real Company + Provider record on
+ * every environment even if a seed run was skipped. A failure here
+ * degrades to "partner not yet registered", never blocks hydration.
+ */
+async function ensureNetworkPartners(prisma) {
+  for (const company of NETWORK_PARTNER_COMPANIES) {
+    await prisma.company.upsert({ where: { id: company.id }, update: {}, create: company });
+  }
+  for (const provider of NETWORK_PARTNER_PROVIDERS) {
+    await prisma.provider.upsert({ where: { id: provider.id }, update: {}, create: provider });
+  }
+}
+
 export async function hydrateStore() {
   if (!DATABASE_ENABLED) return { skipped: true };
   const prisma = db();
+
+  try {
+    await ensureNetworkPartners(prisma);
+  } catch (error) {
+    console.error('ensureNetworkPartners failed (vendor partners degraded, platform continues)', error?.message || error);
+  }
 
   const providerRows = await prisma.provider.findMany();
   store.providers.length = 0;

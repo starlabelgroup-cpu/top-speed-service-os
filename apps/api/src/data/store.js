@@ -6,6 +6,9 @@ const providerCompanies = {
   alpha: '20000000-0000-4000-8000-000000000001',
   beta: '20000000-0000-4000-8000-000000000002',
   gamma: '20000000-0000-4000-8000-000000000003',
+  // Vendor partner (2026-11-14): Cleanout Vents — see
+  // data/networkPartners.js for the canonical seed spec.
+  delta: '20000000-0000-4000-8000-000000000004',
 };
 
 export const store = {
@@ -159,6 +162,21 @@ export const store = {
       specialties: ['Refrigerator', 'Washer', 'Dryer', 'Oven / Range', 'Dishwasher', 'Freezer / Ice Maker', 'Microwave', 'Garbage Disposal', 'Installation'],
       serviceCities: ['Lauderhill', 'Plantation', 'Sunrise', 'Tamarac', 'Fort Lauderdale', 'Lauderdale Lakes', 'North Lauderdale', 'Davie', 'Coral Springs', 'Pompano Beach', 'Oakland Park', 'Margate'],
       rating: 4.8,
+      active: true,
+    },
+    {
+      // Cleanout Vents — vendor partner business (dryer vent cleaning),
+      // Broward County. No rating exists for it (null, never invented)
+      // and no vent-cleaning prices exist anywhere. Its specialties are
+      // not appliance services, so the dispatch matcher never proposes
+      // it for appliance bookings; vent work routes via Service Setters.
+      id: '30000000-0000-4000-8000-000000000004',
+      companyId: providerCompanies.delta,
+      businessName: 'Cleanout Vents',
+      type: 'NETWORK_BUSINESS',
+      specialties: ['Dryer Vent Cleaning', 'Full Vent Line Cleanout', 'Lint & Airflow Inspection'],
+      serviceCities: ['Lauderhill', 'Plantation', 'Sunrise', 'Tamarac', 'Fort Lauderdale', 'Lauderdale Lakes', 'North Lauderdale', 'Davie', 'Coral Springs', 'Pompano Beach', 'Oakland Park', 'Margate', 'Hollywood', 'Pembroke Pines', 'Miramar', 'Deerfield Beach', 'Coconut Creek', 'Dania Beach', 'Cooper City', 'Weston', 'Parkland', 'Hallandale Beach', 'Wilton Manors', 'Lighthouse Point', 'Lauderdale-by-the-Sea', 'Southwest Ranches', 'West Park', 'Pembroke Park', 'Hillsboro Beach', 'Sea Ranch Lakes', 'Lazy Lake'],
+      rating: null,
       active: true,
     },
   ],
