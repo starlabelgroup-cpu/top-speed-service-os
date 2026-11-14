@@ -300,8 +300,9 @@ function boot(){
   get('/auth/me', true).then(function(res){
     var me = data(res.j);
     if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
-    var role = me.user.role || '';
-    if (STAFF.indexOf(role) === -1){
+    var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
+    var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
+    if (!isStaff){
       showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Remote Manager is restricted to Top Speed staff and the owner.</p></div>');
       return;
     }
@@ -311,8 +312,8 @@ function boot(){
     document.getElementById('refreshBtn').style.display = '';
     document.getElementById('logoutBtn').style.display = '';
     var rb = document.getElementById('roleBadge');
-    if (role === 'COMPANY_OWNER'){ rb.textContent = 'MASTER'; rb.style.display = ''; }
-    else if (role === 'PLATFORM_ADMIN'){ rb.textContent = 'ADMIN'; rb.style.display = ''; }
+    if (roles.indexOf('COMPANY_OWNER') !== -1){ rb.textContent = 'MASTER'; rb.style.display = ''; }
+    else if (roles.indexOf('PLATFORM_ADMIN') !== -1){ rb.textContent = 'ADMIN'; rb.style.display = ''; }
     loadAll();
   });
 }
