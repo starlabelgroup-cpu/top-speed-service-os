@@ -35,10 +35,12 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink
     <h2>Phases</h2>
     <p>1) Cities — seeds each city as service-covered, creates and publishes its landing page.<br>
        2) Categories — commercial repair (5), residential installation (9), commercial installation (6).<br>
-       3) Problem pages — symptom pages for all residential services and commercial categories (runs a recon check on the existing problem pages first).</p>
+       3) Problem pages — symptom pages for all residential services and commercial categories (runs a recon check on the existing problem pages first).<br>
+       4) Core service pages — a main page for every residential repair service. Every page in every phase carries the Speedy Booking + Speedy AI links in its booking section.</p>
     <button id="btnCities">Run Phase 1 — Cities (53)</button>
     <button id="btnCats">Run Phase 2 — Categories (20)</button>
     <button id="btnProblems">Run Phase 3 — Problem Pages (31)</button>
+    <button id="btnCore">Run Phase 4 — Core Service Pages (8)</button>
     <button id="btnCounts" class="ghost">Refresh Counts</button>
   </div>
   <div id="log">Log ready.</div>
@@ -80,6 +82,26 @@ var CAT_SERVICES = [
  {kind:'comins', name:'Commercial Trash & Beverage Equipment Installation', slug:'commercial-trash-and-beverage-equipment-installation', parent:'commercial-appliance-installation'}
 ];
 
+var CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 954-931-7997.';
+var CORE_SERVICES = [
+ {name:'Refrigerator', slug:'refrigerator-repair'},
+ {name:'Washer', slug:'washer-repair'},
+ {name:'Dryer', slug:'dryer-repair'},
+ {name:'Oven/Range', slug:'oven-range-repair'},
+ {name:'Dishwasher', slug:'dishwasher-repair'},
+ {name:'Freezer/Ice Maker', slug:'freezer-ice-maker-repair'},
+ {name:'Microwave', slug:'microwave-repair'},
+ {name:'Garbage Disposal', slug:'garbage-disposal-repair'}
+];
+function rewriteCta(sections, heading){
+  var found = false;
+  var out = (sections||[]).map(function(b){
+    if(b.type==='cta'){ found = true; return {type:'cta', heading:heading, body:CTA_BODY, phone:'954-931-7997'}; }
+    return b;
+  });
+  if(!found) out.push({type:'cta', heading:heading, body:CTA_BODY, phone:'954-931-7997'});
+  return out;
+}
 var SYMPTOM_NAMES = {'not-cooling':'Not Cooling','not-draining':'Not Draining','not-heating':'Not Heating','leaking':'Leaking','error-codes':'Error Codes','unusual-noises':'Unusual Noises','no-ice':'No Ice'};
 var PROBLEMS_RES = {
  'refrigerator-repair':['leaking','unusual-noises','error-codes'],
@@ -120,19 +142,29 @@ function publish(pageId){
   });
 }
 
-function patchTitleMeta(pageId, title, meta){
+function patchTitleMeta(pageId, title, meta, ctaHeading){
   return api('GET','/marketing-os/admin/pages/'+pageId).then(function(r){
     var page = r.json && r.json.data; if(!page) return false;
-    return api('PATCH','/marketing-os/admin/pages/'+pageId,{title:title, metaDescription:meta, sections:page.sections||[], note:'Expander build 2026-11-13'}).then(function(r2){ return r2.status<300; });
+    var sections = rewriteCta(page.sections||[], ctaHeading || 'Book your repair');
+    return api('PATCH','/marketing-os/admin/pages/'+pageId,{title:title, metaDescription:meta, sections:sections, note:'Expander build 2026-11-13'}).then(function(r2){ return r2.status<300; });
   });
 }
 
-function swapTermsAndPatch(pageId, termsBlock, title, meta){
+function swapTermsAndPatch(pageId, termsBlock, title, meta, ctaHeading){
   return api('GET','/marketing-os/admin/pages/'+pageId).then(function(r){
     var page = r.json && r.json.data; if(!page) { log('  ! could not read page '+pageId); return false; }
     var sections = (page.sections||[]).map(function(b){ return b.type==='service-terms' ? termsBlock : b; });
     if(!sections.some(function(b){ return b.type==='service-terms'; })) sections.push(termsBlock);
+    sections = rewriteCta(sections, ctaHeading || 'Book your repair');
     return api('PATCH','/marketing-os/admin/pages/'+pageId,{title:title, metaDescription:meta, sections:sections, note:'Expander build 2026-11-13'}).then(function(r2){ return r2.status<300; });
+  });
+}
+
+function enrichCtasOnly(pageId, ctaHeading){
+  return api('GET','/marketing-os/admin/pages/'+pageId).then(function(r){
+    var page = r.json && r.json.data; if(!page) return false;
+    var sections = rewriteCta(page.sections||[], ctaHeading || 'Book your repair');
+    return api('PATCH','/marketing-os/admin/pages/'+pageId,{sections:sections, note:'Speedy booking links 2026-11-13'}).then(function(r2){ return r2.status<300; });
   });
 }
 function runCities(btn){
@@ -159,7 +191,9 @@ function runCities(btn){
           if(r.status===409){ log('  page = '+name+' (already exists)'); existed++; return; }
           if(r.status>=300){ log('  ! '+name+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
           var pid = r.json.data.id;
-          return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+name+' → '+r.json.data.canonicalUrl); } else failed++; });
+          return enrichCtasOnly(pid, 'Book your repair').then(function(){
+            return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+name+' → '+r.json.data.canonicalUrl); } else failed++; });
+          });
         });
       }).then(function(){ return sleep(120); });
     });
@@ -205,7 +239,8 @@ function runCats(btn){
           if(r.status===409){ log('  page = '+s.slug+' (already exists)'); existed++; return; }
           if(r.status>=300){ log('  ! '+s.slug+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
           var pid = r.json.data.id, tm = catTitleMeta(s);
-          return swapTermsAndPatch(pid, tm.terms, tm.title, tm.meta).then(function(){
+          var ctaH = s.kind==='ins' ? 'Book your installation' : (s.kind==='com' || s.kind==='comins') ? 'Book commercial service' : 'Book your repair';
+          return swapTermsAndPatch(pid, tm.terms, tm.title, tm.meta, ctaH).then(function(){
             return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+s.slug+' → '+r.json.data.canonicalUrl); } else failed++; });
           });
         });
@@ -262,13 +297,13 @@ function buildProblems(btn, symKey){
           if(!j.com){
             title = sv.name+' '+prob+' — Diagnosis & Repair in South Florida | Top Speed Appliance';
             meta = sv.name+' '+prob.toLowerCase()+'? What it usually means, what our technician checks, and how to book an on-site diagnosis in South Florida — $99 diagnostic credited toward your repair.';
-            return patchTitleMeta(page.id, title, meta).then(function(){
+            return patchTitleMeta(page.id, title, meta, 'Book your repair').then(function(){
               return publish(page.id).then(function(ok){ if(ok){ done++; log('  page ✓ '+page.canonicalUrl); } else failed++; });
             });
           }
           title = sv.name+' '+prob+' — Diagnosis & Repair in South Florida | Top Speed Appliance';
           meta = sv.name+' '+prob.toLowerCase()+'? What it usually means, what our technician checks, and how to book an on-site assessment — commercial work is priced by custom quote under a service agreement.';
-          return swapTermsAndPatch(page.id, COMMERCIAL_TERMS, title, meta).then(function(){
+          return swapTermsAndPatch(page.id, COMMERCIAL_TERMS, title, meta, 'Book commercial service').then(function(){
             return publish(page.id).then(function(ok){ if(ok){ done++; log('  page ✓ '+page.canonicalUrl); } else failed++; });
           });
         }).then(function(){ return sleep(120); });
@@ -276,6 +311,34 @@ function buildProblems(btn, symKey){
     });
     chain.then(function(){ log('PHASE 3 DONE — published '+done+', already existed '+existed+', failed '+failed+(stopped?' (stopped early — see log)':'')); btn.disabled=false; refreshCounts(); });
   });
+}
+
+function runCore(btn){
+  btn.disabled = true; log('\n=== PHASE 4: CORE SERVICE PAGES ('+CORE_SERVICES.length+') ===');
+  var done=0, existed=0, failed=0;
+  var chain = Promise.resolve();
+  CORE_SERVICES.forEach(function(s){
+    chain = chain.then(function(){
+      return taxonomy().then(function(t){
+        var sv = (t.services||[]).filter(function(x){ return x.slug===s.slug; })[0];
+        if(!sv){ log('  ! core service missing from taxonomy: '+s.slug); failed++; return null; }
+        return sv.id;
+      }).then(function(sid){
+        if(!sid) return;
+        return api('POST','/marketing-os/admin/pages',{type:'SERVICE', serviceId:sid, note:'Core service page build 2026-11-13'}).then(function(r){
+          if(r.status===409){ log('  page = '+s.slug+' (already exists)'); existed++; return; }
+          if(r.status>=300){ log('  ! '+s.slug+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
+          var pid = r.json.data.id;
+          var title = s.name+' Repair — '+GEO+' | Top Speed Appliance';
+          var meta = s.name+' repair across Broward, Palm Beach and Miami-Dade — $99 diagnostic credited toward your repair, flat $210 labor, written quote before any work, 90-day parts and labor warranty. Book online with Top Speed Appliance.';
+          return patchTitleMeta(pid, title, meta, 'Book your repair').then(function(){
+            return publish(pid).then(function(ok){ if(ok){ done++; log('  page ✓ '+s.slug+' → '+r.json.data.canonicalUrl); } else failed++; });
+          });
+        });
+      }).then(function(){ return sleep(120); });
+    });
+  });
+  chain.then(function(){ log('PHASE 4 DONE — published '+done+', already existed '+existed+', failed '+failed); btn.disabled=false; refreshCounts(); });
 }
 
 function refreshCounts(){
@@ -297,6 +360,7 @@ function refreshCounts(){
   document.getElementById('btnCities').onclick = function(){ runCities(this); };
   document.getElementById('btnCats').onclick = function(){ runCats(this); };
   document.getElementById('btnProblems').onclick = function(){ runProblems(this); };
+  document.getElementById('btnCore').onclick = function(){ runCore(this); };
   document.getElementById('btnCounts').onclick = function(){ refreshCounts(); };
 })();
 </script>
