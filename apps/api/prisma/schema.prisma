@@ -1074,6 +1074,8 @@ model MediaContent {
 
   assets MediaAsset[]
 
+  adCampaigns AdCampaign[]
+
   @@index([status, division])
   @@index([division, publishedAt])
 }
@@ -1091,4 +1093,55 @@ model MediaAsset {
   content MediaContent? @relation(fields: [contentId], references: [id], onDelete: SetNull)
 
   @@index([contentId])
+}
+
+// ─── Ad Studio (in-house advertising system, 2026-11-14) ────────────
+// Ramone's own ad system on the Service OS: campaigns are built from
+// Media OS creatives, send traffic to his own published landing pages,
+// and run as placements on his own platform surfaces (the flagship
+// footer Banner rotation). Nothing outside is bought and no money
+// moves — a campaign goes live only when the owner (MASTER) approves
+// it, and results are counted from real bookings/connections that
+// carry the campaign's sourceTag.
+enum AdBusinessLine {
+  TOP_SPEED
+  CLEANOUT_VENTS
+  COCOCANE
+}
+
+enum AdCampaignStatus {
+  DRAFT
+  PENDING_APPROVAL
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum AdPlacement {
+  BANNER
+  NONE
+}
+
+model AdCampaign {
+  id             String           @id @default(uuid()) @db.Uuid
+  name           String
+  businessLine   AdBusinessLine
+  objective      String
+  status         AdCampaignStatus @default(DRAFT)
+  creativeId     String?          @db.Uuid
+  destinationUrl String
+  sourceTag      String           @unique
+  placement      AdPlacement      @default(NONE)
+  bannerId       String?          @db.Uuid
+  notes          String?
+  createdById    String?          @db.Uuid
+  approvedById   String?          @db.Uuid
+  approvedAt     DateTime?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  creative MediaContent? @relation(fields: [creativeId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([businessLine, status])
 }

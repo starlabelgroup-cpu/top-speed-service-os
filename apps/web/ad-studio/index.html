@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ad Studio — Top Speed Appliance</title>
+<meta name="description" content="Top Speed Ad Studio: the in-house advertising system of the Top Speed ecosystem — build campaigns from the creative library, run them on our own platform surfaces, and count real bookings by source. Pepper manages, Ramone approves.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Space Grotesk";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:14px 2px 4px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Space Grotesk";font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:720px;line-height:1.6}
+h2.sec{font-family:"Space Grotesk";font-size:20px;margin:26px 0 6px;display:flex;align-items:center;gap:9px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:780px}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-top:14px}
+.role{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px}
+.role h3{font-family:"Space Grotesk";font-size:16px;display:flex;align-items:center;gap:8px}
+.role p{color:var(--mut);font-size:13px;line-height:1.55;margin-top:6px}
+.badge{font-size:10.5px;font-weight:800;letter-spacing:.07em;padding:3px 9px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.badge.master{color:#fff;background:linear-gradient(135deg,var(--red2),var(--red))}
+.badge.mgr{color:var(--blue);border:1px solid rgba(18,128,255,.45);background:rgba(18,128,255,.12)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Space Grotesk";font-size:16px;line-height:1.3}
+.card p{color:var(--mut);font-size:13px;line-height:1.55}
+.card .thumb{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.card .titlecard{width:100%;aspect-ratio:1/1;border-radius:10px;border:1px solid var(--line);background:linear-gradient(150deg,#0E1A36,#060B18 70%);display:flex;flex-direction:column;justify-content:flex-end;padding:14px;gap:6px}
+.card .titlecard .tk{color:var(--red);font-size:10.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.card .titlecard .tt{font-family:"Space Grotesk";font-weight:700;font-size:19px;line-height:1.2;color:#fff}
+.card .go{margin-top:auto;font-size:13px;font-weight:700;color:var(--blue);background:none;border:0;cursor:pointer;text-align:left;font-family:Inter;padding:0}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase}
+.pill.active{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.pill.pending{color:var(--yel);border-color:rgba(234,179,8,.45)}
+.pill.paused{color:#F5C66B;border-color:rgba(234,179,8,.3)}
+.pill.ended{color:#F08A88;border-color:rgba(232,50,46,.4)}
+.pill.draft{color:var(--mut)}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:14px}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+.console h3{font-family:"Space Grotesk";font-size:16px;margin-bottom:4px}
+.cform{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+.cform .full{grid-column:1/-1}
+.cform label{display:block;font-size:11px;font-weight:700;color:var(--mut);letter-spacing:.05em;margin-bottom:5px;text-transform:uppercase}
+.cform input,.cform select,.cform textarea{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:9px 11px;font-size:13.5px;font-family:Inter;width:100%}
+.btn{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn.blue{background:rgba(18,128,255,.18);border:1px solid rgba(18,128,255,.5);color:#BFD9FF}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn[disabled]{opacity:.55;cursor:wait}
+.rows{display:flex;flex-direction:column}
+.crow{display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--line);flex-wrap:wrap}
+.crow:last-child{border-bottom:0}
+.crow .meta{flex:1;min-width:230px}
+.crow .meta b{font-size:14.5px}
+.crow .meta .slug{font-size:11.5px;color:var(--mut);font-family:ui-monospace,Menlo,monospace;word-break:break-all}
+.crow .meta .desc{font-size:12.5px;color:var(--mut);line-height:1.5;margin-top:2px}
+.crow .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.stats{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--mut)}
+.stats b{color:var(--txt);font-size:15px}
+.msg{font-size:13px;margin-top:10px;line-height:1.5}
+.msg.ok{color:var(--grn)}
+.msg.err{color:#F08A88}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:2px 7px;color:#B9CFF2;word-break:break-all}
+.signin{max-width:440px}
+.signin input{background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter;width:100%;margin-top:8px}
+.chatlog{display:flex;flex-direction:column;gap:10px;max-height:340px;overflow:auto;margin-top:12px;padding-right:2px}
+.chatmsg{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.55;max-width:92%}
+.chatmsg.me{align-self:flex-end;background:rgba(18,128,255,.13);border-color:rgba(18,128,255,.4)}
+.chatmsg.pep{align-self:flex-start;background:var(--panel2);white-space:pre-wrap}
+.chatmsg .who{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.chatform{display:flex;gap:8px;margin-top:12px}
+.chatform input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Serving South Florida</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+19549317997">Call 954-931-7997</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">In-House Advertising — No Outside Spend</div>
+    <h1>Ad <span>Studio</span></h1>
+    <p>Our own advertising system, on the same Service OS as booking and dispatch. Campaigns are built from the Media OS creative library, send traffic to our own landing pages, and run as placements on our own platform surfaces — the flagship footer banner rotation. Every lead and booking a campaign produces is counted by its source tag. Nothing goes live without the owner's approval.</p>
+  </div>
+
+  <div class="roles">
+    <div class="role">
+      <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg>Pepper — System Manager <span class="badge mgr">Manager</span></h3>
+      <p>Pepper (Muse AI) runs the studio day to day: builds campaigns from the creative library, wires the placements, tracks the source-tag results, and queues everything for approval. Pepper never launches a campaign and never spends a dollar — there is no outside spend in this system at all.</p>
+    </div>
+    <div class="role">
+      <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8 1 5.4-4.9-2.6-4.9 2.6 1-5.4L4.2 8.7l5.4-.8z" stroke="#E8322E"/></svg>Ramone — Owner <span class="badge master">Master</span></h3>
+      <p>Ramone owns every account and every approval. A campaign moves from draft to live only when the owner account approves it here — the approve button exists only on the owner (MASTER) session. Pausing, ending and resuming follow the same rule.</p>
+    </div>
+  </div>
+
+  <div id="signinZone" style="display:none">
+    <h2 class="sec">Staff sign-in</h2>
+    <p class="sub">The Ad Studio is staff-only. Sign in with your Service OS account — the studio checks the session against the real campaign API before showing anything.</p>
+    <div class="console signin">
+      <form id="signinForm">
+        <label class="small mut" for="siEmail">Email</label>
+        <input id="siEmail" type="email" autocomplete="username" required placeholder="you@topspeedappliance.net">
+        <label class="small mut" for="siPass" style="display:block;margin-top:10px">Password</label>
+        <input id="siPass" type="password" autocomplete="current-password" required placeholder="Your Service OS password">
+        <div style="margin-top:12px"><button class="btn" type="submit">Sign in to Ad Studio</button></div>
+        <div class="msg" id="signinMsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="staffZone" style="display:none">
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.5l2.2 2.2L15.5 10"/><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4v-1M12 21.6v-1M3.4 12h-1M21.6 12h-1" stroke="#E8322E"/></svg>Owner approval queue</h2>
+    <p class="sub">Campaigns waiting for the MASTER decision. Approving a campaign with a banner placement puts its creative into the flagship footer rotation immediately; approving a link-only campaign activates its tracked link.</p>
+    <div class="console">
+      <div class="rows" id="queueRows"><span class="mut small"><span class="spin"></span> Loading the queue…</span></div>
+      <div class="msg" id="queueMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9.5h18" stroke="#E8322E"/><circle cx="6.6" cy="7.2" r=".9" fill="currentColor" stroke="none"/></svg>Creative library</h2>
+    <p class="sub">The Media OS library — the Flywheel ad set and everything else the platform holds. Creatives with a public image show it; the rest render as designed title cards, exactly as honest as the library itself. Pick one to build a campaign around it.</p>
+    <div id="creativeGrid"><div class="empty"><span class="spin"></span> Loading the creative library…</div></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="#E8322E"/><rect x="3.5" y="3.5" width="17" height="17" rx="3"/></svg>Campaign builder</h2>
+    <p class="sub">Build a draft. The destination list is the platform's real published landing pages, fetched live — plus the platform's own doors. The source tag is generated by the server from the campaign name, so two campaigns can never share one.</p>
+    <div class="console">
+      <form class="cform" id="buildForm">
+        <div><label>Campaign name</label><input id="bName" required maxlength="160" placeholder="Fall refrigerator repair push"></div>
+        <div><label>Business line</label><select id="bLine">
+          <option value="TOP_SPEED">Top Speed Appliance — repair, installation, sales &amp; delivery</option>
+          <option value="CLEANOUT_VENTS">Cleanout Vents — dryer vent cleaning</option>
+          <option value="COCOCANE">CocoCane — juice shop</option>
+        </select></div>
+        <div><label>Placement</label><select id="bPlacement">
+          <option value="BANNER">Banner — flagship footer rotation</option>
+          <option value="NONE">Link only — tracked URL, no placement</option>
+        </select></div>
+        <div class="full"><label>Objective — what this campaign is for</label><input id="bObjective" required maxlength="600" placeholder="Bookings for refrigerator repair from the published city pages"></div>
+        <div><label>Creative (Media OS)</label><select id="bCreative"><option value="">— no creative —</option></select></div>
+        <div><label>Destination — published landing page</label><select id="bDest"><option value="">Loading published pages…</option></select></div>
+        <div class="full"><label>…or paste any of our own URLs</label><input id="bDestCustom" type="url" maxlength="1000" placeholder="https://topspeedserviceos.com/book"></div>
+        <div class="full"><label>Notes (optional)</label><textarea id="bNotes" rows="2" maxlength="2000" placeholder="Rotation notes, who asked for it, anything the approver should know."></textarea></div>
+        <div class="full"><span class="small mut">Source tag preview: </span><span class="tag" id="tagPreview">adstudio-…</span> <span class="small mut">— the server generates and confirms the final tag; every booking and lead from this campaign is counted under it.</span></div>
+        <div class="full"><button class="btn" type="submit">Create draft campaign</button></div>
+      </form>
+      <div class="msg" id="buildMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V10M12 19.5V4.5M20 19.5v-8" stroke="#E8322E"/><path d="M2.5 19.5h19"/></svg>Campaigns &amp; results</h2>
+    <p class="sub">Every campaign with its live status and its real attributed results — bookings and leads whose intake carried the campaign's source tag. Zero is an honest number here: a campaign with no attributed bookings shows zero.</p>
+    <div class="console">
+      <div class="small mut" id="campCounts">Loading…</div>
+      <div class="rows" id="campRows" style="margin-top:6px"><span class="mut small"><span class="spin"></span> Loading campaigns…</span></div>
+      <div class="msg" id="campMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 1 1-3.4-6.6L21 5.5l-.6 3.3A8.4 8.4 0 0 1 21 12z"/><path d="M8.5 10.8h7M8.5 13.8h4.5" stroke="#E8322E"/></svg>Ask Pepper</h2>
+    <p class="sub">Campaign advice from Pepper, the system manager — which creative fits which page, what a source tag is telling you, what to build next. Pepper advises and drafts; the launch decision stays with the owner.</p>
+    <div class="console">
+      <div class="chatlog" id="chatLog">
+        <div class="chatmsg pep"><div class="who">Pepper — System Manager</div>Tell me what you want to promote and I will line up the creative, the destination page and the source tag. When the draft looks right, it goes to the owner queue for the MASTER call.</div>
+      </div>
+      <form class="chatform" id="chatForm">
+        <input id="chatInput" maxlength="2000" placeholder="Ask about a campaign, a creative, or the results…" autocomplete="off">
+        <button class="btn" type="submit">Ask</button>
+      </form>
+      <div class="msg" id="chatMsg"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="/">Platform Home</a><a href="/ad-studio">Ad Studio</a><a href="/media">Media OS</a><a href="/marketing-os">Marketing OS</a><a href="/manager">Remote Manager</a><a href="/advertiser">Advertiser Console</a><a href="/book">Book Service</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Ad Studio — in-house advertising on the Service OS · System manager: Pepper · Owner &amp; approver: Ramone (MASTER)</div>
+</footer>
+
+<script src="/speedy-widget.js" defer></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+function setMsg(id, text, ok){
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'msg ' + (text ? (ok ? 'ok' : 'err') : '');
+}
+var STATUS_LABEL = { DRAFT:'Draft', PENDING_APPROVAL:'Pending approval', ACTIVE:'Active', PAUSED:'Paused', ENDED:'Ended' };
+var LINE_LABEL = { TOP_SPEED:'Top Speed Appliance', CLEANOUT_VENTS:'Cleanout Vents', COCOCANE:'CocoCane' };
+function statusPill(s){
+  var cls = s === 'ACTIVE' ? 'active' : s === 'PENDING_APPROVAL' ? 'pending' : s === 'PAUSED' ? 'paused' : s === 'ENDED' ? 'ended' : 'draft';
+  return '<span class="pill ' + cls + '">' + esc(STATUS_LABEL[s] || s) + '</span>';
+}
+function slugify(v){
+  return String(v || '').toLowerCase().trim().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+var isOwner = false;
+var campaigns = [];
+var resultsById = {};
+var creatives = [];
+
+function actionButtons(c){
+  var btns = [];
+  if (c.status === 'DRAFT') btns.push('<button class="btn blue sm" type="button" data-act="submit" data-id="' + esc(c.id) + '">Submit for approval</button>');
+  if (c.status === 'PENDING_APPROVAL' && isOwner) btns.push('<button class="btn sm" type="button" data-act="approve" data-id="' + esc(c.id) + '">Approve &amp; launch</button>');
+  if (c.status === 'ACTIVE') btns.push('<button class="btn ghost sm" type="button" data-act="pause" data-id="' + esc(c.id) + '">Pause</button>');
+  if (c.status === 'PAUSED' && isOwner) btns.push('<button class="btn sm" type="button" data-act="resume" data-id="' + esc(c.id) + '">Resume</button>');
+  if (c.status === 'ACTIVE' || c.status === 'PAUSED' || c.status === 'PENDING_APPROVAL') btns.push('<button class="btn ghost sm" type="button" data-act="end" data-id="' + esc(c.id) + '">End</button>');
+  return btns.join('');
+}
+function campaignMeta(c){
+  var r = resultsById[c.id] || { bookings: 0, connections: 0, total: 0 };
+  var bits = '<div class="slug">' + esc(LINE_LABEL[c.businessLine] || c.businessLine) + ' · tag <span class="tag">' + esc(c.sourceTag) + '</span></div>' +
+    '<div class="desc">' + esc(c.objective || '') + '</div>' +
+    '<div class="desc">Destination: <a href="' + esc(c.trackedUrl) + '" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">' + esc(c.destinationUrl) + '</a>' +
+    (c.creative ? ' · Creative: ' + esc(c.creative.title) : ' · No creative attached') +
+    (c.placement === 'BANNER' ? ' · Placement: flagship footer banner' : ' · Placement: link only') + '</div>' +
+    '<div class="desc">Results so far: <b style="color:var(--txt)">' + (r.bookings || 0) + ' booking(s)</b> · <b style="color:var(--txt)">' + (r.connections || 0) + ' lead(s)</b> attributed' +
+    (c.banner ? ' · Banner: ' + (c.banner.active ? 'rotating' : 'off') + ' · ' + (c.banner.impressions || 0) + ' impressions · ' + (c.banner.clicks || 0) + ' clicks' : '') +
+    (c.approvedAt ? ' · Approved ' + esc(String(c.approvedAt).slice(0, 10)) : '') + '</div>';
+  return bits;
+}
+function renderQueue(){
+  var rows = document.getElementById('queueRows');
+  var pending = campaigns.filter(function(c){ return c.status === 'PENDING_APPROVAL'; });
+  if (!pending.length){ rows.innerHTML = '<span class="mut small">Nothing is waiting. Drafts submitted for approval will appear here for the MASTER decision.</span>'; return; }
+  rows.innerHTML = pending.map(function(c){
+    return '<div class="crow"><div class="meta"><b>' + esc(c.name) + '</b> ' + statusPill(c.status) + campaignMeta(c) + '</div>' +
+      '<div class="acts">' + (isOwner ? actionButtons(c) : '<span class="pill pending">Waiting for the owner (MASTER)</span>') + '</div></div>';
+  }).join('');
+}
+function renderCampaigns(){
+  var rows = document.getElementById('campRows');
+  var countsEl = document.getElementById('campCounts');
+  var by = {};
+  campaigns.forEach(function(c){ by[c.status] = (by[c.status] || 0) + 1; });
+  countsEl.textContent = campaigns.length + ' campaign(s) · ' + (by.DRAFT || 0) + ' draft · ' + (by.PENDING_APPROVAL || 0) + ' pending approval · ' +
+    (by.ACTIVE || 0) + ' active · ' + (by.PAUSED || 0) + ' paused · ' + (by.ENDED || 0) + ' ended';
+  if (!campaigns.length){ rows.innerHTML = '<span class="mut small">No campaigns yet — build the first draft above.</span>'; return; }
+  rows.innerHTML = campaigns.map(function(c){
+    return '<div class="crow"><div class="meta"><b>' + esc(c.name) + '</b> ' + statusPill(c.status) + campaignMeta(c) + '</div>' +
+      '<div class="acts">' + actionButtons(c) + '</div></div>';
+  }).join('');
+}
+function loadAll(){
+  return Promise.all([
+    authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }),
+    authFetch('/ad-studio/results').then(function(r){ return r.ok ? r.json() : null; })
+  ]).then(function(res){
+    if (res[0]) campaigns = res[0].data || [];
+    resultsById = {};
+    ((res[1] && res[1].data) || []).forEach(function(r){ resultsById[r.campaignId] = r; });
+    renderQueue(); renderCampaigns();
+  }).catch(function(){});
+}
+function doAction(act, id, btn){
+  btn.disabled = true;
+  authFetch('/ad-studio/campaigns/' + id + '/' + act, { method: 'POST', body: '{}' })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){
+        var msg = (res.j && res.j.error) || 'That action is not available for this campaign.';
+        setMsg('campMsg', msg, false); setMsg('queueMsg', msg, false);
+        btn.disabled = false; return;
+      }
+      var label = { submit: 'Submitted for approval.', approve: 'Approved and live.', resume: 'Resumed and live.', pause: 'Paused — placement is off.', end: 'Campaign ended.' }[act] || 'Done.';
+      setMsg('campMsg', label, true); setMsg('queueMsg', label, true);
+      loadAll();
+    })
+    .catch(function(){ setMsg('campMsg', 'Action failed — connection error.', false); btn.disabled = false; });
+}
+document.addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-act]'); if (!btn) return;
+  doAction(btn.getAttribute('data-act'), btn.getAttribute('data-id'), btn);
+});
+
+/* ── Creative library (Media OS) ───────────────────────── */
+function loadCreatives(){
+  authFetch('/media-os/admin/content').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    var grid = document.getElementById('creativeGrid');
+    if (!j){ grid.innerHTML = '<div class="empty">The creative library could not be loaded for this session.</div>'; return; }
+    creatives = j.data || [];
+    var sel = document.getElementById('bCreative');
+    sel.innerHTML = '<option value="">— no creative —</option>' + creatives.map(function(c){
+      return '<option value="' + esc(c.id) + '">' + esc(c.title) + ' (' + esc(c.status) + ')</option>';
+    }).join('');
+    if (!creatives.length){ grid.innerHTML = '<div class="empty">The Media OS library is empty for this view.</div>'; return; }
+    grid.innerHTML = '<div class="grid">' + creatives.map(function(c){
+      var img = c.thumbnailUrl || c.assetUrl || '';
+      var visual = img
+        ? '<img class="thumb" src="' + esc(img) + '" alt="" loading="lazy">'
+        : '<div class="titlecard"><div class="tk">' + esc(c.division) + ' · ' + esc(String(c.type).replace('_', ' ')) + '</div><div class="tt">' + esc(c.title) + '</div></div>';
+      return '<div class="card">' + visual +
+        '<div><span class="pill">' + esc(c.status) + '</span> <span class="pill">' + esc(c.division) + '</span></div>' +
+        '<h3>' + esc(c.title) + '</h3>' +
+        (c.description ? '<p>' + esc(c.description) + '</p>' : '') +
+        '<button class="go" type="button" data-use="' + esc(c.id) + '">Use in a campaign</button></div>';
+    }).join('') + '</div>';
+  }).catch(function(){
+    document.getElementById('creativeGrid').innerHTML = '<div class="empty">The creative library could not be loaded right now.</div>';
+  });
+}
+document.addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-use]'); if (!btn) return;
+  var id = btn.getAttribute('data-use');
+  var sel = document.getElementById('bCreative');
+  sel.value = id;
+  document.getElementById('buildForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setMsg('buildMsg', 'Creative selected — finish the draft and create it.', true);
+});
+
+/* ── Destination picker (real published pages) ─────────── */
+function loadDestinations(){
+  var sel = document.getElementById('bDest');
+  var staples = [
+    ['Flagship home — topspeedserviceos.com', 'https://topspeedserviceos.com/'],
+    ['Speedy Booking — /book', 'https://topspeedserviceos.com/book'],
+    ['Talk to Speedy — /speedy', 'https://topspeedserviceos.com/speedy'],
+    ['Refer & Earn — /refer', 'https://topspeedserviceos.com/refer'],
+    ['Create account — /signup', 'https://topspeedserviceos.com/signup'],
+    ['Offers & Rewards — /offers-rewards', 'https://topspeedserviceos.com/offers-rewards']
+  ];
+  var html = staples.map(function(s){ return '<option value="' + esc(s[1]) + '">' + esc(s[0]) + '</option>'; }).join('');
+  fetch(API + '/marketing-os/pages').then(function(r){ return r.json(); }).then(function(j){
+    var pages = (j && j.data) || [];
+    html += pages.map(function(p){ return '<option value="' + esc(p.canonicalUrl) + '">' + esc(p.title) + ' — ' + esc(p.canonicalUrl) + '</option>'; }).join('');
+    sel.innerHTML = html;
+  }).catch(function(){ sel.innerHTML = html; });
+}
+
+/* ── Builder ───────────────────────────────────────────── */
+document.getElementById('bName').addEventListener('input', function(){
+  var v = slugify(this.value);
+  document.getElementById('tagPreview').textContent = v ? 'adstudio-' + v : 'adstudio-…';
+});
+document.getElementById('buildForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var custom = document.getElementById('bDestCustom').value.trim();
+  var body = {
+    name: document.getElementById('bName').value.trim(),
+    businessLine: document.getElementById('bLine').value,
+    objective: document.getElementById('bObjective').value.trim(),
+    creativeId: document.getElementById('bCreative').value || null,
+    destinationUrl: custom || document.getElementById('bDest').value,
+    placement: document.getElementById('bPlacement').value,
+    notes: document.getElementById('bNotes').value.trim() || null
+  };
+  if (!body.destinationUrl){ setMsg('buildMsg', 'Pick a destination page first.', false); return; }
+  authFetch('/ad-studio/campaigns', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ setMsg('buildMsg', (res.j && res.j.error) || 'Create failed.', false); return; }
+      setMsg('buildMsg', 'Draft created — source tag: ' + res.j.data.sourceTag + '. Submit it for approval when it is ready.', true);
+      ev.target.reset();
+      document.getElementById('tagPreview').textContent = 'adstudio-…';
+      loadAll();
+    })
+    .catch(function(){ setMsg('buildMsg', 'Create failed — connection error.', false); });
+});
+
+/* ── Ask Pepper (Speedy chat, AD_STUDIO source) ────────── */
+function chatSessionId(){
+  try {
+    var v = sessionStorage.getItem('tsos_adstudio_session');
+    if (!v){
+      v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'adstudio-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+      sessionStorage.setItem('tsos_adstudio_session', v);
+    }
+    return v;
+  } catch(e){ return 'adstudio-session'; }
+}
+function addChat(who, cls, text){
+  var log = document.getElementById('chatLog');
+  var div = document.createElement('div');
+  div.className = 'chatmsg ' + cls;
+  div.innerHTML = '<div class="who">' + esc(who) + '</div>' + esc(text);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+document.getElementById('chatForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addChat('You', 'me', text);
+  var pending = addChat('Pepper — System Manager', 'pep', 'Thinking…');
+  fetch(API + '/speedy/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + tok() },
+    body: JSON.stringify({ message: text, sessionId: chatSessionId(), source: 'AD_STUDIO' })
+  }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      var reply = res.ok && res.j && res.j.data ? (res.j.data.reply || res.j.data.text || '') : '';
+      pending.innerHTML = '<div class="who">Pepper — System Manager</div>' + esc(reply || (res.j && res.j.error) || 'Pepper could not answer just now — try again, or call 954-931-7997.');
+    })
+    .catch(function(){
+      pending.innerHTML = '<div class="who">Pepper — System Manager</div>' + esc('Connection error — please try again.');
+    });
+});
+
+/* ── Session gate: show the studio only to a real staff session ── */
+function showSignedOut(){
+  document.getElementById('staffZone').style.display = 'none';
+  document.getElementById('signinZone').style.display = '';
+}
+function enterStudio(){
+  document.getElementById('signinZone').style.display = 'none';
+  document.getElementById('staffZone').style.display = '';
+  loadAll(); loadCreatives(); loadDestinations();
+}
+document.getElementById('signinForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  setMsg('signinMsg', 'Signing in…', true);
+  fetch(API + '/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: document.getElementById('siEmail').value.trim(), password: document.getElementById('siPass').value })
+  }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok || !res.j || !res.j.token){ setMsg('signinMsg', (res.j && res.j.error) || 'Sign-in failed — check the email and password.', false); return; }
+      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ setMsg('signinMsg', 'Sign-in failed — connection error.', false); });
+});
+function boot(){
+  if (!tok()){ showSignedOut(); return; }
+  Promise.all([
+    authFetch('/auth/me').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+    authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+  ]).then(function(res){
+    var me = res[0];
+    if (!me || !res[1]){ showSignedOut(); return; }
+    var roles = (me.user && me.user.roles) || [];
+    isOwner = roles.indexOf('COMPANY_OWNER') !== -1 || roles.indexOf('PLATFORM_ADMIN') !== -1;
+    campaigns = res[1].data || [];
+    enterStudio();
+  });
+}
+boot();
+</script>
+</body>
+</html>

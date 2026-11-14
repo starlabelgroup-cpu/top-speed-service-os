@@ -112,6 +112,11 @@ export const store = {
   // library, never blocks hydration.
   mediaContent: [],
   mediaAssets: [],
+  // Ad Studio (2026-11-14): the in-house advertising system — campaigns
+  // built from Media OS creatives, run on the platform's own surfaces,
+  // approved by the owner. Hydrated from the AdCampaign table via
+  // db/adStudioRepo; degrades to an empty list like the Media OS.
+  adCampaigns: [],
   marketingCities: [],
   marketingBrands: [],
   marketingServices: [],
