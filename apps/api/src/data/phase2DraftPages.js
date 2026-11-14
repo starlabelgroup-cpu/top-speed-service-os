@@ -34,6 +34,11 @@ export const PHASE2_SITE_BASE = 'https://topspeedappliance.net';
 
 const PHONE = '954-931-7997';
 
+// Booking-links CTA body for the 2026-11-13 tri-county problem pages:
+// every page carries the Speedy Booking and Speedy AI links, per the
+// owner's "booking links on all pages" directive.
+const SPEEDY_CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 954-931-7997.';
+
 function ctaBlock(heading, body) {
   return { type: 'cta', heading, body, phone: PHONE };
 }
@@ -43,6 +48,14 @@ function diagnosticTermsBlock() {
     type: 'service-terms',
     heading: 'Straightforward pricing',
     body: 'Residential service starts with a $99 diagnostic, collected at booking and credited toward your repair when you approve it. You approve the repair quote before any repair work begins — no surprises.',
+  };
+}
+
+function commercialTermsBlock() {
+  return {
+    type: 'service-terms',
+    heading: 'Commercial terms',
+    body: 'Commercial work is priced by custom quote under a service agreement. The residential diagnostic fee does not apply to commercial accounts.',
   };
 }
 
@@ -373,6 +386,452 @@ const SYMPTOM_PAGES = [
       a: 'Give it a full 24 hours. Ice makers cycle slowly, and the first batches after any change are often small or hollow.',
     },
   },
+  // ─── Tri-county problem pages (owner-directed expansion, 2026-11-13) ───
+  {
+    serviceSlug: 'refrigerator-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Refrigerator',
+    phrase: 'Leaking',
+    geo: 'South Florida',
+    causes: 'Water pooling under or inside a refrigerator usually comes from a clogged defrost drain, a cracked drain pan, a leaking water inlet valve, or a split line feeding the ice maker or dispenser. Where the water shows up — front, back, or inside the crisper — points to the source.',
+    checks: 'Your technician clears and tests the defrost drain, inspects the drain pan and inlet valve, pressure-checks the water lines, and confirms the leak is gone with a full fill-and-dispense cycle before quoting any part.',
+    note: 'Mop up standing water and place a towel at the base — if the leak is near the water line connection, closing the small shut-off valve behind the fridge or under the sink stops it until your appointment.',
+    faq: {
+      q: 'Is a leaking fridge an emergency?',
+      a: 'Rarely, but water damages floors quietly and a line leak can split further. Shut the water off, keep food cold with the doors closed, and book the diagnostic.',
+    },
+  },
+  {
+    serviceSlug: 'refrigerator-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Refrigerator',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Buzzing, rattling, clicking, or grinding from a refrigerator usually traces to a worn evaporator or condenser fan, a compressor working against dirty coils, a failing start relay clicking on and off, or simple vibration where the cabinet touches a wall or cabinet panel.',
+    checks: 'Your technician isolates the sound by compartment and cycle, tests both fan motors, the start relay and compressor draw, and cleans and inspects the coils — so a fan noise is never billed as a compressor failure.',
+    note: null,
+    faq: {
+      q: 'The noise stops when I open the door — what does that mean?',
+      a: 'That pattern almost always points to the evaporator fan inside the freezer, which switches off with the door. It is a useful detail to mention when you book.',
+    },
+  },
+  {
+    serviceSlug: 'refrigerator-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Refrigerator',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Error codes on a refrigerator display are the control board reporting a sensor, fan, defrost, or communication fault. The same code can mean different things on different brands, and a code alone rarely names the failed part — it names the system to test.',
+    checks: 'Your technician reads the code against your exact model, then tests the flagged system — thermistors, fans, defrost components, and board voltages — and confirms the real failure before quoting the repair.',
+    note: 'Write the code down or photograph the display before unplugging anything — a power cycle can clear the code your technician needs to see.',
+    faq: {
+      q: 'I unplugged it and the code went away. Is it fixed?',
+      a: 'Usually not — the fault that triggered the code is still there and the code will return. If it does, note how long it took to come back; that timing helps the diagnosis.',
+    },
+  },
+  {
+    serviceSlug: 'washer-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Washer',
+    phrase: 'Leaking',
+    geo: 'South Florida',
+    causes: 'A washer leak usually comes from a worn door gasket on front-loaders, a split inlet or drain hose, a failing drain pump, or — on top-loaders — a tub seal that has reached the end of its life. When the water appears in the cycle tells the story: fill, wash, drain, or spin.',
+    checks: 'Your technician runs a controlled cycle and watches each stage, inspects the gasket, hoses, pump, and tub seal under pressure, and finds the source before any parts are quoted.',
+    note: 'Close both water supply valves behind the washer if water is spreading, and do not run another load — a hose that is weeping today can split outright tomorrow.',
+    faq: {
+      q: 'It only leaks on big loads — can it wait?',
+      a: 'Intermittent leaks still soak flooring and subfloor a little at a time. Catching a gasket or hose early is one of the cheapest washer repairs there is.',
+    },
+  },
+  {
+    serviceSlug: 'washer-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Washer',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Banging usually means an unbalanced load or worn suspension; grinding or roaring in the spin points to tub bearings; squealing can be a belt or motor coupling on older models. A noise that has been getting louder over weeks is a wear part asking for attention, not a quirk.',
+    checks: 'Your technician runs the machine empty and loaded, isolates the noise by cycle stage, and inspects the suspension, bearings, belt or drive system, and pump for the debris that often hides there.',
+    note: null,
+    faq: {
+      q: 'It bangs only with heavy loads like towels — is that normal?',
+      a: 'An occasional thump on an uneven load is normal; repeated banging on ordinary loads is not. Mention whether it happens on every load when you book.',
+    },
+  },
+  {
+    serviceSlug: 'washer-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Washer',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Washer error codes most often flag drain problems, water-fill timeouts, door-lock faults, or motor and control communication errors. The code narrows the search — it does not finish it, because several different failures can set the same code.',
+    checks: 'Your technician decodes the fault for your exact model, then tests the flagged system end to end — pump and hoses for drain codes, valves and pressure switches for fill codes, lock assemblies for door codes — before quoting.',
+    note: 'Photograph the code before you unplug the machine or clear it — some washers only store the fault until the next power cycle.',
+    faq: {
+      q: 'The code cleared and the washer runs again. Should I still book?',
+      a: 'If it happened once after a power flicker, watch it. If the same code returns, the underlying fault is real and intermittent faults are far easier to catch early.',
+    },
+  },
+  {
+    serviceSlug: 'dryer-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Dryer',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Thumping usually means worn drum support rollers; squealing points to the idler pulley or belt; scraping can be a worn drum glide or something caught in the blower. Dryer noises are almost always a support part wearing out, and they get worse, not better.',
+    checks: 'Your technician opens the cabinet, inspects the rollers, idler, belt, and glides, checks the blower for trapped objects, and quotes only the worn parts the inspection actually finds.',
+    note: null,
+    faq: {
+      q: 'Is it safe to keep drying while it squeals?',
+      a: 'A squealing idler or belt can let go mid-cycle and leave the drum stalled against a hot element area. It is better to book than to push it.',
+    },
+  },
+  {
+    serviceSlug: 'dryer-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Dryer',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Dryer error codes commonly report airflow restrictions, thermistor faults, door-switch problems, or heating-system errors. An airflow code is the machine protecting itself — lint buildup or a crushed vent run is the usual trigger, and clearing the code without clearing the cause invites a repeat.',
+    checks: 'Your technician reads the code for your model, tests the flagged sensors and switches, and inspects the full vent run for restriction — because a thermal fault with a blocked vent is a vent problem first.',
+    note: 'If the code mentions airflow or heat, check that the outside vent flap opens when the dryer runs and that the lint trap is clean — and tell your technician what you found.',
+    faq: {
+      q: 'Can a code tell me the exact part to replace?',
+      a: 'It tells your technician where to test, not what to replace. Two different failed parts can set the same code, which is why the on-site diagnostic tests before it quotes.',
+    },
+  },
+  {
+    serviceSlug: 'oven-range-repair',
+    symptomSlug: 'not-heating',
+    appliance: 'Oven & Range',
+    phrase: 'Not Heating',
+    geo: 'South Florida',
+    causes: 'An oven that will not heat usually has a failed bake element or igniter, a weak gas igniter that glows but never opens the valve, a faulty temperature sensor, or a control board relay that has stopped sending power. A range where the burners work but the oven does not has already narrowed the search considerably.',
+    checks: 'Your technician tests the element or igniter and its amp draw, the temperature sensor, and the control outputs, and verifies gas flow on gas models — then quotes the repair that matches the failure found.',
+    note: 'On a gas oven, if you smell gas strongly or the igniter glows for minutes with no flame, switch the oven off and ventilate the kitchen before your appointment.',
+    faq: {
+      q: 'The broiler works but bake does not — same repair?',
+      a: 'Usually not: bake and broil use separate elements or ignition paths, so one can fail while the other works. The diagnostic tests each path independently.',
+    },
+  },
+  {
+    serviceSlug: 'oven-range-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Oven & Range',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Oven error codes most often report temperature-sensor faults, control-board problems, or a runaway-temperature safety trip. An F-code after a self-clean cycle is a classic pattern — the heat of the cycle stresses the sensor and the door lock first.',
+    checks: 'Your technician decodes the fault for your model, measures the temperature sensor against its specification, tests the door lock and control board, and confirms the failure before quoting.',
+    note: 'Note whether the code appeared during normal cooking, after self-clean, or after a power outage — the timing is a real diagnostic clue.',
+    faq: {
+      q: 'The oven locked itself and shows a code — what now?',
+      a: 'Let it cool completely; some locks release when the temperature drops. Do not force the door — a forced lock usually turns one repair into two.',
+    },
+  },
+  {
+    serviceSlug: 'dishwasher-repair',
+    symptomSlug: 'not-draining',
+    appliance: 'Dishwasher',
+    phrase: 'Not Draining',
+    geo: 'South Florida',
+    causes: 'Standing water in the bottom of a dishwasher usually means a clogged filter or sump, a blocked or kinked drain hose, a failed drain pump, or — after a new garbage disposal install — a knockout plug that was never removed. Most causes are simple; the trick is testing them in the right order.',
+    checks: 'Your technician inspects the filter and sump, tests the drain pump, checks the hose and air gap for blockages, and verifies a full drain cycle before quoting anything.',
+    note: 'Scoop out what water you can and leave the door ajar — standing water turns stale fast, and there is no need to run another cycle until it drains properly.',
+    faq: {
+      q: 'It drains some times and not others — what does that suggest?',
+      a: 'Intermittent draining often means debris shifting in the sump or a pump that fails only when hot. Worth booking while the pattern is still easy to reproduce.',
+    },
+  },
+  {
+    serviceSlug: 'dishwasher-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Dishwasher',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Dishwasher error codes typically flag fill problems, drain faults, leaks detected by the flood sensor, or heater errors. A leak code can set even when you see no water — the sensor sits in the base pan where leaks collect first.',
+    checks: 'Your technician reads the code for your model, inspects the base pan and flood sensor, tests the fill valve, drain pump, and heater, and confirms the cause before quoting.',
+    note: 'Write the code down before resetting the breaker — and if the code is a leak fault, check under the unit for moisture before running it again.',
+    faq: {
+      q: 'Can I just reset it and keep washing?',
+      a: 'A single reset after a power flicker is reasonable. A code that returns is the machine reporting a real fault, and leak codes especially should not be cleared and ignored.',
+    },
+  },
+  {
+    serviceSlug: 'dishwasher-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Dishwasher',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Grinding usually means hard debris — glass, a bone fragment, a lost screw — in the pump or chopper area; humming without action points to a straining wash motor; rattling is often a spray arm hitting a tall item. The stage of the cycle where the noise happens is the best clue.',
+    checks: 'Your technician runs the cycle stage by stage, inspects the sump and spray arms, checks the wash and drain motors, and removes whatever does not belong before it damages the pump.',
+    note: null,
+    faq: {
+      q: 'The noise started right after a glass broke in the wash — related?',
+      a: 'Very likely: glass shards migrate to the pump area and grind there. Mention it when you book — it tells your technician exactly where to look first.',
+    },
+  },
+  {
+    serviceSlug: 'freezer-ice-maker-repair',
+    symptomSlug: 'not-cooling',
+    appliance: 'Freezer',
+    phrase: 'Not Cooling',
+    geo: 'South Florida',
+    causes: 'A freezer that runs warm is usually fighting frost-choked evaporator coils from a failed defrost system, a dead evaporator fan, dirty condenser coils, or a door gasket letting humid South Florida air pour in. Frost pattern on the back wall is the classic tell.',
+    checks: 'Your technician measures actual compartment temperature, inspects the frost pattern, tests the defrost heater, thermostat and timer or board, the fan motor, and the gasket seal — then quotes the failure that is actually there.',
+    note: 'Move the most valuable frozen food to a cooler with ice or a neighbor freezer — food that has fully thawed and sat warm should not be refrozen.',
+    faq: {
+      q: 'The fridge side is fine but the freezer is warm — why?',
+      a: 'The freezer does the cooling for both sides in most designs, so a partial failure often shows in the freezer first as soft ice cream and slow freezing.',
+    },
+  },
+  {
+    serviceSlug: 'freezer-ice-maker-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Freezer & Ice Maker',
+    phrase: 'Leaking',
+    geo: 'South Florida',
+    causes: 'Water from a freezer or ice maker usually traces to a frozen or clogged defrost drain that spills meltwater onto the floor of the compartment, a split ice maker fill line, or a leaking inlet valve. Ice sheets building on the freezer floor are the signature of the drain problem.',
+    checks: 'Your technician clears and flush-tests the defrost drain, inspects the fill line and inlet valve under pressure, and confirms the compartment stays dry through a defrost cycle.',
+    note: 'Chip out loose floor ice if you can do it gently — never with a knife or screwdriver, which can puncture a line and turn a small job into a big one.',
+    faq: {
+      q: 'Why does the puddle come and go?',
+      a: 'Defrost cycles happen on a timer, so a drain leak often appears in a rhythm — a puddle every day or so, matching the cycle, rather than a constant drip.',
+    },
+  },
+  {
+    serviceSlug: 'microwave-repair',
+    symptomSlug: 'not-heating',
+    appliance: 'Microwave',
+    phrase: 'Not Heating',
+    geo: 'South Florida',
+    causes: 'A microwave that runs, lights up, and turns the plate but does not heat has a failure in the high-voltage system — most often the magnetron, a diode, or a capacitor — or a door interlock switch that is not confirming the door is sealed. The lights-and-turntable behavior is what separates this from a dead unit.',
+    checks: 'Your technician tests the door interlock switches first, then safely discharges and tests the high-voltage components. Microwave capacitors hold a charge even unplugged, which is exactly why this one is a professional job, never a DIY one.',
+    note: 'Do not open a microwave cabinet yourself — the high-voltage capacitor can hold a dangerous charge long after the plug is pulled.',
+    faq: {
+      q: 'Is a non-heating microwave worth repairing?',
+      a: 'Often, yes, for built-in and over-the-range models where replacement means cabinet and vent work too. Your technician quotes the repair first, and you decide with the number in hand.',
+    },
+  },
+  {
+    serviceSlug: 'microwave-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Microwave',
+    phrase: 'Showing Error Codes',
+    geo: 'South Florida',
+    causes: 'Microwave error codes commonly involve the keypad or control board, door sensing, or a humidity/steam sensor fault on sensor-cook models. A code that appears the moment a cook cycle starts usually points at the door switches or the sensor circuit.',
+    checks: 'Your technician decodes the fault for your model, tests the door interlocks, keypad, and control board, and confirms the failing component before quoting.',
+    note: 'Note the code and what the microwave was doing when it appeared — sensor codes during high-steam cooking tell a different story than codes at idle.',
+    faq: {
+      q: 'It beeps and flashes a code after every power outage — normal?',
+      a: 'A clock-reset prompt after an outage is normal; a fault code that blocks cooking is not. If the code stops the cycle, book the diagnostic.',
+    },
+  },
+  {
+    serviceSlug: 'microwave-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Microwave',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Buzzing or humming louder than usual can come from a failing magnetron or a worn turntable motor; arcing sounds and sparks point to a damaged waveguide cover or metal where it does not belong; a rattling fan suggests the cooling fan is obstructed or worn.',
+    checks: 'Your technician inspects the cavity and waveguide cover, tests the turntable and fan motors, and checks the high-voltage system if the sound is electrical — and confirms the unit is safe to run before it goes back into service.',
+    note: 'Sparking or arcing is a stop-now symptom: switch the unit off and leave it off until it has been checked.',
+    faq: {
+      q: 'It pops and sparks when I heat certain foods — is that the microwave?',
+      a: 'Some foods spark naturally, but repeated arcing in the same spot usually means the waveguide cover is burned or the cavity paint is damaged. That needs a look.',
+    },
+  },
+  {
+    serviceSlug: 'garbage-disposal-repair',
+    symptomSlug: 'unusual-noises',
+    appliance: 'Garbage Disposal',
+    phrase: 'Making Unusual Noises',
+    geo: 'South Florida',
+    causes: 'Grinding or rattling from a disposal usually means something hard — a bottle cap, a bone, a dropped utensil — is loose in the chamber; a humming disposal that does not spin is jammed or has a failed motor; a unit that has grown steadily louder may have worn bearings.',
+    checks: 'Your technician inspects the chamber with the power off, clears obstructions, tests the flywheel and motor, and checks the splash guard and flanges — and quotes a replacement honestly if the motor itself has failed.',
+    note: 'Never reach into a disposal with your hand, even switched off. If it hums but does not spin, switch it off quickly — a stalled motor overheats.',
+    faq: {
+      q: 'The disposal hums but nothing moves — can I fix it myself?',
+      a: 'A jam can sometimes be freed with the hex wrench on the base, but a unit that still hums afterward has a motor problem. If in doubt, book it — the check is quick.',
+    },
+  },
+  {
+    serviceSlug: 'garbage-disposal-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Garbage Disposal',
+    phrase: 'Leaking',
+    geo: 'South Florida',
+    causes: 'A disposal leak comes from one of three places: the sink flange seal at the top, a hose or dishwasher connection on the side, or the body of the unit itself — and that third one means the internal seals have failed and the unit is at end of life. Where the drip starts tells you which repair conversation you are having.',
+    checks: 'Your technician dries the unit, runs water stage by stage, and pinpoints whether the leak is flange, connection, or body — a flange reseal is a repair; a body leak is a replacement quote, given honestly.',
+    note: 'Put a bowl under the drip and avoid running the disposal until you know the source — water in the cabinet base does quiet damage.',
+    faq: {
+      q: 'How do I know if it is worth repairing or replacing?',
+      a: 'Seal and connection leaks are repairs. A leak through the body of the unit is not repairable — your technician will show you the source so the recommendation makes sense.',
+    },
+  },
+  {
+    serviceSlug: 'garbage-disposal-repair',
+    symptomSlug: 'not-draining',
+    appliance: 'Garbage Disposal',
+    phrase: 'Not Draining',
+    geo: 'South Florida',
+    causes: 'A sink that will not drain through the disposal is rarely the disposal itself — the unit does not pump water; it is usually a clog in the trap or drain line beyond it, sometimes packed with the grease and fibrous food that disposals are often fed. A disposal that runs but the sink stays full is pointing past itself.',
+    checks: 'Your technician confirms the disposal chamber is clear, inspects the trap and drain run, and clears the blockage — and checks that the dishwasher drain connection is not part of the problem.',
+    note: 'Do not pour chemical drain cleaner into a disposal — it can splash back during any later work and damages seals. A plunger on the sink side is the safer stopgap.',
+    faq: {
+      q: 'The dishwasher also drains poorly — same problem?',
+      a: 'Often, yes: the dishwasher usually drains through the disposal or the same trap, so one clog slows both down. Mention both symptoms when you book.',
+    },
+  },
+  // Commercial problem pages — custom-quote terms, no residential diagnostic.
+  {
+    serviceSlug: 'commercial-refrigeration-repair',
+    symptomSlug: 'not-cooling',
+    appliance: 'Commercial Refrigeration',
+    phrase: 'Not Cooling',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'A walk-in, reach-in, or prep cooler running warm threatens inventory and health-code compliance at the same time. The usual causes are refrigerant loss, a failed evaporator or condenser fan, frost-choked coils from a defrost fault, or a compressor working against a dirty condenser in a hot kitchen.',
+    checks: 'Your technician logs box temperatures, checks refrigerant pressures, tests fan motors and the defrost system, inspects door gaskets, and gives you a written quote before repair work begins — with critical equipment prioritized in dispatch.',
+    note: 'Log your current box temperatures and move the most perishable inventory to your coldest unit — temperature records matter for your own food-safety documentation.',
+    faq: {
+      q: 'Can you prioritize a cooler that is holding food?',
+      a: 'Yes — tell us what is in the unit when you book. Critical equipment on a service agreement gets priority dispatch, and every commercial booking is confirmed by a Service Setter.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-refrigeration-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Commercial Refrigeration',
+    phrase: 'Leaking',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'Water under a commercial cooler usually means a clogged or frozen condensate drain, a cracked drain pan, or condensation overwhelming the drain in a humid kitchen. In a walk-in, persistent water can also signal door gasket failure letting moist air flood in.',
+    checks: 'Your technician clears and flush-tests the condensate drain, inspects the pan and drain line heater where fitted, checks door gaskets and door alignment, and confirms dry operation through a defrost cycle.',
+    note: 'Keep the area mopped and marked until your appointment — standing water in a kitchen is a slip hazard for your team as much as an equipment problem.',
+    faq: {
+      q: 'There is ice building up by the evaporator too — related?',
+      a: 'Very often: a frozen drain and evaporator icing feed each other. Mention both symptoms when you book so the visit covers the full defrost picture.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-cooking-equipment-repair',
+    symptomSlug: 'not-heating',
+    appliance: 'Commercial Cooking Equipment',
+    phrase: 'Not Heating',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'A range, oven, or fryer that will not heat in the middle of service usually comes down to a failed igniter or pilot system, a faulty thermostat or high-limit switch, a burned element on electric units, or a gas valve problem. On busy lines, heat-loss complaints can also be calibration drift rather than outright failure.',
+    checks: 'Your technician tests ignition and gas flow or element continuity, verifies thermostat calibration against a reference thermometer, and checks safety limits — then quotes the repair in writing before work begins.',
+    note: 'If you smell gas strongly or ignition keeps failing, take the unit out of service and ventilate — a line unit that will not light properly should not be coaxed through a shift.',
+    faq: {
+      q: 'Can the repair happen around service hours?',
+      a: 'Bookings are confirmed by a Service Setter who will work with your operating hours where the schedule allows. Note your service windows when you book.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-cooking-equipment-repair',
+    symptomSlug: 'error-codes',
+    appliance: 'Commercial Cooking Equipment',
+    phrase: 'Showing Error Codes',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'Modern commercial cooking equipment reports faults for temperature probes, ignition failures, fan and airflow problems, and control communication errors. The code identifies the system; on commercial controls, a probe reading out of range is one of the most common root causes.',
+    checks: 'Your technician decodes the fault against your make and model, tests the probe and the flagged components, and confirms the failure before quoting — so a sensor fault is not billed as a control board.',
+    note: 'Photograph the display before resetting the unit — commercial controls often clear the stored fault on reset, and that code speeds the visit considerably.',
+    faq: {
+      q: 'The unit still cooks with the code showing — can it wait?',
+      a: 'A code that involves ignition, temperature limits, or fans should not wait; those are safety-adjacent systems. Book it and note whether the unit is still in service.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-dishwashing-repair',
+    symptomSlug: 'not-draining',
+    appliance: 'Commercial Dishwasher',
+    phrase: 'Not Draining',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'A commercial dishmachine holding water usually has a clogged scrap screen or drain valve issue, a failed drain pump, or debris at the standpipe. In high-volume kitchens, drain problems compound fast — a slow drain during a rush backs the whole warewashing station up.',
+    checks: 'Your technician inspects screens, scrap traps, and the drain valve or pump, verifies a complete drain cycle under load, and checks the fill and drain timing the controller expects.',
+    note: 'Clear the scrap screens now if your model allows it — if the machine drains after a screen cleaning, tell us; if it does not, the pump and valve are next.',
+    faq: {
+      q: 'Dishes come out dirty when the drain acts up — connected?',
+      a: 'Yes, often: a machine that cannot fully drain refills with diluted dirty water. Fixing the drain usually fixes the wash quality complaint with it.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-dishwashing-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Commercial Dishwasher',
+    phrase: 'Leaking',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'Leaks on commercial dishmachines come from door and tank gaskets, pump seals, loose hose connections worked slack by vibration, or a sticking fill valve overfilling the tank. Water near the base during the wash stage versus the fill stage points to different sources.',
+    checks: 'Your technician runs the machine through its stages and watches each one, inspects gaskets, pump housing, clamps, and the fill valve, and finds the source before quoting parts.',
+    note: 'Note when the leak happens — filling, washing, or draining — and keep the floor marked and mopped; in a dishpit, that detail shortens the visit.',
+    faq: {
+      q: 'Is a small drip worth a service call?',
+      a: 'On a commercial machine, yes: pump seals and gaskets rarely reseal themselves, and a drip today is the leak that floods a shift later.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-laundry-repair',
+    symptomSlug: 'not-draining',
+    appliance: 'Commercial Laundry Equipment',
+    phrase: 'Not Draining',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'A commercial washer that will not drain usually has a failed drain pump or drain valve, a lint-and-debris clog that home machines never see at this scale, or a control fault stopping the cycle mid-program. In a laundromat or hotel laundry, one dead machine quickly becomes a queue.',
+    checks: 'Your technician tests the pump or drain valve, inspects the drain path and coin or card trigger systems where fitted, and verifies a full commercial cycle completes and drains.',
+    note: 'Tell us how many machines you run and whether this one is card, coin, or OPL when you book — it helps the technician arrive with the right parts picture.',
+    faq: {
+      q: 'Can you service multiple machines in one visit?',
+      a: 'Yes — list every machine and symptom when you book, and the visit is planned around the full list under your service agreement.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-laundry-repair',
+    symptomSlug: 'not-heating',
+    appliance: 'Commercial Dryer',
+    phrase: 'Not Heating',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'A commercial dryer tumbling without heat usually has a failed igniter or heating element, a tripped high-limit or thermal fuse, or — very commonly in commercial settings — a lint-restricted vent run that overheats the machine until a safety cuts the heat. Repeat fuse failures are the machine reporting the vent, not the fuse.',
+    checks: 'Your technician tests the ignition or element circuit and all thermal safeties, inspects the full vent run for restriction, and verifies heating under a real load cycle before the machine goes back into service.',
+    note: 'Check the lint screens and the outside vent termination now — a blocked termination is the fastest cause to rule in or out, and your note helps the visit.',
+    faq: {
+      q: 'The fuse was replaced last month and it blew again — why?',
+      a: 'Thermal fuses blow on temperature, so a repeat failure means the heat is not leaving — usually vent restriction or airflow. The visit tests the airflow, not just the fuse.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-trash-beverage-equipment-repair',
+    symptomSlug: 'not-cooling',
+    appliance: 'Beverage Equipment',
+    phrase: 'Not Cooling',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'Beverage coolers and refrigerated dispensers that run warm are usually fighting a dirty condenser in a greasy or dusty environment, a failed fan, low refrigerant, or a thermostat or control fault. Product temperature is what matters — a cabinet can feel cool while drinks sit above target.',
+    checks: 'Your technician measures actual product-zone temperatures, cleans and inspects the condenser, tests fans and controls, and checks refrigerant pressures before quoting the repair in writing.',
+    note: 'Note the temperature your team measured and what product is affected — carbonated systems and dairy-based drinks have different tolerances, and it shapes the priority.',
+    faq: {
+      q: 'Can this be combined with other equipment in one visit?',
+      a: 'Yes — commercial visits are planned around your full equipment list. Add every unit and symptom when you book.',
+    },
+  },
+  {
+    serviceSlug: 'commercial-trash-beverage-equipment-repair',
+    symptomSlug: 'leaking',
+    appliance: 'Trash & Beverage Equipment',
+    phrase: 'Leaking',
+    kind: 'commercial',
+    geo: 'South Florida',
+    causes: 'Leaks around beverage systems and compactors come from condensate drains, split beverage or water lines, worn pump seals, or hydraulic seepage on compactor equipment. A water leak and a hydraulic leak look different and mean very different repairs, so identifying the fluid is the first step.',
+    checks: 'Your technician identifies the leaking fluid and its source, inspects lines, drains, seals, and hydraulic fittings under operating pressure where safe, and quotes the repair in writing before work begins.',
+    note: 'If the fluid is oily, keep the compactor out of service and contain the spill — hydraulic leaks under pressure are a safety issue, not just a mess.',
+    faq: {
+      q: 'How do I tell a water leak from a hydraulic one?',
+      a: 'Water is thin and clear and tracks to a drain or line; hydraulic fluid is oily, amber, and leaves a rainbow sheen. Your description when you book routes the right preparation.',
+    },
+  },
 ];
 
 function symptomSections(page) {
@@ -394,7 +853,7 @@ function symptomSections(page) {
   if (page.note) {
     blocks.push({ type: 'intro', heading: 'In the meantime', body: page.note });
   }
-  blocks.push(diagnosticTermsBlock());
+  blocks.push(page.kind === 'commercial' ? commercialTermsBlock() : diagnosticTermsBlock());
   blocks.push({
     type: 'faq',
     heading: 'Questions',
@@ -408,8 +867,8 @@ function symptomSections(page) {
     ],
   });
   blocks.push(ctaBlock(
-    'Book the diagnosis',
-    'One visit, one confirmed diagnosis, one quote you approve before repair. Serving all twelve Broward service cities.',
+    page.ctaHeading || (page.kind === 'commercial' ? 'Book commercial service' : 'Book the diagnosis'),
+    page.ctaBody || (page.geo ? SPEEDY_CTA_BODY : 'One visit, one confirmed diagnosis, one quote you approve before repair. Serving all twelve Broward service cities.'),
   ));
   return blocks;
 }
@@ -468,8 +927,10 @@ export function buildPhase2DraftPages() {
       serviceSlug: page.serviceSlug,
       slug,
       canonicalUrl: `${PHASE2_SITE_BASE}/${slug}/`,
-      title: `${page.appliance} ${page.phrase} — Diagnosis & Repair in Broward County | Top Speed Appliance`,
-      metaDescription: `${page.appliance.toLowerCase()} ${page.phrase.toLowerCase()}? What it usually means, what our technician checks, and how to book an on-site diagnosis in Broward County — $99 diagnostic credited toward your repair.`,
+      title: `${page.appliance} ${page.phrase} — Diagnosis & Repair in ${page.geo || 'Broward County'} | Top Speed Appliance`,
+      metaDescription: page.kind === 'commercial'
+        ? `${page.appliance} ${page.phrase.toLowerCase()}? What it usually means, what our technician checks, and how to book commercial service in ${page.geo || 'Broward County'} — custom quote under a service agreement.`
+        : `${page.appliance.toLowerCase()} ${page.phrase.toLowerCase()}? What it usually means, what our technician checks, and how to book an on-site diagnosis in ${page.geo || 'Broward County'} — $99 diagnostic credited toward your repair.`,
       sections: symptomSections(page),
     });
   }
