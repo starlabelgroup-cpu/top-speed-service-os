@@ -123,11 +123,21 @@ var PROBLEMS_COM = {
 
 function log(msg){ var el=document.getElementById('log'); el.textContent += '\n' + msg; el.scrollTop = el.scrollHeight; }
 function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
-function api(method, path, body){
+function api(method, path, body, attempt){
+  attempt = attempt || 0;
   var opts = {method: method, headers: {'Content-Type':'application/json','Authorization':'Bearer ' + TOKEN}};
   if(body) opts.body = JSON.stringify(body);
   return fetch(API + path, opts).then(function(r){
-    return r.text().then(function(t){ var j=null; try{ j=JSON.parse(t); }catch(e){} return {status:r.status, json:j, text:t}; });
+    return r.text().then(function(t){
+      var j=null; try{ j=JSON.parse(t); }catch(e){}
+      var out = {status:r.status, json:j, text:t};
+      if(r.status===429 && attempt<6){
+        var wait = 65;
+        log('  ⏸ rate limit (200 req / 15 min) — waiting '+wait+'s, then retrying '+method+' '+path);
+        return sleep(wait*1000).then(function(){ return api(method, path, body, attempt+1); });
+      }
+      return out;
+    });
   });
 }
 function taxonomy(){ return api('GET','/marketing-os/admin/taxonomy').then(function(r){ return r.json && r.json.data; }); }
@@ -169,10 +179,18 @@ function enrichCtasOnly(pageId, ctaHeading){
 }
 function runCities(btn){
   btn.disabled = true; log('\n=== PHASE 1: CITIES ('+CITIES.length+') ===');
-  var done=0, existed=0, failed=0;
-  var chain = Promise.resolve();
+  var done=0, existed=0, failed=0, skipped=0;
+  var publishedCityIds = {}, cityByName = {};
+  var chain = Promise.all([taxonomy(), api('GET','/marketing-os/admin/pages?type=CITY')]).then(function(res){
+    var t = res[0];
+    (t.cities||[]).forEach(function(c){ cityByName[c.name]=c; });
+    var pages = (res[1].json && res[1].json.data) || [];
+    pages.forEach(function(p){ if(p.status==='PUBLISHED' && p.city && p.city.id) publishedCityIds[p.city.id]=true; });
+    log('Pre-check: '+Object.keys(publishedCityIds).length+' city pages already published — those cities will be skipped at no API cost.');
+  });
   CITIES.forEach(function(name){
     chain = chain.then(function(){
+      if(cityByName[name] && publishedCityIds[cityByName[name].id]){ skipped++; log('skip ✓ '+name+' (already published)'); return; }
       return api('POST','/marketing-os/admin/taxonomy/cities',{name:name, serviceCovered:true, state:'FL'}).then(function(r){
         var cityId = null;
         if(r.status===201){ cityId = r.json.data.id; log('city + '+name); }
@@ -198,7 +216,7 @@ function runCities(btn){
       }).then(function(){ return sleep(120); });
     });
   });
-  chain.then(function(){ log('PHASE 1 DONE — published '+done+', already existed '+existed+', failed '+failed); btn.disabled=false; refreshCounts(); });
+  chain.then(function(){ log('PHASE 1 DONE — published '+done+', already existed '+existed+', skipped '+skipped+', failed '+failed); btn.disabled=false; refreshCounts(); });
 }
 
 function catTitleMeta(s){
@@ -316,14 +334,14 @@ function buildProblems(btn, symKey){
 function runCore(btn){
   btn.disabled = true; log('\n=== PHASE 4: CORE SERVICE PAGES ('+CORE_SERVICES.length+') ===');
   var done=0, existed=0, failed=0;
-  var chain = Promise.resolve();
+  var svcBySlug = {};
+  var chain = taxonomy().then(function(t){
+    (t.services||[]).forEach(function(x){ svcBySlug[x.slug]=x; });
+  });
   CORE_SERVICES.forEach(function(s){
     chain = chain.then(function(){
-      return taxonomy().then(function(t){
-        var sv = (t.services||[]).filter(function(x){ return x.slug===s.slug; })[0];
-        if(!sv){ log('  ! core service missing from taxonomy: '+s.slug); failed++; return null; }
-        return sv.id;
-      }).then(function(sid){
+      return Promise.resolve(svcBySlug[s.slug] ? svcBySlug[s.slug].id : null).then(function(sid){
+        if(!sid){ log('  ! core service missing from taxonomy: '+s.slug); failed++; return; }
         if(!sid) return;
         return api('POST','/marketing-os/admin/pages',{type:'SERVICE', serviceId:sid, note:'Core service page build 2026-11-13'}).then(function(r){
           if(r.status===409){ log('  page = '+s.slug+' (already exists)'); existed++; return; }
