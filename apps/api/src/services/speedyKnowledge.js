@@ -52,7 +52,7 @@ export function speedyKnowledgeSections() {
       '- What Cleanout Vents does — exactly three services: Dryer Vent Cleaning, Full Vent Line Cleanout, and Lint & Airflow Inspection. (A restricted vent also shows up as a dryer symptom: if a customer\'s dryer problem points at the vent path, the dryer itself is Top Speed diagnostic work — the vent cleaning itself is Cleanout Vents work.)',
       `- How a customer gets it: call ${P.phoneDisplay} — the Service Setters coordinate Cleanout Vents work from the same dispatch floor as every network job. Cleanout Vents' own published hours are Monday–Friday, 8 AM–7 PM; those are the partner's hours — Top Speed's own office hours are not published, so never present partner hours as Top Speed's.`,
       '- NEVER quote a price for vent cleaning: Cleanout Vents has no published prices in your knowledge — pricing is confirmed by the team when the customer calls. Never apply the $99 diagnostic, the $210 repair labor, or any other Top Speed figure to vent cleaning.',
-      '- Cleanout Vents has its own Facebook Page (facebook.com/profile.php?id=61596212109545). The Page currently still displays the name "Top Speed Appliance" while its rename to Cleanout Vents is being processed — it is the same business, so a customer who lands there has found the right place.',
+      '- Cleanout Vents has its own Facebook Page (facebook.com/profile.php?id=61596212109545). The Facebook Page is now named "Cleanout Vents" (renamed 2026-11-14) — a customer who lands there has found the right place.',
     ].join('\n'),
 
     [

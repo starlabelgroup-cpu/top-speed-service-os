@@ -20,8 +20,8 @@
  *   Address: 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073
  *   Coverage: Broward County (rides the Service Setters dispatch)
  *   Facebook: https://www.facebook.com/profile.php?id=61596212109545
- *             (setup complete; the Page still displays the old name
- *             "Top Speed Appliance" — the rename is pending)
+ *             (setup complete; the Page was renamed to
+ *             "Cleanout Vents" on 2026-11-14)
  * NO prices exist for vent cleaning — none are stored or published.
  * NO rating exists for Cleanout Vents — rating stays null; never
  * invent one. Vent cleaning is NOT one of the canonical 9 residential
