@@ -12,133 +12,206 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="TS Manager">
 <link rel="icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/command-center.css">
 <script src="/google-tag.js"></script>
 <style>
-:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+:root{--cc-red:#e94e5c;--blue:#e65766}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:86px}
+body{background:#f5f7fb;color:#1b2840;font-family:'DM Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
-.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
-header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid var(--line)}
-.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
-.hwrap img{width:40px;height:40px;border-radius:9px;object-fit:cover}
-.htitle{font-family:"Space Grotesk";font-weight:700;font-size:17px;line-height:1.15}
-.hsub{font-size:11.5px;color:var(--mut)}
-.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
-.badge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
-.badge.master{color:#fff;background:linear-gradient(135deg,var(--red2),var(--red));border-color:transparent}
-.badge.live{color:var(--grn);border-color:rgba(34,197,94,.4)}
-.badge.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 8px var(--grn)}
-.iconbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:8px 11px;font-size:13px;font-weight:600;cursor:pointer}
-main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
-.hero{padding:8px 2px 4px}
-.hero h1{font-family:"Space Grotesk";font-size:clamp(24px,5.4vw,38px);line-height:1.08;font-weight:700}
-.hero h1 span{color:var(--red)}
-.hero p{color:var(--mut);font-size:14.5px;margin-top:8px;max-width:640px}
-.updated{font-size:12px;color:var(--mut);margin-top:10px}
-nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(4,8,18,.92);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
-.tabs-in{max-width:1060px;margin:0 auto;display:flex;justify-content:space-around;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;font-weight:600;color:var(--mut);padding:6px 10px;border-radius:12px;border:0;background:none;cursor:pointer;font-family:Inter}
-.tab svg{width:21px;height:21px}
-.tab.on{color:#fff;background:var(--panel2)}
-section.page{display:none;padding-top:16px}
-section.page.on{display:block}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none}
+.badge{font-size:9px;font-weight:800;letter-spacing:1px;padding:8px 10px;border-radius:25px;border:1px solid #e9edf3;background:#f1f4f8;color:#65758f;white-space:nowrap}
+.badge.master{color:#fff;background:#e94e5c;border-color:transparent}
+.badge.mgr{color:#fff;background:#4b95e2;border-color:transparent}
+.badge.live{color:#309d7f;background:#f3fcf8;border-color:#d8f0e6}
+.badge.live i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#20c79a;margin-right:5px}
+.iconbtn{background:#fff;border:1px solid #dee5ef;color:#34445c;border-radius:8px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.iconbtn:hover{border-color:#ed6372}
+.updated{font-size:11px;color:#9cacc7;margin-top:2px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:15px}
-.kpi .n{font-family:"Space Grotesk";font-size:30px;font-weight:700;margin-top:6px}
-.kpi .l{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.02em}
-.kpi .s{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.45}
-.card h3{font-family:"Space Grotesk";font-size:15.5px;display:flex;align-items:center;gap:8px}
-.card h3 .fxi{width:19px;height:19px}
+#kpiGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.card{background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:20px;min-width:0}
+.kpi .l{font-size:11px;color:#7a879a;font-weight:700;display:flex;align-items:center;gap:8px}
+.kpi .l::before{content:'';width:10px;height:10px;border-radius:3px;flex:none;background:#697cf0}
+#kpiGrid .kpi:nth-child(2) .l::before{background:#e99a5f}
+#kpiGrid .kpi:nth-child(3) .l::before{background:#9775dd}
+#kpiGrid .kpi:nth-child(4) .l::before{background:#27b99d}
+.kpi .n{font-family:Manrope,sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;color:#182742;margin-top:8px}
+.kpi .s{font-size:11px;color:#97a3b4;margin-top:12px;line-height:1.45;border-top:1px solid #f0f2f6;padding-top:11px}
+.card h3{font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#1c2b46;display:flex;align-items:center;gap:8px}
 .wide{grid-column:1/-1}
 .rows{margin-top:10px;display:flex;flex-direction:column;gap:9px}
-.row{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5}
-.row .dot{margin-top:5px}
-.dot{width:9px;height:9px;border-radius:50%;flex:none}
-.dot.g{background:var(--grn);box-shadow:0 0 7px rgba(34,197,94,.8)}
-.dot.y{background:var(--yel);box-shadow:0 0 7px rgba(234,179,8,.8)}
-.dot.r{background:var(--red);box-shadow:0 0 7px rgba(232,50,46,.8)}
-.dot.b{background:var(--blue);box-shadow:0 0 7px rgba(18,128,255,.8)}
-.mut{color:var(--mut)}
+.row{display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;color:#52647c}
+.row b{color:#24334d}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+.dot.g{background:#27b99d;box-shadow:0 0 7px rgba(39,185,157,.45)}
+.dot.y{background:#e8a05c;box-shadow:0 0 7px rgba(232,160,92,.45)}
+.dot.r{background:#e94e5c;box-shadow:0 0 7px rgba(233,78,92,.45)}
+.dot.b{background:#697cf0;box-shadow:0 0 7px rgba(105,124,240,.45)}
+.mut{color:#8591a4}
 .small{font-size:12.5px}
-.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
-.pill.ok{color:var(--grn);border-color:rgba(34,197,94,.4)}
-.pill.warn{color:var(--yel);border-color:rgba(234,179,8,.4)}
-.pill.off{color:#F08A88;border-color:rgba(232,50,46,.4)}
-.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
-.link{display:flex;flex-direction:column;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;transition:border-color .15s}
-.link:hover{border-color:var(--blue)}
-.link b{font-size:14px;display:flex;align-items:center;gap:8px}
-.link span{font-size:12px;color:var(--mut);line-height:1.45}
-h2.sec{font-family:"Space Grotesk";font-size:18px;margin:20px 0 11px;display:flex;align-items:center;gap:9px}
+.pill{font-size:9px;font-weight:800;letter-spacing:.4px;padding:6px 8px;border-radius:5px;background:#f1f4f8;border:1px solid #e9edf3;color:#65758f;white-space:nowrap}
+.pill.ok{color:#138f79;background:#e6f8f2;border-color:#d9f4e9}
+.pill.warn{color:#b0802f;background:#fff5e4;border-color:#f9eac7}
+.pill.newct{color:#fff;background:#e94e5c;border-color:transparent}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.link{display:flex;flex-direction:column;gap:5px;background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:16px;transition:border-color .15s,transform .15s}
+.link:hover{border-color:#ee8290;transform:translateY(-1px)}
+.link b{font-family:Manrope,sans-serif;font-size:14px;font-weight:800;color:#1c2b46;display:flex;align-items:center;gap:8px}
+.link span{font-size:12px;color:#8591a4;line-height:1.5}
+.link .st{font-size:12px;color:#52647c;line-height:1.5;border-top:1px solid #f0f2f6;padding-top:9px;margin-top:3px}
+.link .st:empty{display:none}
+.link .opn{margin-top:auto;padding-top:10px}
+.link .opn i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.07em;color:#fff;background:#e94e5c;border-radius:999px;padding:5px 11px;display:inline-block}
+h2.sec{font-family:Manrope,sans-serif;font-size:17px;font-weight:800;letter-spacing:-.3px;color:#1c2b46;margin:28px 0 12px;display:flex;align-items:center;gap:9px}
 h2.sec:first-child{margin-top:2px}
-.gate{max-width:430px;margin:26px auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px}
-.gate h2{font-family:"Space Grotesk";font-size:20px;margin-bottom:6px}
-.gate p{color:var(--mut);font-size:13.5px;line-height:1.55}
-.gate label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:14px 0 6px;letter-spacing:.03em}
-.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:12px;font-size:15px;font-family:Inter}
-.gate button{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:11px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter}
-.err{display:none;margin-top:12px;background:rgba(232,50,46,.12);border:1px solid rgba(232,50,46,.45);color:#FFB4B1;font-size:13px;border-radius:10px;padding:10px 12px;line-height:1.5}
-.queue{display:flex;flex-direction:column;gap:10px}
-.qitem{display:flex;gap:11px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;font-size:13.5px;line-height:1.55}
-.qitem b{font-family:"Space Grotesk";font-size:14.5px}
-.num{width:24px;height:24px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none;margin-top:1px}
-footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-size:12px;line-height:1.6}
-.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+.gate{max-width:430px;margin:9vh auto;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:26px 22px;box-shadow:0 12px 34px rgba(12,22,43,.07)}
+.gate h2{font-family:Manrope,sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#182742;margin-bottom:6px}
+.gate p{color:#8591a4;font-size:13.5px;line-height:1.55}
+.gate label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:14px 0 6px;letter-spacing:1.2px}
+.gate input{width:100%;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:#1b2840;padding:11px 12px;font-size:14px;font-family:inherit}
+.gate input:focus{outline:none;border-color:#ed6372}
+.gate button{width:100%;margin-top:18px;background:#e94e5c;color:#fff;border:1px solid #e94e5c;border-radius:8px;padding:12px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 16px rgba(233,78,92,.10)}
+.gate button:hover{background:#d83d4d}
+.err{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;font-size:13px;border-radius:9px;padding:10px 12px;line-height:1.5}
+.acct{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13.5px;line-height:1.6;color:#25364f}
+.acct .k{color:#97a3b4;font-weight:800;font-size:10px;letter-spacing:1px;display:block}
+.pl-search{width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#253a57;padding:11px 12px;font-size:13px;font-family:inherit;margin-top:10px}
+.pl-search:focus{outline:none;border-color:#ed6372}
+.pl-group{margin-top:16px}
+.pl-gname{font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#1c2b46;margin-bottom:4px}
+.pl-count{color:#e65766;font-size:13px}
+.pl-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 11px;margin:6px 0;background:#fff;border:1px solid #e7ecf3;border-radius:11px}
+.pl-row:hover{border-color:#ee8290}
+.pl-main{display:flex;flex-direction:column;gap:2px;min-width:0}
+.pl-title{font-weight:700;font-size:13.5px;color:#25364f}
+.pl-url{font-size:11.5px;color:#9ba6b7;word-break:break-all}
+.pl-badge{font-size:9px;font-weight:800;padding:6px 8px;border-radius:5px;white-space:nowrap;border:1px solid transparent}
+.pl-live{color:#138f79;background:#e6f8f2;border-color:#d9f4e9}
+.pl-staff{color:#8b71bc;background:#f1ebfb;border-color:#eee6f9}
+.pl-prop{color:#b0802f;background:#fff5e4;border-color:#f9eac7}
+.pl-pend{color:#d4666e;background:#fff0f1;border-color:#fae2e4}
+footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
+.spin{width:15px;height:15px;border:2px solid #e7ecf3;border-top-color:#697cf0;border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
-.tabbadge{background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;margin-left:2px}
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px}
-.chip{background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Inter}
-.chip.on{color:#fff;border-color:var(--blue)}
-.chip .n{color:var(--red);font-weight:700}
-.rep{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+@media(max-width:1100px){#kpiGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){#kpiGrid{gap:10px}.kpi .n{font-size:24px}.gate{margin:4vh 14px}}
+#kpiGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+#kpiGrid .kpi:nth-child(5) .l::before{background:#697cf0}
+#kpiGrid .kpi:nth-child(6) .l::before{background:#e99a5f}
+section.page{display:none;padding-top:4px}
+section.page.on{display:block}
+.card h3 .fxi{width:19px;height:19px}
+.pill.off{color:#d4666e;background:#fff0f1;border-color:#fae2e4}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 14px}
+.chip{border:1px solid transparent;background:#f5f7fa;color:#8290a4;border-radius:6px;padding:10px 11px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+.chip.on{border-color:#f5b9c0;color:#da5260;background:#fff1f2}
+.chip .n{color:#e65766;font-weight:800}
+.rep{background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:16px;margin-bottom:10px}
 .rep .rt{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
-.rep .rt b{font-family:"Space Grotesk";font-size:14.5px;line-height:1.35}
-.rep .meta{font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.6}
-.rep .det{font-size:13px;line-height:1.6;margin-top:9px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
-.rep .det .k{color:var(--mut);font-weight:600}
-.rep .ack{margin-top:11px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter}
-.rep .acked{font-size:12px;color:var(--grn);font-weight:600;margin-top:11px}
-@media(min-width:760px){body{padding-bottom:26px}nav.tabs{position:sticky;bottom:auto;top:57px;border-top:0;border-bottom:1px solid var(--line)}.tabs-in{justify-content:flex-start;gap:6px}.tab{flex-direction:row;font-size:13px;padding:9px 14px}}
+.rep .rt b{font-family:Manrope,sans-serif;font-size:14.5px;font-weight:800;color:#1c2b46;line-height:1.35}
+.rep .meta{font-size:11.5px;color:#97a3b4;margin-top:5px;line-height:1.6}
+.rep .det{font-size:13px;line-height:1.6;margin-top:9px;background:#f8faff;border:1px solid #e6edf6;border-radius:10px;padding:10px 12px;color:#52647c}
+.rep .det .k{color:#97a3b4;font-weight:700}
+.rep .ack{margin-top:11px;background:#e94e5c;color:#fff;border:1px solid #e94e5c;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+.rep .ack:hover{background:#d83d4d}
+.rep .acked{font-size:12px;color:#138f79;font-weight:700;margin-top:11px}
+.queue{display:flex;flex-direction:column;gap:10px}
+.qitem{display:flex;gap:11px;background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:14px;font-size:13.5px;line-height:1.55;color:#52647c}
+.qitem b{font-family:Manrope,sans-serif;font-size:14.5px;font-weight:800;color:#1c2b46}
+.num{width:24px;height:24px;border-radius:50%;background:#172940;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none;margin-top:1px}
+.tabbadge{background:#e94e5c;color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 7px}
+.cc-nav-link span.tabbadge{flex:0 0 auto}
+.cc-brand-lockup strong span{font-size:10.5px;letter-spacing:1.9px}
+@media(max-width:1100px){#kpiGrid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<header>
-  <div class="hwrap">
-    <img src="/flag.jpg" alt="Top Speed Appliance">
-    <div>
-      <div class="htitle">Remote Manager</div>
-      <div class="hsub">Top Speed Appliance — all platforms, one login</div>
-    </div>
-    <div class="hright">
-      <span class="badge live" id="liveBadge" style="display:none"><i></i>LIVE</span>
-      <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
-      <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
-      <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
-    </div>
-  </div>
-</header>
-
 <div id="gate"></div>
 
 <div id="portal" style="display:none">
-<nav class="tabs"><div class="tabs-in">
-  <button class="tab on" data-tab="overview" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10.5M10 20V4.8M16 20v-8.4M21 20H3" stroke="#E8322E"/><path d="M4 20v-6.5M9.5 20V7M15 20v-5.5M20 20v-9.5"/></svg>Overview</button>
-  <button class="tab" data-tab="reports" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16M4 12h16M4 18.5h10" /><path d="M17.5 16.2l1.8 1.8 3-3.4" stroke="#E8322E"/></svg>Reports<span class="tabbadge" id="repBadge" style="display:none"></span></button>
-  <button class="tab" data-tab="analytics" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg>Analytics</button>
-  <button class="tab" data-tab="platforms" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" stroke="#E8322E"/></svg>Platforms</button>
-  <button class="tab" data-tab="automate" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1" stroke="#E8322E"/></svg>Automate</button>
-  <button class="tab" data-tab="manager" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V4.8M12 4.8h.01" stroke="#E8322E" stroke-width="2.2"/><path d="M9.3 13h.01M14.7 13h.01" stroke-width="2.4"/><path d="M9.5 16.2h5"/></svg>Manager</button>
-</div></nav>
-
-<main>
-  <div class="hero">
-    <h1>Every platform. <span>One manager.</span></h1>
-    <p>Live operations, analytics and automations for the whole Top Speed ecosystem — checked from anywhere. Pepper runs the day-to-day as manager; you hold the master keys: approvals, money and terms.</p>
-    <div class="updated" id="updatedLine">Loading live data…</div>
-  </div>
+<div class="cc-shell">
+  <aside class="cc-sidebar" id="ccSidebar">
+    <div class="cc-sidebar-logo">
+      <div class="cc-brand-lockup">
+        <span class="cc-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <div>
+          <strong>TOP SPEED <span>REMOTE MANAGER</span></strong>
+          <small>SERVICE OS · ONE LOGIN</small>
+        </div>
+        <button class="cc-mobile-close" id="ccCloseBtn" type="button" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      </div>
+    </div>
+    <div class="cc-workspace-switch">
+      <span class="cc-switch-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg></span>
+      <div><strong>Top Speed Service OS</strong><small>Manager workspace</small></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+    </div>
+    <div class="cc-sidebar-scroll">
+      <div class="cc-nav-section">
+        <p>VIEWS</p>
+        <button class="tab cc-nav-link on" data-tab="overview" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10.5M10 20V4.8M16 20v-8.4M21 20H3" stroke="#E8322E"/><path d="M4 20v-6.5M9.5 20V7M15 20v-5.5M20 20v-9.5"/></svg><span>Overview</span></button>
+        <button class="tab cc-nav-link" data-tab="reports" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16M4 12h16M4 18.5h10"/><path d="M17.5 16.2l1.8 1.8 3-3.4" stroke="#E8322E"/></svg><span>Reports</span><span class="tabbadge" id="repBadge" style="display:none"></span></button>
+        <button class="tab cc-nav-link" data-tab="analytics" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg><span>Analytics</span></button>
+        <button class="tab cc-nav-link" data-tab="platforms" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6" stroke="#E8322E"/></svg><span>Platforms</span></button>
+        <button class="tab cc-nav-link" data-tab="automate" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1" stroke="#E8322E"/></svg><span>Automate</span></button>
+        <button class="tab cc-nav-link" data-tab="manager" type="button"><svg class="fxi" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="2.5"/><path d="M12 8V4.8M12 4.8h.01" stroke="#E8322E" stroke-width="2.2"/><path d="M9.3 13h.01M14.7 13h.01" stroke-width="2.4"/><path d="M9.5 16.2h5"/></svg><span>Manager</span></button>
+      </div>
+      <div class="cc-nav-section">
+        <p>SUPER MANAGER</p>
+        <a class="cc-nav-link" href="/applianceman"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg><span>ApplianceMan hub</span></a>
+      </div>
+    </div>
+    <div class="cc-sidebar-bottom">
+      <div class="cc-support-box">
+        <span class="cc-support-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <strong>Master &amp; manager</strong>
+        <span>Ramone holds the master keys — approvals, money and terms. Pepper runs the day-to-day as manager.</span>
+        <a href="/applianceman">Open ApplianceMan <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="cc-sidebar-foot"><span class="cc-pulse-dot"></span> SERVICE OS <span>TOP SPEED APPLIANCE LLC</span></div>
+    </div>
+  </aside>
+  <div class="cc-backdrop" id="ccBackdrop" style="display:none"></div>
+  <div class="cc-main">
+    <header class="cc-topbar">
+      <div class="cc-topbar-left">
+        <button class="cc-menu-toggle" id="ccMenuBtn" type="button" aria-label="Open menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span>Service OS</span>
+        <svg class="cc-crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        <strong>Remote Manager</strong>
+      </div>
+      <div class="cc-topbar-right">
+        <span class="cc-live-badge" id="liveBadge" style="display:none"><span></span>LIVE SIGNALS</span>
+        <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
+        <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+        <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+        <span class="cc-header-divider"></span>
+        <div class="cc-profile">
+          <span class="cc-profile-avatar" id="tbAvatar">—</span>
+          <div><strong id="tbName">Signed in</strong><small id="tbRole">Staff</small></div>
+        </div>
+      </div>
+    </header>
+    <main class="cc-page">
+      <div class="cc-hero-banner">
+        <div class="cc-hero-content">
+          <div class="cc-hero-eyebrow"><span class="cc-pulse-dot"></span> REMOTE MANAGER · SERVICE OS</div>
+          <h2>Every platform. <em>One manager.</em></h2>
+          <p>Live operations, analytics and automations for the whole Top Speed ecosystem — checked from anywhere. Pepper runs the day-to-day as manager; you hold the master keys: approvals, money and terms.</p>
+          <div class="updated" id="updatedLine">Loading live data…</div>
+        </div>
+        <div class="cc-hero-art">
+          <span class="cc-hero-ring"></span><span class="cc-hero-ring cc-ring-two"></span><span class="cc-hero-ring cc-ring-three"></span>
+          <span class="cc-hero-glow"><svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+          <span class="cc-floating-tag cc-tag-top"><span class="cc-tag-dot green"></span>Live platform signals</span>
+          <span class="cc-floating-tag cc-tag-bottom"><span class="cc-tag-dot red"></span>6 manager views</span>
+        </div>
+      </div>
 
   <section class="page on" id="page-overview">
     <h2 class="sec">Right now</h2>
@@ -161,17 +234,17 @@ footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-si
       <div class="card wide">
         <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg>Speedy AI chats — last 30 days</h3>
         <div class="rows" id="chatRows"><span class="mut small"><span class="spin"></span> Loading chat insights…</span></div>
-        <div class="rows"><a class="small" href="/chats" style="color:var(--blue);font-weight:600">Open Chat Insights console →</a></div>
+        <div class="rows"><a class="small" href="/chats" style="color:#e65766;font-weight:700">Open Chat Insights console →</a></div>
       </div>
       <div class="card wide">
         <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9" stroke="#E8322E"/><path d="M14.6 7.6h3.3v3.3"/></svg>Google search &amp; traffic (SEO)</h3>
         <div class="rows" id="seoRows"><span class="mut small"><span class="spin"></span> Checking SEO connection…</span></div>
-        <div class="rows"><a class="small" href="/marketing-os/seo" style="color:var(--blue);font-weight:600">Open SEO dashboard →</a></div>
+        <div class="rows"><a class="small" href="/marketing-os/seo" style="color:#e65766;font-weight:700">Open SEO dashboard →</a></div>
       </div>
       <div class="card wide">
-        <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0" /><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3" stroke="#E8322E"/></svg>Google accounts registry</h3>
+        <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3" stroke="#E8322E"/></svg>Google accounts registry</h3>
         <div class="rows" id="acctRows"><span class="mut small"><span class="spin"></span> Loading registry…</span></div>
-        <div class="rows"><a class="small" href="/marketing-os/google-accounts" style="color:var(--blue);font-weight:600">Open registry →</a></div>
+        <div class="rows"><a class="small" href="/marketing-os/google-accounts" style="color:#e65766;font-weight:700">Open registry →</a></div>
       </div>
       <div class="card">
         <h3>Referrals</h3>
@@ -273,12 +346,14 @@ footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-si
     </div>
     <p class="small mut" style="margin-top:14px">Queue as of Nov 13, 2026. Tell Pepper in chat when one is done and she'll verify it and clear it from this list.</p>
   </section>
-</main>
 
-<footer>
-  Top Speed Appliance LLC — Remote Manager. Data on this page is pulled live from the Service OS; anything that can't be reached says so instead of guessing.<br>
-  Add this portal to your phone's home screen (browser menu → “Add to Home screen”) and it opens like an app — no app store needed.
-</footer>
+      <footer>
+        Top Speed Appliance LLC — Remote Manager. Data on this page is pulled live from the Service OS; anything that can't be reached says so instead of guessing.<br>
+        Add this portal to your phone's home screen (browser menu → “Add to Home screen”) and it opens like an app — no app store needed.
+      </footer>
+    </main>
+  </div>
+</div>
 </div>
 
 <script src="/speedy-widget.js"></script>
@@ -339,6 +414,9 @@ function boot(){
     var rb = document.getElementById('roleBadge');
     if (roles.indexOf('COMPANY_OWNER') !== -1){ rb.textContent = 'MASTER'; rb.style.display = ''; }
     else if (roles.indexOf('PLATFORM_ADMIN') !== -1){ rb.textContent = 'ADMIN'; rb.style.display = ''; }
+    var tbN = document.getElementById('tbName'); if (tbN) tbN.textContent = me.user.name || me.user.email || '';
+    var tbR = document.getElementById('tbRole'); if (tbR) tbR.textContent = roles.indexOf('COMPANY_OWNER') !== -1 ? 'Master account' : (roles.indexOf('PLATFORM_ADMIN') !== -1 ? 'Admin account' : 'Manager account');
+    var tbA = document.getElementById('tbAvatar'); if (tbA){ var psrc = (me.user.name || me.user.email || ''); var pparts = psrc.replace(/@.*/, '').split(/[\s.]+/).filter(Boolean); tbA.textContent = ((pparts[0] || 'T').charAt(0) + (pparts[1] ? pparts[1].charAt(0) : '')).toUpperCase(); }
     loadAll();
   });
 }
@@ -524,6 +602,12 @@ document.querySelectorAll('.tab').forEach(function(btn){
   });
 });
 document.getElementById('refreshBtn').addEventListener('click', loadAll);
+var ccSb = document.getElementById('ccSidebar'), ccBd = document.getElementById('ccBackdrop');
+function ccToggleSidebar(open){ if (!ccSb) return; var willOpen = open != null ? open : !ccSb.classList.contains('cc-open'); ccSb.classList.toggle('cc-open', willOpen); if (ccBd) ccBd.style.display = willOpen ? 'block' : 'none'; }
+var ccMb = document.getElementById('ccMenuBtn'); if (ccMb) ccMb.addEventListener('click', function(){ ccToggleSidebar(); });
+var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListener('click', function(){ ccToggleSidebar(false); });
+if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
+if (ccSb) ccSb.addEventListener('click', function(ev){ if (ev.target.closest && ev.target.closest('a')) ccToggleSidebar(false); });
 document.getElementById('logoutBtn').addEventListener('click', function(){
   try { localStorage.removeItem('tsos_token'); } catch(e){}
   location.reload();

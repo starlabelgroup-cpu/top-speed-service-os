@@ -97,8 +97,11 @@ footer{padding:18px;text-align:center;color:var(--mut);font-size:13px;line-heigh
 .empty{color:var(--mut);font-size:13px;text-align:center;padding:16px 6px}
 @media(max-width:900px){.metrics{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.remgrid,.flygrid{grid-template-columns:1fr}.windows{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.win{flex:0 0 62vw;scroll-snap-align:start}.cols{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity}.col{flex:0 0 78vw;max-width:340px;scroll-snap-align:start}.brand h1{font-size:26px}}
 body:not(.live) .gated{display:none!important}</style>
-<script src="/google-tag.js"></script></head>
-<body>
+<script src="/google-tag.js"></script>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/command-center.css"></head>
+<body class="cc-bookos">
 <div class="flag"></div>
 <header class="top"><div class="topin">
 <div class="brand"><div class="logo">TS</div><div><h1>Service Book Pro</h1><p>Dispatch Console • Top Speed CRM • Service Setters</p></div></div>
@@ -119,11 +122,11 @@ body:not(.live) .gated{display:none!important}</style>
 
 <!-- STAFF SIGN-IN / LIVE MODE -->
 <section class="panel" id="staffPanel" style="margin-bottom:18px">
-<div class="ph"><div><h2>Staff Sign-In \u2014 Live Book OS</h2><p>Service Setters &amp; dispatch: sign in with your Service OS account to work the <b>live</b> queue, today\u2019s appointments and the dispatch board. Signed out, this page stays a demo preview with sample data.</p></div><span class="badge" id="staffState">SIGNED OUT</span></div>
+<div class="ph"><div><h2>Staff Sign-In — Live Book OS</h2><p>Service Setters &amp; dispatch: sign in with your Service OS account to work the <b>live</b> queue, today’s appointments and the dispatch board. Signed out, this page stays a demo preview with sample data.</p></div><span class="badge" id="staffState">SIGNED OUT</span></div>
 <div id="staffLogin" style="padding:0 16px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:end">
 <label style="flex:1;min-width:210px;font-size:13px;font-weight:700">Email<br><input id="staffEmail" type="email" autocomplete="username" placeholder="service@topspeedappliance.net" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
-<label style="flex:1;min-width:170px;font-size:13px;font-weight:700">Password<br><input id="staffPw" type="password" autocomplete="current-password" placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
-<button class="btn primary" onclick="staffSignIn()">Sign in to Live Book OS \u2192</button>
+<label style="flex:1;min-width:170px;font-size:13px;font-weight:700">Password<br><input id="staffPw" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+<button class="btn primary" onclick="staffSignIn()">Sign in to Live Book OS →</button>
 </div>
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
