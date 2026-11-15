@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A265C">
+<meta name="description" content="Appliance Pro by Top Speed Appliance: the commercial account app — equipment registry, work orders, service agreements and consolidated monthly invoicing, with Speedy AI on the Top Speed Service OS.">
+<title>Appliance Pro — Commercial Accounts</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#061638;--panel:#0A265C;--panel2:#0E3168;--line:#1D447F;--blue:#1473FF;--red:#E8322E;--ink:#EDF3FC;--muted:#9DB6D8;--faint:#6E8AB3;--green:#2FBF71}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Archivo,Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:96px}
+  header{padding:20px 20px 6px}
+  h1{font-size:25px;font-weight:800;letter-spacing:.01em} h1 .red{color:var(--red)}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px;line-height:1.5}
+  main{padding:8px 16px 0}
+  .card{background:var(--panel);border-radius:16px;padding:16px;margin:12px 0}
+  .card h3{font-size:15px;font-weight:800;margin-bottom:8px}
+  .card p{color:var(--muted);font-size:13px;line-height:1.6}
+  .hero{background:linear-gradient(160deg,#0A265C,#071F4F 55%,#04122E);border:1px solid var(--line);border-radius:22px;padding:20px;margin:12px 0}
+  .hero h2{font-size:23px;font-weight:800;line-height:1.25}
+  .hero p{font-size:13px;margin:8px 0 14px;color:var(--muted);line-height:1.6}
+  .btn{display:inline-block;background:var(--red);color:#fff;border:none;border-radius:999px;padding:11px 18px;font-weight:700;font-size:13px;cursor:pointer;text-decoration:none;text-align:center}
+  .btn-blue{background:var(--blue)}
+  .btn-block{display:block;width:100%;padding:14px;font-size:15px;border-radius:16px}
+  .btn-ghost{background:var(--panel2);color:var(--ink);width:100%;padding:12px;font-size:13px;border-radius:12px;margin-top:8px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .act{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;color:var(--ink);text-align:left;cursor:pointer;font-family:inherit}
+  .act b{display:block;font-size:14px;margin-top:8px}
+  .act span{font-size:11px;color:var(--muted);line-height:1.45;display:block;margin-top:3px}
+  .act svg{color:var(--blue)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{background:var(--panel2);color:var(--ink);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:600}
+  .tier{display:flex;gap:12px;background:var(--panel2);border-radius:14px;padding:13px;margin:8px 0;align-items:flex-start}
+  .tier .dot{width:11px;height:11px;border-radius:50%;margin-top:4px;flex:none}
+  .tier b{font-size:13.5px;display:block}
+  .tier small{color:var(--muted);font-size:11.5px;line-height:1.5;display:block;margin-top:2px}
+  .rowline{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .rowline:last-child{border-bottom:none}
+  .rowline svg{color:var(--blue);flex:none;margin-top:1px}
+  .rowline b{font-size:13.5px;display:block}
+  .rowline span{font-size:12px;color:var(--muted);line-height:1.5;display:block;margin-top:2px}
+  .note{font-size:11px;color:var(--faint);text-align:center;margin-top:12px;line-height:1.6}
+  .tagline{display:inline-block;background:#243517;color:#B7E33C;border-radius:999px;padding:4px 10px;font-size:10px;font-weight:700;letter-spacing:.4px}
+  nav{position:fixed;left:0;right:0;bottom:0;background:#04122E;display:flex;justify-content:space-around;padding:9px 2px calc(9px + env(safe-area-inset-bottom));border-top:1px solid var(--line);z-index:10}
+  nav button{background:none;border:none;color:var(--faint);font-size:9.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;font-family:inherit;flex:1}
+  nav button.on{color:#fff}
+  nav button.on svg{color:var(--red)}
+  .view{display:none}.view.on{display:block}
+  footer{padding:6px 20px 0;text-align:center;color:var(--faint);font-size:11px;line-height:1.7}
+  footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Appliance <span class="red">Pro</span></h1>
+  <div class="sub">Commercial appliance service, managed — by Top Speed Appliance LLC on the Top Speed Service OS.</div>
+</header>
+<main>
+  <!-- DASHBOARD -->
+  <section id="v-dash" class="view on">
+    <div class="hero">
+      <span class="tagline">COMMERCIAL ACCOUNTS ONLY</span>
+      <h2 style="margin-top:10px">Every appliance, every location — one system.</h2>
+      <p>Your equipment registry, work orders and billing run on the Service OS, with Speedy AI and the Service Setters behind every request.</p>
+      <button class="btn" onclick="go('book')">Book service</button>
+      <a class="btn btn-blue" href="https://topspeedserviceos.com/appliance-pro-site" style="margin-left:8px">Sign in to your portal</a>
+    </div>
+    <div class="actions">
+      <button class="act" onclick="go('orders')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.5" width="13" height="17" rx="2"/><path d="M9.5 4.5a2.5 2.5 0 0 1 5 0"/><path d="M9 10.5h6M9 14h6M9 17.5h3.6"/></svg><b>Work Orders</b><span>Requests, visits and findings in one place.</span></button>
+      <button class="act" onclick="go('equip')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5H12L20.5 12a2 2 0 0 1 0 2.9l-5.6 5.6a2 2 0 0 1-2.9 0L3.5 12z"/><circle cx="8" cy="8" r="1.6"/></svg><b>Equipment</b><span>Every unit registered with its own asset tag.</span></button>
+      <button class="act" onclick="go('inv')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6"/></svg><b>Invoices</b><span>One consolidated monthly invoice.</span></button>
+      <button class="act" onclick="go('speedy')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/></svg><b>Ask Speedy</b><span>Speedy AI sorts requests and answers fast.</span></button>
+    </div>
+    <div class="card">
+      <h3>Who it's for</h3>
+      <p>Commercial accounts across South Florida — custom-quoted per facility and equipment mix.</p>
+      <div class="chips">
+        <span class="chip">Restaurants</span><span class="chip">Hotels</span><span class="chip">Laundromats</span><span class="chip">Healthcare</span><span class="chip">Offices</span><span class="chip">Retail</span><span class="chip">Facilities</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Service agreements</h3>
+      <p>Three tiers, priced by custom quote for your facility:</p>
+      <div class="tier"><span class="dot" style="background:var(--blue)"></span><div><b>Essential</b><small>Core coverage for your registered equipment.</small></div></div>
+      <div class="tier"><span class="dot" style="background:var(--green)"></span><div><b>Priority</b><small>Faster placement in the dispatch queue.</small></div></div>
+      <div class="tier"><span class="dot" style="background:var(--red)"></span><div><b>Total Care</b><small>Top-tier account — critical equipment moves first, automatically.</small></div></div>
+    </div>
+    <p class="note">Homeowner or property manager? Your door is <a href="https://topspeedserviceos.com/connect-pro-site" style="color:var(--muted)">Appliance Connect Pro</a> — Appliance Pro is for businesses and facilities only.</p>
+  </section>
+
+  <!-- BOOK SERVICE -->
+  <section id="v-book" class="view">
+    <div class="card">
+      <h3>Book commercial service</h3>
+      <p>Requests open in the Service OS booking flow and land in the Service Setters' queue with a COMMERCIAL tag. Commercial work is priced by custom quote for your facility — there is no flat diagnostic fee on commercial accounts.</p>
+      <div style="margin-top:14px"><a class="btn btn-block" href="https://topspeedserviceos.com/book">Open booking</a></div>
+      <a class="btn btn-ghost" href="tel:+19549317997" style="display:block;text-decoration:none;text-align:center">Call 954-931-7997</a>
+    </div>
+    <div class="card">
+      <h3>How a request moves</h3>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/></svg><div><b>Speedy sorts it</b><span>Type or paste the day's requests in plain words — Speedy AI sorts them into separate work orders.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6.5L9.5 17L4 11.5"/></svg><div><b>Service Setters confirm</b><span>A person on the dispatch team confirms every work order before a technician is sent.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/></svg><div><b>Priority where it matters</b><span>Equipment marked critical — and top-tier accounts — move first in the queue automatically.</span></div></div>
+    </div>
+    <p class="note">New to Appliance Pro? Accounts are set up per facility — call 954-931-7997 and the team will open your commercial account.</p>
+  </section>
+
+  <!-- WORK ORDERS -->
+  <section id="v-orders" class="view">
+    <div class="card">
+      <h3>Your work orders</h3>
+      <p>Every request and every visit on your account — what was reported, what the technician found, and a photo report when the job closes. Work orders live in your commercial portal on the Service OS.</p>
+      <div style="margin-top:14px"><a class="btn btn-block btn-blue" href="https://topspeedserviceos.com/appliance-pro-site">Sign in — open your commercial portal</a></div>
+      <p style="margin-top:10px">Signing in takes you to your account on the Top Speed Service OS, where your live work orders, statuses and visit reports are kept. Nothing about your account is stored in this app shell.</p>
+    </div>
+    <div class="card">
+      <h3>What you'll see inside</h3>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.5" width="13" height="17" rx="2"/><path d="M9 10.5h6M9 14h6"/></svg><div><b>Open &amp; scheduled orders</b><span>Every active request across all your locations.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.7"/><path d="M12 7.5V12l3 2"/></svg><div><b>Visit history</b><span>Findings and completed work, per unit and per location.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="14" rx="2"/><circle cx="12" cy="12.5" r="3.4"/><path d="M8.5 5.5l1.2-2h4.6l1.2 2"/></svg><div><b>Photo reports</b><span>A photo report when the job closes, attached to the work order.</span></div></div>
+    </div>
+  </section>
+
+  <!-- EQUIPMENT -->
+  <section id="v-equip" class="view">
+    <div class="card">
+      <h3>Equipment registry</h3>
+      <p>Every unit at every location you run — registered once, then tied to its work orders, warranty and billing. The registry lives in your commercial portal on the Service OS.</p>
+      <div style="margin-top:14px"><a class="btn btn-block btn-blue" href="https://topspeedserviceos.com/appliance-pro-site">Sign in — open your commercial portal</a></div>
+      <p style="margin-top:10px">Signing in takes you to your account, where your registered equipment and its live health statuses are kept.</p>
+    </div>
+    <div class="card">
+      <h3>On file for every unit</h3>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5H12L20.5 12a2 2 0 0 1 0 2.9l-5.6 5.6a2 2 0 0 1-2.9 0L3.5 12z"/><circle cx="8" cy="8" r="1.6"/></svg><div><b>Automatic asset tag</b><span>Each unit gets its own tag (TS-EQ-XXXX) the moment it's registered.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg><div><b>Brand, model &amp; serial</b><span>The plate details that make parts and warranty checks fast.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l7 3v5c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9v-5z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg><div><b>Warranty &amp; health status</b><span>Warranty status on file, and a health status that flags critical equipment for priority dispatch.</span></div></div>
+    </div>
+  </section>
+
+  <!-- INVOICES -->
+  <section id="v-inv" class="view">
+    <div class="card">
+      <h3>Consolidated monthly invoicing</h3>
+      <p>All work across all your locations rolls into a single consolidated monthly invoice — no per-job paperwork chasing. Invoices live in your commercial portal on the Service OS.</p>
+      <div style="margin-top:14px"><a class="btn btn-block btn-blue" href="https://topspeedserviceos.com/appliance-pro-site">Sign in — open your commercial portal</a></div>
+      <p style="margin-top:10px">Signing in takes you to your account, where your monthly invoices and account activity are kept.</p>
+    </div>
+    <div class="card">
+      <h3>Agreements &amp; billing</h3>
+      <div class="tier"><span class="dot" style="background:var(--blue)"></span><div><b>Essential</b><small>Core agreement coverage — priced by custom quote.</small></div></div>
+      <div class="tier"><span class="dot" style="background:var(--green)"></span><div><b>Priority</b><small>Priority dispatch placement — priced by custom quote.</small></div></div>
+      <div class="tier"><span class="dot" style="background:var(--red)"></span><div><b>Total Care</b><small>Top-tier coverage — priced by custom quote.</small></div></div>
+      <p style="margin-top:10px">Quotes are built per facility from your equipment mix — call 954-931-7997 to set up or change your agreement.</p>
+    </div>
+  </section>
+
+  <!-- ASK SPEEDY -->
+  <section id="v-speedy" class="view">
+    <div class="hero">
+      <h2>Ask Speedy</h2>
+      <p>Speedy is the AI brain of the Top Speed Service OS. Describe the problem in plain words — Speedy sorts it into the right work order, answers account questions, and routes everything to the Service Setters, who confirm every dispatch.</p>
+      <a class="btn" href="https://topspeedserviceos.com/speedy">Talk to Speedy</a>
+    </div>
+    <div class="card">
+      <h3>Good things to ask Speedy</h3>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/></svg><div><b>"The walk-in cooler at the Davie location is running warm."</b><span>Speedy drafts the work order for the right unit and location.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/></svg><div><b>"Three washers down at the laundromat — one is leaking."</b><span>Bulk requests get split into separate work orders, critical first.</span></div></div>
+      <div class="rowline"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/></svg><div><b>"What's the status of yesterday's ice machine job?"</b><span>Speedy answers from your account's live work orders.</span></div></div>
+    </div>
+    <p class="note">Speedy never dispatches alone — a Service Setter confirms every work order, and safety calls stay with licensed technicians.</p>
+  </section>
+
+  <footer>
+    <strong style="color:var(--muted)">Top Speed Appliance LLC</strong> · Appliance Pro · Commercial accounts<br>
+    954-931-7997 · <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="https://topspeedserviceos.com/privacy">Privacy</a>
+  </footer>
+</main>
+
+<nav>
+  <button id="n-dash" class="on" onclick="go('dash')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>Dashboard</span></button>
+  <button id="n-book" onclick="go('book')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.8h17M8 3v4M16 3v4M12 12.5v6M9 15.5h6"/></svg><span>Book</span></button>
+  <button id="n-orders" onclick="go('orders')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5.5" y="4.5" width="13" height="17" rx="2"/><path d="M9.5 4.5a2.5 2.5 0 0 1 5 0"/><path d="M9 10.5h6M9 14h6M9 17.5h3.6"/></svg><span>Orders</span></button>
+  <button id="n-equip" onclick="go('equip')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 3.5H12L20.5 12a2 2 0 0 1 0 2.9l-5.6 5.6a2 2 0 0 1-2.9 0L3.5 12z"/><circle cx="8" cy="8" r="1.6"/></svg><span>Equipment</span></button>
+  <button id="n-inv" onclick="go('inv')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6"/></svg><span>Invoices</span></button>
+  <button id="n-speedy" onclick="go('speedy')"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/></svg><span>Speedy</span></button>
+</nav>
+
+<script>
+const $ = id => document.getElementById(id);
+function go(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.remove("on"));
+  $("v-"+v).classList.add("on");
+  document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on"));
+  const n = $("n-"+v); if(n) n.classList.add("on");
+  window.scrollTo(0,0);
+}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
