@@ -4,6 +4,7 @@ import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
+import { PLUG_192, PLUG_512, PRO_192, PRO_512 } from '../assets/appIcons.js';
 
 const router = Router();
 
@@ -63,6 +64,32 @@ const STORE_LISTINGS = [
 const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 /** Current app release + how to get it on each store. Public. */
+/**
+ * PWA install icons for the Appliance Plug and Appliance Pro apps.
+ * The PNG bytes live in assets/appIcons.js as base64 text (the repo's
+ * push pipeline is text-only, so real binary PNGs cannot be stored in
+ * the repo); this route serves the decoded bytes as image/png. The
+ * apps' manifests and apple-touch-icon links point here. Public on
+ * purpose — these are published brand assets, no data behind them.
+ */
+const APP_ICON_FILES = {
+  'plug-192.png': PLUG_192,
+  'plug-512.png': PLUG_512,
+  'pro-192.png': PRO_192,
+  'pro-512.png': PRO_512,
+};
+
+router.get('/app/icons/:name', (req, res) => {
+  const encoded = APP_ICON_FILES[req.params.name];
+  if (!encoded) return res.status(404).json({ error: 'Icon not found' });
+  res.set({
+    'Content-Type': 'image/png',
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  return res.send(Buffer.from(encoded, 'base64'));
+});
+
 router.get('/app/current-version', (req, res) => {
   return res.json({
     data: {
