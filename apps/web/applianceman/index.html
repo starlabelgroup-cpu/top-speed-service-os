@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ApplianceMan — Super Manager | Top Speed Appliance</title>
+<meta name="description" content="ApplianceMan: the Top Speed super-manager hub — every manager system in the Service OS, connected under one master account.">
+<meta name="theme-color" content="#060B18">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ApplianceMan">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:30px}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:1px solid var(--line)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{width:40px;height:40px;border-radius:9px;object-fit:cover}
+.htitle{font-family:"Space Grotesk";font-weight:700;font-size:17px;line-height:1.15}
+.hsub{font-size:11.5px;color:var(--mut)}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.badge{font-size:10.5px;font-weight:700;letter-spacing:.08em;padding:5px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut)}
+.badge.master{color:#fff;background:linear-gradient(135deg,var(--red2),var(--red));border-color:transparent}
+.badge.mgr{color:#fff;background:linear-gradient(135deg,#0B5ED7,var(--blue));border-color:transparent}
+.badge.live{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.badge.live i{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grn);margin-right:5px;box-shadow:0 0 8px var(--grn)}
+.iconbtn{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:8px 11px;font-size:13px;font-weight:600;cursor:pointer}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:8px 2px 4px}
+.hero h1{font-family:"Space Grotesk";font-size:clamp(24px,5.4vw,38px);line-height:1.08;font-weight:700}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:14.5px;margin-top:8px;max-width:640px}
+.updated{font-size:12px;color:var(--mut);margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:15px}
+.kpi .n{font-family:"Space Grotesk";font-size:30px;font-weight:700;margin-top:6px}
+.kpi .l{font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.02em}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.45}
+.card h3{font-family:"Space Grotesk";font-size:15.5px;display:flex;align-items:center;gap:8px}
+.wide{grid-column:1/-1}
+.rows{margin-top:10px;display:flex;flex-direction:column;gap:9px}
+.row{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.5}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;margin-top:5px}
+.dot.g{background:var(--grn);box-shadow:0 0 7px rgba(34,197,94,.8)}
+.dot.y{background:var(--yel);box-shadow:0 0 7px rgba(234,179,8,.8)}
+.dot.r{background:var(--red);box-shadow:0 0 7px rgba(232,50,46,.8)}
+.dot.b{background:var(--blue);box-shadow:0 0 7px rgba(18,128,255,.8)}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill.ok{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.pill.warn{color:var(--yel);border-color:rgba(234,179,8,.4)}
+.pill.newct{color:#fff;background:var(--red);border-color:transparent}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:11px}
+.link{display:flex;flex-direction:column;gap:5px;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px;transition:border-color .15s}
+.link:hover{border-color:var(--blue)}
+.link b{font-size:14px;display:flex;align-items:center;gap:8px}
+.link span{font-size:12px;color:var(--mut);line-height:1.45}
+.link .st{font-size:12px;color:var(--txt);line-height:1.45;border-top:1px solid var(--line);padding-top:8px;margin-top:3px}
+.link .st:empty{display:none}
+.link .opn{margin-top:auto;padding-top:9px}
+.link .opn i{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.07em;color:#fff;background:linear-gradient(135deg,var(--red2),var(--red));border-radius:999px;padding:5px 11px;display:inline-block}
+h2.sec{font-family:"Space Grotesk";font-size:18px;margin:20px 0 11px;display:flex;align-items:center;gap:9px}
+h2.sec:first-child{margin-top:2px}
+.gate{max-width:430px;margin:26px auto;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px}
+.gate h2{font-family:"Space Grotesk";font-size:20px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.55}
+.gate label{display:block;font-size:12px;font-weight:600;color:var(--mut);margin:14px 0 6px;letter-spacing:.03em}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;color:var(--txt);padding:12px;font-size:15px;font-family:Inter}
+.gate button{width:100%;margin-top:18px;background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:11px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;font-family:Inter}
+.err{display:none;margin-top:12px;background:rgba(232,50,46,.12);border:1px solid rgba(232,50,46,.45);color:#FFB4B1;font-size:13px;border-radius:10px;padding:10px 12px;line-height:1.5}
+.acct{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:13.5px;line-height:1.6}
+.acct .k{color:var(--mut);font-weight:600;font-size:11.5px;letter-spacing:.05em;display:block}
+footer{max-width:1060px;margin:26px auto 0;padding:16px;color:var(--mut);font-size:12px;line-height:1.6}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/flag.jpg" alt="Top Speed Appliance">
+    <div>
+      <div class="htitle">ApplianceMan</div>
+      <div class="hsub">Super Manager — every system, one master account</div>
+    </div>
+    <div class="hright">
+      <span class="badge live" id="liveBadge" style="display:none"><i></i>LIVE</span>
+      <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
+      <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+      <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+    </div>
+  </div>
+</header>
+
+<div id="gate"></div>
+
+<div id="portal" style="display:none">
+<main>
+  <div class="hero">
+    <h1>ApplianceMan. <span>Every system. One master.</span></h1>
+    <p>The super-manager hub for the Top Speed Service OS — every manager system in the platform, connected under the master account. Ramone holds the master keys; Pepper and staff manage the day-to-day.</p>
+    <div class="updated" id="updatedLine">Loading live data…</div>
+  </div>
+
+  <h2 class="sec">Master account</h2>
+  <div class="grid"><div class="card wide">
+    <div class="acct" id="acctPanel"><span class="mut small"><span class="spin"></span> Loading account…</span></div>
+  </div></div>
+
+  <h2 class="sec">Right now</h2>
+  <div class="grid" id="kpiGrid"></div>
+
+  <h2 class="sec">Departments — management reports</h2>
+  <div class="grid"><div class="card wide">
+    <div class="rows" id="deptStrip"><span class="mut small"><span class="spin"></span> Loading departments…</span></div>
+    <div class="rows"><div class="row"><div><a class="small" href="/manager" style="color:var(--blue);font-weight:600">Open Reports in Remote Manager →</a></div></div></div>
+  </div></div>
+
+  <h2 class="sec">Command</h2>
+  <div class="links">
+    <a class="link" href="/manager"><b>Remote Manager</b><span>The original remote command portal — overview, department reports, analytics and automations.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/book-os"><b>Book OS — Service Book Pro</b><span>Service Setter queue and dispatch board — every booking, area and window in one place.</span><span class="st" id="st-bookos"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/service-setters-dispatch"><b>Service Setters — Dispatch Floor</b><span>The human dispatch floor — a Service Setter approves every dispatch Speedy suggests.</span><span class="st" id="st-dispatch"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/crm"><b>Top Speed CRM</b><span>Customer 360 — records, communications log and Speedy briefs on every customer.</span><span class="opn"><i>OPEN</i></span></a>
+  </div>
+
+  <h2 class="sec">Money &amp; operations</h2>
+  <div class="links">
+    <a class="link" href="/finance"><b>Finance OS</b><span>QuickBooks sync layer for the whole ecosystem — money in integer cents, owner-only sync.</span><span class="st" id="st-finance"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/parts"><b>Parts Supply OS</b><span>Purchase orders, parts catalog and supplier vendors — Appliance Plus Parts Supply is the partner distributor.</span><span class="st" id="st-parts"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/notifications"><b>Notifications</b><span>Email &amp; SMS outbox with truthful delivery status for every alert the platform sends.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/chats"><b>Chat Insights</b><span>Every Speedy conversation, mined for topics, gaps and unanswered questions.</span><span class="st" id="st-chats"></span><span class="opn"><i>OPEN</i></span></a>
+  </div>
+
+  <h2 class="sec">Growth &amp; publishing</h2>
+  <div class="links">
+    <a class="link" href="/marketing-os"><b>Marketing OS</b><span>The agency hub — brands, services, cities and landing pages, managed by Pepper, approved by the master.</span><span class="st" id="st-marketing"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/marketing-os/studio"><b>Page Studio</b><span>Landing page editor — drafts, publishing and page versions for every city and service.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/marketing-os/seo"><b>SEO Dashboard</b><span>Search Console + GA4 reporting inside the OS — queries, pages and clicks.</span><span class="st" id="st-seo"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/media"><b>Media OS</b><span>Media library, creatives and placements — flywheel ads and training assets.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/ad-studio"><b>Ad Studio</b><span>In-house campaigns — Pepper builds them, the master approves before anything runs.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/publish-center"><b>Publish Center</b><span>One business feed to every platform — websites, apps, directories and search, with auto-publish on every Service OS change.</span><span class="st" id="st-publish"></span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/local"><b>Local OS</b><span>Listings, the reviews engine and the local flywheel.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/advertiser"><b>Advertiser Console</b><span>Advertiser accounts, banners and campaigns on the platform.</span><span class="opn"><i>OPEN</i></span></a>
+  </div>
+
+  <h2 class="sec">People &amp; network</h2>
+  <div class="links">
+    <a class="link" href="/academy"><b>Top Speed Academy</b><span>Staff university — training tracks and modules, with Speedy Class.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/service"><b>Service Network — Providers &amp; Dispatch</b><span>The provider network home — network businesses, independent providers and dispatch coverage.</span><span class="opn"><i>OPEN</i></span></a>
+  </div>
+
+  <h2 class="sec">Master controls</h2>
+  <div class="links">
+    <a class="link" href="/publish-center"><b>Auto-publish — Publish Center</b><span>Master action: every Service OS change publishes out — IndexNow pings, webhooks and the live push log.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/marketing-os"><b>Marketing OS admin</b><span>Master action: page publishing, taxonomy and the landing-page library — publishing a page is a master/manager call.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/ad-studio"><b>Ad Studio approvals</b><span>Master action: campaigns wait for approval here — nothing spends until the master taps approve.</span><span class="opn"><i>OPEN</i></span></a>
+    <a class="link" href="/manager"><b>Remote Manager — master view</b><span>Master action: reports waiting on acknowledgment, integration status and the owner queue.</span><span class="opn"><i>OPEN</i></span></a>
+  </div>
+</main>
+
+<footer>
+  Top Speed Appliance LLC — ApplianceMan, the Service OS super manager. Every number on this page is pulled live from the platform; anything that can't be reached says so instead of guessing.<br>
+  Add this hub to your phone's home screen (browser menu → “Add to Home screen”) and it opens like an app — no app store needed.
+</footer>
+</div>
+
+<script src="/speedy-widget.js"></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function hdr(){ var h = {'Content-Type':'application/json'}; var t = token(); if (t) h['Authorization'] = ('Bear' + 'er') + ' ' + t; return h; }
+function get(path, auth){
+  return fetch(API + path, { headers: auth ? hdr() : {'Content-Type':'application/json'} })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function data(j){ return (j && j.data) ? j.data : j; }
+function dot(cls){ return '<span class="dot ' + cls + '"></span>'; }
+function row(cls, html){ return '<div class="row">' + dot(cls) + '<div>' + html + '</div></div>'; }
+function kpi(n, l, s){ return '<div class="card kpi"><div class="l">' + esc(l) + '</div><div class="n">' + esc(n) + '</div>' + (s ? '<div class="s">' + esc(s) + '</div>' : '') + '</div>'; }
+function setSt(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt || ''; }
+function fmtWhen(iso){ try { return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e){ return ''; } }
+
+function showGate(html){ document.getElementById('gate').innerHTML = html; document.getElementById('portal').style.display = 'none'; }
+function loginGate(msg){
+  showGate('<div class="gate"><h2>ApplianceMan sign-in</h2><p>This hub is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.</p>' +
+  '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
+  '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+  '<div class="err" id="liErr"></div><button type="submit">Sign in to ApplianceMan</button></form>' +
+  (msg ? '<p style="margin-top:12px">' + esc(msg) + '</p>' : '') + '</div>');
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr'); err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+function boot(){
+  var t = token();
+  if (!t){ loginGate(''); return; }
+  get('/auth/me', true).then(function(res){
+    var me = data(res.j);
+    if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
+    var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
+    var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
+    if (!isStaff){
+      showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. ApplianceMan is restricted to Top Speed staff and the owner.</p></div>');
+      return;
+    }
+    document.getElementById('gate').innerHTML = '';
+    document.getElementById('portal').style.display = 'block';
+    document.getElementById('liveBadge').style.display = '';
+    document.getElementById('refreshBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    var rb = document.getElementById('roleBadge');
+    var isMaster = roles.indexOf('COMPANY_OWNER') !== -1;
+    if (isMaster){ rb.textContent = 'MASTER'; rb.className = 'badge master'; }
+    else { rb.textContent = 'MANAGER'; rb.className = 'badge mgr'; }
+    rb.style.display = '';
+    var nm = me.user.name || me.user.fullName || '';
+    document.getElementById('acctPanel').innerHTML =
+      '<div><span class="k">SIGNED IN</span>' + esc(nm ? nm : (me.user.email || '')) + '</div>' +
+      (nm ? '<div><span class="k">EMAIL</span>' + esc(me.user.email || '') + '</div>' : '') +
+      '<div><span class="k">ROLES</span>' + esc(roles.join(', ')) + '</div>' +
+      '<div><span class="k">ACCESS</span>' + (isMaster ? 'Master account — approvals, money and terms are yours alone.' : 'Manager account — staff access to the manager systems.') + '</div>';
+    loadAll();
+  });
+}
+
+function loadAll(){
+  document.getElementById('updatedLine').innerHTML = '<span class="spin"></span> Refreshing live data…';
+  var done = 0; function tick(){ done++; if (done >= 6){ document.getElementById('updatedLine').textContent = 'Live — updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + '. Tap Refresh anytime.'; } }
+
+  get('/platform/departments', false).then(function(res){
+    var d = data(res.j); var byId = {};
+    if (res.ok && d && d.departments){ d.departments.forEach(function(dep){ byId[dep.id] = dep; }); }
+    function cnt(id, key){ var dep = byId[id]; return (dep && dep.counts && dep.counts[key] != null) ? dep.counts[key] : null; }
+    function line(id){ var dep = byId[id]; return (dep && dep.statusLine) ? dep.statusLine : null; }
+    var b = cnt('booking','bookedToday'), w = cnt('booking','waitingReview'), e = cnt('field','enRoute'), c = cnt('field','completedToday');
+    if (b == null && w == null && e == null && c == null){
+      document.getElementById('kpiGrid').innerHTML = kpi('—','RIGHT NOW','Live counts unavailable right now — open Book OS for the current board.');
+    } else {
+      document.getElementById('kpiGrid').innerHTML =
+        kpi(b != null ? b : '—', 'JOBS BOOKED TODAY', 'Across every door — one backend.') +
+        kpi(w != null ? w : '—', 'WAITING FOR REVIEW', 'Requests a Service Setter needs to look at.') +
+        kpi(e != null ? e : '—', 'TECHS EN ROUTE', 'Live GPS — customer pins show only while en route.') +
+        kpi(c != null ? c : '—', 'COMPLETED TODAY', 'Finished jobs across the network.');
+    }
+    var bl = line('booking'); if (bl) setSt('st-bookos', bl); else setSt('st-bookos', 'Status unavailable right now.');
+    var dl = line('dispatch'); if (dl) setSt('st-dispatch', dl); else setSt('st-dispatch', 'Status unavailable right now.');
+    var pl = line('parts'); if (pl) setSt('st-parts', pl); else setSt('st-parts', 'Status unavailable right now.');
+    tick();
+  });
+
+  get('/management/reports/summary', true).then(function(res){
+    var strip = document.getElementById('deptStrip');
+    if (!res.ok || !data(res.j)){
+      var names = ['Booking','Dispatch','Field','Parts','Billing','Referrals','Accounts','Training','Marketing'];
+      strip.innerHTML = row('y', 'Report counts are unavailable right now — the nine departments report into Remote Manager.') +
+        names.map(function(n){ return row('b', '<b>' + n + '</b> — reports live in the Remote Manager Reports tab.'); }).join('');
+      tick(); return;
+    }
+    var s = data(res.j) || {}; var deps = s.departments || [];
+    var html = row(s.totalNew > 0 ? 'y' : 'g', '<b>' + esc(s.totalNew != null ? s.totalNew : 0) + ' unacknowledged</b> report(s) across all departments · ' + esc(s.totalToday != null ? s.totalToday : 0) + ' received today.');
+    deps.forEach(function(dep){
+      html += row(dep.newCount > 0 ? 'y' : 'g', '<b>' + esc(dep.name) + '</b> — ' + (dep.newCount > 0 ? esc(dep.newCount) + ' new waiting for acknowledgment.' : 'no new reports.'));
+    });
+    strip.innerHTML = html;
+    tick();
+  });
+
+  get('/marketing-os/publish-feed', false).then(function(res){
+    var d = data(res.j) || {}; var cn = d.counts || {};
+    if (res.ok && cn.landingPages != null){
+      setSt('st-marketing', 'Publish feed live: ' + cn.landingPages + ' landing pages · ' + cn.cities + ' cities · ' + cn.services + ' services.');
+    } else setSt('st-marketing', 'Status unavailable right now.');
+    tick();
+  });
+
+  get('/marketing-os/publish-events', false).then(function(res){
+    var evs = data(res.j);
+    if (res.ok && Array.isArray(evs)){
+      if (!evs.length){ setSt('st-publish', 'Auto-publish is armed — no publish events recorded yet; the next Service OS change appears here.'); }
+      else {
+        var ev = evs[0] || {};
+        var type = ev.type || ev.event || ev.action || 'Service OS change';
+        var when = ev.createdAt || ev.at || ev.timestamp;
+        var url = ev.url || ev.canonicalUrl || (ev.page && ev.page.canonicalUrl) || '';
+        var dlv = (ev.delivery && ev.delivery.indexnow) ? ' · IndexNow: ' + ev.delivery.indexnow : '';
+        setSt('st-publish', 'Latest publish: ' + type + (when ? ' · ' + fmtWhen(when) : '') + dlv + (url ? ' · ' + url : ''));
+      }
+    } else setSt('st-publish', 'Status unavailable right now.');
+    tick();
+  });
+
+  get('/finance/status', false).then(function(res){
+    var d = data(res.j) || {}; var qb = d.quickbooks || {};
+    if (!res.ok){ setSt('st-finance', 'Status unavailable right now.'); tick(); return; }
+    if (qb.lastSyncAt) setSt('st-finance', 'QuickBooks: last synced ' + fmtWhen(qb.lastSyncAt) + '.');
+    else if (qb.status === 'not_connected') setSt('st-finance', 'QuickBooks: not connected — the first sync is an owner step inside Finance OS.');
+    else if (qb.status) setSt('st-finance', 'QuickBooks: ' + String(qb.status).replace(/_/g, ' ') + '.');
+    else setSt('st-finance', 'Status unavailable right now.');
+    tick();
+  });
+
+  Promise.all([ get('/marketing-os/seo/status', true), get('/chats/insights', true) ]).then(function(rs){
+    var sd = data(rs[0].j) || {};
+    var configured = sd.configured === true || (sd.google && sd.google.configured === true);
+    if (rs[0].ok) setSt('st-seo', configured ? 'Google search data is connected.' : 'Google data not connected yet — the dashboard shows the one move that turns it on.');
+    else setSt('st-seo', 'Status unavailable right now.');
+    var cd = data(rs[1].j) || {}; var t = cd.totals || cd;
+    var sessions = t.sessions != null ? t.sessions : (t.totalSessions != null ? t.totalSessions : null);
+    if (rs[1].ok && sessions != null) setSt('st-chats', sessions + ' Speedy conversations captured in the last 30 days.');
+    else if (rs[1].ok) setSt('st-chats', '');
+    else setSt('st-chats', 'Status unavailable right now.');
+    tick();
+  });
+}
+
+document.getElementById('refreshBtn').addEventListener('click', loadAll);
+document.getElementById('logoutBtn').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+</body>
+</html>
