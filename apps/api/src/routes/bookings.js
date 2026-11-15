@@ -148,6 +148,27 @@ router.get('/bookings', authenticate, requireCompany, (req, res) => {
 
 
 /**
+ * PUBLIC recent-completed feed (added 2026-11-15, flagship proof strip):
+ * the most recent completed jobs as { city, appliance, completedDate }
+ * ONLY — no names, addresses, phones, references or job IDs ever leave
+ * the store on this route. An empty list is a valid, honest answer
+ * (the homepage section that reads it simply stays hidden).
+ */
+router.get('/bookings/recent-completed', (req, res) => {
+  const jobs = [...store.bookings.values()]
+    .filter((b) => b.status === 'COMPLETED' && b.completedAt)
+    .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)))
+    .slice(0, 8)
+    .map((b) => ({
+      city: b.city || null,
+      appliance: b.appliance || null,
+      completedDate: b.completedAt,
+    }))
+    .filter((job) => job.city && job.appliance);
+  return res.json({ data: jobs });
+});
+
+/**
  * PUBLIC job tracking (added 2026-11-10): a customer tracks a real booking
  * with the reference from their confirmation (TS-XXXXXX) plus the phone
  * number on the booking — no account needed. Returns status only: no

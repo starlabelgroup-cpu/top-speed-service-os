@@ -689,6 +689,75 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   </div>
 </section>
 
+<!-- THE TOP SPEED PROMISE — the standing published terms, named: the
+     90-day parts & labor warranty (Terms & Conditions §5), the $99
+     diagnostic credited toward the approved repair (§4), no work before
+     the customer approves the written quote (§4 + Launch Pack terms),
+     and the real 8-stage Track My Tech pipeline
+     (apps/api/src/services/tracking.js STAGE8_LABELS). -->
+<section id="promise" style="border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="card reveal" style="padding:30px;background:linear-gradient(140deg,var(--navy),var(--navy-3));border:none;color:#D7E4FA">
+      <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Our promise</span>
+      <h2 style="color:#fff;font-size:clamp(26px,4vw,36px);margin:12px 0 6px">The Top Speed Promise</h2>
+      <p style="margin:0;max-width:70ch">Four commitments on every job — the same terms written in our Terms &amp; Conditions and printed on your invoice.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-top:22px">
+        <div><h3 style="color:#fff;font-size:18px;margin:0 0 6px">90-day warranty</h3><p style="margin:0">Parts &amp; labor on the repair we perform. If the same failure returns inside 90 days, we come back and repair it at no additional labor charge.</p></div>
+        <div><h3 style="color:#fff;font-size:18px;margin:0 0 6px">$99 diagnostic, credited</h3><p style="margin:0">Collected at booking to reserve your window — and credited in full toward your repair when you approve the fix.</p></div>
+        <div><h3 style="color:#fff;font-size:18px;margin:0 0 6px">No work before your OK</h3><p style="margin:0">The tech names the cause and gives you the exact written quote on site. Repair work starts only after you approve it — never before.</p></div>
+        <div><h3 style="color:#fff;font-size:18px;margin:0 0 6px">Live 8-stage tracking</h3><p style="margin:0">From request received to repair completed, every job moves through 8 tracked stages — follow yours live in Track My Tech.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RECENT REPAIRS — live proof feed. Populated ONLY from real completed
+     jobs via GET /api/v1/bookings/recent-completed (appliance + city +
+     month, nothing personal). The section stays hidden until at least
+     one real completed job returns; never seeded, no placeholder jobs. -->
+<section id="recentRepairs" hidden style="background:var(--surface-2);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag red">Recent repairs</span>
+      <h2>Just fixed, <em>near you.</em></h2>
+      <p>Real completed jobs from the Service OS — appliance, city and month only. No names, no addresses.</p>
+    </div>
+    <div id="recentRepairsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px"></div>
+  </div>
+</section>
+<script>
+(function(){
+  var sec=document.getElementById('recentRepairs');
+  var grid=document.getElementById('recentRepairsGrid');
+  if(!sec||!grid) return;
+  fetch('https://top-speed-service-os.vercel.app/api/v1/bookings/recent-completed')
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      var jobs=(j&&Array.isArray(j.data))?j.data:[];
+      if(!jobs.length) return; /* no real completed jobs yet — section stays hidden */
+      var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      jobs.forEach(function(job){
+        var d=new Date(job.completedDate);
+        var when=isNaN(d.getTime())?'':months[d.getMonth()]+' '+d.getFullYear();
+        var card=document.createElement('div');
+        card.className='card';
+        card.style.padding='18px 20px';
+        var h=document.createElement('h3');
+        h.style.cssText='font-size:17px;margin:0 0 4px';
+        h.textContent=(job.appliance||'Appliance')+' repair';
+        var p=document.createElement('p');
+        p.style.cssText='margin:0;color:#5A6E94;font-size:14.5px';
+        p.textContent=(job.city||'')+(when?' · '+when:'');
+        card.appendChild(h);
+        card.appendChild(p);
+        grid.appendChild(card);
+      });
+      sec.hidden=false;
+    })
+    .catch(function(){ /* feed unavailable — section stays hidden */ });
+})();
+</script>
+
 <!-- ASK SPEEDY COMMUNICATION CENTER -->
 <section id="ask-speedy" style="background:linear-gradient(180deg,#071A3D 0%,#0A265C 100%); color:#fff;">
   <div class="wrap" style="padding-top:52px; padding-bottom:52px;">
@@ -1516,6 +1585,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       </div>
     </div>
     <p style="margin-top:30px;font-size:13.5px;color:#7E96C4">topspeedserviceos.com — the live Top Speed Appliance platform, running on the Top Speed Service OS. Every booking is reviewed by a Service Setter and confirmed by phone at 954-931-7997.</p>
+    <p style="margin-top:14px;font-size:13.5px"><a href="/privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="/legal">Terms &amp; Conditions</a> &nbsp;·&nbsp; <a href="/privacy">Do Not Sell My Info</a></p>
   </div>
 
 <div class="footer-ad" id="footerAdSlot" style="background:linear-gradient(120deg,#071a3d,#0a265c 60%,#123a7d);border-top:4px solid #e01a22;margin-top:36px;transition:opacity .45s ease;">
