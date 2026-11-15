@@ -55,6 +55,16 @@ h2{font-size:28px;color:var(--navy);margin-bottom:10px}
 .b-owner{background:#5a6b82;color:#fff}
 .note{background:var(--light);border-radius:14px;padding:26px;color:var(--muted);font-size:15.5px;line-height:1.6}
 .note strong{color:var(--navy)}
+.evlist{display:flex;flex-direction:column;gap:12px}
+.evrow{background:var(--light);border-radius:14px;padding:18px 20px}
+.evrow .evtop{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.evkind{font-weight:800;color:var(--navy);font-size:15.5px}
+.evtime{color:var(--muted);font-size:13.5px;margin-left:auto}
+.evtitle{font-size:16px;color:var(--ink);line-height:1.45}
+.evurl{font-size:14px;word-break:break-all}
+.evurl a{color:var(--blue);text-decoration:underline}
+.evbadges{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.evbadges .badge{margin-bottom:0}
 footer{background:#04122e;color:#9db6d8;padding:36px 24px;text-align:center;font-size:14px;line-height:1.7}
 footer strong{color:#fff}
 footer a{color:#cfe0f5}
@@ -65,6 +75,7 @@ footer a{color:#cfe0f5}
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
   <nav>
     <a href="#feed">Live Feed</a>
+    <a href="#autopublish">Auto-publish</a>
     <a href="#channels">Channels</a>
     <a href="#export">Directory Export</a>
     <a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> 954-931-7997</a>
@@ -88,6 +99,12 @@ footer a{color:#cfe0f5}
     <p class="feedmeta" id="feedMeta">Reading the live feed…</p>
     <p class="feedmeta"><a href="https://top-speed-service-os.vercel.app/api/v1/marketing-os/publish-feed" target="_blank" rel="noopener">View feed (JSON)</a> — the open endpoint any platform, partner site or directory tool can read.</p>
   </div>
+</section>
+
+<section id="autopublish" style="padding-top:6px;">
+  <h2>Auto-publish — latest changes</h2>
+  <p class="sub">Every change in the Service OS publishes automatically — websites and apps instantly, search directories via IndexNow, and any connected platform via webhook. This panel is the live record of those changes and how each one was delivered.</p>
+  <div class="evlist" id="eventsList"><div class="note">Reading the latest changes…</div></div>
 </section>
 
 <section id="channels" style="padding-top:6px;">
@@ -187,6 +204,49 @@ footer a{color:#cfe0f5}
     .catch(function () {
       feedMeta.textContent = 'The live feed is unavailable right now — counts and the directory export will appear as soon as it responds. No numbers are shown rather than guessed.';
       csvNote.textContent = 'The directory export needs the live feed; it is unavailable right now.';
+    });
+})();
+</script>
+<script>
+(function () {
+  var EVENTS_URL = 'https://top-speed-service-os.vercel.app/api/v1/marketing-os/publish-events';
+  var list = document.getElementById('eventsList');
+  if (!list) return;
+  var KIND_LABELS = {
+    'page.published': 'Page published',
+    'page.unpublished': 'Page unpublished',
+    'page.created': 'Page created',
+    'taxonomy.changed': 'Taxonomy changed'
+  };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function badge(text, cls) { return '<span class="badge ' + cls + '">' + esc(text) + '</span>'; }
+  fetch(EVENTS_URL)
+    .then(function (r) {
+      if (!r.ok) throw new Error('events request failed');
+      return r.json();
+    })
+    .then(function (json) {
+      var events = (json && json.data) || [];
+      if (!events.length) {
+        list.innerHTML = '<div class="note">No changes have been published yet. The moment a page is published, unpublished or created — or the service taxonomy changes — the event appears here with its delivery record.</div>';
+        return;
+      }
+      list.innerHTML = events.map(function (e) {
+        var d = e.delivery || {};
+        var when = e.at ? new Date(e.at) : null;
+        var whenText = when && !isNaN(when.getTime()) ? when.toLocaleString() : '';
+        var idxCls = d.indexnow === 'sent' ? 'b-live' : (d.indexnow === 'failed' ? 'b-block' : 'b-owner');
+        var html = '<div class="evrow"><div class="evtop"><span class="evkind">' + esc(KIND_LABELS[e.kind] || e.kind || 'Change') + '</span><span class="evtime">' + esc(whenText) + '</span></div>';
+        if (e.title) html += '<div class="evtitle">' + esc(e.title) + '</div>';
+        if (e.url) html += '<div class="evurl"><a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.url) + '</a></div>';
+        html += '<div class="evbadges">' + badge('IndexNow: ' + (d.indexnow || 'skipped'), idxCls) + badge('Webhooks: ' + (d.webhooks != null ? d.webhooks : 0), 'b-conn') + '</div></div>';
+        return html;
+      }).join('');
+    })
+    .catch(function () {
+      list.innerHTML = '<div class="note">The auto-publish event feed is unavailable right now — the latest changes will appear here as soon as it responds.</div>';
     });
 })();
 </script>

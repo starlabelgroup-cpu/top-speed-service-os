@@ -312,6 +312,107 @@ router.get('/marketing-os/publish-feed', (req, res) => {
   });
 });
 
+// ─── auto-publish: change events + push ─────────────────────────────
+// Owner's rule: any time a change happens in the Service OS, it must be
+// published. Websites/apps/feed read the same database, so they reflect
+// changes instantly; this layer records each change as a publish event
+// and pushes page publish/unpublish changes outward — IndexNow for
+// search directories (Bing/Yandex/etc.) and webhooks for any subscribed
+// platform. Delivery is fire-and-forget: it never blocks or fails the
+// admin request that caused the change, and the recorded delivery state
+// is always the honest outcome (no key file live yet → "failed").
+
+const INDEXNOW_KEY = process.env.INDEXNOW_KEY || 'eae4e48cf0fc8affa4154be5f851e286';
+const INDEXNOW_HOST = 'topspeedappliance.net';
+const PUBLISH_EVENT_CAP = 200;
+
+function publishEventList() {
+  if (!Array.isArray(store.publishEvents)) store.publishEvents = [];
+  return store.publishEvents;
+}
+
+async function postJson(url, payload, timeoutMs = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function deliverPublishEvent(event) {
+  // Push delivery is for page publish/unpublish changes only; created
+  // and taxonomy events are recorded with delivery skipped/0.
+  if (event.kind !== 'page.published' && event.kind !== 'page.unpublished') return;
+  const indexNow = (async () => {
+    if (!event.url) return;
+    try {
+      const res = await postJson('https://api.indexnow.org/indexnow', {
+        host: INDEXNOW_HOST,
+        key: INDEXNOW_KEY,
+        keyLocation: `https://${INDEXNOW_HOST}/${INDEXNOW_KEY}.txt`,
+        urlList: [event.url],
+      });
+      event.delivery.indexnow = res.ok ? 'sent' : 'failed';
+    } catch {
+      event.delivery.indexnow = 'failed';
+    }
+  })();
+  const webhooks = (async () => {
+    const urls = String(process.env.PUBLISH_WEBHOOK_URLS || '')
+      .split(',')
+      .map((u) => u.trim())
+      .filter(Boolean);
+    let attempted = 0;
+    await Promise.all(urls.map(async (u) => {
+      attempted += 1;
+      try { await postJson(u, event); } catch { /* subscriber errors never surface */ }
+    }));
+    event.delivery.webhooks = attempted;
+  })();
+  await Promise.all([indexNow, webhooks]);
+}
+
+function firePublishEvent({ kind, title, url }) {
+  try {
+    const event = {
+      id: createId(),
+      at: new Date().toISOString(),
+      kind,
+      title: title || null,
+      url: url || null,
+      delivery: { indexnow: 'skipped', webhooks: 0 },
+    };
+    const events = publishEventList();
+    events.unshift(event);
+    if (events.length > PUBLISH_EVENT_CAP) events.length = PUBLISH_EVENT_CAP;
+    deliverPublishEvent(event).catch(() => {});
+    return event;
+  } catch {
+    return null;
+  }
+}
+
+// Public, read-only: the latest auto-publish events (newest first) —
+// public-safe fields only, powering the Publish Center's live panel.
+router.get('/marketing-os/publish-events', (req, res) => {
+  const events = publishEventList().slice(0, 50).map((e) => ({
+    id: e.id,
+    at: e.at,
+    kind: e.kind,
+    title: e.title,
+    url: e.url,
+    delivery: { indexnow: e.delivery.indexnow, webhooks: e.delivery.webhooks },
+  }));
+  return res.json({ data: events });
+});
+
 // ─── admin: taxonomy ────────────────────────────────────────────────
 
 router.get('/marketing-os/admin/taxonomy', ...marketingOnly, (req, res) => {
@@ -378,6 +479,7 @@ router.post('/marketing-os/admin/taxonomy/:kind', ...marketingOnly, taxonomyKind
   if (req.taxonomyKind === 'service') record.partOfService = parsed.data.partOfService || null;
   list.push(record);
   await persistTaxonomyRecord(req.taxonomyKind, record);
+  firePublishEvent({ kind: 'taxonomy.changed', title: `${req.taxonomyKind} added: ${record.name}`, url: null });
   return res.status(201).json({ data: record });
 });
 
@@ -501,6 +603,10 @@ router.post('/marketing-os/admin/pages', ...marketingOnly, async (req, res) => {
     entityId: page.id,
     details: { type, canonicalUrl },
   });
+  firePublishEvent({ kind: 'page.created', title: page.title, url: page.canonicalUrl });
+  if (page.status === 'PUBLISHED') {
+    firePublishEvent({ kind: 'page.published', title: page.title, url: page.canonicalUrl });
+  }
   return res.status(201).json({ data: pageAdmin(page) });
 });
 
@@ -569,6 +675,7 @@ router.post('/marketing-os/admin/pages/:id/status', ...marketingOnly, async (req
       });
     }
   }
+  const previousStatus = page.status;
   page.status = target;
   page.updatedBy = actorOf(req);
   page.updatedAt = new Date().toISOString();
@@ -594,6 +701,11 @@ router.post('/marketing-os/admin/pages/:id/status', ...marketingOnly, async (req
       reference: page.canonicalUrl,
       eventKey: `marketing-page:${page.id}:published:${page.updatedAt}`,
     });
+  }
+  if (target === 'PUBLISHED' && previousStatus !== 'PUBLISHED') {
+    firePublishEvent({ kind: 'page.published', title: page.title, url: page.canonicalUrl });
+  } else if (previousStatus === 'PUBLISHED' && target !== 'PUBLISHED') {
+    firePublishEvent({ kind: 'page.unpublished', title: page.title, url: page.canonicalUrl });
   }
   return res.json({ data: pageAdmin(page) });
 });
