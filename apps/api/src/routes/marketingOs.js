@@ -276,6 +276,42 @@ router.get('/marketing-os/pages/by-url', (req, res) => {
   return res.json({ data: pagePublic(page) });
 });
 
+// Publish feed — the Service OS database published outward to other
+// platforms, websites, apps, social channels, directories and direct
+// marketing. Business data ONLY (services, cities, published pages,
+// business facts): no customer data ever leaves through this feed.
+router.get('/marketing-os/publish-feed', (req, res) => {
+  const services = store.marketingServices.map((s) => ({ name: s.name, slug: s.slug }));
+  const cities = store.marketingCities.map((c) => ({
+    name: c.name,
+    slug: c.slug,
+    serviceCovered: c.serviceCovered,
+  }));
+  const landingPages = store.landingPages
+    .filter((p) => p.status === 'PUBLISHED')
+    .map((p) => ({ type: p.type, title: p.title, canonicalUrl: p.canonicalUrl }));
+  return res.json({
+    business: {
+      name: 'Top Speed Appliance Network',
+      legalName: 'Top Speed Appliance LLC',
+      phone: '954-931-7997',
+      email: 'service@topspeedappliance.net',
+      address: '6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073',
+      hours: 'Mon-Fri 8am-7pm',
+      website: 'https://topspeedserviceos.com',
+    },
+    services,
+    cities,
+    landingPages,
+    counts: {
+      cities: cities.length,
+      services: services.length,
+      landingPages: landingPages.length,
+    },
+    generatedAt: new Date().toISOString(),
+  });
+});
+
 // ─── admin: taxonomy ────────────────────────────────────────────────
 
 router.get('/marketing-os/admin/taxonomy', ...marketingOnly, (req, res) => {
