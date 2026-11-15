@@ -1,6 +1,10 @@
 /* Speedy Guide — pop-notification tour guide / inner-linking system.
-   NOT chat: no input, no messages. Small Speedy pops + sitelink panel.
-   Chat opens ONLY from the explicit "Talk to Speedy — chat" tap in the panel. */
+   NOT chat: no input, no messages. Small Speedy pops + a sitelink panel.
+   Chat opens ONLY from the explicit "Talk to Speedy — chat" tap in the panel.
+   Behavioral rules (Ramone): no waste customers, and respect their space —
+   any dismissal silences ALL pops for the session; pops wait for a natural
+   pause; max 1 standard pop per page context, max 3 pops per session;
+   one calm "still lost" insight pop per session at most. Friendly, no pressure. */
 (function () {
   'use strict';
 
@@ -23,6 +27,7 @@
   /* ---- Session storage (guarded) ---- */
   function sget(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }
   function sset(k, v) { try { sessionStorage.setItem(k, v); } catch (e) {} }
+  function snum(k) { var v = parseInt(sget(k) || '0', 10); return isNaN(v) ? 0 : v; }
 
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {
@@ -46,7 +51,7 @@
     CALL
   ];
 
-  /* ---- Contexts: where am I + the 3 nearest exits ---- */
+  /* ---- Contexts: where am I, the 3 nearest exits, and a calm insight line ---- */
   var L = {
     book: { label: 'Book a Repair', href: '/book' },
     track: { label: 'Track My Tech', href: '/track' },
@@ -62,21 +67,51 @@
   };
 
   var CONTEXTS = {
-    home:       { here: "You're on the home page", exits: [L.book, L.speedy, L.track] },
-    app:        { here: "You're in the Appliance Connect customer app", exits: [L.book, L.track, L.offers] },
-    book:       { here: "You're booking a repair", exits: [L.speedy, L.track, L.call] },
-    track:      { here: "You're tracking your technician", exits: [L.book, L.garage, L.call] },
-    cpapp:      { here: "You're in the Appliance Connect Pro app", exits: [L.book, L.track, L.pm] },
-    cpsite:     { here: "You're on Appliance Connect Pro", exits: [L.cpapp, L.pm, L.book] },
-    refer:      { here: "You're on Refer & Earn", exits: [L.offers, L.book, L.garage] },
-    offers:     { here: "You're browsing Offers & Rewards", exits: [L.book, L.refer, L.garage] },
-    areas:      { here: "You're in the Service Areas directory", exits: [L.book, L.speedy, L.track] },
-    speedy:     { here: "You're on Photo Diagnosis with Speedy", exits: [L.book, L.track, L.garage] },
-    commercial: { here: "You're on Commercial service", exits: [L.book, L.pm, L.call] },
-    pm:         { here: "You're on Property Managers", exits: [L.cpapp, L.book, L.call] },
-    garage:     { here: "You're in your garage", exits: [L.book, L.track, L.offers] },
-    signup:     { here: "You're creating your account", exits: [L.book, L.garage, L.offers] },
-    generic:    { here: "You're on Top Speed Appliance", exits: [L.book, L.track, L.garage] }
+    home:       { here: "You're on the home page",
+                  exits: [L.book, L.speedy, L.track],
+                  insight: "Here's what you can do from this page: book a repair, send Speedy a photo of the problem for a plain-language read, or track a job that's already booked." },
+    app:        { here: "You're in the Appliance Connect customer app",
+                  exits: [L.book, L.track, L.offers],
+                  insight: "Here's what you can do from the app: book a repair, track your technician, and see your appliances and their service history in your garage." },
+    book:       { here: "You're booking a repair",
+                  exits: [L.speedy, L.track, L.call],
+                  insight: "This page books your repair in a few steps — the appliance, what's happening, and a time window. Not sure what's wrong yet? A photo helps Speedy explain it first." },
+    track:      { here: "You're tracking your technician",
+                  exits: [L.book, L.garage, L.call],
+                  insight: "This page follows your repair through all eight stages, so you always know what happens next. If you haven't booked yet, booking only takes a few steps." },
+    cpapp:      { here: "You're in the Appliance Connect Pro app",
+                  exits: [L.book, L.track, L.pm],
+                  insight: "From here you can book service for your units, track jobs in progress, and keep every property's appliances in one place." },
+    cpsite:     { here: "You're on Appliance Connect Pro",
+                  exits: [L.cpapp, L.pm, L.book],
+                  insight: "This page explains the Connect Pro app for homeowners and property managers — one place for every unit's appliances, bookings, and history." },
+    refer:      { here: "You're on Refer & Earn",
+                  exits: [L.offers, L.book, L.garage],
+                  insight: "From here you can share your referral link and earn service credit when friends book — and check the offers waiting for you." },
+    offers:     { here: "You're browsing Offers & Rewards",
+                  exits: [L.book, L.refer, L.garage],
+                  insight: "These pages hold your offers and rewards — what's available, and how each one works. When you're ready, booking a repair is one tap away." },
+    areas:      { here: "You're in the Service Areas directory",
+                  exits: [L.book, L.speedy, L.track],
+                  insight: "This directory lists all 65 cities we cover and every service page. Pick your city to see what's available near you." },
+    speedy:     { here: "You're on Photo Diagnosis with Speedy",
+                  exits: [L.book, L.track, L.garage],
+                  insight: "Here's what happens on this page: send a photo of the problem and Speedy explains, in plain language, what it usually means and what happens next. A technician confirms everything in person before any work." },
+    commercial: { here: "You're on Commercial service",
+                  exits: [L.book, L.pm, L.call],
+                  insight: "This section covers commercial accounts — service for restaurants, laundromats, and facilities, priced by custom quote after we see the equipment." },
+    pm:         { here: "You're on Property Managers",
+                  exits: [L.cpapp, L.book, L.call],
+                  insight: "This page is for property managers: one portal for every unit's appliances, bookings, and service history." },
+    garage:     { here: "You're in your garage",
+                  exits: [L.book, L.track, L.offers],
+                  insight: "Your garage holds your appliances and their service history. From here you can book a repair for any of them, or track a job in progress." },
+    signup:     { here: "You're creating your account",
+                  exits: [L.book, L.garage, L.offers],
+                  insight: "Creating an account keeps your appliances, bookings, and history in one place. It only takes a moment — and booking works without one, too." },
+    generic:    { here: "You're on Top Speed Appliance",
+                  exits: [L.book, L.track, L.garage],
+                  insight: "Here's what you can do from here: book a repair, send Speedy a photo of the problem, or track a job that's already booked." }
   };
 
   function contextFor() {
@@ -98,15 +133,19 @@
   }
 
   var ctx = contextFor();
-  var ctxKey = 'sg-' + (path === '/' ? 'home' : seg + path.replace(/\//g, '-'));
+  var ctxKey = path.replace(/\//g, '-').replace(/^-/, '') || 'home';
 
-  /* ---- Tour stops ---- */
+  /* Count this visit (repeat-visit "still lost" signal) */
+  var visits = snum('sg-visits-' + ctxKey) + 1;
+  sset('sg-visits-' + ctxKey, String(visits));
+
+  /* ---- Tour stops — calm, plain, hospital-style explanations ---- */
   var TOUR = [
-    { title: 'Book a Repair', href: '/book', line: 'Book a real repair in about a minute — pick your appliance, the problem, and a time window that suits you.' },
-    { title: 'Photo Diagnosis', href: '/speedy', line: 'Snap a photo of the problem and Speedy gives you a read on what is likely wrong before the tech arrives.' },
-    { title: 'Track My Tech', href: '/track', line: 'Follow your job live through all eight stages, from request received to repair completed.' },
-    { title: 'My Garage', href: '/app', line: 'Your appliances and their full service history live in your garage in the customer app.' },
-    { title: 'Offers & Refer & Earn', href: '/offers-rewards', line: 'See your offers and rewards, and earn service credit when friends book through Refer & Earn.' },
+    { title: 'Book a Repair', href: '/book', line: 'Booking is a few calm steps: the appliance, what\'s happening, and a time window. You\'ll know the terms up front — a $99 diagnostic, credited in full toward your repair, and a written quote you approve before any work starts.' },
+    { title: 'Photo Diagnosis', href: '/speedy', line: 'A photo can tell us a lot. Send one and Speedy explains, in plain language, what the problem usually means and what would happen next. Nothing is final from a photo — a technician confirms it in person, and every repair is backed by a 90-day warranty.' },
+    { title: 'Track My Tech', href: '/track', line: 'Think of it like being kept updated during care: your repair moves through eight stages, from request received to repair completed, and you can see exactly where things stand at any moment.' },
+    { title: 'My Garage', href: '/app', line: 'Your garage keeps your appliances and their full service history in one place — like a chart for your home, ready whenever you need it.' },
+    { title: 'Offers & Refer & Earn', href: '/offers-rewards', line: 'See the offers and rewards waiting for you, and earn service credit when friends book through Refer & Earn.' },
     { title: 'Service Areas', href: '/service-areas-directory', line: 'We cover 65 cities across Broward, Palm Beach, and Miami-Dade — with a page for every service.' }
   ];
 
@@ -121,9 +160,9 @@
     '.sg-card.sg-on{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);transition:opacity .25s ease,transform .25s ease}',
     '#sg-root.sg-up .sg-btn{bottom:calc(100px + env(safe-area-inset-bottom,0px))}',
     '#sg-root.sg-up .sg-card{bottom:calc(170px + env(safe-area-inset-bottom,0px))}',
-    /* pop */
+    /* pops (help + insight share the avatar/bubble layout) */
     '.sg-pop-in{display:flex;gap:12px;padding:16px 16px 14px;align-items:flex-start}',
-    '.sg-pop.sg-on .sg-pop-in{animation:sg-in .55s cubic-bezier(.34,1.35,.64,1) both}',
+    '.sg-anim.sg-on .sg-pop-in{animation:sg-in .55s cubic-bezier(.34,1.35,.64,1) both}',
     '@keyframes sg-in{0%{opacity:0;transform:translateY(18px) scale(.72)}55%{opacity:1;transform:translateY(-3px) scale(1.05)}78%{transform:translateY(1px) scale(.99)}100%{opacity:1;transform:translateY(0) scale(1)}}',
     '.sg-avatar{position:relative;flex:none;width:54px;height:54px;animation:sg-bob 3.2s ease-in-out .8s infinite}',
     '.sg-avatar svg{width:54px;height:54px;display:block;filter:drop-shadow(0 6px 14px rgba(10,38,92,.35))}',
@@ -134,6 +173,9 @@
     '.sg-bubble::before{content:"";position:absolute;left:-6px;top:22px;width:12px;height:12px;background:#F2F7FF;border-left:1px solid #DBE7FA;border-bottom:1px solid #DBE7FA;transform:rotate(45deg)}',
     '.sg-q{font-size:15px;font-weight:700;line-height:1.35;margin:0 22px 3px 0}',
     '.sg-ctx{font-size:12.5px;color:#4A5D7E;line-height:1.4;margin:0 0 11px}',
+    '.sg-insight-txt{font-size:13.5px;color:#33475F;line-height:1.5;margin:0 0 11px}',
+    '.sg-mini{display:block;background:#fff;border:1.5px solid #D9E3F2;border-radius:10px;padding:8px 11px;margin:0 0 7px;font:700 13px Inter,system-ui,sans-serif;color:#0A265C;text-decoration:none}',
+    '.sg-mini:hover{border-color:#1280FF}',
     '.sg-row{display:flex;gap:8px;flex-wrap:wrap}',
     '.sg-act{border:none;border-radius:999px;padding:9px 15px;font:700 13.5px Inter,system-ui,sans-serif;cursor:pointer}',
     '.sg-act-yes{background:#E8322E;color:#fff;box-shadow:0 6px 16px rgba(232,50,46,.35)}',
@@ -170,7 +212,7 @@
     '.sg-act-go{background:#0A265C;color:#fff}',
     '.sg-act-next{background:#E8322E;color:#fff}',
     '.sg-act-end{background:#fff;color:#4A5D7E;border:1.5px solid #C9D6EA}',
-    '@media (prefers-reduced-motion: reduce){.sg-pop.sg-on .sg-pop-in,.sg-panel.sg-on .sg-panel-body{animation:none}.sg-avatar{animation:none}.sg-avatar::after{animation:none;display:none}.sg-card{transition:opacity .2s ease,visibility 0s linear .2s}.sg-card.sg-on{transition:opacity .2s ease}}'
+    '@media (prefers-reduced-motion: reduce){.sg-anim.sg-on .sg-pop-in,.sg-panel.sg-on .sg-panel-body{animation:none}.sg-avatar{animation:none}.sg-avatar::after{animation:none;display:none}.sg-card{transition:opacity .2s ease,visibility 0s linear .2s}.sg-card.sg-on{transition:opacity .2s ease}}'
   ].join('');
 
   var SPARK = '<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg>';
@@ -184,6 +226,9 @@
   function tile(item) {
     var cls = item.href.indexOf('tel:') === 0 ? 'sg-tile sg-call' : 'sg-tile';
     return '<a class="' + cls + '" href="' + esc(item.href) + '">' + esc(item.label) + '</a>';
+  }
+  function miniLink(item) {
+    return '<a class="sg-mini" href="' + esc(item.href) + '">' + esc(item.label) + '</a>';
   }
 
   /* ---- Build DOM ---- */
@@ -201,8 +246,9 @@
   btn.setAttribute('aria-expanded', 'false');
   btn.innerHTML = COMPASS + '<span>Guide</span>';
 
+  /* Standard help pop */
   var pop = document.createElement('div');
-  pop.className = 'sg-card sg-pop';
+  pop.className = 'sg-card sg-pop sg-anim';
   pop.setAttribute('role', 'dialog');
   pop.setAttribute('aria-label', 'Speedy Guide');
   pop.innerHTML =
@@ -219,6 +265,26 @@
       '</div>' +
     '</div>';
 
+  /* "Still lost" insight pop — informational, never pushy */
+  var insight = document.createElement('div');
+  insight.className = 'sg-card sg-insight sg-anim';
+  insight.setAttribute('role', 'dialog');
+  insight.setAttribute('aria-label', 'Speedy Guide — a few pointers');
+  insight.innerHTML =
+    '<div class="sg-pop-in">' +
+      '<div class="sg-avatar">' + SPARK + '</div>' +
+      '<div class="sg-bubble">' +
+        '<button class="sg-x" type="button" aria-label="Close">&times;</button>' +
+        '<p class="sg-q">Just a few pointers</p>' +
+        '<p class="sg-insight-txt">' + esc(ctx.insight) + '</p>' +
+        ctx.exits.map(miniLink).join('') +
+        '<div class="sg-row" style="margin-top:9px">' +
+          '<button class="sg-act sg-act-no" type="button">Not now</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  /* Guide panel — the highway */
   var panel = document.createElement('div');
   panel.className = 'sg-card sg-panel';
   panel.setAttribute('role', 'dialog');
@@ -244,6 +310,7 @@
 
   root.appendChild(btn);
   root.appendChild(pop);
+  root.appendChild(insight);
   root.appendChild(panel);
   root.appendChild(tour);
   document.body.appendChild(root);
@@ -260,37 +327,79 @@
   var rzT;
   window.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(detectRaise, 150); });
 
-  /* ---- State / timers ---- */
-  var popVisible = false, panelOpen = false, tourIdx = -1;
-  var fadeTimer = null, idleTimer = null, lastAct = Date.now();
+  /* ---- Activity tracking: pops only ever appear in a natural pause ---- */
+  var lastAct = Date.now();
+  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(function (ev) {
+    window.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true });
+  });
+
+  /* Wait until the customer has paused (~1.5s without scroll/click/key),
+     then run cb. If no pause comes within ~24s, run giveUp instead. */
+  function whenPaused(cb, giveUp) {
+    var tries = 0;
+    (function check() {
+      if (document.hidden) { if (giveUp) giveUp(); return; }
+      if (Date.now() - lastAct >= 1500) { cb(); return; }
+      if (++tries > 30) { if (giveUp) giveUp(); return; }
+      setTimeout(check, 800);
+    })();
+  }
+
+  /* ---- Pop state ---- */
+  var popVisible = false, insightVisible = false, panelOpen = false, tourIdx = -1;
+  var fadeTimer = null;
+
+  function popCount() { return snum('sg-popcount'); }
+  function countPop() { sset('sg-popcount', String(popCount() + 1)); }
+  function silenced() { return !!sget('sg-quiet'); }
+  function anythingOpen() { return popVisible || insightVisible || panelOpen || tourIdx >= 0; }
+
+  function armFade(card, ms, onFade) {
+    if (fadeTimer) clearTimeout(fadeTimer);
+    fadeTimer = setTimeout(function () { onFade(); }, ms);
+    card.onpointerenter = function () { if (fadeTimer) clearTimeout(fadeTimer); };
+    card.onpointerdown = function () { if (fadeTimer) clearTimeout(fadeTimer); };
+    card.onpointerleave = function () {
+      if (fadeTimer) clearTimeout(fadeTimer);
+      fadeTimer = setTimeout(function () { onFade(); }, ms);
+    };
+  }
 
   function showPop() {
-    if (sget('sg-nonag')) return;
-    hidePanel(); stopTour();
+    if (silenced() || popCount() >= 3 || anythingOpen()) return;
+    hidePanel(); stopTour(); hideInsight();
     pop.classList.add('sg-on');
     popVisible = true;
+    countPop();
     sset('sg-pop-' + ctxKey, '1');
-    startFadeTimer();
+    armFade(pop, 14000, function () {
+      hidePop();
+      sset('sg-act-' + ctxKey, 'fade');   /* faded untouched — a later stall may offer pointers */
+    });
   }
   function hidePop() {
     pop.classList.remove('sg-on');
     popVisible = false;
     if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
   }
-  function startFadeTimer() {
-    if (fadeTimer) clearTimeout(fadeTimer);
-    fadeTimer = setTimeout(function () {
-      if (!popVisible) return;
-      hidePop();
-      if (!sget('sg-act-' + ctxKey)) sset('sg-act-' + ctxKey, 'fade');
-    }, 14000);
+
+  function showInsight() {
+    if (silenced() || sget('sg-insight') || popCount() >= 3 || anythingOpen()) return;
+    hidePanel(); stopTour(); hidePop();
+    insight.classList.add('sg-on');
+    insightVisible = true;
+    countPop();
+    sset('sg-insight', '1');
+    armFade(insight, 16000, hideInsight);
   }
-  pop.addEventListener('pointerenter', function () { if (fadeTimer) clearTimeout(fadeTimer); });
-  pop.addEventListener('pointerleave', function () { if (popVisible) startFadeTimer(); });
-  pop.addEventListener('pointerdown', function () { if (fadeTimer) clearTimeout(fadeTimer); });
+  function hideInsight() {
+    insight.classList.remove('sg-on');
+    insightVisible = false;
+    if (fadeTimer) { clearTimeout(fadeTimer); fadeTimer = null; }
+  }
 
   function openPanel() {
-    hidePop(); stopTour();
+    hidePop(); hideInsight(); stopTour();
     panel.classList.add('sg-on');
     panelOpen = true;
     btn.setAttribute('aria-expanded', 'true');
@@ -301,9 +410,17 @@
     btn.setAttribute('aria-expanded', 'false');
   }
 
+  /* A dismissal — any × or "Not now", on either pop — silences ALL pops
+     for the rest of the session. The Guide button stays available on demand. */
+  function dismiss() {
+    sset('sg-quiet', '1');
+    hidePop();
+    hideInsight();
+  }
+
   /* ---- Chat: ONLY from the explicit tap, via the page's own mechanism ---- */
   function openChat() {
-    hidePanel(); hidePop(); stopTour();
+    hidePanel(); hidePop(); hideInsight(); stopTour();
     if (typeof window.TSOpenSpeedy === 'function') { window.TSOpenSpeedy(); return; }
     var tswBtn = document.querySelector('.tsw-btn');
     if (tswBtn) { tswBtn.click(); return; }
@@ -334,7 +451,7 @@
     acts[2].addEventListener('click', stopTour);
   }
   function startTour() {
-    hidePanel(); hidePop();
+    hidePanel(); hidePop(); hideInsight();
     tourIdx = 0;
     renderTour();
     tour.classList.add('sg-on');
@@ -348,49 +465,43 @@
   btn.addEventListener('click', function () {
     if (panelOpen) { hidePanel(); } else { openPanel(); }
   });
-  pop.querySelector('.sg-x').addEventListener('click', function () {
-    sset('sg-act-' + ctxKey, 'close');
-    hidePop();
-  });
-  pop.querySelector('.sg-act-no').addEventListener('click', function () {
-    sset('sg-nonag', '1');           /* Not now = no more pops this session */
-    sset('sg-act-' + ctxKey, 'notnow');
-    hidePop();
-  });
+  pop.querySelector('.sg-x').addEventListener('click', dismiss);
+  pop.querySelector('.sg-act-no').addEventListener('click', dismiss);
   pop.querySelector('.sg-act-yes').addEventListener('click', function () {
     sset('sg-act-' + ctxKey, 'yes');
     openPanel();                     /* Guide panel only — never chat */
   });
+  insight.querySelector('.sg-x').addEventListener('click', dismiss);
+  insight.querySelector('.sg-act-no').addEventListener('click', dismiss);
   panel.querySelector('.sg-head .sg-x').addEventListener('click', hidePanel);
   panel.querySelector('.sg-tour-btn').addEventListener('click', startTour);
   panel.querySelector('.sg-chat').addEventListener('click', openChat);
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { hidePanel(); hidePop(); stopTour(); }
+    if (e.key === 'Escape') { hidePanel(); hidePop(); hideInsight(); stopTour(); }
   });
 
-  /* ---- Arrival pop (~2s), once per context per session ---- */
-  function tryArrival() {
-    if (document.hidden) {
-      document.addEventListener('visibilitychange', function h() {
-        if (!document.hidden) { document.removeEventListener('visibilitychange', h); tryArrival(); }
-      });
-      return;
+  /* ---- Arrival (~2s, then wait for a natural pause) ----
+     Standard pop: once per context. On a 3rd+ visit to the same page,
+     the "still lost" insight pop may come instead. If no pause ever
+     comes, we skip it — browsing customers get their space, and a
+     later genuine stall can still offer the pointers. */
+  setTimeout(function () {
+    if (silenced() || popCount() >= 3) return;
+    if (!sget('sg-pop-' + ctxKey)) {
+      whenPaused(showPop, function () { sset('sg-nopause-' + ctxKey, '1'); });
+    } else if (visits >= 3 && !sget('sg-insight')) {
+      whenPaused(showInsight, null);
     }
-    if (!sget('sg-nonag') && !sget('sg-pop-' + ctxKey)) showPop();
-  }
-  setTimeout(tryArrival, 2000);
+  }, 2000);
 
-  /* ---- Idle pop (~45s, once per context, only if the first pop faded untouched) ---- */
-  ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel'].forEach(function (ev) {
-    window.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true });
-  });
-  idleTimer = setInterval(function () {
-    if (document.hidden || popVisible || panelOpen || tourIdx >= 0) return;
-    if (sget('sg-nonag') || sget('sg-idle-' + ctxKey)) return;
-    if (sget('sg-act-' + ctxKey) !== 'fade') return;
-    if (Date.now() - lastAct >= 45000) {
-      sset('sg-idle-' + ctxKey, '1');
-      showPop();
-    }
+  /* ---- Genuine stall (~45s with no scroll/click/key) after the standard
+     pop faded untouched (or never found a pause): one insight pop. ---- */
+  setInterval(function () {
+    if (document.hidden || anythingOpen()) return;
+    if (silenced() || sget('sg-insight') || popCount() >= 3) return;
+    var faded = sget('sg-act-' + ctxKey) === 'fade';
+    var noPause = !!sget('sg-nopause-' + ctxKey);
+    if (!faded && !noPause) return;
+    if (Date.now() - lastAct >= 45000) showInsight();
   }, 5000);
 })();
