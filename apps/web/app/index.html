@@ -82,6 +82,8 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 .brandrow .bn span{font-size:11.5px; color:#BFD4F5; font-weight:600; letter-spacing:.06em; text-transform:uppercase;}
 .callbtn{margin-left:auto; background:#fff; color:var(--navy); border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; padding:9px 13px; display:flex; align-items:center; gap:6px; cursor:pointer; text-decoration:none;}
 .preview-note{margin-top:10px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#DCE9FF; font-size:11.5px; font-weight:600; border-radius:8px; padding:6px 9px; display:flex; gap:6px; align-items:center;}
+.signin-btn{margin-left:auto; flex:none; background:#16A34A; color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; min-height:44px; padding:10px 16px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,.28);}
+.signin-btn:active{background:#15803D;}
 
 /* install banner */
 .install-banner{flex:none; margin:12px 14px 0; background:var(--navy); color:#fff; border-radius:14px; padding:12px 13px; display:flex; gap:11px; align-items:center; box-shadow:0 8px 18px -8px rgba(10,38,92,.5);}
@@ -90,6 +92,14 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 .install-banner span{font-size:12px; color:#C9DBF8; display:block; line-height:1.35;}
 .install-banner .ib-go{background:#fff; color:var(--navy); border:none; font:inherit; font-weight:800; font-size:12.5px; padding:8px 11px; border-radius:99px; cursor:pointer; flex:none;}
 .install-banner .ib-x{background:none; border:none; color:#9DB9E8; font-size:18px; cursor:pointer; padding:2px; flex:none; line-height:1;}
+
+/* app store buttons (sit directly under the install banner) */
+.store-row{flex:none; margin:8px 14px 0; display:flex; gap:9px;}
+.store-btn{flex:1; display:flex; align-items:center; gap:10px; background:#0B1526; color:#fff; border:1px solid rgba(255,255,255,.22); border-radius:12px; padding:8px 12px; min-height:48px; font:inherit; text-decoration:none; cursor:pointer; box-shadow:0 8px 18px -10px rgba(10,38,92,.55);}
+.store-btn svg{flex:none;}
+.store-btn .sb-t{line-height:1.12; text-align:left;}
+.store-btn .sb-t small{display:block; font-size:9.5px; font-weight:600; letter-spacing:.04em; opacity:.85; text-transform:uppercase;}
+.store-btn .sb-t b{display:block; font-size:16px; font-weight:700; letter-spacing:.01em;}
 
 /* ---------- Screens ---------- */
 .screens{flex:1; overflow-y:auto; overscroll-behavior:contain; scrollbar-width:none;}
@@ -401,7 +411,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <div class="bn"><b>APPLIANCE CONNECT</b><span>Customer App</span></div>
             <a class="callbtn" href="tel:+19549317997"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>954-931-7997</a>
           </div>
-          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Live Service OS customer app — sign in and your bookings save for real.</div>
+          <div class="preview-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg> Live Service OS customer app — sign in and your bookings save for real.<button class="signin-btn" id="signinBtn" type="button" onclick="signinBtnGo()">Sign in</button></div>
         </header>
 
         <div class="install-banner" id="installBanner">
@@ -409,6 +419,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <div style="flex:1; min-width:0;"><b>Add Appliance Connect to your home screen</b><span id="installHint">No app store needed — installs in seconds.</span></div>
           <button class="ib-go" onclick="openInstall()">Install</button>
           <button class="ib-x" onclick="document.getElementById('installBanner').style.display='none'" aria-label="Dismiss install banner">×</button>
+        </div>
+
+        <div class="store-row" id="storeRow">
+          <a class="store-btn" id="storeBtnApple" href="#" rel="noopener" aria-label="Download on the App Store"><svg width="22" height="22" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M16.365 12.43c.02 2.14 1.88 2.85 1.9 2.86-.02.07-.3.99-.97 1.92-.6.87-1.55 2.03-2.8 2.04-1.33.02-1.76-.79-3.28-.78-1.52.01-1.98.78-3.3.77-1.36-.01-2.4-1.23-3.01-2.1C2.72 17.4 1.66 12.13 3.4 9.6c.87-1.26 2.41-2.06 4.09-2.08 1.28-.03 2.49.86 3.27.86.79 0 2.28-1.07 3.85-.91.66.03 2.3.27 3.38 2-.09.06-2.02 1.18-2 3.98M13.94 5.5c.7-.85 1.17-2.02 1.04-3.2-1.01.04-2.23.67-2.95 1.51-.65.75-1.23 1.95-1.08 3.1 1.13.09 2.28-.57 2.99-1.41"/></svg><span class="sb-t"><small>Download on the</small><b>App Store</b></span></a>
+          <a class="store-btn" id="storeBtnGoogle" href="#" rel="noopener" aria-label="Get it on Google Play"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M5.2 3.6v16.8c0 .8.9 1.3 1.6.9l13.6-8.4c.6-.4.6-1.4 0-1.8L6.8 2.7c-.7-.4-1.6.1-1.6.9z"/></svg><span class="sb-t"><small>Get it on</small><b>Google Play</b></span></a>
         </div>
 
         <main class="screens" id="screens">
@@ -1542,5 +1557,76 @@ if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
 <script src="/speedy-widget.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
+<script>
+/* ============ HEADER SIGN-IN BUTTON + APP STORE BUTTONS (2026-11-15) ============ */
+/* Sign in: the platform's sign-in/sign-up destination is this app itself —
+   the flagship's Sign in links and the /login + /register routes all resolve
+   to /app, whose account view (More tab) holds the real sign-in form, and
+   the signed-in account panel once a session exists. The header button
+   surfaces that view; its label follows the session like the app does. */
+function signinBtnRefresh(){
+  var b=document.getElementById('signinBtn'); if(!b) return;
+  var t=''; try{ t=localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){}
+  b.textContent = t ? 'My account' : 'Sign in';
+}
+function signinBtnGo(){
+  showTab('more');
+  signinBtnRefresh();
+}
+signinBtnRefresh();
+/* Keep the label honest after an in-page sign-in: custApplyUser is the app's
+   own session-applied hook — wrap it to also refresh the label, don't change it. */
+if(window.custApplyUser){
+  var _custApplyUser = window.custApplyUser;
+  window.custApplyUser = function(u){ _custApplyUser(u); signinBtnRefresh(); };
+}
+
+/* ---- App store buttons ----
+   STORE_URLS is the switch. There is NO live store listing yet (developer
+   enrollments pending), so both URLs start EMPTY and the buttons must not
+   point at a store homepage, a store search, or anyone else's app: while a
+   URL is empty, its button runs today's real install path — the captured
+   beforeinstallprompt when the browser offers one, otherwise the same
+   add-to-home-screen guidance the banner's Install button opens.
+   The day the listings publish, paste the two listing URLs into STORE_URLS
+   (or publish them via GET /app/stores on the Service OS API — the buttons
+   adopt any URL it reports) and both buttons become direct outbound store
+   links automatically. */
+var STORE_URLS = { apple: '', google: '' };
+function storeBtnApply(){
+  [['storeBtnApple','apple'],['storeBtnGoogle','google']].forEach(function(pair){
+    var el=document.getElementById(pair[0]); if(!el) return;
+    var url=STORE_URLS[pair[1]];
+    if(url){ el.setAttribute('href',url); el.setAttribute('target','_blank'); }
+    else { el.setAttribute('href','#'); el.removeAttribute('target'); }
+  });
+}
+function storeBtnGo(store, ev){
+  if(STORE_URLS[store]) return true; /* real listing — follow the link out */
+  if(ev) ev.preventDefault();
+  if(deferredPrompt){
+    var dp=deferredPrompt; deferredPrompt=null;
+    dp.prompt();
+    if(dp.userChoice && dp.userChoice.then) dp.userChoice.then(function(){}, function(){});
+    return false;
+  }
+  openInstall();
+  return false;
+}
+(function(){
+  storeBtnApply();
+  var a=document.getElementById('storeBtnApple'), g=document.getElementById('storeBtnGoogle');
+  if(a) a.addEventListener('click', function(e){ storeBtnGo('apple', e); });
+  if(g) g.addEventListener('click', function(e){ storeBtnGo('google', e); });
+  fetch('https://top-speed-service-os.vercel.app/api/v1/app/stores')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var list=(j&&j.data&&j.data.stores)||[];
+      list.forEach(function(s){ if(s&&s.url&&(s.store==='apple'||s.store==='google')) STORE_URLS[s.store]=s.url; });
+      storeBtnApply();
+    })
+    .catch(function(){});
+})();
+</script>
 </body>
 </html>
