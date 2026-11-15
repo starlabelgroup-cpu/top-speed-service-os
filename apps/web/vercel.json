@@ -40,6 +40,28 @@
       "permanent": true
     },
     {
+      "source": "/:asset(.*\\.(?:jpg|jpeg|png|gif|webp|svg|ico|js|css|json|txt|woff|woff2|mp4|webmanifest))",
+      "has": [
+        {
+          "type": "host",
+          "value": "topspeedservice.app"
+        }
+      ],
+      "destination": "https://topspeedserviceos.com/:asset",
+      "permanent": true
+    },
+    {
+      "source": "/:asset(.*\\.(?:jpg|jpeg|png|gif|webp|svg|ico|js|css|json|txt|woff|woff2|mp4|webmanifest))",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.topspeedservice.app"
+        }
+      ],
+      "destination": "https://topspeedserviceos.com/:asset",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
