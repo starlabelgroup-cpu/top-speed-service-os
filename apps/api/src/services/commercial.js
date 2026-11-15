@@ -78,6 +78,7 @@ export async function createCommercialBooking({ companyId, account, facility, eq
     customer: customerRecord,
     referenceCode: createReferenceCode(),
     source: 'COMMERCIAL',
+    segment: 'COMMERCIAL',
     city: facility.city,
     zip: facility.zip,
     // Facilities are validated into the covered area model at creation,

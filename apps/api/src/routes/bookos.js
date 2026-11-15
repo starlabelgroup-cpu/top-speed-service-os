@@ -65,6 +65,18 @@ function appointmentSummary(booking) {
   return { date, window, windowLabel: windowById(window)?.label || window, status, setAt, setBy };
 }
 
+/**
+ * Residential/commercial segment for queue + board rows. New bookings
+ * record `segment` at creation; it is derived from the persisted
+ * `source` when absent (records written before the field existed, and
+ * records rehydrated from the database, where only `source` is a
+ * column) so every row carries the distinction setters filter by.
+ */
+function segmentOf(booking) {
+  if (booking.segment) return booking.segment;
+  return booking.source === 'COMMERCIAL' || booking.commercial ? 'COMMERCIAL' : 'RESIDENTIAL';
+}
+
 /** The day's windows with per-area capacity, derived from live bookings. */
 router.get('/bookos/slots', ...staffOnly, (req, res) => {
   const parsed = z.object({ date: dateParam }).safeParse({ date: req.query.date });
@@ -100,6 +112,7 @@ router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
       bookingId: booking.id,
       referenceCode: booking.referenceCode || null,
       source: booking.source || null,
+      segment: segmentOf(booking),
       ageMinutes: Math.max(0, Math.floor((now - new Date(booking.createdAt).getTime()) / 60000)),
       createdAt: booking.createdAt,
       customerName: booking.customer?.name || null,
@@ -324,6 +337,7 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
         source: booking.source || null,
+        segment: segmentOf(booking),
         city: booking.city,
         area: effectiveArea(booking),
         areaStatus: effectiveAreaStatus(booking),

@@ -1,4 +1,5 @@
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
+import { createLeadBooking } from '../services/leadBookings.js';
 import { DATABASE_ENABLED, db } from './client.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 
@@ -69,6 +70,17 @@ export async function createConnectionRecord({ name, phone, email = null, type, 
   };
   store.connections.push(record);
   await persistConnection(record);
+  // Customer leads also become bookings in the Service Setters queue
+  // (services/leadBookings.js) — a connection alone is invisible to
+  // Book OS. Wrapped so a lead-booking failure can never fail the
+  // public form: the connection record above stays the intake of
+  // record either way.
+  try {
+    const leadBooking = await createLeadBooking(record);
+    if (leadBooking) record.leadBookingId = leadBooking.id;
+  } catch (error) {
+    console.error('createLeadBooking failed', error?.message || error);
+  }
   appendEvent('CONNECTION_CREATED', {
     source: record.source,
     actor: 'public-web',

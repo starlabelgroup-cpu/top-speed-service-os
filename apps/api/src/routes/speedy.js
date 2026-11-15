@@ -255,6 +255,7 @@ router.post('/speedy/book', async (req, res) => {
     customer: customerRecord,
     referenceCode: createReferenceCode(),
     source: source || 'SPEEDY_CHAT',
+    segment: 'RESIDENTIAL',
     ...(attribution ? { attribution } : {}),
     city: canonicalCity,
     zip,

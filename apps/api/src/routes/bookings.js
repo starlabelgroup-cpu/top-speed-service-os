@@ -87,6 +87,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     customer: customerRecord,
     referenceCode: createReferenceCode(),
     source: 'API',
+    segment: 'RESIDENTIAL',
     city: canonicalCity,
     zip,
     area: resolution.area,
