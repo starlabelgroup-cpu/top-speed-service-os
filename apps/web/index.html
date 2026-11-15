@@ -261,6 +261,37 @@ footer a{color:#D7E6FF}
 .stickybar{position:fixed;left:0;right:0;bottom:0;z-index:70;display:none;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:color-mix(in srgb, var(--surface) 94%, transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line)}
 .stickybar .btn{flex:1;padding:13px}
 @media(max-width:760px){.stickybar{display:flex} footer{padding-bottom:130px}}
+/* --- flagship upgrade pass: header actions / city finder / coupons / resources --- */
+.hdr-book{display:none}
+@media(max-width:900px){
+  .hdr-book{display:inline-flex;margin-left:auto;padding:12px 18px;font-size:15.5px}
+  .nav .call{margin-left:0}
+}
+@media(max-width:560px){.hdr-book{padding:10px 13px;font-size:14px}}
+.city-find{margin-top:16px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:16px}
+.city-find label{display:block;font-weight:800;color:#fff;font-size:16px;margin-bottom:9px;font-family:"Archivo",sans-serif}
+.city-find select{width:100%;background:#fff;color:#12233D;border:none;border-radius:11px;padding:13px 14px;font:inherit;font-size:16px}
+.city-find p{margin:9px 0 0;font-size:13.5px;color:#9DB6DE}
+.coupon-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+@media(max-width:820px){.coupon-grid{grid-template-columns:1fr}}
+.coupon{background:var(--surface);border:2px dashed #A9C2E8;border-radius:18px;padding:24px;display:flex;flex-direction:column}
+@media (prefers-color-scheme: dark){.coupon{border-color:#33507E}}
+.coupon .cp-head{font-family:"Archivo",sans-serif;font-size:clamp(28px,3.6vw,36px);font-weight:900;color:var(--navy);line-height:1.05;margin-top:12px}
+@media (prefers-color-scheme: dark){.coupon .cp-head{color:#fff}}
+.coupon .cp-sub{font-size:16.5px;font-weight:600;color:var(--ink);margin:6px 0 0}
+.coupon .cp-div{border-top:2px dashed var(--line);margin:15px 0}
+.coupon .cp-terms{font-size:13.5px;color:var(--muted);margin:0 0 16px}
+.coupon .btn{margin-top:auto}
+.res-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1000px){.res-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.res-grid{grid-template-columns:1fr}}
+.res-card{overflow:hidden;padding:0;display:flex;flex-direction:column;text-decoration:none;color:var(--body)}
+.res-card img{width:100%;height:150px;object-fit:cover}
+.res-card .rc-body{padding:18px 20px 20px;display:flex;flex-direction:column;flex:1}
+.res-card h3{font-size:18px;margin:0 0 8px}
+.res-card p{font-size:14.5px;margin:0 0 12px}
+.res-card .go{font-weight:700;color:var(--blue);font-size:14.5px;margin-top:auto}
+
 #speedyBtn{position:fixed;right:16px;bottom:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:1190;background:var(--red);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:800;font-size:16px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center;transition:opacity .18s ease,visibility .18s ease}
 body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-events:none}
 @media(max-width:760px){#speedyBtn{bottom:84px;padding:12px 16px;font-size:15px}}
@@ -314,6 +345,7 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
       <a href="#areas">Areas</a>
       <a href="/app">My Account</a>
     </nav>
+    <a class="btn btn-navy hdr-book" href="/book">Book</a>
     <a class="btn btn-red call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> 954-931-7997</a>
   </div>
 </header>
@@ -384,6 +416,14 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
         <a class="nh-tile" href="/local"><span class="nh-ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg></span>Service Areas</a>
       </div>
       <div class="nh-contact"><a class="nh-text" href="sms:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text Us</a><a class="nh-wa" href="https://wa.me/19549317997" target="_blank" rel="noopener">WhatsApp</a></div>
+      <div class="city-find">
+        <label for="cityPick"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Find service in your city</label>
+        <select id="cityPick" aria-label="Find service in your city" onchange="if(this.value){location.href='https://www.topspeedappliance.net/service-areas/'+this.value+'/';}">
+          <option value="">Choose your city — 65 served across South Florida</option>
+          <optgroup label="Broward County"><option value="coconut-creek">Coconut Creek</option><option value="cooper-city">Cooper City</option><option value="coral-springs">Coral Springs</option><option value="dania-beach">Dania Beach</option><option value="davie">Davie</option><option value="deerfield-beach">Deerfield Beach</option><option value="fort-lauderdale">Fort Lauderdale</option><option value="hallandale-beach">Hallandale Beach</option><option value="hillsboro-beach">Hillsboro Beach</option><option value="hollywood">Hollywood</option><option value="lauderdale-lakes">Lauderdale Lakes</option><option value="lauderdale-by-the-sea">Lauderdale-by-the-Sea</option><option value="lauderhill">Lauderhill</option><option value="lazy-lake">Lazy Lake</option><option value="lighthouse-point">Lighthouse Point</option><option value="margate">Margate</option><option value="miramar">Miramar</option><option value="north-lauderdale">North Lauderdale</option><option value="oakland-park">Oakland Park</option><option value="parkland">Parkland</option><option value="pembroke-park">Pembroke Park</option><option value="pembroke-pines">Pembroke Pines</option><option value="plantation">Plantation</option><option value="pompano-beach">Pompano Beach</option><option value="sea-ranch-lakes">Sea Ranch Lakes</option><option value="southwest-ranches">Southwest Ranches</option><option value="sunrise">Sunrise</option><option value="tamarac">Tamarac</option><option value="west-park">West Park</option><option value="weston">Weston</option><option value="wilton-manors">Wilton Manors</option></optgroup><optgroup label="Palm Beach County"><option value="belle-glade">Belle Glade</option><option value="boca-raton">Boca Raton</option><option value="boynton-beach">Boynton Beach</option><option value="delray-beach">Delray Beach</option><option value="greenacres">Greenacres</option><option value="jupiter">Jupiter</option><option value="lake-park">Lake Park</option><option value="lake-worth-beach">Lake Worth Beach</option><option value="north-palm-beach">North Palm Beach</option><option value="palm-beach">Palm Beach</option><option value="palm-beach-gardens">Palm Beach Gardens</option><option value="palm-springs">Palm Springs</option><option value="riviera-beach">Riviera Beach</option><option value="royal-palm-beach">Royal Palm Beach</option><option value="wellington">Wellington</option><option value="west-palm-beach">West Palm Beach</option></optgroup><optgroup label="Miami-Dade County"><option value="aventura">Aventura</option><option value="bal-harbour">Bal Harbour</option><option value="coral-gables">Coral Gables</option><option value="cutler-bay">Cutler Bay</option><option value="doral">Doral</option><option value="florida-city">Florida City</option><option value="hialeah">Hialeah</option><option value="hialeah-gardens">Hialeah Gardens</option><option value="homestead">Homestead</option><option value="key-biscayne">Key Biscayne</option><option value="miami">Miami</option><option value="miami-beach">Miami Beach</option><option value="miami-gardens">Miami Gardens</option><option value="north-miami">North Miami</option><option value="north-miami-beach">North Miami Beach</option><option value="sunny-isles-beach">Sunny Isles Beach</option><option value="surfside">Surfside</option><option value="sweetwater">Sweetwater</option></optgroup>
+        </select>
+        <p>Pick your city to open its own Top Speed page — local services, symptoms and booking for where you live.</p>
+      </div>
       <div class="nh-speedy">
         <div class="nh-speedy-h"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Meet Speedy — Your AI Service Assistant</div>
         <p>Describe your appliance problem, upload photos, request live video support, or schedule a technician.</p>
@@ -409,7 +449,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="wrap">
       <div class="stat"><b>90-Day</b><span>Parts &amp; labor warranty</span></div>
       <div class="stat"><b>9</b><span>Appliance services</span></div>
-      <div class="stat"><b>12</b><span>Broward cities served</span></div>
+      <div class="stat"><b>65</b><span>Cities served — tri-county</span></div>
       <div class="stat"><b>Same-Day</b><span>Service windows</span></div>
     </div>
   </div>
@@ -535,8 +575,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Ask Speedy AI</b></figcaption>
 </figure>
 <figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-cities.jpg" alt="Top Speed Appliance poster — Serving 12 Broward Cities" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Serving 12 Broward cities</b></figcaption>
+  <img src="/visual-cities.jpg" alt="Top Speed Appliance poster — serving cities across South Florida" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
+  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Now serving 65 cities — Broward, Palm Beach &amp; Miami-Dade</b></figcaption>
 </figure>
     </div>
   </div>
@@ -581,7 +621,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <div style="background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:24px;">
         <div style="font-size:26px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 5.2a3.6 3.6 0 0 1 4.8-3.3L16.2 4l1.9 1.9 2.1-2.1a3.6 3.6 0 0 1-4.8 4.3L9 14.5a1.7 1.7 0 0 1-2.4 0L5.4 13.3a1.7 1.7 0 0 1 0-2.4z" transform="scale(.92) translate(.6 .4)"/><path d="M14.5 13.5L20.5 19.5M17 11l3.5 3.5-1.8 1.8-3.5-3.5" stroke="#E8322E"/></svg></div>
         <h3 style="color:var(--navy); margin:8px 0 6px;">Service Network</h3>
-        <p style="color:#5A6E94; font-size:15px; line-height:1.55;">Vetted local technicians and providers across 12 Broward cities, coordinated by Service Setters dispatch — hybrid matching, human approval on every job.</p>
+        <p style="color:#5A6E94; font-size:15px; line-height:1.55;">Vetted local technicians and providers across 65 cities in Broward, Palm Beach &amp; Miami-Dade, coordinated by Service Setters dispatch — hybrid matching, human approval on every job.</p>
         <a href="/service-network" style="color:var(--blue); font-weight:800;">How the network works →</a>
       </div>
       <div style="background:#fff; border:1.5px solid var(--line); border-radius:16px; padding:24px;">
@@ -597,6 +637,55 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
         <a href="/smart-booking" style="color:var(--blue); font-weight:800;">How Smart Booking works →</a>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- SPECIAL OFFERS — coupon style. Every card below is a real program from
+     the platform's offers catalog (apps/api/src/config/offers.js, published
+     on /offers-rewards) or the standing published pricing — with its real
+     terms. No invented discounts, no invented expiry dates. -->
+<section id="offers" style="background:var(--surface-2);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag red">Special offers</span>
+      <h2>Real offers. <em>No fine-print games.</em></h2>
+      <p>The same programs published in our offers catalog. Claim one when you book — the team confirms your eligibility right on the call.</p>
+    </div>
+    <div class="coupon-grid reveal">
+      <div class="coupon">
+        <span class="tag red" style="align-self:flex-start">New customers</span>
+        <div class="cp-head">$25 OFF</div>
+        <p class="cp-sub">Your first eligible repair — the New Customer Welcome.</p>
+        <div class="cp-div"></div>
+        <p class="cp-terms">For new registered customers. Minimum service charge and exclusions apply — eligibility is confirmed at booking.</p>
+        <a class="btn btn-red" href="/offers/new-customer-welcome">Claim offer</a>
+      </div>
+      <div class="coupon">
+        <span class="tag red" style="align-self:flex-start">Every booking</span>
+        <div class="cp-head">$99 DIAGNOSTIC</div>
+        <p class="cp-sub">Credited in full toward your approved repair.</p>
+        <div class="cp-div"></div>
+        <p class="cp-terms">Residential service. Collected at booking to reserve your window; the full $99 comes off your repair total when you approve the fix, and is still due if you decline the repair.</p>
+        <a class="btn btn-red" href="/book">Book the diagnostic</a>
+      </div>
+      <div class="coupon">
+        <span class="tag red" style="align-self:flex-start">Refer &amp; earn</span>
+        <div class="cp-head">EARN $25 CREDIT</div>
+        <p class="cp-sub">For every friend whose Top Speed job is completed.</p>
+        <div class="cp-div"></div>
+        <p class="cp-terms">Your referral code is issued automatically when a job completes. Credits grow to $35 each from your 5th referral and $50 each from your 10th, plus one-time bonuses of $100 at 10 and $250 at 25 lifetime referrals. Credits expire 12 months after they are issued.</p>
+        <a class="btn btn-red" href="/refer">See Refer &amp; Earn</a>
+      </div>
+      <div class="coupon">
+        <span class="tag red" style="align-self:flex-start">Same visit</span>
+        <div class="cp-head">ONE VISIT, MORE FIXED</div>
+        <p class="cp-sub">Multi-appliance savings when several appliances are serviced in a single visit.</p>
+        <div class="cp-div"></div>
+        <p class="cp-terms">Tell Speedy or the booking form about every appliance for the visit — the multi-appliance pricing you qualify for is confirmed at booking.</p>
+        <a class="btn btn-red" href="/offers/multi-appliance-service-savings">See the offer</a>
+      </div>
+    </div>
+    <p class="fine" style="margin-top:16px">Every repair also runs on flat, published labor — <b>$210 repair labor</b> and <b>$150 installation labor</b> (parts &amp; materials extra) — and every repair is backed by our <b>90-day parts &amp; labor warranty</b>. <a href="/offers-rewards">See all 12 offers &amp; rewards →</a></p>
   </div>
 </section>
 
@@ -984,7 +1073,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             }
             if(n===2){
               if(val('wAddress').length<5) return 'Please add the street address for the visit.';
-              if(!val('wCity')) return 'Please choose your city — we serve 12 Broward cities.';
+              if(!val('wCity')) return 'Please choose your city — we serve 65 cities across Broward, Palm Beach & Miami-Dade.';
               if(!/^\d{5}$/.test(val('wZip'))) return 'Please add the 5-digit ZIP code.';
             }
             if(n===3){
@@ -1174,10 +1263,11 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <div class="wrap">
     <div class="sec-head reveal">
       <span class="tag">Service areas</span>
-      <h2>12 Broward cities. <em>Same-day fast.</em></h2>
-      <p>Our core coverage across Broward County — plus surrounding neighborhoods. Don't see your city? Call — if a tech is nearby, we're coming.</p>
+      <h2>65 cities. <em>Same-day fast.</em></h2>
+      <p>Our core Broward team is below — and the network now covers 65 cities across Broward, Palm Beach &amp; Miami-Dade. Don't see your city? Call — if a tech is nearby, we're coming.</p>
     </div>
     <div class="city-grid reveal" id="cityGrid"></div>
+    <p style="margin-top:16px">Showing our 12 core Broward cities — <a href="/service-areas-directory"><b>see all 65 cities &amp; their landing pages →</b></a></p>
   </div>
 </section>
 
@@ -1185,14 +1275,29 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 <section id="tips" style="background:var(--surface-2);border-top:1px solid var(--line)">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag">From the blog — Tips &amp; care</span>
+      <span class="tag">Helpful resources — Symptom guides</span>
       <h2>Know it <em>before it breaks.</em></h2>
+      <p>What to check first for the problems we fix most — from our symptom guides for every service we run. Tap a guide for the full checks, and book straight from it if it is time for a tech.</p>
     </div>
-    <div class="blog-grid reveal">
-      <article class="card post"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg></div><h3>Fridge running warm? Check these 3 things first</h3><p>Blocked vents, dirty coils and a door seal that fails the dollar-bill test cause most "warm fridge" calls. What to check in 10 minutes — and when it's the fan or compressor instead.</p><span class="tag">Refrigerator care</span></article>
-      <article class="card post"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z"/><path d="M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z" stroke="#E8322E"/></svg></div><h3>The dryer vent rule that prevents fires</h3><p>Lint beyond the trap is the #1 dryer problem we see in Broward homes. How often to clear the full vent run, the signs airflow is choked, and why dry times creep up first.</p><span class="tag">Dryer safety</span></article>
-      <article class="card post"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a2 2 0 1 1 2 2 4 4 0 1 1-4-4 6.2 6.2 0 1 1 6.2 6.2" stroke="#E8322E"/><circle cx="12" cy="12" r=".9" fill="#E8322E" stroke="none"/></svg></div><h3>Washer smells? It's the gasket — here's the fix</h3><p>Front-load odor comes from moisture trapped in the door gasket folds. The monthly wipe-down routine, the leave-it-ajar habit, and when the smell means a drain problem.</p><span class="tag">Laundry care</span></article>
+    <div class="res-grid reveal">
+      <a class="card res-card" href="https://www.topspeedappliance.net/services/refrigerator-repair/not-cooling/">
+        <img src="/visual-fridge-not-cooling.jpg" alt="Refrigerator not cooling — Top Speed Appliance symptom guide" loading="lazy">
+        <div class="rc-body"><h3>Fridge not cooling? Check these 3 things first</h3><p>Blocked vents, dirty coils and a door seal that fails the dollar-bill test cause most "warm fridge" calls. What to check in 10 minutes — and when it is the fan or compressor instead.</p><span class="go">Read the guide →</span></div>
+      </a>
+      <a class="card res-card" href="https://www.topspeedappliance.net/services/washer-repair/not-draining/">
+        <img src="/photo-washer.jpg" alt="Washer not draining — Top Speed Appliance symptom guide" loading="lazy">
+        <div class="rc-body"><h3>Washer not draining? Start here</h3><p>Standing water usually means a clogged drain pump filter, a kinked hose, or a pump on its way out. The safe checks to run before you mop — and the sounds that mean stop and call.</p><span class="go">Read the guide →</span></div>
+      </a>
+      <a class="card res-card" href="https://www.topspeedappliance.net/services/dryer-repair/not-heating/">
+        <img src="/photo-dryer.jpg" alt="Dryer not heating — Top Speed Appliance symptom guide" loading="lazy">
+        <div class="rc-body"><h3>Dryer not heating? The usual suspects</h3><p>A blown thermal fuse, a tired heating element, or a vent run choked with lint. How to tell which one you are dealing with — and why the vent check matters for safety.</p><span class="go">Read the guide →</span></div>
+      </a>
+      <a class="card res-card" href="https://www.topspeedappliance.net/services/oven-range-repair/not-heating/">
+        <img src="/photo-range.jpg" alt="Oven not heating — Top Speed Appliance symptom guide" loading="lazy">
+        <div class="rc-body"><h3>Oven not heating? What to check</h3><p>Weak igniter on gas, burned bake element on electric — the two classic causes cover most no-heat ovens. Simple checks first, then the tests a tech runs on site.</p><span class="go">Read the guide →</span></div>
+      </a>
     </div>
+    <p style="text-align:center;margin-top:22px"><a class="btn btn-ghost" href="/service-areas-directory">View all services &amp; symptoms →</a></p>
 
     <div class="card reveal" style="margin-top:22px;padding:26px;background:linear-gradient(140deg,var(--navy),var(--navy-3));border:none;color:#D7E4FA">
       <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -1208,7 +1313,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div style="margin-top:34px" class="reveal">
       <h3 style="font-size:22px;margin-bottom:14px">Quick answers</h3>
       <details class="faq"><summary>How does the $99 diagnostic work?</summary><p>It's collected at booking to reserve your window, the tech diagnoses the appliance in person, and if you approve the repair, the full $99 is credited toward the total. You approve a flat quote before any repair work starts.</p></details>
-      <details class="faq"><summary>How fast can you come?</summary><p>Same-day windows are offered across our 12 core Broward cities when the board allows — pick a window in Smart Booking or call 954-931-7997 and dispatch will tell you the earliest real opening.</p></details>
+      <details class="faq"><summary>How fast can you come?</summary><p>Same-day windows are offered across our 65-city tri-county service area when the board allows — pick a window in Smart Booking or call 954-931-7997 and dispatch will tell you the earliest real opening.</p></details>
       <details class="faq"><summary>Do you service my brand?</summary><p>Yes — Samsung, LG, Whirlpool, GE, Frigidaire, Maytag, Bosch, KitchenAid and more, including smart/Wi-Fi models and commercial units.</p></details>
       <details class="faq"><summary>Is this the live website?</summary><p>Yes — this is Top Speed's live platform at topspeedserviceos.com, running on the Top Speed Service OS. Bookings, AI diagnosis, and tracking here are real. Our longtime address topspeedappliance.net keeps running while it moves over to this platform. To book by phone instead: 954-931-7997.</p></details>
     </div>
@@ -1234,7 +1339,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
         <div class="card" style="padding:24px;margin-bottom:16px">
           <h3 style="font-size:20px;margin-bottom:10px">How the network works</h3>
           <ol style="margin:0;padding-left:20px">
-            <li style="margin-bottom:8px"><b>Apply free</b> — tell us your trades and areas (all 12 Broward cities).</li>
+            <li style="margin-bottom:8px"><b>Apply free</b> — tell us your trades and areas (all 65 cities — Broward, Palm Beach &amp; Miami-Dade).</li>
             <li style="margin-bottom:8px"><b>Get verified</b> — license/insurance and quality standards checked.</li>
             <li style="margin-bottom:8px"><b>Service Setters dispatch</b> — a human team quality-checks every job before it reaches you. No buying leads, no bidding wars.</li>
             <li style="margin-bottom:8px"><b>Run the job in the app</b> — customer photos, route, in-app invoice, ratings.</li>
@@ -1278,7 +1383,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="foot-grid">
       <div>
         <h3 style="font-family:'Archivo';font-style:italic;font-size:22px">TOP SPEED <span style="color:#FF4D52">APPLIANCE</span></h3>
-        <p style="max-width:42ch">Top Speed Appliance LLC — appliance repair, service and installation across Broward County, Florida. <i>"The Faster, The Better."</i></p>
+        <p style="max-width:42ch">Top Speed Appliance LLC — appliance repair, service and installation across Broward, Palm Beach &amp; Miami-Dade, Florida. <i>"The Faster, The Better."</i></p>
         <p>Licensed &amp; EPA Certified Technicians • $99 diagnostic credited toward repair</p>
       </div>
       <div>
@@ -1320,7 +1425,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <img src="/graphic-gettopspeed.jpg" alt="Get Top Speed" style="width:104px;height:104px;object-fit:cover;border-radius:14px;flex:0 0 auto;" onerror="this.style.display='none'">
     <div style="flex:1;min-width:240px;">
       <div class="michroma" style="color:#fff;font-size:clamp(20px,3.4vw,30px);letter-spacing:.02em;">GET TOP SPEED.</div>
-      <p style="color:#b9cdf0;margin-top:6px;font-size:15.5px;line-height:1.5;">Your appliance repair starts here — same-day slots across Broward County. <b style="color:#fff;">$99 diagnostic, collected at booking and credited toward your repair.</b></p>
+      <p style="color:#b9cdf0;margin-top:6px;font-size:15.5px;line-height:1.5;">Your appliance repair starts here — same-day slots across Broward, Palm Beach &amp; Miami-Dade. <b style="color:#fff;">$99 diagnostic, collected at booking and credited toward your repair.</b></p>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
       <a href="#book" style="background:#e01a22;color:#fff;padding:13px 22px;border-radius:9px;font-weight:800;">Book Service</a>
@@ -1333,9 +1438,9 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 
 <!-- STICKY BAR -->
 <div class="stickybar">
-  <a class="btn btn-red" href="#book"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> Book Online</a>
-  <a class="btn btn-ghost" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call Us</a>
-  <button class="btn" type="button" style="background:#0A265C;color:#fff;border:none" onclick="toggleSpeedy()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Chat</button>
+  <a class="btn btn-red" href="/book"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> Book</a>
+  <a class="btn btn-ghost" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a>
+  <button class="btn" type="button" style="background:#0A265C;color:#fff;border:none" onclick="toggleSpeedy()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Speedy AI</button>
 </div>
 
 <!-- SPEEDY -->
