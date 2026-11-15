@@ -231,7 +231,7 @@ function advCopy(){ var svc=document.getElementById('cpService').value.split(' /
   if(ang==='tech') H=['Show Us Live On Video','AI Photo Diagnosis — Free','Track Your Tech Live','$99 Diagnostic — Credited','Top Speed Appliance Repair',svc+' Repair in '+city,'Book Online in 60 Seconds','The Faster, The Better'];
   var D=['Top Speed fixes '+svc.toLowerCase()+'s across '+city+'. $99 diagnostic collected at booking and credited toward your repair. Book online or call 954-931-7997.',
     'Flat quote after diagnosis, before any work. Parts and labor carry a 90-day warranty. Five arrival windows daily — book in 60 seconds.',
-    'Send a photo, get a preliminary diagnosis, watch your tech arrive live. Serving '+city+' and 11 more Broward cities. The Faster, The Better.'];
+    'Send a photo, get a preliminary diagnosis, watch your tech arrive live. Serving '+city+' and 64 more cities across Broward, Palm Beach & Miami-Dade. The Faster, The Better.'];
   var hr=H.map(function(h){ var f=fit(h,30); return '<div class="copyrow"><span>'+f+'</span><span class="count">'+f.length+'/30</span></div>'; }).join('');
   var dr=D.map(function(d){ var f=fit(d,90); return '<div class="copyrow"><span>'+f+'</span><span class="count">'+f.length+'/90</span></div>'; }).join('');
   document.getElementById('copyOut').innerHTML='<div class="out"><b>Headlines</b>'+hr+'<b style="display:block;margin-top:10px">Descriptions</b>'+dr+'</div>'; }
