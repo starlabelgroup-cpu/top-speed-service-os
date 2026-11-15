@@ -938,6 +938,25 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           #wizReview .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #dbe4f0;padding:7px 0}
           #wizReview .r b{color:var(--navy);text-align:right}
           #wizReview .r span{color:#5a6b84}
+          #wizPriceLine{background:#f2f6fd;border:1px solid #dbe4f0;border-radius:12px;padding:9px 13px;font-size:13px;color:#42557a;margin-bottom:14px;line-height:1.5}
+          #wizPriceLine b{color:var(--navy)}
+          .wizPrice{border:1.5px solid #dbe4f0;border-radius:14px;padding:4px 14px 8px;margin-top:14px;background:#f8fafd}
+          .wizPrice .ph{font-size:12px;font-weight:800;letter-spacing:1.2px;color:var(--red);padding:10px 0 2px}
+          .wizPrice .pr{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #dbe4f0;font-size:14.5px}
+          .wizPrice .pr:last-child{border-bottom:none}
+          .wizPrice .pr span{color:#5a6b84}
+          .wizPrice .pr b{color:var(--navy);text-align:right;white-space:nowrap}
+          .wphSub{font-size:13px;color:#5a6b84;margin:2px 0 10px;line-height:1.5}
+          .wphRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+          #wizBody .wphBtn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:1.5px dashed #b9c8e2;border-radius:999px;background:#fff;font:inherit;font-weight:700;color:var(--navy);cursor:pointer;font-size:14.5px}
+          #wPhotoPrev{width:74px;height:74px;object-fit:cover;border-radius:12px;border:1px solid #dbe4f0}
+          .wphName{font-size:13px;color:#5a6b84;margin-top:8px}
+          .wphRun{margin-top:10px;background:var(--navy);color:#fff;border:none;border-radius:999px;padding:11px 18px;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+          .wphRun:disabled{opacity:.55;cursor:wait}
+          .wphResult{margin-top:12px;background:#f2f6fd;border:1px solid #dbe4f0;border-radius:14px;padding:13px 15px;font-size:14px;color:#33456b}
+          .wphResult b{color:var(--navy)}
+          .wphResult p{white-space:pre-wrap;margin:6px 0}
+          .wphFine{font-size:12.5px;color:#7c8db0;margin-top:8px}
           #wizDone{display:none;background:#fff;color:var(--ink);padding:26px 22px;text-align:center;border-radius:18px;margin-top:16px}
           #wizDone .ref{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--navy);letter-spacing:1px}
           #wizSpeedy{display:flex;align-items:center;gap:12px;background:#123064;color:#fff;border:none;width:100%;padding:16px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left;margin-top:14px;border-radius:16px}
@@ -953,6 +972,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           <div id="wizSteps"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
         </div>
         <div id="wizBody">
+          <div id="wizPriceLine"><b>$99 diagnostic</b> — credited in full toward your repair · Repair labor <b>$210 flat</b> · Installation <b>$150 flat</b> · <b>90-day</b> parts &amp; labor warranty · Full price panel before you confirm.</div>
           <div class="wizPane" data-pane="1">
             <h4>Contact details <small>1 of 5</small></h4>
             <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
@@ -983,6 +1003,16 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
               <button type="button" class="atile" data-v="Installation"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg></span>Installation</button>
             </div>
             <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm, ice maker stopped, started two days ago…"></textarea>
+            <label>Add a photo of the problem <span style="font-weight:600;color:#8fa1bb">(optional)</span></label>
+            <p class="wphSub">Speedy pre-diagnoses it for your tech: pick a photo and Speedy gives you a live read right here. Speedy's written read rides along with your booking notes — the photo itself isn't stored.</p>
+            <div class="wphRow">
+              <button type="button" class="wphBtn" id="wPhotoBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2.5"/><circle cx="12" cy="13.5" r="3.4"/><path d="M8.6 7l1.2-2.3h4.4L15.4 7" stroke="#E8322E"/></svg> Choose a photo</button>
+              <input type="file" id="wPhoto" accept="image/*" style="display:none">
+              <img id="wPhotoPrev" alt="Your appliance photo" style="display:none">
+            </div>
+            <div class="wphName" id="wPhotoName"></div>
+            <button type="button" class="wphRun" id="wPhotoRun" style="display:none">Get Speedy's read on this photo</button>
+            <div class="wphResult" id="wPhotoResult" style="display:none"></div>
           </div>
           <div class="wizPane" data-pane="4" hidden>
             <h4>Pick a window <small>4 of 5</small></h4>
@@ -999,7 +1029,16 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           <div class="wizPane" data-pane="5" hidden>
             <h4>Review &amp; book <small>5 of 5</small></h4>
             <div id="wizReview"></div>
-            <p style="font-size:13.5px;color:#5a6b84;margin-top:12px">The <b>$99 diagnostic</b> is collected at booking and <b>credited in full toward your repair</b>. A Service Setter reviews every request and confirms your appointment by phone/text before dispatch — and you'll be able to follow the visit live in Track My Tech.</p>
+            <div class="wizPrice">
+              <div class="ph">WHAT IT COSTS — BEFORE YOU CONFIRM</div>
+              <div class="pr"><span><b style="color:var(--navy)">Diagnostic</b> — collected at booking; credited in full toward an approved repair; still due if you decline the repair</span><b>$99</b></div>
+              <div class="pr"><span><b style="color:var(--navy)">Repair labor</b> — flat rate, no hourly meter</span><b>$210</b></div>
+              <div class="pr"><span><b style="color:var(--navy)">Installation</b> — flat rate</span><b>$150</b></div>
+              <div class="pr"><span><b style="color:var(--navy)">Parts &amp; materials</b> — priced on the quote, never a surprise</span><b>Extra</b></div>
+              <div class="pr"><span><b style="color:var(--navy)">Warranty</b> — parts &amp; labor, in writing</span><b>90 days</b></div>
+              <div class="pr"><span><b style="color:var(--navy)">Written quote</b> — no work starts without your approved written quote</span><b>Always</b></div>
+            </div>
+            <p style="font-size:13.5px;color:#5a6b84;margin-top:12px">A Service Setter reviews every request and confirms your appointment by phone/text before dispatch — and you'll be able to follow the visit live in Track My Tech.</p>
           </div>
           <div id="wizErr"></div>
           <div class="wizNav">
@@ -1047,6 +1086,63 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           var atiles=[].slice.call(document.querySelectorAll('.atile'));
           atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
 
+          /* Optional photo — a handoff into the EXISTING Speedy photo
+             diagnosis (POST /speedy/diagnose — the same flow the Diagnose
+             Lab and the Speedy chat use). The booking API takes no photo
+             field (guestBookingSchema has none), so no photo is ever sent
+             with the booking; only Speedy's written read is appended to
+             the booking's issue text at submit, where the Service Setter
+             and the tech see it. The API never stores the image. */
+          var wizPhotoData=null, wizDiag=null, wizDiagBusy=false;
+          function escT(s){return String(s).replace(/</g,'&lt;')}
+          $('wPhotoBtn').addEventListener('click',function(){ $('wPhoto').click(); });
+          $('wPhoto').addEventListener('change',function(e){
+            var f=e.target.files[0]; if(!f) return;
+            wizPhotoData=null; wizDiag=null;
+            $('wPhotoResult').style.display='none'; $('wPhotoRun').style.display='none';
+            if(f.type.indexOf('image/')!==0){ $('wPhotoName').textContent='That file is not a photo \u2014 pick a JPG or PNG of the appliance.'; $('wPhotoPrev').style.display='none'; return; }
+            var r=new FileReader();
+            r.onload=function(ev){
+              var img=new Image();
+              img.onload=function(){
+                var pv=$('wPhotoPrev'); pv.src=img.src; pv.style.display='block';
+                try{
+                  var mx=1280,w=img.naturalWidth,h=img.naturalHeight,sc=Math.min(1,mx/Math.max(w,h));
+                  var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+                  cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+                  wizPhotoData=cv.toDataURL('image/jpeg',0.82);
+                }catch(err){ wizPhotoData=null; }
+                if(wizPhotoData){ $('wPhotoName').textContent='Loaded: '+f.name+' \u2014 now get Speedy\u2019s read, or just keep booking.'; $('wPhotoRun').style.display='inline-block'; }
+                else { $('wPhotoName').textContent='That photo could not be read on this device \u2014 you can still book and the tech diagnoses in person.'; }
+              };
+              img.src=ev.target.result;
+            };
+            r.readAsDataURL(f);
+          });
+          $('wPhotoRun').addEventListener('click',function(){
+            if(wizDiagBusy||!wizPhotoData) return;
+            wizDiagBusy=true; var btn=$('wPhotoRun'); btn.disabled=true; btn.textContent='Speedy is reading your photo\u2026';
+            var box=$('wPhotoResult'); box.style.display='block';
+            box.innerHTML='<b>Reading your photo\u2026</b><p>Speedy is reviewing it with what you told us. This takes a few seconds.</p>';
+            var body={imageDataUrl:wizPhotoData,note:(val('wAppliance')+': '+val('wIssue')).slice(0,480),source:'web-form-wizard'};
+            var nm=val('wName'); if(nm) body.customerName=nm;
+            var ph=val('wPhone'); if(ph) body.phone=ph;
+            var em2=val('wEmail'); if(em2) body.email=em2;
+            fetch(API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+            .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+            .then(function(x){
+              var reply=x.ok&&x.j&&x.j.data&&x.j.data.reply;
+              if(!reply) throw new Error('no reply');
+              wizDiag=String(reply).slice(0,700);
+              box.innerHTML='<b>Speedy\u2019s preliminary read</b><p>'+escT(reply)+'</p><div class="wphFine">Preliminary read from your photo \u2014 a technician confirms the diagnosis in person. This written read is attached to your booking notes for your tech; the photo itself isn\u2019t stored.</div>';
+            })
+            .catch(function(){
+              wizDiag=null;
+              box.innerHTML='<b>Speedy could not read that photo</b><p>Try a clearer, well-lit photo \u2014 or just finish booking: the $99 diagnostic (credited toward your repair) has the technician diagnose it in person.</p>';
+            })
+            .finally(function(){ wizDiagBusy=false; btn.disabled=false; btn.textContent='Get Speedy\u2019s read on this photo'; });
+          });
+
           var locBtn=document.getElementById('wLocBtn');
           if(locBtn) locBtn.addEventListener('click',function(){
             if(!navigator.geolocation){err('Location is not available on this device \u2014 type the ZIP instead.');return;}
@@ -1088,11 +1184,13 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           function fillReview(){
             var win=document.querySelector('input[name="wwin"]:checked');
             var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Window',win?win.nextElementSibling.textContent:'—']];
+            if(wizDiag) rows.push(['Photo diagnosis','Speedy\u2019s read is attached to your booking notes']);
             $('wizReview').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+r[1].replace(/</g,'&lt;')+'</b></div>'}).join('');
           }
           function submit(){
             var win=document.querySelector('input[name="wwin"]:checked').value;
             var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
+            if(wizDiag) issue+='\n[Speedy photo diagnosis: '+wizDiag+']';
             var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
             var em=val('wEmail'); if(em) payload.customer.email=em;
             busy=true; var btn=$('wizNextBtn'); btn.disabled=true; btn.textContent='Booking…';
