@@ -44,9 +44,21 @@ const ownerOnly = [
   requireRole(ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
 ];
 
-const BUSINESS_LINES = ['TOP_SPEED', 'CLEANOUT_VENTS', 'COCOCANE'];
+const BUSINESS_LINES = ['TOP_SPEED', 'CLEANOUT_VENTS', 'COCOCANE', 'EXTERNAL'];
 const CAMPAIGN_STATUSES = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'PAUSED', 'ENDED'];
 const PLACEMENTS = ['BANNER', 'NONE'];
+// Flywheel relatedness categories (2026-11-16): a campaign may declare
+// one; customer surfaces pass theirs to the display feed, which prefers
+// a category match and falls back to any ACTIVE campaign. No scoring —
+// a declared label and a surface label, compared exactly.
+export const AD_CATEGORIES = [
+  'APPLIANCE_SERVICE',
+  'PARTS_SUPPLY',
+  'VENT_CLEANING',
+  'FOOD_DRINK',
+  'HOME_SERVICES',
+  'GENERAL',
+];
 const TRANSITIONS = {
   DRAFT: ['PENDING_APPROVAL'],
   PENDING_APPROVAL: ['ACTIVE', 'ENDED'],
@@ -58,11 +70,13 @@ const LINE_LABELS = {
   TOP_SPEED: 'Top Speed Appliance',
   CLEANOUT_VENTS: 'Cleanout Vents',
   COCOCANE: 'CocoCane',
+  EXTERNAL: 'Advertiser',
 };
 const LINE_CTA = {
   TOP_SPEED: 'Book Service',
   CLEANOUT_VENTS: 'Book a Cleaning',
   COCOCANE: 'See the Menu',
+  EXTERNAL: 'Learn More',
 };
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -106,19 +120,32 @@ function taggedUrl(url, tag) {
  * from its creative; in every other state that banner is inactive.
  * Uses the existing Banner store + persistence, unchanged.
  */
+/**
+ * The display resolution every surface shares: a campaign's own
+ * advertiser fields win (Flywheel advertiser campaigns carry their
+ * business name, headline, copy and CTA on the campaign itself); house
+ * campaigns fall back to their Media OS creative, then to the business
+ * line's label and default CTA — exactly the pre-Flywheel behavior.
+ */
+function displayFields(campaign) {
+  const creative = findCreative(campaign.creativeId);
+  return {
+    advertiserName: campaign.advertiserName || LINE_LABELS[campaign.businessLine] || 'Top Speed Appliance',
+    headline: (campaign.headline || creative?.title || campaign.name).slice(0, 120),
+    copy: (campaign.copy || creative?.description || campaign.objective || '').slice(0, 400) || null,
+    imageUrl: creative?.thumbnailUrl || creative?.assetUrl || null,
+    ctaText: campaign.ctaText || LINE_CTA[campaign.businessLine] || 'Learn More',
+    ctaUrl: taggedUrl(campaign.destinationUrl, campaign.sourceTag),
+  };
+}
+
 async function syncBanner(campaign) {
   const shouldRun = campaign.status === 'ACTIVE' && campaign.placement === 'BANNER';
   let banner = campaign.bannerId ? store.banners.find((b) => b.id === campaign.bannerId) : null;
   if (shouldRun) {
-    const creative = findCreative(campaign.creativeId);
     const fields = {
       placement: 'FOOTER',
-      advertiserName: LINE_LABELS[campaign.businessLine] || 'Top Speed Appliance',
-      headline: (creative?.title || campaign.name).slice(0, 120),
-      copy: (creative?.description || campaign.objective || '').slice(0, 400) || null,
-      imageUrl: creative?.thumbnailUrl || creative?.assetUrl || null,
-      ctaText: LINE_CTA[campaign.businessLine] || 'Learn More',
-      ctaUrl: taggedUrl(campaign.destinationUrl, campaign.sourceTag),
+      ...displayFields(campaign),
       active: true,
     };
     if (!banner) {
@@ -171,6 +198,12 @@ function publicCampaign(record) {
     trackedUrl: taggedUrl(record.destinationUrl, record.sourceTag),
     sourceTag: record.sourceTag,
     placement: record.placement,
+    advertiserName: record.advertiserName || null,
+    offering: record.offering || null,
+    headline: record.headline || null,
+    copy: record.copy || null,
+    ctaText: record.ctaText || null,
+    category: record.category || null,
     bannerId: record.bannerId || null,
     banner: banner
       ? { id: banner.id, active: banner.active !== false, impressions: banner.impressions || 0, clicks: banner.clicks || 0 }
@@ -210,6 +243,17 @@ router.get('/ad-studio/results', ...staffOnly, (req, res) => {
   return res.json({ data });
 });
 
+// Flywheel advertiser fields, shared by the staff create/patch schemas
+// (all optional + nullable: house campaigns leave them null).
+const advertiserFields = {
+  advertiserName: z.string().trim().min(2).max(120).nullable().optional(),
+  offering: z.string().trim().min(3).max(200).nullable().optional(),
+  headline: z.string().trim().min(3).max(120).nullable().optional(),
+  copy: z.string().trim().max(400).nullable().optional(),
+  ctaText: z.string().trim().min(2).max(60).nullable().optional(),
+  category: z.enum(AD_CATEGORIES).nullable().optional(),
+};
+
 const campaignCreateSchema = z.object({
   name: z.string().trim().min(3).max(160),
   businessLine: z.enum(BUSINESS_LINES),
@@ -218,6 +262,7 @@ const campaignCreateSchema = z.object({
   destinationUrl: z.string().trim().min(1).max(1000),
   placement: z.enum(PLACEMENTS).optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
+  ...advertiserFields,
 });
 
 router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
@@ -238,6 +283,12 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
     sourceTag: generateSourceTag(parsed.data.name),
     placement: parsed.data.placement || 'NONE',
     bannerId: null,
+    advertiserName: parsed.data.advertiserName || null,
+    offering: parsed.data.offering || null,
+    headline: parsed.data.headline || null,
+    copy: parsed.data.copy || null,
+    ctaText: parsed.data.ctaText || null,
+    category: parsed.data.category || null,
     notes: parsed.data.notes || null,
     createdById: actorIdOf(req),
     approvedById: null,
@@ -271,6 +322,7 @@ const campaignPatchSchema = z.object({
   destinationUrl: z.string().trim().min(1).max(1000).optional(),
   placement: z.enum(PLACEMENTS).optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
+  ...advertiserFields,
 });
 
 router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
@@ -342,5 +394,223 @@ router.post('/ad-studio/campaigns/:id/approve', ...ownerOnly, (req, res) => tran
 router.post('/ad-studio/campaigns/:id/resume', ...ownerOnly, (req, res) => transition(req, res, 'ACTIVE', { owner: true }));
 router.post('/ad-studio/campaigns/:id/pause', ...staffOnly, (req, res) => transition(req, res, 'PAUSED'));
 router.post('/ad-studio/campaigns/:id/end', ...staffOnly, (req, res) => transition(req, res, 'ENDED'));
+
+// ─── Flywheel mini-banner display feed (public, 2026-11-16) ─────────
+
+/**
+ * The public display feed for the Flywheel mini banner that rides on
+ * every customer surface. PUBLIC-SAFE BY CONSTRUCTION: it serves only
+ * campaigns that are ACTIVE with placement BANNER — house campaigns
+ * and approved advertiser campaigns alike — and only the fields the
+ * banner renders (business name, what's advertised, headline, copy,
+ * CTA, the utm-tagged destination, category, and the banner id the
+ * impression/click pings use). No ACTIVE campaign → an empty list →
+ * the widget renders NOTHING. There is no house filler here: the
+ * pre-existing FOOTER banner seeds belong to the homepage footer slot
+ * and are deliberately not part of this feed.
+ *
+ * Relatedness: ?category=<AD_CATEGORIES value> sorts campaigns whose
+ * declared category matches the surface first; the rest follow as the
+ * fallback. Exact label match only — no scoring.
+ */
+function displayItem(campaign) {
+  return {
+    id: campaign.id,
+    bannerId: campaign.bannerId || null,
+    ...displayFields(campaign),
+    offering: campaign.offering || null,
+    category: campaign.category || null,
+  };
+}
+
+router.get('/ad-studio/display', (req, res) => {
+  const category = String(req.query.category || '').trim().toUpperCase();
+  const items = store.adCampaigns
+    .filter((c) => c.status === 'ACTIVE' && c.placement === 'BANNER')
+    .sort((a, b) => {
+      if (category) {
+        const am = (a.category || '') === category ? 0 : 1;
+        const bm = (b.category || '') === category ? 0 : 1;
+        if (am !== bm) return am - bm;
+      }
+      return String(b.updatedAt).localeCompare(String(a.updatedAt));
+    })
+    .map(displayItem);
+  return res.json({ data: items });
+});
+
+// ─── Advertiser self-serve (Advertiser Console, 2026-11-16) ─────────
+
+/**
+ * Flywheel advertiser accounts manage THEIR OWN campaigns here. An
+ * advertiser account is a business account: it self-registers with the
+ * ADVERTISER role and starts UNVERIFIED under Speedy Verify (see
+ * services/speedyVerify.js) — the Master issues its access code before
+ * its first sign-in, exactly like commercial / PM accounts.
+ *
+ * Ownership is the campaign's createdById: an advertiser sees, edits,
+ * submits and pauses only campaigns they created (anything else is a
+ * 404 — other advertisers' campaigns are not even revealed). Campaigns
+ * are always businessLine EXTERNAL + placement BANNER. The status
+ * machine is Ad Studio's own: DRAFT → PENDING_APPROVAL → ACTIVE is
+ * reached ONLY through the owner-tier approve in Ad Studio above (an
+ * advertiser can never activate, resume, or approve anything); the
+ * owner ending a pending review is the rejection path (ENDED, never
+ * approved). Submissions land in the same store.adCampaigns the staff
+ * list and the Turbo Boss decision queue read, so an advertiser's
+ * PENDING_APPROVAL campaign surfaces there with no extra wiring.
+ */
+const advertiserOnly = [authenticate, requireRole(ROLES.ADVERTISER)];
+
+function findOwnCampaign(req) {
+  const ownerId = actorIdOf(req);
+  if (!ownerId) return null;
+  const record = findCampaign(req.params.id);
+  return record && record.createdById === ownerId ? record : null;
+}
+
+function myCampaignView(record) {
+  const banner = record.bannerId ? store.banners.find((b) => b.id === record.bannerId) : null;
+  return {
+    ...publicCampaign(record),
+    // Real counters only: the linked banner's recorded impressions and
+    // clicks (zero until the campaign has run). Nothing is estimated.
+    stats: {
+      impressions: banner ? banner.impressions || 0 : 0,
+      clicks: banner ? banner.clicks || 0 : 0,
+    },
+    wasApproved: Boolean(record.approvedAt),
+  };
+}
+
+router.get('/ad-studio/my-campaigns', ...advertiserOnly, (req, res) => {
+  const ownerId = actorIdOf(req);
+  const items = store.adCampaigns
+    .filter((c) => ownerId && c.createdById === ownerId)
+    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  return res.json({ data: items.map(myCampaignView) });
+});
+
+const advertiserCreateSchema = z.object({
+  name: z.string().trim().min(3).max(160),
+  advertiserName: z.string().trim().min(2).max(120),
+  offering: z.string().trim().min(3).max(200),
+  headline: z.string().trim().min(3).max(120).optional(),
+  copy: z.string().trim().max(400).nullable().optional(),
+  ctaText: z.string().trim().min(2).max(60).optional(),
+  destinationUrl: z.string().trim().min(1).max(1000),
+  category: z.enum(AD_CATEGORIES).nullable().optional(),
+  notes: z.string().trim().max(2000).nullable().optional(),
+});
+
+router.post('/ad-studio/my-campaigns', ...advertiserOnly, async (req, res) => {
+  const parsed = advertiserCreateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign', details: parsed.error.flatten() });
+  const now = new Date().toISOString();
+  const record = {
+    id: createId(),
+    name: parsed.data.name,
+    businessLine: 'EXTERNAL',
+    // The objective of an advertiser campaign is the offering itself.
+    objective: parsed.data.offering,
+    status: 'DRAFT',
+    creativeId: null,
+    destinationUrl: parsed.data.destinationUrl,
+    sourceTag: generateSourceTag(parsed.data.name),
+    placement: 'BANNER',
+    bannerId: null,
+    advertiserName: parsed.data.advertiserName,
+    offering: parsed.data.offering,
+    headline: parsed.data.headline || null,
+    copy: parsed.data.copy || null,
+    ctaText: parsed.data.ctaText || null,
+    category: parsed.data.category || null,
+    notes: parsed.data.notes || null,
+    createdById: actorIdOf(req),
+    approvedById: null,
+    approvedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.adCampaigns.push(record);
+  await persistAdCampaign(record);
+  appendEvent('AD_CAMPAIGN_CREATED', {
+    source: 'advertiser-console',
+    actor: actorOf(req),
+    entityType: 'AD_CAMPAIGN',
+    entityId: record.id,
+    details: { sourceTag: record.sourceTag, businessLine: record.businessLine, placement: record.placement },
+  });
+  return res.status(201).json({ data: myCampaignView(record) });
+});
+
+const advertiserPatchSchema = advertiserCreateSchema.partial();
+
+router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, async (req, res) => {
+  const record = findOwnCampaign(req);
+  if (!record) return res.status(404).json({ error: 'Campaign not found' });
+  if (req.body && ('status' in req.body || 'sourceTag' in req.body || 'businessLine' in req.body)) {
+    return res.status(400).json({ error: 'Status, sourceTag and business line cannot be edited' });
+  }
+  // Locked while in review (the team is reading this exact text),
+  // while live (pause first), and once ended.
+  if (record.status !== 'DRAFT' && record.status !== 'PAUSED') {
+    return res.status(422).json({ error: `A ${record.status} campaign cannot be edited` });
+  }
+  const parsed = advertiserPatchSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign update', details: parsed.error.flatten() });
+  Object.assign(record, parsed.data, { updatedAt: new Date().toISOString() });
+  if (parsed.data.offering) record.objective = parsed.data.offering;
+  await persistAdCampaign(record);
+  return res.json({ data: myCampaignView(record) });
+});
+
+router.post('/ad-studio/my-campaigns/:id/submit', ...advertiserOnly, async (req, res) => {
+  const record = findOwnCampaign(req);
+  if (!record) return res.status(404).json({ error: 'Campaign not found' });
+  if (record.status !== 'DRAFT') {
+    return res.status(422).json({ error: `Cannot submit a campaign from ${record.status}`, allowedTransitions: TRANSITIONS[record.status] || [] });
+  }
+  record.status = 'PENDING_APPROVAL';
+  record.updatedAt = new Date().toISOString();
+  await persistAdCampaign(record);
+  appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+    source: 'advertiser-console',
+    actor: actorOf(req),
+    entityType: 'AD_CAMPAIGN',
+    entityId: record.id,
+    details: { sourceTag: record.sourceTag, ownerAction: false },
+  });
+  emitReport({
+    department: 'marketing',
+    type: 'AD_CAMPAIGN_SUBMITTED',
+    title: `Ad campaign submitted for approval — ${record.name}`,
+    detail: { campaignId: record.id, name: record.name, businessLine: record.businessLine, advertiserName: record.advertiserName, sourceTag: record.sourceTag, destinationUrl: record.destinationUrl, placement: record.placement, actor: actorOf(req) },
+    source: 'advertiser-console',
+    reference: record.sourceTag,
+    eventKey: `ad-campaign:${record.id}:PENDING_APPROVAL:${record.updatedAt}`,
+  });
+  return res.json({ data: myCampaignView(record) });
+});
+
+router.post('/ad-studio/my-campaigns/:id/pause', ...advertiserOnly, async (req, res) => {
+  const record = findOwnCampaign(req);
+  if (!record) return res.status(404).json({ error: 'Campaign not found' });
+  if (record.status !== 'ACTIVE') {
+    return res.status(422).json({ error: `Cannot pause a campaign from ${record.status}`, allowedTransitions: TRANSITIONS[record.status] || [] });
+  }
+  record.status = 'PAUSED';
+  record.updatedAt = new Date().toISOString();
+  await syncBanner(record);
+  await persistAdCampaign(record);
+  appendEvent('AD_CAMPAIGN_PAUSED', {
+    source: 'advertiser-console',
+    actor: actorOf(req),
+    entityType: 'AD_CAMPAIGN',
+    entityId: record.id,
+    details: { sourceTag: record.sourceTag, ownerAction: false },
+  });
+  return res.json({ data: myCampaignView(record) });
+});
 
 export default router;

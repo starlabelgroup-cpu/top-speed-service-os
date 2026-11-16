@@ -1149,6 +1149,10 @@ enum AdBusinessLine {
   TOP_SPEED
   CLEANOUT_VENTS
   COCOCANE
+  // Flywheel Advertising (2026-11-16): campaigns owned by an external
+  // advertiser account (Advertiser Console self-serve). The business
+  // identity rides on the campaign's advertiserName field, not the line.
+  EXTERNAL
 }
 
 enum AdCampaignStatus {
@@ -1175,6 +1179,18 @@ model AdCampaign {
   sourceTag      String           @unique
   placement      AdPlacement      @default(NONE)
   bannerId       String?          @db.Uuid
+  // Flywheel advertiser fields (2026-11-16, all nullable — house
+  // campaigns leave them null and resolve from businessLine + creative):
+  // the advertiser's business name as shown on the ad, the product or
+  // service advertised, the ad's own headline/copy/CTA (when no Media
+  // OS creative carries them), and the relatedness category the
+  // mini-banner display uses to prefer related surfaces.
+  advertiserName String?
+  offering       String?
+  headline       String?
+  copy           String?
+  ctaText        String?
+  category       String?
   notes          String?
   createdById    String?          @db.Uuid
   approvedById   String?          @db.Uuid

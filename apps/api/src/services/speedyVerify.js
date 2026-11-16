@@ -14,8 +14,10 @@ import { consumeEmailVerification, issueEmailVerification } from './emailVerific
  * reset a code, or flip an account's requirement switch.
  *
  * Phase 1 covers STAFF accounts (STAFF_ROLES) and BUSINESS accounts
- * (signupAudience commercial / property-manager). Customers and providers
- * are designed (ACCESS-CODE-SYSTEM.md) but their sign-in is unchanged.
+ * (signupAudience commercial / property-manager). Flywheel advertiser
+ * accounts (ADVERTISER role) are business accounts and are covered the
+ * same way (2026-11-16). Customers and providers are designed
+ * (ACCESS-CODE-SYSTEM.md) but their sign-in is unchanged.
  *
  * Activation is PER ACCOUNT via User.verifyRequired (default false):
  * every account that existed at launch is grandfathered. Issuing an
@@ -72,6 +74,10 @@ export function isSpeedyVerifyCovered(user) {
   if (!user) return false;
   const roles = Array.isArray(user.roles) ? user.roles : [];
   if (roles.some((role) => STAFF_ROLES.includes(role))) return true;
+  // Flywheel Advertising (2026-11-16): advertiser accounts are business
+  // accounts — a business's ADVERTISER account starts unverified and
+  // waits for the Master's code exactly like a commercial / PM account.
+  if (roles.includes(ROLES.ADVERTISER)) return true;
   return BUSINESS_AUDIENCES.includes(user.signupAudience || '');
 }
 
