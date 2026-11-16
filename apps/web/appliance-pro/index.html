@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var bulkItems=[];
 function bulkSort(){
   var m=document.getElementById('bkMsg'); var text=document.getElementById('bkText').value.trim();
-  if(text.length<8){ m.innerHTML='\u26a0\ufe0f Add a little more detail first.'; m.className='msg err'; return; }
+  if(text.length<8){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add a little more detail first.'; m.className='msg err'; return; }
   m.textContent='Speedy is sorting your list\u2026'; m.className='msg';
   api('/speedy/extract-bulk',{method:'POST',body:JSON.stringify({text:text})})
     .then(function(j){ bulkItems=(j.data&&j.data.items)||[]; bulkRender();
@@ -278,9 +278,9 @@ function bulkRender(){
 function bulkSend(){
   var m=document.getElementById('bkMsg');
   var prop=document.getElementById('bkProperty').value.trim();
-  if(!prop){ m.innerHTML='\u26a0\ufe0f Add the property / business location first.'; m.className='msg err'; return; }
+  if(!prop){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add the property / business location first.'; m.className='msg err'; return; }
   var payload={manager:{name:(window.CUR&&(CUR.firstName||CUR.email))||'Account holder', phone:(window.CUR&&CUR.phone)||document.getElementById('bkPhone').value.trim(), company:window.BIZ||undefined}, property:prop, requests:bulkItems};
-  if(!payload.manager.phone){ m.innerHTML='\u26a0\ufe0f Add a callback phone so the setters can confirm.'; m.className='msg err'; return; }
+  if(!payload.manager.phone){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add a callback phone so the setters can confirm.'; m.className='msg err'; return; }
   api('/commercial/bulk-requests',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){ m.textContent='Sent \u2014 batch '+j.data.batchReference+'('+j.data.count+'requests). A Service Setter confirms every one by text.'; m.className='msg ok'; bulkItems=[]; bulkRender(); document.getElementById('bkText').value=''; if(window.loadActivity) loadActivity(); })
     .catch(function(e){ m.textContent=''+e.message; m.className='msg err'; });
@@ -299,7 +299,7 @@ function addEquip(){
   var m=document.getElementById('eqMsg');
   var payload={type:document.getElementById('eqType').value,brand:document.getElementById('eqBrand').value.trim()||undefined,model:document.getElementById('eqModel').value.trim()||undefined};
   api('/connect/appliances',{method:'POST',body:JSON.stringify(payload)})
-    .then(function(){ m.innerHTML='\u2705 Added to the registry.'; m.className='msg ok'; loadEquip(); })
+    .then(function(){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Added to the registry.'; m.className='msg ok'; loadEquip(); })
     .catch(function(e){ m.textContent=''+e.message; m.className='msg err'; });
 }
 function loadActivity(){
@@ -484,11 +484,11 @@ function swBookIt(btn){
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
       window._swBooked=true; window._swRef=j.data.referenceCode;
-      document.getElementById('swBookCard').innerHTML='\u2705 <b>Booked!</b> Your reference is <b>'+swEsc(j.data.referenceCode)+'</b>. A Service Setter will text '+swEsc(d.phone)+' to confirm your window.';
+      document.getElementById('swBookCard').innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>Booked!</b> Your reference is <b>'+swEsc(j.data.referenceCode)+'</b>. A Service Setter will text '+swEsc(d.phone)+' to confirm your window.';
       document.getElementById('swBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="swReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" onclick="swReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>');
     })
     .catch(function(e){
-      btn.disabled=false; btn.innerHTML='\u2713 Book my visit';
+      btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit';
       swAdd('That booking did not go through ('+e.message+'). You can book from the main site, or call 954-931-7997.',false);
     });
 }
@@ -504,8 +504,8 @@ function swLoadRecs(){
   var box=document.getElementById('swRecs'); if(!box) return;
   function render(updates, recs, mine){
     var h='';
-    if(updates.length){ h+='<div class="sw-rec-h">\uD83D\uDD14 Your updates</div>'+updates.map(function(u){return '<div class="sw-rec upd"><b>'+swEsc(u.t)+'</b> \u2014 '+swEsc(u.d)+'</div>';}).join(''); }
-    h+='<div class="sw-rec-h">\u2726 Speedy recommends'+(mine?' for you':'')+'</div>';
+    if(updates.length){ h+='<div class="sw-rec-h"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.2 10.2a5.8 5.8 0 0 1 11.6 0c0 3.8 1.4 5.3 1.4 5.3H4.8s1.4-1.5 1.4-5.3"/><path d="M10.2 19a2 2 0 0 0 3.6 0" stroke="#E8322E"/></svg> Your updates</div>'+updates.map(function(u){return '<div class="sw-rec upd"><b>'+swEsc(u.t)+'</b> \u2014 '+swEsc(u.d)+'</div>';}).join(''); }
+    h+='<div class="sw-rec-h"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy recommends'+(mine?' for you':'')+'</div>';
     h+=recs.map(function(r){ return '<div class="sw-rec"><b>'+swEsc(r.t)+'</b> \u2014 '+swEsc(r.d)+(r.a?' <a href="'+r.a+'">'+swEsc(r.c||'Open')+' \u2192</a>':'')+'</div>'; }).join('');
     box.innerHTML=h; box.style.display='flex';
   }
@@ -553,9 +553,9 @@ function swLoadRecs(){
     if(listening){ try{rec.stop();}catch(e){} return; }
     rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
     rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
-    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onend=function(){ listening=false; B.classList.remove('rec'); };
     rec.onerror=rec.onend;
-    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+    try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
   });
 })();
 </script>

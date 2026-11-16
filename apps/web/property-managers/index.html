@@ -783,7 +783,7 @@ function bkRender(){
   slot.innerHTML=bkItems.map(function(it,i){
     return '<div style="display:flex; gap:10px; align-items:flex-start; background:#F2F6FD; border:1.5px solid #D5E2F4; border-radius:12px; padding:10px 12px; margin-bottom:8px;">' +
       '<div style="flex:1; font-size:14.5px;"><b>'+bkEsc(it.unit||'Unit')+'</b> — '+bkEsc(it.appliance)+': '+bkEsc(it.issue)+(it.urgency==='urgent'?' <b style="color:#C72420;">URGENT</b>':'')+'</div>' +
-      '<button type="button" onclick="bkRemove('+i+')" style="background:none; border:none; color:#C72420; font-weight:800; cursor:pointer;">\u2715</button></div>';
+      '<button type="button" onclick="bkRemove('+i+')" style="background:none; border:none; color:#C72420; font-weight:800; cursor:pointer;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
   }).join('');
   document.getElementById('bkSendBtn').style.display=bkItems.length?'':'none';
 }
@@ -800,7 +800,7 @@ function bkSend(){
   fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })
     .then(function(j){
-      msg.innerHTML='\u2705 <b>Sent!</b> Batch reference <b>'+j.data.batchReference+'</b> — '+j.data.count+' work orders are with the Service Setters. Individual references: '+j.data.references.join(', ')+'.';
+      msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>Sent!</b> Batch reference <b>'+j.data.batchReference+'</b> — '+j.data.count+' work orders are with the Service Setters. Individual references: '+j.data.references.join(', ')+'.';
       btn.style.display='none';
       document.getElementById('bkList').innerHTML='';
       bkItems=[];

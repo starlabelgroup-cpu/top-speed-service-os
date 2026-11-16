@@ -1377,7 +1377,7 @@ if(cTok()){
     var bar=document.getElementById('payBar'); if(!bar) return;
     if(!booking.id){ bar.innerHTML=''; return; }
     if(booking.payment&&booking.payment.diagnosticPaid){
-      bar.innerHTML='<div style="background:#e5f4ea;border:1px solid #bfe0bf;border-radius:14px;padding:12px 16px;margin-top:12px;font-size:14px;">\u2713 <b>$99 diagnostic paid.</b> It is credited in full toward your repair when you approve it.</div>';
+      bar.innerHTML='<div style="background:#e5f4ea;border:1px solid #bfe0bf;border-radius:14px;padding:12px 16px;margin-top:12px;font-size:14px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>$99 diagnostic paid.</b> It is credited in full toward your repair when you approve it.</div>';
       return;
     }
     if(!configured){ bar.innerHTML=''; return; }
@@ -1565,7 +1565,7 @@ function garageAddAppliance(){
   var yearVal=document.getElementById('gaYear').value.trim();
   var payload={ type: document.getElementById('gaType').value, brand: document.getElementById('gaBrand').value.trim()||undefined, model: document.getElementById('gaModel').value.trim()||undefined, serial: document.getElementById('gaSerial').value.trim()||undefined, year: yearVal?parseInt(yearVal,10):undefined };
   cFetch('/connect/appliances',{method:'POST',body:JSON.stringify(payload)})
-    .then(function(){ msg.innerHTML='\u2705 Added — it is on your record.'; document.getElementById('gaBrand').value=''; document.getElementById('gaModel').value=''; document.getElementById('gaSerial').value=''; document.getElementById('gaYear').value=''; loadGarage(); })
+    .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Added — it is on your record.'; document.getElementById('gaBrand').value=''; document.getElementById('gaModel').value=''; document.getElementById('gaSerial').value=''; document.getElementById('gaYear').value=''; loadGarage(); })
     .catch(function(e){ msg.textContent=''+(e.message||'Could not add that'); });
 }
 </script>
@@ -1588,9 +1588,9 @@ function wireVoice(btnId, inputId){
     if(listening){ try{rec.stop();}catch(e){} return; }
     rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
     rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
-    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onend=function(){ listening=false; B.classList.remove('rec'); };
     rec.onerror=rec.onend;
-    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+    try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
   });
 }
 wireVoice('aspMic','aspInput');

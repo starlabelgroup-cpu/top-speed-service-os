@@ -689,7 +689,7 @@
             "If a unit is down right now, don't wait on email \u2014 call the priority line at 954-931-7997" + (ref ? " and give them reference " + ref : "") + ".";
           okBox.scrollIntoView({ behavior:"smooth", block:"center" });
         }).catch(function(){
-          document.getElementById("okRef").innerHTML = "\u26a0\ufe0f Not sent";
+          document.getElementById("okRef").innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Not sent';
           document.getElementById("okText").textContent = "Something went wrong sending that \u2014 please call 954-931-7997 and ask for the commercial team, and we will open your account by phone.";
           okBox.scrollIntoView({ behavior:"smooth", block:"center" });
         });

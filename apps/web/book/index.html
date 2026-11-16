@@ -100,7 +100,7 @@
       <label for="wCity">City</label>
       <select id="wCity"><option value="">City</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
       <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
-      <button type="button" class="locBtn" id="wLocBtn">\uD83D\uDCCD Use my location</button>
+      <button type="button" class="locBtn" id="wLocBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Use my location</button>
     </div>
     <div class="pane" data-pane="3" hidden>
       <h2>What needs fixing? <small>3 of 5</small></h2>
@@ -228,8 +228,8 @@
           var locBtn=document.getElementById('wLocBtn');
           if(locBtn) locBtn.addEventListener('click',function(){
             if(!navigator.geolocation){err('Location is not available on this device \u2014 type the ZIP instead.');return;}
-            locBtn.disabled=true; var old=locBtn.textContent; locBtn.textContent='\uD83D\uDCCD Finding you\u2026';
-            function done(){locBtn.disabled=false;locBtn.textContent=old;}
+            locBtn.disabled=true; var old=locBtn.innerHTML; locBtn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Finding you\u2026';
+            function done(){locBtn.disabled=false;locBtn.innerHTML=old;}
             navigator.geolocation.getCurrentPosition(function(p){
               fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+p.coords.latitude+'&lon='+p.coords.longitude)
               .then(function(r){return r.json()}).then(function(j){

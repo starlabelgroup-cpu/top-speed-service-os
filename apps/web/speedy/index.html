@@ -217,7 +217,7 @@ function spBookIt(btn){
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
       window._spBooked=true; window._spRef=j.data.referenceCode;
-      document.getElementById('spBookCard').innerHTML='\u2705 <b>Booked!</b> Your reference is <b>'+j.data.referenceCode+'</b>. A Service Setter will text '+String(d.phone).replace(/</g,'&lt;')+' to confirm your window. You can track it any time in the Track section below.';
+      document.getElementById('spBookCard').innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>Booked!</b> Your reference is <b>'+j.data.referenceCode+'</b>. A Service Setter will text '+String(d.phone).replace(/</g,'&lt;')+' to confirm your window. You can track it any time in the Track section below.';
       document.getElementById('spBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="spReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" onclick="spReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>');
     })
     .catch(function(e){
@@ -287,9 +287,9 @@ function wireVoice(btnId, inputId){
     if(listening){ try{rec.stop();}catch(e){} return; }
     rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
     rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
-    rec.onend=function(){ listening=false; B.textContent='\uD83C\uDFA4'; B.classList.remove('rec'); };
+    rec.onend=function(){ listening=false; B.classList.remove('rec'); };
     rec.onerror=rec.onend;
-    try{ rec.start(); listening=true; B.textContent='\uD83D\uDD34'; B.classList.add('rec'); }catch(e){}
+    try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
   });
 }
 wireVoice('spMic','spText');
