@@ -7,6 +7,7 @@ import {
   requestRefundApproval,
 } from './speedyPolicy.js';
 import { speedyKnowledgeSections } from './speedyKnowledge.js';
+import { formatKnowledgeForPrompt, knowledgeStats, searchKnowledge } from '../knowledge/index.js';
 import { createInvite, getReferralStatusForCode, resolveCode } from './referrals.js';
 import { buildOrderTrail } from './superapp.js';
 import { store } from '../data/store.js';
@@ -62,6 +63,7 @@ export function speedyStatus() {
     configured,
     model: configured ? model : null,
     governance: SPEEDY_GOVERNANCE,
+    knowledge: knowledgeStats(),
   };
 }
 
@@ -84,6 +86,8 @@ export function speedySystemPrompt() {
     `Live video consultations: when a customer wants to show the problem live, the ${PLATFORM_CONSTANTS.dispatchTeam} team arranges it three ways — immediate when a qualified technician is available, scheduled when nobody is free, or manager-assisted when a manager should join. Collect their name, phone and appliance, tell them which mode fits, and say the team will set it up. Never claim a video call has started inside this chat.`,
     'Wider network: this same engine and record will serve the wider Top Speed Service Network (including future Top Speed trades such as HVAC, plumbing and electrical). Today, Top Speed serves appliances only — if someone asks for another trade, say it is coming to the network and give the phone number for anything urgent.',
     'Style: friendly, fast, plain language. Short answers unless detail is needed. If a problem sounds unsafe (sparking, gas smell, flooding), tell them to stop using the appliance and stay safe first.',
+    'ALWAYS ANSWER (owner rule, 2026-11-15): you always give the customer an answer — never a dead end and never a bare refusal to help. When the knowledge base or the retrieved knowledge covers the question, answer from it. When it does not, answer from general appliance and home-service knowledge, framed as general guidance ("typically", "in general"). NEVER invent a Top Speed-specific fact — a price, a policy term, a coverage claim, a timeline, a statistic — that is not in your knowledge. For a Top Speed detail you cannot confirm, say plainly that it is not confirmed and give the path that resolves it: book the $99 diagnostic visit, send a photo for a preliminary read, or call (954) 931-7997. That IS an answer. Use the search_knowledge tool when a platform, program, symptom, or maintenance question is not already answered by your instructions.',
+    'INFORM ABOUT THE ECOSYSTEM (owner rule, 2026-11-15): customers should leave knowing how the whole Top Speed ecosystem fits together — not just the one door they knocked on. FIRST answer the customer\'s actual question, completely. THEN, only when their situation genuinely touches another part of the ecosystem, add ONE short note — one or two sentences, plain and useful — naming that part and giving its link or path. The natural pairings: a property manager or landlord asking about repairs → Appliance Connect Pro (one place for requests across their properties, photo reports, one monthly invoice); a business, restaurant, hotel, or facility → Appliance Pro (the commercial door — equipment registry, priority dispatch, custom quote, never the residential $99); a customer who is happy with their repair or wants to recommend us → Refer & Earn (they earn service credit; their friend gets $25 off a first repair); a technician or provider curious about working with us → Speedy Pro (Field Pro work orders + Appliance Plug, inside the Tech App); someone selling or decluttering household items → Pepper Lists It (snap a photo, get a drafted listing); dryer-vent or lint/airflow trouble → Cleanout Vents, our network partner for exactly that. This is insight, not a sales push: never pitch, never pressure, never repeat the same ecosystem note twice in one conversation, and never let the note crowd out or delay the answer itself. If nothing else in the ecosystem genuinely fits their situation, say nothing extra.',
     ...speedyKnowledgeSections(),
     governancePromptBlock(),
   ].join('\n');
@@ -192,6 +196,21 @@ const SPEEDY_TOOLS = [
   },
   {
     type: 'function',
+    name: 'search_knowledge',
+    description:
+      'Search the Top Speed knowledge base — live site facts (pricing, coverage, offers), the platform glossary (what each app, door, and program is), and appliance industry guides (symptoms, maintenance, repair-vs-replace, brands). Use it when a question is not already answered by your instructions. Returns grounded entries: state Top Speed facts ONLY from returned entries, never from memory or invention.',
+    strict: true,
+    parameters: {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        query: { type: 'string', description: 'The question or topic to look up, in the customer\'s words.' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    type: 'function',
     name: 'escalate_to_human_professional',
     description:
       'Escalate the conversation to the human team. Mandatory for safety-critical conditions (gas, carbon monoxide, sparking, fire, flooding, electric shock, refrigerant leaks); also right whenever a human professional should take over.',
@@ -260,6 +279,20 @@ async function executeSpeedyTool(call) {
       // back as plain tool results the model can explain to the customer.
       return { sent: false, error: error?.code || 'INVITE_FAILED', message: error?.message || 'The invite could not be sent.' };
     }
+  }
+  if (call.name === 'search_knowledge') {
+    const matches = searchKnowledge(String(args.query || ''), 4);
+    return {
+      found: matches.length > 0,
+      entries: matches.map(({ entry }) => ({
+        topic: entry.topic,
+        answer: entry.answer,
+        link: entry.link || null,
+      })),
+      message: matches.length
+        ? 'Answer from these entries for any Top Speed fact. Industry entries are general guidance — present them as "typically" / "common causes include" and land on the on-site diagnostic as the confirming step.'
+        : 'No knowledge entry matched. Answer from general appliance knowledge if you can, framed as general guidance; for a Top Speed detail you cannot confirm, say so plainly and give the path (the $99 diagnostic visit, a photo read, or (954) 931-7997). Never invent a Top Speed fact.',
+    };
   }
   if (call.name === 'get_job_departments') {
     const reference = String(args.reference || '').trim().toUpperCase();
@@ -447,7 +480,13 @@ export async function speedyChat({ message, history = [] }) {
     ...history.slice(-10).map((turn) => ({ role: turn.role, content: String(turn.content) })),
     { role: 'user', content: message },
   ];
-  const instructions = speedySystemPrompt();
+  // Learning system: retrieve the knowledge entries this question
+  // matches and put them in front of the model for THIS turn (bounded
+  // — see formatKnowledgeForPrompt), on top of the standing prompt KB.
+  const knowledgeSection = formatKnowledgeForPrompt(searchKnowledge(message, 3));
+  const instructions = knowledgeSection
+    ? `${speedySystemPrompt()}\n${knowledgeSection}`
+    : speedySystemPrompt();
 
   // Fast path: informational questions are answered from the knowledge
   // base in the system prompt — one Responses call, NO tools attached,

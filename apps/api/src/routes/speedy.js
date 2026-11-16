@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, speedyStatus } from '../services/speedy.js';
+import { governanceGate } from '../services/speedyPolicy.js';
+import { composeFallbackAnswer } from '../knowledge/index.js';
 import { normalizeCityName, resolveArea } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
@@ -21,8 +23,11 @@ import {
  * Speedy AI endpoints — public on purpose: the website's Ask Speedy chat
  * serves signed-out customers. Guardrails: the global rate limit, strict
  * input caps, no account data is ever returned, and the OpenAI key stays
- * on the server. When OPENAI_API_KEY is not configured the endpoints say
- * so honestly (503) instead of faking an answer.
+ * on the server. The CHAT endpoint always answers (2026-11-15): when the
+ * provider is down or unconfigured, the knowledge fallback composes a
+ * grounded answer locally and says which layer answered in
+ * data.answeredBy. The diagnose/extract endpoints still say so honestly
+ * (503) when OPENAI_API_KEY is not configured, instead of faking a read.
  */
 const router = Router();
 
@@ -75,30 +80,59 @@ router.get('/speedy/status', (req, res) => {
 });
 
 router.post('/speedy/chat', optionalAuthenticate, async (req, res) => {
-  if (!speedyStatus().configured) return notConfigured(res);
   const parsed = chatSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid chat message', details: parsed.error.flatten() });
   }
   const { message, sessionId, source } = parsed.data;
   const userId = req.user?.id || null;
-  try {
-    const result = await speedyChat(parsed.data);
+
+  // ALWAYS-ANSWER (owner rule, 2026-11-15): a customer chat never
+  // ends in the 502 "connection snag" because the AI provider failed.
+  // The generative path runs when configured; the governance
+  // pre-screen answers policy/safety messages deterministically with
+  // no provider at all; and ANY provider failure — or Speedy being
+  // unconfigured — falls to the knowledge fallback, which composes a
+  // grounded answer locally. The snag text now survives only for
+  // true browser↔API network failures, which never reach this route.
+  let result = null;
+  if (speedyStatus().configured) {
+    try {
+      result = await speedyChat(parsed.data);
+    } catch (error) {
+      console.error(JSON.stringify({
+        level: 'error',
+        message: 'speedy chat provider failed — knowledge fallback engaged',
+        error: String(error?.message || error),
+      }));
+    }
+  } else {
+    result = governanceGate(message);
+  }
+
+  if (result) {
     // Capture AFTER the reply is composed, bounded + error-swallowed:
     // a capture failure can never break or noticeably slow the chat.
     const session = await captureSafely(() =>
-      captureChatExchange({ sessionId, source, userId, userMessage: message, assistantReply: result.reply }),
+      captureChatExchange({ sessionId, source, userId, userMessage: message, assistantReply: result.reply, answeredBy: 'ai' }),
     );
     return res.json({
-      data: { ...result, sessionId: session?.id || normalizeChatSessionId(sessionId) || undefined },
+      data: { ...result, answeredBy: 'ai', sessionId: session?.id || normalizeChatSessionId(sessionId) || undefined },
     });
-  } catch (error) {
-    // The snag is itself analysis data (an unanswered exchange).
-    await captureSafely(() =>
-      captureChatExchange({ sessionId, source, userId, userMessage: message, error: true }),
-    );
-    return res.status(502).json({ error: 'Speedy had a hiccup — try again, or call (954) 931-7997', detail: String(error?.message || error) });
   }
+
+  const fallback = composeFallbackAnswer(message);
+  const session = await captureSafely(() =>
+    captureChatExchange({ sessionId, source, userId, userMessage: message, assistantReply: fallback.reply, answeredBy: 'knowledge-fallback' }),
+  );
+  return res.json({
+    data: {
+      reply: fallback.reply,
+      model: null,
+      answeredBy: 'knowledge-fallback',
+      sessionId: session?.id || normalizeChatSessionId(sessionId) || undefined,
+    },
+  });
 });
 
 router.post('/speedy/diagnose', optionalAuthenticate, async (req, res) => {

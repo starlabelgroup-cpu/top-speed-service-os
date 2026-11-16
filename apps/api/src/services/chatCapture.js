@@ -184,6 +184,7 @@ export async function captureChatExchange({
   userMessage,
   assistantReply,
   error = false,
+  answeredBy = null,
 } = {}) {
   const { session, created } = getOrCreateChatSession({ sessionId, source, userId });
   await ensureSessionPersisted(session, created);
@@ -196,6 +197,16 @@ export async function captureChatExchange({
   } else if (assistantReply != null) {
     const flagged = isUnansweredReply(assistantReply);
     const replyRow = appendMessage(session, 'assistant', assistantReply, flagged);
+    // Always-answer layer (2026-11-15): when the AI provider was down
+    // and the knowledge fallback composed the reply, the exchange is
+    // recorded as ANSWERED (not an error) and the reply row carries
+    // which layer answered, so Chat Insights can tell provider-down
+    // answers from live-AI answers. The persistence layer maps its
+    // own columns; this marker rides the in-memory record.
+    if (answeredBy) {
+      replyRow.answeredBy = answeredBy;
+      session.lastAnsweredBy = answeredBy;
+    }
     if (flagged) session.hasUnanswered = true;
     await persistQuietly(persistChatMessage(session.id, replyRow));
   }
