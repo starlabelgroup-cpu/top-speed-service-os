@@ -3,7 +3,7 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Top Speed Tech App — Service OS</title>
+<title>Speedy Pro — Top Speed Tech App</title>
 <link rel="icon" href="data:,">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="manifest" href="/manifest.webmanifest">
@@ -61,6 +61,30 @@ nav.tabs .bdg{position:absolute;top:0;right:calc(50% - 16px);background:var(--re
 #toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy2);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s;z-index:9}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .demo{font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+/* ===== FIELD WORKSPACE (Speedy AI Field Pro integration) ===== */
+.ovw{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px}
+.ovw .tile{padding:11px 6px}
+.ovw .n{font-size:19px}
+.ws-head{background:linear-gradient(135deg,#262e36,#131920);color:#fff;border-radius:16px;padding:15px;margin-bottom:12px}
+.ws-head .ref{font-family:'Roboto Mono',monospace;font-size:11px;color:#ff9d94;letter-spacing:.05em}
+.ws-head h3{font-size:17px;margin:3px 0 2px;color:#fff}
+.ws-head p{font-size:12px;color:#c3cedb;line-height:1.5}
+.ws-acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.ws-act{display:flex;flex-direction:column;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:10px 4px;font-size:11px;font-weight:700;color:var(--navy);text-decoration:none;cursor:pointer;font-family:inherit}
+.ws-act.primary{background:var(--red);border-color:var(--red);color:#fff}
+.ws-tabs{display:flex;gap:6px;margin:0 0 12px}
+.ws-tabs button{flex:1;border:1.5px solid var(--line);background:#fff;border-radius:999px;padding:8px 4px;font-size:12px;font-weight:700;color:var(--soft);cursor:pointer;font-family:inherit}
+.ws-tabs button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.ws-pane{display:none}.ws-pane.on{display:block}
+.chk-progress{height:8px;border-radius:4px;background:#e7eefb;overflow:hidden;margin:8px 0 6px}
+.chk-progress i{display:block;height:100%;background:var(--green);border-radius:4px}
+.chk{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed var(--line);font-size:13.5px;cursor:pointer}
+.chk input{width:19px;height:19px;margin-top:1px;accent-color:var(--green);flex:none}
+.chk.done span{color:var(--soft);text-decoration:line-through}
+.note-entry{border-left:3px solid var(--navy);padding:2px 0 2px 10px;margin:0 0 12px}
+.note-entry p{font-size:13.5px;line-height:1.5}
+.note-entry small{color:var(--soft);font-size:11px}
+textarea.ws-note{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:14px}
 body.signedout section.screen,body.signedout .tabs{display:none!important}</style>
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body class="signedout">
@@ -91,7 +115,14 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     </div>
     <!-- TODAY -->
     <section class="screen on" id="s-today">
-      <h2 class="sec">Today</h2>
+      <h2 class="sec">Field Pro · Today</h2>
+      <div class="card" style="background:linear-gradient(135deg,#262e36,#131920);color:#fff;border:0">
+        <p style="font-size:10px;color:#ff9d94;text-transform:uppercase;letter-spacing:.08em;font-weight:700">Speedy Pro — the pro suite</p>
+        <h3 style="color:#fff;font-size:16px;margin:4px 0 3px">Field Pro + Appliance Plug</h3>
+        <p style="font-size:12px;color:#c3cedb;line-height:1.55">One suite for Top Speed techs: Field Pro runs your work orders, checklists and reports; Appliance Plug snaps the model plate and lines up parts — both on your real Service OS jobs, dispatched by Service Setters.</p>
+        <div class="btnrow" style="margin-top:10px"><button class="btn red" type="button" onclick="go('today')">Field Pro — my jobs</button><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="go('plug')">Appliance Plug</button></div>
+      </div>
+      <div id="ovwStrip"></div>
       <div id="todayList"><p class="note">No jobs yet — your confirmed jobs for today appear here once Service Setters dispatch assigns them.</p></div>
       </div>
       <p class="note">Jobs are matched by Service Setters dispatch and confirmed here before they land on your day — the hybrid dispatch you already know, in your pocket.</p>
@@ -103,7 +134,18 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
       <p class="note" id="offerEmpty" style="display:none">No open offers right now. Keep availability on — dispatch matches by area, appliance, and your ratings.</p>
     </section>
     <!-- JOB DETAIL -->
-    <section class="screen" id="s-job"><h2 class="sec">Job detail</h2><div class="card"><p class="note" style="margin:0">Select a job from Today or Offers to see its details, update its status, and share your live location for Track My Tech.</p></div></section>
+    <section class="screen" id="s-job"><h2 class="sec">Field Pro · Job workspace</h2><div id="wsRoot"><div class="card"><p class="note" style="margin:0">Select a job from Today to open its field workspace — job steps, service checklist, tech notes, the written-quote facts, and a downloadable service report, all on the real job record.</p></div></div></section>
+    <!-- APPLIANCE PLUG (Speedy Pro module) -->
+    <section class="screen" id="s-plug">
+      <h2 class="sec">Appliance Plug</h2>
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--navy)">Snap the plate. Order the right parts.</h3>
+        <p class="note" style="margin:4px 0 10px">Appliance Plug runs inside each job's workspace: snap the model plate, Speedy reads it, you confirm every field, Parts Finder lines up part categories with fitment notes, and the order draft carries the job's TS reference — Appliance Plus Parts Supply first, other distributors second. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p>
+        <div class="btnrow"><button class="btn navy" type="button" onclick="go('today')">Pick a job to start</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/appliance-plug-app">Open Plug app</a></div>
+      </div>
+      <h2 class="sec">My parts orders</h2>
+      <div id="plugOrdersList"><p class="note">Your parts orders across all your jobs appear here once you are signed in.</p></div>
+    </section>
     <!-- EARNINGS -->
     <section class="screen" id="s-earn"><h2 class="sec">My week</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n">—</div><div class="l">Jobs this week</div></div></div><div class="card" style="margin-top:12px"><p class="note" style="margin:0">Payout amounts follow your provider agreement. Your live statement appears here when you are signed in with your provider account.</p></div></section>
     <!-- MORE -->
@@ -111,7 +153,7 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
       <h2 class="sec">More</h2>
       <div class="card" id="techSpeedyCard">
         <h3 style="font-size:14px;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Speedy — your in-app assistant</h3>
-        <p class="note" style="margin:4px 0 10px">Ask about your assignments, offers, or today’s jobs. For a job update, Speedy drafts the wording in the job card and <b>you</b> tap “Save to job” — Speedy never submits an update, changes a status, or certifies a repair on its own.</p>
+        <p class="note" style="margin:4px 0 10px">Ask about your assignments, offers, or today’s jobs. For a job update, Speedy drafts the wording in the job workspace and <b>you</b> tap “Save to job” — Speedy never submits an update, changes a status, or certifies a repair on its own.</p>
         <textarea id="techSpeedyQ" rows="2" placeholder="e.g. What jobs do I have today? or: draft an update — replaced the drain pump, tested fine" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:14px;"></textarea>
         <div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="techSpeedyAsk()">Ask Speedy</button></div>
         <div class="btnrow" style="margin-top:7px;"><button class="btn no" type="button" onclick="techSpeedyQuick('today')">Today’s jobs</button><button class="btn no" type="button" onclick="techSpeedyQuick('offers')">Open offers</button><button class="btn no" type="button" onclick="techSpeedyQuick('draft')">Draft an update</button></div>
@@ -125,6 +167,8 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E8322E"/></svg> Call dispatch <a href="tel:+19549317997">954-931-7997</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M20.04 15.33L15.33 20.04L8.67 20.04L3.96 15.33L3.96 8.67L8.67 3.96L15.33 3.96L20.04 8.67z"/><path d="M3.3 12h17.4M12 3.3l2.8 3.4L15.9 12l-1.1 5.3L12 20.7l-2.8-3.4L8.1 12l1.1-5.3z" stroke="#E8322E"/></svg> Provider portal <a href="/service/">Open</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E8322E"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Service OS web portal <a href="/portal">Open</a></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Appliance Plug — model &amp; parts <a href="/appliance-plug-app">Open</a></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8" stroke="#E8322E"/><circle cx="12" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg> Parts Supply OS <a href="/parts">Open</a></div>
         <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Customer app <a href="/app">Appliance Pro</a></div>
       </div>
       <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Live jobs flow when your provider account is signed in.</p>
@@ -134,6 +178,7 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <button class="on" data-tab="today" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7.5 4.5h9l2 2v15h-13v-15z"/><path d="M9.5 4.5l1-1.8h3l1 1.8" stroke="#E8322E"/><path d="M9 10.5h6M9 14h6M9 17.5h3.6"/></svg> Today</button>
     <button data-tab="offers" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16V15l-2.6 4.5H6.6L4 15z"/><path d="M12 7v6.4M9 10.6l3 3 3-3M4 15h5l1.2 1.8h3.6L15 15h5" stroke="#E8322E"/><circle cx="12" cy="13.4" r="1.2" fill="currentColor" stroke="none"/></svg> Offers<span class="bdg" id="offerBdg">2</span></button>
     <button data-tab="job" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> Job</button>
+    <button data-tab="plug" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M9 2.8v5M15 2.8v5" stroke="#E8322E"/><path d="M6.5 7.8h11V13a5.5 5.5 0 0 1-11 0z"/><path d="M12 18.5V21"/></svg> Plug</button>
     <button data-tab="earn" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4v16.5h16.5"/><path d="M8.5 16.5v-5M12.5 16.5V8M16.5 16.5v-8.5" stroke="#E8322E"/><circle cx="8.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.5" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg> Week</button>
     <button data-tab="more" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><path d="M18.2 5.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/><path d="M5.8 16.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/></svg> More</button>
   </nav>
@@ -217,27 +262,23 @@ function renderTech(provider,assignments,user){
     var when=b.appointment?('\ud83d\udd53 '+tDateLabel(b.appointment.date)+' \u00b7 '+escT(b.appointment.windowLabel||'')):'\ud83d\udd53 Window to be set by dispatch';
     return '<div class="card offer"><h3 style="font-size:15px">'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><div class="meta"><span>\ud83d\udccd '+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+'</span><span>'+when+'</span></div><p style="font-size:12px;color:var(--soft)">Match score '+a.matchScore+'% \u00b7 Ref '+escT(b.referenceCode||'')+'. Payout per your provider agreement. Diagnostic $99 collected at booking, credited to the repair.</p><div class="btnrow"><button class="btn no" type="button" onclick="liveDeclineTech(\''+a.id+'\')">Decline</button><button class="btn go" type="button" onclick="liveAcceptTech(\''+a.id+'\')">Accept job</button></div></div>';
   }).join('');
+  var nextJob=null;
+  for(var ni=0;ni<accepted.length;ni++){ var nbk=accepted[ni].booking||{}; if(nbk.status!=='COMPLETED'){ nextJob=accepted[ni]; break; } }
+  var doneCount=accepted.filter(function(a){ return a.booking&&a.booking.status==='COMPLETED'; }).length;
+  var jtEl=document.getElementById('jobsToday'); if(jtEl) jtEl.textContent=doneCount;
+  document.getElementById('ovwStrip').innerHTML=
+    '<div class="ovw"><div class="tile"><div class="n">'+accepted.length+'</div><div class="l">Jobs on your day</div></div>'+
+    '<div class="tile"><div class="n">'+offerList.length+'</div><div class="l">Offers waiting</div></div>'+
+    '<div class="tile"><div class="n">'+doneCount+'</div><div class="l">Completed</div></div></div>'+
+    (nextJob?('<div class="card" style="border-left:4px solid var(--red)"><p class="demo" style="color:var(--red)">Next job</p><h3 style="font-size:14px;margin-top:3px">'+escT((nextJob.booking||{}).appliance||'Appliance')+' \u2014 '+escT((nextJob.booking||{}).issue||'')+'</h3><p class="note" style="margin-top:3px">'+((nextJob.booking||{}).appointment?escT(nextJob.booking.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(nextJob.booking.appointment.date):'Window TBD')+' \u00b7 '+escT((nextJob.booking||{}).city||'')+'</p><div class="btnrow"><button class="btn navy" type="button" onclick="openWorkspace(\''+nextJob.id+'\')">Open workspace</button></div></div>'):'')+
+    '<div class="btnrow" style="margin-bottom:12px"><button class="btn no" type="button" onclick="go(\'more\')">Ask Speedy</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/appliance-plug-app">Appliance Plug</a><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/parts">Parts Supply OS</a></div>';
   document.getElementById('todayList').innerHTML=accepted.length?accepted.map(function(a){
     var b=a.booking||{};
     var when=b.appointment?(escT(b.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(b.appointment.date)):'Window TBD';
     var cust=b.customer?(' \u00b7 '+escT(b.customer.name||'')):'';
-    var noteBox='<div style="flex-basis:100%; margin-top:10px; border-top:1px dashed #D5E2F4; padding-top:10px;">' +
-      '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">AI job update \u2014 say it, Speedy writes it</label>' +
-      '<textarea id="ainote-'+a.id+'" rows="2" placeholder="e.g. Replaced the drain pump, tested two cycles, running fine." style="width:100%; margin-top:6px; border:1.5px solid #D5E2F4; border-radius:10px; padding:9px; font:inherit; font-size:14px;"></textarea>' +
-      '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+a.id+'\')">\u2728 Structure with Speedy</button></div>' +
-      '<div id="ainote-prev-'+a.id+'" style="margin-top:8px;"></div></div>';
-    var progBox='<div style="flex-basis:100%; margin-top:10px; border-top:1px dashed #D5E2F4; padding-top:10px;">' +
-      '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">Track My Tech \u2014 update the customer</label>' +
-      '<div class="btnrow" style="margin-top:7px; gap:7px; flex-wrap:wrap;">' +
-      '<input id="eta-'+a.id+'" type="number" min="1" max="600" placeholder="ETA min" style="width:96px; padding:9px; border:1.5px solid #D5E2F4; border-radius:9px; font:inherit; font-size:14px;">' +
-      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'EN_ROUTE\')">\ud83d\ude90 En route</button>' +
-      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'ARRIVED\')">\ud83d\udccd Arrived</button>' +
-      '<button class="btn" type="button" onclick="jobStatus(\''+a.id+'\',\'DIAGNOSIS_STARTED\')">\ud83d\udd0d Diagnosis</button>' +
-      '<button class="btn go" type="button" onclick="jobStatus(\''+a.id+'\',\'ESTIMATE_APPROVED\')">\u2705 Estimate approved</button></div>' +
-      '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="locShare(\''+a.id+'\',this)">\ud83d\udccd Share live location</button></div>' +
-      '<div id="jsmsg-'+a.id+'" style="margin-top:7px; font-size:13.5px;"></div></div>';
-    return '<div class="card job"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p></div><span class="st next">ACCEPTED</span>'+noteBox+progBox+'</div>';
-  }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with the customer details.</p>';
+    var done=b.status==='COMPLETED';
+    return '<div class="card job" onclick="openWorkspace(\''+a.id+'\')"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p><p style="color:var(--navy);font-weight:700;margin-top:4px">Open workspace \u2192</p></div><span class="st '+(done?'done':'next')+'">'+(done?'DONE':'ACCEPTED')+'</span></div>';
+  }).join(''):'<p class="note">No accepted jobs yet. When you accept an offer, it lands here with its field workspace.</p>';
 }
 function liveAcceptTech(id){
   tFetch('/provider/assignments/'+id+'/accept',{method:'POST',body:JSON.stringify({})})
@@ -329,10 +370,10 @@ function techSpeedyQuick(kind){
   var offers=all.filter(function(a){ return a.status==='APPROVED'; });
   if(kind==='today'){ techSpeedySay(accepted.length? '<b>Today’s accepted jobs ('+accepted.length+'):</b>'+techSpeedyList(accepted) : 'No accepted jobs yet. Accepted offers land in the Today tab.'); return; }
   if(kind==='offers'){ techSpeedySay(offers.length? '<b>Open offers ('+offers.length+'):</b>'+techSpeedyList(offers)+'<p class="note">Accept or decline in the Offers tab — those buttons answer dispatch for real.</p>' : 'No open offers right now. Keep availability on — dispatch matches by area, appliance, and rating.'); return; }
-  if(!accepted.length){ techSpeedySay('You need an accepted job before drafting an update. Once you accept an offer, its job card has the “AI job update” box Speedy drafts into.'); return; }
-  go('today');
-  setTimeout(function(){ var first=document.getElementById('ainote-'+accepted[0].id); if(first){ first.scrollIntoView({behavior:'smooth',block:'center'}); first.focus(); } },80);
-  toast('Type the update in the job card — Speedy drafts, you save');
+  if(!accepted.length){ techSpeedySay('You need an accepted job before drafting an update. Once you accept an offer, its job workspace has the “AI job update” box Speedy drafts into.'); return; }
+  window._wsFocusNote=accepted[0].id;
+  openWorkspace(accepted[0].id);
+  toast('Type the update in the job workspace — Speedy drafts, you save');
 }
 function techSpeedyAsk(){
   var input=document.getElementById('techSpeedyQ');
@@ -346,12 +387,9 @@ function techSpeedyAsk(){
     var accepted=(window._techAssignments||[]).filter(function(a){ return a.status==='ACCEPTED'; });
     if(!accepted.length){ techSpeedyQuick('draft'); return; }
     if(text.length<3 || text===q){ techSpeedyQuick('draft'); return; }
-    go('today');
-    setTimeout(function(){
-      var box=document.getElementById('ainote-'+accepted[0].id);
-      if(box){ box.value=text; box.scrollIntoView({behavior:'smooth',block:'center'}); aiNotePreview(accepted[0].id); }
-    },80);
-    techSpeedySay('I put your words in the first accepted job’s update box and asked Speedy to structure them. Review the draft in the job card — nothing saves until you tap “Save to job”.');
+    window._wsDraftText={id:accepted[0].id,text:text};
+    openWorkspace(accepted[0].id);
+    techSpeedySay('I put your words in the first accepted job’s workspace and asked Speedy to structure them. Review the draft in the workspace Notes tab — nothing saves until you tap “Save to job”.');
     return;
   }
   if(/certif|safe|refund|credential|compliance/.test(low)){ techSpeedySay('That is outside Speedy’s authority: Speedy never certifies repair safety, issues refunds, overrides credentials, or changes compliance status. A human professional or Service Setters handle those — call dispatch at 954-931-7997.'); return; }
@@ -368,6 +406,384 @@ function techSpeedyAsk(){
     .then(function(j){ techSpeedySay(escT((j.data&&j.data.reply)||'Speedy had no answer for that one.')); })
     .catch(function(e){ techSpeedySay('Speedy could not answer just now ('+escT(e.message)+'). For assignment questions, the quick buttons above read your live jobs directly.'); });
 }
+</script>
+
+
+<script>
+/* ============ FIELD WORKSPACE (Speedy AI Field Pro integration) ============
+   Field Pro's workspace layout on real Service OS data: the signed-in
+   tech's own assignments, the real provider status endpoints, checklist
+   + notes persisted on the booking record via /workspace endpoints, the
+   booking's real pricing facts (no estimate builder, no simulated
+   approvals), and a service report generated from the job record.
+   Parts stay in Appliance Plug / Parts Supply OS — no catalog here. */
+var _wsView=null, _wsId=null, _wsTab='details';
+var WS_STAGES=['Received','Confirmed','Assigned','En route','Arrived','Diagnosis','Quote OK','Completed'];
+var WS_STAGE_LABELS=['Request received','Appointment confirmed','Technician assigned','Technician en route','Technician arrived','Diagnosis in progress','Estimate approved','Repair completed'];
+var ICO_CALL='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E8322E"/></svg>';
+var ICO_TEXT='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg>';
+var ICO_NAV='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-10.4A6.5 6.5 0 0 1 12 4a6.5 6.5 0 0 1 6.5 6.6C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="10.4" r="1.2" fill="#E8322E" stroke="none"/></svg>';
+var ICO_BOLT='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M13 2.5L4.5 13.5H11l-1.2 8L19 10h-6.5z" stroke="#E8322E"/></svg>';
+function wsTime(at){ try{ return new Date(at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function openWorkspace(id){
+  _wsId=id; _wsTab='details'; _plugCands=[]; _plugFields=null; go('job');
+  var root=document.getElementById('wsRoot');
+  var a=(window._techAssignments||[]).filter(function(x){ return x.id===id; })[0];
+  if(!a){ root.innerHTML='<div class="card"><p class="note" style="margin:0">That job is no longer on your list — tap Refresh in the sign-in card above.</p></div>'; return; }
+  root.innerHTML='<div class="card"><p class="note" style="margin:0">Loading the field workspace…</p></div>';
+  tFetch('/provider/assignments/'+id+'/workspace')
+    .then(function(j){ _wsView=j.data; wsRender(); })
+    .catch(function(e){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Workspace unavailable: '+escT(e.message)+'</p></div>'; });
+}
+function wsStageDone(view){
+  var a=view.assignment, b=a.booking||{}, ev={};
+  (view.stageEvents||[]).forEach(function(e){ ev[e.type]=true; });
+  return [true, !!b.appointment, a.status==='ACCEPTED'||!!ev.ASSIGNMENT_ACCEPTED, !!ev.TECH_EN_ROUTE, !!ev.TECH_ARRIVED, !!ev.DIAGNOSIS_STARTED, !!ev.ESTIMATE_APPROVED, b.status==='COMPLETED'];
+}
+function wsTabShow(name){
+  _wsTab=name;
+  $$('#wsRoot .ws-tabs button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-wstab')===name); });
+  $$('#wsRoot .ws-pane').forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-pane')===name); });
+}
+function wsRender(){
+  var view=_wsView; if(!view) return;
+  var a=view.assignment, b=a.booking||{}, c=b.customer||{}, id=a.id;
+  var addr=c.address||'';
+  var cityLine=(b.city||'')+(b.zip?' '+b.zip:'');
+  var mapsQ=encodeURIComponent((addr?addr+', ':'')+cityLine);
+  var done=wsStageDone(view);
+  var stageNow=WS_STAGE_LABELS[0];
+  for(var si=done.length-1;si>=0;si--){ if(done[si]){ stageNow=WS_STAGE_LABELS[si]; break; } }
+  var stepsHtml='<div class="steps" style="margin:2px 0 0">'+WS_STAGES.map(function(s,i){ return '<div class="'+(done[i]?'done':'')+'"><i></i>'+s+'</div>'; }).join('')+'</div>';
+  var chk=view.checklist||[];
+  var chkDone=chk.filter(function(x){ return x.done; }).length;
+  var chkPct=chk.length?Math.round(chkDone/chk.length*100):0;
+  var chkHtml=chk.map(function(item){
+    return '<label class="chk'+(item.done?' done':'')+'"><input type="checkbox" class="ws-chk" value="'+item.id+'"'+(item.done?' checked':'')+' onchange="wsToggleCheck(\''+id+'\')"><span>'+escT(item.label)+'</span></label>';
+  }).join('');
+  var notesHtml=(view.notes&&view.notes.length)?view.notes.map(function(n){
+    return '<div class="note-entry"><p>'+escT(n.note)+'</p>'+
+      (n.partsUsed&&n.partsUsed.length?'<p style="font-size:12.5px;color:var(--soft)">Parts used: '+n.partsUsed.map(escT).join(', ')+'</p>':'')+
+      (n.nextStep?'<p style="font-size:12.5px;color:var(--soft)">Next step: '+escT(n.nextStep)+'</p>':'')+
+      '<small>'+(n.at?wsTime(n.at):'')+(n.structuredBy==='SPEEDY'?' · Speedy draft, confirmed by you':' · Tech note')+'</small></div>';
+  }).join(''):'<p class="note">No notes on this job yet. Document findings, readings, and customer conversations — they save to the job record.</p>';
+  var pricing=view.pricing||{};
+  var quoteHtml;
+  if(pricing.segment==='COMMERCIAL'){
+    quoteHtml='<div class="kv"><span>Job type</span><b>Commercial</b></div>'+
+      '<div class="kv"><span>Pricing</span><b>Custom quote</b></div>'+
+      '<div class="kv"><span>Quote approved (tracking)</span><b>'+(view.estimateApproved?'On record':'Not recorded yet')+'</b></div>'+
+      '<p class="note">Commercial work is priced by custom quote — the residential $99 diagnostic does not apply to this job. Written quotes are prepared through Book OS after diagnosis; once the customer approves the written quote, record it with the “Estimate approved” button above.</p>';
+  } else {
+    quoteHtml='<div class="kv"><span>Diagnostic fee</span><b>$'+(pricing.diagnosticFee!=null?pricing.diagnosticFee:99)+'</b></div>'+
+      '<div class="kv"><span>Collected</span><b>At booking</b></div>'+
+      '<div class="kv"><span>Credited toward repair</span><b>'+(pricing.diagnosticFeeCreditedTowardRepair?'Yes — in full':'No')+'</b></div>'+
+      '<div class="kv"><span>Standard terms</span><b>Repair $210 flat · Install $150 flat</b></div>'+
+      '<div class="kv"><span>Quote approved (tracking)</span><b>'+(view.estimateApproved?'On record':'Not recorded yet')+'</b></div>'+
+      '<p class="note">Parts and materials are extra, on the written quote. No work starts without the customer\u2019s approved written quote — once they approve it, record it with the “Estimate approved” button above. This app does not build or send estimates; the quote is prepared after diagnosis.</p>';
+  }
+  var speedyBox='<div style="border-top:1px dashed #D5E2F4; padding-top:10px; margin-top:4px;">' +
+    '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">AI job update — say it, Speedy writes it</label>' +
+    '<textarea id="ainote-'+id+'" rows="2" placeholder="e.g. Replaced the drain pump, tested two cycles, running fine." style="width:100%; margin-top:6px; border:1.5px solid #D5E2F4; border-radius:10px; padding:9px; font:inherit; font-size:14px;"></textarea>' +
+    '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+id+'\')">✨ Structure with Speedy</button></div>' +
+    '<div id="ainote-prev-'+id+'" style="margin-top:8px;"></div></div>';
+  var html='';
+  html+='<button class="btn no" type="button" onclick="go(\'today\')" style="flex:none;padding:8px 14px;margin-bottom:10px">← All jobs</button>';
+  html+='<div class="ws-head"><span class="ref">'+escT(b.referenceCode||'')+' · '+escT(stageNow.toUpperCase())+'</span><h3>'+escT(c.name||'Customer')+'</h3><p>'+escT(b.appliance||'Appliance')+' — '+escT(b.issue||'')+'<br>'+(addr?escT(addr)+'<br>':'')+escT(cityLine)+(b.appointment?'<br>'+escT(b.appointment.windowLabel||'')+' · '+tDateLabel(b.appointment.date):'<br>Window to be set by dispatch')+'</p></div>';
+  html+='<div class="ws-acts">'+
+    (c.phone?'<a class="ws-act" href="tel:'+escT(c.phone)+'">'+ICO_CALL+'Call</a><a class="ws-act" href="sms:'+escT(c.phone)+'">'+ICO_TEXT+'Text</a>':'<span class="ws-act" style="opacity:.45">'+ICO_CALL+'No number</span><span class="ws-act" style="opacity:.45">'+ICO_TEXT+'No number</span>')+
+    '<a class="ws-act" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+mapsQ+'">'+ICO_NAV+'Navigate</a>'+
+    '<button class="ws-act primary" type="button" onclick="wsAskSpeedy(\''+id+'\')">'+ICO_BOLT+'Ask Speedy</button></div>';
+  html+='<div class="card"><p class="demo">Job progress — customer tracking</p>'+stepsHtml+'</div>';
+  html+='<div class="card"><label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">Track My Tech — update the customer</label>'+
+    '<div class="btnrow" style="margin-top:7px; gap:7px; flex-wrap:wrap;">'+
+    '<input id="eta-'+id+'" type="number" min="1" max="600" placeholder="ETA min" style="width:96px; padding:9px; border:1.5px solid #D5E2F4; border-radius:9px; font:inherit; font-size:14px;">'+
+    '<button class="btn" type="button" onclick="jobStatus(\''+id+'\',\'EN_ROUTE\')">🚐 En route</button>'+
+    '<button class="btn" type="button" onclick="jobStatus(\''+id+'\',\'ARRIVED\')">📍 Arrived</button>'+
+    '<button class="btn" type="button" onclick="jobStatus(\''+id+'\',\'DIAGNOSIS_STARTED\')">🔍 Diagnosis</button>'+
+    '<button class="btn go" type="button" onclick="jobStatus(\''+id+'\',\'ESTIMATE_APPROVED\')">✅ Estimate approved</button></div>'+
+    '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="locShare(\''+id+'\',this)">📍 Share live location</button></div>'+
+    '<div id="jsmsg-'+id+'" style="margin-top:7px; font-size:13.5px;"></div></div>';
+  html+='<div class="ws-tabs" role="tablist">'+
+    '<button type="button" data-wstab="details" onclick="wsTabShow(\'details\')">Details</button>'+
+    '<button type="button" data-wstab="checklist" onclick="wsTabShow(\'checklist\')">Checklist</button>'+
+    '<button type="button" data-wstab="notes" onclick="wsTabShow(\'notes\')">Notes</button>'+
+    '<button type="button" data-wstab="quote" onclick="wsTabShow(\'quote\')">Quote</button>'+
+    '<button type="button" data-wstab="parts" onclick="wsTabShow(\'parts\')">Parts</button>'+
+    '<button type="button" data-wstab="report" onclick="wsTabShow(\'report\')">Report</button></div>';
+  html+='<div class="ws-pane" data-pane="details"><div class="card">'+
+    '<div class="kv"><span>Appliance</span><b>'+escT(b.appliance||'—')+'</b></div>'+
+    '<div class="kv"><span>Reported issue</span><b style="text-align:right;max-width:60%">'+escT(b.issue||'—')+'</b></div>'+
+    '<div class="kv"><span>Customer</span><b>'+escT(c.name||'—')+'</b></div>'+
+    '<div class="kv"><span>Phone</span><b>'+escT(c.phone||'—')+'</b></div>'+
+    '<div class="kv"><span>Address</span><b style="text-align:right;max-width:60%">'+escT(addr||'—')+'</b></div>'+
+    '<div class="kv"><span>City · ZIP</span><b>'+escT(cityLine||'—')+'</b></div>'+
+    '<div class="kv"><span>Appointment</span><b>'+(b.appointment?escT(b.appointment.windowLabel||'')+' · '+tDateLabel(b.appointment.date):'To be set by dispatch')+'</b></div>'+
+    '<div class="kv"><span>Match score</span><b>'+(a.matchScore!=null?a.matchScore+'%':'—')+'</b></div>'+
+    '<div class="kv"><span>Booking status</span><b>'+escT(b.status||'—')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Assignment</span><b>'+escT(a.status||'—')+'</b></div>'+
+    '</div>'+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Need a part for this job?</h3><p class="note" style="margin:4px 0 10px">Snap the model plate in Appliance Plug — Speedy returns part categories with fitment and verify-first notes. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p><div class="btnrow"><button class="btn navy" type="button" onclick="wsTabShow(\'parts\')">Snap &amp; order parts</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/parts">Parts Supply OS</a></div></div></div>';
+  html+='<div class="ws-pane" data-pane="checklist"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Service checklist</h3>'+
+    '<div class="chk-progress"><i id="wsChkBar" style="width:'+chkPct+'%"></i></div>'+
+    '<p class="note" id="wsChkCount" style="margin:0">'+chkDone+' of '+chk.length+' steps done — every change saves to the job record.</p>'+
+    chkHtml+
+    '<p class="note">Safety first: isolate power, water, or gas as the manufacturer requires. Never bypass appliance safety protections.</p></div></div>';
+  html+='<div class="ws-pane" data-pane="notes"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Technician notes</h3>'+
+    '<div style="margin-top:8px">'+notesHtml+'</div>'+
+    '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">Add a note</label>'+
+    '<textarea class="ws-note" id="wsnote-'+id+'" rows="3" placeholder="Findings, test readings, parts used, customer conversations…"></textarea>'+
+    '<div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="wsSaveNote(\''+id+'\')">Save note to job</button></div>'+
+    speedyBox+'</div></div>';
+  html+='<div class="ws-pane" data-pane="quote"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Quote &amp; pricing facts</h3><div style="margin-top:6px">'+quoteHtml+'</div></div></div>';
+  html+='<div class="ws-pane" data-pane="parts">'+plugPaneHtml(id, b)+'</div>';
+  html+='<div class="ws-pane" data-pane="report"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Service report</h3>'+
+    '<p class="note" style="margin:4px 0 10px">A portable HTML summary of this visit — job details, checklist, your notes, and the tracking timeline — generated from the real job record. It is a service summary, not an invoice.</p>'+
+    '<div class="btnrow"><button class="btn navy" type="button" onclick="wsReport(\''+id+'\')">Download service report</button></div></div></div>';
+  document.getElementById('wsRoot').innerHTML=html;
+  wsTabShow(_wsTab||'details');
+  if(window._wsFocusNote===id){
+    window._wsFocusNote=null; wsTabShow('notes');
+    var f=document.getElementById('ainote-'+id);
+    if(f){ f.scrollIntoView({behavior:'smooth',block:'center'}); f.focus(); }
+  }
+  if(window._wsDraftText&&window._wsDraftText.id===id){
+    var dt=window._wsDraftText; window._wsDraftText=null; wsTabShow('notes');
+    var bx=document.getElementById('ainote-'+id);
+    if(bx){ bx.value=dt.text; bx.scrollIntoView({behavior:'smooth',block:'center'}); aiNotePreview(id); }
+  }
+}
+function wsToggleCheck(id){
+  var ids=[];
+  $$('#wsRoot .ws-chk').forEach(function(x){ if(x.checked) ids.push(x.value); });
+  tFetch('/provider/assignments/'+id+'/checklist',{method:'PUT',body:JSON.stringify({doneIds:ids})})
+    .then(function(j){
+      if(_wsView) _wsView.checklist=j.data.checklist;
+      var chk=j.data.checklist, doneCount=chk.filter(function(x){ return x.done; }).length;
+      var bar=document.getElementById('wsChkBar'); if(bar) bar.style.width=(chk.length?Math.round(doneCount/chk.length*100):0)+'%';
+      var cnt=document.getElementById('wsChkCount'); if(cnt) cnt.textContent=doneCount+' of '+chk.length+' steps done — every change saves to the job record.';
+      $$('#wsRoot .ws-chk').forEach(function(x){ var lab=x.closest('.chk'); if(lab) lab.classList.toggle('done', x.checked); });
+      toast('Checklist saved to the job record');
+    })
+    .catch(function(e){ toast('Checklist save failed: '+e.message); openWorkspace(id); });
+}
+function wsSaveNote(id){
+  var ta=document.getElementById('wsnote-'+id);
+  var text=(ta&&ta.value||'').trim();
+  if(text.length<3){ toast('Write the note first'); return; }
+  tFetch('/provider/assignments/'+id+'/notes',{method:'POST',body:JSON.stringify({text:text})})
+    .then(function(j){ if(_wsView) _wsView.notes=j.data.notes; _wsTab='notes'; wsRender(); toast('Note saved to the job record'); })
+    .catch(function(e){ toast('Note save failed: '+e.message); });
+}
+function wsAskSpeedy(id){
+  var a=(window._techAssignments||[]).filter(function(x){ return x.id===id; })[0];
+  var b=(a&&a.booking)||{};
+  var q='About my job '+(b.referenceCode||'')+': '+(b.appliance||'appliance')+' — '+(b.issue||'')+'. ';
+  if(window.TSOpenSpeedy){ TSOpenSpeedy(); }
+  setTimeout(function(){
+    var inp=document.querySelector('#tswForm input[type="text"]');
+    if(inp){ inp.value=q; inp.focus(); }
+  },220);
+}
+function wsReport(id){
+  var view=_wsView;
+  if(!view||view.assignment.id!==id){ toast('Open the workspace first'); return; }
+  var a=view.assignment, b=a.booking||{}, c=b.customer||{};
+  var done=wsStageDone(view);
+  var stageNow=WS_STAGE_LABELS[0];
+  for(var si=done.length-1;si>=0;si--){ if(done[si]){ stageNow=WS_STAGE_LABELS[si]; break; } }
+  var chkRows=(view.checklist||[]).map(function(x){ return '<li>'+(x.done?'✓':'○')+' '+escT(x.label)+'</li>'; }).join('');
+  var noteRows=(view.notes&&view.notes.length)?view.notes.map(function(n){ return '<li>'+escT(n.note)+(n.at?' <small>('+escT(wsTime(n.at))+')</small>':'')+'</li>'; }).join(''):'<li>No notes recorded</li>';
+  var evLabels={ASSIGNMENT_ACCEPTED:'Technician accepted the job',TECH_EN_ROUTE:'Technician en route',TECH_ARRIVED:'Technician arrived',DIAGNOSIS_STARTED:'Diagnosis started',ESTIMATE_APPROVED:'Estimate approved'};
+  var evRows=(view.stageEvents&&view.stageEvents.length)?view.stageEvents.map(function(e){ return '<li>'+escT(evLabels[e.type]||e.type)+(e.at?' — '+escT(wsTime(e.at)):'')+'</li>'; }).join(''):'<li>No tracking events yet</li>';
+  var pricing=view.pricing||{};
+  var priceHtml=pricing.segment==='COMMERCIAL'
+    ? '<p>Commercial job — priced by custom quote. The residential diagnostic fee does not apply.</p>'
+    : '<p>Diagnostic fee: $'+(pricing.diagnosticFee!=null?pricing.diagnosticFee:99)+' — collected at booking'+(pricing.diagnosticFeeCreditedTowardRepair?', credited in full toward the approved repair':'')+'. Repair labor $210 flat · Installation $150 flat · Parts and materials extra, per the approved written quote.</p>';
+  var html='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Service Report ' + escT(b.referenceCode||'') + '</title><style>body{font:15px Arial,sans-serif;max-width:850px;margin:48px auto;color:#1c2630;line-height:1.55;padding:0 20px}header{border-bottom:5px solid #E8112D;padding-bottom:16px}h1{font-size:26px}h2{margin-top:32px}small{color:#67717a}footer{margin-top:56px;border-top:1px solid #ddd;padding-top:16px;font-size:12px;color:#68717c}.badge{display:inline-block;background:#f6eded;color:#a52b2e;padding:5px 12px;border-radius:20px}@media print{body{margin:10px}}</style></head><body>'+
+    '<header><strong>TOP SPEED APPLIANCE · TECH APP</strong><h1>Field Service Report</h1><p>'+escT(b.referenceCode||'')+' · <span class="badge">'+escT(stageNow)+'</span></p></header>'+
+    '<h2>Customer &amp; appointment</h2><p><strong>'+escT(c.name||'')+'</strong><br>'+escT(c.address||'')+(c.address?'<br>':'')+escT((b.city||'')+(b.zip?' '+b.zip:''))+'<br>'+escT(c.phone||'')+(b.appointment?'<br>'+escT(b.appointment.windowLabel||'')+' · '+escT(tDateLabel(b.appointment.date)):'')+'</p>'+
+    '<h2>Equipment &amp; issue</h2><p>'+escT(b.appliance||'')+'<br>Reported issue: '+escT(b.issue||'')+'</p>'+
+    '<h2>Pricing facts</h2>'+priceHtml+
+    '<h2>Service checklist</h2><ul>'+chkRows+'</ul>'+
+    '<h2>Parts orders</h2>'+((view.partsOrders&&view.partsOrders.length)?'<ul>'+view.partsOrders.map(function(o){ return '<li><strong>'+escT(o.reference)+'</strong> — '+escT(o.status.replace(/_/g,' '))+' · '+o.lines.map(function(l){ return escT(l.category)+' × '+l.qty; }).join(', ')+'</li>'; }).join('')+'</ul>':'<p>No parts orders on this job.</p>')+
+    '<h2>Technician notes</h2><ul>'+noteRows+'</ul>'+
+    '<h2>Job timeline</h2><ul>'+evRows+'</ul>'+
+    '<footer>Generated from the Top Speed Service OS job record on '+escT(new Date().toLocaleString('en-US'))+'. This is a service summary, not an invoice or a signed receipt.</footer></body></html>';
+  var blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var link=document.createElement('a'); link.href=url; link.download=(b.referenceCode||'job')+'-service-report.html'; link.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1000);
+  toast('Service report downloaded');
+}
+
+/* ============ APPLIANCE PLUG IN THE WORKSPACE (Speedy Pro) ============
+   Snap the model plate → Speedy transcribes → the tech confirms every
+   field → Parts Finder returns categories → selected categories become
+   an order draft carrying this job's TS reference. Statuses advance
+   only on a real tap. No OEM part numbers or prices anywhere — Parts
+   Supply OS confirms the exact part and price at order time. */
+var _plugCands=[], _plugFields=null;
+var PLUG_NEXT={DRAFT:'SENT_TO_PARTS_SUPPLY_OS',SENT_TO_PARTS_SUPPLY_OS:'ORDERED',ORDERED:'RECEIVED'};
+var PLUG_NEXT_LABEL={DRAFT:'Send to Parts Supply OS',SENT_TO_PARTS_SUPPLY_OS:'Mark ordered',ORDERED:'Mark received'};
+var PLUG_VENDOR_LABEL={APPLIANCE_PLUS_PARTS_SUPPLY:'Appliance Plus Parts Supply',OTHER_DISTRIBUTOR:'Other distributor'};
+function plugFields(id, b){
+  if(!_plugFields){ _plugFields={brand:'',model:'',serial:'',type:(b&&b.appliance)||'',fuel:''}; }
+  return _plugFields;
+}
+function plugPaneHtml(id, b){
+  var f=plugFields(id, b);
+  var inp='width:100%;padding:9px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:14px;margin:4px 0 8px';
+  var orders=(_wsView&&_wsView.partsOrders)||[];
+  return '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Appliance Plug — snap &amp; order for this job</h3>'+
+    '<p class="note" style="margin:4px 0 10px">Orders created here carry this job\u2019s reference ('+escT(b.referenceCode||'')+') automatically. Appliance Plus Parts Supply is routed first as a Parts Supply OS draft; other distributors second.</p>'+
+    '<p class="demo" style="color:var(--red)">Step 1 — Snap the model plate</p>'+
+    '<div class="btnrow" style="margin:8px 0"><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="document.getElementById(\'plugFile\').click()">📷 Snap / upload plate photo</button></div>'+
+    '<input id="plugFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="plugSnap(this,\''+id+'\')">'+
+    '<div id="plugMsg" style="font-size:13px;margin:2px 0 8px"></div>'+
+    '<label style="font-size:12px;font-weight:800;color:#5A6E94">BRAND</label><input id="plug-brand" style="'+inp+'" value="'+escT(f.brand)+'" oninput="_plugFields.brand=this.value" placeholder="As printed on the plate">'+
+    '<label style="font-size:12px;font-weight:800;color:#5A6E94">MODEL</label><input id="plug-model" style="'+inp+'" value="'+escT(f.model)+'" oninput="_plugFields.model=this.value" placeholder="Character for character">'+
+    '<label style="font-size:12px;font-weight:800;color:#5A6E94">SERIAL</label><input id="plug-serial" style="'+inp+'" value="'+escT(f.serial)+'" oninput="_plugFields.serial=this.value" placeholder="As printed on the plate">'+
+    '<div style="display:flex;gap:8px"><div style="flex:1"><label style="font-size:12px;font-weight:800;color:#5A6E94">TYPE</label><input id="plug-type" style="'+inp+'" value="'+escT(f.type)+'" oninput="_plugFields.type=this.value"></div>'+
+    '<div style="flex:1"><label style="font-size:12px;font-weight:800;color:#5A6E94">FUEL / POWER</label><input id="plug-fuel" style="'+inp+'" value="'+escT(f.fuel)+'" oninput="_plugFields.fuel=this.value" placeholder="Electric, gas…"></div></div>'+
+    '<p class="note">Speedy\u2019s read is a draft — confirm every field against the plate. Wrong model means wrong parts.</p></div>'+
+    '<div class="card"><p class="demo" style="color:var(--red)">Step 2 — Find part categories</p>'+
+    '<div class="btnrow" style="margin:8px 0"><button class="btn navy" type="button" onclick="plugFind(\''+id+'\')">Find parts with Speedy</button></div>'+
+    '<div id="plugCands"><p class="note" style="margin:0">Categories appear here with fitment and verify-first notes — never OEM part numbers or prices.</p></div></div>'+
+    '<div class="card"><p class="demo" style="color:var(--red)">Step 3 — Order draft for '+escT(b.referenceCode||'this job')+'</p>'+
+    '<label style="font-size:12px;font-weight:800;color:#5A6E94">ROUTE TO</label>'+
+    '<label class="chk" style="border:0;padding:6px 0"><input type="radio" name="plug-vendor" value="APPLIANCE_PLUS_PARTS_SUPPLY" checked><span style="text-decoration:none">Appliance Plus Parts Supply — Parts Supply OS draft (first)</span></label>'+
+    '<label class="chk" style="border:0;padding:6px 0"><input type="radio" name="plug-vendor" value="OTHER_DISTRIBUTOR"><span style="text-decoration:none">Other distributor (second)</span></label>'+
+    '<label style="font-size:12px;font-weight:800;color:#5A6E94">URGENCY</label>'+
+    '<select id="plug-urgency" style="'+inp+'"><option value="STANDARD">Standard</option><option value="SAME_DAY">Same-day</option><option value="EMERGENCY">Emergency</option></select>'+
+    '<div class="btnrow"><button class="btn go" type="button" onclick="plugCreate(\''+id+'\')">Create order draft</button></div>'+
+    '<p class="note">Tick the categories you need in Step 2 first. The draft lands on this job\u2019s record — sending it to Parts Supply OS is the next tap, below.</p></div>'+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Parts orders on this job</h3><div id="plugWsOrders" style="margin-top:8px">'+
+    (orders.length?orders.map(function(o){ return plugOrderCard(o, id, 'ws'); }).join(''):'<p class="note" style="margin:0">No parts orders yet on this job.</p>')+
+    '</div></div>';
+}
+function plugOrderCard(o, assignmentId, ctx){
+  var pillCls=o.status==='RECEIVED'?'done':(o.status==='DRAFT'?'wait':'prog');
+  var next=PLUG_NEXT[o.status];
+  return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px">'+
+    '<div style="display:flex;align-items:center;gap:8px"><b style="font-size:13.5px">'+escT(o.reference||'')+'</b><span class="st '+pillCls+'" style="margin-left:auto">'+escT(o.status.replace(/_/g,' '))+'</span></div>'+
+    '<p class="note" style="margin:5px 0 0">'+escT(PLUG_VENDOR_LABEL[o.vendor]||o.vendor||'')+' · '+escT((o.urgency||'STANDARD').replace(/_/g,' '))+(o.bookingReference?' · Job '+escT(o.bookingReference):'')+'</p>'+
+    '<p style="font-size:13px;margin:6px 0 0">'+o.lines.map(function(l){ return escT(l.category)+' × '+l.qty; }).join('<br>')+'</p>'+
+    (o.appliance&&(o.appliance.brand||o.appliance.model)?'<p class="note" style="margin:4px 0 0">'+escT(o.appliance.brand||'')+' '+escT(o.appliance.model||'')+(o.appliance.serial?' · S/N '+escT(o.appliance.serial):'')+'</p>':'')+
+    (next?'<div class="btnrow" style="margin-top:8px"><button class="btn navy" type="button" onclick="plugAdvance(\''+assignmentId+'\',\''+o.id+'\',\''+next+'\',\''+ctx+'\')">'+PLUG_NEXT_LABEL[o.status]+'</button></div>':'<p class="note" style="margin:6px 0 0;color:#157347;font-weight:700">Complete — received.</p>')+
+    '</div>';
+}
+function plugMsg(m, ok){
+  var el=document.getElementById('plugMsg');
+  if(el){ el.textContent=m; el.style.color=ok?'#0f7a3d':'#5A6E94'; }
+}
+function plugSnap(input, id){
+  var file=input.files&&input.files[0];
+  if(!file) return;
+  var url=URL.createObjectURL(file);
+  var img=new Image();
+  img.onload=function(){
+    var max=1280, sc=Math.min(1, max/Math.max(img.width||1, img.height||1));
+    var cv=document.createElement('canvas');
+    cv.width=Math.max(1, Math.round(img.width*sc)); cv.height=Math.max(1, Math.round(img.height*sc));
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url);
+    var dataUrl=cv.toDataURL('image/jpeg', 0.85);
+    plugMsg('Speedy is reading the plate…');
+    tFetch('/provider/assignments/'+id+'/plate-read', {method:'POST', body:JSON.stringify({imageDataUrl:dataUrl})})
+      .then(function(j){
+        var p=j.data.plate||{};
+        if(!_plugFields) _plugFields={brand:'',model:'',serial:'',type:'',fuel:''};
+        if(p.brand) _plugFields.brand=p.brand;
+        if(p.model) _plugFields.model=p.model;
+        if(p.serial) _plugFields.serial=p.serial;
+        if(p.appliance_type) _plugFields.type=p.appliance_type;
+        if(p.fuel) _plugFields.fuel=p.fuel;
+        var set=function(eid, v){ var n=document.getElementById(eid); if(n&&v) n.value=v; };
+        set('plug-brand', p.brand); set('plug-model', p.model); set('plug-serial', p.serial); set('plug-type', p.appliance_type); set('plug-fuel', p.fuel);
+        plugMsg('Plate read'+(p.confidence!=null?' ('+Math.round(p.confidence*100)+'% read confidence)':'')+' — check every field against the plate, then find parts.', true);
+      })
+      .catch(function(e){ plugMsg('Plate read unavailable: '+e.message+' You can still type the plate details in by hand.'); });
+  };
+  img.onerror=function(){ URL.revokeObjectURL(url); plugMsg('That photo could not be opened — try another.'); };
+  img.src=url;
+  input.value='';
+}
+function plugFind(id){
+  var box=document.getElementById('plugCands');
+  var f=_plugFields||{};
+  var get=function(eid, cur){ var n=document.getElementById(eid); return n?n.value.trim():(cur||''); };
+  f.brand=get('plug-brand', f.brand); f.model=get('plug-model', f.model); f.serial=get('plug-serial', f.serial); f.type=get('plug-type', f.type); f.fuel=get('plug-fuel', f.fuel);
+  _plugFields=f;
+  box.innerHTML='<p class="note" style="margin:0">Speedy is lining up part categories…</p>';
+  tFetch('/provider/assignments/'+id+'/parts-finder', {method:'POST', body:JSON.stringify({brand:f.brand||undefined, model:f.model||undefined, applianceType:f.type||undefined})})
+    .then(function(j){
+      _plugCands=j.data.candidates||[];
+      if(!_plugCands.length){ box.innerHTML='<p class="note" style="margin:0">Speedy returned no categories for this one — add the confirmed model details and try again, or ask Speedy in chat.</p>'; return; }
+      box.innerHTML=_plugCands.map(function(cd, ix){
+        return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px">'+
+          '<label class="chk" style="border:0;padding:0"><input type="checkbox" class="plug-pick" data-ix="'+ix+'" checked><span><b>'+escT(cd.category)+'</b></span></label>'+
+          '<p class="note" style="margin:5px 0 0">'+escT(cd.why||'')+'</p>'+
+          (cd.fitment_notes?'<p class="note" style="margin:4px 0 0"><b>Fitment:</b> '+escT(cd.fitment_notes)+'</p>':'')+
+          (cd.verify_first&&cd.verify_first.length?'<p class="note" style="margin:4px 0 0"><b>Verify first:</b> '+cd.verify_first.map(escT).join(' · ')+'</p>':'')+
+          '<div style="display:flex;align-items:center;gap:8px;margin-top:7px"><span style="font-size:12px;color:var(--soft)">Qty</span><input type="number" class="plug-qty" data-ix="'+ix+'" value="1" min="1" max="999" style="width:70px;padding:7px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:14px"></div>'+
+          '<p class="note" style="margin:6px 0 0;color:#8a6100">Exact OEM part # and price confirmed by Parts Supply OS at order time.</p></div>';
+      }).join('');
+    })
+    .catch(function(e){ box.innerHTML='<p class="note" style="margin:0">Parts Finder unavailable: '+escT(e.message)+'</p>'; });
+}
+function plugCreate(id){
+  var picks=[];
+  $$('#plugCands .plug-pick').forEach(function(x){
+    if(!x.checked) return;
+    var ix=Number(x.getAttribute('data-ix'));
+    var cd=_plugCands[ix]; if(!cd) return;
+    var q=document.querySelector('#plugCands .plug-qty[data-ix="'+ix+'"]');
+    picks.push({category:cd.category, qty:Math.max(1, parseInt(q&&q.value, 10)||1), fitmentNotes:cd.fitment_notes||null});
+  });
+  if(!picks.length){ toast('Tick at least one part category in Step 2 first'); return; }
+  var vendor='APPLIANCE_PLUS_PARTS_SUPPLY';
+  $$('input[name="plug-vendor"]').forEach(function(r){ if(r.checked) vendor=r.value; });
+  var urg=document.getElementById('plug-urgency');
+  var f=_plugFields||{};
+  tFetch('/provider/assignments/'+id+'/parts-orders', {method:'POST', body:JSON.stringify({
+    vendor:vendor, urgency:urg?urg.value:'STANDARD',
+    appliance:{brand:f.brand||null, model:f.model||null, serial:f.serial||null, applianceType:f.type||null},
+    lines:picks,
+  })})
+    .then(function(j){
+      if(_wsView){ _wsView.partsOrders=[j.data.order].concat(_wsView.partsOrders||[]); }
+      _wsTab='parts'; wsRender();
+      toast('Order draft '+j.data.order.reference+' created on this job');
+    })
+    .catch(function(e){ toast('Order draft failed: '+e.message); });
+}
+function plugAdvance(assignmentId, orderId, next, ctx){
+  tFetch('/provider/assignments/'+assignmentId+'/parts-orders/'+orderId+'/status', {method:'POST', body:JSON.stringify({status:next})})
+    .then(function(j){
+      if(ctx==='ws'&&_wsView){
+        _wsView.partsOrders=(_wsView.partsOrders||[]).map(function(o){ return o.id===orderId?j.data.order:o; });
+        _wsTab='parts'; wsRender();
+      }
+      if(ctx==='plug') loadPlugOrders();
+      toast('Order '+j.data.order.reference+': '+next.replace(/_/g,' '));
+    })
+    .catch(function(e){ toast('Status update failed: '+e.message); });
+}
+function loadPlugOrders(){
+  var box=document.getElementById('plugOrdersList');
+  if(!box||!tTok()) return;
+  tFetch('/provider/parts-orders')
+    .then(function(j){
+      var orders=j.data.orders||[];
+      box.innerHTML=orders.length?orders.map(function(o){ return plugOrderCard(o, o.assignmentId, 'plug'); }).join(''):'<p class="note">No parts orders yet. Open a job from Field Pro and use its Parts tab to snap &amp; order.</p>';
+    })
+    .catch(function(e){ box.innerHTML='<p class="note">Orders unavailable: '+escT(e.message)+'</p>'; });
+}
+(function(){
+  var btn=document.querySelector('nav.tabs button[data-tab="plug"]');
+  if(btn) btn.addEventListener('click', loadPlugOrders);
+})();
 </script>
 
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->

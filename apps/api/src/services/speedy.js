@@ -721,3 +721,98 @@ export async function speedyStructureNote(text) {
   });
   return JSON.parse(extractText(body));
 }
+
+/* ---------------- Appliance Plug: model plate + parts finder ----------------
+ * The field-tech side of Speedy (Appliance Plug, inside Speedy Pro).
+ * The plate reader transcribes ONLY what is printed on the rating plate
+ * — the technician confirms every field before anything is ordered.
+ * The parts finder returns part CATEGORIES with fitment and
+ * verify-first notes. It has no field for an OEM part number or a
+ * price and must never invent one: exact part numbers and prices are
+ * confirmed by Parts Supply OS at order time.
+ */
+
+const PLATE_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_model_plate',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      brand: { type: ['string', 'null'], description: 'Brand exactly as printed on the plate, or null if not legible.' },
+      model: { type: ['string', 'null'], description: 'Model number exactly as printed, character for character, or null if not legible.' },
+      serial: { type: ['string', 'null'], description: 'Serial number exactly as printed, character for character, or null if not legible.' },
+      appliance_type: { type: ['string', 'null'], description: 'Appliance type shown or unmistakable from the plate (e.g. Refrigerator, Washer, Dryer), or null.' },
+      fuel: { type: ['string', 'null'], description: 'Fuel/power type if printed (e.g. Electric, Natural Gas), or null.' },
+      confidence: { type: 'number', description: '0 to 1 — how legible and complete the plate read is.' },
+    },
+    required: ['brand', 'model', 'serial', 'appliance_type', 'fuel', 'confidence'],
+  },
+};
+
+export async function speedyExtractModelPlate(imageUrl) {
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nPlate mode: a field technician photographed an appliance rating plate. Transcribe ONLY what is printed on the plate into the required structured format, character for character. Never guess or complete a model or serial number that is not legible — return null for anything you cannot read exactly. This transcription is a draft: the technician confirms every field before it is used.',
+    input: [
+      {
+        role: 'user',
+        content: [
+          { type: 'input_text', text: 'Transcribe this appliance model plate.' },
+          { type: 'input_image', image_url: imageUrl },
+        ],
+      },
+    ],
+    text: { format: PLATE_FORMAT },
+    max_output_tokens: 400,
+  });
+  return JSON.parse(extractText(body));
+}
+
+const PARTS_FINDER_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_parts_finder',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      candidates: {
+        type: 'array',
+        maxItems: 6,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            category: { type: 'string', description: 'The part CATEGORY only (e.g. "Drain pump", "Heating element") — never a brand-specific part name with a number.' },
+            why: { type: 'string', description: 'Why this category fits the reported issue, in one or two sentences.' },
+            fitment_notes: { type: 'string', description: 'What determines the exact part for this category on this appliance (model revision, size, rating, connector).' },
+            verify_first: { type: 'array', items: { type: 'string' }, description: 'Checks the technician should run before ordering, so a category is not ordered on a guess.' },
+          },
+          required: ['category', 'why', 'fitment_notes', 'verify_first'],
+        },
+      },
+    },
+    required: ['candidates'],
+  },
+};
+
+export async function speedyPartsFinder({ brand, model, applianceType, issue }) {
+  const facts = [
+    brand ? `Brand: ${brand}` : null,
+    model ? `Model: ${model}` : null,
+    applianceType ? `Appliance: ${applianceType}` : null,
+    issue ? `Reported issue: ${issue}` : null,
+  ].filter(Boolean).join('\n');
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nParts Finder mode: a field technician needs the part CATEGORIES most likely involved in this job. Return categories only — NEVER an OEM part number, a SKU, or a price; exact part numbers and prices are confirmed by Parts Supply OS at order time against the full model and revision. Order candidates by likelihood. Every candidate needs fitment notes and verify-first checks so the technician confirms the diagnosis before ordering.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: facts.slice(0, 2000) }] }],
+    text: { format: PARTS_FINDER_FORMAT },
+    max_output_tokens: 800,
+  });
+  return JSON.parse(extractText(body));
+}
