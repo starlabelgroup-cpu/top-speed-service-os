@@ -28,6 +28,10 @@ export const store = {
   // mode uses the EmailVerificationToken table). Keyed by token
   // SHA-256 hash, same discipline as authHandoffs.
   emailVerificationTokens: new Map(),
+  // Speedy Verify access codes (skeleton-mode fallback; the database
+  // mode uses the SpeedyVerifyCode table). Keyed by userId; the record
+  // holds only the scrypt hash of the code, never the plain code.
+  speedyVerifyCodes: new Map(),
   // Legal gate: signed TermsAcceptance rows in skeleton mode (the
   // database mode uses the TermsAcceptance table). Plain array of
   // { id, userId, document, version, signatureName, acceptedAt }.

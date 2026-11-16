@@ -147,6 +147,14 @@ body:not(.live) .gated{display:none!important}</style>
 <label style="flex:1;min-width:210px;font-size:13px;font-weight:700">Email<br><input id="staffEmail" type="email" autocomplete="username" placeholder="service@topspeedappliance.net" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
 <label style="flex:1;min-width:170px;font-size:13px;font-weight:700">Password<br><input id="staffPw" type="password" autocomplete="current-password" placeholder="••••••••" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
 <button class="btn primary" onclick="staffSignIn()">Sign in to Live Book OS →</button>
+<div id="staffCodeRow" style="display:none;flex-basis:100%;margin-top:6px">
+<div style="font-size:13px;font-weight:700">Speedy Verify — enter your access code</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:6px">
+<label style="flex:1;min-width:170px;font-size:13px;font-weight:700">Access code<br><input id="staffCode" inputmode="numeric" autocomplete="one-time-code" placeholder="1234 5678" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+<button class="btn primary" onclick="staffVerify()">Verify &amp; sign in →</button>
+</div>
+<div style="font-size:12px;margin-top:6px">Your password checked out. Speedy Verify: enter the 8-digit access code the office issued for your account. No code yet? Accounts wait for the office to issue one — contact the office.</div>
+</div>
 </div>
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
@@ -341,6 +349,7 @@ function windowIdFromText(t){ if(!t) return '10-12'; t=(''+t).toLowerCase();
   if(t.indexOf('4')===0||t.indexOf('evening')>-1) return '16-18';
   return '10-12'; }
 
+var staffChallenge=null;
 function staffSignIn(){
   var email=document.getElementById('staffEmail').value.trim();
   var pw=document.getElementById('staffPw').value;
@@ -348,12 +357,35 @@ function staffSignIn(){
   fetch(TSOS_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
     .then(function(j){
+      if(j && j.verifyRequired && j.challenge){
+        staffChallenge=j.challenge;
+        document.getElementById('staffCodeRow').style.display='block';
+        toast('Speedy Verify — enter your access code to finish signing in');
+        var ci=document.getElementById('staffCode'); if(ci) ci.focus();
+        return;
+      }
       localStorage.setItem('tsos_token',j.token);
       enterLive(j.user);
       toast('Welcome — Live Book OS connected');
       loadLive();
     })
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
+}
+function staffVerify(){
+  var code=document.getElementById('staffCode').value;
+  if(!staffChallenge){ toast('Sign in with your password first, then enter your code'); return; }
+  if(!code){ toast('Enter your access code'); return; }
+  fetch(TSOS_API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:staffChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      staffChallenge=null;
+      document.getElementById('staffCodeRow').style.display='none';
+      localStorage.setItem('tsos_token',j.token);
+      enterLive(j.user);
+      toast('Welcome — Live Book OS connected');
+      loadLive();
+    })
+    .catch(function(e){ toast('Speedy Verify: '+e.message); });
 }
 function cleanupTestData(){
   var b=document.getElementById('cleanupBtn');

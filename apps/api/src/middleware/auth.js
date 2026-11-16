@@ -72,6 +72,9 @@ export function authenticate(req, res, next) {
       companyId: payload.companyId,
       email: payload.email,
       roles: Array.isArray(payload.roles) ? payload.roles : [],
+      // Speedy Verify (2026-11-16): true only when this session passed
+      // the Master's access-code step (services/speedyVerify.js).
+      sv: payload.sv === true,
     };
     req.authMode = 'jwt';
     return next();
@@ -99,6 +102,7 @@ export function optionalAuthenticate(req, res, next) {
       companyId: payload.companyId,
       email: payload.email,
       roles: Array.isArray(payload.roles) ? payload.roles : [],
+      sv: payload.sv === true,
     };
     req.authMode = 'jwt';
   } catch {

@@ -114,6 +114,14 @@
     fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
+      if(x.ok&&x.j.speedyVerify&&x.j.speedyVerify.status==='PENDING'){
+        // Speedy Verify: a new business / property-manager account starts
+        // unverified — the office issues its access code before the first
+        // sign-in. Say so plainly instead of failing the sign-up.
+        btn.textContent='Account created';
+        fail(x.j.speedyVerify.message||'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.');
+        return;
+      }
       if(!x.ok||!x.j.token){
         var m=(x.j&&x.j.error)||'Sign-up did not go through.';
         var fe=x.j&&x.j.details&&x.j.details.fieldErrors;

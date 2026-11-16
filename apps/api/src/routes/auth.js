@@ -19,6 +19,14 @@ import {
   termsStatusForUser,
   validateTermsAcceptance,
 } from '../services/legalTerms.js';
+import {
+  getVerifyState,
+  isMasterAccount,
+  isSpeedyVerifyCovered,
+  loginGate as speedyLoginGate,
+  registrationStartsUnverified,
+  verifyGateApplies,
+} from '../services/speedyVerify.js';
 
 /**
  * The Service OS login system.
@@ -126,6 +134,7 @@ const usersRepo = DATABASE_ENABLED
             serviceZip: user.serviceZip ?? null,
             serviceArea: user.serviceArea ?? null,
             serviceAreaStatus: user.serviceAreaStatus ?? null,
+            verifyRequired: user.verifyRequired ?? false,
           },
         });
       },
@@ -183,7 +192,7 @@ function iso(value) {
   return value instanceof Date ? value.toISOString() : String(value);
 }
 
-function publicUser(user) {
+export function publicUser(user) {
   return {
     id: user.id,
     companyId: user.companyId,
@@ -202,6 +211,8 @@ function publicUser(user) {
     serviceZip: user.serviceZip ?? null,
     serviceArea: user.serviceArea ?? null,
     serviceAreaStatus: user.serviceAreaStatus ?? null,
+    // Speedy Verify: the account's activation switch (never the code).
+    verifyRequired: user.verifyRequired === true,
     createdAt: iso(user.createdAt),
   };
 }
@@ -323,6 +334,17 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       updatedAt: new Date().toISOString(),
     };
 
+    // Speedy Verify (Phase 1, 2026-11-16): NEW staff accounts (created by
+    // an administrator — including from the Turbo Boss Accounts panel)
+    // and NEW business / property-manager accounts (offer sign-ups)
+    // start UNVERIFIED — verifyRequired on, no code — so they wait in
+    // the Master's approval queue and cannot sign in until he issues
+    // their access code. Admin-created contractor (provider) accounts
+    // start flagged the same way and surface in the panel, but their
+    // sign-in stays ungated until Phase 3. The Master tier is exempt;
+    // self-registered customer accounts are untouched.
+    draft.verifyRequired = registrationStartsUnverified(draft, adminCreated);
+
     let user;
     try {
       // With a signed acceptance, the account and its TermsAcceptance
@@ -376,6 +398,20 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
     }
 
     const terms = await termsStatusForUser(user.id);
+    if (user.verifyRequired === true && isSpeedyVerifyCovered(user) && !isMasterAccount(user)) {
+      // No session token for an unverified account — it activates when
+      // the Master issues its Speedy Verify access code.
+      return res.status(201).json({
+        user: publicUser(user),
+        emailVerification: emailVerificationState(user),
+        terms,
+        termsStatus: terms,
+        speedyVerify: {
+          status: 'PENDING',
+          message: 'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',
+        },
+      });
+    }
     return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
     return next(error);
@@ -411,6 +447,33 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(403).json({ error: 'This account is inactive' });
     }
 
+    // Speedy Verify (Phase 1): an activated staff/business account must
+    // pass the Master's access-code step before a session is issued.
+    // No live code → denied here; live code → a 10-minute challenge the
+    // client exchanges at POST /speedy-verify/verify. Every other
+    // account (including the Master, always) signs in exactly as before.
+    const gate = await speedyLoginGate(user);
+    if (gate.action === 'deny') {
+      return res.status(403).json({
+        error: 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.',
+        code: 'SPEEDY_VERIFY_NO_CODE',
+      });
+    }
+    if (gate.action === 'challenge') {
+      return res.json({
+        verifyRequired: true,
+        code: 'SPEEDY_VERIFY_REQUIRED',
+        challenge: gate.challenge,
+        expiresInSeconds: gate.expiresInSeconds,
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName ?? null,
+          lastName: user.lastName ?? null,
+        },
+      });
+    }
+
     const terms = await termsStatusForUser(user.id);
     return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
@@ -422,6 +485,20 @@ router.get('/auth/me', authenticate, async (req, res, next) => {
   try {
     const user = await usersRepo.findById(req.user.id);
     if (user) {
+      // Speedy Verify session enforcement: every console loads /auth/me
+      // at boot, so this is where a revocation (or a fresh activation)
+      // takes effect for an already-open console. An activated account
+      // must present a session that passed the code step AND still hold
+      // a live code. The Master is exempt by construction.
+      if (verifyGateApplies(user)) {
+        const state = await getVerifyState(user);
+        if (req.user.sv !== true || !state.hasActiveCode) {
+          return res.status(403).json({
+            error: 'Speedy Verify required — sign in and complete the access-code step to continue.',
+            code: 'SPEEDY_VERIFY_REQUIRED',
+          });
+        }
+      }
       const terms = await termsStatusForUser(user.id);
       return res.json({ user: publicUser(user), terms, termsStatus: terms, authMode: req.authMode });
     }

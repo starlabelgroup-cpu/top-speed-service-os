@@ -13,7 +13,7 @@ function base64UrlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-export function signAccessToken(user, { expiresInSeconds } = {}) {
+export function signAccessToken(user, { expiresInSeconds, speedyVerified } = {}) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not configured');
 
@@ -27,6 +27,10 @@ export function signAccessToken(user, { expiresInSeconds } = {}) {
     companyId: user.companyId,
     email: user.email,
     roles: Array.isArray(user.roles) ? user.roles : [],
+    // Speedy Verify (2026-11-16): set ONLY by the code-step exchange —
+    // a session that passed the Master's access-code check carries
+    // sv: true; /auth/me requires it for activated accounts.
+    ...(speedyVerified ? { sv: true } : {}),
     iat: now,
     exp,
   };

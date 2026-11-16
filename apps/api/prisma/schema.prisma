@@ -133,6 +133,13 @@ model User {
   serviceZip        String?
   serviceArea       String?
   serviceAreaStatus String?
+  // Speedy Verify (2026-11-16, Phase 1): the per-account activation
+  // switch for the Master's access-code system. Default false — every
+  // account that existed at launch is grandfathered (password-only
+  // sign-in, unchanged). The Master turns it on per account (issuing
+  // the account's first code turns it on automatically); new staff and
+  // business accounts are created with it on and wait for his code.
+  verifyRequired Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -145,6 +152,8 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
 
   termsAcceptances TermsAcceptance[]
+
+  speedyVerifyCode SpeedyVerifyCode?
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -665,6 +674,33 @@ model EmailVerificationToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// Speedy Verify (2026-11-16, Phase 1): the Master's access-code system.
+// One record per account: the code itself is stored ONLY as a scrypt hash
+// (the same format as User.passwordHash) — the plain 8-digit code exists
+// solely on the Master's screen at the moment he issues it. status is
+// ACTIVE | REVOKED; revoking denies sign-in immediately. failedAttempts /
+// lockedUntil carry the code-entry lockout (5 wrong codes → 15 minutes).
+// The Master account (COMPANY_OWNER) never needs a record to sign in —
+// it is exempt by construction (Rule Zero).
+model SpeedyVerifyCode {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @unique @db.Uuid
+  codeHash       String
+  status         String    @default("ACTIVE")
+  issuedById     String?   @db.Uuid
+  issuedAt       DateTime  @default(now())
+  revokedAt      DateTime?
+  lastUsedAt     DateTime?
+  failedAttempts Int       @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
 }
 
 // Legal gate (2026-11-12): one row per document version a user has

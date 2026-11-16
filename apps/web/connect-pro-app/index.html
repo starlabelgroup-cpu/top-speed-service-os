@@ -115,6 +115,12 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       <label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="email" placeholder="you@email.com">
       <label for="liPass">Password</label><input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••">
       <div style="margin-top:16px;"><button class="btn" onclick="doLogin()">Sign in</button></div>
+      <div id="svStep" style="display:none;margin-top:14px;">
+        <h3 style="margin:0 0 6px;">Speedy Verify — enter your access code</h3>
+        <p style="margin:0 0 8px;">Your password checked out. Speedy Verify: enter the 8-digit access code the office issued for your account. No code yet? Business accounts wait for the office to issue one — contact the office.</p>
+        <label for="svCode">Access code</label><input id="svCode" inputmode="numeric" autocomplete="one-time-code" placeholder="1234 5678">
+        <div style="margin-top:12px;"><button class="btn" onclick="doVerify()">Verify &amp; sign in</button></div>
+      </div>
       <div class="msg" id="gateMsg"></div>
     </div>
     <div class="card">
@@ -250,9 +256,25 @@ function api(path, opts){
 }
 (function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} history.replaceState(null,'',location.pathname); } })();
 function gateErr(e){ var m=document.getElementById('gateMsg'); m.textContent=''+e.message; m.className='msg err'; }
+var svChallenge=null;
 function doLogin(){
   api('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPass').value})})
-    .then(function(j){ setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); }).catch(gateErr);
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){
+        svChallenge=j.challenge;
+        document.getElementById('svStep').style.display='';
+        var m=document.getElementById('gateMsg'); m.textContent='Speedy Verify — enter your access code to finish signing in.'; m.className='msg';
+        var ci=document.getElementById('svCode'); if(ci) ci.focus();
+        return;
+      }
+      setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot();
+    }).catch(gateErr);
+}
+function doVerify(){
+  if(!svChallenge){ gateErr(new Error('Sign in with your password first, then enter your code.')); return; }
+  api('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:svChallenge,code:document.getElementById('svCode').value})})
+    .then(function(j){ svChallenge=null; document.getElementById('svStep').style.display='none'; setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); })
+    .catch(gateErr);
 }
 /* ===== ACCESS RULES — the Connect Pro business-login gate (2026-11-16) =====
    Connect Pro is a separate business door. A session that simply exists in
@@ -326,7 +348,7 @@ function boot(){
     document.getElementById('app').style.display='';
     var w=document.getElementById('who'); if(w) w.textContent=(CUR.email||'');
     onAppReady();
-  }).catch(function(){ try{localStorage.removeItem('tsos_token'); localStorage.removeItem('cp_biz_login');}catch(e){} document.getElementById('gate').style.display=''; });
+  }).catch(function(e){ try{localStorage.removeItem('tsos_token'); localStorage.removeItem('cp_biz_login');}catch(err){} document.getElementById('gate').style.display=''; if(e && /^Speedy Verify/.test(e.message||'')) gateErr(e); });
 }
 document.addEventListener('DOMContentLoaded', boot);
 </script>

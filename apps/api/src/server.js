@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
 import authRouter from './routes/auth.js';
+import speedyVerifyRouter from './routes/speedyVerify.js';
 import bookingsRouter from './routes/bookings.js';
 import integrationsRouter from './routes/integrations.js';
 import bookosRouter from './routes/bookos.js';
@@ -78,6 +79,9 @@ app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' })
 app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);
+// Speedy Verify shares the auth rate limiter: code entry and recovery
+// are credential-shaped surfaces and get the same throttle as login.
+app.use('/api/v1/speedy-verify', authRateLimit);
 
 app.get('/api/v1/health', async (req, res) => {
   const database = await databaseStatus();
@@ -128,6 +132,7 @@ app.use('/api/v1', async (req, res, next) => {
 });
 
 app.use('/api/v1', authRouter);
+app.use('/api/v1/speedy-verify', speedyVerifyRouter);
 app.use('/api/v1', bookingsRouter);
 app.use('/api/v1', integrationsRouter);
 app.use('/api/v1', bookosRouter);
