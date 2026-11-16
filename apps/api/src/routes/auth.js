@@ -214,6 +214,21 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       });
     }
 
+    // Master-tier grant lock (Rule Zero, directed 2026-11-16): COMPANY_OWNER
+    // is the master account tier, held by the owner alone. Only a signed-in
+    // master holder can create another master account — a PLATFORM_ADMIN can
+    // provision staff, managers, and providers, but can never mint a master.
+    // (There is no endpoint anywhere in the API that edits an existing
+    // account's roles, so registration is the only grant path to lock.)
+    if (
+      requestedRole === ROLES.COMPANY_OWNER &&
+      !(req.authMode === 'jwt' && (req.user?.roles || []).includes(ROLES.COMPANY_OWNER))
+    ) {
+      return res.status(403).json({
+        error: 'Only the master account holder can grant the COMPANY_OWNER role',
+      });
+    }
+
     // Accounts normally live on the platform tenant. An administrator may
     // create an account inside another company (provider accounts for the
     // Tech App); anyone else asking for a foreign companyId is refused.

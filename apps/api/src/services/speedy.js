@@ -597,7 +597,39 @@ function renderDiagnosis(diagnosis) {
   return lines.join('\n');
 }
 
+/**
+ * Upload hardening (security pass, 2026-11-16): the diagnose/plate schemas
+ * validate the data URL's DECLARED image type; this verifies the actual
+ * bytes match it (JPEG/PNG/WebP magic numbers) before anything reaches the
+ * vision model. Uploaded photos are never written to disk, stored, or
+ * served back — they exist only as this data URL inside the request — so a
+ * mismatched payload has nowhere to execute; the check simply refuses
+ * non-image bytes early. Plain http(s) image URLs pass through unchanged
+ * (the model fetches those itself). Real photos are unaffected.
+ */
+export function assertImageDataUrl(value) {
+  if (typeof value !== 'string') return value;
+  const match = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=]+)/.exec(value);
+  if (!match) return value; // Not a data URL — the zod schema governs shape.
+  const declared = match[1] === 'jpg' ? 'jpeg' : match[1];
+  const head = Buffer.from(match[2].slice(0, 24), 'base64');
+  const isJpeg = head.length >= 3 && head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff;
+  const isPng =
+    head.length >= 8 &&
+    head[0] === 0x89 && head[1] === 0x50 && head[2] === 0x4e && head[3] === 0x47 &&
+    head[4] === 0x0d && head[5] === 0x0a && head[6] === 0x1a && head[7] === 0x0a;
+  const isWebp =
+    head.length >= 12 && head.toString('ascii', 0, 4) === 'RIFF' && head.toString('ascii', 8, 12) === 'WEBP';
+  const ok =
+    (declared === 'jpeg' && isJpeg) || (declared === 'png' && isPng) || (declared === 'webp' && isWebp);
+  if (!ok) {
+    throw new Error('That file is not a real photo — its contents do not match an image format');
+  }
+  return value;
+}
+
 export async function speedyDiagnose({ imageUrl, note = '' }) {
+  assertImageDataUrl(imageUrl);
   const promptText =
     'A customer sent this photo of their appliance problem.' +
     (note ? ` They add: "${note}".` : '') +
@@ -791,6 +823,7 @@ const PLATE_FORMAT = {
 };
 
 export async function speedyExtractModelPlate(imageUrl) {
+  assertImageDataUrl(imageUrl);
   const body = await responsesRequest({
     instructions:
       speedySystemPrompt() +
