@@ -76,6 +76,21 @@ footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mu
 footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 .trackhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .trackhead .count{margin-left:auto}
+.govnote{border:1px solid rgba(234,179,8,.45);background:rgba(234,179,8,.07);border-radius:var(--rad);padding:13px 15px;margin-top:14px;font-size:13.5px;line-height:1.6;color:var(--txt);display:flex;gap:10px;align-items:flex-start}
+.govnote .fxi{width:19px;height:19px;margin-top:1px;color:var(--yel)}
+.deptcard{cursor:pointer;text-align:left;width:100%;font-family:Inter;color:var(--txt)}
+.deptcard:hover{border-color:var(--blue)}
+.deptcard .who2{display:flex;align-items:center;gap:8px;margin-top:2px}
+.specava{width:34px;height:34px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.specava .fxi{width:19px;height:19px}
+.specgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px}
+.backrow{margin-top:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Inter;text-align:left}
+.chip:hover{border-color:var(--blue)}
+.modebar{font-size:12px;color:var(--mut);margin-top:8px;display:flex;gap:7px;align-items:center}
+.modebar .dot{width:8px;height:8px;border-radius:50%;background:var(--grn);flex:none}
+.modebar.kb .dot{background:var(--yel)}
 </style>
 </head>
 <body>
@@ -96,7 +111,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div class="hero">
     <div class="kicker">Top Speed University — Education OS</div>
     <h1>Top Speed <span>Academy</span></h1>
-    <p>The staff university of the Top Speed Service OS: 29 training modules in 8 role tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works.</p>
+    <p>The staff university of the Top Speed Service OS: 29 training modules in 8 role tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works. Below it, the AI Specialists &amp; Strategists give every department — and every category inside it — its own coach for running that part of the ecosystem.</p>
   </div>
 
   <div id="gateZone"></div>
@@ -111,6 +126,27 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
         <button class="btn" id="chatSend" type="submit">Ask</button>
       </form>
       <div class="msg" id="chatMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 19.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5" stroke="#E8322E"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14.6c2.9-.3 4.6 1.2 5 4" stroke="#E8322E"/></svg>AI Specialists &amp; Strategists</h2>
+    <p class="sub">One AI specialist for every department of the ecosystem, and a strategist for every category inside it — grounded in the same knowledge base as Speedy, and in the Academy curriculum. Pick a department, pick a category, and ask. The Ecosystem Guide covers the whole system across departments.</p>
+    <div class="govnote"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M12 8v4" stroke="#E8322E"/><circle cx="12" cy="15.4" r=".4" fill="#E8322E"/></svg><div><strong>Explain-only, by design.</strong> Specialists explain and guide — they never run operations. Dispatch, approvals, refunds, account and campaign changes are done by people in the consoles; your specialist will give you the exact steps and walk you to the right one.</div></div>
+    <div class="modebar" id="specMode"><span class="dot"></span><span>Loading the specialist roster…</span></div>
+    <div id="specZone"><div class="empty">Loading the specialists…</div></div>
+    <div id="coachPanel" class="console" style="display:none">
+      <div class="backrow" style="margin-top:0">
+        <button class="btn ghost sm" id="coachBack" type="button">← All specialists</button>
+        <span class="pill" id="coachDeptPill"></span>
+      </div>
+      <h3 id="coachTitle" style="margin-top:12px"></h3>
+      <p class="small mut" id="coachScope"></p>
+      <div class="chips" id="coachStarters"></div>
+      <div class="chatlog" id="coachLog"></div>
+      <form class="chatform" id="coachForm">
+        <input id="coachInput" type="text" maxlength="2000" placeholder="Ask your specialist…" autocomplete="off">
+        <button class="btn" id="coachSend" type="submit">Ask</button>
+      </form>
+      <div class="msg" id="coachMsg"></div>
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.5 9 12 14l9.5-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" stroke="#E8322E"/><path d="M21.5 9v5" stroke="#E8322E"/></svg>The curriculum</h2>
@@ -327,6 +363,195 @@ document.getElementById('chatForm').addEventListener('submit', function(ev){
   }).then(function(){ sendBtn.disabled = false; input.focus(); });
 });
 
+/* ── AI Specialists & Strategists ──────────────────────── */
+var SPEC_ICONS = {
+  guide: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M15.5 8.5l-2 5-5 2 2-5z" stroke="#E8322E"/></svg>',
+  dispatch: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.6"/><circle cx="18" cy="6" r="2.6"/><path d="M8.6 18H15a3 3 0 0 0 0-6h-6a3 3 0 0 1 0-6h.6" stroke="#E8322E"/></svg>',
+  commercial: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V6a1.5 1.5 0 0 1 1.5-1.5h8A1.5 1.5 0 0 1 15 6v14"/><path d="M15 10h3.5A1.5 1.5 0 0 1 20 11.5V20"/><path d="M2.5 20h19" stroke="#E8322E"/><path d="M7.5 8.5h4M7.5 12h4M7.5 15.5h4"/></svg>',
+  providers: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4.2 4.2 0 0 1 5.6-4L17.7 4.9l1.2 1.2 2.5-2.4a4.2 4.2 0 0 1-5.6 5.6L8 17.1a2 2 0 0 1-2.8 0l-.7-.7a2 2 0 0 1 0-2.8z" transform="translate(-2.4 1.6) scale(.92)"/></svg>',
+  crm: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="8" r="3.4"/><path d="M4.5 19.5c.6-3 2.7-4.5 5.5-4.5s4.9 1.5 5.5 4.5" stroke="#E8322E"/><path d="M16.5 5.4a3.4 3.4 0 0 1 0 5.9M17.8 15.3c1.9.6 3 1.9 3.4 4.2" stroke="#E8322E"/></svg>',
+  finance: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4v15.5h16" /><path d="M8 16v-5M12 16V8M16 16v-3" stroke="#E8322E"/></svg>',
+  marketing: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4l3 .5V9.5z"/><path d="M7 9.5L19 5v13l-12-3.5" stroke="#E8322E"/><path d="M9.5 14.8L11 20"/></svg>',
+  referrals: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="4"/><path d="M5.5 14v6h13v-6M12 10v10" stroke="#E8322E"/><path d="M12 10c-4.5 0-5.5-4.5-3-5.5C11 3.8 12 6 12 10zm0 0c4.5 0 5.5-4.5 3-5.5C13 3.8 12 6 12 10z" stroke="#E8322E"/></svg>',
+  parts: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9L18 18M18 6l-2.1 2.1M8.1 15.9L6 18" stroke="#E8322E"/></svg>',
+  messages: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.2 2.7H4.8z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/></svg>',
+  system: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 11.8l2.2 2.2 3.8-4" stroke="#E8322E"/></svg>',
+  training: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.5 9 12 14l9.5-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" stroke="#E8322E"/><path d="M21.5 9v5" stroke="#E8322E"/></svg>'
+};
+var specRoster = null;
+var specView = { level: 'home', deptId: null };
+var coachState = {}; // target -> { history: [], welcomed: bool }
+var coachTarget = null;
+
+function specAvatar(iconKey){
+  return '<span class="specava">' + (SPEC_ICONS[iconKey] || SPEC_ICONS.guide) + '</span>';
+}
+function renderSpecHome(){
+  specView = { level: 'home', deptId: null };
+  document.getElementById('coachPanel').style.display = 'none';
+  var zone = document.getElementById('specZone');
+  zone.style.display = '';
+  var g = specRoster.guide;
+  var html = '<div class="grid"><div class="card deptcard" data-open-guide="1"><h3>' + specAvatar('guide') + '<span>' + esc(g.name) + ' — ' + esc(g.title) + '</span></h3>' +
+    '<p>' + esc(g.explains) + '</p><div><span class="pill pub">Cross-department</span></div></div></div>';
+  html += '<div class="specgrid">' + specRoster.departments.map(function(d){
+    return '<div class="card deptcard" data-open-dept="' + esc(d.id) + '"><h3>' + specAvatar(d.id) + '<span>' + esc(d.name) + '</span></h3>' +
+      '<p>' + esc(d.blurb) + '</p>' +
+      '<div class="who2"><span class="pill">' + esc(d.specialist.name) + ' · ' + esc(d.specialist.title) + '</span></div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill">' + d.categories.length + ' categories</span>' + d.consoles.map(function(c){ return '<span class="pill">' + esc(c.name) + '</span>'; }).join('') + '</div></div>';
+  }).join('') + '</div>';
+  zone.innerHTML = html;
+  zone.querySelector('[data-open-guide]').addEventListener('click', function(){
+    openCoach('guide', g.name, g.title, g.scope, g.explains, g.starters, 'Ecosystem');
+  });
+  zone.querySelectorAll('[data-open-dept]').forEach(function(el){
+    el.addEventListener('click', function(){ renderSpecDept(el.getAttribute('data-open-dept')); });
+  });
+}
+function renderSpecDept(deptId){
+  var d = specRoster.departments.filter(function(x){ return x.id === deptId; })[0];
+  if (!d) return;
+  specView = { level: 'dept', deptId: deptId };
+  document.getElementById('coachPanel').style.display = 'none';
+  var zone = document.getElementById('specZone');
+  zone.style.display = '';
+  var s = d.specialist;
+  var html = '<div class="backrow"><button class="btn ghost sm" id="specBackHome" type="button">← All departments</button><span class="pill">' + esc(d.name) + '</span></div>';
+  html += '<div class="grid" style="margin-top:12px"><div class="card"><h3>' + specAvatar(d.id) + '<span>' + esc(s.name) + ' — ' + esc(s.title) + '</span></h3>' +
+    '<p>' + esc(s.explains) + '</p>' +
+    '<div><button class="btn sm" data-talk-dept="' + esc(d.id) + '" type="button">Talk to ' + esc(s.name) + '</button></div></div></div>';
+  html += '<h2 class="sec" style="font-size:17px">Categories — strategist guidance</h2><div class="specgrid">' +
+    d.categories.map(function(c){
+      return '<div class="card"><h3><span>' + esc(c.name) + '</span></h3><p>' + esc(c.explains) + '</p>' +
+        '<div><button class="btn ghost sm" data-talk-cat="' + esc(c.target) + '" type="button">Ask the strategist</button></div></div>';
+    }).join('') + '</div>';
+  zone.innerHTML = html;
+  document.getElementById('specBackHome').addEventListener('click', renderSpecHome);
+  zone.querySelector('[data-talk-dept]').addEventListener('click', function(){
+    openCoach(d.id, s.name, s.title, s.scope, s.explains, s.starters, d.name);
+  });
+  zone.querySelectorAll('[data-talk-cat]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var target = el.getAttribute('data-talk-cat');
+      var cat = d.categories.filter(function(x){ return x.target === target; })[0];
+      openCoach(target, s.name, s.title + ' — ' + cat.name + ' Strategist', d.name + ' / ' + cat.name + ': ' + cat.explains, cat.explains, cat.starters, d.name);
+    });
+  });
+}
+function coachBubble(who, text, mine){
+  var log = document.getElementById('coachLog');
+  var div = document.createElement('div');
+  div.className = 'bubble ' + (mine ? 'me' : 'sp');
+  div.innerHTML = '<span class="who">' + esc(who) + '</span>' + esc(text);
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+function openCoach(target, name, title, scopeText, explains, starters, deptName){
+  coachTarget = target;
+  if (!coachState[target]) coachState[target] = { history: [], welcomed: false };
+  document.getElementById('specZone').style.display = 'none';
+  var panel = document.getElementById('coachPanel');
+  panel.style.display = '';
+  document.getElementById('coachDeptPill').textContent = deptName || '';
+  document.getElementById('coachTitle').textContent = name + ' — ' + title;
+  document.getElementById('coachScope').textContent = scopeText;
+  document.getElementById('coachMsg').textContent = '';
+  var log = document.getElementById('coachLog');
+  log.innerHTML = '';
+  var st = coachState[target];
+  st.history.forEach(function(turn){
+    coachBubble(turn.role === 'user' ? 'You' : name, turn.content, turn.role === 'user');
+  });
+  if (!st.welcomed){
+    st.welcomed = true;
+    coachBubble(name, explains + ' Ask me anything in this area — I explain and guide; for anything operational I\'ll give you the steps and the console where it\'s done.', false);
+  }
+  var chips = document.getElementById('coachStarters');
+  chips.innerHTML = '';
+  (starters || []).forEach(function(q){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.textContent = q;
+    b.addEventListener('click', function(){
+      document.getElementById('coachInput').value = q;
+      document.getElementById('coachForm').requestSubmit();
+    });
+    chips.appendChild(b);
+  });
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function postCoach(message, attempt){
+  var st = coachState[coachTarget];
+  var body = { target: coachTarget, message: message, sessionId: classSessionId(), history: st.history.slice(-10) };
+  var headers = { 'Content-Type': 'application/json' };
+  if (tok()) headers['Authorization'] = 'Bearer ' + tok();
+  return fetch(API + '/academy/coach', { method: 'POST', headers: headers, body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status >= 500 && attempt < 1){
+        return new Promise(function(resolve){ setTimeout(resolve, 1500); }).then(function(){ return postCoach(message, attempt + 1); });
+      }
+      if (res.status !== 200 || !res.j || !res.j.data || !res.j.data.reply){
+        throw new Error((res.j && res.j.error) || ('HTTP ' + res.status));
+      }
+      return res.j.data;
+    });
+}
+document.getElementById('coachForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  if (!coachTarget) return;
+  var input = document.getElementById('coachInput');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  var st = coachState[coachTarget];
+  var name = document.getElementById('coachTitle').textContent.split(' — ')[0];
+  var sendBtn = document.getElementById('coachSend');
+  sendBtn.disabled = true;
+  document.getElementById('coachMsg').textContent = '';
+  coachBubble('You', msg, true);
+  st.history.push({ role: 'user', content: msg });
+  var pending = coachBubble(name, 'Thinking…', false);
+  postCoach(msg, 0).then(function(data){
+    pending.innerHTML = '<span class="who">' + esc(name) + '</span>' + esc(data.reply);
+    st.history.push({ role: 'assistant', content: data.reply });
+    var log = document.getElementById('coachLog');
+    log.scrollTop = log.scrollHeight;
+    var note = document.getElementById('coachMsg');
+    if (data.answeredBy === 'knowledge-fallback') note.textContent = 'That answer came from the Academy knowledge base.';
+    else if (data.answeredBy === 'governance') note.textContent = 'Governance boundary — explained, never executed by AI.';
+    else note.textContent = '';
+  }).catch(function(){
+    pending.innerHTML = '<span class="who">' + esc(name) + '</span>' + esc('I hit a snag reaching the Academy service — try again, or call 954-931-7997 and a Service Setter will help.');
+  }).then(function(){ sendBtn.disabled = false; input.focus(); });
+});
+document.getElementById('coachBack').addEventListener('click', function(){
+  if (specView.level === 'dept' && specView.deptId) renderSpecDept(specView.deptId);
+  else renderSpecHome();
+});
+function loadSpecialists(){
+  authFetch('/academy/specialists').then(function(r){
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function(j){
+    specRoster = j.data;
+    var mode = document.getElementById('specMode');
+    if (specRoster.meta && specRoster.meta.providerConfigured){
+      mode.className = 'modebar';
+      mode.innerHTML = '<span class="dot"></span><span>Live AI, grounded in the Academy knowledge base — with automatic knowledge fallback.</span>';
+    } else {
+      mode.className = 'modebar kb';
+      mode.innerHTML = '<span class="dot"></span><span>Answering from the Academy knowledge base right now — the AI provider is not connected, so specialists answer from grounded knowledge. Nothing is invented.</span>';
+    }
+    renderSpecHome();
+  }).catch(function(){
+    document.getElementById('specZone').innerHTML = '<div class="empty">The specialist roster could not be loaded just now — refresh the page, or ask Speedy Class above in the meantime.</div>';
+    document.getElementById('specMode').innerHTML = '<span>Specialist roster unavailable.</span>';
+  });
+}
+
 /* ── Boot: the staff zone opens only on a real staff session ── */
 function boot(){
   if (!tok()){ showGate(); return; }
@@ -344,6 +569,7 @@ function boot(){
       addBubble('Speedy Class', 'Welcome to Speedy Class. Ask about any module, your track, or how the platform works — I teach from the Academy curriculum and will point you to the right module.', false);
     }
     renderTracks(j.data || []);
+    loadSpecialists();
   }).catch(function(){ showGate('The Academy library could not be reached — check your connection and try again.'); });
 }
 document.getElementById('btnSignOut').addEventListener('click', function(){

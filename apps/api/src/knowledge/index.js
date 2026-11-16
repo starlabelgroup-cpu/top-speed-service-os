@@ -109,22 +109,33 @@ function scoreEntry(queryNorm, queryTokens, entry) {
 }
 
 /**
+ * Ranked retrieval over a GIVEN entry list — the shared scorer behind
+ * searchKnowledge, exported so scoped retrieval (the Academy coaches'
+ * department/category entry sets in knowledge/specialists.js) ranks
+ * with exactly the same rules as the customer knowledge base.
+ * Returns [{ entry, score }] best first.
+ */
+export function searchEntries(query, entries, limit = 4) {
+  const queryNorm = normalize(query);
+  if (!queryNorm) return [];
+  const queryTokens = new Set(tokens(query));
+  const scored = [];
+  for (const entry of entries || []) {
+    const score = scoreEntry(queryNorm, queryTokens, entry);
+    if (score > 0) scored.push({ entry, score });
+  }
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, Math.max(1, limit));
+}
+
+/**
  * Ranked retrieval over all packs. Returns [{ entry, score }] best
  * first. Safety entries are only returned through matchSafetyEntry()
  * or when they genuinely outscore — they are flagged so callers can
  * give them priority.
  */
 export function searchKnowledge(query, limit = 4) {
-  const queryNorm = normalize(query);
-  if (!queryNorm) return [];
-  const queryTokens = new Set(tokens(query));
-  const scored = [];
-  for (const entry of allKnowledgeEntries()) {
-    const score = scoreEntry(queryNorm, queryTokens, entry);
-    if (score > 0) scored.push({ entry, score });
-  }
-  scored.sort((a, b) => b.score - a.score);
-  return scored.slice(0, Math.max(1, limit));
+  return searchEntries(query, allKnowledgeEntries(), limit);
 }
 
 /** A match strong enough to answer from directly in fallback mode. */
