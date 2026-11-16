@@ -235,7 +235,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <label class="plb-lab">Ad text<textarea id="plAdCopy" rows="3" maxlength="240" placeholder="Say what you're selling, where, and how buyers reach you." style="display:block;width:100%;margin-top:5px;padding:12px 14px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500"></textarea></label>
       <div class="plb-row">
         <label class="plb-lab">Button text<input id="plAdCta" type="text" maxlength="24" placeholder="e.g. See the listing"></label>
-        <label class="plb-lab">Button link<input id="plAdUrl" type="text" placeholder="https://… your listing or page"></label>
+        <label class="plb-lab">Button link (needed)<input id="plAdUrl" type="text" placeholder="https://… your listing or page"></label>
       </div>
       <div class="plb-btnrow"><button class="btn small" type="button" onclick="plAdsSubmit()">Send my ad for review</button></div>
       <p class="plb-msg" id="plAdMsg" role="status"></p>
@@ -1476,6 +1476,7 @@ function plAdsSubmit(){
     ctaUrl:(document.getElementById('plAdUrl').value||'').trim()
   };
   if(!body.advertiserName||!body.headline||!body.copy){ plAdsMsg('Please fill in your name or business, a headline, and the ad text.',true); return; }
+  if(!body.ctaUrl){ plAdsMsg('Please add the link your ad button should open — your listing or page.',true); return; }
   plAdsMsg('Sending…');
   fetch(PL_API+'/pepper-lists/ads',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+plTok()},body:JSON.stringify(body)})
     .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })

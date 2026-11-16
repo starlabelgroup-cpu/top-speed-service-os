@@ -58,6 +58,10 @@ export const AD_CATEGORIES = [
   'FOOD_DRINK',
   'HOME_SERVICES',
   'GENERAL',
+  // Pepper Lists customer ads (2026-11-16): ads submitted by regular
+  // CUSTOMER accounts from inside Pepper Lists carry this category so
+  // the Pepper Lists surface's display feed prefers them.
+  'PEPPER_LISTS',
 ];
 const TRANSITIONS = {
   DRAFT: ['PENDING_APPROVAL'],
@@ -98,7 +102,7 @@ function findCreative(id) {
   return store.mediaContent.find((c) => c.id === id) || null;
 }
 
-function generateSourceTag(name) {
+export function generateSourceTag(name) {
   const base = `adstudio-${slugify(name) || 'campaign'}`.slice(0, 60);
   if (!store.adCampaigns.some((c) => c.sourceTag === base)) return base;
   for (let n = 2; n < 1000; n += 1) {
