@@ -8,6 +8,7 @@ import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECT
 import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP } from '../assets/serviceImages.js';
 import { PL_SELL_WEBP, PL_BOOK_WEBP } from '../assets/pepperListsImages.js';
 import { IMG_SELL_INDIVIDUAL, IMG_SELL_BUSINESS, IMG_POST_REVIEWS, IMG_BOOKING_DISPATCH, IMG_LIVE_TRACKING, IMG_SPEEDY_DIAGNOSIS, IMG_REFER_EARN, IMG_COMMERCIAL_PM, IMG_SPEEDY_PRO_TECH, IMG_FLYWHEEL_ADS, IMG_RESIDENTIAL_FRIDGE, IMG_RESIDENTIAL_LAUNDRY, IMG_RESIDENTIAL_OVEN, IMG_COMMERCIAL_RESTAURANT, IMG_COMMERCIAL_LAUNDROMAT, IMG_COMMERCIAL_HOTEL, IMG_CLEANOUT_VENTS, IMG_APPLIANCE_PLUG, IMG_LOCAL_FORT_LAUDERDALE, IMG_FLYWHEEL_DISPLAY_AD } from '../assets/platformImages.js';
+import { IMG2_ACADEMY_LEARNING, IMG2_AD_STUDIO_CREATE, IMG2_APP_GARAGE, IMG2_BOOKING_FORM_CLASSIC, IMG2_COCOCANE_JUICE, IMG2_COMMERCIAL_WORK_ORDER, IMG2_DELIVERY_NEW_APPLIANCE, IMG2_DISPATCH_SETTERS, IMG2_EMERGENCY_NIGHT, IMG2_HAUL_AWAY_RECYCLE, IMG2_INSTALL_DAY, IMG2_LIVE_VIDEO_HELP, IMG2_MAINTENANCE_PLAN, IMG2_PARTS_DELIVERY, IMG2_PM_BATCH_SCHEDULING, IMG2_PROMISE_SHIELD, IMG2_QUOTE_APPROVAL, IMG2_REMINDERS_BELL, IMG2_REPAIR_COMPLETE_PAY, IMG2_SCAN_SERIAL, IMG2_SERVICE_HISTORY, IMG2_SPEEDY_CHAT_ASSISTANT, IMG2_SPEEDY_VERIFY_SHIELD, IMG2_STORM_PREP, IMG2_ACADEMY_DEPARTMENTS, IMG2_APP_EMPTY_BOOKINGS, IMG2_APP_EMPTY_GARAGE, IMG2_APP_ONBOARDING_WELCOME, IMG2_BOOK_OS_INBOX, IMG2_DIRECTORY_STOREFRONT, IMG2_DIRECTORY_TEAM, IMG2_DIRECTORY_VAN_STREET, IMG2_FB_COVER_CLEANOUT_WIDE, IMG2_FB_COVER_CLEANOUT, IMG2_FB_COVER_COCOCANE_WIDE, IMG2_FB_COVER_COCOCANE, IMG2_FB_COVER_REPAIR_WIDE, IMG2_FB_COVER_REPAIR, IMG2_FB_COVER_SALES_WIDE, IMG2_FB_COVER_SALES, IMG2_MARKETING_OS_STUDIO, IMG2_PLUG_EMPTY, IMG2_SERVICE_DISHWASHER, IMG2_SERVICE_DISPOSAL, IMG2_SERVICE_DRYER, IMG2_SERVICE_FREEZER, IMG2_SERVICE_MICROWAVE, IMG2_SERVICE_RANGE, IMG2_SOCIAL_POST_THANKS, IMG2_SOCIAL_POST_TIPS, IMG2_TECH_ONBOARDING, IMG2_TURBO_BOSS_OVERVIEW, IMG2_APP_EMPTY_NOTIFICATIONS, IMG2_APP_EMPTY_PAYMENTS, IMG2_APP_EMPTY_SEARCH, IMG2_CLEANOUT_VENTS_HERO, IMG2_COMMERCIAL_FRIDGE_PRO, IMG2_COMMERCIAL_OVEN_PRO, IMG2_OVERSIGHT_OVERVIEW, IMG2_PEPPERLISTS_EMPTY, IMG2_SERVICE_ICE_MAKER, IMG2_SOCIAL_POST_COMMERCIAL, IMG2_SOCIAL_POST_INSTALL, IMG2_SOCIAL_POST_PEPPERLISTS, IMG2_SOCIAL_POST_SEASONAL, IMG2_COMMERCIAL_ICE_MACHINE, IMG2_PEPPERLISTS_EMPTY_REVIEWS, IMG2_SOCIAL_POST_BEFORE_AFTER, IMG2_SOCIAL_POST_REVIEW_SPOTLIGHT } from '../assets/platformImages2.js';
 
 const router = Router();
 
@@ -141,7 +142,7 @@ router.get('/app/pepper-lists-images/:name', (req, res) => {
 });
 
 /**
- * Platform illustration pack (2026-11-16): 20 flat-vector category /
+ * Platform illustration pack (2026-11-16): 89 flat-vector category /
  * purpose illustrations generated for the platforms, embedded as
  * base64 in assets/platformImages.js (same text-only-pipeline
  * constraint as above) and served here as image/webp. Web surfaces
@@ -169,6 +170,75 @@ const PLATFORM_IMAGE_FILES = {
   'appliance-plug.webp': IMG_APPLIANCE_PLUG,
   'local-fort-lauderdale.webp': IMG_LOCAL_FORT_LAUDERDALE,
   'flywheel-display-ad.webp': IMG_FLYWHEEL_DISPLAY_AD,
+  'academy-learning.webp': IMG2_ACADEMY_LEARNING,
+  'ad-studio-create.webp': IMG2_AD_STUDIO_CREATE,
+  'app-garage.webp': IMG2_APP_GARAGE,
+  'booking-form-classic.webp': IMG2_BOOKING_FORM_CLASSIC,
+  'cococane-juice.webp': IMG2_COCOCANE_JUICE,
+  'commercial-work-order.webp': IMG2_COMMERCIAL_WORK_ORDER,
+  'delivery-new-appliance.webp': IMG2_DELIVERY_NEW_APPLIANCE,
+  'dispatch-setters.webp': IMG2_DISPATCH_SETTERS,
+  'emergency-night.webp': IMG2_EMERGENCY_NIGHT,
+  'haul-away-recycle.webp': IMG2_HAUL_AWAY_RECYCLE,
+  'install-day.webp': IMG2_INSTALL_DAY,
+  'live-video-help.webp': IMG2_LIVE_VIDEO_HELP,
+  'maintenance-plan.webp': IMG2_MAINTENANCE_PLAN,
+  'parts-delivery.webp': IMG2_PARTS_DELIVERY,
+  'pm-batch-scheduling.webp': IMG2_PM_BATCH_SCHEDULING,
+  'promise-shield.webp': IMG2_PROMISE_SHIELD,
+  'quote-approval.webp': IMG2_QUOTE_APPROVAL,
+  'reminders-bell.webp': IMG2_REMINDERS_BELL,
+  'repair-complete-pay.webp': IMG2_REPAIR_COMPLETE_PAY,
+  'scan-serial.webp': IMG2_SCAN_SERIAL,
+  'service-history.webp': IMG2_SERVICE_HISTORY,
+  'speedy-chat-assistant.webp': IMG2_SPEEDY_CHAT_ASSISTANT,
+  'speedy-verify-shield.webp': IMG2_SPEEDY_VERIFY_SHIELD,
+  'storm-prep.webp': IMG2_STORM_PREP,
+  'academy-departments.webp': IMG2_ACADEMY_DEPARTMENTS,
+  'app-empty-bookings.webp': IMG2_APP_EMPTY_BOOKINGS,
+  'app-empty-garage.webp': IMG2_APP_EMPTY_GARAGE,
+  'app-onboarding-welcome.webp': IMG2_APP_ONBOARDING_WELCOME,
+  'book-os-inbox.webp': IMG2_BOOK_OS_INBOX,
+  'directory-storefront.webp': IMG2_DIRECTORY_STOREFRONT,
+  'directory-team.webp': IMG2_DIRECTORY_TEAM,
+  'directory-van-street.webp': IMG2_DIRECTORY_VAN_STREET,
+  'fb-cover-cleanout-wide.webp': IMG2_FB_COVER_CLEANOUT_WIDE,
+  'fb-cover-cleanout.webp': IMG2_FB_COVER_CLEANOUT,
+  'fb-cover-cococane-wide.webp': IMG2_FB_COVER_COCOCANE_WIDE,
+  'fb-cover-cococane.webp': IMG2_FB_COVER_COCOCANE,
+  'fb-cover-repair-wide.webp': IMG2_FB_COVER_REPAIR_WIDE,
+  'fb-cover-repair.webp': IMG2_FB_COVER_REPAIR,
+  'fb-cover-sales-wide.webp': IMG2_FB_COVER_SALES_WIDE,
+  'fb-cover-sales.webp': IMG2_FB_COVER_SALES,
+  'marketing-os-studio.webp': IMG2_MARKETING_OS_STUDIO,
+  'plug-empty.webp': IMG2_PLUG_EMPTY,
+  'service-dishwasher.webp': IMG2_SERVICE_DISHWASHER,
+  'service-disposal.webp': IMG2_SERVICE_DISPOSAL,
+  'service-dryer.webp': IMG2_SERVICE_DRYER,
+  'service-freezer.webp': IMG2_SERVICE_FREEZER,
+  'service-microwave.webp': IMG2_SERVICE_MICROWAVE,
+  'service-range.webp': IMG2_SERVICE_RANGE,
+  'social-post-thanks.webp': IMG2_SOCIAL_POST_THANKS,
+  'social-post-tips.webp': IMG2_SOCIAL_POST_TIPS,
+  'tech-onboarding.webp': IMG2_TECH_ONBOARDING,
+  'turbo-boss-overview.webp': IMG2_TURBO_BOSS_OVERVIEW,
+  'app-empty-notifications.webp': IMG2_APP_EMPTY_NOTIFICATIONS,
+  'app-empty-payments.webp': IMG2_APP_EMPTY_PAYMENTS,
+  'app-empty-search.webp': IMG2_APP_EMPTY_SEARCH,
+  'cleanout-vents-hero.webp': IMG2_CLEANOUT_VENTS_HERO,
+  'commercial-fridge-pro.webp': IMG2_COMMERCIAL_FRIDGE_PRO,
+  'commercial-oven-pro.webp': IMG2_COMMERCIAL_OVEN_PRO,
+  'oversight-overview.webp': IMG2_OVERSIGHT_OVERVIEW,
+  'pepperlists-empty.webp': IMG2_PEPPERLISTS_EMPTY,
+  'service-ice-maker.webp': IMG2_SERVICE_ICE_MAKER,
+  'social-post-commercial.webp': IMG2_SOCIAL_POST_COMMERCIAL,
+  'social-post-install.webp': IMG2_SOCIAL_POST_INSTALL,
+  'social-post-pepperlists.webp': IMG2_SOCIAL_POST_PEPPERLISTS,
+  'social-post-seasonal.webp': IMG2_SOCIAL_POST_SEASONAL,
+  'commercial-ice-machine.webp': IMG2_COMMERCIAL_ICE_MACHINE,
+  'pepperlists-empty-reviews.webp': IMG2_PEPPERLISTS_EMPTY_REVIEWS,
+  'social-post-before-after.webp': IMG2_SOCIAL_POST_BEFORE_AFTER,
+  'social-post-review-spotlight.webp': IMG2_SOCIAL_POST_REVIEW_SPOTLIGHT,
 };
 
 router.get('/app/platform-images/:name', (req, res) => {
