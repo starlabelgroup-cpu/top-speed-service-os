@@ -275,6 +275,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .menu-row .m-val{margin-left:auto; color:var(--mut); font-size:13px; font-weight:600; flex:none;}
 .menu-row .m-chev{margin-left:auto; color:#B7C3D6; flex:none;}
 .menu-row .m-val + .m-chev{margin-left:0;}
+.menu-row .m-sub{display:block; font-size:12px; color:var(--mut); font-weight:500; margin-top:1px;}
 .offer-row{display:flex; gap:12px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; text-decoration:none; color:var(--ink);}
 .offer-row b{font-size:15px; display:block;}
 .o-sub{display:block; font-size:13px; color:var(--mut); line-height:1.45; margin-top:2px;}
@@ -757,6 +758,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <h2 class="greet">Account</h2>
           <p class="sub">Referrals, reviews, your plan, and app settings.</p>
 
+          <h3 class="sec">Account</h3>
+
                     <div class="card" id="acctCard" style="margin-bottom:12px;">
             <b style="font-size:15px;">My account</b>
             <div id="acctOut">
@@ -772,15 +775,36 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             </div>
           </div>
 
+          <h3 class="sec">Settings</h3>
+          <div class="card" style="margin-bottom:12px; padding-top:6px; padding-bottom:6px;">
+            <button class="menu-row" onclick="mnuProfile()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-3.4 3.6-5 7-5s6.2 1.6 7 5"/></svg></span><span>Profile &amp; contact info<span class="m-sub">Phone &amp; service address on your account</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div id="profForm" style="display:none; padding:4px 2px 12px;">
+              <label class="fl">Phone</label><input id="pfPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">Street address</label><input id="pfStreet" type="text" autocomplete="street-address" placeholder="Street address" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">City</label><input id="pfCity" type="text" autocomplete="address-level2" placeholder="City" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">ZIP</label><input id="pfZip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div class="btnrow" style="margin-top:10px;"><button class="btn blue small" onclick="mnuSaveProfile()">Save profile</button></div>
+              <p class="sub" style="margin:8px 0 0;">Saved to your Service OS account — the same contact info your Service Setters see.</p>
+            </div>
+            <button class="menu-row" onclick="mnuNotifications()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6.2 15.8v-5A5.8 5.8 0 0 1 12 5a5.8 5.8 0 0 1 5.8 5.8v5l1.3 3.2H4.9z"/><path d="M10 21a2.1 2.1 0 0 0 4 0"/></svg></span><span>Notifications<span class="m-sub">Booking texts &amp; emails follow your account contact info</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button class="menu-row" onclick="mnuSecurity()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="5.5" y="10.5" width="13" height="9.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/><circle cx="12" cy="15.2" r="1.3" fill="#E94E5C" stroke="none"/></svg></span><span>Security &amp; sign-in<span class="m-sub">Change your password</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div id="pwForm" style="display:none; padding:4px 2px 12px;">
+              <label class="fl">Current password</label><input id="pwCur" type="password" autocomplete="current-password" placeholder="Current password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <label class="fl">New password — 10+ characters</label><input id="pwNew" type="password" autocomplete="new-password" placeholder="New password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div class="btnrow" style="margin-top:10px;"><button class="btn blue small" onclick="mnuChangePw()">Change password</button></div>
+            </div>
+            <button class="menu-row" onclick="openInstall()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 4v10.2M7.9 10.6L12 14.7l4.1-4.1"/><path d="M5 19.5h14"/></svg></span><span>Install the app<span class="m-sub">Add Appliance Connect to your home screen</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+          </div>
+
+          <h3 class="sec">Features</h3>
           <div class="card" style="margin-bottom:12px; padding-top:6px; padding-bottom:6px;">
             <button class="menu-row" onclick="showTab('garage')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4.5 9.8L12 4l7.5 5.8V20h-15z"/><path d="M8.2 20v-6.2h7.6V20"/><path d="M8.2 16.9h7.6"/><circle cx="12" cy="4" r="1.15" fill="#E94E5C" stroke="none"/></svg></span>My Garage<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
             <button class="menu-row" onclick="showTab('track')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.5 6h13V20h-13z"/><path d="M5.5 9.8h13"/><path d="M8.6 12.8h.01M12 12.8h.01M15.4 12.8h.01" stroke-width="2.4"/><circle cx="8.6" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/><circle cx="15.4" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/></svg></span>My bookings<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
             <button class="menu-row" onclick="showTab('track')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.5" fill="#E94E5C" stroke="none"/></svg></span>Track my tech<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button class="menu-row" onclick="showTab('speedy')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>Book with Speedy<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
             <a class="menu-row" href="/offers-rewards"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg></span>Offers &amp; rewards<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a>
             <button class="menu-row" onclick="showTab('refer')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11h16v9.5H4z"/><path d="M3 6.8h18V11H3z"/><path d="M12 6.8V20.5"/><path d="M12 6.8C8.6 6.8 7.8 3.4 10 3.4c1.9 0 2 3.4 2 3.4zM12 6.8c3.4 0 4.2-3.4 2-3.4-1.9 0-2 3.4-2 3.4z"/></svg></span>Refer &amp; Earn<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
             <button class="menu-row" onclick="var p=document.getElementById('tsePanel'); if(p){ p.scrollIntoView({behavior:'smooth', block:'start'}); }"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>The Top Speed Ecosystem<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
-            <a class="menu-row" href="tel:+19549317997"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg></span>Call us<span class="m-val">954-931-7997</span></a>
-            <div class="menu-row" style="cursor:default;"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3.2 2"/></svg></span>Hours<span class="m-val">Mon–Fri · 8–7</span></div>
           </div>
 
           <div class="card" style="margin-bottom:12px;">
@@ -818,12 +842,13 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <button class="btn blue small" onclick="toast('A Service Setter will call with plan options — 954-931-7997')">Ask about the plan</button>
           </div>
 
-          <h3 class="sec">Notifications</h3>
-          <div class="card" style="padding-top:4px; padding-bottom:4px;">
-            <div class="setting"><div><b>Text updates</b><span>Booking confirmations, en-route and completion texts</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle text updates"></button></div>
-            <div class="setting"><div><b>Day-before reminder</b><span>A reminder the evening before your window</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle day-before reminder"></button></div>
-            <div class="setting"><div><b>Maintenance reminders</b><span>Filters, vents, and seasonal check-ups</span></div><button class="tgl on" onclick="this.classList.toggle('on')" aria-label="Toggle maintenance reminders"></button></div>
-            <div class="setting"><div><b>Neighbor offers</b><span>Occasional referral and seasonal offers</span></div><button class="tgl" onclick="this.classList.toggle('on')" aria-label="Toggle neighbor offers"></button></div>
+          <h3 class="sec">Help &amp; Support</h3>
+          <div class="card" style="padding-top:6px; padding-bottom:6px;">
+            <a class="menu-row" href="tel:+19549317997"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg></span>Call us<span class="m-val">954-931-7997</span></a>
+            <button class="menu-row" onclick="showTab('speedy')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>Tell Speedy<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div class="menu-row" style="cursor:default;"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3.2 2"/></svg></span>Hours<span class="m-val">Mon–Fri · 8–7</span></div>
+            <a class="menu-row" href="/privacy"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span>Privacy Policy<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a>
+            <a class="menu-row" href="/legal"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 3.5h8L19 8.5V20.5H6z"/><path d="M13.5 3.5v5.5H19"/></svg></span>Terms of Service<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a>
           </div>
 
           <h3 class="sec">Appliance Pro Commercial Accounts</h3>
@@ -1770,6 +1795,48 @@ function storeBtnGo(store, ev){
     })
     .catch(function(){});
 })();
+</script>
+<script>
+/* More-tab menu wiring — real endpoints only (POST /auth/profile, POST /auth/change-password) */
+function mnuNeedSignIn(msg){ toast(msg); var c=document.getElementById('acctCard'); if(c){ c.scrollIntoView({behavior:'smooth', block:'start'}); } }
+function mnuToggle(id){ var el=document.getElementById(id); if(el){ el.style.display=(el.style.display==='block')?'none':'block'; } }
+function mnuProfile(){
+  if(!cTok()){ mnuNeedSignIn('Sign in to manage your profile'); return; }
+  mnuToggle('profForm');
+  cFetch('/auth/me').then(function(j){ var u=j.user||{};
+    if(u.phone) document.getElementById('pfPhone').value=u.phone;
+    if(u.serviceCity) document.getElementById('pfCity').value=u.serviceCity;
+    if(u.serviceZip) document.getElementById('pfZip').value=u.serviceZip;
+  }).catch(function(){});
+}
+function mnuSaveProfile(){
+  var body={}; var ph=document.getElementById('pfPhone').value.trim(); if(ph) body.phone=ph;
+  var addr={}; var st=document.getElementById('pfStreet').value.trim(); if(st) addr.street=st;
+  var ci=document.getElementById('pfCity').value.trim(); if(ci) addr.city=ci;
+  var zi=document.getElementById('pfZip').value.trim(); if(zi) addr.zip=zi;
+  if(Object.keys(addr).length) body.serviceAddress=addr;
+  if(!Object.keys(body).length){ toast('Add a phone or address first'); return; }
+  cFetch('/auth/profile',{method:'POST',body:JSON.stringify(body)}).then(function(){
+    toast('Profile saved');
+    cFetch('/auth/me').then(function(j){ if(j.user) custApplyUser(j.user); }).catch(function(){});
+  }).catch(function(e){ toast(e.message||'Could not save — try again'); });
+}
+function mnuSecurity(){
+  if(!cTok()){ mnuNeedSignIn('Sign in to manage security'); return; }
+  mnuToggle('pwForm');
+}
+function mnuChangePw(){
+  var cur=document.getElementById('pwCur').value, nw=document.getElementById('pwNew').value;
+  if(!cur||!nw){ toast('Enter your current and new password'); return; }
+  if(nw.length<10){ toast('New password needs at least 10 characters'); return; }
+  cFetch('/auth/change-password',{method:'POST',body:JSON.stringify({currentPassword:cur,newPassword:nw})}).then(function(){
+    document.getElementById('pwCur').value=''; document.getElementById('pwNew').value=''; toast('Password updated');
+  }).catch(function(e){ toast(e.message||'Could not change password'); });
+}
+function mnuNotifications(){
+  var c=document.getElementById('acctCard'); if(c){ c.scrollIntoView({behavior:'smooth', block:'start'}); }
+  toast('Booking texts & emails follow your account contact info — keep your profile current and you will not miss an update');
+}
 </script>
 </body>
 </html>
