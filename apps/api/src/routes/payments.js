@@ -143,7 +143,7 @@ router.post('/payments/webhook', async (req, res) => {
               details: { bookingId: booking.id, amountCents: payment.amountCents },
             });
             const firstName = (booking.customer?.name || 'there').split(' ')[0];
-            const message = 'Hi ' + firstName + ' — payment received: $99 diagnostic for booking ' + (booking.referenceCode || '') + '. It is credited in full toward your repair when you approve it. Thank you! — Top Speed Appliance';
+            const message = 'Hi ' + firstName + ' — payment received: $99 diagnostic for booking ' + (booking.referenceCode || '') + '. It is credited in full toward your repair when you approve it. Thank you! — Top Speed Appliance. Track your visit: https://topspeedserviceos.com/track';
             emitReport({
               department: 'billing',
               type: 'PAYMENT_RECEIVED',

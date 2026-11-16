@@ -64,6 +64,74 @@ export const NOTIFICATION_TEMPLATES = {
 };
 
 /* ------------------------------------------------------------------ */
+/* Customer reach — universal-reach rule (Ramone, 2026-11-15): from   */
+/* every direct-marketing touch (email or text), a customer reaches   */
+/* Top Speed Service OS in ONE click — Book, Call, or Tell Speedy.    */
+/*                                                                    */
+/* Emails on this platform are plain text (services/senders.js sends  */
+/* text-only via Resend/SendGrid), so the "button row" is a labeled   */
+/* action block: CUSTOMER_REACH_FOOTER, appended CENTRALLY in         */
+/* queueNotification for customer-facing email templates only — staff */
+/* alerts and internal entries never get it, and a message that       */
+/* already carries it is never doubled. The footer also carries the   */
+/* one-line ecosystem note (book / track / referral credits /         */
+/* appliances in one place) so every email informs, not just routes.  */
+/*                                                                    */
+/* SMS stays short: exactly one action link per message, added at     */
+/* each composer below. A message that already carries a tracking,    */
+/* join, or referral link already satisfies one-click reach and is    */
+/* left untouched; the ecosystem line is intentionally NOT added to   */
+/* SMS (the action link is the ecosystem door, and length matters).   */
+/* ------------------------------------------------------------------ */
+export const REACH_LINKS = {
+  home: 'https://topspeedserviceos.com',
+  book: 'https://topspeedserviceos.com/book',
+  speedy: 'https://topspeedserviceos.com/speedy',
+  track: 'https://topspeedserviceos.com/track',
+  refer: 'https://topspeedserviceos.com/refer',
+  call: 'tel:+19549317997',
+};
+
+export const CUSTOMER_REACH_FOOTER =
+  `\n\n— — —\n` +
+  `Book a repair: ${REACH_LINKS.book}\n` +
+  `Tell Speedy (our AI assistant): ${REACH_LINKS.speedy}\n` +
+  `Call us: ${REACH_LINKS.call} (${PLATFORM_CONSTANTS.phoneDisplay})\n` +
+  `Part of the Top Speed ecosystem — book, track your tech live, earn $25 referral credits, and manage your appliances in one place: ${REACH_LINKS.home}\n` +
+  `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
+
+/** Customer-facing email templates that receive the reach footer. */
+const CUSTOMER_EMAIL_TEMPLATES = new Set([
+  NOTIFICATION_TEMPLATES.BOOKING_CONFIRMATION,
+  NOTIFICATION_TEMPLATES.APPOINTMENT_REMINDER,
+  NOTIFICATION_TEMPLATES.TECH_EN_ROUTE,
+  NOTIFICATION_TEMPLATES.TRACKING_UPDATE,
+  NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
+  NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
+  NOTIFICATION_TEMPLATES.REFERRAL_CODE,
+  NOTIFICATION_TEMPLATES.REFERRAL_INVITE,
+  NOTIFICATION_TEMPLATES.REFERRAL_BOOKED,
+  NOTIFICATION_TEMPLATES.REFERRAL_COMPLETED,
+  NOTIFICATION_TEMPLATES.REFERRAL_REWARD_APPROVED,
+  NOTIFICATION_TEMPLATES.REFERRAL_CREDIT_EXPIRING,
+  NOTIFICATION_TEMPLATES.REFERRAL_CREDIT_EXPIRED,
+  NOTIFICATION_TEMPLATES.PAYMENT_RECEIVED,
+  NOTIFICATION_TEMPLATES.BOOKING_RECEIPT,
+  NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION,
+  NOTIFICATION_TEMPLATES.ACCOUNT_WELCOME,
+  NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION,
+  NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS,
+  'SIGNIN_LINK', // composed in routes/handoff.js with a literal template name
+]);
+
+function withCustomerReachFooter(channel, template, payload) {
+  if (channel !== 'email' || !CUSTOMER_EMAIL_TEMPLATES.has(template)) return payload;
+  if (!payload || typeof payload.message !== 'string') return payload;
+  if (payload.message.includes('Part of the Top Speed ecosystem')) return payload;
+  return { ...payload, message: payload.message + CUSTOMER_REACH_FOOTER, reachFooter: true };
+}
+
+/* ------------------------------------------------------------------ */
 /* Settings — staff toggles, persisted via db/notificationsRepo.       */
 /* Defaults are ALL ON; the store copy is hydrated at cold start.      */
 /* ------------------------------------------------------------------ */
@@ -113,12 +181,15 @@ export function queueNotification({ channel, template, to, payload = {}, source 
     const existing = store.notificationOutbox.find((entry) => entry.eventKey === eventKey);
     if (existing) return existing;
   }
+  // Universal reach: customer-facing emails carry the shared Book /
+  // Call / Tell Speedy action block + ecosystem footer (see above).
+  const outPayload = withCustomerReachFooter(channel, template, payload);
   const entry = {
     id: createId(),
     channel,
     template,
     to,
-    payload,
+    payload: outPayload,
     status: status || 'QUEUED',
     createdAt: new Date().toISOString(),
   };
@@ -341,7 +412,7 @@ export function notifySubmission({ kind, reference, submitter = {}, lines = [], 
     `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
   const smsBody =
     `Top Speed Appliance: we received your ${label} — ref ${displayRef || 'on file'}. ${presentation.next} ` +
-    `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`;
+    `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Ask Speedy any time: ${REACH_LINKS.speedy}`;
 
   const emailPayload = {
     kind,
@@ -521,7 +592,7 @@ export function notifyPhotoDiagnosis({ submitter = {}, diagnosis = null, reply =
     `Top Speed Appliance photo diagnosis: ${appliance}` +
     (causes.length ? ` — most likely: ${causes[0]}` : '') +
     (safetyCritical ? '. SAFETY: follow the safety steps Speedy gave you and do not use the appliance.' : '.') +
-    (bookingReference ? ` Attached to booking ${bookingReference}.` : ' Book the $99 diagnostic (credited toward repair): topspeedserviceos.com/book') +
+    (bookingReference ? ` Attached to booking ${bookingReference}. Track it: ${REACH_LINKS.track}` : ' Book the $99 diagnostic (credited toward repair): topspeedserviceos.com/book') +
     ` Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`;
 
   const emailPayload = {
@@ -605,7 +676,7 @@ export function notifyBookingConfirmation(booking, source = null) {
         businessPhone: PLATFORM_CONSTANTS.phone,
         message:
           `Top Speed Appliance: your ${booking.appliance} service in ${booking.city} is booked.${appointmentText} ` +
-          `${PLATFORM_CONSTANTS.feeTerms} Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`,
+          `${PLATFORM_CONSTANTS.feeTerms} Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${REACH_LINKS.track}`,
       },
     }),
   );
@@ -674,7 +745,7 @@ export function notifyAppointmentReminder(booking, source = null) {
         message:
           `Top Speed Appliance reminder: your ${booking.appliance} appointment in ${booking.city} is ` +
           `${appointment.date}, ${appointment.windowLabel || appointment.window}. ` +
-          `Need a different time? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`,
+          `Need a different time? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${REACH_LINKS.track}`,
       },
     }),
   );
@@ -700,7 +771,8 @@ export function notifyReferralIssued(booking, referral, source = null) {
         customerName: booking.customer?.name,
         message:
           `Top Speed Appliance: thanks for choosing us! Know a neighbor with a broken appliance? ` +
-          `Share your referral code ${referral.code} — when they book, we will know you sent them.`,
+          `Share your referral code ${referral.code} — when they book, we will know you sent them. ` +
+          `Share your link: ${REACH_LINKS.refer}?c=${referral.code}`,
       },
     }),
   );
@@ -792,7 +864,7 @@ export function notifyReferralBooked(referral, journey, source = null) {
         message:
           `Top Speed Appliance: good news — ${refereeName} booked service with your referral code ${referral.code}` +
           (journey.bookingReference ? ` (ref ${journey.bookingReference})` : '') +
-          `. We'll keep you posted as their job progresses.`,
+          `. We'll keep you posted as their job progresses. Your referral home: ${REACH_LINKS.refer}`,
       },
     }),
   );
@@ -826,7 +898,8 @@ export function notifyReferralCompleted(referral, journey, source = null) {
         rewardAmountCents: journey.rewardAmountCents ?? null,
         message:
           `Top Speed Appliance: ${refereeName}'s service (booked with your referral code ${referral.code}) is complete.` +
-          amountLine,
+          amountLine +
+          ` Your referral home: ${REACH_LINKS.refer}`,
       },
     }),
   );
@@ -862,7 +935,7 @@ export function notifyReferralRewardApproved(referral, journey, credit, bonusCre
         message:
           `Top Speed Appliance: your referral reward credit of ${formatCents(credit.amountCents)} has been issued ` +
           `for ${journey.refereeName || 'your friend'}'s completed service.${bonusLine}${expiryLine} ` +
-          `Mention it when you book your next service and we'll apply it.`,
+          `Mention it when you book your next service and we'll apply it. Book: ${REACH_LINKS.book}`,
       },
     }),
   );
@@ -903,7 +976,7 @@ export function notifyReferralCreditExpiring(credit, source = null) {
         expiresAt: credit.expiresAt || null,
         message:
           `Top Speed Appliance: a quick heads-up — your referral reward credit of ${formatCents(credit.amountCents)} ` +
-          `expires on ${expiryDate}. Book your next service before then and mention the credit so we can apply it.`,
+          `expires on ${expiryDate}. Book your next service before then and mention the credit so we can apply it. Book: ${REACH_LINKS.book}`,
       },
     }),
   );
@@ -929,7 +1002,7 @@ export function notifyReferralCreditExpired(credit, source = null) {
         expiresAt: credit.expiresAt || null,
         message:
           `Top Speed Appliance: your referral reward credit of ${formatCents(credit.amountCents)} expired on ${expiryDate} ` +
-          `before it was used. Your referral code still works — friends you send us can still earn you new credit.`,
+          `before it was used. Your referral code still works — friends you send us can still earn you new credit. Your referral home: ${REACH_LINKS.refer}`,
       },
     }),
   );
@@ -947,7 +1020,7 @@ export function notifyTechEnRoute(booking, source = null) {
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
-        message: 'Top Speed Appliance: your technician is on the way. You can follow the visit status from your booking updates.',
+        message: `Top Speed Appliance: your technician is on the way. Track the visit live: ${REACH_LINKS.track}`,
       },
     }),
   );
@@ -1094,7 +1167,7 @@ export function notifyReviewRequest(booking, source = null) {
         message:
           `Top Speed Appliance: thanks for your ${booking.appliance} service. ` +
           'If we earned it, a Google review helps neighbors find us — and if anything is not right, call ' +
-          `${PLATFORM_CONSTANTS.phoneDisplay} and we will make it right.`,
+          `${PLATFORM_CONSTANTS.phoneDisplay} and we will make it right. Book again or ask Speedy: ${REACH_LINKS.speedy}`,
       },
     }),
   );
