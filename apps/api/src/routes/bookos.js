@@ -17,6 +17,7 @@ import {
   windowById,
 } from '../services/bookos.js';
 import { notifyAppointmentReminder, notifyBookingConfirmation } from '../services/notifications.js';
+import { countSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { emitReport } from '../services/managementReports.js';
 
 const router = Router();
@@ -101,14 +102,54 @@ router.get('/bookos/slots', ...staffOnly, (req, res) => {
  * the expansion waitlist); area-review requests appear flagged so a
  * setter resolves the area first. ?area=<city> narrows to one area.
  */
-router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
+/**
+ * The lead link for a queue row: which intake connection created this
+ * booking. Live bookings carry it on `booking.lead`; after a cold
+ * restart the booking is rehydrated without it (it is not a database
+ * column), but the BOOKING_CREATED history entry IS persisted and
+ * carries the connection id / reference / type — resolve from there,
+ * and from the reference to the connection record when needed.
+ */
+function leadLinkOf(booking) {
+  if (booking.lead?.connectionId) {
+    return {
+      connectionId: booking.lead.connectionId,
+      connectionReference: booking.lead.connectionReference || null,
+      connectionType: booking.lead.connectionType || null,
+    };
+  }
+  const created = (booking.history || []).find((h) => (h.type || h.event) === 'BOOKING_CREATED' && (h.connectionId || h.connectionReference));
+  if (!created) return null;
+  let connectionId = created.connectionId || null;
+  if (!connectionId && created.connectionReference) {
+    const conn = store.connections.find((c) => c.reference === created.connectionReference);
+    if (conn) connectionId = conn.id;
+  }
+  if (!connectionId && !created.connectionReference) return null;
+  return {
+    connectionId,
+    connectionReference: created.connectionReference || null,
+    connectionType: created.connectionType || null,
+  };
+}
+
+const MEDIA_LEAD_TYPES = ['PEPPER_LISTS_SCAN', 'PEPPER_LISTS_LIVE_VIDEO'];
+
+router.get('/bookos/setter-queue', ...staffOnly, async (req, res) => {
   const now = Date.now();
   const areaFilter = String(req.query.area || '').trim();
-  const queue = visibleBookings(req)
+  const rows = visibleBookings(req)
     .filter((booking) => booking.status === 'PENDING_DISPATCH' && effectiveAreaStatus(booking) !== 'OUT_OF_AREA')
     .filter((booking) => !areaFilter || effectiveArea(booking) === areaFilter || booking.city === areaFilter)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((booking) => ({
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const queue = await Promise.all(rows.map(async (booking) => {
+    const lead = leadLinkOf(booking);
+    // Media count only for Pepper Lists submissions (the only intake
+    // that carries SubmissionMedia) — a COUNT query, never the bytes.
+    const mediaCount = lead?.connectionId && MEDIA_LEAD_TYPES.includes(lead.connectionType)
+      ? await countSubmissionMedia(lead.connectionId)
+      : null;
+    return {
       bookingId: booking.id,
       referenceCode: booking.referenceCode || null,
       source: booking.source || null,
@@ -129,7 +170,10 @@ router.get('/bookos/setter-queue', ...staffOnly, (req, res) => {
       priority: booking.priority || false,
       preferredWindow: booking.preferredWindow || null,
       appointment: appointmentSummary(booking),
-    }));
+      lead,
+      mediaCount,
+    };
+  }));
   return res.json({ data: { count: queue.length, queue } });
 });
 

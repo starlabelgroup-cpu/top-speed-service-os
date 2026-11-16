@@ -55,6 +55,24 @@ a{color:inherit}
 @media(prefers-color-scheme:dark){.badge{color:#B9D2FF}}
 .qcard{padding:14px 16px;border-bottom:1px solid var(--line)}
 .qcard:last-child{border-bottom:0}
+.qmedia{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
+.qm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:9px;margin-top:4px}
+.qm-item{margin:0;min-width:0}
+.qm-item.vid{grid-column:span 2}
+.qm-thumb{display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);cursor:pointer}
+.qm-thumb img{display:block;width:100%;height:88px;object-fit:cover}
+.qm-vid{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#000}
+.qm-vid video{display:block;width:100%;max-height:230px;background:#000}
+.qm-cap{font-size:11.5px;color:var(--mut);margin-top:4px;line-height:1.45;overflow-wrap:anywhere}
+.qm-note{font-size:12px;color:var(--mut);margin-top:8px;line-height:1.45}
+.qm-err{font-size:12.5px;color:#B3261E;margin-top:6px;line-height:1.45}
+.qm-load{font-size:13px;color:var(--mut);line-height:1.5}
+.qmlb{position:fixed;inset:0;background:rgba(4,12,30,.9);display:none;place-items:center;z-index:300;padding:14px}
+.qmlb.on{display:grid}
+.qmlb figure{margin:0;width:100%;max-width:920px}
+.qmlb img{display:block;max-width:100%;max-height:80vh;margin:0 auto;border-radius:12px}
+.qmlb figcaption{color:#DCE6F7;font-size:13px;text-align:center;margin-top:10px}
+.qmlb .qm-x{position:absolute;top:12px;right:12px;background:#fff;color:var(--navy);border:0;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer;font-size:13.5px;font-family:inherit}
 .qtop{display:flex;justify-content:space-between;gap:10px}
 .qtop b{font-size:17px}.age{color:var(--red);font-weight:800;font-size:12px;white-space:nowrap}
 .meta{color:var(--mut);font-size:13.5px;line-height:1.5;margin-top:3px}
@@ -468,6 +486,7 @@ function loadLive(){
 }
 function renderLiveQueue(items){
   liveQueue=items;
+  qmResetUrls();
   document.getElementById('qCount').textContent=items.length+' waiting';
   var el=document.getElementById('queue');
   if(!items.length){ el.innerHTML='<div class="empty"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 20.5L9 11l6 4.5zM9 11l-1.8-4.6L13.5 4l1 4.2M15 15.5l3.2-1.4-1 3.4M17.8 8.6l2.6-.8-1.2 2.6" stroke="#E8322E"/><circle cx="19" cy="15.4" r=".9" fill="#E8322E" stroke="none"/></svg> Queue clear \u2014 every request has been called. New bookings will appear here live.</div>'; return; }
@@ -477,10 +496,98 @@ function renderLiveQueue(items){
     var actions='<button class="btn red" onclick="liveCall('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg> Call</button>';
     if(appt){ actions+='<button class="btn primary" onclick="liveResched('+i+')">\u21bb Move to Tomorrow</button>'; }
     else{ actions+='<button class="btn primary" onclick="liveConfirm('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirm Appointment</button>'; }
+    var hasMedia=!!(q.lead&&(q.lead.connectionId||q.lead.connectionReference)&&q.mediaCount>0);
+    if(hasMedia){ actions+='<button class="btn ghost" id="qmb-'+i+'" aria-expanded="false" onclick="toggleQMedia('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13" rx="2.5"/><circle cx="12" cy="13" r="3.4" stroke="#E8322E"/><path d="M8.5 6.5l1.6-2.7h3.8l1.6 2.7"/></svg> Customer media ('+q.mediaCount+')</button>'; }
+    var mediaSec=hasMedia?'<div class="qmedia" id="qm-'+i+'" hidden><div class="qm-load">Customer media loads here when opened \u2014 photos and videos are not downloaded for the whole queue.</div></div>':'';
     actions+='<button class="btn ghost" id="rm-'+i+'" onclick="liveRemove('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> Remove</button>';
-    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div></article>';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div>'+mediaSec+'</article>';
   }).join('');
 }
+/* ============ CUSTOMER MEDIA VIEWER (Pepper Lists submissions) ============
+   Media bytes live behind the staff-gated pepper-lists endpoints. Nothing
+   is fetched while the queue renders: a card's media loads only when a
+   setter opens it, each file streams with the staff token in the
+   Authorization header (never in a URL) and renders from an object URL. */
+var qmUrls=[], qmObjUrls={}, qmLoaded={};
+function qmResetUrls(){ qmUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} }); qmUrls=[]; qmObjUrls={}; qmLoaded={}; }
+function qmLinkOf(q){ return (q&&q.lead&&(q.lead.connectionId||q.lead.connectionReference))||''; }
+function fmtKB(n){ if(n==null) return ''; if(n<1024) return n+' B'; if(n<1048576) return Math.max(1,Math.round(n/1024))+' KB'; return (n/1048576).toFixed(1)+' MB'; }
+function qmHasSpeedyRead(q){ var t=String((q&&q.issue)||''); return t.indexOf('Speedy photo read:')>-1 && t.indexOf('unavailable')===-1; }
+function apiBlob(path){
+  return fetch(TSOS_API+path,{headers:{'Authorization':'Bearer '+tsosToken()}})
+    .then(function(r){ if(r.status===401) throw new Error('session expired'); if(!r.ok) throw new Error('status '+r.status); return r.blob(); });
+}
+function toggleQMedia(i){
+  var sec=document.getElementById('qm-'+i); if(!sec) return;
+  var btn=document.getElementById('qmb-'+i);
+  if(!sec.hidden){ sec.hidden=true; if(btn) btn.setAttribute('aria-expanded','false'); return; }
+  sec.hidden=false; if(btn) btn.setAttribute('aria-expanded','true');
+  if(!qmLoaded[i]) loadQMedia(i);
+}
+function loadQMedia(i){
+  var q=liveQueue[i]; var sec=document.getElementById('qm-'+i); if(!q||!sec) return;
+  var link=qmLinkOf(q); if(!link){ sec.innerHTML=''; return; }
+  sec.innerHTML='<div class="qm-load">Loading customer media\u2026</div>';
+  apiFetch('/pepper-lists/submissions/'+encodeURIComponent(link)+'/media?meta=1')
+    .then(function(j){
+      var items=j.data||[];
+      if(!items.length){ /* nothing actually attached \u2014 remove the viewer chrome entirely */
+        if(sec.parentNode) sec.parentNode.removeChild(sec);
+        var b=document.getElementById('qmb-'+i); if(b&&b.parentNode) b.parentNode.removeChild(b);
+        return;
+      }
+      qmLoaded[i]=items;
+      renderQMedia(i,items);
+    })
+    .catch(function(e){
+      sec.innerHTML='<div class="qm-err">Could not load this customer\u2019s media ('+escH(e.message)+'). <button class="btn ghost" style="padding:6px 11px;font-size:12px" onclick="loadQMedia('+i+')">Retry</button></div>';
+    });
+}
+function renderQMedia(i,items){
+  var sec=document.getElementById('qm-'+i); if(!sec) return;
+  var q=liveQueue[i]; var link=qmLinkOf(q);
+  var html='<div class="qm-grid">'+items.map(function(m,mi){
+    var label=(m.kind==='video'?'Video ':'Photo ')+(mi+1)+' \u00b7 '+fmtKB(m.sizeBytes)+(m.mime?' \u00b7 '+escH(m.mime):'');
+    if(m.kind==='video'){
+      return '<figure class="qm-item vid" id="qmf-'+i+'-'+mi+'"><div class="qm-vid"><video id="qmv-'+i+'-'+mi+'" controls preload="metadata" playsinline></video></div><figcaption class="qm-cap">'+label+'</figcaption></figure>';
+    }
+    return '<figure class="qm-item" id="qmf-'+i+'-'+mi+'"><button type="button" class="qm-thumb" onclick="qmLightbox('+i+','+mi+')" aria-label="Open '+label+' full size"><img id="qmi-'+i+'-'+mi+'" alt="'+label+'"></button><figcaption class="qm-cap">'+label+' \u00b7 tap to enlarge</figcaption></figure>';
+  }).join('')+'</div>';
+  if(qmHasSpeedyRead(q)) html+='<div class="qm-note">Speedy\u2019s photo read is attached to this request \u2014 see the request text on the card above.</div>';
+  sec.innerHTML=html;
+  items.forEach(function(m,mi){
+    apiBlob('/pepper-lists/submissions/'+encodeURIComponent(link)+'/media/'+encodeURIComponent(m.id))
+      .then(function(blob){
+        var url=URL.createObjectURL(blob); qmUrls.push(url); qmObjUrls[i+':'+mi]=url;
+        var el=document.getElementById(m.kind==='video'?('qmv-'+i+'-'+mi):('qmi-'+i+'-'+mi));
+        if(el) el.src=url;
+      })
+      .catch(function(){
+        var f=document.getElementById('qmf-'+i+'-'+mi);
+        if(f) f.insertAdjacentHTML('beforeend','<div class="qm-err">This file could not be loaded.</div>');
+      });
+  });
+}
+function qmEnsureLb(){
+  var lb=document.getElementById('qmLb');
+  if(lb) return lb;
+  lb=document.createElement('div'); lb.className='qmlb'; lb.id='qmLb';
+  lb.innerHTML='<figure><img id="qmLbImg" alt=""><figcaption id="qmLbCap"></figcaption></figure><button type="button" class="qm-x" onclick="qmCloseLb()" aria-label="Close full view"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> Close</button>';
+  lb.addEventListener('click',function(ev){ if(ev.target===lb) qmCloseLb(); });
+  document.body.appendChild(lb);
+  return lb;
+}
+function qmLightbox(i,mi){
+  var url=qmObjUrls[i+':'+mi]; if(!url) return;
+  var items=qmLoaded[i]||[]; var m=items[mi];
+  var lb=qmEnsureLb();
+  document.getElementById('qmLbImg').src=url;
+  document.getElementById('qmLbCap').textContent=m?((m.kind==='video'?'Video ':'Photo ')+(mi+1)+' \u00b7 '+fmtKB(m.sizeBytes)):'';
+  lb.classList.add('on');
+}
+function qmCloseLb(){ var lb=document.getElementById('qmLb'); if(lb) lb.classList.remove('on'); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') qmCloseLb(); });
+
 var rmArm={};
 function liveRemove(i){
   var q=liveQueue[i]; if(!q||!q.referenceCode) return;

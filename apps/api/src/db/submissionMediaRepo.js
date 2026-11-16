@@ -77,7 +77,24 @@ export async function listSubmissionMedia(connectionId) {
   return [];
 }
 
-export async function countSubmissionMedia(connectionId) {
+export async function getSubmissionMediaItem(connectionId, mediaId) {
   const rows = await listSubmissionMedia(connectionId);
-  return rows.length;
+  return rows.find((row) => row.id === mediaId) || null;
+}
+
+export async function countSubmissionMedia(connectionId) {
+  // A count must never pull the media bytes themselves: in-memory rows
+  // answer directly, and database mode uses a real COUNT query. The
+  // full list read is only the last-resort fallback.
+  const inMemory = memory.get(connectionId);
+  if (inMemory) return inMemory.length;
+  if (DATABASE_ENABLED) {
+    try {
+      return await db().submissionMedia.count({ where: { connectionId } });
+    } catch (error) {
+      console.error('countSubmissionMedia failed', error?.message || error);
+      return 0;
+    }
+  }
+  return 0;
 }

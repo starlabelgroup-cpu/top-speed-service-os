@@ -124,6 +124,7 @@ export async function createLeadBooking(record) {
     updatedAt: new Date().toISOString(),
   };
   addBookingEvent(booking, 'BOOKING_CREATED', 'lead-intake', {
+    connectionId: record.id,
     connectionReference: record.reference,
     connectionType: record.type,
     segment: lead.segment,

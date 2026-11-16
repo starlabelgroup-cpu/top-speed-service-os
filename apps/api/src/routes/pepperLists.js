@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { store } from '../data/store.js';
 import { createConnectionRecord } from '../db/connectionsRepo.js';
-import { listSubmissionMedia, saveSubmissionMedia } from '../db/submissionMediaRepo.js';
+import { getSubmissionMediaItem, listSubmissionMedia, saveSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { assertImageDataUrl, speedyDiagnose, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
@@ -217,18 +217,78 @@ router.post('/pepper-lists/submissions', authenticate, async (req, res) => {
   });
 });
 
-router.get('/pepper-lists/submissions/:connectionId/media', authenticate, requireCompany, requireRole(...STAFF_ROLES), async (req, res) => {
-  const rows = await listSubmissionMedia(req.params.connectionId);
+/**
+ * Media routes accept either the connection's id or its TS- reference:
+ * a booking's persisted history carries the connection reference (the
+ * lead link itself is not a database column), so staff surfaces that
+ * only know the reference still resolve to the same record. Anything
+ * else falls through unchanged and simply finds no media.
+ */
+function resolveMediaConnectionId(param) {
+  const raw = String(param || '');
+  if (!raw) return raw;
+  if (store.connections.some((c) => c.id === raw)) return raw;
+  const byReference = store.connections.find((c) => c.reference === raw);
+  return byReference ? byReference.id : raw;
+}
+
+const staffMediaGate = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
+
+router.get('/pepper-lists/submissions/:connectionId/media', ...staffMediaGate, async (req, res) => {
+  const rows = await listSubmissionMedia(resolveMediaConnectionId(req.params.connectionId));
+  // ?meta=1 returns the manifest only (no media bytes) so staff
+  // consoles can list a submission's files cheaply and stream each
+  // one through the per-item route below when a setter opens it.
+  const metaOnly = String(req.query.meta || '') === '1';
   return res.json({
     data: rows.map((row) => ({
       id: row.id,
       kind: row.kind,
       mime: row.mime,
       sizeBytes: row.sizeBytes,
-      dataUrl: row.dataUrl,
+      ...(metaOnly ? {} : { dataUrl: row.dataUrl }),
       createdAt: row.createdAt,
     })),
   });
+});
+
+/**
+ * One media item as raw bytes (staff only, same gate as the list).
+ * Consoles fetch it with the staff token in the Authorization header
+ * and hand the browser an object URL — the token never appears in a
+ * URL. Range requests are honored so video can seek and stream
+ * instead of downloading the whole clip before playback.
+ */
+router.get('/pepper-lists/submissions/:connectionId/media/:mediaId', ...staffMediaGate, async (req, res) => {
+  const row = await getSubmissionMediaItem(resolveMediaConnectionId(req.params.connectionId), req.params.mediaId);
+  if (!row) return res.status(404).json({ error: 'Media item not found' });
+  const match = /^data:([^;,]+);base64,([\s\S]*)$/.exec(row.dataUrl || '');
+  if (!match) return res.status(500).json({ error: 'Stored media is unreadable' });
+  const bytes = Buffer.from(match[2], 'base64');
+  const total = bytes.length;
+  const filename = `pepper-lists-${row.kind}-${row.id.slice(0, 8)}`;
+  res.set({
+    'Content-Type': row.mime || match[1] || 'application/octet-stream',
+    'Cache-Control': 'private, no-store',
+    'Accept-Ranges': 'bytes',
+    'Content-Disposition': `inline; filename="${filename}"`,
+  });
+  const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || ''));
+  if (range && (range[1] !== '' || range[2] !== '')) {
+    let start = range[1] === '' ? 0 : Number(range[1]);
+    let end = range[2] === '' ? total - 1 : Number(range[2]);
+    if (range[1] === '') { start = Math.max(0, total - Number(range[2])); end = total - 1; }
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start > end || start >= total) {
+      res.set('Content-Range', `bytes */${total}`);
+      return res.status(416).end();
+    }
+    end = Math.min(end, total - 1);
+    res.status(206);
+    res.set({ 'Content-Range': `bytes ${start}-${end}/${total}`, 'Content-Length': end - start + 1 });
+    return res.end(bytes.subarray(start, end + 1));
+  }
+  res.set('Content-Length', total);
+  return res.end(bytes);
 });
 
 export default router;
