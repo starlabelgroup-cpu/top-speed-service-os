@@ -270,7 +270,11 @@ function tchLoadSettings(){
 </script>
 <script>
 const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
+/* Toast discipline: msg is ALWAYS inserted as a text node, so job/customer data can never
+   become markup. Icons travel only via the optional 2nd argument and must be one of this
+   file's own static ICO_* SVG strings, parsed as markup inside a wrapper span. */
+const ICO_ACCEPT='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg>';
+function toast(m,icon){const t=$('#toast');t.innerHTML='';if(icon){const ic=document.createElement('span');ic.innerHTML=icon;t.appendChild(ic);t.appendChild(document.createTextNode(' '))}t.appendChild(document.createTextNode(m));t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function go(tab){$$('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+tab));$$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));window.scrollTo(0,0)}
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
 $$('[data-open-job]').forEach(c=>c.addEventListener('click',()=>go('job')));
@@ -280,7 +284,7 @@ $$('#offerList .offer').forEach(card=>{
   card.querySelector('[data-accept]').addEventListener('click',()=>{
     const title=card.querySelector('h3').textContent;card.remove();offers--;syncOffers();
     const d=document.createElement('div');d.className='card job';d.innerHTML='<div class="when">NEW</div><div><h3>'+title+'</h3><p>Accepted just now · details in Job tab</p></div><span class="st next">ADDED</span>';
-    d.addEventListener('click',()=>go('job'));$('#todayList').appendChild(d);toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> Job accepted — added to your day');go('today');
+    d.addEventListener('click',()=>go('job'));$('#todayList').appendChild(d);toast('Job accepted — added to your day',ICO_ACCEPT);go('today');
   });
   card.querySelector('[data-decline]').addEventListener('click',()=>{card.remove();offers--;syncOffers();toast('Offer declined — dispatch will re-match it')});
 });
