@@ -680,7 +680,7 @@ function renderTeamList(){
   var el = document.getElementById('teamList');
   if (!el) return;
   if (!TB.team.length){ el.innerHTML = '<p class="empty">No accounts loaded.</p>'; return; }
-  el.innerHTML = '<h3 style="margin:0 0 10px;color:#182742;font-size:15px;font-family:'Rajdhani',sans-serif">Team accounts · ' + TB.team.length + '</h3>' + TB.team.map(function(u){
+  el.innerHTML = '<h3 style="margin:0 0 10px;color:#182742;font-size:15px;font-family:Rajdhani,sans-serif">Team accounts · ' + TB.team.length + '</h3>' + TB.team.map(function(u){
     var name = (((u.firstName || '') + ' ' + (u.lastName || '')).trim()) || u.email;
     return '<div class="teamrow"><span class="who"><b>' + esc(name) + '</b> · ' + esc(u.email || '') + (u.phone ? ' · ' + esc(u.phone) : '') + '</span>'
       + '<span class="meta">' + esc((u.roles || []).join(', ')) + ' · ' + esc(companyLabel(u.companyId)) + (u.active === false ? ' · INACTIVE' : '') + '</span></div>';
