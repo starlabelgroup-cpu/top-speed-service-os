@@ -87,43 +87,6 @@
   <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="segLabels" id="segLabels"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
 
-  <style>
-    .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.5);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(18,128,255,.16);margin-top:20px;text-align:left;}
-    .sbpromo-top{display:flex;gap:14px;align-items:flex-start;}
-    .sbpromo-mark{flex:none;width:58px;height:58px;}
-    .sbpromo-mark svg{width:58px;height:58px;display:block;filter:drop-shadow(0 0 9px rgba(18,128,255,.65));}
-    .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#9FD0FF;background:rgba(18,128,255,.16);border:1px solid rgba(25,167,255,.45);padding:3px 9px;border-radius:99px;}
-    .sbpromo-h{font-size:21px;line-height:1.2;font-weight:800;margin:8px 0 5px;color:#fff;font-family:'Poppins',sans-serif;}
-    .sbpromo-p{font-size:14px;line-height:1.5;color:#C7D8F5;margin:0;}
-    .sbpromo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
-    .sbpromo-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;color:#EAF3FF;}
-    .sbpromo-chip svg{width:17px;height:17px;flex:none;filter:drop-shadow(0 0 3px rgba(25,167,255,.65));}
-    .sbpromo-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}
-    .sbpromo-cta{display:inline-flex;align-items:center;gap:9px;background:#E8322E;color:#fff;border:none;border-radius:999px;padding:13px 22px;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 8px 20px rgba(232,50,46,.35);}
-    .sbpromo-cta svg{width:19px;height:19px;flex:none;}
-    .sbpromo-note{font-size:12.5px;color:#9DB6DD;line-height:1.45;}
-    @media(max-width:480px){.sbpromo{padding:16px;}.sbpromo-h{font-size:19px;}.sbpromo-cta{width:100%;justify-content:center;}}
-  </style>
-  <div class="sbpromo">
-    <div class="sbpromo-top">
-      <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
-      <div>
-        <span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
-        <h3 class="sbpromo-h">Book the smart way — with Speedy AI</h3>
-        <p class="sbpromo-p">Just tell Speedy what's wrong — type it, say it, or snap a photo. Speedy asks a couple of quick questions and books your visit right in the chat.</p>
-      </div>
-    </div>
-    <div class="sbpromo-chips">
-      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16v10.2h-9.2l-4.4 3.9v-3.9H4z"/><circle cx="8.4" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.2" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.6" r="1.2" fill="currentColor" stroke="none"/></svg>Type it, say it, or snap a photo</span>
-      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3.5 3.5H11L20.5 13 13 20.5 3.5 11z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 13.4l1.9 1.9 3.5-3.8"/></svg>$99 diagnostic — credited toward your repair</span>
-      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21L6.6 11.6a5.4 5.4 0 1 1 10.8 0z"/><circle cx="12" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg>Live 8-stage tracking after you book</span>
-    </div>
-    <div class="sbpromo-row">
-      <button type="button" class="sbpromo-cta" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}else{var b=document.querySelector('.tsw-btn');if(b){b.click();}else{location.href='/speedy';}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#fff" stroke="none"/></svg>Book with Speedy</button>
-      <span class="sbpromo-note">Prefer the classic form? It's right below — same queue, same confirmation.</span>
-    </div>
-  </div>
-
   <div class="card" id="formCard">
     <div class="pane" data-pane="1">
       <h2>Contact details <small>1 of 5</small></h2>
@@ -192,6 +155,42 @@
     </div>
   </div>
 
+  <style>
+    .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.5);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(18,128,255,.16);margin-top:20px;text-align:left;}
+    .sbpromo-top{display:flex;gap:14px;align-items:flex-start;}
+    .sbpromo-mark{flex:none;width:58px;height:58px;}
+    .sbpromo-mark svg{width:58px;height:58px;display:block;filter:drop-shadow(0 0 9px rgba(18,128,255,.65));}
+    .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#9FD0FF;background:rgba(18,128,255,.16);border:1px solid rgba(25,167,255,.45);padding:3px 9px;border-radius:99px;}
+    .sbpromo-h{font-size:21px;line-height:1.2;font-weight:800;margin:8px 0 5px;color:#fff;font-family:'Poppins',sans-serif;}
+    .sbpromo-p{font-size:14px;line-height:1.5;color:#C7D8F5;margin:0;}
+    .sbpromo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+    .sbpromo-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;color:#EAF3FF;}
+    .sbpromo-chip svg{width:17px;height:17px;flex:none;filter:drop-shadow(0 0 3px rgba(25,167,255,.65));}
+    .sbpromo-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}
+    .sbpromo-cta{display:inline-flex;align-items:center;gap:9px;background:#E8322E;color:#fff;border:none;border-radius:999px;padding:13px 22px;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 8px 20px rgba(232,50,46,.35);}
+    .sbpromo-cta svg{width:19px;height:19px;flex:none;}
+    .sbpromo-note{font-size:12.5px;color:#9DB6DD;line-height:1.45;}
+    @media(max-width:480px){.sbpromo{padding:16px;}.sbpromo-h{font-size:19px;}.sbpromo-cta{width:100%;justify-content:center;}}
+  </style>
+  <div class="sbpromo">
+    <div class="sbpromo-top">
+      <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
+      <div>
+        <span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
+        <h3 class="sbpromo-h">Book the smart way — with Speedy AI</h3>
+        <p class="sbpromo-p">Prefer the high-tech way? Just tell Speedy what's wrong — type it, say it, or snap a photo. Speedy asks a couple of quick questions and books your visit right in the chat.</p>
+      </div>
+    </div>
+    <div class="sbpromo-chips">
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16v10.2h-9.2l-4.4 3.9v-3.9H4z"/><circle cx="8.4" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.2" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.6" r="1.2" fill="currentColor" stroke="none"/></svg>Type it, say it, or snap a photo</span>
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3.5 3.5H11L20.5 13 13 20.5 3.5 11z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 13.4l1.9 1.9 3.5-3.8"/></svg>$99 diagnostic — credited toward your repair</span>
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21L6.6 11.6a5.4 5.4 0 1 1 10.8 0z"/><circle cx="12" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg>Live 8-stage tracking after you book</span>
+    </div>
+    <div class="sbpromo-row">
+      <button type="button" class="sbpromo-cta" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}else{var b=document.querySelector('.tsw-btn');if(b){b.click();}else{location.href='/speedy';}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#fff" stroke="none"/></svg>Book with Speedy</button>
+      <span class="sbpromo-note">The classic form above is how most customers book — same queue, same confirmation either way.</span>
+    </div>
+  </div>
   <a class="speedy" href="/speedy">
     <span><b>Need help? Ask Speedy AI</b><small>Rather talk it through? Speedy books it in the chat — same queue, same confirmation.</small></span>
     <span class="bub"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg></span>
