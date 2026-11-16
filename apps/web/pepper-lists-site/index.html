@@ -183,6 +183,7 @@ footer a{color:var(--lime)}
       <div class="plc-two">
         <div class="plc-block">
           <h4>Selling as an individual</h4>
+          <a href="#" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();} return false;" style="display:block;margin-bottom:12px"><img src="/api/v1/app/platform-images/sell-individual.webp" alt="Illustration: a homeowner photographing household items in the yard to sell them — Pepper Lists Sell for individuals" style="width:100%;height:auto;display:block;border-radius:14px" loading="lazy"></a>
           <p>Snap a photo of what you're selling and talk it through with Speedy — Pepper drafts the listing from your photo, and posts it to Facebook Marketplace only after your yes in chat. Nothing goes live without you.</p>
           <div class="plb-btnrow">
             <button class="btn small" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Start a listing with Speedy</button>
@@ -191,6 +192,7 @@ footer a{color:var(--lime)}
         </div>
         <div class="plc-block">
           <h4>Selling as a business</h4>
+          <a href="#" onclick="plbShow('ads');plAdsMine(); return false;" style="display:block;margin-bottom:12px"><img src="/api/v1/app/platform-images/sell-business.webp" alt="Illustration: a shop owner at a market stall advertising her products — Pepper Lists Sell for businesses" style="width:100%;height:auto;display:block;border-radius:14px" loading="lazy"></a>
           <p>Put an ad for your business inside Pepper Lists — it can also rotate in the Flywheel mini banner across Top Speed sites, and the Top Speed office reviews every ad before anything runs. For full campaigns, use the Flywheel advertiser console.</p>
           <div class="plb-btnrow">
             <button class="btn small" type="button" onclick="plbShow('ads');plAdsMine()">Advertise in Pepper Lists</button>
@@ -203,6 +205,7 @@ footer a{color:var(--lime)}
     <div class="plb-panel" id="plCatPanel-post" style="display:none">
       <h3>Pepper Lists Post</h3>
       <p class="plb-note">Had a repair done? Post a review of it — with photos or a video of the repair and the short post-service survey. A review tied to a finished job posts as a <b>Verified Repair</b> review. Speedy answers every review personally, you can comment back on your own thread, and published reviews appear on the public wall.</p>
+      <a href="#reviews" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/post-reviews.webp" alt="Illustration: a happy customer giving a thumbs-up beside her repaired refrigerator while posting a review — Pepper Lists Post reviews, photos and comments" style="width:100%;height:auto;display:block;border-radius:14px" loading="lazy"></a>
       <div class="plb-btnrow">
         <button class="btn small" type="button" onclick="plCatGoReviews()">Write a review</button>
         <a class="btn small dark" href="#reviews">See the public wall</a>
@@ -567,6 +570,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
       <h3>Pepper Lists Sell</h3>
       <p style="margin-bottom:12px">For individuals &amp; businesses</p>
+      <a href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/sell-individual.webp" alt="Illustration: a homeowner photographing household items in the yard to sell them — Pepper Lists Sell for individuals and businesses" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
       <ul class="plc-list">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Individuals:</b> snap a photo of what you're selling — Pepper drafts the listing and posts it to Facebook Marketplace only after your yes.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Businesses:</b> advertise inside Pepper Lists — every ad is reviewed by the Top Speed office before it runs.</li>
@@ -578,6 +582,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg></div>
       <h3>Pepper Lists Post</h3>
       <p style="margin-bottom:12px">Reviews · videos · photos · comments</p>
+      <a href="#reviews" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/post-reviews.webp" alt="Illustration: a happy customer giving a thumbs-up beside her repaired refrigerator while posting a review — Pepper Lists Post reviews, photos and comments" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
       <ul class="plc-list">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Post a review</b> of your completed repair — a Verified Repair review when it's tied to a finished job.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Add photos or video</b> of the repair, plus the quick post-service survey.</li>
@@ -1566,7 +1571,7 @@ function plAdsEsc(t){return String(t==null?'':t).replace(/</g,'&lt;').replace(/"
   var wall=document.getElementById('plAdsWall');
   if(!wall) return;
   function invite(){
-    wall.innerHTML='<div class="plad-card"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
+    wall.innerHTML='<div class="plad-card"><img src="/api/v1/app/platform-images/flywheel-display-ad.webp" alt="Illustration: a Top Speed technician waving beside a blank display-ad card — your product could be advertised here" style="width:100%;height:auto;display:block;border-radius:12px;margin-bottom:14px" loading="lazy"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
   }
   fetch(PL_API+'/ad-studio/display?category=PEPPER_LISTS').then(function(r){return r.json();}).then(function(j){
     var list=(j&&j.data)||[];

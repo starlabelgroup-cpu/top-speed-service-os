@@ -237,6 +237,14 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
   </div>
 </div><div class="checker" style="margin-top:0"></div></section>
 
+<!-- PHOTO DIAGNOSIS BANNER -->
+<section style="padding:28px 0 4px"><div class="wrap">
+  <a href="/speedy" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy(); return false;}" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;text-decoration:none;color:inherit">
+    <img src="/api/v1/app/platform-images/speedy-diagnosis.webp" alt="Illustration: a customer photographing the inside of a washing machine for a Speedy AI photo diagnosis" style="width:min(300px,100%);height:auto;border-radius:12px;display:block" loading="lazy">
+    <span style="flex:1;min-width:min(260px,100%)"><b style="font-size:20px;display:block;margin-bottom:6px">Not sure what's wrong? Snap a photo.</b><span style="color:var(--muted);font-size:14.5px;line-height:1.55;display:block">Send Speedy a photo of the appliance or its error code and get triage guidance before you book — a technician always confirms the diagnosis on site.</span><span style="font-weight:800;color:var(--red);display:block;margin-top:10px">Try a photo diagnosis with Speedy →</span></span>
+  </a>
+</div></section>
+
 <!-- TRUST BAND -->
 <div style="background:#fff;border-bottom:1px solid var(--line)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px">
   <b>Licensed &amp; EPA Certified Technicians</b><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg> Same-Day Service</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.2 2.6v5.6c0 4.6-3 7.9-7.2 9.8-4.2-1.9-7.2-5.2-7.2-9.8V5.6z"/><path d="M8.8 11.8l2.3 2.3 4.2-4.4" stroke="#E8322E"/></svg> 90-Day Warranty</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg> $99 Diagnostic Credited Toward Repair</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> 65 Cities • Tri-County Coverage</span><a href="/" target="_blank" rel="noopener" style="font-weight:800;color:var(--blue)">Customer site: topspeedappliance.net ↗</a>
@@ -246,6 +254,14 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 <section class="section" id="request" style="padding-bottom:20px"><div class="wrap">
   <div class="eyebrow">What we fix • Tap a service to pre-fill your request</div><h2 class="title">9 Services. One Dispatch System.</h2><p class="sub">Every request — home or business — flows through the same Service OS: triage, Service Setters approval, provider match, live tracking, invoice + warranty.</p>
   <div class="cards" style="margin-top:22px" id="serviceCards"></div>
+  <div class="eyebrow" style="margin-top:32px">Residential Track • In-home repair</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Home repairs, pictured</h3>
+  <p class="sub" style="margin-bottom:16px">The three jobs we run most at home — tap a picture to open the booking form, and a Service Setter confirms your window.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px">
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-fridge.webp" alt="Illustration: a Top Speed technician checking a refrigerator during an in-home refrigerator repair visit" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Refrigerator Repair →</span></a>
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-laundry.webp" alt="Illustration: a customer folding laundry beside a washer and dryer pair — washer and dryer repair" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Washer &amp; Dryer Repair →</span></a>
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-oven.webp" alt="Illustration: a home cook taking a tray from a working oven — oven and range repair" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Oven &amp; Range Repair →</span></a>
+  </div>
 </div></section>
 
 <!-- HOW SERVICE OS WORKS -->
@@ -329,6 +345,14 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <div class="success" id="commSuccess"></div>
       <div style="margin-top:14px;background:var(--card2);border-radius:12px;padding:12px"><b style="font-size:13px;letter-spacing:.06em;text-transform:uppercase">Recent work-order flow (preview)</b><div style="font-size:14px;margin-top:8px;display:grid;gap:8px"><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#22C55E" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#22C55E" opacity=".45"/></svg> <b>WO — Refrigeration</b> • Fort Lauderdale • Received → Triaged → Approved</div><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#EAB308" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#EAB308" opacity=".45"/></svg> <b>WO — Laundry</b> • Lauderhill • Awaiting site contact confirmation</div><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#3B82F6" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#3B82F6" opacity=".45"/></svg> <b>WO — Oven / Range</b> • Miami • Provider en route</div></div></div>
     </form>
+  </div>
+  <div class="eyebrow" style="margin-top:30px">Commercial Track • Who we keep running</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Businesses we keep running</h3>
+  <p class="sub" style="margin-bottom:16px">Restaurants, laundromats, hotels and the properties behind them — tap a picture to start a booking, or use the work-order form above.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px">
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-restaurant.webp" alt="Illustration: a chef giving a thumbs-up beside a commercial range while a technician finishes the repair — restaurant equipment service" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Restaurant Equipment →</span></a>
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-laundromat.webp" alt="Illustration: an attendant walking a row of commercial washers with a tablet — laundromat equipment service" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Laundromat Equipment →</span></a>
+    <a class="card" href="/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-hotel.webp" alt="Illustration: a maintenance lead with a service cart in a hotel corridor — hotel and property maintenance service" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Hotels &amp; Property Maintenance →</span></a>
   </div>
 </div></section>
 

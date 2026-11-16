@@ -7,6 +7,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512 } from '../assets/appIcons.js';
 import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP } from '../assets/serviceImages.js';
 import { PL_SELL_WEBP, PL_BOOK_WEBP } from '../assets/pepperListsImages.js';
+import { IMG_SELL_INDIVIDUAL, IMG_SELL_BUSINESS, IMG_POST_REVIEWS, IMG_BOOKING_DISPATCH, IMG_LIVE_TRACKING, IMG_SPEEDY_DIAGNOSIS, IMG_REFER_EARN, IMG_COMMERCIAL_PM, IMG_SPEEDY_PRO_TECH, IMG_FLYWHEEL_ADS, IMG_RESIDENTIAL_FRIDGE, IMG_RESIDENTIAL_LAUNDRY, IMG_RESIDENTIAL_OVEN, IMG_COMMERCIAL_RESTAURANT, IMG_COMMERCIAL_LAUNDROMAT, IMG_COMMERCIAL_HOTEL, IMG_CLEANOUT_VENTS, IMG_APPLIANCE_PLUG, IMG_LOCAL_FORT_LAUDERDALE, IMG_FLYWHEEL_DISPLAY_AD } from '../assets/platformImages.js';
 
 const router = Router();
 
@@ -130,6 +131,48 @@ const PEPPER_LISTS_IMAGE_FILES = {
 
 router.get('/app/pepper-lists-images/:name', (req, res) => {
   const bytes = PEPPER_LISTS_IMAGE_FILES[req.params.name];
+  if (!bytes) return res.status(404).json({ error: 'Image not found' });
+  res.set({
+    'Content-Type': 'image/webp',
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  return res.send(bytes);
+});
+
+/**
+ * Platform illustration pack (2026-11-16): 20 flat-vector category /
+ * purpose illustrations generated for the platforms, embedded as
+ * base64 in assets/platformImages.js (same text-only-pipeline
+ * constraint as above) and served here as image/webp. Web surfaces
+ * reference them same-origin via /api/v1/app/platform-images/<file>
+ * (vercel.json rewrite on the web project). Public brand assets.
+ */
+const PLATFORM_IMAGE_FILES = {
+  'sell-individual.webp': IMG_SELL_INDIVIDUAL,
+  'sell-business.webp': IMG_SELL_BUSINESS,
+  'post-reviews.webp': IMG_POST_REVIEWS,
+  'booking-dispatch.webp': IMG_BOOKING_DISPATCH,
+  'live-tracking.webp': IMG_LIVE_TRACKING,
+  'speedy-diagnosis.webp': IMG_SPEEDY_DIAGNOSIS,
+  'refer-earn.webp': IMG_REFER_EARN,
+  'commercial-pm.webp': IMG_COMMERCIAL_PM,
+  'speedy-pro-tech.webp': IMG_SPEEDY_PRO_TECH,
+  'flywheel-ads.webp': IMG_FLYWHEEL_ADS,
+  'residential-fridge.webp': IMG_RESIDENTIAL_FRIDGE,
+  'residential-laundry.webp': IMG_RESIDENTIAL_LAUNDRY,
+  'residential-oven.webp': IMG_RESIDENTIAL_OVEN,
+  'commercial-restaurant.webp': IMG_COMMERCIAL_RESTAURANT,
+  'commercial-laundromat.webp': IMG_COMMERCIAL_LAUNDROMAT,
+  'commercial-hotel.webp': IMG_COMMERCIAL_HOTEL,
+  'cleanout-vents.webp': IMG_CLEANOUT_VENTS,
+  'appliance-plug.webp': IMG_APPLIANCE_PLUG,
+  'local-fort-lauderdale.webp': IMG_LOCAL_FORT_LAUDERDALE,
+  'flywheel-display-ad.webp': IMG_FLYWHEEL_DISPLAY_AD,
+};
+
+router.get('/app/platform-images/:name', (req, res) => {
+  const bytes = PLATFORM_IMAGE_FILES[req.params.name];
   if (!bytes) return res.status(404).json({ error: 'Image not found' });
   res.set({
     'Content-Type': 'image/webp',

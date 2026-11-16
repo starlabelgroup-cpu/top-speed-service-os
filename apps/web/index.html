@@ -942,7 +942,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <p>No more four-hour guessing games. Enter the booking reference from your confirmation (it looks like TS-XXXXXX) and the phone number on the booking — your real job status appears here, the same record our dispatch team works from.</p>
     </div>
     <div class="track-grid reveal">
-      <div class="mapbox" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px;text-align:center"><img src="/flag.jpg" alt="Top Speed Appliance checkered flag" style="width:120px;border-radius:12px" onerror="this.style.display='none'"><b style="font-size:19px">Live tracking, stage by stage</b><p style="margin:0;max-width:340px">When your job is live, this section fills with your technician's real stage updates — and at the en-route stage, a live location link from the technician's phone.</p><div class="eta-pill" id="etaPill">Enter your booking reference to see live status</div></div>
+      <div class="mapbox" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px;text-align:center"><a href="/app" style="display:block;width:100%"><img src="/api/v1/app/platform-images/live-tracking.webp" alt="Illustration: a customer on the couch watching live technician tracking on a phone map — Track My Tech live tracking in the app" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"></a><img src="/flag.jpg" alt="Top Speed Appliance checkered flag" style="width:120px;border-radius:12px" onerror="this.style.display='none'"><b style="font-size:19px">Live tracking, stage by stage</b><p style="margin:0;max-width:340px">When your job is live, this section fills with your technician's real stage updates — and at the en-route stage, a live location link from the technician's phone.</p><div class="eta-pill" id="etaPill">Enter your booking reference to see live status</div></div>
       <div class="card" style="padding:20px">
         <div style="display:grid;gap:10px;margin-bottom:14px">
           <input id="trkRef" placeholder="Booking reference — e.g. TS-AEVEQH" style="padding:12px;border:1px solid #B9CFEA;border-radius:10px;font-size:15px;text-transform:uppercase">
@@ -1503,6 +1503,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <h2>65 cities. <em>Same-day fast.</em></h2>
       <p>Our core Broward team is below — and the network now covers 65 cities across Broward, Palm Beach &amp; Miami-Dade. Don't see your city? Call — if a tech is nearby, we're coming.</p>
     </div>
+    <a href="/service-areas-directory" style="display:block;margin:20px 0 4px"><img src="/api/v1/app/platform-images/local-fort-lauderdale.webp" alt="Illustration: a Top Speed technician shaking hands with a homeowner in front of a Fort Lauderdale home — local appliance repair across 65 cities in Broward, Palm Beach and Miami-Dade" style="width:100%;height:auto;border-radius:16px;display:block" loading="lazy"></a>
     <div class="city-grid reveal" id="cityGrid"></div>
     <p style="margin-top:16px">Showing our 12 core Broward cities — <a href="/service-areas-directory"><b>see all 65 cities &amp; their landing pages →</b></a></p>
   </div>
