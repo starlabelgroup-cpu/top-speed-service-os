@@ -182,7 +182,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
         <span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Same-Day Windows</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Photo Triage</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Live Status Texts</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Jobs — Not Leads</span>
       </div>
-      <div class="hero-img" style="margin-top:22px"><img data-tsheal src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/hero-tech.webp" alt="Top Speed Appliance technician in branded uniform repairing a refrigerator compressor"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 65 cities across Broward, Palm Beach &amp; Miami-Dade</span></div></div>
+      <div class="hero-img" style="margin-top:22px"><img data-tsheal src="/api/v1/app/service-images/hero-tech.webp" alt="Top Speed Appliance technician in branded uniform repairing a refrigerator compressor"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 65 cities across Broward, Palm Beach &amp; Miami-Dade</span></div></div>
     </div>
 
     <!-- QUICK REQUEST MINI -->
@@ -236,7 +236,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
     <div class="card"><div class="stepnum">7</div><h3>Invoice + Warranty</h3><p style="color:var(--muted);margin:0">$99 credited toward repair. 90-day parts + labor warranty on invoice.</p></div>
     <div class="card"><div class="stepnum">8</div><h3>Review Engine</h3><p style="color:var(--muted);margin:0">Completed jobs trigger a review request at the happiest moment.</p></div>
   </div>
-  <div style="margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid var(--line)"><img data-tsheal src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/van-banner.webp" alt="Top Speed Appliance service van banner — Get Top Speed" style="width:100%;height:180px;object-fit:cover"></div>
+  <div style="margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid var(--line)"><img data-tsheal src="/api/v1/app/service-images/van-banner.webp" alt="Top Speed Appliance service van banner — Get Top Speed" style="width:100%;height:180px;object-fit:cover"></div>
 </div></section>
 
 <section class="section" id="providers"><div class="wrap">
@@ -274,7 +274,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
     <div><div class="card" style="padding:22px"><h3 style="margin:0 0 8px">The Provider App — Tech App</h3><p style="color:var(--muted);margin:0 0 10px">Real offers from Service Setters dispatch land in the Tech App: matched jobs with the diagnosis photos attached, your route for the day, job-status updates and live-location sharing for Track My Tech. Payout terms, onboarding requirements (license/insurance verification) and launch timing are confirmed directly with the Top Speed team — nothing here is a sample job.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-red" href="/tech">Open the Tech App</a><a class="btn btn-outline" href="/network">Provider Network</a></div></div></div>
     <div>
       <div class="notice" style="margin-top:14px">Provider preview: payout terms, onboarding requirements (license/insurance verification), and launch timing are confirmed directly with applicants — nothing is promised on this page beyond the model described.</div>
-      <img data-tsheal src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/commercial.webp" alt="Top Speed Appliance technician in branded uniform repairing the back of a commercial range" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
+      <img data-tsheal src="/api/v1/app/service-images/commercial.webp" alt="Top Speed Appliance technician in branded uniform repairing the back of a commercial range" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
     </div>
   </div>
 </div></section>
@@ -560,29 +560,40 @@ document.getElementById('appChips').innerHTML=SERVICES.map(function(s){return '<
    of leaving a broken-image placeholder. Bounded: 4 retries (1.5s, 4s, 10s, 20s), then the
    alt text stands. All three images have fixed heights, so retrying never shifts layout. */
 (function(){
-  var DELAYS=[1500,4000,10000,20000];
+  var DELAYS=[1500,4000,10000,20000,45000,90000];
+  var revivers=[];
   function heal(img){
     var original=img.getAttribute('src');
     if(!original)return;
     var tries=0,done=false,timer=null;
     function finish(){done=true;if(timer){clearTimeout(timer);timer=null;}img.removeEventListener('load',onLoad);img.removeEventListener('error',onError);}
+    function attempt(){
+      img.src=original+(original.indexOf('?')===-1?'?':'&')+'tsheal='+tries+'-'+Date.now();
+    }
     function onLoad(){finish();}
     function onError(){
       if(done)return;
-      if(tries>=DELAYS.length){finish();return;}
+      if(tries>=DELAYS.length){return;}
       var wait=DELAYS[tries];tries++;
-      timer=setTimeout(function(){
-        if(done)return;
-        img.src=original+(original.indexOf('?')===-1?'?':'&')+'tsheal='+tries+'-'+Date.now();
-      },wait);
+      if(timer)clearTimeout(timer);
+      timer=setTimeout(function(){if(!done)attempt();},wait);
     }
     img.addEventListener('load',onLoad);
     img.addEventListener('error',onError);
+    revivers.push(function(){
+      if(done)return;
+      if(img.complete&&img.naturalWidth>0){finish();return;}
+      tries=0;if(timer){clearTimeout(timer);timer=null;}
+      attempt();
+    });
     if(img.complete&&img.naturalWidth===0){onError();}
     else if(img.complete&&img.naturalWidth>0){finish();}
   }
   var imgs=document.querySelectorAll('img[data-tsheal]');
   for(var i=0;i<imgs.length;i++){heal(imgs[i]);}
+  function reviveAll(){for(var i=0;i<revivers.length;i++){revivers[i]();}}
+  window.addEventListener('online',reviveAll);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)reviveAll();});
 })();
 </script>
 </body>
