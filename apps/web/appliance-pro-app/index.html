@@ -53,15 +53,49 @@
   nav button.on{color:#fff}
   nav button.on svg{color:var(--red)}
   .view{display:none}.view.on{display:block}
+
+  .pmn-btn{flex:none;background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px 13px;font-family:inherit;font-weight:700;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .pmn-back{position:fixed;inset:0;background:rgba(2,8,24,.62);z-index:9994;display:none}
+  .pmn-back.on{display:block}
+  .pmn-drawer{position:fixed;top:0;right:0;bottom:0;width:min(320px,86vw);background:#081D47;border-left:1px solid var(--line);z-index:9995;transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column;padding:18px 16px calc(16px + env(safe-area-inset-bottom));overflow-y:auto}
+  .pmn-drawer.on{transform:translateX(0)}
+  .pmn-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .pmn-head b{font-size:16px}
+  .pmn-x{background:var(--panel2);border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:10px;font-size:16px;cursor:pointer}
+  .pmn-item{display:flex;align-items:center;gap:12px;width:100%;background:none;border:none;border-bottom:1px solid var(--line);color:var(--ink);font-family:inherit;font-size:14.5px;font-weight:600;text-align:left;padding:13px 4px;cursor:pointer;text-decoration:none}
+  .pmn-item svg{color:var(--blue);flex:none}
+  .pmn-item small{display:block;color:var(--muted);font-size:11.5px;font-weight:400;margin-top:2px}
+  .pmn-item .grow{flex:1}
+  .pmn-sec{font-size:10.5px;letter-spacing:1.2px;color:var(--faint);font-weight:800;margin:16px 4px 2px}
   footer{padding:6px 20px 0;text-align:center;color:var(--faint);font-size:11px;line-height:1.7}
   footer a{color:var(--muted)}
 </style>
 </head>
 <body>
-<header>
+<header style="display:flex;align-items:flex-start;gap:12px">
+  <div style="flex:1;min-width:0">
   <h1>Appliance <span class="red">Pro</span></h1>
   <div class="sub">Commercial appliance service, managed — by Top Speed Appliance LLC on the Top Speed Service OS.</div>
+  </div>
+  <button class="pmn-btn" type="button" onclick="pmnToggle(true)" aria-label="Open menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="square"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>Menu</button>
 </header>
+<div class="pmn-back" id="pmnBack" onclick="pmnToggle(false)"></div>
+<aside class="pmn-drawer" id="pmnDrawer" aria-label="Appliance Pro menu">
+  <div class="pmn-head"><b>Appliance Pro</b><button class="pmn-x" type="button" onclick="pmnToggle(false)" aria-label="Close menu">✕</button></div>
+  <p style="color:var(--muted);font-size:12px;line-height:1.5">Commercial accounts on the Top Speed Service OS.</p>
+  <div class="pmn-sec">WORK</div>
+  <button class="pmn-item" type="button" onclick="pmnGo('dash')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3.5 3.5h7v7h-7z"/><path d="M13.5 3.5h7v7h-7z"/><path d="M3.5 13.5h7v7h-7z"/><path d="M13.5 13.5h7v7h-7z"/></svg><span class="grow">Dashboard</span></button>
+  <button class="pmn-item" type="button" onclick="pmnGo('equip')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3.5 3.5H12l8.5 8.5-8.5 8.5-8.5-8.5z"/><circle cx="8" cy="8" r="1.3" fill="currentColor" stroke="none"/></svg><span class="grow">Equipment Registry</span></button>
+  <button class="pmn-item" type="button" onclick="pmnGo('book')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3.5 5h17v15.5h-17z"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/></svg><span class="grow">Request Service</span></button>
+  <button class="pmn-item" type="button" onclick="pmnGo('orders')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 5h12v16H6z"/><path d="M9.5 5V3h5v2"/><path d="M9 10.5h6M9 14h6"/></svg><span class="grow">Work Orders</span></button>
+  <button class="pmn-item" type="button" onclick="pmnGo('inv')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6"/></svg><span class="grow">Invoices</span></button>
+  <a class="pmn-item" href="https://topspeedserviceos.com/appliance-pro-site"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 20.5v-15L12 3.5v17"/><path d="M12 9.5l7 2v9"/><path d="M8 8.2h1.6M8 12h1.6M15.4 14.8h1.6"/></svg><span class="grow">Sites &amp; Team<small>Locations and portal users, in your commercial portal</small></span></a>
+  <div class="pmn-sec">ACCOUNT</div>
+  <button class="pmn-item" type="button" onclick="pmnGo('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span class="grow">Settings</span></button>
+  <button class="pmn-item" type="button" onclick="pmnGo('eco')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 8.2l3.8 2.2v4.2L12 16.8l-3.8-2.2v-4.2z"/></svg><span class="grow">The Top Speed Ecosystem</span></button>
+  <a class="pmn-item" href="tel:+19549317997"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg><span class="grow">Support — 954-931-7997<small>Mon–Fri 8am–7pm</small></span></a>
+  <button class="pmn-item" type="button" onclick="proSignOut()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14 4h5.5v16H14M10.5 8L5 12l5.5 4M5 12h11"/></svg><span class="grow">Sign out</span></button>
+</aside>
 <main>
   <!-- DASHBOARD -->
   <section id="v-dash" class="view on">
@@ -177,6 +211,44 @@
     <p class="note">Speedy never dispatches alone — a Service Setter confirms every work order, and safety calls stay with licensed technicians.</p>
   </section>
 
+  <!-- SETTINGS -->
+  <section id="v-settings" class="view">
+    <div class="card">
+      <h3>Settings</h3>
+      <p>Your company profile, sites, team and notification preferences live with your account in the commercial portal on the Service OS — this app shell stores nothing about your account.</p>
+      <div style="margin-top:14px"><a class="btn btn-block btn-blue" href="https://topspeedserviceos.com/appliance-pro-site">Company profile — open portal</a></div>
+      <a class="btn btn-ghost" href="https://topspeedserviceos.com/appliance-pro-site" style="display:block;text-decoration:none;text-align:center">Notification preferences — in the portal</a>
+      <button class="btn btn-ghost" type="button" onclick="go('inv')">Agreement &amp; billing</button>
+    </div>
+    <div class="card">
+      <h3>Session on this device</h3>
+      <p id="pmnOutNote">Signed in to the Service OS in this browser? Signing out here ends that session on this device.</p>
+      <button class="btn btn-ghost" type="button" onclick="proSignOut()">Sign out on this device</button>
+    </div>
+    <div class="card">
+      <h3>Support</h3>
+      <p>Commercial account support: Mon–Fri 8am–7pm.</p>
+      <a class="btn btn-ghost" href="tel:+19549317997" style="display:block;text-decoration:none;text-align:center">Call 954-931-7997</a>
+    </div>
+  </section>
+
+  <!-- ECOSYSTEM -->
+  <section id="v-eco" class="view">
+    <div class="card">
+      <h3>The Top Speed Ecosystem</h3>
+      <p>One Service OS behind every door. <b style="color:var(--ink)">You are here: Appliance Pro</b> — commercial accounts only.</p>
+    </div>
+    <div class="actions">
+      <a class="act" href="https://topspeedserviceos.com/book" style="text-decoration:none"><b>Book a Repair</b><span>Residential booking on the Service OS.</span></a>
+      <a class="act" href="https://topspeedserviceos.com/app" style="text-decoration:none"><b>Appliance Connect</b><span>The customer app for homeowners.</span></a>
+      <a class="act" href="https://topspeedserviceos.com/connect-pro-site" style="text-decoration:none"><b>Appliance Connect Pro</b><span>Homeowners &amp; property managers.</span></a>
+      <a class="act" href="https://topspeedserviceos.com/track" style="text-decoration:none"><b>Track My Tech</b><span>Live 8-stage tracking for booked jobs.</span></a>
+      <a class="act" href="https://topspeedserviceos.com/refer" style="text-decoration:none"><b>Refer &amp; Earn</b><span>Service credit for completed referrals.</span></a>
+      <a class="act" href="https://topspeedserviceos.com/group" style="text-decoration:none"><b>Top Speed Group</b><span>The whole family of brands and apps.</span></a>
+    </div>
+    <a class="btn btn-ghost" href="https://topspeedserviceos.com/" style="display:block;text-decoration:none;text-align:center">Top Speed Service OS home</a>
+  </section>
+
   <footer>
     <strong style="color:var(--muted)">Top Speed Appliance LLC</strong> · Appliance Pro · Commercial accounts<br>
     954-931-7997 · <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="https://topspeedserviceos.com/privacy">Privacy</a>
@@ -200,6 +272,16 @@ function go(v){
   document.querySelectorAll("nav button").forEach(b=>b.classList.remove("on"));
   const n = $("n-"+v); if(n) n.classList.add("on");
   window.scrollTo(0,0);
+}
+function pmnToggle(open){
+  document.getElementById('pmnDrawer').classList.toggle('on', !!open);
+  document.getElementById('pmnBack').classList.toggle('on', !!open);
+}
+function pmnGo(v){ pmnToggle(false); go(v); }
+function proSignOut(){
+  try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_cust_token'); }catch(e){}
+  pmnToggle(false); go('settings');
+  var el = document.getElementById('pmnOutNote'); if (el) el.textContent = 'Signed out on this device — your Service OS session here has ended.';
 }
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>

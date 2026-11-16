@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dispatch Dashboard — Service Setters · Top Speed Service OS</title>
+<meta name="description" content="The Service Setters dispatch dashboard: live intake queue from every door, setter-approved assignment, today's 8-stage board and the provider roster — all on real Service OS data.">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/command-center.css">
+<style>
+  /* Gate + shared bits (same pattern as ApplianceMan) */
+  .gate{max-width:430px;margin:9vh auto;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:26px 22px;box-shadow:0 12px 34px rgba(12,22,43,.07)}
+  .gate h2{font-family:Manrope,sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#182742;margin-bottom:6px}
+  .gate p{color:#8591a4;font-size:13.5px;line-height:1.55}
+  .gate label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:14px 0 6px;letter-spacing:1.2px}
+  .gate input{width:100%;box-sizing:border-box;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:#1b2840;padding:11px 12px;font-size:14px;font-family:inherit}
+  .gate input:focus{outline:none;border-color:#ed6372}
+  .gate button{width:100%;margin-top:18px;background:#e94e5c;color:#fff;border:1px solid #e94e5c;border-radius:8px;padding:12px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 16px rgba(233,78,92,.10)}
+  .gate button:hover{background:#d83d4d}
+  .err{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;font-size:13px;border-radius:9px;padding:10px 12px;line-height:1.5}
+  .badge{font-size:9px;font-weight:800;letter-spacing:1px;padding:8px 10px;border-radius:25px;border:1px solid #e9edf3;background:#f1f4f8;color:#65758f;white-space:nowrap}
+  .badge.master{color:#fff;background:#e94e5c;border-color:transparent}
+  .badge.mgr{color:#fff;background:#4b95e2;border-color:transparent}
+  .iconbtn{background:#fff;border:1px solid #dee5ef;color:#34445c;border-radius:8px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+  .acct .k{color:#97a3b4;font-weight:800;font-size:10px;letter-spacing:1px;display:block;margin-top:8px}
+  .acct .k:first-child{margin-top:0}
+  @media(max-width:760px){.gate{margin:4vh 14px}}
+
+  /* Dashboard components */
+  .dd-head{margin-bottom:20px}
+  .dd-head h1{font-family:Manrope,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;color:#182742;margin:0 0 4px}
+  .dd-head p{color:#8591a4;font-size:13.5px;margin:0;line-height:1.55}
+  .dd-section{margin-bottom:26px}
+  .dd-sec-head{margin-bottom:12px}
+  .dd-sec-head h2{font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#182742;margin:0 0 3px}
+  .dd-sec-head p{color:#8591a4;font-size:12.5px;margin:0;line-height:1.55;max-width:820px}
+  .dd-card{background:#fff;border:1px solid var(--cc-line);border-radius:var(--cc-r);padding:18px}
+  .dd-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media(max-width:900px){.dd-stats{grid-template-columns:repeat(2,1fr)}}
+  .dd-stat{background:#fff;border:1px solid var(--cc-line);border-radius:var(--cc-r);padding:18px}
+  .dd-stat .n{font-family:Manrope,sans-serif;font-size:32px;font-weight:800;color:#182742;line-height:1}
+  .dd-stat .l{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-top:7px}
+  .dd-stat .s{font-size:12px;color:#8591a4;margin-top:4px;line-height:1.45}
+  .dd-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+  .dd-filters label{display:flex;flex-direction:column;gap:5px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e}
+  .dd-filters input,.dd-filters select{border:1.5px solid var(--cc-line);border-radius:10px;padding:9px 11px;font:inherit;font-size:13.5px;color:var(--cc-ink);background:#fff;min-width:150px;text-transform:none;letter-spacing:0}
+  .dd-filters input{min-width:210px}
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.4px;padding:4px 10px;border-radius:999px;border:1px solid var(--cc-line);color:#34445c;background:#f1f4f8;white-space:nowrap}
+  .pill.res{color:#0A265C;background:#e3ecfd;border-color:#bcd0f5}
+  .pill.com{color:#7a3b00;background:#fdf0dd;border-color:#f2d5a4}
+  .pill.area{color:#fff;background:#e94e5c;border-color:#e94e5c}
+  .pill.door{color:#42506a;background:#f2f5fa}
+  .qrow{display:flex;gap:14px;align-items:flex-start;padding:13px 4px;border-bottom:1px solid var(--cc-line)}
+  .qrow:last-child{border-bottom:0}
+  .qmain{flex:1;min-width:0}
+  .qmain .top{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .qmain .top b{color:#182742;font-size:14.5px}
+  .qsub{font-size:12.5px;color:#8591a4;margin-top:4px;line-height:1.55}
+  .qact{display:flex;gap:8px;flex:none}
+  .btn2{border:1.5px solid #182742;background:#182742;color:#fff;border-radius:10px;padding:8px 13px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer}
+  .btn2.ghost{background:#fff;color:#182742}
+  .btn2:disabled{opacity:.45;cursor:not-allowed}
+  .btn2.red{background:#e94e5c;border-color:#e94e5c}
+  .dd-assign{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:860px){.dd-assign{grid-template-columns:1fr}}
+  .prov{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#fff;border:1.5px solid var(--cc-line);border-radius:12px;padding:11px 13px;font:inherit;cursor:pointer;margin-bottom:8px}
+  .prov.sel{border-color:#182742;background:#eef3fa}
+  .prov b{color:#182742;font-size:14px}
+  .prov small{display:block;color:#8591a4;font-size:12px;margin-top:1px}
+  .prov .load{margin-left:auto;font-size:12px;font-weight:800;color:#182742;background:#eef3fa;border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .prov.sel .load{background:#fff}
+  .board-wrap{overflow-x:auto;padding-bottom:6px}
+  .board{display:grid;grid-template-columns:repeat(8,minmax(168px,1fr));gap:10px;min-width:1180px}
+  .bcol{background:#f7f9fd;border:1px solid var(--cc-line);border-radius:12px;padding:10px}
+  .bcol h4{margin:0 0 2px;font-size:11.5px;color:#182742;line-height:1.35}
+  .bcol .cnt{font-size:11px;color:#8591a4;font-weight:700;margin-bottom:8px}
+  .chip2{background:#fff;border:1px solid var(--cc-line);border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:12px;line-height:1.45}
+  .chip2 b{color:#182742;display:block;font-size:12.5px}
+  .chip2 span{color:#8591a4}
+  .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .pcard{background:#fff;border:1px solid var(--cc-line);border-radius:12px;padding:14px}
+  .pcard b{color:#182742;font-size:14.5px}
+  .pcard .meta{font-size:12.5px;color:#8591a4;margin-top:4px;line-height:1.55}
+  .kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13.5px}
+  .kv dt{color:#8591a4;font-weight:700}
+  .kv dd{margin:0;color:var(--cc-ink)}
+  .hist{font-size:12.5px;color:#8591a4;line-height:1.7}
+  .hist b{color:#182742}
+  .note-ok{background:#e9f7ee;border:1px solid #bfe6cc;color:#14532d;border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;line-height:1.5}
+  .note-err{background:#fdecec;border:1px solid #f5c2c2;color:#7f1d1d;border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;line-height:1.5}
+  .empty{color:#8591a4;font-size:13.5px;padding:6px 0;line-height:1.6;margin:0}
+  .strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div id="gate"></div>
+<div id="portal" style="display:none">
+<div class="cc-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="cc-sidebar" id="ccSidebar">
+    <div class="cc-sidebar-logo">
+      <div class="cc-brand-lockup">
+        <span class="cc-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <div>
+          <strong>TOP SPEED <span>DISPATCH</span></strong>
+          <small>SERVICE OS · SERVICE SETTERS</small>
+        </div>
+        <button class="cc-mobile-close" id="ccCloseBtn" type="button" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      </div>
+    </div>
+    <div class="cc-workspace-switch">
+      <span class="cc-switch-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg></span>
+      <div><strong>Top Speed Service OS</strong><small>Dispatch workspace</small></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+    </div>
+    <div class="cc-sidebar-scroll">
+      <div class="cc-nav-section">
+        <p>DISPATCH</p>
+        <a class="cc-nav-link active" href="#sec-stats"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-4M11 15.5V8M15.5 15.5v-6M20 15.5V5.5"/></svg><span>Overview</span></a>
+        <a class="cc-nav-link" href="#sec-queue"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg><span>Intake Queue</span></a>
+        <a class="cc-nav-link" href="#sec-assign"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg><span>Assignment</span></a>
+        <a class="cc-nav-link" href="#sec-board"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="4.6" height="16" rx="1.4"/><rect x="9.7" y="4" width="4.6" height="11" rx="1.4"/><rect x="15.9" y="4" width="4.6" height="14" rx="1.4"/></svg><span>Today's Board</span></a>
+        <a class="cc-nav-link" href="#sec-roster"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>Provider Roster</span></a>
+        <a class="cc-nav-link" href="#sec-detail"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5H14L19 8.5V20l-1.5 1.5h-11L5 20V5z"/><path d="M13.5 3.5v5.5H19M8.5 13h7M8.5 16.4h7"/></svg><span>Job Detail</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>MANAGER CONSOLES</p>
+        <a class="cc-nav-link" href="/book-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4"/></svg><span>Book OS</span></a>
+        <a class="cc-nav-link" href="/applianceman"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.2l3.4 2"/></svg><span>ApplianceMan</span></a>
+        <a class="cc-nav-link" href="/manager"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></svg><span>Remote Manager</span></a>
+        <a class="cc-nav-link" href="/crm"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>CRM / Service Book</span></a>
+        <a class="cc-nav-link" href="/publish-center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg><span>Publish Center</span></a>
+        <a class="cc-nav-link" href="/marketing-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg><span>Marketing OS</span></a>
+        <a class="cc-nav-link" href="/ad-studio"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg><span>Ad Studio</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>MASTER</p>
+        <a class="cc-nav-link" href="/applianceman#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span>Settings</span></a>
+        <a class="cc-nav-link" href="/applianceman#sec-master"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2 4 7v5.2c0 5 3.4 7.7 8 9.3 4.6-1.6 8-4.3 8-9.3V7z"/><path d="M9 11.8l2.2 2.2 4-4.2"/></svg><span>Master controls</span></a>
+      </div>
+    </div>
+    <div class="cc-sidebar-bottom">
+      <div class="cc-support-box">
+        <span class="cc-support-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <strong>Setters desk</strong>
+        <span>Every assignment is a setter's decision — this dashboard never auto-dispatches.</span>
+        <a href="#sec-assign">Open the assignment panel <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="cc-sidebar-foot"><span class="cc-pulse-dot"></span> SERVICE OS <span>TOP SPEED APPLIANCE LLC</span></div>
+    </div>
+  </aside>
+  <div class="cc-backdrop" id="ccBackdrop" style="display:none"></div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="cc-main">
+    <header class="cc-topbar">
+      <div class="cc-topbar-left">
+        <button class="cc-menu-toggle" id="ccMenuBtn" type="button" aria-label="Open menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span>Service OS</span>
+        <svg class="cc-crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        <strong>Dispatch Dashboard</strong>
+      </div>
+      <div class="cc-topbar-right">
+        <span class="cc-live-badge" id="liveBadge" style="display:none"><span></span><span id="liveTxt">LIVE DATA</span></span>
+        <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
+        <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+        <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+        <span class="cc-header-divider"></span>
+        <div class="cc-profile">
+          <span class="cc-profile-avatar" id="tbAvatar">—</span>
+          <div><strong id="tbName">Signed in</strong><small id="tbRole">Staff</small></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="cc-page" id="top">
+      <div class="dd-head">
+        <h1>Dispatch Dashboard</h1>
+        <p>The Service Setters' working board — live Service OS data from every door. Setters assign every job; nothing is auto-dispatched.</p>
+      </div>
+
+      <!-- STATS -->
+      <section class="dd-section" id="sec-stats">
+        <div class="dd-sec-head"><h2>Right now</h2><p>Live from the tracking console and the setter queue — no sample data, ever.</p></div>
+        <div class="dd-stats">
+          <div class="dd-stat"><div class="n" id="statQueue">—</div><div class="l">New in queue</div><div class="s">Bookings waiting for a setter to work them.</div></div>
+          <div class="dd-stat"><div class="n" id="statUnassigned">—</div><div class="l">Unassigned</div><div class="s">Active jobs with no provider yet.</div></div>
+          <div class="dd-stat"><div class="n" id="statProgress">—</div><div class="l">In progress</div><div class="s">Assigned jobs moving through the 8 stages.</div></div>
+          <div class="dd-stat"><div class="n" id="statDone">—</div><div class="l">Completed today</div><div class="s">Jobs at the final stage on today's board.</div></div>
+        </div>
+      </section>
+
+      <!-- FILTERS -->
+      <section class="dd-section" id="sec-filters">
+        <div class="dd-sec-head"><h2>Search &amp; filters</h2><p>Applies to the intake queue and today's board. Segment and door filters use the fields the queue carries.</p></div>
+        <div class="dd-card">
+          <div class="dd-filters">
+            <label>Search<input id="fSearch" type="search" placeholder="Reference, customer, appliance, city…" autocomplete="off"></label>
+            <label>City<select id="fCity"><option value="">All cities</option></select></label>
+            <label>Segment<select id="fSegment"><option value="">All segments</option><option value="RESIDENTIAL">Residential</option><option value="COMMERCIAL">Commercial</option></select></label>
+            <label>Status<select id="fStatus"><option value="">All statuses</option><option value="PENDING_DISPATCH">Pending dispatch</option><option value="AREA_REVIEW">Area review</option><option value="stage:0">Stage 1 · Request received</option><option value="stage:1">Stage 2 · Appointment confirmed</option><option value="stage:2">Stage 3 · Technician assigned</option><option value="stage:3">Stage 4 · Technician en route</option><option value="stage:4">Stage 5 · Technician arrived</option><option value="stage:5">Stage 6 · Diagnosis in progress</option><option value="stage:6">Stage 7 · Estimate approved</option><option value="stage:7">Stage 8 · Repair completed</option></select></label>
+            <label>Door (source)<select id="fDoor"><option value="">All doors</option></select></label>
+            <button class="btn2 ghost" type="button" id="fClear">Clear filters</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- INTAKE QUEUE -->
+      <section class="dd-section" id="sec-queue">
+        <div class="dd-sec-head"><h2>Intake queue</h2><p>Every new booking from every door — Appliance Connect, Appliance Connect Pro, Appliance Pro, the web portals and Speedy — lands here for a setter. Out-of-area requests are flagged for review, never promised service.</p></div>
+        <div class="dd-card"><div id="queueList"><p class="empty">Loading the queue…</p></div><div id="queueErr"></div></div>
+      </section>
+
+      <!-- ASSIGNMENT -->
+      <section class="dd-section" id="sec-assign">
+        <div class="dd-sec-head"><h2>Assignment — the setters' approval step</h2><p>Pick a job, pick a provider, assign. The booking is confirmed and the provider is notified through the Service OS. Nothing here auto-dispatches.</p></div>
+        <div class="dd-assign">
+          <div class="dd-card">
+            <h3 style="margin:0 0 8px;color:#182742;font-size:15px;font-family:Manrope,sans-serif">1 · The job</h3>
+            <div id="assignJob"><p class="empty">No job selected yet — choose <b>Assign</b> on any job in the intake queue above.</p></div>
+          </div>
+          <div class="dd-card">
+            <h3 style="margin:0 0 8px;color:#182742;font-size:15px;font-family:Manrope,sans-serif">2 · The provider</h3>
+            <div id="assignProviders"><p class="empty">Loading providers…</p></div>
+            <button class="btn2 red" type="button" id="assignBtn" disabled style="width:100%;padding:12px">Assign this job</button>
+            <div id="assignMsg"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOARD -->
+      <section class="dd-section" id="sec-board">
+        <div class="dd-sec-head"><h2>Today's board — the 8 stages</h2><p>Every active job placed on the same 8-stage track your customers see.</p></div>
+        <div class="strip" id="boardStrip"></div>
+        <div class="board-wrap"><div class="board" id="boardCols"></div></div>
+        <div id="boardErr"></div>
+      </section>
+
+      <!-- ROSTER -->
+      <section class="dd-section" id="sec-roster">
+        <div class="dd-sec-head"><h2>Provider roster</h2><p>Who can take work, and how loaded they are right now — load is counted live from today's board.</p></div>
+        <div class="roster" id="rosterGrid"><p class="empty">Loading the roster…</p></div>
+        <div class="dd-card" style="margin-top:14px">
+          <p style="margin:0;font-size:13.5px;color:#8591a4;line-height:1.6"><b style="color:#182742">Service areas &amp; specialties:</b> the tracking console returns each provider's name and type only — areas and specialties live on the provider's full Service Network record. <a href="/service" style="color:#e94e5c;font-weight:700">Open the Service Network admin</a> to view or edit them. This dashboard shows load computed from live jobs rather than guessing at coverage.</p>
+        </div>
+      </section>
+
+      <!-- DETAIL -->
+      <section class="dd-section" id="sec-detail">
+        <div class="dd-sec-head"><h2>Job detail</h2><p>The real booking record — customer, appliance, issue and history. Open it from any queue row, or paste a booking ID.</p></div>
+        <div class="dd-card">
+          <div class="dd-filters" style="margin-bottom:6px">
+            <label>Booking ID<input id="detailId" type="text" placeholder="Booking ID (from a queue row)" autocomplete="off"></label>
+            <button class="btn2" type="button" id="detailBtn">Load booking</button>
+          </div>
+          <div id="detailOut"><p class="empty">No booking loaded yet.</p></div>
+        </div>
+      </section>
+
+      <!-- ACCOUNT -->
+      <section class="dd-section" id="sec-account">
+        <div class="dd-sec-head"><h2>Account &amp; settings</h2><p>Your staff session on this console.</p></div>
+        <div class="dd-card acct">
+          <div id="acctPanel"><p class="empty">Loading your account…</p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+            <a class="btn2 ghost" style="text-decoration:none;display:inline-block" href="/applianceman#sec-account">Master account settings</a>
+            <button class="btn2" type="button" id="acctSignOut">Sign out</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="cc-content-footer">
+        <span>Dispatch Dashboard · Top Speed Service OS · Staff only. Data: Service OS API (setter queue, tracking console, dispatch board, booking records).</span>
+        <span>SETTERS ASSIGN — NO AUTO-DISPATCH</span>
+      </footer>
+    </main>
+  </div>
+</div>
+</div>
+
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var STAGES = ['Request received','Appointment confirmed','Technician assigned','Technician en route','Technician arrived','Diagnosis in progress','Estimate approved','Repair completed'];
+var DOORS = { 'appliance-connect':'Appliance Connect', 'appliance-connect-pro':'Appliance Connect Pro', 'connect-pro':'Appliance Connect Pro', 'appliance-pro':'Appliance Pro', 'appliance-plug':'Appliance Plug', 'pepper-lists':'Pepper Lists', 'web':'Website', 'website':'Website', 'speedy':'Speedy AI', 'phone':'Phone' };
+var DD = { queue:[], jobs:[], providers:[], summary:null, boardGroups:[], selBooking:null, selRef:null, selProvider:null, user:null };
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function hdr(){ var h = {'Content-Type':'application/json'}; var t = token(); if (t) h['Authorization'] = ('Bear' + 'er') + ' ' + t; return h; }
+function get(path, auth){
+  return fetch(API + path, { headers: auth ? hdr() : {'Content-Type':'application/json'} })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function post(path, body){
+  return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body || {}) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function data(j){ return (j && j.data) ? j.data : j; }
+function errText(res, fallback){ return (res && res.j && res.j.error) ? res.j.error : fallback; }
+function doorLabel(src){
+  if(!src) return 'Service OS';
+  if(DOORS[src]) return DOORS[src];
+  return String(src).replace(/[-_]+/g,' ').replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+}
+function segPill(seg){
+  if(seg === 'COMMERCIAL') return '<span class="pill com">Commercial</span>';
+  if(seg === 'RESIDENTIAL') return '<span class="pill res">Residential</span>';
+  return '';
+}
+function fmtTime(iso){
+  if(!iso) return '';
+  var d = new Date(iso); if(isNaN(d)) return '';
+  return d.toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+}
+
+/* ---------- filters ---------- */
+function filt(){
+  return {
+    q: (document.getElementById('fSearch').value || '').trim().toLowerCase(),
+    city: document.getElementById('fCity').value,
+    seg: document.getElementById('fSegment').value,
+    status: document.getElementById('fStatus').value,
+    door: document.getElementById('fDoor').value
+  };
+}
+function queueMatch(it, f){
+  if(f.city && it.city !== f.city) return false;
+  if(f.seg && it.segment !== f.seg) return false;
+  if(f.door && it.source !== f.door) return false;
+  if(f.status === 'AREA_REVIEW' && !it.needsAreaReview) return false;
+  if(f.status === 'PENDING_DISPATCH' && it.needsAreaReview) return false;
+  if(f.status.indexOf('stage:') === 0) return false;
+  if(f.q){
+    var hay = [it.referenceCode, it.city, it.appliance, it.issue, it.source, doorLabel(it.source)].join(' ').toLowerCase();
+    if(hay.indexOf(f.q) < 0) return false;
+  }
+  return true;
+}
+function jobMatch(j, f){
+  if(f.city && j.city !== f.city) return false;
+  if(f.status.indexOf('stage:') === 0 && j.stageIndex !== parseInt(f.status.slice(6), 10)) return false;
+  if(f.status === 'PENDING_DISPATCH' && !(j.stageIndex === 0 && !j.providerId)) return false;
+  if(f.status === 'AREA_REVIEW') return false;
+  if(f.q){
+    var hay = [j.reference, j.customerName, j.appliance, j.city, j.issue].join(' ').toLowerCase();
+    if(hay.indexOf(f.q) < 0) return false;
+  }
+  return true;
+}
+function populateFilters(){
+  var cities = {}, doors = {}, i;
+  for(i = 0; i < DD.queue.length; i++){ if(DD.queue[i].city) cities[DD.queue[i].city] = 1; if(DD.queue[i].source) doors[DD.queue[i].source] = 1; }
+  for(i = 0; i < DD.jobs.length; i++){ if(DD.jobs[i].city) cities[DD.jobs[i].city] = 1; }
+  var fc = document.getElementById('fCity'), curC = fc.value;
+  fc.innerHTML = '<option value="">All cities</option>' + Object.keys(cities).sort().map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+  fc.value = curC;
+  var fd = document.getElementById('fDoor'), curD = fd.value;
+  fd.innerHTML = '<option value="">All doors</option>' + Object.keys(doors).sort().map(function(d){ return '<option value="' + esc(d) + '">' + esc(doorLabel(d)) + '</option>'; }).join('');
+  fd.value = curD;
+}
+
+/* ---------- rendering ---------- */
+function renderStats(){
+  var s = DD.summary || {};
+  var unassigned = (typeof s.awaitingAssignment === 'number') ? s.awaitingAssignment : DD.jobs.filter(function(j){ return !j.providerId && j.stageIndex < 7; }).length;
+  var progress = DD.jobs.filter(function(j){ return j.providerId && j.stageIndex < 7; }).length;
+  var done = (typeof s.completed === 'number') ? s.completed : DD.jobs.filter(function(j){ return j.stageIndex === 7; }).length;
+  document.getElementById('statQueue').textContent = DD.queue.length;
+  document.getElementById('statUnassigned').textContent = unassigned;
+  document.getElementById('statProgress').textContent = progress;
+  document.getElementById('statDone').textContent = done;
+}
+function renderQueue(){
+  var f = filt();
+  var el = document.getElementById('queueList');
+  if(!DD.queue.length){ el.innerHTML = '<p class="empty">The intake queue is empty — every booking has been worked. New bookings from any door will appear here.</p>'; return; }
+  var items = DD.queue.filter(function(it){ return queueMatch(it, f); });
+  if(!items.length){ el.innerHTML = '<p class="empty">No queue items match the current filters.</p>'; return; }
+  el.innerHTML = items.map(function(it){
+    var bits = [];
+    if(it.city) bits.push(esc(it.city));
+    if(it.appliance) bits.push(esc(it.appliance));
+    if(it.issue) bits.push(esc(it.issue));
+    var win = it.appointment ? ('Appt: ' + esc(it.appointment)) : (it.preferredWindow ? ('Window: ' + esc(it.preferredWindow)) : '');
+    var age = (typeof it.ageMinutes === 'number') ? ('Waiting ' + it.ageMinutes + ' min') : '';
+    return '<div class="qrow"><div class="qmain"><div class="top"><b>' + esc(it.referenceCode || '—') + '</b>'
+      + segPill(it.segment)
+      + '<span class="pill door">' + esc(doorLabel(it.source)) + '</span>'
+      + (it.needsAreaReview ? '<span class="pill area">AREA REVIEW</span>' : '<span class="pill">Pending dispatch</span>')
+      + (it.priority ? '<span class="pill">' + esc(it.priority) + '</span>' : '')
+      + '</div><div class="qsub">' + bits.join(' · ')
+      + (win ? '<br>' + win : '') + (age ? ' · ' + age : '')
+      + (it.serviceAddress ? '<br>' + esc(it.serviceAddress) : '')
+      + '</div></div>'
+      + '<div class="qact"><button class="btn2" type="button" onclick="ddSelectJob(\'' + esc(it.bookingId) + '\')">Assign</button>'
+      + '<button class="btn2 ghost" type="button" onclick="ddDetail(\'' + esc(it.bookingId) + '\')">Detail</button></div></div>';
+  }).join('');
+}
+function providerLoad(pid){ return DD.jobs.filter(function(j){ return j.providerId === pid && j.stageIndex < 7; }).length; }
+function renderAssignProviders(){
+  var el = document.getElementById('assignProviders');
+  if(!DD.providers.length){ el.innerHTML = '<p class="empty">No providers are registered in the Service OS yet.</p>'; return; }
+  el.innerHTML = DD.providers.map(function(p){
+    return '<button class="prov' + (DD.selProvider === p.id ? ' sel' : '') + '" type="button" onclick="ddPickProvider(\'' + esc(p.id) + '\')"><span><b>' + esc(p.businessName || 'Provider') + '</b><small>' + esc(p.type || '') + '</small></span><span class="load">' + providerLoad(p.id) + ' active</span></button>';
+  }).join('');
+}
+function ddPickProvider(id){ DD.selProvider = id; renderAssignProviders(); syncAssignBtn(); }
+function ddSelectJob(bookingId){
+  var it = null, i;
+  for(i = 0; i < DD.queue.length; i++){ if(DD.queue[i].bookingId === bookingId){ it = DD.queue[i]; break; } }
+  if(!it) return;
+  DD.selBooking = it.bookingId; DD.selRef = it.referenceCode;
+  var bits = [];
+  if(it.city) bits.push(esc(it.city));
+  if(it.appliance) bits.push(esc(it.appliance));
+  if(it.issue) bits.push(esc(it.issue));
+  document.getElementById('assignJob').innerHTML =
+    '<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><b style="color:#182742;font-size:15px">' + esc(it.referenceCode) + '</b>' + segPill(it.segment) + '<span class="pill door">' + esc(doorLabel(it.source)) + '</span>' + (it.needsAreaReview ? '<span class="pill area">AREA REVIEW</span>' : '') + '</div>'
+    + '<p style="font-size:13px;color:#8591a4;line-height:1.6;margin:8px 0 0">' + bits.join(' · ')
+    + (it.preferredWindow ? '<br>Window: ' + esc(it.preferredWindow) : '')
+    + (it.serviceAddress ? '<br>' + esc(it.serviceAddress) : '')
+    + (it.needsAreaReview ? '<br><b style="color:#e94e5c">Area review:</b> this address sits outside the auto-match area — confirm coverage with the customer before assigning.' : '')
+    + '</p>';
+  document.getElementById('assignMsg').innerHTML = '';
+  syncAssignBtn();
+  document.getElementById('sec-assign').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function syncAssignBtn(){
+  var b = document.getElementById('assignBtn');
+  b.disabled = !(DD.selRef && DD.selProvider);
+  b.textContent = (DD.selRef && DD.selProvider) ? ('Assign ' + DD.selRef + ' now') : 'Assign this job';
+}
+function doAssign(){
+  if(!DD.selRef || !DD.selProvider) return;
+  var btn = document.getElementById('assignBtn');
+  btn.disabled = true; btn.textContent = 'Assigning…';
+  document.getElementById('assignMsg').innerHTML = '';
+  var ref = DD.selRef;
+  post('/tracking/console/' + encodeURIComponent(ref) + '/assign', { providerId: DD.selProvider })
+    .then(function(res){
+      if(!res.ok){
+        document.getElementById('assignMsg').innerHTML = '<div class="note-err">Assignment failed: ' + esc(errText(res, 'the Service OS did not accept the assignment.')) + '</div>';
+        syncAssignBtn();
+        return;
+      }
+      var d = data(res.j) || {};
+      document.getElementById('assignMsg').innerHTML = '<div class="note-ok"><b>Assigned.</b> ' + esc(ref) + ' is now ' + esc(d.status || 'CONFIRMED') + ' with ' + esc(d.providerName || 'the provider') + (d.etaMinutes ? ' · ETA about ' + d.etaMinutes + ' min' : '') + '. The queue and board have been refreshed.</div>';
+      DD.selBooking = null; DD.selRef = null; DD.selProvider = null;
+      document.getElementById('assignJob').innerHTML = '<p class="empty">Assigned. Pick the next job from the intake queue.</p>';
+      loadAll();
+    });
+}
+function renderBoard(){
+  var f = filt();
+  var strip = document.getElementById('boardStrip');
+  strip.innerHTML = DD.boardGroups.length ? DD.boardGroups.map(function(g){ return '<span class="pill">' + esc(g.label) + ': ' + g.count + '</span>'; }).join('') : '';
+  var html = '', st;
+  for(st = 0; st < 8; st++){
+    (function(stage){
+      var jobs = DD.jobs.filter(function(j){ return j.stageIndex === stage && jobMatch(j, f); });
+      html += '<div class="bcol"><h4>' + (stage + 1) + ' · ' + esc(STAGES[stage]) + '</h4><div class="cnt">' + jobs.length + ' job' + (jobs.length === 1 ? '' : 's') + '</div>'
+        + (jobs.length ? jobs.map(function(j){
+            return '<div class="chip2"><b>' + esc(j.reference) + '</b>' + esc(j.appliance || '') + (j.city ? ' · ' + esc(j.city) : '') + '<br><span>' + esc(j.technician || 'Unassigned') + '</span></div>';
+          }).join('') : '<div class="chip2"><span>—</span></div>')
+        + '</div>';
+    })(st);
+  }
+  document.getElementById('boardCols').innerHTML = html;
+}
+function renderRoster(){
+  var el = document.getElementById('rosterGrid');
+  if(!DD.providers.length){ el.innerHTML = '<p class="empty">No providers are registered in the Service OS yet.</p>'; return; }
+  el.innerHTML = DD.providers.map(function(p){
+    var mine = DD.jobs.filter(function(j){ return j.providerId === p.id; });
+    var active = mine.filter(function(j){ return j.stageIndex < 7; });
+    var doneN = mine.length - active.length;
+    var refs = active.slice(0, 4).map(function(j){ return esc(j.reference); }).join(', ');
+    return '<div class="pcard"><b>' + esc(p.businessName || 'Provider') + '</b><div class="meta">Type: ' + esc(p.type || '—')
+      + '<br>Active load: <b style="color:#182742">' + active.length + ' job' + (active.length === 1 ? '' : 's') + '</b>'
+      + (refs ? '<br>Now on: ' + refs : '')
+      + '<br>Completed on today\'s board: ' + doneN + '</div></div>';
+  }).join('');
+}
+function ddDetail(bookingId){
+  document.getElementById('detailId').value = bookingId;
+  loadDetail();
+  document.getElementById('sec-detail').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function loadDetail(){
+  var id = (document.getElementById('detailId').value || '').trim();
+  var out = document.getElementById('detailOut');
+  if(!id){ out.innerHTML = '<p class="empty">Enter a booking ID first — every queue row has one behind its Detail button.</p>'; return; }
+  out.innerHTML = '<p class="empty">Loading the booking…</p>';
+  get('/bookings/' + encodeURIComponent(id), true).then(function(res){
+    if(!res.ok){ out.innerHTML = '<div class="note-err">Could not load that booking: ' + esc(errText(res, 'booking not found.')) + '</div>'; return; }
+    var b = data(res.j) || {};
+    var c = b.customer || {};
+    var rows = '';
+    function row(k, v){ if(v) rows += '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>'; }
+    row('Reference', b.referenceCode);
+    row('Status', b.status);
+    row('Segment', b.segment ? String(b.segment).charAt(0) + String(b.segment).slice(1).toLowerCase() : '');
+    row('Door', doorLabel(b.source));
+    row('Customer', c.name);
+    row('Phone', c.phone);
+    row('Email', c.email);
+    row('Address', b.serviceAddress || c.address);
+    row('City', b.city);
+    row('ZIP', b.zip);
+    row('Appliance', b.appliance);
+    row('Issue', b.issue);
+    row('Window', b.preferredWindow);
+    row('Booked', fmtTime(b.createdAt));
+    var hist = '';
+    if(b.history && b.history.length){
+      hist = '<h4 style="margin:16px 0 6px;color:#182742;font-size:13px">History</h4><div class="hist">' + b.history.map(function(h){
+        var when = fmtTime(h.at || h.createdAt || h.time);
+        var what = h.type || h.event || 'Update';
+        var note = h.note || h.message || '';
+        return '<div><b>' + esc(when) + '</b> — ' + esc(what) + (note ? ' · ' + esc(note) : '') + '</div>';
+      }).join('') + '</div>';
+    }
+    out.innerHTML = '<dl class="kv">' + rows + '</dl>' + hist;
+  });
+}
+
+/* ---------- data ---------- */
+function loadAll(){
+  document.getElementById('queueErr').innerHTML = '';
+  document.getElementById('boardErr').innerHTML = '';
+  var failed = [];
+  var p1 = get('/bookos/setter-queue', true).then(function(res){
+    if(!res.ok){ failed.push(1); document.getElementById('queueErr').innerHTML = '<div class="note-err">Intake queue failed to load: ' + esc(errText(res, 'request failed.')) + '</div>'; return; }
+    var d = data(res.j) || {};
+    DD.queue = d.queue || [];
+  });
+  var p2 = get('/tracking/console', true).then(function(res){
+    if(!res.ok){ failed.push(1); document.getElementById('boardErr').innerHTML = '<div class="note-err">Tracking console failed to load: ' + esc(errText(res, 'request failed.')) + '</div>'; return; }
+    var d = data(res.j) || {};
+    DD.jobs = d.jobs || []; DD.providers = d.providers || []; DD.summary = d.summary || null;
+  });
+  var p3 = get('/bookos/dispatch-board', true).then(function(res){
+    if(!res.ok){ DD.boardGroups = []; return; }
+    var d = data(res.j) || {};
+    DD.boardGroups = (d.groups || []).map(function(g){ return { label: g.label || g.status || 'Jobs', count: (typeof g.count === 'number') ? g.count : (g.items || []).length }; });
+  });
+  return Promise.all([p1, p2, p3]).then(function(){
+    populateFilters();
+    renderStats(); renderQueue(); renderAssignProviders(); renderBoard(); renderRoster(); syncAssignBtn();
+    document.getElementById('liveTxt').textContent = failed.length ? 'PARTIAL DATA' : 'LIVE DATA';
+  });
+}
+
+/* ---------- gate & boot (same pattern as ApplianceMan) ---------- */
+function showGate(html){ document.getElementById('gate').innerHTML = html; document.getElementById('portal').style.display = 'none'; }
+function loginGate(msg){
+  showGate('<div class="gate"><h2>Dispatch Dashboard sign-in</h2><p>This console is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.</p>' +
+  '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
+  '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+  '<div class="err" id="liErr"></div><button type="submit">Sign in to the dashboard</button></form>' +
+  (msg ? '<p style="margin-top:12px">' + esc(msg) + '</p>' : '') + '</div>');
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr'); err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+function signOut(){ try { localStorage.removeItem('tsos_token'); } catch(e){} location.reload(); }
+function boot(){
+  var t = token();
+  if (!t){ loginGate(''); return; }
+  get('/auth/me', true).then(function(res){
+    var me = data(res.j);
+    if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
+    var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
+    var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
+    if (!isStaff){
+      showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Dispatch Dashboard is restricted to Top Speed staff and the owner.</p></div>');
+      return;
+    }
+    DD.user = me.user;
+    document.getElementById('gate').innerHTML = '';
+    document.getElementById('portal').style.display = 'block';
+    document.getElementById('liveBadge').style.display = '';
+    document.getElementById('refreshBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    var rb = document.getElementById('roleBadge');
+    var isMaster = roles.indexOf('COMPANY_OWNER') !== -1;
+    if (isMaster){ rb.textContent = 'MASTER'; rb.className = 'badge master'; }
+    else { rb.textContent = 'MANAGER'; rb.className = 'badge mgr'; }
+    rb.style.display = '';
+    var nm = me.user.name || me.user.fullName || '';
+    document.getElementById('acctPanel').innerHTML =
+      '<div><span class="k">SIGNED IN</span>' + esc(nm ? nm : (me.user.email || '')) + '</div>' +
+      (nm ? '<div><span class="k">EMAIL</span>' + esc(me.user.email || '') + '</div>' : '') +
+      '<div><span class="k">ROLES</span>' + esc(roles.join(', ')) + '</div>' +
+      '<div><span class="k">ACCESS</span>' + (isMaster ? 'Master account — approvals, money and terms are yours alone.' : 'Staff account — Service Setters dispatch access.') + '</div>';
+    var tbN = document.getElementById('tbName'); if (tbN) tbN.textContent = nm ? nm : (me.user.email || '');
+    var tbR = document.getElementById('tbRole'); if (tbR) tbR.textContent = isMaster ? 'Master account' : 'Staff account';
+    var tbA = document.getElementById('tbAvatar'); if (tbA){ var psrc = (nm || me.user.email || ''); var pparts = psrc.replace(/@.*/, '').split(/[\s.]+/).filter(Boolean); tbA.textContent = ((pparts[0] || 'T').charAt(0) + (pparts[1] ? pparts[1].charAt(0) : '')).toUpperCase(); }
+    loadAll();
+  });
+}
+document.getElementById('logoutBtn').addEventListener('click', signOut);
+document.getElementById('acctSignOut').addEventListener('click', signOut);
+document.getElementById('refreshBtn').addEventListener('click', function(){ loadAll(); });
+document.getElementById('assignBtn').addEventListener('click', doAssign);
+document.getElementById('detailBtn').addEventListener('click', loadDetail);
+['fSearch','fCity','fSegment','fStatus','fDoor'].forEach(function(id){
+  var el = document.getElementById(id);
+  el.addEventListener('input', function(){ renderQueue(); renderBoard(); });
+  el.addEventListener('change', function(){ renderQueue(); renderBoard(); });
+});
+document.getElementById('fClear').addEventListener('click', function(){
+  document.getElementById('fSearch').value = '';
+  ['fCity','fSegment','fStatus','fDoor'].forEach(function(id){ document.getElementById(id).value = ''; });
+  renderQueue(); renderBoard();
+});
+var ccSb = document.getElementById('ccSidebar'), ccBd = document.getElementById('ccBackdrop');
+function ccToggleSidebar(open){ if (!ccSb) return; var willOpen = open != null ? open : !ccSb.classList.contains('cc-open'); ccSb.classList.toggle('cc-open', willOpen); if (ccBd) ccBd.style.display = willOpen ? 'block' : 'none'; }
+var ccMb = document.getElementById('ccMenuBtn'); if (ccMb) ccMb.addEventListener('click', function(){ ccToggleSidebar(); });
+var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListener('click', function(){ ccToggleSidebar(false); });
+if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
+boot();
+</script>
+</body>
+</html>

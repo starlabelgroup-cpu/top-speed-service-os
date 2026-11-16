@@ -19,6 +19,15 @@ a{text-decoration:none}
 .topbar nav{margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .topbar nav a{color:#cfe0f5;font-size:14.5px}
 .wrap{max-width:880px;margin:0 auto;padding:28px 18px 60px}
+.cpm-wrap{position:relative;display:inline-block}
+.cpm-btn{background:#E8322E;color:#fff;border:none;border-radius:999px;padding:10px 18px;font-weight:800;font-size:14.5px;cursor:pointer;font-family:inherit}
+.cpm-drop{display:none;position:absolute;right:0;top:calc(100% + 10px);background:#fff;color:#12233d;border:1px solid #dbe4f0;border-radius:14px;box-shadow:0 18px 40px rgba(4,18,46,.28);min-width:252px;padding:8px;z-index:9995;text-align:left}
+.cpm-drop.on{display:block}
+.cpm-drop button{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;background:none;border:none;font:inherit;font-size:14.5px;font-weight:700;color:#0A265C;padding:9px 11px;border-radius:9px;cursor:pointer}
+.cpm-drop button:hover{background:#eef3fa}
+.cpm-drop small{font-size:11.5px;font-weight:400;color:#5b6b82}
+.cpm-sep{border-top:1px solid #dbe4f0;margin:5px 4px}
+
 .hero-card{background:linear-gradient(160deg,#071a3d,#0a265c);color:#fff;border-radius:18px;padding:30px 28px;margin-bottom:18px}
 .hero-card h1{font-size:clamp(26px,4.5vw,36px);margin-bottom:8px}
 .hero-card p{color:#b9cdf0;line-height:1.55;font-size:16px}
@@ -69,7 +78,18 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
 <body>
 <div class="topbar">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
-  <nav><a href="/">Site home</a><a href="/connect">Connect</a><a href="/app">Customer App</a><a href="tel:+19549317997">954-931-7997</a></nav>
+  <nav><a href="/">Site home</a><a href="/connect">Connect</a><a href="/app">Customer App</a><a href="tel:+19549317997">954-931-7997</a><span class="cpm-wrap"><button class="cpm-btn" type="button" onclick="cpmToggle()">Menu ▾</button><span class="cpm-drop" id="cpmDrop">
+<button type="button" onclick="cpmGoTo('secHome')">Home<small>Your workspace directory</small></button>
+<button type="button" onclick="cpmBook()">Book<small>Book service for your home</small></button>
+<button type="button" onclick="cpmProps()">My Properties<small>Property manager mode — units &amp; bulk requests</small></button>
+<button type="button" onclick="location.href='/track'">Track My Tech<small>Live 8-stage tracking</small></button>
+<button type="button" onclick="cpmGoTo('secRefer')">Refer &amp; Earn<small>Your code and service credit</small></button>
+<button type="button" onclick="cpmGoTo('secAccount')">Settings<small>Account &amp; legal</small></button>
+<button type="button" onclick="location.href='/group'">The Top Speed Ecosystem<small>Every app and door, one platform</small></button>
+<span class="cpm-sep"></span>
+<button type="button" onclick="location.href='tel:+19549317997'">Support — 954-931-7997<small>Mon–Fri 8am–7pm</small></button>
+<button type="button" onclick="signOut()">Sign out</button>
+</span></span></nav>
 </div>
 <div class="wrap">
   <div id="gate">
@@ -747,4 +767,34 @@ function loadReferral(){
 <script src="/speedy-widget.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
+<script>
+function cpmToggle(force){
+  var d=document.getElementById('cpmDrop'); if(!d) return;
+  var on = (typeof force === 'boolean') ? force : !d.classList.contains('on');
+  d.classList.toggle('on', on);
+}
+document.addEventListener('click', function(ev){
+  var d=document.getElementById('cpmDrop');
+  if(!d || !d.classList.contains('on')) return;
+  if(!ev.target.closest || !ev.target.closest('.cpm-wrap')) d.classList.remove('on');
+});
+function cpmGoTo(id){
+  cpmToggle(false);
+  var app=document.getElementById('app');
+  var el=document.getElementById(id);
+  if(!el) return;
+  if(app && app.offsetParent === null){ window.scrollTo({top:0,behavior:'smooth'}); return; }
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function cpmBook(){
+  cpmToggle(false);
+  if(typeof showMode === 'function') showMode('home');
+  setTimeout(function(){ var el=document.getElementById('secBook'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }, 90);
+}
+function cpmProps(){
+  cpmToggle(false);
+  if(typeof showMode === 'function') showMode('pm');
+  setTimeout(function(){ var el=document.getElementById('modePm'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }, 90);
+}
+</script>
 </body></html>
