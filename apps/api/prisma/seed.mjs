@@ -37,13 +37,19 @@ const companies = [
 
 const providers = [
   {
+    // Score reset (Ramone, 2026-11-16): every provider starts at zero.
+    // No rating is seeded — rating stays null ("no rating yet") until
+    // real reviews from real completed jobs earn one. The invented
+    // 4.9 / 4.8 / 4.8 values these records carried were removed here
+    // and zeroed on existing rows by migration
+    // 20261116140000_score_reset_zero.
     id: '30000000-0000-4000-8000-000000000001',
     companyId: providerCompanies.alpha,
     businessName: 'Broward Rapid Refrigeration',
     type: 'NETWORK_BUSINESS',
     specialties: ['Refrigerator', 'Freezer / Ice Maker'],
     serviceCities: ['Sunrise', 'Plantation', 'Fort Lauderdale', 'Lauderhill', 'Tamarac', 'Davie'],
-    rating: 4.9,
+    rating: null,
     active: true,
   },
   {
@@ -53,7 +59,7 @@ const providers = [
     type: 'NETWORK_BUSINESS',
     specialties: ['Washer', 'Dryer', 'Dishwasher'],
     serviceCities: ['Plantation', 'Sunrise', 'Davie', 'Coral Springs', 'Fort Lauderdale'],
-    rating: 4.8,
+    rating: null,
     active: true,
   },
   {
@@ -63,7 +69,7 @@ const providers = [
     type: 'INDEPENDENT_PROVIDER',
     specialties: ['Refrigerator', 'Washer', 'Dryer', 'Oven / Range', 'Dishwasher', 'Freezer / Ice Maker', 'Microwave', 'Garbage Disposal', 'Installation'],
     serviceCities: ['Lauderhill', 'Plantation', 'Sunrise', 'Tamarac', 'Fort Lauderdale', 'Lauderdale Lakes', 'North Lauderdale', 'Davie', 'Coral Springs', 'Pompano Beach', 'Oakland Park', 'Margate'],
-    rating: 4.8,
+    rating: null,
     active: true,
   },
 ];

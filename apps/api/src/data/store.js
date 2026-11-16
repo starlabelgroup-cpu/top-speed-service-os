@@ -139,13 +139,17 @@ export const store = {
   events: [],
   providers: [
     {
+      // Score reset (Ramone, 2026-11-16): ratings are never seeded.
+      // Every provider starts at null ("no rating yet") and earns a
+      // rating only from real reviews of real completed jobs — the
+      // same honest state Cleanout Vents below has always had.
       id: '30000000-0000-4000-8000-000000000001',
       companyId: providerCompanies.alpha,
       businessName: 'Broward Rapid Refrigeration',
       type: 'NETWORK_BUSINESS',
       specialties: ['Refrigerator', 'Freezer / Ice Maker'],
       serviceCities: ['Sunrise', 'Plantation', 'Fort Lauderdale', 'Lauderhill', 'Tamarac', 'Davie'],
-      rating: 4.9,
+      rating: null,
       active: true,
     },
     {
@@ -155,7 +159,7 @@ export const store = {
       type: 'NETWORK_BUSINESS',
       specialties: ['Washer', 'Dryer', 'Dishwasher'],
       serviceCities: ['Plantation', 'Sunrise', 'Davie', 'Coral Springs', 'Fort Lauderdale'],
-      rating: 4.8,
+      rating: null,
       active: true,
     },
     {
@@ -165,7 +169,7 @@ export const store = {
       type: 'INDEPENDENT_PROVIDER',
       specialties: ['Refrigerator', 'Washer', 'Dryer', 'Oven / Range', 'Dishwasher', 'Freezer / Ice Maker', 'Microwave', 'Garbage Disposal', 'Installation'],
       serviceCities: ['Lauderhill', 'Plantation', 'Sunrise', 'Tamarac', 'Fort Lauderdale', 'Lauderdale Lakes', 'North Lauderdale', 'Davie', 'Coral Springs', 'Pompano Beach', 'Oakland Park', 'Margate'],
-      rating: 4.8,
+      rating: null,
       active: true,
     },
     {
