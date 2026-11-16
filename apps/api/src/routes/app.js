@@ -4,7 +4,7 @@ import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { PLUG_192, PLUG_512, PRO_192, PRO_512 } from '../assets/appIcons.js';
+import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512 } from '../assets/appIcons.js';
 
 const router = Router();
 
@@ -65,7 +65,8 @@ const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
 /** Current app release + how to get it on each store. Public. */
 /**
- * PWA install icons for the Appliance Plug and Appliance Pro apps.
+ * PWA install icons for the Service OS apps (Appliance Connect,
+ * Appliance Connect Pro, Appliance Pro, Appliance Plug, Speedy Pro).
  * The PNG bytes live in assets/appIcons.js as base64 text (the repo's
  * push pipeline is text-only, so real binary PNGs cannot be stored in
  * the repo); this route serves the decoded bytes as image/png. The
@@ -77,6 +78,12 @@ const APP_ICON_FILES = {
   'plug-512.png': PLUG_512,
   'pro-192.png': PRO_192,
   'pro-512.png': PRO_512,
+  'connect-192.png': CONNECT_192,
+  'connect-512.png': CONNECT_512,
+  'connectpro-192.png': CONNECTPRO_192,
+  'connectpro-512.png': CONNECTPRO_512,
+  'speedy-192.png': SPEEDY_192,
+  'speedy-512.png': SPEEDY_512,
 };
 
 router.get('/app/icons/:name', (req, res) => {
