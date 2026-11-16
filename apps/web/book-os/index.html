@@ -239,7 +239,11 @@ body:not(.live) .gated{display:none!important}</style>
 
 <script>
 var toastEl=document.getElementById('toast'),toastT;
-function toast(msg){toastEl.textContent=msg;toastEl.style.display='block';clearTimeout(toastT);toastT=setTimeout(function(){toastEl.style.display='none'},3400)}
+/* Toast discipline: msg is ALWAYS inserted as a text node, so customer data can never
+   become markup. Icons travel only via the optional 2nd argument and must be one of this
+   file's own static ICO_* SVG strings, parsed as markup inside a wrapper span. */
+var ICO_CHECK='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>';
+function toast(msg,icon){toastEl.innerHTML='';if(icon){var ic=document.createElement('span');ic.innerHTML=icon;toastEl.appendChild(ic);toastEl.appendChild(document.createTextNode(' '))}toastEl.appendChild(document.createTextNode(msg));toastEl.style.display='block';clearTimeout(toastT);toastT=setTimeout(function(){toastEl.style.display='none'},3400)}
 var dispatched=0;
 
 // QUEUE
@@ -254,7 +258,7 @@ function renderQueue(){
  }).join('');
 }
 function callQ(i){toast('Calling '+queue[i].name+'… Follow the Call Guide on the right →')}
-function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set */ toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+q.name+' confirmed for '+q.window+' — confirmation text sent · '+q.id);renderQueue();addToToday(q)}
+function confirmQ(i){var q=queue.splice(i,1)[0];dispatched++; /* counts as set */ toast(q.name+' confirmed for '+q.window+' — confirmation text sent · '+q.id,ICO_CHECK);renderQueue();addToToday(q)}
 function reschedQ(i){var wins=['Today 4–6 PM','Tomorrow 8–10 AM','Tomorrow 10 AM–12 PM','Tomorrow 2–4 PM'];var cur=wins.indexOf(queue[i].window);queue[i].window=wins[(cur+1)%wins.length];queue[i].age=0;toast('Rescheduled '+queue[i].name+' → '+queue[i].window);renderQueue()}
 
 // TODAY
@@ -266,7 +270,7 @@ function renderToday(){
   return '<div class="win"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.8V12l3 2" stroke="#E8322E"/></svg> '+w+'</h3>'+today[w].map(function(j,idx){return '<div class="job"><b>'+j.n+'</b><br>'+j.a+'<br><button class="st '+stCls[j.s]+'" style="border:0;cursor:pointer" onclick="advToday(\''+w+'\','+idx+')">'+j.s+' →</button></div>'}).join('')+'</div>'
  }).join('');
 }
-function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already Done');return}j.s=nextSt[j.s];if(j.s==='Done'){toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+j.n+' complete — review request text queued')}else{toast(j.n+' → '+j.s)}renderToday()}
+function advToday(w,i){var j=today[w][i];if(j.s==='Done'){toast(j.n+' is already Done');return}j.s=nextSt[j.s];if(j.s==='Done'){toast(j.n+' complete — review request text queued',ICO_CHECK)}else{toast(j.n+' → '+j.s)}renderToday()}
 function addToToday(q){if(q.window.indexOf('Today')!==0)return;var key=q.window.indexOf('2–4')>-1?'2–4 PM':q.window.indexOf('4–6')>-1?'4–6 PM':'12–2 PM';if(today[key]){today[key].push({n:q.name.split(' ')[0][0]+'. '+q.name.split(' ')[1],a:q.appliance.split(' —')[0]+' · '+q.zip.split('· ')[1],s:'Confirmed'});renderToday()}}
 
 // DISPATCH
@@ -290,9 +294,9 @@ function renderDispatch(){
 }
 function moveJob(ci,ji){var job=cols[ci].jobs.splice(ji,1)[0];
  if(ci===0){job.prov=altProvs[Math.floor(Math.random()*altProvs.length)];job.score=(88+Math.floor(Math.random()*8))+'%';toast('AI matched '+job.id+' → '+job.prov+' ('+job.score+') — needs setter approval')}
- if(ci===1){dispatched++;toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Dispatched '+job.id+' to '+job.prov+' — customer + provider texted')}
+ if(ci===1){dispatched++;toast('Dispatched '+job.id+' to '+job.prov+' — customer + provider texted',ICO_CHECK)}
  if(ci===2){toast(job.id+' en route — live tracking + ETA text sent to customer')}
- if(ci===3){toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> '+job.id+' complete — $99 credited, photo report + review request sent')}
+ if(ci===3){toast(job.id+' complete — $99 credited, photo report + review request sent',ICO_CHECK)}
  cols[ci+1].jobs.unshift(job);renderDispatch();renderQueue()}
 function reassign(ci,ji){var j=cols[ci].jobs[ji];var idx=altProvs.indexOf(j.prov);j.prov=altProvs[(idx+1)%altProvs.length];j.score=(86+Math.floor(Math.random()*10))+'%';toast('Reassigned '+j.id+' → '+j.prov);renderDispatch()}
 
@@ -708,7 +712,7 @@ function refApprove(id){
   var body={};
   if(inp&&inp.value.trim()!==''){ var cents=Math.round(parseFloat(inp.value)*100); if(!(cents>=0)) { refMsgB('err','Approval amount must be a valid dollar amount.'); return; } body.amountCents=cents; }
   apiFetch('/referrals/admin/journeys/'+id+'/approve',{method:'POST',body:JSON.stringify(body)})
-    .then(function(){ refMsgB('ok','Referral approved — credit issued.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Referral approved — credit issued'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Referral approved — credit issued.'); toast('Referral approved — credit issued',ICO_CHECK); loadReferrals(); })
     .catch(function(e){ refMsgB('err','Approve failed: '+e.message); });
 }
 function refReject(id){
@@ -724,7 +728,7 @@ function refRedeem(id){
   var ref=inp?inp.value.trim():'';
   if(!ref){ refMsgB('err','Enter the booking reference to redeem this credit against.'); return; }
   apiFetch('/referrals/admin/credits/'+id+'/redeem',{method:'POST',body:JSON.stringify({bookingReference:ref})})
-    .then(function(){ refMsgB('ok','Credit redeemed against '+ref+'.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Credit redeemed'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Credit redeemed against '+ref+'.'); toast('Credit redeemed',ICO_CHECK); loadReferrals(); })
     .catch(function(e){ refMsgB('err','Redeem failed: '+e.message); });
 }
 document.getElementById('refSettingsForm').addEventListener('submit',function(e){
@@ -736,7 +740,7 @@ document.getElementById('refSettingsForm').addEventListener('submit',function(e)
   var body={ rewardAmountCents:cents('rsReward'), tier2Threshold:intOrNull('rsT2Thresh'), tier2AmountCents:cents('rsT2Amt'), tier3Threshold:intOrNull('rsT3Thresh'), tier3AmountCents:cents('rsT3Amt'), monthlyCapPerReferrer:intOrNull('rsCap'), rewardExpiryDays:intOrNull('rsExpiry') };
   if(en!=='') body.enabled=(en==='true');
   apiFetch('/referrals/admin/settings',{method:'PUT',body:JSON.stringify(body)})
-    .then(function(){ refMsgB('ok','Program settings saved.'); toast('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Referral settings saved'); loadReferrals(); })
+    .then(function(){ refMsgB('ok','Program settings saved.'); toast('Referral settings saved',ICO_CHECK); loadReferrals(); })
     .catch(function(err){ refMsgB('err','Settings save failed: '+err.message+' (owner sign-in required)'); });
 });
 setInterval(function(){ if(document.body.classList.contains('live')) loadReferrals(); },60000);
