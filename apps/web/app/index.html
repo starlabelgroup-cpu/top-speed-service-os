@@ -7,40 +7,40 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#0A265C" />
+    <meta name="theme-color" content="#0C162B" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Appliance Connect" />
 <title>Appliance Connect — Customer App | Top Speed Appliance</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#0A265C; --navy2:#061A40; --blue:#1280FF; --blue-d:#0B63CE; --red:#E8322E; --red-d:#C72420;
-  --ink:#101828; --mut:#5B6B82; --line:#E2E8F2; --bg:#EEF2F8; --card:#FFFFFF; --soft:#EAF2FE;
+  --navy:#0C162B; --navy2:#060D1A; --blue:#1280FF; --blue-d:#0B63CE; --red:#E94E5C; --red-d:#D63A48;
+  --ink:#1B2840; --mut:#5A6B84; --line:#E7ECF3; --bg:#F5F7FB; --card:#FFFFFF; --soft:#EAF2FE;
   --green:#12805C; --green-bg:#E3F4EC; --amber:#9A6A00; --amber-bg:#FBF0D3;
-  --page-bg:#DCE6F4; --page-ink:#0A265C; --page-mut:#46608C;
+  --page-bg:#DFE7F3; --page-ink:#0C162B; --page-mut:#46608C;
 }
 @media (prefers-color-scheme: dark){
   :root{ --page-bg:#050D1F; --page-ink:#EAF1FE; --page-mut:#9DB2D6; }
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
 html,body{height:100%;}
-body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-bg); color:var(--page-ink);}
+body{margin:0; font-family:"DM Sans",system-ui,sans-serif; background:var(--page-bg); color:var(--page-ink);}
 
 /* ---------- Page layout ---------- */
 .page{min-height:100dvh; display:flex; align-items:center; justify-content:center; gap:56px; padding:28px 20px;}
 .promo{max-width:460px; display:none;}
 @media(min-width:1020px){ .promo{display:block;} }
-.promo .flag{display:inline-flex; align-items:center; gap:10px; font-family:"Barlow Condensed"; font-weight:700; letter-spacing:.14em; font-size:13px; text-transform:uppercase; color:var(--page-mut);}
+.promo .flag{display:inline-flex; align-items:center; gap:10px; font-family:"Manrope"; font-weight:700; letter-spacing:.14em; font-size:13px; text-transform:uppercase; color:var(--page-mut);}
 .checkers{width:44px; height:14px; border-radius:3px; background:
-  conic-gradient(#0A265C 25%, #fff 0 50%, #0A265C 0 75%, #fff 0) 0 0/14px 14px;
+  conic-gradient(#0C162B 25%, #fff 0 50%, #0C162B 0 75%, #fff 0) 0 0/14px 14px;
   box-shadow:inset 0 0 0 1px rgba(10,38,92,.25);}
 @media (prefers-color-scheme: dark){ .checkers{background:conic-gradient(#EAF1FE 25%, #13294F 0 50%, #EAF1FE 0 75%, #13294F 0) 0 0/14px 14px;} }
-.promo h1{font-family:"Barlow Condensed"; font-size:64px; line-height:.95; margin:18px 0 6px; text-transform:uppercase; font-weight:700;}
+.promo h1{font-family:"Manrope"; font-size:64px; line-height:.95; margin:18px 0 6px; text-transform:uppercase; font-weight:700;}
 .promo h1 em{font-style:normal; color:var(--red);}
-.promo .tag{font-family:"Barlow Condensed"; font-size:24px; font-weight:600; letter-spacing:.02em; margin:0 0 14px;}
+.promo .tag{font-family:"Manrope"; font-size:24px; font-weight:600; letter-spacing:.02em; margin:0 0 14px;}
 .promo p{color:var(--page-mut); font-size:16.5px; line-height:1.55; margin:0 0 20px;}
 .promo .stars{font-weight:700; color:var(--page-ink);}
 .dl-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:22px 0;}
@@ -61,8 +61,8 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 
 /* ---------- Phone ---------- */
 .phone-wrap{display:flex; justify-content:center;}
-.phone{width:min(412px,100vw); height:min(880px,94dvh); background:#0B1526; border-radius:48px; padding:11px; box-shadow:0 40px 80px -20px rgba(4,16,40,.55), 0 0 0 1px rgba(255,255,255,.08) inset; position:relative;}
-.phone::before{content:""; position:absolute; top:11px; left:50%; transform:translateX(-50%); width:110px; height:24px; background:#0B1526; border-radius:0 0 16px 16px; z-index:30;}
+.phone{width:min(412px,100vw); height:min(880px,94dvh); background:#060D1A; border-radius:48px; padding:11px; box-shadow:0 40px 80px -20px rgba(4,16,40,.55), 0 0 0 1px rgba(255,255,255,.08) inset; position:relative;}
+.phone::before{content:""; position:absolute; top:11px; left:50%; transform:translateX(-50%); width:110px; height:24px; background:#060D1A; border-radius:0 0 16px 16px; z-index:30;}
 .app{background:var(--bg); border-radius:38px; overflow:hidden; height:100%; display:flex; flex-direction:column; position:relative; color:var(--ink);}
 @media(max-width:560px){
   .page{padding:0;}
@@ -72,21 +72,21 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 }
 
 /* ---------- App header ---------- */
-.ahead{background:var(--navy); color:#fff; padding:30px 18px 12px; position:relative; flex:none;}
-.ahead::after{content:""; position:absolute; left:0; right:0; bottom:0; height:5px;
+.ahead{background:linear-gradient(155deg,#0C162B 0%,#060D1A 100%); color:#fff; padding:30px 18px 14px; position:relative; flex:none;}
+.ahead::after{display:none; content:""; position:absolute; left:0; right:0; bottom:0; height:5px;
   background:conic-gradient(#fff 25%, var(--navy2) 0 50%, #fff 0 75%, var(--navy2) 0) 0 0/12px 12px; opacity:.9;}
 .brandrow{display:flex; align-items:center; gap:10px;}
-.logo{width:40px; height:40px; border-radius:11px; background:var(--red); display:grid; place-items:center; font-family:"Barlow Condensed"; font-weight:700; font-size:19px; letter-spacing:.02em; flex:none; box-shadow:0 4px 10px rgba(0,0,0,.3);}
+.logo{width:42px; height:42px; display:grid; place-items:center; flex:none;}
 .brandrow .bn{line-height:1.05;}
-.brandrow .bn b{font-family:"Barlow Condensed"; font-size:21px; letter-spacing:.03em; display:block;}
-.brandrow .bn span{font-size:11.5px; color:#BFD4F5; font-weight:600; letter-spacing:.06em; text-transform:uppercase;}
+.brandrow .bn b{font-family:"Manrope"; font-size:19px; font-weight:800; letter-spacing:.02em; display:block;}
+.brandrow .bn span{font-size:10.5px; color:#F2767F; font-weight:700; letter-spacing:.18em; text-transform:uppercase;}
 .callbtn{margin-left:auto; background:#fff; color:var(--navy); border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; padding:9px 13px; display:flex; align-items:center; gap:6px; cursor:pointer; text-decoration:none;}
 .preview-note{margin-top:10px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#DCE9FF; font-size:11.5px; font-weight:600; border-radius:8px; padding:6px 9px; display:flex; gap:6px; align-items:center;}
 .signin-btn{margin-left:auto; flex:none; background:#16A34A; color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; font-size:13.5px; min-height:44px; padding:10px 16px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,.28);}
 .signin-btn:active{background:#15803D;}
 
 /* install banner */
-.install-banner{flex:none; margin:12px 14px 0; background:var(--navy); color:#fff; border-radius:14px; padding:12px 13px; display:flex; gap:11px; align-items:center; box-shadow:0 8px 18px -8px rgba(10,38,92,.5);}
+.install-banner{flex:none; margin:12px 14px 0; background:linear-gradient(155deg,#0C162B,#060D1A); color:#fff; border-radius:14px; padding:12px 13px; display:flex; gap:11px; align-items:center; box-shadow:0 8px 18px -8px rgba(10,38,92,.5);}
 .install-banner .ib-ic{width:36px; height:36px; border-radius:10px; background:var(--blue); display:grid; place-items:center; flex:none;}
 .install-banner b{font-size:14px; display:block; line-height:1.25;}
 .install-banner span{font-size:12px; color:#C9DBF8; display:block; line-height:1.35;}
@@ -95,7 +95,7 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 
 /* app store buttons (sit directly under the install banner) */
 .store-row{flex:none; margin:8px 14px 0; display:flex; gap:9px;}
-.store-btn{flex:1; display:flex; align-items:center; gap:10px; background:#0B1526; color:#fff; border:1px solid rgba(255,255,255,.22); border-radius:12px; padding:8px 12px; min-height:48px; font:inherit; text-decoration:none; cursor:pointer; box-shadow:0 8px 18px -10px rgba(10,38,92,.55);}
+.store-btn{flex:1; display:flex; align-items:center; gap:10px; background:#060D1A; color:#fff; border:1px solid rgba(255,255,255,.22); border-radius:12px; padding:8px 12px; min-height:48px; font:inherit; text-decoration:none; cursor:pointer; box-shadow:0 8px 18px -10px rgba(10,38,92,.55);}
 .store-btn svg{flex:none;}
 .store-btn .sb-t{line-height:1.12; text-align:left;}
 .store-btn .sb-t small{display:block; font-size:9.5px; font-weight:600; letter-spacing:.04em; opacity:.85; text-transform:uppercase;}
@@ -108,19 +108,19 @@ body{margin:0; font-family:"Barlow",system-ui,sans-serif; background:var(--page-
 .screen.on{display:block;}
 @keyframes fade{from{opacity:0; transform:translateY(5px);} to{opacity:1; transform:none;}}
 @media (prefers-reduced-motion: reduce){ .screen{animation:none;} }
-.greet{font-family:"Barlow Condensed"; font-size:29px; font-weight:700; color:var(--navy); margin:2px 0 2px; text-transform:uppercase; letter-spacing:.01em;}
+.greet{font-family:"Manrope"; font-size:27px; font-weight:800; color:var(--navy); margin:2px 0 2px; letter-spacing:0;}
 .sub{color:var(--mut); font-size:14.5px; margin:0 0 14px; line-height:1.45;}
-h3.sec{font-family:"Barlow Condensed"; font-size:19px; text-transform:uppercase; letter-spacing:.04em; color:var(--navy); margin:20px 0 10px; display:flex; align-items:center; gap:8px;}
+h3.sec{font-family:"Manrope"; font-size:13.5px; font-weight:800; text-transform:uppercase; letter-spacing:.11em; color:var(--mut); margin:22px 0 10px; display:flex; align-items:center; gap:8px;}
 h3.sec:first-child{margin-top:0;}
 .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:15px;}
 .chip99{display:flex; gap:11px; align-items:center; background:linear-gradient(120deg,#FFF4E0,#FFE9C4); border:1px solid #F2D492; border-radius:14px; padding:12px 13px; margin-bottom:14px;}
-.chip99 .amt{font-family:"Barlow Condensed"; font-size:30px; font-weight:700; color:#8A5A00; line-height:1;}
+.chip99 .amt{font-family:"Manrope"; font-size:30px; font-weight:700; color:#8A5A00; line-height:1;}
 .chip99 p{margin:0; font-size:13px; line-height:1.4; color:#6B4E12;}
 .chip99 p b{color:#543D0B;}
 
 .grid9{display:grid; grid-template-columns:repeat(3,1fr); gap:9px;}
 .appl{background:var(--card); border:1.5px solid var(--line); border-radius:14px; padding:13px 6px 11px; text-align:center; cursor:pointer; font:inherit; color:var(--ink); transition:border-color .15s, transform .15s;}
-.appl:hover{border-color:var(--blue);}
+.appl:hover{border-color:var(--red);}
 .appl:active{transform:scale(.97);}
 .appl svg{display:block; margin:0 auto 7px;}
 .appl span{font-size:12.5px; font-weight:700; line-height:1.15; display:block;}
@@ -137,12 +137,12 @@ h3.sec:first-child{margin-top:0;}
 .pill.gray{background:#EDF1F7; color:var(--mut);}
 .dot{width:7px; height:7px; border-radius:50%; background:currentColor;}
 .progress{height:7px; background:#E6ECF5; border-radius:99px; margin:12px 0 6px; overflow:hidden;}
-.progress i{display:block; height:100%; background:var(--blue); border-radius:99px; transition:width .5s ease;}
+.progress i{display:block; height:100%; background:var(--red); border-radius:99px; transition:width .5s ease;}
 .jc-meta{font-size:13px; color:var(--mut); line-height:1.5;}
 .btn{display:block; width:100%; border:none; border-radius:13px; padding:14px; font:inherit; font-weight:800; font-size:15.5px; cursor:pointer; text-align:center; text-decoration:none;}
 .btn.primary{background:var(--red); color:#fff; box-shadow:0 10px 20px -10px rgba(232,50,46,.7);}
 .btn.primary:active{background:var(--red-d);}
-.btn.blue{background:var(--blue); color:#fff;}
+.btn.blue{background:linear-gradient(155deg,#0C162B,#060D1A); color:#fff;}
 .btn.ghost{background:#fff; color:var(--navy); border:1.5px solid var(--line);}
 .btn.small{padding:10px; font-size:14px;}
 .btn:disabled{opacity:.45; cursor:not-allowed; box-shadow:none;}
@@ -152,7 +152,7 @@ h3.sec:first-child{margin-top:0;}
 /* booking steps */
 .steps-bar{display:flex; gap:5px; margin-bottom:16px;}
 .steps-bar i{flex:1; height:5px; border-radius:99px; background:#D8E1EE;}
-.steps-bar i.done{background:var(--blue);}
+.steps-bar i.done{background:var(--red);}
 .bstep{display:none;}
 .bstep.on{display:block; animation:fade .22s ease;}
 label.fl{display:block; font-size:13px; font-weight:800; color:var(--navy); margin:14px 0 7px; text-transform:uppercase; letter-spacing:.05em;}
@@ -169,7 +169,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .chips{display:flex; flex-wrap:wrap; gap:8px;}
 .chip{border:1.5px solid var(--line); background:#fff; border-radius:99px; padding:9px 14px; font:inherit; font-size:14px; font-weight:700; cursor:pointer; color:var(--ink);}
 .chip small{display:block; font-size:11px; font-weight:600; color:var(--mut);}
-.chip.on{border-color:var(--blue); background:var(--soft); color:var(--navy);}
+.chip.on{border-color:var(--red); background:#FDECEC; color:var(--navy);}
 .chip.on small{color:var(--blue-d);}
 .sumrow{display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px dashed var(--line); font-size:14.5px;}
 .sumrow:last-of-type{border-bottom:none;}
@@ -177,7 +177,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .sumrow b{text-align:right;}
 .success-hero{text-align:center; padding:10px 0 4px;}
 .success-hero .ok{width:70px; height:70px; border-radius:50%; background:var(--green-bg); display:grid; place-items:center; margin:0 auto 12px;}
-.refcode{font-family:"Barlow Condensed"; font-size:34px; font-weight:700; letter-spacing:.1em; color:var(--navy); background:#fff; border:2px dashed #B9CBE4; border-radius:14px; padding:10px; margin:12px 0;}
+.refcode{font-family:"Manrope"; font-size:34px; font-weight:700; letter-spacing:.1em; color:var(--navy); background:#fff; border:2px dashed #B9CBE4; border-radius:14px; padding:10px; margin:12px 0;}
 
 /* track */
 .stages{position:relative; margin:6px 0 4px; padding-left:6px;}
@@ -185,14 +185,14 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .stage:last-child{padding-bottom:2px;}
 .stage::before{content:""; position:absolute; left:15px; top:32px; bottom:0; width:2.5px; background:#DCE5F1;}
 .stage:last-child::before{display:none;}
-.stage.done::before{background:var(--blue);}
+.stage.done::before{background:var(--red);}
 .stage .st-ic{width:32px; height:32px; border-radius:50%; background:#E4EBF5; color:#8FA5C4; display:grid; place-items:center; flex:none; z-index:1; font-weight:800; font-size:13px;}
-.stage.done .st-ic{background:var(--blue); color:#fff;}
-.stage.now .st-ic{background:var(--navy); color:#fff; box-shadow:0 0 0 5px rgba(18,128,255,.18);}
+.stage.done .st-ic{background:var(--red); color:#fff;}
+.stage.now .st-ic{background:#fff; color:var(--red); border:2.5px solid var(--red); box-shadow:0 0 0 5px rgba(233,78,92,.16);}
 .stage b{font-size:15px; display:block; padding-top:5px;}
 .stage span{font-size:12.5px; color:var(--mut); display:block;}
 .techcard{display:flex; gap:12px; align-items:center;}
-.avatar{width:52px; height:52px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-family:"Barlow Condensed"; font-weight:700; font-size:19px; flex:none;}
+.avatar{width:52px; height:52px; border-radius:50%; background:var(--navy); color:#fff; display:grid; place-items:center; font-family:"Manrope"; font-weight:700; font-size:19px; flex:none;}
 .techcard b{font-size:16px; display:block;}
 .techcard span{font-size:13px; color:var(--mut); display:block; line-height:1.4;}
 .feed{display:grid; gap:0;}
@@ -218,9 +218,9 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .remind b{color:#43300A;}
 
 /* more */
-.ref-card{background:var(--navy); color:#fff; border-radius:16px; padding:17px; position:relative; overflow:hidden;}
-.ref-card::after{content:""; position:absolute; right:0; top:0; bottom:0; width:8px; background:conic-gradient(#fff 25%, var(--navy2) 0 50%, #fff 0 75%, var(--navy2) 0) 0 0/8px 8px; opacity:.85;}
-.ref-card .rc-code{font-family:"Barlow Condensed"; font-size:30px; font-weight:700; letter-spacing:.1em; margin:6px 0 4px;}
+.ref-card{background:linear-gradient(150deg,#0C162B,#060D1A); color:#fff; border-radius:16px; padding:17px; position:relative; overflow:hidden;}
+.ref-card::after{display:none; content:""; position:absolute; right:0; top:0; bottom:0; width:8px; background:conic-gradient(#fff 25%, var(--navy2) 0 50%, #fff 0 75%, var(--navy2) 0) 0 0/8px 8px; opacity:.85;}
+.ref-card .rc-code{font-family:"Manrope"; font-size:30px; font-weight:700; letter-spacing:.1em; margin:6px 0 4px;}
 .ref-card p{margin:0; font-size:13.5px; color:#C9DBF8; line-height:1.5; max-width:92%;}
 .copy-btn{margin-top:12px; background:#fff; color:var(--navy); border:none; font:inherit; font-weight:800; font-size:13.5px; padding:9px 14px; border-radius:99px; cursor:pointer;}
 .stars-in{display:flex; gap:6px; margin:10px 0 4px;}
@@ -239,8 +239,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 /* bottom nav */
 .bnav{flex:none; background:#fff; border-top:1px solid var(--line); display:flex; padding:8px 6px calc(10px + env(safe-area-inset-bottom)); position:relative; z-index:5;}
 .bnav button{flex:1; background:none; border:none; font:inherit; cursor:pointer; color:#8496B3; font-size:11px; font-weight:700; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 0; border-radius:10px;}
-.bnav button.on{color:var(--navy);}
-.bnav button.on svg{color:var(--blue);filter:drop-shadow(0 0 5px rgba(232,50,46,.45));}
+.bnav button.on{color:var(--red);}
+.bnav button.on svg{color:var(--red);filter:drop-shadow(0 0 5px rgba(233,78,92,.55));}
 .bnav .bookfab{width:52px; height:52px; border-radius:50%; background:var(--red); color:#fff !important; display:grid; place-items:center; margin-top:-26px; box-shadow:0 10px 20px -6px rgba(232,50,46,.6); border:3.5px solid #fff;}
 .bnav .fabwrap{display:flex; flex-direction:column; align-items:center; gap:3px;}
 
@@ -250,12 +250,41 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 .sheet .sh-card{background:#fff; width:100%; border-radius:22px 22px 0 0; padding:20px 18px calc(20px + env(safe-area-inset-bottom)); max-height:82%; overflow-y:auto; animation:up .25s ease;}
 @keyframes up{from{transform:translateY(30px); opacity:.5;} to{transform:none; opacity:1;}}
 @media (prefers-reduced-motion: reduce){ .sheet .sh-card{animation:none;} }
-.sheet h4{font-family:"Barlow Condensed"; font-size:23px; text-transform:uppercase; color:var(--navy); margin:0 0 6px;}
+.sheet h4{font-family:"Manrope"; font-size:22px; font-weight:800; color:var(--navy); margin:0 0 6px;}
 .sheet p, .sheet li{font-size:14.5px; line-height:1.55; color:#33445E;}
 .sheet ol{padding-left:20px; margin:8px 0;}
 .toast{position:absolute; left:50%; bottom:104px; transform:translate(-50%,20px); background:var(--navy); color:#fff; font-size:13.5px; font-weight:700; padding:11px 16px; border-radius:99px; opacity:0; pointer-events:none; transition:all .3s; z-index:50; box-shadow:0 12px 24px -8px rgba(5,20,50,.6); max-width:88%; text-align:center;}
 .toast.on{opacity:1; transform:translate(-50%,0);}
 .empty-note{text-align:center; color:var(--mut); font-size:14px; padding:18px 10px; line-height:1.5;}
+/* ---------- Figma super-app components ---------- */
+.hero-speedy{background:linear-gradient(150deg,#0C162B,#060D1A); color:#fff; border:none; padding:18px;}
+.hero-disc{width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.16); display:grid; place-items:center; flex:none; box-shadow:0 0 14px rgba(233,78,92,.35);}
+.hero-disc svg{width:24px; height:24px; display:block;}
+.qa-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:9px;}
+.qa{background:#fff; border:1px solid var(--line); border-radius:16px; padding:13px 4px 11px; display:flex; flex-direction:column; align-items:center; gap:7px; font:inherit; font-size:12.5px; font-weight:700; color:var(--ink); cursor:pointer; text-decoration:none;}
+.qa:active{transform:scale(.97);}
+.qa svg{width:24px; height:24px; color:var(--navy);}
+.eco-teaser{display:flex; gap:12px; align-items:center; cursor:pointer; margin-bottom:12px;}
+.price-card{display:flex; gap:12px; align-items:flex-start; margin-bottom:12px;}
+.o-ic{width:42px; height:42px; border-radius:12px; background:#FDECEC; color:var(--red); display:grid; place-items:center; flex:none;}
+.o-ic svg{width:22px; height:22px;}
+.m-ic{width:38px; height:38px; border-radius:11px; background:#F1F5FB; display:grid; place-items:center; flex:none; color:var(--navy);}
+.m-ic svg{width:21px; height:21px;}
+.menu-row{display:flex; align-items:center; gap:12px; width:100%; background:none; border:none; border-bottom:1px solid var(--line); padding:11px 2px; font:inherit; font-size:14.5px; font-weight:600; color:var(--ink); cursor:pointer; text-decoration:none; text-align:left;}
+.menu-row:last-child{border-bottom:none;}
+.menu-row .m-val{margin-left:auto; color:var(--mut); font-size:13px; font-weight:600; flex:none;}
+.menu-row .m-chev{margin-left:auto; color:#B7C3D6; flex:none;}
+.menu-row .m-val + .m-chev{margin-left:0;}
+.offer-row{display:flex; gap:12px; align-items:flex-start; background:#fff; border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:10px; text-decoration:none; color:var(--ink);}
+.offer-row b{font-size:15px; display:block;}
+.o-sub{display:block; font-size:13px; color:var(--mut); line-height:1.45; margin-top:2px;}
+.divider-or{display:flex; align-items:center; gap:12px; margin:16px 0 2px; color:var(--mut); font-size:11.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;}
+.divider-or::before,.divider-or::after{content:""; flex:1; height:1px; background:var(--line);}
+.mapcard{border-radius:18px; background:linear-gradient(150deg,#0C162B,#060D1A); padding:12px 12px 4px; margin-bottom:16px; position:relative;}
+.map-chip{position:absolute; top:12px; left:12px; background:rgba(255,255,255,.1); color:#DCE9FF; font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; padding:5px 9px; border-radius:99px;}
+.speedy-disc{width:52px; height:52px; border-radius:50%; background:linear-gradient(150deg,#16294D,#0C162B); display:grid; place-items:center; margin-top:-24px; border:3.5px solid #fff; box-shadow:0 10px 22px -6px rgba(12,22,43,.55); flex:none;}
+.bnav button.on .speedy-disc{background:linear-gradient(150deg,#F2606F,#E94E5C); box-shadow:0 10px 22px -6px rgba(233,78,92,.6), 0 0 16px rgba(233,78,92,.45);}
+
 </style>
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script></head>
 <body>
@@ -281,11 +310,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
     </ul>
     <style>
       .acct-card{background:#fff;border:1px solid #DCE6F5;border-radius:18px;padding:22px;margin:22px 0;box-shadow:0 14px 34px -18px rgba(5,20,50,.25)}
-      .acct-card h2{font-size:21px;color:#0A265C;margin:0 0 4px}
+      .acct-card h2{font-size:21px;color:#0C162B;margin:0 0 4px}
       .acct-card .sub{font-size:14px;color:#5A6B82;line-height:1.5;margin:0 0 14px}
       .acct-tabs{display:flex;background:#EEF3FB;border-radius:99px;padding:4px;margin-bottom:16px}
       .acct-tabs button{flex:1;border:none;background:transparent;font:inherit;font-weight:700;font-size:14.5px;padding:10px;border-radius:99px;cursor:pointer;color:#42557A}
-      .acct-tabs button.on{background:#0A265C;color:#fff}
+      .acct-tabs button.on{background:#0C162B;color:#fff}
       .acct-card label{font-size:13.5px;font-weight:700;color:#344054;display:block;margin:12px 0 6px}
       .acct-card input{width:100%;padding:13px 16px;border:1.5px solid #D7DEE9;border-radius:12px;font:inherit;font-size:15px;box-sizing:border-box}
       .acct-card input:focus{outline:2px solid #1280FF;border-color:#1280FF}
@@ -293,13 +322,13 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
       .acct-go:disabled{opacity:.55}
       .acct-err{display:none;background:#FDECEC;border:1px solid #F5C2C0;color:#8F1D1A;border-radius:12px;padding:11px 13px;font-size:13.5px;margin-top:14px}
       .acct-links{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
-      .acct-links a{text-align:center;padding:12px 8px;border-radius:12px;background:#0A265C;color:#fff;font-weight:700;font-size:14px;text-decoration:none}
-      .acct-links a.alt{background:#EEF3FB;color:#0A265C}
+      .acct-links a{text-align:center;padding:12px 8px;border-radius:12px;background:#0C162B;color:#fff;font-weight:700;font-size:14px;text-decoration:none}
+      .acct-links a.alt{background:#EEF3FB;color:#0C162B}
       .acct-out{margin-top:12px;width:100%;background:none;border:none;color:#B3261E;font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:6px}
       .acct-note{font-size:12.5px;color:#8496B3;margin-top:12px;line-height:1.5}
     </style>
     <div class="acct-card" id="landingAcct">
-      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7 10.5h10l2 2v5.5l-2 2H7l-2-2v-5.5z"/><path d="M8 10.5V8.2L9.4 5h5.2L16 8.2v2.3"/><circle cx="12" cy="14.6" r="1.5" fill="#E8322E" stroke="none"/><path d="M12 16v1.6" stroke="#E8322E"/></svg> Your Top Speed Account</h2>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7 10.5h10l2 2v5.5l-2 2H7l-2-2v-5.5z"/><path d="M8 10.5V8.2L9.4 5h5.2L16 8.2v2.3"/><circle cx="12" cy="14.6" r="1.5" fill="#E94E5C" stroke="none"/><path d="M12 16v1.6" stroke="#E94E5C"/></svg> Your Top Speed Account</h2>
       <p class="sub">One account for everything — this app, the web portal, and the mobile app. Create it once and sign in everywhere.</p>
       <div id="laOut">
         <div class="acct-tabs">
@@ -325,10 +354,10 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
       <div id="laIn" style="display:none">
         <p class="sub" id="laWho" style="margin-bottom:0"></p>
         <div class="acct-links">
-          <a href="#app"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Open the app</a>
-          <a href="/garage"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 9h14l2 2v6.5l-2 2H5L3 19.5V11z"/><path d="M9 9V7l1.2-2.3h3.6L15 7v2M3 13.5h18" stroke="#E8322E"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg> My Appliances</a>
-          <a href="/track"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l4.8 1.9 1.6 3.7-.6 2.8L12 21.6 6.2 11.4 5.6 8.6 7.2 4.9z"/><circle cx="12" cy="9.6" r="2.4" stroke="#E8322E"/><circle cx="12" cy="9.6" r=".9" fill="#E8322E" stroke="none"/></svg> Track My Tech</a>
-          <a href="/portal" class="alt"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E8322E"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Web Portal</a>
+          <a href="#app"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E94E5C"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Open the app</a>
+          <a href="/garage"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 9h14l2 2v6.5l-2 2H5L3 19.5V11z"/><path d="M9 9V7l1.2-2.3h3.6L15 7v2M3 13.5h18" stroke="#E94E5C"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg> My Appliances</a>
+          <a href="/track"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l4.8 1.9 1.6 3.7-.6 2.8L12 21.6 6.2 11.4 5.6 8.6 7.2 4.9z"/><circle cx="12" cy="9.6" r="2.4" stroke="#E94E5C"/><circle cx="12" cy="9.6" r=".9" fill="#E94E5C" stroke="none"/></svg> Track My Tech</a>
+          <a href="/portal" class="alt"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E94E5C"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Web Portal</a>
         </div>
         <button class="acct-out" id="laOutBtn" type="button">Sign out</button>
       </div>
@@ -407,7 +436,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
         <header class="ahead">
           <div class="brandrow">
-            <div class="logo">AC</div>
+            <div class="logo"><svg width="42" height="42" viewBox="0 0 48 48" fill="none" stroke="#fff" stroke-width="4.4" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M24 7L7.5 39.5"/><path d="M24 7l6.8 12.5-5.2 4.5 6 2 8.9 13.5"/><path d="M14.8 30.2h18.4"/><circle cx="24" cy="7" r="3.1" fill="#E94E5C" stroke="none"/><circle cx="7.5" cy="39.5" r="3.4" fill="#E94E5C" stroke="none"/><circle cx="40.5" cy="39.5" r="3.4" fill="#E94E5C" stroke="none"/><circle cx="14.8" cy="30.2" r="1.8" fill="#E94E5C" stroke="none"/><circle cx="33.2" cy="30.2" r="1.8" fill="#E94E5C" stroke="none"/></svg></div>
             <div class="bn"><b>APPLIANCE CONNECT</b><span>Customer App</span></div>
             <a class="callbtn" href="tel:+19549317997"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>954-931-7997</a>
           </div>
@@ -430,25 +459,39 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
         <!-- ================= HOME (customer) ================= -->
         <section class="screen on" id="scr-home">
-          <h2 class="greet">Hey Ramone — what needs fixing?</h2>
+          <h2 class="greet"><span id="greetWord">Good evening</span> — what needs fixing?</h2>
           <p class="sub">Same-day slots across Broward County. A Service Setter confirms every booking by text.</p>
-          <div class="chip99">
-            <div class="amt">$99</div>
-            <p><b>Diagnostic, collected at booking</b> — and <b>credited in full toward your repair</b>. No surprises, ever.</p>
-          </div>
-          <div class="card" style="background:var(--navy); color:#fff; border:none;">
-            <b style="font-size:16px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Talk to Speedy — the fastest way to book</b>
-            <p style="margin:6px 0 12px; font-size:14px; opacity:.92;">Just say what's wrong — "My fridge stopped cooling, can someone come today?" Speedy asks the few details needed and books your $99 diagnostic visit right in the chat.</p>
-            <button class="btn" style="background:#fff; color:var(--navy);" onclick="showTab('speedy')">Talk to Speedy</button>
+          <div class="card hero-speedy">
+            <div style="display:flex; align-items:center; gap:12px;"><span class="hero-disc"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.6l1.9 6.2 6.2 1.9-6.2 1.9L12 18.8l-1.9-6.2L3.9 10.7l6.2-1.9z" fill="#fff"/><circle cx="12" cy="10.7" r="1.35" fill="#E94E5C"/></svg></span><b style="font-size:18px; font-family:'Manrope'; font-weight:800;">Tell Speedy</b></div>
+            <p style="margin:10px 0 14px; font-size:14px; line-height:1.5; opacity:.92;">Just say what's wrong — "My fridge stopped cooling, can someone come today?" Speedy asks the few details needed and books your $99 diagnostic visit right in the chat.</p>
+            <button class="btn" style="background:var(--red); color:#fff; border-radius:99px;" onclick="showTab('speedy')">Tell Speedy</button>
           </div>
 
-          <div class="grid9" id="applianceGrid"></div>
+                    <h3 class="sec">Quick actions</h3>
+          <div class="qa-grid">
+            <button class="qa" onclick="showTab('book')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.5 6h13V20h-13z"/><path d="M5.5 9.8h13"/><path d="M12 12.8v4M10 14.8h4"/><circle cx="8.6" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/><circle cx="15.4" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/></svg><span>Book</span></button>
+            <button class="qa" onclick="showTab('track')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.5" fill="#E94E5C" stroke="none"/></svg><span>Track</span></button>
+            <button class="qa" onclick="showTab('garage')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4.5 9.8L12 4l7.5 5.8V20h-15z"/><path d="M8.2 20v-6.2h7.6V20"/><path d="M8.2 16.9h7.6"/><circle cx="12" cy="4" r="1.15" fill="#E94E5C" stroke="none"/></svg><span>Garage</span></button>
+            <a class="qa" href="/offers-rewards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg><span>Offers</span></a>
+          </div>
+          <h3 class="sec">Book by appliance</h3>
+<div class="grid9" id="applianceGrid"></div>
 
-          <h3 class="sec">Your active job</h3>
+          <h3 class="sec">Your next visit</h3>
           <div id="activeJobSlot"></div>
           <div id="payBar"></div>
 
-          <h3 class="sec">Why Appliance Connect</h3>
+                    <div class="card eco-teaser" onclick="showTab('more'); setTimeout(function(){ var p=document.getElementById('tsePanel'); if(p){ p.scrollIntoView({behavior:'smooth', block:'start'}); } },80);">
+            <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>
+            <div style="flex:1;"><b style="font-size:15.5px;">The Top Speed Ecosystem</b><p class="sub" style="margin:3px 0 0;">Property manager, business, or selling something? Every Top Speed door lives in one family.</p></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B7C3D6" stroke-width="2" style="flex:none;"><path d="M9 5l7 7-7 7"/></svg>
+          </div>
+          <div class="card price-card">
+            <span class="o-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span>
+            <div><b style="font-size:15.5px;">$99 diagnostic — credited toward your repair</b><p class="sub" style="margin:3px 0 0;">Diagnostic collected at booking and credited in full toward your approved repair. 90-day parts &amp; labor warranty on every repair.</p></div>
+          </div>
+
+<h3 class="sec">Why Appliance Connect</h3>
           <div class="card" style="display:grid; gap:10px;">
             <div style="display:flex; gap:10px; font-size:14px;"><span class="pill blue">LICENSED</span><span style="align-self:center;">Licensed &amp; EPA Certified Technicians</span></div>
             <div style="display:flex; gap:10px; font-size:14px;"><span class="pill green">90-DAY</span><span style="align-self:center;">Warranty on parts &amp; labor</span></div>
@@ -467,11 +510,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <section class="screen" id="scr-book">
           <h2 class="greet">Book a repair</h2>
           <style>
-            .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.5);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(4,16,40,.35),0 0 22px rgba(18,128,255,.16);margin:4px 0 14px;}
+            .sbpromo{background:linear-gradient(150deg,#0C162B 0%,#060D1A 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(4,16,40,.35);margin:4px 0 14px;}
             .sbpromo-top{display:flex;gap:14px;align-items:flex-start;}
             .sbpromo-mark{flex:none;width:58px;height:58px;}
             .sbpromo-mark svg{width:58px;height:58px;display:block;filter:drop-shadow(0 0 9px rgba(18,128,255,.65));}
-            .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#9FD0FF;background:rgba(18,128,255,.16);border:1px solid rgba(25,167,255,.45);padding:3px 9px;border-radius:99px;}
+            .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#fff;background:var(--red);border:1px solid transparent;padding:3px 9px;border-radius:99px;}
             .sbpromo-h{font-size:21px;line-height:1.2;font-weight:800;margin:8px 0 5px;color:#fff;}
             .sbpromo-p{font-size:14px;line-height:1.5;color:#C7D8F5;margin:0;}
             .sbpromo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
@@ -485,7 +528,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           </style>
           <div class="sbpromo">
             <div class="sbpromo-top">
-              <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
+              <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0C162B"/><circle cx="24" cy="24" r="21" fill="none" stroke="#E94E5C" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E94E5C"/></svg></span>
               <div>
                 <span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
                 <h3 class="sbpromo-h">Book the smart way — with Speedy AI</h3>
@@ -502,6 +545,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
               <span class="sbpromo-note">Same Service Setters queue, same confirmation — just faster to start.</span>
             </div>
           </div>
+          <div class="divider-or"><span>Or use the classic form</span></div>
           <p class="sub">Four quick steps. Under a minute. This form stays here as the classic option.</p>
           <div class="steps-bar" id="stepsBar"><i class="done"></i><i></i><i></i><i></i></div>
 
@@ -612,33 +656,51 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
         <!-- ================= TRACK ================= -->
         <!-- ================= TALK TO SPEEDY ================= -->
         <section class="screen" id="scr-speedy">
-          <h2 class="greet">Talk to Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg></h2>
+          <h2 class="greet">Talk to Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E94E5C"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg></h2>
           <p class="sub">Tell Speedy what's wrong, in your own words. When Speedy has everything, you'll confirm the booking right here — no form needed.</p>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:9px; margin:14px 0 4px;">
-            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.8 7.5h8.5l2 2v6l-2 2H4.8l-2-2v-6z"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E8322E"/><path d="M11.03 13.34L9.84 14.53L8.16 14.53L6.97 13.34L6.97 11.66L8.16 10.47L9.84 10.47L11.03 11.66z"/></svg></div><b style="font-size:14.5px;">Live video</b><div style="font-size:12.5px; opacity:.85;">Talk to a technician</div></a>
-            <a href="https://topspeedserviceos.com/#diagnose" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 7.5h14l2 2v8.5l-2 2H5L3 18V9.5z"/><path d="M8.5 7.5L10.2 4h3.6l1.7 3.5"/><path d="M15.05 14.96L13.26 16.75L10.74 16.75L8.95 14.96L8.95 12.44L10.74 10.65L13.26 10.65L15.05 12.44z"/><circle cx="12" cy="13.7" r="1" fill="#E8322E" stroke="none"/><path d="M17.6 10.6h.01" stroke-width="2.4" stroke="#E8322E"/></svg></div><b style="font-size:14.5px;">Photo diagnosis</b><div style="font-size:12.5px; opacity:.85;">Send appliance pictures</div></a>
-            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.8 7.5h8.5l2 2v6l-2 2H4.8l-2-2v-6z"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E8322E"/></svg></div><b style="font-size:14.5px;">Send video</b><div style="font-size:12.5px; opacity:.85;">Show symptoms</div></a>
-            <a href="mailto:service@topspeedappliance.net?subject=Diagnostic%20evidence" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 6h14l2 2v8.5l-2 2H5L3 18.5V8z"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg></div><b style="font-size:14.5px;">Email technician</b><div style="font-size:12.5px; opacity:.85;">Send diagnostic evidence</div></a>
-            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E8322E"/></svg></div><b style="font-size:14.5px;">Call technician</b><div style="font-size:12.5px; opacity:.85;">AI-directed connection</div></a>
-            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 15v-2.2L6 6.8 10 4h4l4 2.8L20 12.8V15"/><path d="M4.2 13.6h2.4l1 1v4.6l-1 1H4.2l-1-1v-4.6z"/><path d="M19.8 13.6h-2.4l-1 1v4.6l1 1h2.4l1-1v-4.6z"/><path d="M19.6 20.2a3.4 3.4 0 0 1-3.4 2.3h-2.7" stroke="#E8322E"/></svg></div><b style="font-size:14.5px;">Call manager</b><div style="font-size:12.5px; opacity:.85;">Escalation support</div></a>
+            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.8 7.5h8.5l2 2v6l-2 2H4.8l-2-2v-6z"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E94E5C"/><path d="M11.03 13.34L9.84 14.53L8.16 14.53L6.97 13.34L6.97 11.66L8.16 10.47L9.84 10.47L11.03 11.66z"/></svg></div><b style="font-size:14.5px;">Live video</b><div style="font-size:12.5px; opacity:.85;">Talk to a technician</div></a>
+            <a href="https://topspeedserviceos.com/#diagnose" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 7.5h14l2 2v8.5l-2 2H5L3 18V9.5z"/><path d="M8.5 7.5L10.2 4h3.6l1.7 3.5"/><path d="M15.05 14.96L13.26 16.75L10.74 16.75L8.95 14.96L8.95 12.44L10.74 10.65L13.26 10.65L15.05 12.44z"/><circle cx="12" cy="13.7" r="1" fill="#E94E5C" stroke="none"/><path d="M17.6 10.6h.01" stroke-width="2.4" stroke="#E94E5C"/></svg></div><b style="font-size:14.5px;">Photo diagnosis</b><div style="font-size:12.5px; opacity:.85;">Send appliance pictures</div></a>
+            <a href="/video" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.8 7.5h8.5l2 2v6l-2 2H4.8l-2-2v-6z"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E94E5C"/></svg></div><b style="font-size:14.5px;">Send video</b><div style="font-size:12.5px; opacity:.85;">Show symptoms</div></a>
+            <a href="mailto:service@topspeedappliance.net?subject=Diagnostic%20evidence" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 6h14l2 2v8.5l-2 2H5L3 18.5V8z"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E94E5C"/></svg></div><b style="font-size:14.5px;">Email technician</b><div style="font-size:12.5px; opacity:.85;">Send diagnostic evidence</div></a>
+            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E94E5C"/></svg></div><b style="font-size:14.5px;">Call technician</b><div style="font-size:12.5px; opacity:.85;">AI-directed connection</div></a>
+            <a href="tel:+19549317997" style="background:var(--navy); color:#fff; border-radius:14px; padding:14px; text-decoration:none;"><div style="font-size:19px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 15v-2.2L6 6.8 10 4h4l4 2.8L20 12.8V15"/><path d="M4.2 13.6h2.4l1 1v4.6l-1 1H4.2l-1-1v-4.6z"/><path d="M19.8 13.6h-2.4l-1 1v4.6l1 1h2.4l1-1v-4.6z"/><path d="M19.6 20.2a3.4 3.4 0 0 1-3.4 2.3h-2.7" stroke="#E94E5C"/></svg></div><b style="font-size:14.5px;">Call manager</b><div style="font-size:12.5px; opacity:.85;">Escalation support</div></a>
           </div>
-          <button class="btn" style="background:var(--red); color:#fff; width:100%; margin-bottom:6px;" onclick="document.getElementById('aspInput').focus()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M10 3l1.6 5.4L17 10l-5.4 1.6L10 17l-1.6-5.4L3 10l5.4-1.6z"/><circle cx="10" cy="10" r="1.2" fill="currentColor" stroke="none"/><path d="M18.6 14.6l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8z" stroke="#E8322E"/><path d="M18.5 4l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/></svg> Let Speedy AI choose who to contact</button>
-          <div id="aspLog" style="display:grid; gap:9px; margin:14px 0;">
+          <button class="btn" style="background:var(--red); color:#fff; width:100%; margin-bottom:6px;" onclick="document.getElementById('aspInput').focus()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M10 3l1.6 5.4L17 10l-5.4 1.6L10 17l-1.6-5.4L3 10l5.4-1.6z"/><circle cx="10" cy="10" r="1.2" fill="currentColor" stroke="none"/><path d="M18.6 14.6l.8 2.4 2.4.8-2.4.8-.8 2.4-.8-2.4-2.4-.8 2.4-.8z" stroke="#E94E5C"/><path d="M18.5 4l.6 1.9 1.9.6-1.9.6-.6 1.9-.6-1.9-1.9-.6 1.9-.6z"/></svg> Let Speedy AI choose who to contact</button>
+                    <div style="display:flex; align-items:center; gap:11px; margin:16px 0 2px;">
+            <span class="hero-disc" style="background:linear-gradient(150deg,#0C162B,#060D1A); width:42px; height:42px;"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.6l1.9 6.2 6.2 1.9-6.2 1.9L12 18.8l-1.9-6.2L3.9 10.7l6.2-1.9z" fill="#fff"/><circle cx="12" cy="10.7" r="1.35" fill="#E94E5C"/></svg></span>
+            <div><b style="font-size:16px; font-family:'Manrope'; font-weight:800; color:var(--navy);">Speedy</b><div style="font-size:12.5px; color:var(--mut);">Ask anything — repairs, pricing, areas, your booking.</div></div>
+          </div>
+<div id="aspLog" style="display:grid; gap:9px; margin:14px 0;">
             <div style="background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;"><b style="color:var(--navy);">Speedy</b><br>Hi! I'm Speedy. What's going on with your appliance?</div>
           </div>
           <div id="aspCard"></div>
           <div style="display:flex; gap:8px; margin-top:6px;">
             <input id="aspInput" type="text" placeholder="My fridge stopped cooling… or tap the mic and say it" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
-            <button class="btn" type="button" id="aspPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8.5V6.5L6.5 4h2M15.5 4h2L20 6.5v2M20 15.5v2L17.5 20h-2M8.5 20h-2L4 17.5v-2"/><path d="M15.14 13.3L13.3 15.14L10.7 15.14L8.86 13.3L8.86 10.7L10.7 8.86L13.3 8.86L15.14 10.7z"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg></button><input type="file" id="aspFile" accept="image/*" style="display:none"><button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/><circle cx="8.3" cy="7.4" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.7" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg></button>
-            <button class="btn blue" id="aspSendBtn" onclick="aspSend()">Send</button>
+            <button class="btn" type="button" id="aspPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8.5V6.5L6.5 4h2M15.5 4h2L20 6.5v2M20 15.5v2L17.5 20h-2M8.5 20h-2L4 17.5v-2"/><path d="M15.14 13.3L13.3 15.14L10.7 15.14L8.86 13.3L8.86 10.7L10.7 8.86L13.3 8.86L15.14 10.7z"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg></button><input type="file" id="aspFile" accept="image/*" style="display:none"><button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E94E5C"/><circle cx="8.3" cy="7.4" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.7" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg></button>
+            <button class="btn" id="aspSendBtn" style="background:var(--red); color:#fff;" onclick="aspSend()">Send</button>
           </div>
+          <p class="sub" style="margin-top:12px;">Photo reads are preliminary — a technician confirms on site.</p>
           <p class="sub" style="margin-top:12px;">Prefer the classic way? <a href="#" onclick="showTab('book'); return false;" style="color:var(--blue); font-weight:800;">Use the booking form →</a></p>
         </section>
 
         <section class="screen" id="scr-track">
           <h2 class="greet">Track your job</h2>
           <p class="sub" id="trackSub">No job booked yet · <span id="trackRef">—</span></p>
-          <div class="stages" id="stages"></div>
+                    <div class="mapcard" aria-hidden="true">
+            <span class="map-chip">8-stage live tracking</span>
+            <svg viewBox="0 0 340 132" width="100%" height="132" fill="none">
+              <path d="M0 33H340M0 66H340M0 99H340M85 0v132M170 0v132M255 0v132" stroke="rgba(255,255,255,.05)"/>
+              <path d="M26 108h118l10-52 84-24" stroke="#E94E5C" stroke-width="2.4" stroke-dasharray="6 6"/>
+              <circle cx="88" cy="108" r="3" fill="#E94E5C"/><circle cx="154" cy="56" r="3" fill="#E94E5C"/>
+              <circle cx="26" cy="108" r="5" fill="#fff"/>
+              <text x="26" y="92" fill="#9DB2D6" font-size="9" font-weight="700" letter-spacing="1.5">HOME</text>
+              <circle cx="238" cy="32" r="13" stroke="#E94E5C" stroke-width="1.6"/>
+              <path d="M238 40s-6.5-5.7-6.5-10a6.5 6.5 0 1 1 13 0c0 4.3-6.5 10-6.5 10z" fill="#fff"/>
+              <circle cx="238" cy="29.8" r="2.2" fill="#E94E5C"/>
+            </svg>
+          </div>
+<div class="stages" id="stages"></div>
           <button class="btn ghost small" id="advanceBtn" style="display:none" onclick="refreshMyBooking(); renderTrack();">↻ Refresh status</button>
 
           <h3 class="sec">Your technician</h3>
@@ -661,7 +723,12 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <p class="sub">Your garage — powered by <b>Appliance Connect</b>. Every appliance and its real service history, on your Service OS record.</p>
           <div class="card" id="garageList" style="padding-top:4px; padding-bottom:6px;"></div>
 
-          <div id="garageAdd" style="display:none;">
+                    <div class="card" style="background:linear-gradient(150deg,#0C162B,#060D1A); color:#fff; border:none; margin-top:12px; display:flex; gap:12px; align-items:flex-start;">
+            <span class="o-ic" style="background:rgba(255,255,255,.1); color:#fff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span>
+            <div><b style="font-size:15px;">Care tip from Speedy</b><p style="margin:4px 0 0; font-size:13.5px; line-height:1.5; opacity:.92;">Clean the dryer vent and fridge coils twice a year — the two cheapest ways to prevent a breakdown. Vent care is handled by Cleanout Vents, our network partner.</p></div>
+          </div>
+
+<div id="garageAdd" style="display:none;">
             <h3 class="sec">Add an appliance</h3>
             <div class="card">
               <label class="fl">Appliance type</label>
@@ -703,6 +770,17 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
               <p class="sub" style="margin:4px 0 10px;" id="acctWho"></p>
               <div class="btnrow"><button class="btn blue" onclick="showTab('book')">Book a repair</button><button class="btn ghost" onclick="custLogout()">Sign out</button></div>
             </div>
+          </div>
+
+          <div class="card" style="margin-bottom:12px; padding-top:6px; padding-bottom:6px;">
+            <button class="menu-row" onclick="showTab('garage')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4.5 9.8L12 4l7.5 5.8V20h-15z"/><path d="M8.2 20v-6.2h7.6V20"/><path d="M8.2 16.9h7.6"/><circle cx="12" cy="4" r="1.15" fill="#E94E5C" stroke="none"/></svg></span>My Garage<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button class="menu-row" onclick="showTab('track')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.5 6h13V20h-13z"/><path d="M5.5 9.8h13"/><path d="M8.6 12.8h.01M12 12.8h.01M15.4 12.8h.01" stroke-width="2.4"/><circle cx="8.6" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/><circle cx="15.4" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/></svg></span>My bookings<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button class="menu-row" onclick="showTab('track')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.5" fill="#E94E5C" stroke="none"/></svg></span>Track my tech<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <a class="menu-row" href="/offers-rewards"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg></span>Offers &amp; rewards<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a>
+            <button class="menu-row" onclick="showTab('refer')"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11h16v9.5H4z"/><path d="M3 6.8h18V11H3z"/><path d="M12 6.8V20.5"/><path d="M12 6.8C8.6 6.8 7.8 3.4 10 3.4c1.9 0 2 3.4 2 3.4zM12 6.8c3.4 0 4.2-3.4 2-3.4-1.9 0-2 3.4-2 3.4z"/></svg></span>Refer &amp; Earn<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <button class="menu-row" onclick="var p=document.getElementById('tsePanel'); if(p){ p.scrollIntoView({behavior:'smooth', block:'start'}); }"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>The Top Speed Ecosystem<svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <a class="menu-row" href="tel:+19549317997"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg></span>Call us<span class="m-val">954-931-7997</span></a>
+            <div class="menu-row" style="cursor:default;"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.4V12l3.2 2"/></svg></span>Hours<span class="m-val">Mon–Fri · 8–7</span></div>
           </div>
 
           <div class="card" style="margin-bottom:12px;">
@@ -765,29 +843,27 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <a class="btn primary" style="margin-top:16px;" href="tel:+19549317997">Call Top Speed — 954-931-7997</a>
           <p class="sub" style="text-align:center; margin-top:14px;">Appliance Connect App · Top Speed Appliance · Broward County, FL<br>The Faster, The Better.</p>
 <!-- TSE-PANEL v1 -->
-<section class="tse-panel" aria-label="The Top Speed Ecosystem">
+<section class="tse-panel" id="tsePanel" aria-label="The Top Speed Ecosystem">
 <style>
-.tse-panel{max-width:1100px;margin:34px auto;padding:26px 22px;background:#fff;border:1px solid #dfe7f5;border-radius:18px;box-shadow:0 12px 32px rgba(10,38,92,.08)}
-.tse-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
-.tse-title{margin:0;font-size:24px;line-height:1.2;color:#0A265C}
-.tse-intro{margin:6px 0 0;color:#43536e;font-size:14.5px;line-height:1.55;max-width:640px}
-.tse-tell{display:inline-flex;align-items:center;gap:9px;background:#0A265C;color:#fff;border:0;border-radius:999px;padding:9px 18px 9px 11px;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(10,38,92,.25);flex:none}
-.tse-tell svg{width:26px;height:26px;display:block}
-.tse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin-top:18px}
-.tse-item{display:flex;flex-direction:column;gap:3px;padding:13px;background:#f4f7ff;border:1px solid #e1e9f8;border-radius:13px;text-decoration:none;color:#12264f;position:relative}
-.tse-item:hover{box-shadow:0 10px 22px rgba(10,38,92,.12)}
-.tse-item svg{width:22px;height:22px;color:#0A265C;margin-bottom:5px}
-.tse-name{font-weight:800;font-size:14px}
-.tse-desc{font-size:12px;line-height:1.45;color:#54678a}
-.tse-here{border-color:#E8322E;background:#fff5f5}
-.tse-badge{align-self:flex-start;background:#E8322E;color:#fff;font-size:10px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:999px;text-transform:uppercase;margin-bottom:5px}
-.tse-insight{margin:16px 0 0;padding:12px 14px;background:#0A265C;color:#dbe7ff;border-radius:12px;font-size:13.5px;line-height:1.55}
-.tse-insight b{color:#fff}
-@media(max-width:480px){.tse-grid{grid-template-columns:1fr 1fr}.tse-title{font-size:21px}.tse-panel{margin:26px 12px;padding:20px 14px}}
+.tse-panel{margin:26px 0 0}
+.tse-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
+.tse-title{font-family:"Manrope";margin:0;font-size:21px;font-weight:800;line-height:1.2;color:var(--navy)}
+.tse-intro{margin:6px 0 0;color:var(--mut);font-size:14px;line-height:1.55}
+.tse-tell{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(150deg,#0C162B,#060D1A);color:#fff;border:0;border-radius:999px;padding:8px 16px 8px 10px;font-weight:800;font-size:14px;cursor:pointer;flex:none;font-family:inherit}
+.tse-tell svg{width:24px;height:24px;display:block}
+.tse-list{display:grid;gap:9px;margin-top:16px}
+.tse-item{display:flex;align-items:center;gap:12px;padding:12px 13px;background:#fff;border:1px solid var(--line);border-radius:15px;text-decoration:none;color:var(--ink)}
+.tse-ic{width:38px;height:38px;border-radius:11px;background:#F1F5FB;display:grid;place-items:center;flex:none;color:var(--navy)}
+.tse-ic svg{width:21px;height:21px}
+.tse-name{font-weight:800;font-size:14.5px;display:block}
+.tse-desc{font-size:12.5px;line-height:1.4;color:var(--mut);display:block}
+.tse-badge{background:var(--red);color:#fff;font-size:10px;font-weight:800;letter-spacing:.6px;padding:4px 9px;border-radius:999px;text-transform:uppercase;flex:none;margin-left:auto}
+.tse-chev{margin-left:auto;color:#B7C3D6;flex:none}
+.tse-insight{margin:14px 0 0;padding:13px 14px;background:#fff;border:1px solid var(--line);border-radius:15px;font-size:13.5px;line-height:1.55;color:var(--ink);display:flex;gap:11px;align-items:flex-start}
 </style>
-<div class="tse-head"><div><h2 class="tse-title">The Top Speed Ecosystem</h2><p class="tse-intro">Everything runs on one connected platform with Speedy AI at the center — booking, live tracking, parts, referrals, and service for homes, property managers, and businesses.</p></div><button type="button" class="tse-tell" onclick="showTab('speedy')"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg>Tell Speedy</button></div>
-<div class="tse-grid"><a class="tse-item" href="/book"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/><circle cx="18.6" cy="5.4" r="1.1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Book a Repair</span><span class="tse-desc">Book repair or installation online in a couple of minutes.</span></a><a class="tse-item tse-here" href="/app"><span class="tse-badge">You are here</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7.5 3.5h9V20.5h-9z"/><path d="M10.8 17.8h2.4"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg><span class="tse-name">Appliance Connect</span><span class="tse-desc">The customer app — book, track, and keep your appliances in My Garage.</span></a><a class="tse-item" href="/track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.7" fill="currentColor" stroke="none"/></svg><span class="tse-name">Track My Tech</span><span class="tse-desc">Live 8-stage tracking for every booked job.</span></a><a class="tse-item" href="/refer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11h16v9.5H4z"/><path d="M3 6.8h18V11H3z"/><path d="M12 6.8V20.5"/><path d="M12 6.8C8.6 6.8 7.8 3.4 10 3.4c1.9 0 2 3.4 2 3.4zM12 6.8c3.4 0 4.2-3.4 2-3.4-1.9 0-2 3.4-2 3.4z"/></svg><span class="tse-name">Refer &amp; Earn</span><span class="tse-desc">Earn a $25 credit for every completed referral.</span></a><a class="tse-item" href="/offers-rewards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg><span class="tse-name">Offers &amp; Rewards</span><span class="tse-desc">Current offers, welcome savings, and loyalty rewards.</span></a><a class="tse-item" href="/connect-pro-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11.2 12 4l8 7.2"/><path d="M6.2 9.6V20h11.6V9.6"/><path d="M10 20v-5.2h4V20"/><circle cx="12" cy="4" r="1.1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Appliance Connect Pro</span><span class="tse-desc">Service hub for homeowners &amp; property managers.</span></a><a class="tse-item" href="/appliance-pro-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 20.5v-15L12 3.5v17"/><path d="M12 9.5l7 2v9"/><path d="M8 8.2h1.6M8 12h1.6M8 15.8h1.6M15.4 14.8h1.6M15.4 17.8h1.6"/></svg><span class="tse-name">Appliance Pro</span><span class="tse-desc">Commercial appliance service for businesses.</span></a><a class="tse-item" href="/cleanout-vents-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 12l.4-5.2M12 12l4.9 1.8M12 12l-4.2 3.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg><span class="tse-name">Cleanout Vents</span><span class="tse-desc">Our dryer-vent cleaning partner in the network.</span></a><a class="tse-item" href="/pepper-lists-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8h2.8l1.8-2.8h6.8L17.2 8H20v11.5H4z"/><circle cx="12" cy="13.4" r="3.1"/><circle cx="17.6" cy="10.6" r="1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Pepper Lists It</span><span class="tse-desc">Snap a photo — Pepper lists your items for sale.</span></a><a class="tse-item" href="/group"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 8.2l3.8 2.2v4.2L12 16.8l-3.8-2.2v-4.2z"/><circle cx="12" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg><span class="tse-name">Top Speed Group</span><span class="tse-desc">The whole family — including Speedy Pro for technicians and the Training Academy.</span></a></div>
-<p class="tse-insight"><b>Good to know:</b> jobs you book here are dispatched by Service Setters and tracked live in 8 stages — and the $99 diagnostic is credited in full toward your approved repair.</p>
+<div class="tse-head"><div><h2 class="tse-title">The Top Speed Ecosystem</h2><p class="tse-intro">Everything runs on one connected platform with Speedy AI at the center — booking, live tracking, parts, referrals, and service for homes, property managers, and businesses.</p></div><button type="button" class="tse-tell" onclick="showTab('speedy')"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0C162B"/><circle cx="24" cy="24" r="21" fill="none" stroke="#E94E5C" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E94E5C"/></svg>Tell Speedy</button></div>
+<div class="tse-list"><a class="tse-item" href="/book"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/><circle cx="18.6" cy="5.4" r="1.1" fill="#E94E5C" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Book a Repair</span><span class="tse-desc">Book repair or installation online in a couple of minutes.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/app"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M7.5 3.5h9V20.5h-9z"/><path d="M10.8 17.8h2.4"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Appliance Connect</span><span class="tse-desc">The customer app — book, track, and keep your appliances in My Garage.</span></span><span class="tse-badge">You are here</span></a><a class="tse-item" href="/track"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.7" fill="currentColor" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Track My Tech</span><span class="tse-desc">Live 8-stage tracking for every booked job.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/refer"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11h16v9.5H4z"/><path d="M3 6.8h18V11H3z"/><path d="M12 6.8V20.5"/><path d="M12 6.8C8.6 6.8 7.8 3.4 10 3.4c1.9 0 2 3.4 2 3.4zM12 6.8c3.4 0 4.2-3.4 2-3.4-1.9 0-2 3.4-2 3.4z"/></svg></span><span style="flex:1;"><span class="tse-name">Refer &amp; Earn</span><span class="tse-desc">Earn a $25 credit for every completed referral.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/offers-rewards"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Offers &amp; Rewards</span><span class="tse-desc">Current offers, welcome savings, and loyalty rewards.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/connect-pro-site"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11.2 12 4l8 7.2"/><path d="M6.2 9.6V20h11.6V9.6"/><path d="M10 20v-5.2h4V20"/><circle cx="12" cy="4" r="1.1" fill="#E94E5C" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Appliance Connect Pro</span><span class="tse-desc">Service hub for homeowners &amp; property managers.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/appliance-pro-site"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 20.5v-15L12 3.5v17"/><path d="M12 9.5l7 2v9"/><path d="M8 8.2h1.6M8 12h1.6M8 15.8h1.6M15.4 14.8h1.6M15.4 17.8h1.6"/></svg></span><span style="flex:1;"><span class="tse-name">Appliance Pro</span><span class="tse-desc">Commercial appliance service for businesses.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/cleanout-vents-site"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.6"/><path d="M12 12l.4-5.2M12 12l4.9 1.8M12 12l-4.2 3.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Cleanout Vents</span><span class="tse-desc">Our dryer-vent cleaning partner in the network.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/pepper-lists-site"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8h2.8l1.8-2.8h6.8L17.2 8H20v11.5H4z"/><circle cx="12" cy="13.4" r="3.1"/><circle cx="17.6" cy="10.6" r="1" fill="#E94E5C" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Pepper Lists It</span><span class="tse-desc">Snap a photo — Pepper lists your items for sale.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a><a class="tse-item" href="/group"><span class="tse-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 8.2l3.8 2.2v4.2L12 16.8l-3.8-2.2v-4.2z"/><circle cx="12" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg></span><span style="flex:1;"><span class="tse-name">Top Speed Group</span><span class="tse-desc">The whole family — including Speedy Pro for technicians and the Training Academy.</span></span><svg class="tse-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></a></div>
+<div class="tse-insight"><span class="o-ic" style="width:36px;height:36px;border-radius:10px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span><span><b>Good to know:</b> jobs you book here are dispatched by Service Setters and tracked live in 8 stages — and the $99 diagnostic is credited in full toward your approved repair.</span></div>
 </section>
 <!-- /TSE-PANEL -->
         </section>
@@ -798,7 +874,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <p class="sub">ApplianceReferral by Top Speed — share your link, your friend books and completes a repair, and you earn service credit after staff approval.</p>
           <p class="sub">Program terms: a $25 service credit per completed referral — $35 each from your 5th through 9th, $50 each from your 10th on, plus a $100 bonus at 10 lifetime referrals and $250 at 25. Credits expire 12 months after they're issued.</p>
 
-          <div id="refSignedOut" style="display:none;">
+                    <a class="offer-row" href="/offers-rewards"><span class="o-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg></span><span><b>$25 off your first repair</b><span class="o-sub">New Customer Welcome — for new registered customers. See terms in the app.</span></span></a>
+          <a class="offer-row" href="/offers-rewards"><span class="o-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span><span><b>$99 diagnostic, credited</b><span class="o-sub">Collected at booking and credited in full toward your approved repair.</span></span></a>
+          <a class="offer-row" href="/offers-rewards" style="margin-bottom:16px;"><span class="o-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M15.3 4.3a4.3 4.3 0 0 0-4.2 5.1L4.2 16.3a2.02 2.02 0 0 0 0 2.9l.6.6a2.02 2.02 0 0 0 2.9 0l6.9-6.9a4.3 4.3 0 0 0 5.1-4.2l-2.8 2.8-2.1-.8-.8-2.1z"/></svg></span><span><b>Flat labor, in writing</b><span class="o-sub">Repair labor $210 flat · Installation $150 flat. No work without your approved quote.</span></span></a>
+
+<div id="refSignedOut" style="display:none;">
             <div class="card">
               <b style="font-size:15.5px;">Sign in to see your referral code</b>
               <p class="sub" style="margin:5px 0 10px;">Your code, your credit balance, and every referral's stage live on your account. Sign in on the More tab, or learn how the program works first.</p>
@@ -825,9 +905,9 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
             <h3 class="sec">Share it</h3>
             <div class="btnrow">
-              <a class="btn blue" id="rfShareSms" href="#" style="text-decoration:none;" aria-label="Share by SMS"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Text</a>
+              <a class="btn blue" id="rfShareSms" href="#" style="text-decoration:none;" aria-label="Share by SMS"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E94E5C"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Text</a>
               <a class="btn" id="rfShareWa" href="#" target="_blank" rel="noopener" style="text-decoration:none;background:var(--green);color:#fff;" aria-label="Share on WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" style="vertical-align:-3px;" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp</a>
-              <a class="btn ghost" id="rfShareMail" href="#" style="text-decoration:none;" aria-label="Share by email"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 6h14l2 2v8.5l-2 2H5L3 18.5V8z"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email</a>
+              <a class="btn ghost" id="rfShareMail" href="#" style="text-decoration:none;" aria-label="Share by email"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 6h14l2 2v8.5l-2 2H5L3 18.5V8z"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E94E5C"/></svg> Email</a>
               <a class="btn" id="rfShareFb" href="#" target="_blank" rel="noopener" style="text-decoration:none;background:#1877F2;color:#fff;" aria-label="Share on Facebook"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" style="vertical-align:-3px;" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</a>
               <a class="btn" id="rfShareLi" href="#" target="_blank" rel="noopener" style="text-decoration:none;background:#0A66C2;color:#fff;" aria-label="Share on LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="#fff" style="vertical-align:-3px;" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg> LinkedIn</a>
             </div>
@@ -864,11 +944,11 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
         <!-- bottom nav -->
         <nav class="bnav" id="bnav">
-          <button data-tab="home" class="on" onclick="showTab('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M3.5 11L12 3.5 20.5 11M5.5 9.3V20l1.5 1.5h3V15h4v6.5h3L18.5 20V9.3"/><circle cx="12" cy="3.5" r="1.2" fill="currentColor" stroke="none"/></svg>Home</button>
-          <button data-tab="track" onclick="showTab('track')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M12 3l4.8 1.9 1.6 3.7-.6 2.8L12 21.6 6.2 11.4 5.6 8.6 7.2 4.9z"/><path d="M14.22 10.52L12.92 11.82L11.08 11.82L9.78 10.52L9.78 8.68L11.08 7.38L12.92 7.38L14.22 8.68z"/></svg>Track</button>
-          <div class="fabwrap"><button data-tab="book" onclick="showTab('book')" aria-label="Book a repair"><span class="bookfab"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><path d="M12 5.8V18.2M5.8 12h12.4"/><circle cx="12" cy="5" r="1.1" fill="#fff" stroke="none"/><circle cx="12" cy="19" r="1.1" fill="#fff" stroke="none"/><circle cx="5" cy="12" r="1.1" fill="#fff" stroke="none"/><circle cx="19" cy="12" r="1.1" fill="#fff" stroke="none"/></svg></span></button><span style="font-size:11px; font-weight:700; color:#8496B3;">Book</span></div>
-          <button data-tab="garage" onclick="showTab('garage')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1"><path d="M4.5 8L12 4.5 19.5 8v10.5L18 20H6L4.5 18.5z"/><path d="M4.5 8L12 11.5 19.5 8M12 11.5V20"/><circle cx="12" cy="11.5" r="1.2" fill="currentColor" stroke="none"/></svg>Garage</button>
-          <button data-tab="more" onclick="showTab('more')"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5 10.2L6.8 12 5 13.8 3.2 12zM12 10.2L13.8 12 12 13.8 10.2 12zM19 10.2L20.8 12 19 13.8 17.2 12z"/></svg>More</button>
+          <button data-tab="home" class="on" onclick="showTab('home')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 11.2L12 4l8 7.2"/><path d="M6.2 9.4V20h11.6V9.4"/><circle cx="12" cy="4" r="1.25" fill="#E94E5C" stroke="none"/></svg>Home</button>
+          <button data-tab="book" onclick="showTab('book')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.5 6h13V20h-13z"/><path d="M5.5 9.8h13"/><path d="M12 12.8v4M10 14.8h4"/><circle cx="8.6" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/><circle cx="15.4" cy="4.4" r="1.15" fill="#E94E5C" stroke="none"/></svg>Book</button>
+          <button data-tab="speedy" onclick="showTab('speedy')" aria-label="Talk to Speedy"><span class="speedy-disc"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.6l1.9 6.2 6.2 1.9-6.2 1.9L12 18.8l-1.9-6.2L3.9 10.7l6.2-1.9z" fill="#fff"/><circle cx="12" cy="10.7" r="1.35" fill="#E94E5C"/></svg></span>Speedy</button>
+          <button data-tab="track" onclick="showTab('track')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.5" fill="#E94E5C" stroke="none"/></svg>Track</button>
+          <button data-tab="more" onclick="showTab('more')"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E94E5C" stroke-width="1.7" stroke-linecap="square"><path d="M5.7 12h12.6"/><circle cx="5" cy="12" r="1.7" fill="#E94E5C" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="#E94E5C" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="#E94E5C" stroke="none"/></svg>More</button>
         </nav>
 
         <!-- install sheet -->
@@ -927,7 +1007,7 @@ var stageIdx = 0;
 var deferredPrompt = null;
 
 function svgIcon(paths, size){
-  return '<svg width="'+(size||30)+'" height="'+(size||30)+'" viewBox="0 0 24 24" fill="none" stroke="#0A265C" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter">'+paths+'</svg>';
+  return '<svg width="'+(size||30)+'" height="'+(size||30)+'" viewBox="0 0 24 24" fill="none" stroke="#0C162B" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter">'+paths+'</svg>';
 }
 function toast(msg){
   var t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on');
@@ -1005,8 +1085,8 @@ function bookAgain(gi){
 }
 function syncBookGrid(){
   document.querySelectorAll('#bookGrid .appl').forEach(function(el,i){
-    el.style.borderColor = APPLIANCES[i].name === booking.appliance ? "var(--blue)" : "";
-    el.style.background = APPLIANCES[i].name === booking.appliance ? "var(--soft)" : "";
+    el.style.borderColor = APPLIANCES[i].name === booking.appliance ? "var(--red)" : "";
+    el.style.background = APPLIANCES[i].name === booking.appliance ? "#FDECEC" : "";
   });
 }
 function bookGo(step){
@@ -1314,8 +1394,8 @@ function aspBubble(who, text){
   var log = document.getElementById('aspLog');
   var d = document.createElement('div');
   if(who === 'me'){
-    d.style.cssText = 'background:var(--soft); border:1.5px solid #C9DBF5; border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%; justify-self:end;';
-    d.innerHTML = '<b style="color:var(--navy);">You</b><br>' + escC(text);
+    d.style.cssText = 'background:linear-gradient(150deg,#0C162B,#060D1A); color:#fff; border:1.5px solid #0C162B; border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%; justify-self:end;';
+    d.innerHTML = '<b style="color:#fff;">You</b><br>' + escC(text);
   } else {
     d.style.cssText = 'background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;';
     d.innerHTML = '<b style="color:var(--navy);">Speedy</b><br>' + escC(text);
@@ -1370,7 +1450,7 @@ function aspMaybeCard(){
         '<b style="font-size:15.5px; color:var(--navy);">Ready to book — look right?</b>' +
         rows.map(function(r){ return '<div style="display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--line); font-size:14px;"><span style="color:#8496B3; font-weight:700;">' + r[0] + '</span><b>' + escC(r[1]) + '</b></div>'; }).join('') +
         '<p class="sub" style="margin:9px 0;">$99 diagnostic, collected at booking and credited toward your repair. A Service Setter confirms by text.</p>' +
-        '<button class="btn blue" id="aspBookBtn" onclick="aspBook()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit</button>' +
+        '<button class="btn blue" id="aspBookBtn" onclick="aspBook()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Book my visit</button>' +
         '<div id="aspBookMsg" style="margin-top:8px; font-size:14px;"></div></div>';
       window._aspData = d;
       document.getElementById('screens').scrollTop = 99999;
@@ -1385,12 +1465,12 @@ function aspBook(){
   var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
   var done = function(ref){
     window._aspRef = ref;
-    document.getElementById('aspBookMsg').innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns();
+    document.getElementById('aspBookMsg').innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E94E5C"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns();
     btn.style.display = 'none';
   };
   var fail = function(msg){
     document.getElementById('aspBookMsg').textContent = ' '+ msg;
-    btn.disabled = false; btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit';
+    btn.disabled = false; btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Book my visit';
   };
   if(cTok()){
     if(cUser && cUser.email) payload.customer.email = cUser.email;
@@ -1430,7 +1510,7 @@ function loadGarage(){
           var meta=[a.brand,a.model,a.year?('· '+a.year):'',a.serial?('· S/N '+a.serial):''].filter(Boolean).join(' ');
           return '<div class="hist"><div><b>'+escC(a.type)+'</b><span>'+escC(meta||'Details on file')+'</span></div>' +
             '<button class="btn ghost small" onclick="garageBook(\''+escC(a.type).replace(/'/g,"\'")+'\')">Book service</button>' +
-            '<button class="btn ghost small" style="color:#C72420;" onclick="garageRemove(\''+a.id+'\')">Remove</button></div>';
+            '<button class="btn ghost small" style="color:#D63A48;" onclick="garageRemove(\''+a.id+'\')">Remove</button></div>';
         }).join(''):'<p class="sub" style="margin:10px 0;">No appliances yet — add your first one below. It takes 20 seconds and Speedy will know your home from then on.</p>';
       }
       var history=j.data.serviceHistory||[];
@@ -1462,12 +1542,11 @@ function garageAddAppliance(){
 }
 </script>
   
-<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
-<style>/* TOP SPEED TYPE SYSTEM */ body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Inter',Inter,Arial,sans-serif} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Sora',Inter,sans-serif}</style>
+<!-- TYPE SYSTEM — FIGMA SUPER APP (Manrope / DM Sans) -->
+<style>/* TYPE SYSTEM */ body{font-family:'DM Sans',system-ui,sans-serif} h1,h2,h3{font-family:'Manrope',system-ui,sans-serif} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Manrope',system-ui,sans-serif}</style>
 
 <!-- TYPE SYSTEM V2 — POSTER GUIDELINES + MICHROMA HOME -->
-<style>/* TYPE SYSTEM V2 */ body{font-weight:500} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Sora',Inter,sans-serif;font-weight:600}</style>
+<style>/* TYPE SYSTEM V2 */ body{font-weight:500} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Manrope',system-ui,sans-serif;font-weight:700}</style>
 
 <style>#spMic.rec,#aspMic.rec,#nhMic.rec{background:#fdecec !important;animation:vpulse 1s infinite}@keyframes vpulse{50%{opacity:.55}}</style>
 <script>
@@ -1489,25 +1568,25 @@ function wireVoice(btnId, inputId){
 wireVoice('aspMic','aspInput');
 </script>
 <script>
-function aspReceiptBtns(){ return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" style="background:#0A265C;color:#fff" onclick="aspReceipt(\'email\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" class="btn" style="background:#0A265C;color:#fff" onclick="aspReceipt(\'sms\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>'; }
+function aspReceiptBtns(){ return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" style="background:#0C162B;color:#fff" onclick="aspReceipt(\'email\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E94E5C"/></svg> Email me my receipt</button><button type="button" class="btn" style="background:#0C162B;color:#fff" onclick="aspReceipt(\'sms\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E94E5C"/></svg> Text me my tracking link</button></div>'; }
 function aspReceipt(channel){ var ref=window._aspRef, d=window._aspData; if(!ref||!d) return;
  fetch(C_API+'/speedy/send-receipt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:ref,phone:d.phone,channel:channel})})
  .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not send'); return j; });})
- .then(function(j){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> '+((j.data&&j.data.message)||'Done.')); })
- .catch(function(e){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: '+e.message+'. Call 954-931-7997 and we will send it by phone.'); });
+ .then(function(j){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E94E5C"/></svg> '+((j.data&&j.data.message)||'Done.')); })
+ .catch(function(e){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E94E5C"/></svg> That did not go through: '+e.message+'. Call 954-931-7997 and we will send it by phone.'); });
 }
 (function(){ var B=document.getElementById('aspPhoto'), F=document.getElementById('aspFile'); if(!B||!F) return;
  B.addEventListener('click',function(){ F.click(); });
  F.addEventListener('change',function(){ var f=F.files&&F.files[0]; F.value=''; if(!f) return;
-  aspBubble('me','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Sent a photo of my appliance');
+  aspBubble('me','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg> Sent a photo of my appliance');
   var r=new FileReader(); r.onload=function(ev){ var img=new Image(); img.onload=function(){
    var mx=1280, sc=Math.min(1,mx/Math.max(img.naturalWidth,img.naturalHeight));
    var cv=document.createElement('canvas'); cv.width=Math.round(img.naturalWidth*sc); cv.height=Math.round(img.naturalHeight*sc);
    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
    fetch(C_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Appliance Connect app chat'})})
    .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
-   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; aspBubble('speedy', rep?('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe.'):'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> I received your photo but could not read it clearly \u2014 a technician will review it in person.'); })
-   .catch(function(){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.'); });
+   .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; aspBubble('speedy', rep?('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg> Speedy\u2019s first look: '+rep+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe.'):'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg> I received your photo but could not read it clearly \u2014 a technician will review it in person.'); })
+   .catch(function(){ aspBubble('speedy','<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg> Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.'); });
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
 })();
@@ -1636,6 +1715,8 @@ function signinBtnGo(){
   signinBtnRefresh();
 }
 signinBtnRefresh();
+/* Time-aware greeting (Figma super app) */
+(function(){ var el=document.getElementById('greetWord'); if(!el) return; var h=new Date().getHours(); el.textContent = h<12 ? 'Good morning' : (h<18 ? 'Good afternoon' : 'Good evening'); })();
 /* Keep the label honest after an in-page sign-in: custApplyUser is the app's
    own session-applied hook — wrap it to also refresh the label, don't change it. */
 if(window.custApplyUser){
