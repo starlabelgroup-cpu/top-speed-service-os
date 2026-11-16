@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turbo Boss — Manager Command · Top Speed Service OS</title>
+<meta name="description" content="Turbo Boss: the manager command home for Top Speed Service OS — the decision queue, department scorecards, team load and the money snapshot, all on real Service OS data.">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/command-center.css">
+<style>
+  /* Gate + shared bits (same pattern as ApplianceMan / Dispatch Dashboard) */
+  *{box-sizing:border-box;margin:0;padding:0}
+  .gate{max-width:430px;margin:9vh auto;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:26px 22px;box-shadow:0 12px 34px rgba(12,22,43,.07)}
+  .gate h2{font-family:Manrope,sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#182742;margin-bottom:6px}
+  .gate p{color:#8591a4;font-size:13.5px;line-height:1.55}
+  .gate label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:14px 0 6px;letter-spacing:1.2px}
+  .gate input{width:100%;box-sizing:border-box;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:#1b2840;padding:11px 12px;font-size:14px;font-family:inherit}
+  .gate input:focus{outline:none;border-color:#ed6372}
+  .gate button{width:100%;margin-top:18px;background:#e94e5c;color:#fff;border:1px solid #e94e5c;border-radius:8px;padding:12px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 16px rgba(233,78,92,.10)}
+  .gate button:hover{background:#d83d4d}
+  .gate button.ghostbtn{background:#fff;color:#34445c;border-color:#dee5ef;box-shadow:none}
+  .err{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;font-size:13px;border-radius:9px;padding:10px 12px;line-height:1.5}
+  .badge{font-size:9px;font-weight:800;letter-spacing:1px;padding:8px 10px;border-radius:25px;border:1px solid #e9edf3;background:#f1f4f8;color:#65758f;white-space:nowrap;flex:none}
+  #liveBadge{flex:none}
+  .badge.pres{color:#fff;background:#e94e5c;border-color:transparent}
+  .badge.mgr{color:#fff;background:#4b95e2;border-color:transparent}
+  .iconbtn{background:#fff;border:1px solid #dee5ef;color:#34445c;border-radius:8px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+  @media(max-width:760px){.gate{margin:4vh 14px}}
+
+  /* Turbo Boss components */
+  .tb-head{margin-bottom:20px}
+  .tb-head h1{font-family:Manrope,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;color:#182742;margin:0 0 4px}
+  .tb-head h1 span{color:#e94e5c}
+  .tb-head p{color:#8591a4;font-size:13.5px;margin:0;line-height:1.55}
+  .tb-section{margin-bottom:26px}
+  .tb-sec-head{margin-bottom:12px;display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}
+  .tb-sec-head h2{font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#182742;margin:0 0 3px}
+  .tb-sec-head p{color:#8591a4;font-size:12.5px;margin:0;line-height:1.55;max-width:820px}
+  .tb-card{background:#fff;border:1px solid var(--cc-line);border-radius:var(--cc-radius);padding:18px}
+  .tb-updated{font-size:11.5px;color:#97a3b4;font-weight:700;white-space:nowrap}
+
+  /* Dark command band */
+  .tb-band{background:radial-gradient(circle at 82% 0%,#293d62 0%,transparent 55%),linear-gradient(110deg,#0c162b,#1a2d4b);border-radius:16px;color:#eef2fb;padding:22px;margin-bottom:26px}
+  .tb-band-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline;margin-bottom:16px}
+  .tb-band-top h2{font-family:Manrope,sans-serif;font-size:19px;font-weight:800;letter-spacing:-.3px;margin:0}
+  .tb-band-top h2 span{color:#f15b65}
+  .tb-band-top .day{font-size:12.5px;color:#91a2bc;font-weight:700}
+  .tb-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:1020px){.tb-stats{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:640px){.tb-stats{grid-template-columns:repeat(2,1fr)}}
+  .tb-stat{background:rgba(255,255,255,.05);border:1px solid #2a3650;border-radius:12px;padding:14px 15px;min-width:0}
+  .tb-stat .n{font-family:Manrope,sans-serif;font-size:29px;font-weight:800;line-height:1;color:#fff}
+  .tb-stat .n.hot{color:#f15b65}
+  .tb-stat .l{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#91a2bc;margin-top:7px}
+  .tb-stat .s{font-size:11.5px;color:#b7c3d8;margin-top:4px;line-height:1.45}
+  .tb-stages{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+  .tb-stage{font-size:11px;font-weight:700;color:#c8d3e6;background:rgba(255,255,255,.06);border:1px solid #2a3650;border-radius:999px;padding:5px 11px;white-space:nowrap}
+  .tb-stage b{color:#fff;font-weight:800}
+
+  /* Decision queue */
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.4px;padding:4px 10px;border-radius:999px;border:1px solid var(--cc-line);color:#34445c;background:#f1f4f8;white-space:nowrap}
+  .pill.res{color:#0A265C;background:#e3ecfd;border-color:#bcd0f5}
+  .pill.com{color:#7a3b00;background:#fdf0dd;border-color:#f2d5a4}
+  .pill.area{color:#fff;background:#e94e5c;border-color:#e94e5c}
+  .pill.kind{color:#fff;background:#182742;border-color:#182742}
+  .pill.age{color:#9e3e4b;background:#fff1f2;border-color:#fad7dc}
+  .qrow{display:flex;gap:14px;align-items:flex-start;padding:14px 4px;border-bottom:1px solid var(--cc-line)}
+  .qrow:last-child{border-bottom:0}
+  .qmain{flex:1;min-width:0}
+  .qmain .top{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .qmain .top b{color:#182742;font-size:14.5px}
+  .qsub{font-size:12.5px;color:#8591a4;margin-top:4px;line-height:1.55}
+  .qact{display:flex;gap:8px;flex:none;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+  .qact select{border:1.5px solid var(--cc-line);border-radius:10px;padding:8px 9px;font:inherit;font-size:12.5px;color:var(--cc-ink);background:#fff;max-width:210px}
+  .btn2{border:1.5px solid #182742;background:#182742;color:#fff;border-radius:10px;padding:8px 13px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}
+  .btn2.ghost{background:#fff;color:#182742}
+  .btn2.red{background:#e94e5c;border-color:#e94e5c}
+  .btn2:disabled{opacity:.45;cursor:not-allowed}
+  @media(max-width:760px){.qrow{flex-direction:column}.qact{justify-content:flex-start}}
+  .note-ok{background:#e9f7ee;border:1px solid #bfe6cc;color:#14532d;border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;line-height:1.5}
+  .note-err{background:#fdecec;border:1px solid #f5c2c2;color:#7f1d1d;border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;line-height:1.5}
+  .empty{color:#8591a4;font-size:13.5px;padding:6px 0;line-height:1.6;margin:0}
+
+  /* Scorecards */
+  .tb-scores{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px}
+  .score{background:#fff;border:1px solid var(--cc-line);border-radius:var(--cc-radius);padding:16px}
+  .score .sh{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .score .sh .ic{width:32px;height:32px;flex:0 0 auto;display:grid;place-items:center;border-radius:9px;background:#eef3fa;color:#182742}
+  .score .sh b{color:#182742;font-size:14.5px;font-family:Manrope,sans-serif}
+  .score .sh a{margin-left:auto;font-size:11px;font-weight:800;color:#e94e5c;text-decoration:none;white-space:nowrap}
+  .score .mets{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+  .score .met .n{font-family:Manrope,sans-serif;font-size:20px;font-weight:800;color:#182742;line-height:1.1}
+  .score .met .n.hot{color:#e94e5c}
+  .score .met .l{font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#97a3b4;margin-top:2px}
+  .score .foot{font-size:12px;color:#8591a4;margin-top:10px;line-height:1.5;border-top:1px solid #f0f2f6;padding-top:9px}
+
+  /* Team board */
+  .roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .pcard{background:#fff;border:1px solid var(--cc-line);border-radius:12px;padding:14px}
+  .pcard b{color:#182742;font-size:14.5px}
+  .pcard .meta{font-size:12.5px;color:#8591a4;margin-top:4px;line-height:1.55}
+  .pill.free{color:#14532d;background:#e9f7ee;border-color:#bfe6cc}
+  .pill.work{color:#0A265C;background:#e3ecfd;border-color:#bcd0f5}
+  .pill.load{color:#9e3e4b;background:#fff1f2;border-color:#fad7dc}
+
+  /* Money */
+  .tb-money{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:12px}
+
+  /* Accounts (owner only) */
+  .acct-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:900px){.acct-grid{grid-template-columns:1fr}}
+  .tb-form label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:0 0 6px;letter-spacing:1.2px}
+  .tb-form input,.tb-form select{width:100%;box-sizing:border-box;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:#1b2840;padding:10px 11px;font-size:13.5px;font-family:inherit}
+  .tb-form input:focus,.tb-form select:focus{outline:none;border-color:#ed6372}
+  .tb-form .frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  @media(max-width:520px){.tb-form .frow{grid-template-columns:1fr}}
+  .tb-form h3{margin:0 0 4px;color:#182742;font-size:15px;font-family:Manrope,sans-serif}
+  .tb-form .hint{font-size:12.5px;color:#8591a4;line-height:1.55;margin:0 0 14px}
+  .teamrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;border:1px solid var(--cc-line);border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px}
+  .teamrow .who b{color:#182742}
+  .teamrow .meta{color:#8591a4;font-size:12.5px;text-align:right}
+  .acct .k{color:#97a3b4;font-weight:800;font-size:10px;letter-spacing:1px;display:block;margin-top:8px}
+  .acct .k:first-child{margin-top:0}
+
+  /* Narrow screens: the topbar cluster (badges + buttons + profile) must
+     fit any width — collapse to the essentials instead of overflowing.
+     The shell compacts <=760px on its own; the sidebar-visible band above
+     it and small phones need these extra steps. */
+  @media(max-width:1100px){
+    #liveBadge{display:none}
+    .cc-profile>div{display:none}
+  }
+  @media(max-width:680px){
+    .cc-topbar{padding:0 14px}
+    .cc-topbar-left,.cc-topbar-right{gap:9px}
+    .cc-topbar-left>span,.cc-crumb-sep{display:none}
+    .cc-header-divider{display:none}
+  }
+  @media(max-width:480px){
+    #refreshBtn,#logoutBtn{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="gate"></div>
+<div id="portal" style="display:none">
+<div class="cc-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="cc-sidebar" id="ccSidebar">
+    <div class="cc-sidebar-logo">
+      <div class="cc-brand-lockup">
+        <span class="cc-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <div>
+          <strong>TOP SPEED <span>TURBO BOSS</span></strong>
+          <small>SERVICE OS · MANAGER COMMAND</small>
+        </div>
+        <button class="cc-mobile-close" id="ccCloseBtn" type="button" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      </div>
+    </div>
+    <div class="cc-workspace-switch">
+      <span class="cc-switch-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="3.2"/></svg></span>
+      <div><strong>Top Speed Service OS</strong><small>Command workspace</small></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+    </div>
+    <div class="cc-sidebar-scroll">
+      <div class="cc-nav-section">
+        <p>COMMAND</p>
+        <a class="cc-nav-link active" href="#sec-now"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-4M11 15.5V8M15.5 15.5v-6M20 15.5V5.5"/></svg><span>Today at a glance</span></a>
+        <a class="cc-nav-link" href="#sec-decisions"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16M4 12h16M4 18.5h10"/><circle cx="19" cy="18.5" r="2.4"/></svg><span>Needs a Decision</span><span class="cc-ai-nav-dot" id="decDot" style="display:none"></span></a>
+        <a class="cc-nav-link" href="#sec-depts"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="8" height="8" rx="1.8"/><rect x="12.5" y="3.5" width="8" height="8" rx="1.8"/><rect x="3.5" y="12.5" width="8" height="8" rx="1.8"/><rect x="12.5" y="12.5" width="8" height="8" rx="1.8"/></svg><span>Department Scorecards</span></a>
+        <a class="cc-nav-link" href="#sec-team"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>Team Board</span></a>
+        <a class="cc-nav-link" href="#sec-money"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M7 15.5h4"/></svg><span>Money Snapshot</span></a>
+        <a class="cc-nav-link" href="#sec-accounts" id="navAccounts" style="display:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8.4" r="3.4"/><path d="M4.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M18.5 5.5v6M15.5 8.5h6"/></svg><span>Accounts — Create</span></a>
+        <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.4" r="3.6"/><path d="M5 20.2a7.4 7.4 0 0 1 14 0"/></svg><span>My Account</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>MANAGER CONSOLES</p>
+        <a class="cc-nav-link" href="/oversight"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Oversight — Monitoring</span></a>
+        <a class="cc-nav-link" href="/dispatch-dashboard"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg><span>Dispatch Dashboard</span></a>
+        <a class="cc-nav-link" href="/book-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4"/></svg><span>Book OS</span></a>
+        <a class="cc-nav-link" href="/applianceman"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 7v5.2l3.4 2"/></svg><span>ApplianceMan</span></a>
+        <a class="cc-nav-link" href="/manager"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></svg><span>Remote Manager</span></a>
+        <a class="cc-nav-link" href="/finance"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg><span>Finance OS</span></a>
+        <a class="cc-nav-link" href="/parts"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4.5 4.5 0 0 1 5.9-4L20 5.5l2.3 2.3 2.7-.6a4.5 4.5 0 0 1-5.7 5.2L7.4 24.3a2 2 0 0 1-2.8 0l-1.4-1.4a2 2 0 0 1 0-2.8L14.7 6.3z" transform="scale(0.92) translate(1,0.4)"/></svg><span>Parts Supply OS</span></a>
+      </div>
+    </div>
+    <div class="cc-sidebar-bottom">
+      <div class="cc-support-box">
+        <span class="cc-support-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <strong>Command, not just watching</strong>
+        <span>Oversight monitors the whole operation. Turbo Boss is where managers act on what it shows.</span>
+        <a href="/oversight">Open Oversight — Monitoring <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="cc-sidebar-foot"><span class="cc-pulse-dot"></span> SERVICE OS <span>TOP SPEED APPLIANCE LLC</span></div>
+    </div>
+  </aside>
+  <div class="cc-backdrop" id="ccBackdrop" style="display:none"></div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="cc-main">
+    <header class="cc-topbar">
+      <div class="cc-topbar-left">
+        <button class="cc-menu-toggle" id="ccMenuBtn" type="button" aria-label="Open menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <span>Service OS</span>
+        <svg class="cc-crumb-sep" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+        <strong>Turbo Boss</strong>
+      </div>
+      <div class="cc-topbar-right">
+        <span class="cc-live-badge" id="liveBadge" style="display:none"><span></span><i id="liveTxt" style="font-style:normal">LIVE DATA</i></span>
+        <span class="badge pres" id="roleBadge" style="display:none">PRESIDENT</span>
+        <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+        <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+        <span class="cc-header-divider"></span>
+        <div class="cc-profile">
+          <span class="cc-profile-avatar" id="tbAvatar">—</span>
+          <div><strong id="tbName">Signed in</strong><small id="tbRole">Manager</small></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="cc-page" id="top">
+      <div class="tb-head">
+        <h1>Turbo <span>Boss</span></h1>
+        <p>The manager's command home — decide, assign and approve from one screen. Every number here is live Service OS data; every button is wired to a real Service OS action.</p>
+      </div>
+
+      <!-- COMMAND HEADER -->
+      <section class="tb-band" id="sec-now">
+        <div class="tb-band-top">
+          <h2>Today at a glance</h2>
+          <span class="day" id="bandDay">—</span>
+        </div>
+        <div class="tb-stats">
+          <div class="tb-stat"><div class="n" id="statBoard">—</div><div class="l">On today's board</div><div class="s">Jobs created today or appointed for today.</div></div>
+          <div class="tb-stat"><div class="n" id="statQueue">—</div><div class="l">In setter queue</div><div class="s">New bookings waiting for a setter.</div></div>
+          <div class="tb-stat"><div class="n hot" id="statUnassigned">—</div><div class="l">Unassigned</div><div class="s">Active jobs with no provider yet.</div></div>
+          <div class="tb-stat"><div class="n" id="statDone">—</div><div class="l">Completed today</div><div class="s">Jobs finished on today's board.</div></div>
+          <div class="tb-stat"><div class="n hot" id="statDecisions">—</div><div class="l">Waiting on a decision</div><div class="s">Items in the queue below that need a human.</div></div>
+        </div>
+        <div class="tb-stages" id="stageStrip"></div>
+      </section>
+
+      <!-- DECISION QUEUE -->
+      <section class="tb-section" id="sec-decisions">
+        <div class="tb-sec-head">
+          <div><h2>Needs a Decision</h2><p>Everything waiting on a human, oldest first — unassigned jobs, area reviews, referral rewards, campaign approvals, department reports, new commercial requests and (for the President) Speedy Verify access codes. Act here, or open the owning console.</p></div>
+          <span class="tb-updated" id="decUpdated"></span>
+        </div>
+        <div class="tb-card"><div id="decList"><p class="empty">Loading the decision queue…</p></div><div id="decMsg"></div></div>
+      </section>
+
+      <!-- SCORECARDS -->
+      <section class="tb-section" id="sec-depts">
+        <div class="tb-sec-head">
+          <div><h2>Department scorecards</h2><p>The live pulse of every department, from the same Service OS endpoints Oversight reads — Turbo Boss adds the doors to act.</p></div>
+        </div>
+        <div class="tb-scores" id="scoreGrid"><p class="empty">Loading scorecards…</p></div>
+      </section>
+
+      <!-- TEAM BOARD -->
+      <section class="tb-section" id="sec-team">
+        <div class="tb-sec-head">
+          <div><h2>Team board</h2><p>Provider load right now, counted live from the tracking console — who is free, who is working, who is loaded.</p></div>
+        </div>
+        <div class="roster" id="teamGrid"><p class="empty">Loading the team…</p></div>
+        <div class="tb-card" style="margin-top:14px">
+          <p style="margin:0;font-size:13.5px;color:#8591a4;line-height:1.6"><b style="color:#182742">Service Setters:</b> setter-by-setter activity is not exposed by a Service OS endpoint yet, so Turbo Boss does not invent it — setters work the intake queue on the <a href="/dispatch-dashboard" style="color:#e94e5c;font-weight:700">Dispatch Dashboard</a>, and every assignment there is a setter's own decision.</p>
+        </div>
+      </section>
+
+      <!-- MONEY -->
+      <section class="tb-section" id="sec-money">
+        <div class="tb-sec-head">
+          <div><h2>Money snapshot</h2><p>Only what the finance layer actually holds — QuickBooks sync state and synced figures, plus card-payment readiness. Nothing estimated, nothing invented.</p></div>
+        </div>
+        <div class="tb-money" id="moneyGrid"><p class="empty">Loading the money snapshot…</p></div>
+      </section>
+
+      <!-- ACCOUNTS (owner only; injected for the owner account) -->
+      <div id="accountsMount"></div>
+
+      <!-- ACCOUNT -->
+      <section class="tb-section" id="sec-account">
+        <div class="tb-sec-head"><h2>My account</h2></div>
+        <div class="tb-card acct">
+          <div id="acctPanel"><p class="empty">Loading your account…</p></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+            <a class="btn2 ghost" style="text-decoration:none" href="/applianceman#sec-account">ApplianceMan account settings</a>
+            <button class="btn2" type="button" id="acctSignOut">Sign out</button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="cc-content-footer">
+        <span>Turbo Boss · Top Speed Service OS · Managers only. Data: Service OS API (tracking console, setter queue, dispatch board, referrals, Ad Studio, management reports, commercial, finance, parts, marketing).</span>
+        <span id="footUpdated">—</span>
+      </footer>
+    </main>
+  </div>
+</div>
+</div>
+
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var MANAGERS = ['COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var STAGES = ['Request received','Appointment confirmed','Technician assigned','Technician en route','Technician arrived','Diagnosis in progress','Estimate approved','Repair completed'];
+var PLATFORM_COMPANY = '10000000-0000-4000-8000-000000000001';
+var TB = { user:null, roles:[], isOwner:false, jobs:[], providers:[], summary:null, queue:[], boardCounts:null,
+  journeys:[], refCounts:{}, campaigns:[], campCounts:null, reports:[], commReqs:[], commercial:null,
+  finance:null, payStatus:null, mktPages:null, parts:null, items:[], companies:[], team:[], verify:[], fail:{} };
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function hdr(){ var h = {'Content-Type':'application/json'}; var t = token(); if (t) h['Authorization'] = ('Bear' + 'er') + ' ' + t; return h; }
+function get(path){
+  return fetch(API + path, { headers: hdr() })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function post(path, body){
+  return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body || {}) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function data(j){ return (j && j.data) ? j.data : j; }
+function errText(res, fallback){ return (res && res.j && res.j.error) ? res.j.error : fallback; }
+function fmtMoney(cents){ if (typeof cents !== 'number') return '—'; return (cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); }
+function fmtET(iso, opts){
+  if (!iso) return '';
+  var d = new Date(iso); if (isNaN(d)) return '';
+  return d.toLocaleString('en-US', Object.assign({ timeZone: 'America/New_York' }, opts || {}));
+}
+function fmtAge(createdAt, ageMinutes){
+  var mins = (typeof ageMinutes === 'number') ? ageMinutes : null;
+  if (mins == null && createdAt){ var t = new Date(createdAt).getTime(); if (!isNaN(t)) mins = Math.max(0, Math.floor((Date.now() - t) / 60000)); }
+  if (mins == null) return '';
+  if (mins < 60) return mins + 'm waiting';
+  if (mins < 1440) return Math.floor(mins / 60) + 'h ' + (mins % 60) + 'm waiting';
+  return Math.floor(mins / 1440) + 'd ' + Math.floor((mins % 1440) / 60) + 'h waiting';
+}
+function segPill(seg){
+  if (seg === 'COMMERCIAL') return '<span class="pill com">Commercial</span>';
+  if (seg === 'RESIDENTIAL') return '<span class="pill res">Residential</span>';
+  return '';
+}
+
+/* ---------- command header ---------- */
+function renderBand(){
+  var s = TB.summary || {};
+  var bc = TB.boardCounts || {};
+  var boardTotal = TB.boardCounts ? ((bc.PENDING_DISPATCH || 0) + (bc.MATCH_PENDING_APPROVAL || 0) + (bc.CONFIRMED || 0) + (bc.COMPLETED || 0)) : null;
+  document.getElementById('statBoard').textContent = (boardTotal == null) ? '—' : boardTotal;
+  document.getElementById('statQueue').textContent = TB.fail.queue ? '—' : TB.queue.length;
+  document.getElementById('statUnassigned').textContent = (typeof s.awaitingAssignment === 'number') ? s.awaitingAssignment : (TB.fail.tracking ? '—' : TB.jobs.filter(function(j){ return !j.providerId && j.stageIndex < 7; }).length);
+  document.getElementById('statDone').textContent = TB.boardCounts ? (bc.COMPLETED || 0) : '—';
+  document.getElementById('statDecisions').textContent = TB.items.length;
+  document.getElementById('bandDay').textContent = new Date().toLocaleDateString('en-US', { timeZone: 'America/New_York', weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) + ' · Eastern';
+  var counts = [0,0,0,0,0,0,0,0];
+  TB.jobs.forEach(function(j){ if (typeof j.stageIndex === 'number' && j.stageIndex >= 0 && j.stageIndex <= 7) counts[j.stageIndex]++; });
+  document.getElementById('stageStrip').innerHTML = STAGES.map(function(label, i){
+    return '<span class="tb-stage">' + (i + 1) + ' · ' + esc(label) + ' — <b>' + counts[i] + '</b></span>';
+  }).join('');
+  var dot = document.getElementById('decDot');
+  dot.style.display = TB.items.length ? '' : 'none';
+}
+
+/* ---------- decision queue ---------- */
+function buildItems(){
+  var items = [];
+  var queueRefs = {};
+  TB.queue.forEach(function(q){
+    if (q.referenceCode) queueRefs[q.referenceCode] = 1;
+    items.push({ kind: q.needsAreaReview ? 'AREA' : 'QUEUE', ref: q.referenceCode, bookingId: q.bookingId,
+      createdAt: q.createdAt, ageMinutes: q.ageMinutes, segment: q.segment, source: q.source,
+      title: (q.appliance || 'Service request') + (q.city ? ' · ' + q.city : ''),
+      sub: [q.issue, q.serviceAddress].filter(Boolean).join(' · ') });
+  });
+  TB.jobs.forEach(function(j){
+    if (j.stageIndex < 2 && !j.providerId && !(j.reference && queueRefs[j.reference])){
+      items.push({ kind: 'UNASSIGNED', ref: j.reference, bookingId: j.id, createdAt: j.createdAt,
+        title: (j.appliance || 'Service request') + (j.city ? ' · ' + j.city : ''),
+        sub: [j.customerName, j.issue, 'Stage: ' + (j.stageLabel8 || STAGES[j.stageIndex] || '')].filter(Boolean).join(' · ') });
+    }
+  });
+  TB.journeys.forEach(function(j){
+    items.push({ kind: 'REFERRAL', id: j.id, createdAt: j.createdAt,
+      title: 'Referral reward — ' + (j.referrerName || 'a customer') + ' referred ' + (j.refereeName || 'a friend'),
+      sub: ['Code ' + (j.code || '—'), (typeof j.rewardAmountCents === 'number' ? fmtMoney(j.rewardAmountCents) + ' credit' : 'Reward amount on the journey'), (j.track ? j.track.charAt(0) + j.track.slice(1).toLowerCase() + ' track' : '')].filter(Boolean).join(' · ') });
+  });
+  TB.campaigns.forEach(function(c){
+    items.push({ kind: 'CAMPAIGN', id: c.id, createdAt: c.createdAt || c.updatedAt,
+      title: 'Ad campaign approval — ' + (c.name || 'Untitled campaign'),
+      sub: [c.businessLine ? c.businessLine.replace(/_/g, ' ') : '', c.objective || ''].filter(Boolean).join(' · ') });
+  });
+  TB.reports.forEach(function(r){
+    items.push({ kind: 'REPORT', id: r.id, createdAt: r.createdAt,
+      title: 'Department report — ' + (r.title || 'Untitled report'),
+      sub: [r.department || '', r.reference || ''].filter(Boolean).join(' · ') });
+  });
+  TB.commReqs.forEach(function(c){
+    items.push({ kind: 'COMMREQ', id: c.id, createdAt: c.createdAt,
+      title: 'Commercial account request — ' + (c.name || 'New business'),
+      sub: [c.reference || '', c.source || ''].filter(Boolean).join(' · ') });
+  });
+  // Speedy Verify approvals — owner only (TB.verify is only ever loaded for
+  // the President's account; the endpoint itself is Master-only). An account
+  // with pendingApproval is blocked at sign-in until its code is issued.
+  TB.verify.forEach(function(row){
+    var v = row.verify || {};
+    if (!v.pendingApproval) return;
+    var u = row.user || {};
+    var name = (((u.firstName || '') + ' ' + (u.lastName || '')).trim()) || u.email || 'An account';
+    items.push({ kind: 'VERIFY', id: u.id, createdAt: u.createdAt,
+      title: 'Speedy Verify — ' + name + ' is waiting for an access code',
+      sub: [u.email || '', (u.roles || []).join(', '), 'Sign-in is blocked until the President issues the code'].filter(Boolean).join(' · ') });
+  });
+  items.sort(function(a, b){ return String(a.createdAt || '9999').localeCompare(String(b.createdAt || '9999')); });
+  TB.items = items;
+}
+var KIND_LABEL = { QUEUE: 'Setter queue', AREA: 'Area review', UNASSIGNED: 'Unassigned job', REFERRAL: 'Referral reward', CAMPAIGN: 'Campaign approval', REPORT: 'Dept report', COMMREQ: 'Commercial request', VERIFY: 'Speedy Verify' };
+function providerOptions(){
+  return '<option value="">Choose a provider…</option>' + TB.providers.map(function(p){
+    var load = TB.jobs.filter(function(j){ return j.providerId === p.id && j.stageIndex < 7; }).length;
+    return '<option value="' + esc(p.id) + '">' + esc(p.businessName || 'Provider') + ' (' + load + ' active)</option>';
+  }).join('');
+}
+function renderDecisions(){
+  var el = document.getElementById('decList');
+  var msg = document.getElementById('decMsg');
+  if (!TB.items.length){
+    el.innerHTML = '<p class="empty">Nothing is waiting on a decision — the operation is clear. New items land here the moment they need a human.</p>';
+    return;
+  }
+  var shown = TB.items.slice(0, 40);
+  el.innerHTML = shown.map(function(it, i){
+    var age = fmtAge(it.createdAt, it.ageMinutes);
+    var head = '<div class="qmain"><div class="top"><span class="pill kind">' + esc(KIND_LABEL[it.kind] || 'Decision') + '</span>'
+      + (it.ref ? '<b>' + esc(it.ref) + '</b>' : '')
+      + segPill(it.segment)
+      + (age ? '<span class="pill age">' + esc(age) + '</span>' : '')
+      + '</div><div class="qsub"><b style="color:#34445c">' + esc(it.title) + '</b>' + (it.sub ? '<br>' + esc(it.sub) : '') + '</div></div>';
+    var act = '';
+    if (it.kind === 'QUEUE' || it.kind === 'UNASSIGNED' || it.kind === 'AREA'){
+      act = '<div class="qact"><select id="psel-' + i + '" aria-label="Provider">' + providerOptions() + '</select>'
+        + '<button class="btn2 red" type="button" onclick="tbAssign(' + i + ')">Assign</button>'
+        + (it.kind === 'AREA' ? '<a class="btn2 ghost" href="/book-os">Resolve area in Book OS</a>' : '<a class="btn2 ghost" href="/dispatch-dashboard">Dispatch</a>')
+        + '</div>';
+      if (it.kind === 'AREA') head = head.replace('</div></div>', '<br><b style="color:#e94e5c">Area review:</b> this address sits outside the auto-match area — confirm coverage before assigning.</div></div>');
+    } else if (it.kind === 'REFERRAL'){
+      act = '<div class="qact"><button class="btn2 red" type="button" onclick="tbApproveRef(' + i + ')">Approve credit</button>'
+        + '<button class="btn2 ghost" type="button" onclick="tbRejectRef(' + i + ')">Reject</button>'
+        + '<a class="btn2 ghost" href="/book-os">Book OS</a></div>';
+    } else if (it.kind === 'CAMPAIGN'){
+      if (TB.roles.indexOf('COMPANY_OWNER') !== -1 || TB.roles.indexOf('PLATFORM_ADMIN') !== -1){
+        act = '<div class="qact"><button class="btn2 red" type="button" onclick="tbApproveCamp(' + i + ')">Approve campaign</button><a class="btn2 ghost" href="/ad-studio">Ad Studio</a></div>';
+      } else {
+        act = '<div class="qact"><span class="pill">Owner approval</span><a class="btn2 ghost" href="/ad-studio">Ad Studio</a></div>';
+      }
+    } else if (it.kind === 'REPORT'){
+      act = '<div class="qact"><button class="btn2" type="button" onclick="tbAckReport(' + i + ')">Acknowledge</button><a class="btn2 ghost" href="/manager">Reports</a></div>';
+    } else if (it.kind === 'COMMREQ'){
+      act = '<div class="qact"><a class="btn2" href="/crm">Work it in the CRM</a></div>';
+    } else if (it.kind === 'VERIFY'){
+      act = '<div class="qact"><a class="btn2 red" href="/applianceman#sec-verify">Issue code in ApplianceMan</a></div>';
+    }
+    return '<div class="qrow">' + head + act + '</div>';
+  }).join('') + (TB.items.length > shown.length ? '<p class="empty" style="padding-top:10px">Showing the ' + shown.length + ' oldest of ' + TB.items.length + ' waiting items — the rest clear as these are worked.</p>' : '');
+  if (msg && msg.dataset.keep !== '1') msg.innerHTML = '';
+}
+function decNote(ok, text){
+  var msg = document.getElementById('decMsg');
+  msg.dataset.keep = '1';
+  msg.innerHTML = '<div class="' + (ok ? 'note-ok' : 'note-err') + '">' + esc(text) + '</div>';
+  setTimeout(function(){ msg.dataset.keep = ''; }, 4000);
+}
+function tbAssign(i){
+  var it = TB.items[i]; if (!it || !it.ref) return;
+  var sel = document.getElementById('psel-' + i);
+  var pid = sel ? sel.value : '';
+  if (!pid){ decNote(false, 'Pick a provider first — ' + it.ref + ' has not been assigned.'); return; }
+  post('/tracking/console/' + encodeURIComponent(it.ref) + '/assign', { providerId: pid }).then(function(res){
+    if (!res.ok){ decNote(false, 'Assignment failed for ' + it.ref + ': ' + errText(res, 'the Service OS did not accept it.')); return; }
+    decNote(true, 'Assigned — ' + it.ref + ' is confirmed with the provider. The board has been refreshed.');
+    loadAll();
+  });
+}
+function tbApproveRef(i){
+  var it = TB.items[i]; if (!it) return;
+  post('/referrals/admin/journeys/' + encodeURIComponent(it.id) + '/approve', {}).then(function(res){
+    if (!res.ok){ decNote(false, 'Approval failed: ' + errText(res, 'the Service OS did not accept it.')); return; }
+    decNote(true, 'Referral credit approved and issued. The queue has been refreshed.');
+    loadAll();
+  });
+}
+function tbRejectRef(i){
+  var it = TB.items[i]; if (!it) return;
+  post('/referrals/admin/journeys/' + encodeURIComponent(it.id) + '/reject', {}).then(function(res){
+    if (!res.ok){ decNote(false, 'Rejection failed: ' + errText(res, 'the Service OS did not accept it.')); return; }
+    decNote(true, 'Referral reward rejected. The queue has been refreshed.');
+    loadAll();
+  });
+}
+function tbApproveCamp(i){
+  var it = TB.items[i]; if (!it) return;
+  post('/ad-studio/campaigns/' + encodeURIComponent(it.id) + '/approve', {}).then(function(res){
+    if (!res.ok){ decNote(false, 'Campaign approval failed: ' + errText(res, 'the Service OS did not accept it.')); return; }
+    decNote(true, 'Campaign approved — it is now ACTIVE in Ad Studio. The queue has been refreshed.');
+    loadAll();
+  });
+}
+function tbAckReport(i){
+  var it = TB.items[i]; if (!it) return;
+  post('/management/reports/' + encodeURIComponent(it.id) + '/ack', {}).then(function(res){
+    if (!res.ok){ decNote(false, 'Acknowledge failed: ' + errText(res, 'the Service OS did not accept it.')); return; }
+    decNote(true, 'Report acknowledged. The queue has been refreshed.');
+    loadAll();
+  });
+}
+
+/* ---------- scorecards ---------- */
+function met(n, l, hot){ return '<div class="met"><div class="n' + (hot ? ' hot' : '') + '">' + esc(n) + '</div><div class="l">' + esc(l) + '</div></div>'; }
+function scoreCard(icon, name, href, linkLabel, mets, foot, failed){
+  return '<div class="score"><div class="sh"><span class="ic">' + icon + '</span><b>' + esc(name) + '</b><a href="' + href + '">' + esc(linkLabel) + '</a></div>'
+    + '<div class="mets">' + mets + '</div>'
+    + '<div class="foot">' + (failed ? 'Live numbers could not load just now — open the console for the current state.' : foot) + '</div></div>';
+}
+var IC = {
+  dispatch: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg>',
+  commercial: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V5.5A1.5 1.5 0 0 1 5.5 4h8A1.5 1.5 0 0 1 15 5.5V21"/><path d="M15 10h3.5A1.5 1.5 0 0 1 20 11.5V21"/><path d="M2.5 21h19"/><path d="M7.5 8h4M7.5 12h4M7.5 16h4"/></svg>',
+  providers: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg>',
+  finance: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M7 15.5h4"/></svg>',
+  marketing: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg>',
+  referrals: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5.5 12v8h13v-8M12 8v12M12 8s-4.5.2-4.5-2.2C7.5 3.7 11 3.4 12 8zM12 8s4.5.2 4.5-2.2C16.5 3.7 13 3.4 12 8z"/></svg>',
+  parts: '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg>'
+};
+function renderScores(){
+  var s = TB.summary || {};
+  var cards = [];
+  var unassigned = (typeof s.awaitingAssignment === 'number') ? s.awaitingAssignment : '—';
+  var bc = TB.boardCounts || {};
+  cards.push(scoreCard(IC.dispatch, 'Dispatch', '/dispatch-dashboard', 'Open', 
+    met(TB.fail.queue ? '—' : TB.queue.length, 'In setter queue', TB.queue.length > 0) + met(unassigned, 'Unassigned', (typeof unassigned === 'number' && unassigned > 0)) + met((typeof s.active === 'number') ? s.active : '—', 'Active jobs') + met(TB.boardCounts ? (bc.COMPLETED || 0) : '—', 'Completed today'),
+    'Setters work the queue on the Dispatch Dashboard — no auto-dispatch, ever.', TB.fail.tracking && TB.fail.queue));
+  var co = TB.commercial;
+  cards.push(scoreCard(IC.commercial, 'Commercial', '/crm', 'Open CRM',
+    co ? met(co.accounts.total, 'Accounts') + met(co.workOrders.open, 'Open work orders', co.workOrders.open > 0) + met(co.workOrders.priorityQueue, 'Priority queue', co.workOrders.priorityQueue > 0) + met(co.facilities.total, 'Facilities') : met('—', 'Accounts') + met('—', 'Open work orders') + met('—', 'Priority queue') + met('—', 'Facilities'),
+    'Appliance Pro commercial accounts. Account requests land in the CRM; work orders flow into the setter queue with a COMMERCIAL tag.', !co));
+  var free = 0, loaded = 0;
+  TB.providers.forEach(function(p){
+    var n = TB.jobs.filter(function(j){ return j.providerId === p.id && j.stageIndex < 7; }).length;
+    if (n === 0) free++; if (n >= 3) loaded++;
+  });
+  var doneToday = TB.jobs.filter(function(j){ return j.stageIndex === 7; }).length;
+  cards.push(scoreCard(IC.providers, 'Providers', '/service', 'Network admin',
+    met(TB.fail.tracking ? '—' : TB.providers.length, 'On the roster') + met(TB.fail.tracking ? '—' : free, 'Free now') + met(TB.fail.tracking ? '—' : loaded, 'Loaded (3+ jobs)', loaded > 0) + met(TB.fail.tracking ? '—' : doneToday, 'Completed (board)'),
+    'Load is counted live from the tracking console — the same jobs customers track.', TB.fail.tracking));
+  var fin = TB.finance;
+  var qb = fin ? (fin.quickbooks || {}) : {};
+  var qbLabel = !fin ? '—' : (qb.status === 'not_connected' ? 'Not connected' : (qb.companyName || 'Connected'));
+  cards.push(scoreCard(IC.finance, 'Finance', '/finance', 'Open',
+    met(qbLabel, 'QuickBooks') + met(fin && qb.status !== 'not_connected' ? fin.invoices.openCount : '—', 'Open invoices') + met(fin && qb.status !== 'not_connected' ? fmtMoney(fin.invoices.outstandingCents) : '—', 'Outstanding') + met(fin && qb.lastSyncAt ? fmtET(qb.lastSyncAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—', 'Last sync'),
+    'Figures exist only after a real QuickBooks sync — the Finance OS holds the detail.', !fin));
+  cards.push(scoreCard(IC.marketing, 'Marketing', '/marketing-os', 'Open',
+    met(TB.mktPages == null ? '—' : TB.mktPages, 'Published pages') + met(TB.campCounts ? (TB.campCounts.pendingApproval || 0) : '—', 'Campaigns awaiting approval', !!(TB.campCounts && TB.campCounts.pendingApproval > 0)) + met(TB.campCounts ? TB.campCounts.total : '—', 'Ad Studio campaigns') + met(TB.campCounts && TB.campCounts.byStatus ? (TB.campCounts.byStatus.ACTIVE || 0) : '—', 'Active campaigns'),
+    'Marketing OS publishes the pages; Ad Studio campaigns spend nothing until approved.', TB.mktPages == null && !TB.campCounts));
+  cards.push(scoreCard(IC.referrals, 'Referrals', '/book-os', 'Open Book OS',
+    met(TB.fail.referrals ? '—' : TB.journeys.length, 'Rewards awaiting approval', TB.journeys.length > 0) + met(TB.fail.referrals ? '—' : (TB.refCounts.creditsAvailable || 0), 'Credits available') + met(TB.fail.referrals ? '—' : (TB.refCounts.creditsRedeemed || 0), 'Credits redeemed') + met(TB.fail.referrals ? '—' : (TB.refCounts.creditsExpired || 0), 'Credits expired'),
+    'Approve or reject rewards right from the decision queue above.', TB.fail.referrals));
+  var pt = TB.parts;
+  cards.push(scoreCard(IC.parts, 'Parts', '/parts', 'Open',
+    pt ? met(pt.parts, 'Parts in catalog') + met(pt.lowStockCount, 'Low stock', pt.lowStockCount > 0) + met(pt.openPurchaseOrders, 'Open purchase orders') + met(fmtMoney(pt.inventoryValueCents), 'Inventory value') : met('—', 'Parts in catalog') + met('—', 'Low stock') + met('—', 'Open purchase orders') + met('—', 'Inventory value'),
+    'Parts Supply OS — exact part numbers and prices are confirmed at order time.', !pt));
+  document.getElementById('scoreGrid').innerHTML = cards.join('');
+}
+
+/* ---------- team board ---------- */
+function renderTeam(){
+  var el = document.getElementById('teamGrid');
+  if (TB.fail.tracking){ el.innerHTML = '<p class="empty">The team board could not load — the tracking console did not answer.</p>'; return; }
+  if (!TB.providers.length){ el.innerHTML = '<p class="empty">No providers are registered in the Service OS yet.</p>'; return; }
+  el.innerHTML = TB.providers.map(function(p){
+    var mine = TB.jobs.filter(function(j){ return j.providerId === p.id; });
+    var active = mine.filter(function(j){ return j.stageIndex < 7; });
+    var doneN = mine.length - active.length;
+    var state = active.length === 0 ? '<span class="pill free">Free</span>' : (active.length >= 3 ? '<span class="pill load">Loaded</span>' : '<span class="pill work">Working</span>');
+    var refs = active.slice(0, 4).map(function(j){ return esc(j.reference); }).join(', ');
+    return '<div class="pcard"><b>' + esc(p.businessName || 'Provider') + '</b> ' + state + '<div class="meta">Type: ' + esc(p.type || '—')
+      + '<br>Active load: <b style="color:#182742">' + active.length + ' job' + (active.length === 1 ? '' : 's') + '</b>'
+      + (refs ? '<br>Now on: ' + refs : '')
+      + '<br>Completed on the board: ' + doneN + '</div></div>';
+  }).join('');
+}
+
+/* ---------- money snapshot ---------- */
+function renderMoney(){
+  var cards = [];
+  var fin = TB.finance;
+  if (!fin){
+    cards.push('<div class="score"><div class="sh"><span class="ic">' + IC.finance + '</span><b>QuickBooks</b><a href="/finance">Finance OS</a></div><p class="empty">The finance overview could not load just now — open Finance OS for the current state.</p></div>');
+  } else {
+    var qb = fin.quickbooks || {};
+    if (qb.status === 'not_connected'){
+      cards.push('<div class="score"><div class="sh"><span class="ic">' + IC.finance + '</span><b>QuickBooks</b><a href="/finance">Finance OS</a></div>'
+        + '<div class="mets">' + met('Not connected', 'Status') + met('—', 'Last sync') + '</div>'
+        + '<div class="foot">QuickBooks is not connected yet, so there are no synced figures to show. Connect it and run the first sync in Finance OS — the real numbers will land here.</div></div>');
+    } else {
+      cards.push('<div class="score"><div class="sh"><span class="ic">' + IC.finance + '</span><b>QuickBooks</b><a href="/finance">Finance OS</a></div>'
+        + '<div class="mets">' + met(qb.companyName || 'Connected', 'Company') + met(fmtET(qb.lastSyncAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) || '—', 'Last sync')
+        + met(fin.invoices.openCount, 'Open invoices') + met(fmtMoney(fin.invoices.outstandingCents), 'Outstanding') + '</div>'
+        + '<div class="foot">Synced figures only, mirrored from QuickBooks' + (fin.snapshots && fin.snapshots.pnl ? ' · P&amp;L snapshot: ' + esc(fin.snapshots.pnl.periodLabel || 'on file') + ' (detail in Finance OS)' : '') + '.</div></div>');
+    }
+  }
+  var ps = TB.payStatus;
+  cards.push('<div class="score"><div class="sh"><span class="ic">' + IC.finance + '</span><b>Card payments</b><a href="/finance">Finance OS</a></div>'
+    + (ps ? '<div class="mets">' + met(ps.configured ? 'Live' : 'Not configured', 'Stripe') + met(ps.webhookConfigured ? 'On' : 'Off', 'Webhook') + met(fmtMoney(ps.diagnosticAmountCents), 'Diagnostic checkout') + '</div>'
+      + '<div class="foot">' + (ps.configured ? 'Card payments run through Stripe with live keys.' : 'Stripe live keys are not in place yet — card payment stays off until they are added. Nothing is charged in the meantime.') + '</div>'
+      : '<p class="empty">Payment status could not load just now.</p>') + '</div>');
+  var pt = TB.parts || (fin ? fin.parts : null);
+  cards.push('<div class="score"><div class="sh"><span class="ic">' + IC.parts + '</span><b>Parts money</b><a href="/parts">Parts Supply OS</a></div>'
+    + (pt ? '<div class="mets">' + met(fmtMoney(pt.inventoryValueCents), 'Inventory value') + met(fmtMoney(pt.partsCostThisMonthCents), 'Parts cost this month') + met(fmtMoney(pt.openPurchaseOrdersCents), 'Open PO value') + met(pt.openPurchaseOrders, 'Open POs') + '</div>'
+      + '<div class="foot">Counted from the live Parts Supply OS ledger.</div>'
+      : '<p class="empty">Parts figures could not load just now.</p>') + '</div>');
+  document.getElementById('moneyGrid').innerHTML = cards.join('');
+}
+
+/* ---------- data ---------- */
+function loadAll(){
+  var failed = [];
+  function track(name, p){ return p.then(function(res){ if (!res.ok) { TB.fail[name] = 1; failed.push(name); } else { TB.fail[name] = 0; } return res; }); }
+  var p1 = track('queue', get('/bookos/setter-queue')).then(function(res){ if (res.ok){ var d = data(res.j) || {}; TB.queue = d.queue || []; } });
+  var p2 = track('tracking', get('/tracking/console')).then(function(res){ if (res.ok){ var d = data(res.j) || {}; TB.jobs = d.jobs || []; TB.providers = d.providers || []; TB.summary = d.summary || null; } });
+  var p3 = track('board', get('/bookos/dispatch-board')).then(function(res){ if (res.ok){ var d = data(res.j) || {}; TB.boardCounts = d.counts || null; } });
+  var p4 = track('referrals', get('/referrals/admin/queue')).then(function(res){ if (res.ok){ var d = data(res.j) || {}; TB.journeys = d.journeys || []; TB.refCounts = d.counts || {}; } });
+  var p5 = track('campaigns', get('/ad-studio/campaigns?status=PENDING_APPROVAL')).then(function(res){ if (res.ok){ TB.campaigns = data(res.j) || []; TB.campCounts = (res.j && res.j.counts) ? res.j.counts : null; } });
+  var p6 = track('reports', get('/management/reports?status=NEW&limit=20')).then(function(res){ if (res.ok){ var d = data(res.j) || {}; TB.reports = d.reports || []; } });
+  var p7 = track('connections', get('/connections')).then(function(res){
+    if (res.ok){
+      var all = data(res.j) || [];
+      var weekAgo = Date.now() - 7 * 24 * 3600 * 1000;
+      TB.commReqs = all.filter(function(c){ return c.type === 'COMMERCIAL_ACCOUNT_REQUEST' && new Date(c.createdAt).getTime() >= weekAgo; }).slice(0, 10);
+    }
+  });
+  var p8 = track('commercial', get('/commercial/overview')).then(function(res){ if (res.ok) TB.commercial = data(res.j); });
+  var p9 = track('finance', get('/finance/overview')).then(function(res){ if (res.ok) TB.finance = data(res.j); });
+  var p10 = track('payments', get('/payments/status')).then(function(res){ if (res.ok) TB.payStatus = data(res.j); });
+  var p11 = track('marketing', get('/marketing-os/pages')).then(function(res){ if (res.ok){ var d = data(res.j); TB.mktPages = Array.isArray(d) ? d.length : null; } });
+  var p12 = track('parts', get('/parts/summary')).then(function(res){ if (res.ok) TB.parts = data(res.j); });
+  // Speedy Verify queue is the President's alone: the endpoint is
+  // Master-only, and managers never call it.
+  var p13 = TB.isOwner
+    ? track('verify', get('/speedy-verify/accounts')).then(function(res){ if (res.ok) TB.verify = data(res.j) || []; })
+    : Promise.resolve();
+  return Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13]).then(function(){
+    buildItems();
+    renderBand(); renderDecisions(); renderScores(); renderTeam(); renderMoney();
+    var stamp = 'Updated ' + new Date().toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: 'numeric', minute: '2-digit' }) + ' ET · auto-refresh 60s';
+    document.getElementById('decUpdated').textContent = stamp;
+    document.getElementById('footUpdated').textContent = stamp.toUpperCase();
+    document.getElementById('liveTxt').textContent = failed.length ? 'PARTIAL DATA' : 'LIVE DATA';
+  });
+}
+
+/* ---------- accounts (owner only) ---------- */
+function genPassword(){
+  var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#', pw = '';
+  for (var i = 0; i < 14; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+  return pw;
+}
+function companyLabel(id){
+  if (id === PLATFORM_COMPANY) return 'Top Speed (platform)';
+  for (var i = 0; i < TB.companies.length; i++){ if (TB.companies[i].companyId === id) return TB.companies[i].businessName; }
+  return 'Company ' + String(id || '').slice(0, 8) + '…';
+}
+function renderTeamList(){
+  var el = document.getElementById('teamList');
+  if (!el) return;
+  if (!TB.team.length){ el.innerHTML = '<p class="empty">No accounts loaded.</p>'; return; }
+  el.innerHTML = '<h3 style="margin:0 0 10px;color:#182742;font-size:15px;font-family:Manrope,sans-serif">Team accounts · ' + TB.team.length + '</h3>' + TB.team.map(function(u){
+    var name = (((u.firstName || '') + ' ' + (u.lastName || '')).trim()) || u.email;
+    return '<div class="teamrow"><span class="who"><b>' + esc(name) + '</b> · ' + esc(u.email || '') + (u.phone ? ' · ' + esc(u.phone) : '') + '</span>'
+      + '<span class="meta">' + esc((u.roles || []).join(', ')) + ' · ' + esc(companyLabel(u.companyId)) + (u.active === false ? ' · INACTIVE' : '') + '</span></div>';
+  }).join('');
+}
+function loadTeam(){
+  return get('/auth/users').then(function(res){ if (res.ok){ TB.team = data(res.j) || []; renderTeamList(); } });
+}
+function acctMsg(id, ok, text){
+  var el = document.getElementById(id);
+  el.innerHTML = '<div class="' + (ok ? 'note-ok' : 'note-err') + '">' + esc(text) + '</div>';
+}
+function createAccount(prefix, role, companyId){
+  var email = document.getElementById(prefix + 'Email').value.trim();
+  var pass = document.getElementById(prefix + 'Pass').value;
+  var msgId = prefix + 'Msg';
+  if (!/.+@.+\..+/.test(email)){ acctMsg(msgId, false, 'Add a valid email address.'); return; }
+  if (!pass || pass.length < 10){ acctMsg(msgId, false, 'The temporary password needs at least 10 characters — tap Generate password.'); return; }
+  var body = { email: email, password: pass, role: role,
+    firstName: document.getElementById(prefix + 'First').value.trim() || undefined,
+    lastName: document.getElementById(prefix + 'Last').value.trim() || undefined,
+    phone: document.getElementById(prefix + 'Phone').value.trim() || undefined };
+  if (companyId) body.companyId = companyId;
+  acctMsg(msgId, true, 'Creating the account…');
+  post('/auth/register', body).then(function(res){
+    if (!res.ok){ acctMsg(msgId, false, 'Could not create the account: ' + errText(res, 'the Service OS did not accept it.')); return; }
+    var u = (res.j && res.j.user) || {};
+    acctMsg(msgId, true, 'Account created for ' + (u.email || email) + ' (' + ((u.roles || [role]).join(', ')) + '). It starts unverified under Speedy Verify — no access code exists yet, so sign-in will stop at the code step until you issue its code in ApplianceMan. Hand them the temporary password yourself; they change it after their first full sign-in.');
+    document.getElementById(prefix + 'Pass').value = '';
+    document.getElementById(prefix + 'Email').value = '';
+    loadTeam();
+  });
+}
+function buildAccounts(){
+  if (!TB.isOwner) return;
+  document.getElementById('navAccounts').style.display = '';
+  document.getElementById('accountsMount').innerHTML =
+    '<section class="tb-section" id="sec-accounts">'
+    + '<div class="tb-sec-head"><div><h2>Accounts — create team logins</h2><p>President-only. Employee and contractor accounts are created here, never by self-registration. The owner role is never offered — only the President\'s account holds it, and only the President can grant roles.</p></div></div>'
+    + '<div class="tb-card" style="margin-bottom:16px"><p style="margin:0;font-size:13.5px;color:#8591a4;line-height:1.6"><b style="color:#182742">Speedy Verify:</b> every account created here starts <b style="color:#182742">unverified</b> — the Service OS flags it at creation and no access code exists yet. The person can enter their email and temporary password, but sign-in stops at the Speedy Verify code step until the President issues their code in <a href="/applianceman#sec-verify" style="color:#e94e5c;font-weight:700">ApplianceMan — Speedy Verify</a>; waiting accounts also surface in Needs a Decision above. Set a temporary password below and hand it to the person yourself (in person or by direct message — never a group chat); after their first full sign-in they change it, and they sign the legal terms at first entry.</p></div>'
+    + '<div class="acct-grid">'
+    + '<div class="tb-card tb-form"><h3>New employee</h3><p class="hint">Service Setters work the dispatch queue; Managers run the consoles. Both sign in with this email and the temporary password.</p>'
+    + '<div class="frow"><div><label>FIRST NAME</label><input id="empFirst" type="text" autocomplete="off"></div><div><label>LAST NAME</label><input id="empLast" type="text" autocomplete="off"></div></div>'
+    + '<div class="frow"><div><label>EMAIL</label><input id="empEmail" type="email" autocomplete="off"></div><div><label>MOBILE PHONE</label><input id="empPhone" type="tel" autocomplete="off"></div></div>'
+    + '<div class="frow"><div><label>ROLE</label><select id="empRole"><option value="DISPATCHER">Service Setter (Dispatcher)</option><option value="COMPANY_ADMIN">Manager (Company Admin)</option></select></div>'
+    + '<div><label>TEMPORARY PASSWORD</label><input id="empPass" type="text" autocomplete="off" placeholder="10+ characters"></div></div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn2 ghost" type="button" id="empGen">Generate password</button><button class="btn2 red" type="button" id="empCreate">Create employee account</button></div>'
+    + '<div id="empMsg"></div></div>'
+    + '<div class="tb-card tb-form"><h3>New contractor (provider)</h3><p class="hint">A Tech App login inside a provider company that already exists in the Service Network. A brand-new provider business is onboarded in the <a href="/service" style="color:#e94e5c;font-weight:700">Service Network admin</a> first — then create its logins here.</p>'
+    + '<div class="frow"><div><label>FIRST NAME</label><input id="conFirst" type="text" autocomplete="off"></div><div><label>LAST NAME</label><input id="conLast" type="text" autocomplete="off"></div></div>'
+    + '<div class="frow"><div><label>EMAIL</label><input id="conEmail" type="email" autocomplete="off"></div><div><label>MOBILE PHONE</label><input id="conPhone" type="tel" autocomplete="off"></div></div>'
+    + '<div class="frow"><div><label>PROVIDER COMPANY</label><select id="conCompany"></select></div><div><label>ROLE</label><select id="conRole"><option value="PROVIDER_TECH">Provider Technician (Tech App)</option><option value="PROVIDER_OWNER">Provider Owner (Tech App)</option></select></div></div>'
+    + '<div class="frow"><div><label>TEMPORARY PASSWORD</label><input id="conPass" type="text" autocomplete="off" placeholder="10+ characters"></div><div></div></div>'
+    + '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="btn2 ghost" type="button" id="conGen">Generate password</button><button class="btn2 red" type="button" id="conCreate">Create contractor account</button></div>'
+    + '<div id="conMsg"></div></div>'
+    + '</div>'
+    + '<div class="tb-card" style="margin-top:16px"><div id="teamList"><p class="empty">Loading team accounts…</p></div></div>'
+    + '</section>';
+  document.getElementById('empGen').addEventListener('click', function(){ document.getElementById('empPass').value = genPassword(); });
+  document.getElementById('conGen').addEventListener('click', function(){ document.getElementById('conPass').value = genPassword(); });
+  document.getElementById('empCreate').addEventListener('click', function(){
+    createAccount('emp', document.getElementById('empRole').value, null);
+  });
+  document.getElementById('conCreate').addEventListener('click', function(){
+    var cid = document.getElementById('conCompany').value;
+    if (!cid){ acctMsg('conMsg', false, 'No provider company is selected — a contractor login must land inside a provider company.'); return; }
+    createAccount('con', document.getElementById('conRole').value, cid);
+  });
+  get('/provider/companies').then(function(res){
+    if (res.ok){
+      TB.companies = data(res.j) || [];
+      var sel = document.getElementById('conCompany');
+      if (sel) sel.innerHTML = TB.companies.map(function(c){ return '<option value="' + esc(c.companyId) + '">' + esc(c.businessName) + '</option>'; }).join('');
+    }
+    loadTeam();
+  });
+}
+
+/* ---------- gate & boot ---------- */
+function showGate(html){ document.getElementById('gate').innerHTML = html; document.getElementById('portal').style.display = 'none'; }
+function loginGate(msg){
+  showGate('<div class="gate"><h2>Turbo Boss sign-in</h2><p>Managers only. Sign in with your Service OS manager account — the same login as ApplianceMan and Book OS.</p>'
+  + '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>'
+  + '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>'
+  + '<div class="err" id="liErr"></div><button type="submit">Sign in to Turbo Boss</button></form>'
+  + (msg ? '<p style="margin-top:12px">' + esc(msg) + '</p>' : '') + '</div>');
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr'); err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (res.j && res.j.code === 'SPEEDY_VERIFY_NO_CODE'){ err.textContent = res.j.error || 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.'; err.style.display = 'block'; return; }
+      if (res.j && res.j.verifyRequired && res.j.challenge){ verifyGate(); return; }
+      if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+function verifyGate(){
+  showGate('<div class="gate"><h2>Speedy Verify — one more step</h2><p>Your password checked out, but this account is protected by Speedy Verify: it also needs the 8-digit access code the President issued. Turbo Boss does not take codes — complete the code step by signing in at ApplianceMan (same login), and Turbo Boss opens right after. No code yet? The account waits in the President\'s Speedy Verify approvals — contact the office.</p>'
+  + '<p style="margin-top:12px"><a class="ghostbtn" href="/applianceman" style="display:inline-block;text-decoration:none">Continue to ApplianceMan</a></p>'
+  + '<button class="ghostbtn" type="button" id="vgSignOut">Sign out</button></div>');
+  document.getElementById('vgSignOut').addEventListener('click', signOut);
+}
+function managersOnlyGate(email){
+  showGate('<div class="gate"><h2>Managers only</h2><p>Turbo Boss is the manager command home. This account (' + esc(email || '') + ') does not hold a manager role, so the command deck stays closed. Service Setters work from the Dispatch Dashboard; the President and Managers work here.</p>'
+  + '<button class="ghostbtn" type="button" id="moSignOut">Sign out</button></div>');
+  document.getElementById('moSignOut').addEventListener('click', signOut);
+}
+function signOut(){ try { localStorage.removeItem('tsos_token'); } catch(e){} location.reload(); }
+function boot(){
+  var t = token();
+  if (!t){ loginGate(''); return; }
+  get('/auth/me').then(function(res){
+    var me = data(res.j);
+    if (!res.ok || !me || !me.user){
+      if (res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ verifyGate(); return; }
+      loginGate('Your session expired — sign in again.'); return;
+    }
+    var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
+    var isManager = roles.some(function(r){ return MANAGERS.indexOf(r) !== -1; });
+    if (!isManager){ managersOnlyGate(me.user.email); return; }
+    TB.user = me.user; TB.roles = roles;
+    TB.isOwner = roles.indexOf('COMPANY_OWNER') !== -1;
+    document.getElementById('gate').innerHTML = '';
+    document.getElementById('portal').style.display = 'block';
+    document.getElementById('liveBadge').style.display = '';
+    document.getElementById('refreshBtn').style.display = '';
+    document.getElementById('logoutBtn').style.display = '';
+    var rb = document.getElementById('roleBadge');
+    if (TB.isOwner){ rb.textContent = 'PRESIDENT'; rb.className = 'badge pres'; }
+    else { rb.textContent = 'MANAGER'; rb.className = 'badge mgr'; }
+    rb.style.display = '';
+    var title = TB.isOwner ? 'President' : 'Manager';
+    var nm = me.user.name || me.user.fullName || '';
+    var fullName = nm || (((me.user.firstName || '') + ' ' + (me.user.lastName || '')).trim()) || (me.user.email || '');
+    document.getElementById('acctPanel').innerHTML =
+      '<div><span class="k">SIGNED IN</span>' + esc(fullName) + '</div>'
+      + '<div><span class="k">EMAIL</span>' + esc(me.user.email || '') + '</div>'
+      + '<div><span class="k">TITLE</span>' + esc(title) + '</div>'
+      + '<div><span class="k">ROLES</span>' + esc(roles.join(', ')) + '</div>'
+      + '<div><span class="k">ACCESS</span>' + (TB.isOwner ? 'President — the owner account. Every manager portal opens for this account, and only this account creates team accounts.' : 'Manager — command access to the manager consoles. Account creation stays with the President.') + '</div>';
+    var tbN = document.getElementById('tbName'); if (tbN) tbN.textContent = fullName;
+    var tbR = document.getElementById('tbRole'); if (tbR) tbR.textContent = title;
+    var tbA = document.getElementById('tbAvatar'); if (tbA){ var psrc = fullName || ''; var pparts = psrc.replace(/@.*/, '').split(/[\s.]+/).filter(Boolean); tbA.textContent = ((pparts[0] || 'T').charAt(0) + (pparts[1] ? pparts[1].charAt(0) : '')).toUpperCase(); }
+    buildAccounts();
+    loadAll();
+    setInterval(function(){ if (document.getElementById('portal').style.display !== 'none') loadAll(); }, 60000);
+  });
+}
+document.getElementById('logoutBtn').addEventListener('click', signOut);
+document.getElementById('acctSignOut').addEventListener('click', signOut);
+document.getElementById('refreshBtn').addEventListener('click', function(){ loadAll(); });
+var ccSb = document.getElementById('ccSidebar'), ccBd = document.getElementById('ccBackdrop');
+function ccToggleSidebar(open){ if (!ccSb) return; var willOpen = open != null ? open : !ccSb.classList.contains('cc-open'); ccSb.classList.toggle('cc-open', willOpen); if (ccBd) ccBd.style.display = willOpen ? 'block' : 'none'; }
+var ccMb = document.getElementById('ccMenuBtn'); if (ccMb) ccMb.addEventListener('click', function(){ ccToggleSidebar(); });
+var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListener('click', function(){ ccToggleSidebar(false); });
+if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
+boot();
+</script>
+</body>
+</html>
