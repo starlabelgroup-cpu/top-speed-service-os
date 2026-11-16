@@ -67,9 +67,80 @@ footer{border-top:1px solid #22301f;color:var(--muted);padding:36px 24px;text-al
 footer strong{color:var(--ink)}
 footer a{color:var(--lime)}
 </style>
-<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+<script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
+<!-- ACCOUNT GATE — Pepper Lists is a Top Speed OS Consumer App. The app
+     opens only for a signed-in Top Speed account (the one platform
+     account system: /auth/login + /auth/register, tsos_token). -->
+<style>
+.plg-wrap{max-width:520px;margin:0 auto;padding:34px 22px 54px}
+.plg-brandrow{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.plg-badge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--lime);border:1.5px solid rgba(183,227,60,.55);border-radius:999px;padding:5px 12px}
+.plg-h{font-size:clamp(28px,5vw,38px);line-height:1.15;margin:16px 0 10px}
+.plg-sub{color:var(--muted);font-size:15.5px;line-height:1.6;margin-bottom:22px}
+.plg-card{background:var(--panel);border:1px solid #22301f;border-radius:18px;padding:24px 22px}
+.plg-tabs{display:flex;gap:8px;margin-bottom:18px}
+.plg-tabs button{flex:1;background:var(--panel2);color:var(--muted);border:1px solid #2c4232;border-radius:999px;padding:11px 10px;font:inherit;font-weight:700;font-size:14.5px;cursor:pointer}
+.plg-tabs button.on{background:var(--lime);color:#0C130E;border-color:var(--lime)}
+.plg-lab{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:0 0 12px}
+.plg-lab input{display:block;width:100%;margin-top:5px;padding:12px 14px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500}
+.plg-lab input:focus{outline:none;border-color:var(--lime)}
+.plg-row{display:flex;gap:10px}.plg-row .plg-lab{flex:1}
+.plg-msg{font-size:13.5px;line-height:1.5;min-height:18px;color:var(--amber);margin:4px 0 10px}
+.plg-msg.err{color:#ff9a8a}
+.plg-full{width:100%;text-align:center}
+.plg-full:disabled{opacity:.45;cursor:not-allowed}
+.plg-note{font-size:14px;line-height:1.6;color:var(--muted)}
+.plg-foot{color:var(--faint);font-size:13px;line-height:1.6;margin-top:18px;text-align:center}
+.plg-foot a{color:var(--lime)}
+.plg-acct{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border-bottom:1px solid #22301f;padding:9px 22px;font-size:13.5px;color:var(--muted)}
+.plg-acct b{color:var(--ink)}
+.plg-acct button{margin-left:auto;background:var(--panel2);color:var(--ink);border:1px solid #2c4232;border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
+.plg-herobadge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;border:2px solid #0C130E;border-radius:999px;padding:5px 12px;margin-bottom:16px}
+</style>
+<section id="plGate" aria-label="Sign in to Pepper Lists It">
+  <div class="plg-wrap">
+    <div class="plg-brandrow"><span class="brand"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed Appliance</small></span></span></div>
+    <span class="plg-badge">Top Speed OS · Consumer App</span>
+    <h1 class="plg-h">Snap it. Pepper lists it — everywhere.</h1>
+    <p class="plg-sub">Pepper Lists is a Top Speed OS Consumer App. Sign in with your Top Speed account — or create one — to open the app. It is the same account you use across the whole Top Speed platform.</p>
+    <div class="plg-card">
+      <div class="plg-tabs" role="tablist" aria-label="Sign in or create account">
+        <button type="button" id="plTabIn" class="on" onclick="plMode('in')">Sign in</button>
+        <button type="button" id="plTabUp" onclick="plMode('up')">Create account</button>
+      </div>
+      <div id="plInForm">
+        <label class="plg-lab">Email<input id="plLiEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="plg-lab">Password<input id="plLiPass" type="password" autocomplete="current-password" placeholder="Your password"></label>
+        <div id="plSvStep" style="display:none">
+          <label class="plg-lab">Speedy Verify access code<input id="plSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></label>
+          <button class="btn plg-full" type="button" style="margin-bottom:10px" onclick="plVerify()">Verify &amp; sign in</button>
+        </div>
+        <p class="plg-msg" id="plMsg" role="status"></p>
+        <button class="btn plg-full" type="button" id="plInBtn" onclick="plLogin()">Sign in</button>
+      </div>
+      <div id="plUpForm" style="display:none">
+        <div class="plg-row">
+          <label class="plg-lab">First name<input id="plUpFirst" type="text" autocomplete="given-name" placeholder="First"></label>
+          <label class="plg-lab">Last name<input id="plUpLast" type="text" autocomplete="family-name" placeholder="Last"></label>
+        </div>
+        <label class="plg-lab">Email<input id="plUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="plg-lab">Phone (optional)<input id="plUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+        <label class="plg-lab">Password — 10+ characters<input id="plUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+        <div id="plLegal"></div>
+        <p class="plg-msg" id="plUpMsg" role="status"></p>
+        <button class="btn plg-full" type="button" id="plUpBtn" onclick="plRegister()" disabled>Create account</button>
+      </div>
+      <div id="plPending" style="display:none">
+        <p class="plg-note" id="plPendingMsg"></p>
+      </div>
+    </div>
+    <p class="plg-foot">One account for the whole Top Speed platform — booking, tracking, referrals and this app.<br><a href="https://topspeedserviceos.com/privacy">Privacy Policy</a> · <a href="https://topspeedserviceos.com/legal">Legal Documents</a></p>
+  </div>
+</section>
+<div id="plApp" style="display:none">
+<div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
 <header>
   <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed Appliance</small></span></a>
   <nav>
@@ -83,6 +154,7 @@ footer a{color:var(--lime)}
 
 <div class="hero">
   <div class="herocard">
+    <span class="plg-herobadge">Top Speed OS · Consumer App</span>
     <h1>Snap it. Pepper lists it — everywhere.</h1>
     <p>Take a photo of anything you sell. Pepper's AI names the item and drafts the listing — title, category, condition, description — then posts it for you. Nothing ever goes live without your yes.</p>
     <div class="cta">
@@ -176,10 +248,113 @@ footer a{color:var(--lime)}
 </section>
 <!-- /TSE-PANEL -->
 <footer>
-  <strong>Pepper Lists It</strong> · A Top Speed Appliance LLC product · Fort Lauderdale, FL<br>
+  <strong>Pepper Lists It</strong> · A Top Speed OS Consumer App · A Top Speed Appliance LLC product · Fort Lauderdale, FL<br>
   Snap it. Pepper lists it — everywhere.<br>
   <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="https://topspeedserviceos.com/privacy">Privacy Policy</a>
 </footer>
+</div><!-- /plApp -->
+<script>
+/* Pepper Lists account gate — the one Top Speed platform account.
+   Mirrors the /app + Connect Pro patterns: tsos_token (mirrored to
+   tsos_cust_token like the customer app), GET /auth/me session check,
+   TSOSLegal signing block on register, terms gate for accounts that
+   still owe a signature, and the Speedy Verify code step for covered
+   accounts (staff / business) exactly as Connect Pro runs it. New
+   accounts created here are standard customer accounts (no declared
+   accountType, signupAudience null) and never start verifyRequired. */
+var PL_API='https://top-speed-service-os.vercel.app/api/v1';
+function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
+function plClearTok(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_cust_token'); }catch(e){} }
+function plApi(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
+  if(plTok()) opts.headers['Authorization']='Bearer '+plTok();
+  return fetch(PL_API+path,opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; throw e; } return j; }); });
+}
+function plMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='plg-msg'+(isErr?' err':''); }
+function plMode(m){
+  document.getElementById('plTabIn').className=(m==='in')?'on':'';
+  document.getElementById('plTabUp').className=(m==='up')?'on':'';
+  document.getElementById('plInForm').style.display=(m==='in')?'':'none';
+  document.getElementById('plUpForm').style.display=(m==='up')?'':'none';
+  document.getElementById('plPending').style.display='none';
+}
+var plSvChallenge=null;
+function plLogin(){
+  plMsg('plMsg','Signing in…');
+  plApi('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('plLiEmail').value.trim(),password:document.getElementById('plLiPass').value})})
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){
+        plSvChallenge=j.challenge;
+        document.getElementById('plSvStep').style.display='';
+        plMsg('plMsg','Speedy Verify — enter your access code to finish signing in.');
+        var ci=document.getElementById('plSvCode'); if(ci) ci.focus();
+        return;
+      }
+      plSaveTok(j.token); plBoot();
+    }).catch(function(e){ plMsg('plMsg',e.message,true); });
+}
+function plVerify(){
+  if(!plSvChallenge){ plMsg('plMsg','Sign in with your password first, then enter your code.',true); return; }
+  plApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:plSvChallenge,code:document.getElementById('plSvCode').value})})
+    .then(function(j){ plSvChallenge=null; document.getElementById('plSvStep').style.display='none'; plSaveTok(j.token); plBoot(); })
+    .catch(function(e){ plMsg('plMsg',e.message,true); });
+}
+function plRegister(){
+  var acceptance=window.TSOSLegal?TSOSLegal.acceptance('pl'):null;
+  if(!acceptance){ plMsg('plUpMsg','Check both agreement boxes and type your full name as your signature first.',true); return; }
+  var body={
+    email:document.getElementById('plUpEmail').value.trim(),
+    password:document.getElementById('plUpPass').value,
+    firstName:document.getElementById('plUpFirst').value.trim()||undefined,
+    lastName:document.getElementById('plUpLast').value.trim()||undefined,
+    phone:document.getElementById('plUpPhone').value.trim()||undefined,
+    termsAcceptance:acceptance
+  };
+  plMsg('plUpMsg','Creating your account…');
+  plApi('/auth/register',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){
+      if(!j.token){
+        /* Speedy Verify pending state: the account exists but no session
+           is issued until the office issues its access code. Not expected
+           for customer sign-ups here — handled honestly if it ever fires. */
+        document.getElementById('plInForm').style.display='none';
+        document.getElementById('plUpForm').style.display='none';
+        var p=document.getElementById('plPending'); p.style.display='';
+        document.getElementById('plPendingMsg').textContent=(j.speedyVerify&&j.speedyVerify.message)||'Your account was created. The office will finish activating it before your first sign-in.';
+        return;
+      }
+      plSaveTok(j.token); plBoot();
+    }).catch(function(e){ plMsg('plUpMsg',e.message,true); });
+}
+function plSignOut(){ plClearTok(); location.reload(); }
+function plEnterApp(u){
+  document.getElementById('plGate').style.display='none';
+  document.getElementById('plApp').style.display='';
+  var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='';
+  var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
+}
+function plBoot(){
+  if(!plTok()){ document.getElementById('plGate').style.display=''; return; }
+  plApi('/auth/me').then(function(j){
+    var u=j.user||{};
+    if(window.TSOSLegal && !TSOSLegal.termsComplete(j.terms||j.termsStatus)){
+      TSOSLegal.showTermsGate({api:PL_API,token:plTok(),onSignOut:plSignOut,onAccepted:function(){ plBoot(); }});
+      return;
+    }
+    plEnterApp(u);
+  }).catch(function(e){
+    plClearTok();
+    document.getElementById('plGate').style.display='';
+    if(e && /^Speedy Verify/.test(e.message||'')) plMsg('plMsg',e.message,true);
+  });
+}
+document.addEventListener('DOMContentLoaded',function(){
+  if(window.TSOSLegal) TSOSLegal.mountSigning('plLegal','pl',{buttonId:'plUpBtn'});
+  var pw=document.getElementById('plLiPass'); if(pw) pw.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plLogin(); });
+  plBoot();
+});
+</script>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500} h1,h2,h3{font-weight:800}</style>

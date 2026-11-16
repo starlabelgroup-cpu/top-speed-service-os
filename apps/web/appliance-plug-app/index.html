@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="https://top-speed-service-os.vercel.app/api/v1/app/icons/plug-192.png">
+<script src="/legal-gate.js"></script>
 <style>
   :root{--bg:#0E1116;--panel:#171C24;--panel2:#1F2631;--amber:#FFB300;--amber-dim:#8A6100;--ink:#F2F5F8;--muted:#9AA7B4;--faint:#67727F;--green:#3ED97E;--red:#FF6A55}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -74,6 +75,88 @@
 <link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
+<!-- ACCOUNT GATE — Appliance Plug is a Top Speed OS Tech App, licensed to
+     Top Speed clients only. The app opens only for a signed-in Top Speed
+     account (the one platform account system: /auth/login + /auth/register,
+     tsos_token). Provider accounts are created by the office during
+     provider onboarding; self-serve sign-up here creates the platform
+     account the office activates for provider work. -->
+<style>
+  .apg-wrap{max-width:520px;margin:0 auto;padding:30px 20px 54px}
+  .apg-logorow{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+  .apg-badge{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);border:1.5px solid var(--amber-dim);border-radius:999px;padding:5px 12px}
+  .apg-h{font-size:30px;font-weight:800;line-height:1.15;margin:14px 0 10px}
+  .apg-h .amber{color:var(--amber)}
+  .apg-sub{color:var(--muted);font-size:14.5px;line-height:1.6;margin-bottom:20px}
+  .apg-card{background:var(--panel);border:1px solid #232B36;border-radius:18px;padding:22px 18px}
+  .apg-tabs{display:flex;gap:8px;margin-bottom:16px}
+  .apg-tabs button{flex:1;background:var(--panel2);color:var(--muted);border:1px solid #232B36;border-radius:999px;padding:11px 10px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .apg-tabs button.on{background:var(--amber);color:#141414;border-color:var(--amber)}
+  .apg-lab{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin:0 0 11px}
+  .apg-lab input{display:block;width:100%;margin-top:5px;padding:12px 13px;border:1.5px solid #232B36;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:500}
+  .apg-lab input:focus{outline:none;border-color:var(--amber)}
+  .apg-row{display:flex;gap:10px}.apg-row .apg-lab{flex:1}
+  .apg-msg{font-size:13px;line-height:1.5;min-height:17px;color:var(--amber);margin:4px 0 9px}
+  .apg-msg.err{color:var(--red)}
+  .apg-full{width:100%;text-align:center}
+  .apg-full:disabled{opacity:.45;cursor:not-allowed}
+  .apg-note{font-size:13.5px;line-height:1.6;color:var(--muted)}
+  .apg-note b{color:var(--ink)}
+  .apg-foot{color:var(--faint);font-size:12.5px;line-height:1.6;margin-top:16px;text-align:center}
+  .apg-foot a{color:var(--amber)}
+  .apg-classpill{display:inline-block;margin-top:7px;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--amber);border:1.5px solid var(--amber-dim);border-radius:999px;padding:3px 9px}
+</style>
+<section id="pgGate" aria-label="Sign in to Appliance Plug">
+  <div class="apg-wrap">
+    <div class="apg-logorow">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" style="color:var(--amber)"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M9.3 6.2v2.6M14.7 6.2v2.6"/><path d="M8 8.8h8v2c0 2.5-1.8 4-4 4s-4-1.5-4-4z"/><path d="M12 14.8v1.6c0 1.5-1.3 1.7-1.3 3.2"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+      <div><h1 style="font-size:22px">Appliance <span class="amber" style="color:var(--amber)">Plug</span></h1><div class="sub">Snap the tag. Speedy finds the part.</div></div>
+    </div>
+    <span class="apg-badge">Top Speed OS · Tech App — Clients Only</span>
+    <h2 class="apg-h">The field-tech <span class="amber">parts tool</span></h2>
+    <p class="apg-sub">Appliance Plug is a Top Speed OS Tech App — a tool licensed to Top Speed clients only: providers, technicians and client businesses. It is not a public consumer app. Sign in with your Top Speed account — or create one — to open it.</p>
+    <div class="apg-card">
+      <div class="apg-tabs" role="tablist" aria-label="Sign in or create account">
+        <button type="button" id="pgTabIn" class="on" onclick="pgMode('in')">Sign in</button>
+        <button type="button" id="pgTabUp" onclick="pgMode('up')">Create account</button>
+      </div>
+      <div id="pgInForm">
+        <label class="apg-lab">Email<input id="pgLiEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="apg-lab">Password<input id="pgLiPass" type="password" autocomplete="current-password" placeholder="Your password"></label>
+        <div id="pgSvStep" style="display:none">
+          <label class="apg-lab">Speedy Verify access code<input id="pgSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></label>
+          <button class="btn btn-amber" type="button" style="margin:0 0 10px" onclick="pgVerify()">Verify &amp; sign in</button>
+        </div>
+        <p class="apg-msg" id="pgMsg" role="status"></p>
+        <button class="btn btn-amber" type="button" style="margin-top:0" id="pgInBtn" onclick="pgLogin()">Sign in</button>
+      </div>
+      <div id="pgUpForm" style="display:none">
+        <div class="apg-row">
+          <label class="apg-lab">First name<input id="pgUpFirst" type="text" autocomplete="given-name" placeholder="First"></label>
+          <label class="apg-lab">Last name<input id="pgUpLast" type="text" autocomplete="family-name" placeholder="Last"></label>
+        </div>
+        <label class="apg-lab">Email<input id="pgUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+        <label class="apg-lab">Phone (optional)<input id="pgUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+        <label class="apg-lab">Password — 10+ characters<input id="pgUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+        <div id="pgLegal"></div>
+        <p class="apg-msg" id="pgUpMsg" role="status"></p>
+        <button class="btn btn-amber" type="button" style="margin-top:0" id="pgUpBtn" onclick="pgRegister()" disabled>Create account</button>
+        <p class="apg-note" style="margin-top:12px">Creating an account gives you a Top Speed platform account. <b>Provider access</b> — your jobs, plate reads and parts ordering under your provider company — is activated by the Top Speed office when your provider onboarding is complete.</p>
+      </div>
+      <div id="pgDone" style="display:none">
+        <p class="apg-note"><b>Your account is created.</b> You are signed in. Provider access — jobs, plate reads and parts ordering under your provider company — is activated by the Top Speed office when your provider onboarding is complete. If the office has already set up your provider account, sign in with that account instead to work right away.</p>
+        <button class="btn btn-amber" type="button" onclick="pgEnterAfterRegister()">Open Appliance Plug</button>
+        <a class="btn btn-ghost" href="https://topspeedserviceos.com/speedy-pro" style="display:block;text-decoration:none;text-align:center">Provider onboarding — Speedy Pro</a>
+        <a class="btn btn-ghost" href="https://topspeedserviceos.com/tech" style="display:block;text-decoration:none;text-align:center">Tech App sign-in</a>
+      </div>
+      <div id="pgPending" style="display:none">
+        <p class="apg-note" id="pgPendingMsg"></p>
+      </div>
+    </div>
+    <p class="apg-foot">Licensed to Top Speed clients only · One Top Speed account across the platform<br><a href="https://topspeedserviceos.com/privacy">Privacy Policy</a> · <a href="https://topspeedserviceos.com/legal">Legal Documents</a></p>
+  </div>
+</section>
+<div id="pgApp" style="display:none">
 <header>
   <div class="logo" aria-hidden="true">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" style="color:var(--amber)"><path d="M12 2.8l8 4.6v9.2l-8 4.6-8-4.6V7.4z"/><path d="M9.3 6.2v2.6M14.7 6.2v2.6"/><path d="M8 8.8h8v2c0 2.5-1.8 4-4 4s-4-1.5-4-4z"/><path d="M12 14.8v1.6c0 1.5-1.3 1.7-1.3 3.2"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg>
@@ -81,6 +164,7 @@
   <div>
     <h1>Appliance <span class="amber">Plug</span></h1>
     <div class="sub">Snap the tag. Speedy finds the part.</div>
+    <span class="apg-classpill">Top Speed OS · Tech App — Clients Only</span>
   </div>
   <button class="plg-btn" type="button" onclick="plgToggle(true)" aria-label="Open menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="square"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>Menu</button>
 </header>
@@ -97,6 +181,9 @@
   <button class="plg-item" type="button" onclick="plgGo('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span class="grow">Settings</span></button>
   <a class="plg-item" href="tel:+19549317997"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg><span class="grow">Support — 954-931-7997<small>Dispatch line, Mon–Fri 8am–7pm</small></span></a>
   <a class="plg-item" href="https://topspeedserviceos.com/speedy-pro"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M10.5 5L4 12l6.5 7M4 12h16"/></svg><span class="grow">Back to Speedy Pro</span></a>
+  <div class="plg-sec">ACCOUNT</div>
+  <div class="plg-item" style="cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-3.4 4.2-5 7.5-5s6.1 1.6 7.5 5"/></svg><span class="grow">Signed in<small id="pgWho">—</small></span></div>
+  <button class="plg-item" type="button" onclick="pgSignOut()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14 4h5.5v16H14M10 8l-4.5 4L10 16M5.5 12H15"/></svg><span class="grow">Sign out</span></button>
 </aside>
 <main>
   <!-- HOME -->
@@ -199,6 +286,7 @@
     <div class="card">
       <b class="t">Settings</b>
       <p>Appliance Plug runs on your Tech App sign-in — plate reads, Parts Finder and orders all run inside the Service OS under your provider account. This shell keeps no settings of its own.</p>
+      <p>Appliance Plug is a Top Speed OS Tech App — a tool licensed to Top Speed clients only. It is not a public consumer app.</p>
       <a class="btn btn-amber" href="https://topspeedserviceos.com/tech">Tech sign-in &amp; provider profile</a>
       <a class="btn btn-ghost" href="https://topspeedserviceos.com/parts" style="display:block;text-decoration:none;text-align:center">Parts Supply OS console</a>
     </div>
@@ -236,6 +324,115 @@
   <button id="n-orders" onclick="go('orders')"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="3.5" r="1.2" fill="currentColor" stroke="none"/></svg></span><span>Orders</span></button>
   <button id="n-speedy" onclick="go('speedy')"><span class="ic"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M13 3L5.5 13.2h4.6L9.2 21l7.5-10.2h-4.6z"/><circle cx="13" cy="3" r="1.2" fill="currentColor" stroke="none"/><circle cx="9.2" cy="21" r="1.2" fill="currentColor" stroke="none"/></svg></span><span>Speedy</span></button>
 </nav>
+</div><!-- /pgApp -->
+<script>
+/* Appliance Plug account gate — the one Top Speed platform account.
+   Mirrors the Connect Pro pattern: tsos_token, GET /auth/me session
+   check, TSOSLegal signing block on register, terms gate for accounts
+   that still owe a signature, and the Speedy Verify code step for
+   covered accounts (staff / business). Self-serve sign-up creates a
+   standard platform account through POST /auth/register — the API
+   grants provider roles by administrator only, so the gate says so
+   plainly and routes new sign-ups to provider onboarding in Speedy
+   Pro. Provider accounts the office created sign in here directly
+   (provider sign-in is not code-gated in Speedy Verify Phase 1). */
+var PG_API='https://top-speed-service-os.vercel.app/api/v1';
+function pgTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function pgSaveTok(t){ try{ if(t) localStorage.setItem('tsos_token',t); }catch(e){} }
+function pgClearTok(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} }
+function pgApi(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
+  if(pgTok()) opts.headers['Authorization']='Bearer '+pgTok();
+  return fetch(PG_API+path,opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; throw e; } return j; }); });
+}
+function pgMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='apg-msg'+(isErr?' err':''); }
+function pgMode(m){
+  document.getElementById('pgTabIn').className=(m==='in')?'on':'';
+  document.getElementById('pgTabUp').className=(m==='up')?'on':'';
+  document.getElementById('pgInForm').style.display=(m==='in')?'':'none';
+  document.getElementById('pgUpForm').style.display=(m==='up')?'':'none';
+  document.getElementById('pgDone').style.display='none';
+  document.getElementById('pgPending').style.display='none';
+}
+var pgSvChallenge=null;
+function pgLogin(){
+  pgMsg('pgMsg','Signing in…');
+  pgApi('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('pgLiEmail').value.trim(),password:document.getElementById('pgLiPass').value})})
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){
+        pgSvChallenge=j.challenge;
+        document.getElementById('pgSvStep').style.display='';
+        pgMsg('pgMsg','Speedy Verify — enter your access code to finish signing in.');
+        var ci=document.getElementById('pgSvCode'); if(ci) ci.focus();
+        return;
+      }
+      pgSaveTok(j.token); pgBoot();
+    }).catch(function(e){ pgMsg('pgMsg',e.message,true); });
+}
+function pgVerify(){
+  if(!pgSvChallenge){ pgMsg('pgMsg','Sign in with your password first, then enter your code.',true); return; }
+  pgApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:pgSvChallenge,code:document.getElementById('pgSvCode').value})})
+    .then(function(j){ pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; pgSaveTok(j.token); pgBoot(); })
+    .catch(function(e){ pgMsg('pgMsg',e.message,true); });
+}
+var pgFreshUser=null;
+function pgRegister(){
+  var acceptance=window.TSOSLegal?TSOSLegal.acceptance('pg'):null;
+  if(!acceptance){ pgMsg('pgUpMsg','Check both agreement boxes and type your full name as your signature first.',true); return; }
+  var body={
+    email:document.getElementById('pgUpEmail').value.trim(),
+    password:document.getElementById('pgUpPass').value,
+    firstName:document.getElementById('pgUpFirst').value.trim()||undefined,
+    lastName:document.getElementById('pgUpLast').value.trim()||undefined,
+    phone:document.getElementById('pgUpPhone').value.trim()||undefined,
+    termsAcceptance:acceptance
+  };
+  pgMsg('pgUpMsg','Creating your account…');
+  pgApi('/auth/register',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){
+      if(!j.token){
+        document.getElementById('pgInForm').style.display='none';
+        document.getElementById('pgUpForm').style.display='none';
+        var p=document.getElementById('pgPending'); p.style.display='';
+        document.getElementById('pgPendingMsg').textContent=(j.speedyVerify&&j.speedyVerify.message)||'Your account was created. The office will finish activating it before your first sign-in.';
+        return;
+      }
+      pgSaveTok(j.token);
+      pgFreshUser=j.user||null;
+      /* Show the honest provider-activation note before opening the app. */
+      document.getElementById('pgInForm').style.display='none';
+      document.getElementById('pgUpForm').style.display='none';
+      document.getElementById('pgDone').style.display='';
+    }).catch(function(e){ pgMsg('pgUpMsg',e.message,true); });
+}
+function pgEnterAfterRegister(){ pgEnterApp(pgFreshUser||{}); }
+function pgSignOut(){ pgClearTok(); location.reload(); }
+function pgEnterApp(u){
+  document.getElementById('pgGate').style.display='none';
+  document.getElementById('pgApp').style.display='';
+  var who=document.getElementById('pgWho'); if(who) who.textContent=(u&&u.email)||'';
+}
+function pgBoot(){
+  if(!pgTok()){ document.getElementById('pgGate').style.display=''; return; }
+  pgApi('/auth/me').then(function(j){
+    var u=j.user||{};
+    if(window.TSOSLegal && !TSOSLegal.termsComplete(j.terms||j.termsStatus)){
+      TSOSLegal.showTermsGate({api:PG_API,token:pgTok(),onSignOut:pgSignOut,onAccepted:function(){ pgBoot(); }});
+      return;
+    }
+    pgEnterApp(u);
+  }).catch(function(e){
+    pgClearTok();
+    document.getElementById('pgGate').style.display='';
+    if(e && /^Speedy Verify/.test(e.message||'')) pgMsg('pgMsg',e.message,true);
+  });
+}
+document.addEventListener('DOMContentLoaded',function(){
+  if(window.TSOSLegal) TSOSLegal.mountSigning('pgLegal','pg',{buttonId:'pgUpBtn'});
+  var pw=document.getElementById('pgLiPass'); if(pw) pw.addEventListener('keydown',function(ev){ if(ev.key==='Enter') pgLogin(); });
+  pgBoot();
+});
+</script>
 
 <script src="/speedy-widget.js" defer></script>
 <script>
