@@ -35,6 +35,7 @@
     '.tsw-msg.me{background:#0B63CE;color:#fff;align-self:flex-end;border-bottom-right-radius:5px}',
     '.tsw-book{background:#fff7e8;border:1.5px solid #f3d391}',
     '.tsw-book button,.tsw-tools button{background:#E8322E;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:800 13.5px Inter,system-ui,sans-serif;cursor:pointer;margin:6px 6px 0 0}',
+    '.tsw-book button.tsw-fix{background:#fff;color:#0C162B;border:1.5px solid #A9BEE0}',
     '.tsw-tools button{background:#0A265C}',
     '.tsw-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 14px 0;flex:none}',
     '.tsw-quick button{background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:999px;padding:6px 11px;font:600 12.5px Inter,system-ui,sans-serif;cursor:pointer}',
@@ -80,7 +81,7 @@
     '<input type="file" id="tswFile" accept="image/*" style="display:none">' +
     '<button type="button" class="ic" id="tswPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7" stroke="#1280FF" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="3.4" stroke="#0A265C" stroke-width="1.9"/><circle cx="12" cy="12" r="1.15" fill="#E8322E"/></svg></button>' +
     '<button type="button" class="ic" id="tswMic" title="Speak instead of typing" aria-label="Speak to Speedy"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6" stroke="#0A265C" stroke-width="2.1" stroke-linecap="round"/><path d="M12 4.8v14.4" stroke="#E8322E" stroke-width="2.1" stroke-linecap="round"/></svg></button>' +
-    '<input type="text" id="tswText" placeholder="Ask about repairs, pricing, areas…" autocomplete="off" aria-label="Message Speedy">' +
+    '<input type="text" id="tswText" placeholder="Ask anything — or tell Speedy what\'s wrong…" autocomplete="off" aria-label="Message Speedy">' +
     '<button type="submit" class="send">Send</button></form>' +
     '<p class="tsw-fine">Speedy books real jobs into Book OS. It never invents prices or certifies a repair is safe — a technician diagnoses on site.</p>';
 
@@ -244,12 +245,18 @@
         var rows = [['Name', d.name], ['Phone', d.phone], ['City', d.city], ['ZIP', d.zip], ['Appliance', d.appliance], ['Problem', d.issue], ['Window', d.preferred_window || 'First available']];
         var card = document.createElement('div');
         card.className = 'tsw-msg bot tsw-book';
-        card.innerHTML = '<b>Ready to book — does this look right?</b><br>' + rows.map(function (r) {
+        card.innerHTML = '<b>Here\'s what I\'ll send to our Service Setters office</b><br><span style="font-size:12.5px">Check it over — nothing is sent until you tap “Looks right — send it”.</span><br>' + rows.map(function (r) {
           return r[0] + ': <b>' + esc(r[1]) + '</b>';
-        }).join('<br>') + '<br><span style="font-size:12.5px">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button type="button" id="tswBookBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit</button>';
+        }).join('<br>') + '<br><span style="font-size:12.5px">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button type="button" id="tswBookBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Looks right — send it</button><button type="button" class="tsw-fix" id="tswFixBtn">Fix something</button>';
         body.appendChild(card);
         body.scrollTop = body.scrollHeight;
         card.querySelector('#tswBookBtn').addEventListener('click', bookIt);
+        card.querySelector('#tswFixBtn').addEventListener('click', function () {
+          pendingBook = null;
+          card.remove();
+          addMsg('No problem — nothing was sent. Tell me what to change — the phone, city, ZIP, appliance, problem or time window — and I\'ll update it.', false);
+          input.focus();
+        });
       }
     }).catch(function () {});
   }
@@ -347,26 +354,30 @@
   });
 
   // Voice — same pattern as the flagship booking suite (wireVoice):
-  // transcripts land in the composer and send through the same path.
+  // the live transcript lands in the composer so the customer can read
+  // and edit it, then tap Send — voice never sends on its own.
   var mic = panel.querySelector('#tswMic');
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     mic.addEventListener('click', function () {
-      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> Voice isn\'t supported in this browser — type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.)', false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> Voice isn\'t available on this browser — you can type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.)', false);
     });
   } else {
-    var rec = null, listening = false;
+    var rec = null, listening = false, voiceBase = '';
     mic.addEventListener('click', function () {
       if (listening) { try { rec.stop(); } catch (e) {} return; }
       rec = new SR();
       rec.lang = 'en-US';
-      rec.interimResults = false;
+      rec.interimResults = true;
       rec.maxAlternatives = 1;
+      voiceBase = input.value.replace(/\s+$/, '');
       rec.onresult = function (e) {
-        var t = e.results[0][0].transcript;
-        input.value = (input.value ? input.value.replace(/\s+$/, '') + ' ' : '') + t;
+        var fin = '', interim = '';
+        for (var i = 0; i < e.results.length; i++) {
+          if (e.results[i].isFinal) fin += e.results[i][0].transcript; else interim += e.results[i][0].transcript;
+        }
+        input.value = (voiceBase ? voiceBase + ' ' : '') + fin + interim;
         input.focus();
-        send(input.value);
       };
       rec.onend = function () { listening = false; mic.classList.remove('rec'); };
       rec.onerror = rec.onend;

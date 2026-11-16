@@ -321,7 +321,8 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
 .sp-quick{display:flex;gap:7px;flex-wrap:wrap;padding:10px 12px 0;flex:none}
 .sp-quick button{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:13.5px;font-weight:600}
 .sp-input{display:flex;gap:8px;padding:12px;flex:none}
-.sp-input input{flex:1}
+.sp-input input{flex:1;min-width:0;padding:12px 14px;border:1.5px solid #A9BEE0;border-radius:12px;font:inherit;font-size:15px;background:#fff;color:#12233D}
+.sp-input input::placeholder{color:#7186A6;opacity:1}
 .sp-input button{background:var(--red);color:#fff;border:none;border-radius:11px;padding:0 18px;font-weight:700}
 .reveal{opacity:1}
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto} #vanMark{transition:none}}
@@ -1691,7 +1692,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <div class="sp-recs" id="spRecs" style="display:none"></div>
   <div class="sp-body" id="spBody"></div>
   <form class="sp-input" id="spForm">
-    <input id="spText" type="text" placeholder="Ask about repairs, pricing, areas… or tap the mic and say it" autocomplete="off" aria-label="Message Speedy">
+    <input id="spText" type="text" placeholder="Ask anything — or tell Speedy what's wrong…" autocomplete="off" aria-label="Message Speedy">
     <button type="button" id="spPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg></button><input type="file" id="spFile" accept="image/*" style="display:none"><button type="button" id="spMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg></button>
     <button type="submit">Send</button>
   </form>
@@ -2010,10 +2011,16 @@ function spMaybeBook(){
       window._spBookShown=true; window._spBook=d;
       var rows=[['Name',d.name],['Phone',d.phone],['City',d.city],['ZIP',d.zip],['Appliance',d.appliance],['Problem',d.issue],['Window',d.preferred_window||'First available']];
       var card=document.createElement('div'); card.className='msg bot'; card.id='spBookCard';
-      card.innerHTML='<b>Ready to book — does this look right?</b><br>'+rows.map(function(r){return r[0]+': <b>'+String(r[1]).replace(/</g,'&lt;')+'</b>';}).join('<br>')+'<br><span style="font-size:12.5px;">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button onclick="spBookIt(this)" style="margin-top:8px; background:var(--blue,#1280FF); color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; padding:9px 16px; cursor:pointer;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit</button>';
+      card.innerHTML='<b>Here\u2019s what I\u2019ll send to our Service Setters office</b><br><span style="font-size:12.5px;">Check it over \u2014 nothing is sent until you tap \u201cLooks right \u2014 send it\u201d.</span><br>'+rows.map(function(r){return r[0]+': <b>'+String(r[1]).replace(/</g,'&lt;')+'</b>';}).join('<br>')+'<br><span style="font-size:12.5px;">$99 diagnostic, collected at booking, credited toward your repair. A Service Setter confirms by text.</span><br><button onclick="spBookIt(this)" style="margin-top:8px; background:var(--blue,#1280FF); color:#fff; border:none; border-radius:99px; font:inherit; font-weight:800; padding:9px 16px; cursor:pointer;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Looks right \u2014 send it</button><button onclick="spFixCard()" style="margin-top:8px; margin-left:8px; background:#fff; color:#0C162B; border:1.5px solid #A9BEE0; border-radius:99px; font:inherit; font-weight:800; padding:9px 16px; cursor:pointer;">Fix something</button>';
       var body=document.getElementById('spBody'); body.appendChild(card); body.scrollTop=body.scrollHeight;
     })
     .catch(function(){});
+}
+function spFixCard(){
+  window._spBook=null; window._spBookShown=false;
+  var card=document.getElementById('spBookCard'); if(card) card.remove();
+  addMsg('No problem \u2014 nothing was sent. Tell me what to change \u2014 the phone, city, ZIP, appliance, problem or time window \u2014 and I\u2019ll update it.',false);
+  var inp=document.getElementById('spText'); if(inp) inp.focus();
 }
 function spBookIt(btn){
   var d=window._spBook; if(!d)return;
@@ -2026,7 +2033,7 @@ function spBookIt(btn){
       document.getElementById('spBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="spReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" onclick="spReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>');
     })
     .catch(function(e){
-      btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Book my visit';
+      btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Looks right \u2014 send it';
       addMsg('That booking did not go through ('+e.message+'). You can use the Smart Booking form on this page, or call 954-931-7997.',false);
     });
 }
@@ -2212,12 +2219,20 @@ function wireVoice(btnId, inputId){
   var B=document.getElementById(btnId), I=document.getElementById(inputId);
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.title='Voice isn\u2019t supported in this browser \u2014 type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t supported in this browser \u2014 type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },2800); }); return; }
-  var rec=null, listening=false;
+  if(!SR){ B.title='Voice isn\u2019t available on this browser \u2014 you can type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t available on this browser \u2014 you can type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },3200); }); return; }
+  var rec=null, listening=false, base='';
   B.addEventListener('click',function(){
     if(listening){ try{rec.stop();}catch(e){} return; }
-    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
-    rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=true; rec.maxAlternatives=1;
+    base=I.value.replace(/\s+$/,'');
+    rec.onresult=function(e){
+      var fin='', interim='';
+      for(var i=0;i<e.results.length;i++){
+        if(e.results[i].isFinal){ fin+=e.results[i][0].transcript; } else { interim+=e.results[i][0].transcript; }
+      }
+      I.value=(base?base+' ':'')+fin+interim;
+      I.focus();
+    };
     rec.onend=function(){ listening=false; B.classList.remove('rec'); };
     rec.onerror=rec.onend;
     try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}

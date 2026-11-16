@@ -679,8 +679,8 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <div style="background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;"><b style="color:var(--navy);">Speedy</b><br>Hi! I'm Speedy. What's going on with your appliance?</div>
           </div>
           <div id="aspCard"></div>
-          <div style="display:flex; gap:8px; margin-top:6px;">
-            <input id="aspInput" type="text" placeholder="My fridge stopped cooling… or tap the mic and say it" style="flex:1; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px;" onkeydown="if(event.key==='Enter'){aspSend();}">
+          <div class="asp-composer">
+            <input id="aspInput" type="text" placeholder="Ask anything — or tell Speedy what's wrong…" aria-label="Message Speedy" autocomplete="off" onkeydown="if(event.key==='Enter'){aspSend();}">
             <button class="btn" type="button" id="aspPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8.5V6.5L6.5 4h2M15.5 4h2L20 6.5v2M20 15.5v2L17.5 20h-2M8.5 20h-2L4 17.5v-2"/><path d="M15.14 13.3L13.3 15.14L10.7 15.14L8.86 13.3L8.86 10.7L10.7 8.86L13.3 8.86L15.14 10.7z"/><circle cx="12" cy="12" r="1.15" fill="#E94E5C" stroke="none"/></svg></button><input type="file" id="aspFile" accept="image/*" style="display:none"><button class="btn" type="button" id="aspMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E94E5C"/><circle cx="8.3" cy="7.4" r="1.2" fill="currentColor" stroke="none"/><circle cx="15.7" cy="7.4" r="1.2" fill="currentColor" stroke="none"/></svg></button>
             <button class="btn" id="aspSendBtn" style="background:var(--red); color:#fff;" onclick="aspSend()">Send</button>
           </div>
@@ -1467,23 +1467,36 @@ function aspSend(){
     });
 }
 function aspMaybeCard(){
+  if(window._aspBookedRef) return;
   fetch(C_API + '/speedy/extract-booking', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: aspTranscript() }) })
     .then(function(r){ return r.json(); })
     .then(function(j){
       var d = j.data || {};
-      if(!d.ready) return;
+      if(!d.ready || window._aspBookedRef) return;
       var slot = document.getElementById('aspCard');
       var rows = [['Name', d.name], ['Phone', d.phone], ['City', d.city], ['ZIP', d.zip], ['Appliance', d.appliance], ['Problem', d.issue], ['Window', d.preferred_window || 'First available']];
       slot.innerHTML = '<div class="card" style="border:2px solid var(--blue);">' +
-        '<b style="font-size:15.5px; color:var(--navy);">Ready to book — look right?</b>' +
+        '<b style="font-size:15.5px; color:var(--navy);">Here\u2019s what I\u2019ll send to our Service Setters office</b>' +
+        '<p class="sub" style="margin:6px 0 4px;">Check it over \u2014 nothing is sent until you tap \u201cLooks right \u2014 send it\u201d.</p>' +
         rows.map(function(r){ return '<div style="display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--line); font-size:14px;"><span style="color:#8496B3; font-weight:700;">' + r[0] + '</span><b>' + escC(r[1]) + '</b></div>'; }).join('') +
         '<p class="sub" style="margin:9px 0;">$99 diagnostic, collected at booking and credited toward your repair. A Service Setter confirms by text.</p>' +
-        '<button class="btn blue" id="aspBookBtn" onclick="aspBook()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Book my visit</button>' +
+        '<div style="display:flex; gap:8px;">' +
+        '<button class="btn blue" id="aspBookBtn" style="width:auto; flex:1;" onclick="aspBook()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Looks right \u2014 send it</button>' +
+        '<button class="btn ghost" id="aspFixBtn" style="width:auto; flex:1;" onclick="aspFix()">Fix something</button>' +
+        '</div>' +
         '<div id="aspBookMsg" style="margin-top:8px; font-size:14px;"></div></div>';
       window._aspData = d;
       document.getElementById('screens').scrollTop = 99999;
     })
     .catch(function(){});
+}
+function aspFix(){
+  window._aspData = null;
+  var slot = document.getElementById('aspCard');
+  if(slot) slot.innerHTML = '';
+  aspBubble('speedy', 'No problem \u2014 nothing was sent. Tell me what to change \u2014 the phone, city, ZIP, appliance, problem or time window \u2014 and I\u2019ll update it.');
+  var inp = document.getElementById('aspInput');
+  if(inp) inp.focus();
 }
 function aspBook(){
   var d = window._aspData;
@@ -1493,12 +1506,14 @@ function aspBook(){
   var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
   var done = function(ref){
     window._aspRef = ref;
+    window._aspBookedRef = ref;
     document.getElementById('aspBookMsg').innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E94E5C"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns();
     btn.style.display = 'none';
+    var fixBtn = document.getElementById('aspFixBtn'); if(fixBtn) fixBtn.style.display = 'none';
   };
   var fail = function(msg){
     document.getElementById('aspBookMsg').textContent = ' '+ msg;
-    btn.disabled = false; btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Book my visit';
+    btn.disabled = false; btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Looks right \u2014 send it';
   };
   if(cTok()){
     if(cUser && cUser.email) payload.customer.email = cUser.email;
@@ -1576,18 +1591,36 @@ function garageAddAppliance(){
 <!-- TYPE SYSTEM V2 — POSTER GUIDELINES + MICHROMA HOME -->
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500} #scr-speedy h1,#scr-speedy h2,#scr-speedy h3{font-family:'Manrope',system-ui,sans-serif;font-weight:700}</style>
 
-<style>#spMic.rec,#aspMic.rec,#nhMic.rec{background:#fdecec !important;animation:vpulse 1s infinite}@keyframes vpulse{50%{opacity:.55}}</style>
+<style>#spMic.rec,#aspMic.rec,#nhMic.rec{background:#fdecec !important;animation:vpulse 1s infinite}@keyframes vpulse{50%{opacity:.55}}
+/* Speedy composer bar: the global .btn rule is width:100%, which crushed
+   this flex row's input to a 26px sliver (buttons took ~103px each).
+   The bar gets its own frame; buttons size to content; input takes the rest. */
+.asp-composer{display:flex;gap:8px;align-items:stretch;margin-top:8px;background:#fff;border:2px solid #A9BEE0;border-radius:16px;padding:7px;box-shadow:0 8px 20px -12px rgba(12,22,43,.45)}
+.asp-composer:focus-within{border-color:var(--blue);box-shadow:0 8px 22px -10px rgba(18,128,255,.55)}
+.asp-composer input{flex:1 1 auto;min-width:0;width:auto;border:none;background:transparent;padding:10px 6px 10px 10px;font:inherit;font-size:15.5px;color:var(--ink)}
+.asp-composer input:focus{outline:none}
+.asp-composer input::placeholder{color:#7186A6;opacity:1}
+.asp-composer .btn{width:auto;flex:none;display:flex;align-items:center;justify-content:center;padding:10px 13px;border-radius:11px}
+</style>
 <script>
 function wireVoice(btnId, inputId){
   var B=document.getElementById(btnId), I=document.getElementById(inputId);
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.title='Voice isn\u2019t supported in this browser \u2014 type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t supported in this browser \u2014 type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },2800); }); return; }
-  var rec=null, listening=false;
+  if(!SR){ B.title='Voice isn\u2019t available on this browser \u2014 you can type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t available on this browser \u2014 you can type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },3200); }); return; }
+  var rec=null, listening=false, base='';
   B.addEventListener('click',function(){
     if(listening){ try{rec.stop();}catch(e){} return; }
-    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
-    rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=true; rec.maxAlternatives=1;
+    base=I.value.replace(/\s+$/,'');
+    rec.onresult=function(e){
+      var fin='', interim='';
+      for(var i=0;i<e.results.length;i++){
+        if(e.results[i].isFinal){ fin+=e.results[i][0].transcript; } else { interim+=e.results[i][0].transcript; }
+      }
+      I.value=(base?base+' ':'')+fin+interim;
+      I.focus();
+    };
     rec.onend=function(){ listening=false; B.classList.remove('rec'); };
     rec.onerror=rec.onend;
     try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
