@@ -1,0 +1,51 @@
+/* ============================================================
+   TOP SPEED SERVICE OS — FUTURISTIC FONT SYSTEM
+   Per Ramone's "Complete Website Font Collection" (2026-11-16)
+   Display / hero headlines ...... Orbitron   (Futuristic Technology)
+   Promo / ad headlines .......... Anton      (Bold Advertising)
+   Headings + UI ................. Rajdhani   (Futuristic Technology)
+   Marketing headlines ........... Poppins    (per chart: Headline)
+   Body text ..................... Inter      (per chart: Body Text)
+   AI / Speedy feature accents ... Sora       (per chart: AI / Feature)
+   Product surfaces .............. Manrope    (per chart: Product)
+   Pro surfaces .................. Plus Jakarta Sans (per chart: Pro)
+   Dispatch / consoles ........... IBM Plex Sans     (per chart: Dispatch)
+   Numbers / codes / references .. Space Mono (Futuristic Technology)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Orbitron:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&family=Rajdhani:wght@500;600;700&family=Sora:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+:root{
+  --font-display:'Orbitron','Rajdhani',sans-serif;
+  --font-promo:'Anton',Impact,sans-serif;
+  --font-head:'Rajdhani','Inter',sans-serif;
+  --font-headline:'Poppins','Inter',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+  --font-ai:'Sora','Inter',sans-serif;
+  --font-product:'Manrope','Inter',sans-serif;
+  --font-pro:'Plus Jakarta Sans','Inter',sans-serif;
+  --font-dispatch:'IBM Plex Sans','Inter',sans-serif;
+  --font-mono:'Space Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+
+/* Platform base */
+body{font-family:var(--font-body)}
+h1{font-family:var(--font-display)}
+h2,h3,h4{font-family:var(--font-head)}
+
+/* Role utilities */
+.f-display{font-family:var(--font-display)}
+.f-promo,.anton{font-family:var(--font-promo)}
+.f-head{font-family:var(--font-head)}
+.f-headline{font-family:var(--font-headline)}
+.f-ai{font-family:var(--font-ai)}
+.f-product{font-family:var(--font-product)}
+.f-pro{font-family:var(--font-pro)}
+.f-dispatch{font-family:var(--font-dispatch)}
+.f-mono,.mono{font-family:var(--font-mono)}
+
+/* Wordmarks ride the futuristic heading face */
+.brand,.logo-text,.wordmark{font-family:var(--font-head);letter-spacing:.02em}
+
+/* Numbers, stats, codes and references ride Space Mono */
+.stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:var(--font-mono)}
+#svCode,#svCodeOnce{font-family:var(--font-mono);letter-spacing:.14em}

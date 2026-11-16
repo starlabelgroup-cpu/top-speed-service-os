@@ -24,7 +24,7 @@
     '.tsw-panel.open{visibility:visible;opacity:1;transform:none;pointer-events:auto;transition:opacity .18s ease,transform .18s ease}',
     '.tsw-grab{display:none}',
     '.tsw-head{display:flex;align-items:center;gap:10px;background:#071f4f;color:#fff;padding:13px 16px;flex:none}',
-    '.tsw-head b{font-size:16px}.tsw-head small{display:block;color:#B9CFF2;font-size:11.5px}',
+    '.tsw-head b{font-size:16px;font-family:'Sora','Inter',sans-serif;letter-spacing:.01em}.tsw-head small{display:block;color:#B9CFF2;font-size:11.5px}',
     '.tsw-head .x{margin-left:auto;background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1}',
     '.tsw-recs{padding:10px 14px;background:#f2f7ff;border-bottom:1px solid #dbe7fa;font-size:12.8px;display:none;flex:none;max-height:170px;overflow-y:auto;-webkit-overflow-scrolling:touch}',
     '.tsw-recs h5{margin:4px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#5a6b87}',
@@ -56,6 +56,8 @@
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
+  // Futuristic Font System: make sure the shared font layer is present wherever Speedy runs.
+  if(!document.querySelector('link[href="/fonts.css"]')){var fl=document.createElement('link');fl.rel='stylesheet';fl.href='/fonts.css';document.head.appendChild(fl);}
 
   var btn = document.createElement('button');
   btn.className = 'tsw-btn';
