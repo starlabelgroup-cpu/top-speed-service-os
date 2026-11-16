@@ -14,15 +14,15 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3f9;min-height:100vh}
 a{text-decoration:none}
-.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap}
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap;position:relative}
 .topbar img.flag{height:40px;border-radius:4px}
 .brand{font-weight:900;font-size:20px;letter-spacing:.4px} .brand span{color:#ff3b42}
 .topbar nav{margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 .topbar nav a{color:#cfe0f5;font-size:14.5px}
 .wrap{max-width:880px;margin:0 auto;padding:28px 18px 60px}
-.cpm-wrap{position:relative;display:inline-block}
+.cpm-wrap{position:static;display:inline-block}
 .cpm-btn{background:#E8322E;color:#fff;border:none;border-radius:999px;padding:10px 18px;font-weight:800;font-size:14.5px;cursor:pointer;font-family:inherit}
-.cpm-drop{display:none;position:absolute;right:0;top:calc(100% + 10px);background:#fff;color:#12233d;border:1px solid #dbe4f0;border-radius:14px;box-shadow:0 18px 40px rgba(4,18,46,.28);min-width:252px;padding:8px;z-index:9995;text-align:left}
+.cpm-drop{display:none;position:absolute;right:12px;top:calc(100% + 8px);background:#fff;color:#12233d;border:1px solid #dbe4f0;border-radius:14px;box-shadow:0 18px 40px rgba(4,18,46,.28);width:min(320px,calc(100vw - 24px));padding:8px;z-index:9995;text-align:left}
 .cpm-drop.on{display:block}
 .cpm-drop button{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;background:none;border:none;font:inherit;font-size:14.5px;font-weight:700;color:#0A265C;padding:9px 11px;border-radius:9px;cursor:pointer}
 .cpm-drop button:hover{background:#eef3fa}
