@@ -70,11 +70,15 @@ footer a{color:var(--lime)}
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
-<!-- ACCOUNT GATE — Pepper Lists is a Top Speed OS Consumer App. The app
-     opens only for a signed-in Top Speed account (the one platform
-     account system: /auth/login + /auth/register, tsos_token). -->
+<!-- ACCOUNT GATE — Pepper Lists is a Top Speed OS Consumer App. The
+     pitch on this page is PUBLIC: anyone can read what the app does.
+     The app itself opens only for a signed-in Top Speed account (the
+     one platform account system: /auth/login + /auth/register,
+     tsos_token) — app-entry buttons route signed-out visitors here. -->
 <style>
 .plg-wrap{max-width:520px;margin:0 auto;padding:34px 22px 54px}
+.plg-back{display:inline-block;background:none;border:none;color:var(--muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer;padding:0;margin-bottom:18px}
+.plg-back:hover{color:var(--lime)}
 .plg-brandrow{display:flex;align-items:center;gap:12px;margin-bottom:22px}
 .plg-badge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--lime);border:1.5px solid rgba(183,227,60,.55);border-radius:999px;padding:5px 12px}
 .plg-h{font-size:clamp(28px,5vw,38px);line-height:1.15;margin:16px 0 10px}
@@ -99,12 +103,13 @@ footer a{color:var(--lime)}
 .plg-acct button{margin-left:auto;background:var(--panel2);color:var(--ink);border:1px solid #2c4232;border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .plg-herobadge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;border:2px solid #0C130E;border-radius:999px;padding:5px 12px;margin-bottom:16px}
 </style>
-<section id="plGate" aria-label="Sign in to Pepper Lists It">
+<section id="plGate" style="display:none" aria-label="Sign in to Pepper Lists It">
   <div class="plg-wrap">
+    <button type="button" class="plg-back" onclick="plCloseGate()">&#8592; Back to Pepper Lists It</button>
     <div class="plg-brandrow"><span class="brand"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed Appliance</small></span></span></div>
     <span class="plg-badge">Top Speed OS · Consumer App</span>
     <h1 class="plg-h">Snap it. Pepper lists it — everywhere.</h1>
-    <p class="plg-sub">Pepper Lists is a Top Speed OS Consumer App. Sign in with your Top Speed account — or create one — to open the app. It is the same account you use across the whole Top Speed platform.</p>
+    <p class="plg-sub">Pepper Lists is a Top Speed OS Consumer App. Sign in with your Top Speed account — or create one — to open the app and start listing. It is the same account you use across the whole Top Speed platform.</p>
     <div class="plg-card">
       <div class="plg-tabs" role="tablist" aria-label="Sign in or create account">
         <button type="button" id="plTabIn" class="on" onclick="plMode('in')">Sign in</button>
@@ -139,7 +144,7 @@ footer a{color:var(--lime)}
     <p class="plg-foot">One account for the whole Top Speed platform — booking, tracking, referrals and this app.<br><a href="https://topspeedserviceos.com/privacy">Privacy Policy</a> · <a href="https://topspeedserviceos.com/legal">Legal Documents</a></p>
   </div>
 </section>
-<div id="plApp" style="display:none">
+<div id="plApp">
 <div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
 <header>
   <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed Appliance</small></span></a>
@@ -148,7 +153,7 @@ footer a{color:var(--lime)}
     <a href="#platforms">Platforms</a>
     <a href="#catalog">Catalog Regulars</a>
     <a href="#faq">FAQ</a>
-    <a class="btn small" href="https://topspeedserviceos.com">Open Pepper Lists It</a>
+    <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
   </nav>
 </header>
 
@@ -158,7 +163,7 @@ footer a{color:var(--lime)}
     <h1>Snap it. Pepper lists it — everywhere.</h1>
     <p>Take a photo of anything you sell. Pepper's AI names the item and drafts the listing — title, category, condition, description — then posts it for you. Nothing ever goes live without your yes.</p>
     <div class="cta">
-      <a class="btn" href="https://topspeedserviceos.com">Open Pepper Lists It</a>
+      <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
       <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
     </div>
     <p class="note">Built for Fort Lauderdale sellers — produce, trees, and whatever's in the yard today.</p>
@@ -216,7 +221,7 @@ footer a{color:var(--lime)}
   <div class="getapp">
     <h2>Ready to list <span class="lime">something?</span></h2>
     <p>Open Pepper Lists It on the Service OS, snap a photo, and review your first draft in under a minute. Or ask Speedy first — tap Talk to Speedy and describe what you're selling.</p>
-    <a class="btn" href="https://topspeedserviceos.com">Open Pepper Lists It</a>
+    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
     <button class="btn dark" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}" style="margin-left:10px;">Talk to Speedy</button>
   </div>
 </section>
@@ -255,7 +260,10 @@ footer a{color:var(--lime)}
 </div><!-- /plApp -->
 <script>
 /* Pepper Lists account gate — the one Top Speed platform account.
-   Mirrors the /app + Connect Pro patterns: tsos_token (mirrored to
+   The pitch on this page is public; the APP is gated. App-entry
+   buttons (plOpenApp) let signed-in accounts through and route
+   signed-out visitors to the gate section (plOpenGate). Auth mirrors
+   the /app + Connect Pro patterns: tsos_token (mirrored to
    tsos_cust_token like the customer app), GET /auth/me session check,
    TSOSLegal signing block on register, terms gate for accounts that
    still owe a signature, and the Speedy Verify code step for covered
@@ -263,6 +271,29 @@ footer a{color:var(--lime)}
    accounts created here are standard customer accounts (no declared
    accountType, signupAudience null) and never start verifyRequired. */
 var PL_API='https://top-speed-service-os.vercel.app/api/v1';
+var plUser=null;
+function plOpenGate(){
+  var g=document.getElementById('plGate'); if(!g) return;
+  g.style.display='';
+  g.scrollIntoView({behavior:'smooth',block:'start'});
+  setTimeout(function(){ var e=document.getElementById('plLiEmail'); if(e) e.focus({preventScroll:true}); },350);
+}
+function plCloseGate(){
+  var g=document.getElementById('plGate'); if(g) g.style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function plOpenApp(ev){
+  if(plUser) return true; /* signed in — the app opens as it always has */
+  if(ev && ev.preventDefault) ev.preventDefault();
+  plOpenGate();
+  return false;
+}
+function plPublic(){
+  plUser=null;
+  var g=document.getElementById('plGate'); if(g) g.style.display='none';
+  var app=document.getElementById('plApp'); if(app) app.style.display='';
+  var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='none';
+}
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
 function plClearTok(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_cust_token'); }catch(e){} }
@@ -327,15 +358,16 @@ function plRegister(){
       plSaveTok(j.token); plBoot();
     }).catch(function(e){ plMsg('plUpMsg',e.message,true); });
 }
-function plSignOut(){ plClearTok(); location.reload(); }
+function plSignOut(){ plClearTok(); plUser=null; location.reload(); }
 function plEnterApp(u){
+  plUser=u||{};
   document.getElementById('plGate').style.display='none';
   document.getElementById('plApp').style.display='';
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='';
   var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
 }
 function plBoot(){
-  if(!plTok()){ document.getElementById('plGate').style.display=''; return; }
+  if(!plTok()){ plPublic(); return; }
   plApi('/auth/me').then(function(j){
     var u=j.user||{};
     if(window.TSOSLegal && !TSOSLegal.termsComplete(j.terms||j.termsStatus)){
@@ -345,8 +377,13 @@ function plBoot(){
     plEnterApp(u);
   }).catch(function(e){
     plClearTok();
-    document.getElementById('plGate').style.display='';
-    if(e && /^Speedy Verify/.test(e.message||'')) plMsg('plMsg',e.message,true);
+    if(e && /^Speedy Verify/.test(e.message||'')){
+      /* The session needs a Speedy Verify code step — open the gate
+         with the reason, over the public pitch. */
+      plPublic(); plOpenGate(); plMsg('plMsg',e.message,true);
+    } else {
+      plPublic();
+    }
   });
 }
 document.addEventListener('DOMContentLoaded',function(){
