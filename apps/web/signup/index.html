@@ -108,7 +108,7 @@
     var acceptance=TSOSLegal.acceptance('su');
     if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
     var parts=name.split(/\s+/);
-    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',termsAcceptance:acceptance};
+    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',accountType:type,termsAcceptance:acceptance};
     if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
     var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
     fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})

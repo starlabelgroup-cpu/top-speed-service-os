@@ -53,6 +53,19 @@ const registerSchema = z.object({
   // an unknown slug is ignored, never fatal — and the audience is
   // pinned from the catalog, never trusted from the client.
   offerSlug: z.string().trim().max(60).optional(),
+  // Portal account type: the web portal sign-up page (/signup) asks the
+  // visitor to declare an account type, using the same signup-type keys
+  // as the offer catalog. The API maps the declared key to its audience
+  // through OFFER_SIGNUP_TYPES — the audience string itself is never
+  // accepted from the client (a raw signupAudience in the body is an
+  // unknown field and is stripped). The declared type is persisted so
+  // the Connect Pro gate can read it from /auth/me. It is DECLARED,
+  // not verified — verification of commercial status lives in the
+  // Appliance Pro commercial account file (TS-C). Only the portal form
+  // sends this field; the customer app never does, so app-created
+  // accounts keep signupAudience null. When an offer slug is present
+  // its pinned audience wins over the declaration (see the handler).
+  accountType: z.enum(['homeowner', 'business', 'pm']).optional(),
   // Admin-only: create the account inside another company (e.g. a
   // provider's company, so its techs can sign in to the Tech App).
   // Honored only when canGrantStaffRoles(req) — see the handler.
@@ -276,11 +289,21 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
     }
 
     // Offer attribution: a known offer slug marks the account as an
-    // offer sign-up and pins its audience from the catalog.
+    // offer sign-up and pins its audience from the catalog. The offer
+    // pin is authoritative — it wins over a declared portal type.
     const offer = parsed.data.offerSlug ? getOffer(parsed.data.offerSlug) : null;
     const signupSource = offer ? 'OFFER_PAGE' : 'ACCOUNT_SIGNUP';
     const signupOfferSlug = offer ? offer.slug : null;
-    const signupAudience = offer ? OFFER_SIGNUP_TYPES[offer.signupType].audience : null;
+    // Portal declaration: a public self-signup may declare its account
+    // type (the /signup portal form); it is mapped to the audience here
+    // and persisted on the account. Administrator-created accounts never
+    // take a declared type, and existing accounts are never backfilled —
+    // a type exists only when it was declared (or offer-pinned) at
+    // creation.
+    const declaredAudience = !adminCreated && parsed.data.accountType
+      ? OFFER_SIGNUP_TYPES[parsed.data.accountType].audience
+      : null;
+    const signupAudience = offer ? OFFER_SIGNUP_TYPES[offer.signupType].audience : declaredAudience;
 
     const draft = {
       id: createId(),
