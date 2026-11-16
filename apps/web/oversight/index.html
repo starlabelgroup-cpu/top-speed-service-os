@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Management Oversight — Top Speed Service OS</title>
+<meta name="description" content="Management Oversight: every Top Speed department on one live screen — dispatch, commercial, providers, customers, finance, marketing, referrals, parts and system health, straight from the Service OS.">
+<link rel="icon" href="/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/command-center.css">
+<style>
+  /* Gate + shared bits (same pattern as ApplianceMan / Dispatch Dashboard) */
+  *{box-sizing:border-box;margin:0;padding:0}
+  .gate{max-width:430px;margin:9vh auto;background:#fff;border:1px solid #e7ecf3;border-radius:16px;padding:26px 22px;box-shadow:0 12px 34px rgba(12,22,43,.07)}
+  .gate h2{font-family:Manrope,sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:#182742;margin-bottom:6px}
+  .gate p{color:#8591a4;font-size:13.5px;line-height:1.55}
+  .gate label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:14px 0 6px;letter-spacing:1.2px}
+  .gate input{width:100%;box-sizing:border-box;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:#1b2840;padding:11px 12px;font-size:14px;font-family:inherit}
+  .gate input:focus{outline:none;border-color:#ed6372}
+  .gate button{width:100%;margin-top:18px;background:#e94e5c;color:#fff;border:1px solid #e94e5c;border-radius:8px;padding:12px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 8px 16px rgba(233,78,92,.10)}
+  .gate button:hover{background:#d83d4d}
+  .err{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;font-size:13px;border-radius:9px;padding:10px 12px;line-height:1.5}
+  .badge{font-size:9px;font-weight:800;letter-spacing:1px;padding:8px 10px;border-radius:25px;border:1px solid #e9edf3;background:#f1f4f8;color:#65758f;white-space:nowrap}
+  .badge.owner{color:#fff;background:#e94e5c;border-color:transparent}
+  .badge.mgr{color:#fff;background:#4b95e2;border-color:transparent}
+  .iconbtn{background:#fff;border:1px solid #dee5ef;color:#34445c;border-radius:8px;padding:9px 13px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+  .acct .k{color:#97a3b4;font-weight:800;font-size:10px;letter-spacing:1px;display:block;margin-top:8px}
+  .acct .k:first-child{margin-top:0}
+  .cc-sidebar-bottom .acct .k{color:#8fa0b8}
+  .acct .acct-v{color:#eef2f8;font-size:13px}
+  .cc-live-badge #liveTxt{width:auto;height:auto;background:transparent;border-radius:0;margin-right:0}
+  @media(max-width:760px){.gate{margin:4vh 14px}}
+
+  /* Oversight components */
+  @media(max-width:640px){.cc-page{padding:22px 14px 18px}}
+  .ov-head{margin-bottom:20px}
+  .ov-head h1{font-family:Manrope,sans-serif;font-size:26px;font-weight:800;letter-spacing:-.5px;color:#182742;margin:0 0 4px}
+  .ov-head p{color:#8591a4;font-size:13.5px;margin:0;line-height:1.55}
+  .ov-head .stamp{font-size:12px;color:#97a3b4;margin-top:7px;font-weight:700;letter-spacing:.4px}
+  .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(330px,100%),1fr));gap:14px;margin-bottom:26px}
+  .ov-tile{background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:17px 18px;display:flex;flex-direction:column;min-width:0}
+  .ov-thead{display:flex;align-items:center;gap:9px;margin-bottom:11px}
+  .ov-ic{flex:none;width:32px;height:32px;border-radius:9px;background:#eef3fa;color:#182742;display:flex;align-items:center;justify-content:center}
+  .ov-thead h3{font-family:Manrope,sans-serif;font-size:15px;font-weight:800;color:#182742;margin:0;flex:1;min-width:0}
+  .ov-open{flex:none;font-size:11px;font-weight:800;letter-spacing:.4px;color:#e94e5c;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+  .ov-open:hover{text-decoration:underline}
+  .ov-big{font-family:Manrope,sans-serif;font-size:31px;font-weight:800;color:#182742;line-height:1.05}
+  .ov-big small{font-size:12.5px;font-weight:700;color:#8591a4;font-family:'DM Sans',sans-serif;letter-spacing:.2px}
+  .ov-rows{margin-top:11px;border-top:1px solid #eef1f6;padding-top:9px;display:flex;flex-direction:column;gap:6px}
+  .ov-row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px}
+  .ov-row .k{color:#8591a4}
+  .ov-row .v{color:#182742;font-weight:700;text-align:right;min-width:0;overflow-wrap:anywhere}
+  .ov-row .v.warn{color:#b3261e}
+  .ov-row .v.amber{color:#9a6a12}
+  .ov-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .ov-chip{font-size:11px;font-weight:700;color:#34445c;background:#f1f4f8;border:1px solid #e7ecf3;border-radius:999px;padding:4px 10px;white-space:nowrap}
+  .ov-chip b{color:#182742}
+  .ov-chip.alert{background:#fff1f2;border-color:#fad7dc;color:#9e3e4b}
+  .ov-chip.alert b{color:#9e3e4b}
+  .ov-load{color:#97a3b4;font-size:13px;padding:4px 0}
+  .ov-note{font-size:12.5px;color:#8591a4;line-height:1.55;margin-top:9px}
+  .ov-note.warn{color:#9e3e4b}
+  .ov-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px;background:#b7c0cf}
+  .ov-dot.g{background:#27b99d}.ov-dot.a{background:#e8a13a}.ov-dot.r{background:#e94e5c}
+  .ov-statusline{font-size:13.5px;color:#182742;font-weight:700;display:flex;align-items:center}
+  .ov-feed-sec h2{font-family:Manrope,sans-serif;font-size:17px;font-weight:800;color:#182742;margin:0 0 3px}
+  .ov-feed-sec>p{color:#8591a4;font-size:12.5px;margin:0 0 12px;line-height:1.55}
+  .ov-feed{background:#fff;border:1px solid #e7ecf3;border-radius:13px;padding:8px 18px}
+  .ov-ev{display:flex;gap:13px;align-items:baseline;padding:10px 0;border-bottom:1px solid #eef1f6}
+  .ov-ev:last-child{border-bottom:0}
+  .ov-ev .when{flex:none;width:86px;font-size:11.5px;color:#97a3b4;font-weight:700;white-space:nowrap}
+  .ov-ev .what{flex:1;min-width:0;font-size:13.5px;color:#1b2840;line-height:1.5}
+  .ov-ev .what b{color:#182742}
+  .ov-ev .what .sub{color:#8591a4;font-size:12.5px}
+  .ov-ev a.go{flex:none;font-size:11px;font-weight:800;letter-spacing:.4px;color:#e94e5c;text-decoration:none;white-space:nowrap}
+  .ov-ev a.go:hover{text-decoration:underline}
+  .ov-foot{color:#97a3b4;font-size:12px;line-height:1.6;margin-top:4px}
+  @media(max-width:420px){.ov-ev .when{width:70px}}
+  @media(max-width:820px){.cc-profile>div{display:none}.cc-topbar-right{gap:7px}#roleBadge,#logoutBtn{display:none}}
+</style>
+</head>
+<body>
+<div id="gate"></div>
+<div id="portal" style="display:none">
+<div class="cc-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="cc-sidebar" id="ccSidebar">
+    <div class="cc-sidebar-logo">
+      <div class="cc-brand-lockup">
+        <span class="cc-brand-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg></span>
+        <div>
+          <strong>TOP SPEED <span>OVERSIGHT</span></strong>
+          <small>SERVICE OS · MANAGEMENT</small>
+        </div>
+        <button class="cc-mobile-close" id="ccCloseBtn" type="button" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+      </div>
+    </div>
+    <div class="cc-workspace-switch">
+      <span class="cc-switch-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+      <div><strong>Top Speed Service OS</strong><small>Management oversight</small></div>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 9l4-4 4 4M8 15l4 4 4-4"/></svg>
+    </div>
+    <div class="cc-sidebar-scroll">
+      <div class="cc-nav-section">
+        <p>OVERSIGHT</p>
+        <a class="cc-nav-link active" href="#top"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Departments</span></a>
+        <a class="cc-nav-link" href="#sec-feed"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg><span>Live activity</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>COMMAND</p>
+        <a class="cc-nav-link" href="/applianceman"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg><span>ApplianceMan hub</span></a>
+        <a class="cc-nav-link" href="/manager"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="12" rx="2"/><path d="M9 20.5h6M12 16.5v4"/></svg><span>Remote Manager</span></a>
+        <a class="cc-nav-link" href="/dispatch-dashboard"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/><circle cx="12" cy="12" r="1.4" fill="#E8322E" stroke="none"/></svg><span>Dispatch Dashboard</span></a>
+        <a class="cc-nav-link" href="/book-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4"/></svg><span>Book OS</span></a>
+        <a class="cc-nav-link" href="/crm"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>CRM</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>MONEY &amp; OPERATIONS</p>
+        <a class="cc-nav-link" href="/finance"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/></svg><span>Finance OS</span></a>
+        <a class="cc-nav-link" href="/parts"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span>Parts Supply OS</span></a>
+        <a class="cc-nav-link" href="/notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 3h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span>Notifications</span></a>
+      </div>
+      <div class="cc-nav-section">
+        <p>GROWTH</p>
+        <a class="cc-nav-link" href="/marketing-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg><span>Marketing OS</span></a>
+        <a class="cc-nav-link" href="/ad-studio"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg><span>Ad Studio</span></a>
+        <a class="cc-nav-link" href="/publish-center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg><span>Publish Center</span></a>
+      </div>
+    </div>
+    <div class="cc-sidebar-bottom">
+      <div class="acct" id="acctPanel"><span style="color:#97a3b4;font-size:12.5px">Loading account…</span></div>
+      <button class="cc-nav-link" type="button" id="acctSignOut" style="width:100%;background:none;border:0;cursor:pointer;text-align:left"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h5.5v16H14M10.5 8L5 12l5.5 4M5 12h11"/></svg><span>Sign out</span></button>
+    </div>
+  </aside>
+  <div class="cc-backdrop" id="ccBackdrop" style="display:none"></div>
+
+  <!-- ============ MAIN ============ -->
+  <div class="cc-main">
+    <header class="cc-topbar">
+      <div class="cc-topbar-left">
+        <button class="cc-menu-toggle" id="ccMenuBtn" type="button" aria-label="Open menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+        <strong>Management Oversight</strong>
+      </div>
+      <div class="cc-topbar-right">
+        <span class="cc-live-badge" id="liveBadge" style="display:none"><span></span><span id="liveTxt">LIVE DATA</span></span>
+        <span class="badge owner" id="roleBadge" style="display:none">OWNER</span>
+        <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
+        <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
+        <div class="cc-profile">
+          <span class="cc-profile-avatar" id="tbAvatar">—</span>
+          <div><strong id="tbName">Signed in</strong><small id="tbRole">Staff</small></div>
+        </div>
+      </div>
+    </header>
+    <main class="cc-page" id="top">
+      <div class="ov-head">
+        <h1>Management Oversight</h1>
+        <p>Every department on one screen — what each team is holding right now, and everything happening across the platform. Numbers come straight from the Service OS; nothing here is estimated.</p>
+        <div class="stamp" id="ovStamp">Loading live data…</div>
+      </div>
+
+      <div class="ov-grid" id="tiles">
+        <section class="ov-tile" id="tile-dispatch">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg></span><h3>Bookings &amp; Dispatch</h3><a class="ov-open" href="/dispatch-dashboard">Open console</a></div>
+          <div id="ovDispatch"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-commercial">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21h16M6 21V4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v17M15 10h4a1 1 0 0 1 1 1v10"/><path d="M9 7h2M9 11h2M9 15h2"/></svg></span><h3>Commercial</h3><a class="ov-open" href="/appliance-pro-app">Open console</a></div>
+          <div id="ovCommercial"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-providers">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.3 10.8l6.9-4M8.3 13.2l6.9 4"/></svg></span><h3>Providers &amp; Network</h3><a class="ov-open" href="/dispatch-dashboard">Open console</a></div>
+          <div id="ovProviders"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-crm">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg></span><h3>Customers &amp; CRM</h3><a class="ov-open" href="/crm">Open console</a></div>
+          <div id="ovCrm"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-finance">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18"/></svg></span><h3>Finance</h3><a class="ov-open" href="/finance">Open console</a></div>
+          <div id="ovFinance"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-marketing">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg></span><h3>Marketing &amp; Publishing</h3><a class="ov-open" href="/marketing-os">Open console</a></div>
+          <div id="ovMarketing"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-referrals">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg></span><h3>Referrals</h3><a class="ov-open" href="/book-os">Open console</a></div>
+          <div id="ovReferrals"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-parts">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg></span><h3>Parts Supply</h3><a class="ov-open" href="/parts">Open console</a></div>
+          <div id="ovParts"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-health">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.2 8.2-7 10-3.8-1.8-7-5-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg></span><h3>System Health</h3><a class="ov-open" href="/applianceman">Open console</a></div>
+          <div id="ovHealth"><p class="ov-load">Loading…</p></div>
+        </section>
+
+        <section class="ov-tile" id="tile-messages">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 3h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg></span><h3>Messages &amp; Alerts</h3><a class="ov-open" href="/notifications">Open console</a></div>
+          <div id="ovMessages"><p class="ov-load">Loading…</p></div>
+        </section>
+      </div>
+
+      <section class="ov-feed-sec" id="sec-feed">
+        <h2>Live activity</h2>
+        <p>The newest events across the whole platform — bookings, dispatch, publishing and more — newest first.</p>
+        <div class="ov-feed" id="feedList"><p class="ov-load" style="padding:8px 0">Loading the activity feed…</p></div>
+      </section>
+
+      <p class="ov-foot">Every number on this screen is read live from the Service OS at refresh time. A tile that cannot load says so — it never estimates. Dispatch, health and activity refresh every minute; the remaining departments refresh every five minutes and on demand.</p>
+    </main>
+  </div>
+</div>
+</div>
+</div>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var OV = { user:null, cycle:0, fast:{}, slow:{}, ferr:{}, serr:{}, adCounts:null };
+function el(id){ return document.getElementById(id); }
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function hdr(auth){ var h = { 'Content-Type':'application/json' }; if (auth !== false && token()) h.Authorization = ('Bear' + 'er') + ' ' + token(); return h; }
+function get(path, auth){
+  return fetch(API + path, { headers: hdr(auth) }).then(function(r){
+    return r.json().catch(function(){ return null; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; });
+  }).catch(function(){ return { ok:false, status:0, j:null }; });
+}
+function data(j){ return j && j.data !== undefined ? j.data : j; }
+function num(n){ n = Number(n); return isFinite(n) ? n.toLocaleString('en-US') : '—'; }
+function money(cents){ var n = Number(cents); if (!isFinite(n)) return '—'; var d = n/100; return '$' + d.toLocaleString('en-US', { minimumFractionDigits: d % 1 ? 2 : 0, maximumFractionDigits: 2 }); }
+function fmtTime(iso){ var d = new Date(iso); if (isNaN(d)) return ''; return d.toLocaleTimeString([], { hour:'numeric', minute:'2-digit' }); }
+function fmtDay(iso){ var d = new Date(iso); if (isNaN(d)) return ''; return d.toLocaleDateString([], { month:'short', day:'numeric' }) + ' · ' + fmtTime(iso); }
+function ago(iso){ var d = new Date(iso); if (isNaN(d)) return ''; var s = Math.max(0, (Date.now() - d.getTime())/1000); if (s < 60) return 'just now'; var m = Math.floor(s/60); if (m < 60) return m + 'm ago'; var h = Math.floor(m/60); if (h < 24) return h + 'h ago'; var dd = Math.floor(h/24); return dd + 'd ago'; }
+function initials(name){ return String(name || '?').trim().split(/\s+/).slice(0,2).map(function(w){ return w[0]; }).join('').toUpperCase(); }
+function rolesOf(u){ return Array.isArray(u && u.roles) ? u.roles : (u && u.role ? [u.role] : []); }
+function isStaff(u){ return rolesOf(u).some(function(r){ return STAFF.indexOf(r) >= 0; }); }
+function tierLabel(u){ var r = rolesOf(u); if (r.indexOf('COMPANY_OWNER') >= 0) return 'OWNER'; if (r.indexOf('COMPANY_ADMIN') >= 0 || r.indexOf('PLATFORM_ADMIN') >= 0) return 'MANAGER'; return 'SERVICE SETTER'; }
+function gateMsg(html){
+  el('portal').style.display = 'none';
+  el('gate').innerHTML = '<div class="gate"><h2>Management Oversight</h2><p>' + html + '</p></div>';
+}
+function loginGate(msg){
+  el('portal').style.display = 'none';
+  el('gate').innerHTML =
+    '<div class="gate"><h2>Management Oversight</h2>' +
+    '<p>Staff sign-in. Every department on one screen — live from the Service OS.</p>' +
+    (msg ? '<div class="err" style="display:block">' + esc(msg) + '</div>' : '') +
+    '<label for="lgEmail">EMAIL</label><input id="lgEmail" type="email" autocomplete="username" placeholder="you@topspeedappliance.net">' +
+    '<label for="lgPass">PASSWORD</label><input id="lgPass" type="password" autocomplete="current-password" placeholder="Your password">' +
+    '<div class="err" id="lgErr"></div>' +
+    '<button id="lgBtn" type="button">Sign in</button></div>';
+  function submit(){
+    var email = el('lgEmail').value.trim(), pass = el('lgPass').value;
+    var err = el('lgErr'); err.style.display = 'none';
+    if (!email || !pass) { err.textContent = 'Enter your email and password.'; err.style.display = 'block'; return; }
+    el('lgBtn').textContent = 'Signing in…';
+    fetch(API + '/auth/login', { method:'POST', headers: hdr(false), body: JSON.stringify({ email: email, password: pass }) })
+      .then(function(r){ return r.json().catch(function(){ return null; }).then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (!res.ok || !res.j || !res.j.token) throw new Error((res.j && res.j.error) || 'Sign-in failed.');
+        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(e){ el('lgBtn').textContent = 'Sign in'; err.textContent = e.message || 'Sign-in failed.'; err.style.display = 'block'; });
+  }
+  el('lgBtn').addEventListener('click', submit);
+  el('lgPass').addEventListener('keydown', function(e){ if (e.key === 'Enter') submit(); });
+}
+function signOut(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+}
+function boot(){
+  if (!token()) { loginGate(); return; }
+  get('/auth/me').then(function(res){
+    var me = data(res.j);
+    if (!res.ok || !me) { try { localStorage.removeItem('tsos_token'); } catch(e){} loginGate('Your session expired — sign in again.'); return; }
+    if (!isStaff(me)) {
+      gateMsg('This console is staff only. You are signed in as <b>' + esc(me.email || 'this account') + '</b>, which does not have a staff role. <a href="/app" style="color:#e94e5c;font-weight:700">Open the customer app</a> or <a href="#" id="gOut" style="color:#e94e5c;font-weight:700">sign out</a> and use a staff account.');
+      var g = el('gOut'); if (g) g.addEventListener('click', function(e){ e.preventDefault(); signOut(); });
+      return;
+    }
+    OV.user = me;
+    el('gate').innerHTML = '';
+    el('portal').style.display = 'block';
+    var tier = tierLabel(me);
+    el('tbAvatar').textContent = initials(me.name || me.email);
+    el('tbName').textContent = me.name || me.email || 'Signed in';
+    el('tbRole').textContent = tier.charAt(0) + tier.slice(1).toLowerCase() + ' · Oversight';
+    var rb = el('roleBadge');
+    rb.style.display = ''; rb.textContent = tier;
+    rb.className = 'badge' + (tier === 'OWNER' ? ' owner' : tier === 'MANAGER' ? ' mgr' : '');
+    el('liveBadge').style.display = '';
+    el('refreshBtn').style.display = '';
+    el('logoutBtn').style.display = '';
+    el('logoutBtn').addEventListener('click', signOut);
+    el('acctSignOut').addEventListener('click', signOut);
+    el('refreshBtn').addEventListener('click', function(){ refresh(true); });
+    el('acctPanel').innerHTML =
+      '<span class="k">SIGNED IN AS</span><span class="acct-v" style="font-weight:700">' + esc(me.name || me.email || 'Staff') + '</span>' +
+      '<span class="k">ACCOUNT</span><span class="acct-v">' + esc(me.email || '') + '</span>' +
+      '<span class="k">ACCESS</span><span class="acct-v">' + esc(tier.charAt(0) + tier.slice(1).toLowerCase()) + ' — staff oversight, read-only</span>';
+    refresh(true);
+    setInterval(function(){ OV.cycle += 1; refresh(false); }, 60000);
+  });
+}
+/* Sidebar (mobile) */
+(function(){
+  var sb = el('ccSidebar'), bd = el('ccBackdrop');
+  function open(){ sb.classList.add('cc-open'); bd.style.display = 'block'; }
+  function close(){ sb.classList.remove('cc-open'); bd.style.display = 'none'; }
+  el('ccMenuBtn').addEventListener('click', open);
+  el('ccCloseBtn').addEventListener('click', close);
+  bd.addEventListener('click', close);
+  sb.querySelectorAll('a.cc-nav-link').forEach(function(a){ a.addEventListener('click', close); });
+})();
+boot();
+</script>
+<script>
+/* ================= DATA + RENDER ================= */
+function store(map, errmap, key, res){ if (res.ok && res.j) { map[key] = data(res.j); delete errmap[key]; } else { errmap[key] = res.status; } }
+function tileState(id, msg){ el(id).innerHTML = '<p class="ov-note warn">' + esc(msg) + '</p>'; }
+function bigRow(big, small){ return '<div class="ov-big">' + big + (small ? ' <small>' + esc(small) + '</small>' : '') + '</div>'; }
+function rowsHtml(pairs){
+  var h = '<div class="ov-rows">';
+  pairs.forEach(function(p){ h += '<div class="ov-row"><span class="k">' + esc(p[0]) + '</span><span class="v' + (p[2] ? ' ' + p[2] : '') + '">' + esc(p[1]) + '</span></div>'; });
+  return h + '</div>';
+}
+function chipsHtml(pairs){
+  var h = '<div class="ov-chips">';
+  pairs.forEach(function(p){ h += '<span class="ov-chip' + (p[2] ? ' alert' : '') + '">' + esc(p[0]) + ' <b>' + esc(p[1]) + '</b></span>'; });
+  return h + '</div>';
+}
+function humanize(t){ var s = String(t || '').replace(/_/g, ' ').toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function refresh(full){
+  loadFast();
+  if (full || OV.cycle % 5 === 0) loadSlow();
+}
+function loadFast(){
+  Promise.all([
+    get('/tracking/console').then(function(r){ store(OV.fast, OV.ferr, 'con', r); }),
+    get('/bookos/setter-queue').then(function(r){ store(OV.fast, OV.ferr, 'queue', r); }),
+    get('/bookos/dispatch-board').then(function(r){ store(OV.fast, OV.ferr, 'board', r); }),
+    get('/platform/events').then(function(r){ store(OV.fast, OV.ferr, 'events', r); }),
+    get('/health', false).then(function(r){ store(OV.fast, OV.ferr, 'health', r); }),
+    get('/notifications/summary').then(function(r){ store(OV.fast, OV.ferr, 'notif', r); })
+  ]).then(function(){
+    renderDispatch(); renderProviders(); renderHealth(); renderMessages(); renderFeed();
+    var errs = Object.keys(OV.ferr);
+    el('liveTxt').textContent = errs.indexOf('con') >= 0 && OV.ferr.con === 429 ? 'RATE LIMITED' : (errs.length ? 'PARTIAL DATA' : 'LIVE DATA');
+    el('ovStamp').textContent = 'Last updated ' + new Date().toLocaleTimeString([], { hour:'numeric', minute:'2-digit', second:'2-digit' }) + ' · auto-refresh is on';
+  });
+}
+function loadSlow(){
+  Promise.all([
+    get('/bookos/scorecard').then(function(r){ store(OV.slow, OV.serr, 'score', r); }),
+    get('/commercial/overview').then(function(r){ store(OV.slow, OV.serr, 'comm', r); }),
+    get('/crm/home').then(function(r){ store(OV.slow, OV.serr, 'crm', r); }),
+    get('/finance/overview').then(function(r){ store(OV.slow, OV.serr, 'fin', r); }),
+    get('/marketing-os/pages', false).then(function(r){ store(OV.slow, OV.serr, 'pages', r); }),
+    get('/marketing-os/publish-events', false).then(function(r){ store(OV.slow, OV.serr, 'pub', r); }),
+    get('/ad-studio/campaigns').then(function(r){ if (r.ok && r.j) { OV.adCounts = r.j.counts || null; delete OV.serr.ads; } else { OV.serr.ads = r.status; } }),
+    get('/referrals/admin/funnel').then(function(r){ store(OV.slow, OV.serr, 'ref', r); }),
+    get('/parts/summary').then(function(r){ store(OV.slow, OV.serr, 'parts', r); }),
+    get('/chats/insights').then(function(r){ store(OV.slow, OV.serr, 'chats', r); })
+  ]).then(function(){
+    renderCommercial(); renderCrm(); renderFinance(); renderMarketing(); renderReferrals(); renderParts(); renderProviders(); renderFeed();
+  });
+}
+
+function renderDispatch(){
+  var q = OV.fast.queue, c = OV.fast.con, b = OV.fast.board;
+  if (!q && !c && !b) { tileState('ovDispatch', 'Dispatch data could not load just now — open the Dispatch Dashboard for the live floor.'); return; }
+  var html = '';
+  if (q) {
+    var review = (q.queue || []).filter(function(x){ return x.needsAreaReview; }).length;
+    html += bigRow(num(q.count), 'waiting for a Service Setter');
+    html += rowsHtml([
+      ['Unassigned jobs', c ? num(c.summary && c.summary.awaitingAssignment) : '—'],
+      ['Needs area review', num(review), review > 0 ? 'amber' : ''],
+      ['Active jobs', c ? num(c.summary && c.summary.active) : '—'],
+      ['En route', c ? num(c.summary && c.summary.enRoute) : '—'],
+      ['On site', c ? num(c.summary && c.summary.onSite) : '—']
+    ]);
+  } else if (c) {
+    html += bigRow(num(c.summary && c.summary.awaitingAssignment), 'jobs unassigned');
+    html += rowsHtml([['Active jobs', num(c.summary && c.summary.active)], ['En route', num(c.summary && c.summary.enRoute)], ['On site', num(c.summary && c.summary.onSite)], ['Completed', num(c.summary && c.summary.completed)]]);
+  }
+  if (b && b.counts) {
+    html += chipsHtml([
+      ['Waiting', num(b.counts.PENDING_DISPATCH)],
+      ['Awaiting approval', num(b.counts.MATCH_PENDING_APPROVAL), Number(b.counts.MATCH_PENDING_APPROVAL) > 0],
+      ['Confirmed', num(b.counts.CONFIRMED)],
+      ['Completed today', num(b.counts.COMPLETED)]
+    ]);
+  }
+  el('ovDispatch').innerHTML = html || '<p class="ov-note">No dispatch data returned.</p>';
+}
+
+function renderProviders(){
+  var c = OV.fast.con, s = OV.slow.score;
+  if (!c) { tileState('ovProviders', 'Provider data could not load just now — the roster lives on the Dispatch Dashboard.'); return; }
+  var roster = c.providers || [], jobs = c.jobs || [];
+  var busy = {};
+  jobs.forEach(function(j){ if (j.providerId && j.stageIndex >= 2 && j.stageIndex <= 6) busy[j.providerId] = true; });
+  var pairs = [
+    ['Providers on a job right now', num(Object.keys(busy).length)],
+    ['Jobs en route', num(c.summary && c.summary.enRoute)],
+    ['Jobs on site', num(c.summary && c.summary.onSite)]
+  ];
+  if (s && s.dispatch) pairs.push(['Dispatch approvals waiting', num(s.dispatch.awaitingApproval), Number(s.dispatch.awaitingApproval) > 0 ? 'amber' : '']);
+  if (s && s.network) pairs.push(['Cities covered', num(s.network.citiesCovered)]);
+  el('ovProviders').innerHTML = bigRow(num(roster.length), 'active providers in the network') + rowsHtml(pairs);
+}
+
+function renderCommercial(){
+  var m = OV.slow.comm;
+  if (!m) { tileState('ovCommercial', OV.serr.comm === 403 ? 'Commercial numbers are limited to manager and owner accounts.' : 'Commercial data could not load just now — open the commercial console for live numbers.'); return; }
+  var wo = m.workOrders || {};
+  el('ovCommercial').innerHTML =
+    bigRow(num(wo.open), 'open commercial work orders') +
+    rowsHtml([
+      ['Commercial accounts', num(m.accounts && m.accounts.total)],
+      ['Facilities', num(m.facilities && m.facilities.total)],
+      ['Equipment tracked', num(m.equipment && m.equipment.total)],
+      ['Priority work orders', num(wo.priorityQueue), Number(wo.priorityQueue) > 0 ? 'warn' : '']
+    ]);
+}
+
+function renderCrm(){
+  var m = OV.slow.crm;
+  if (!m) { tileState('ovCrm', 'Customer data could not load just now — open the CRM for live records.'); return; }
+  var pairs = [
+    ['Bookings today', num(m.bookings && m.bookings.today)],
+    ['Bookings on record', num(m.bookings && m.bookings.total)],
+    ['Waitlist — needs review', num(m.waitlist && m.waitlist.needsReview), Number(m.waitlist && m.waitlist.needsReview) > 0 ? 'amber' : ''],
+    ['Waitlist — out of area', num(m.waitlist && m.waitlist.outOfArea)],
+    ['Referral codes issued', num(m.referralsIssued)]
+  ];
+  var html = bigRow(num(m.customers && m.customers.total), 'customers on record') + rowsHtml(pairs);
+  var ch = OV.slow.chats;
+  if (ch && ch.totals) html += '<p class="ov-note">Speedy chats, last 30 days: ' + num(ch.totals.sessions) + ' conversations · ' + num(ch.totals.convertedSessions) + ' became bookings · ' + num(ch.totals.unansweredSessions) + ' with an unanswered question.</p>';
+  el('ovCrm').innerHTML = html;
+}
+
+function renderFinance(){
+  var f = OV.slow.fin, s = OV.slow.score;
+  if (!f && !s) { tileState('ovFinance', 'Finance data could not load just now — open Finance OS for the synced picture.'); return; }
+  var html = '';
+  if (f && f.quickbooks) {
+    var qb = f.quickbooks;
+    if (qb.status && qb.status !== 'not_connected') {
+      html += '<div class="ov-statusline"><span class="ov-dot g"></span>QuickBooks connected' + (qb.companyName ? ' — ' + esc(qb.companyName) : '') + '</div>';
+      html += '<p class="ov-note">Last sync: ' + (qb.lastSyncAt ? esc(fmtDay(qb.lastSyncAt)) : 'not recorded') + '</p>';
+    } else {
+      html += '<div class="ov-statusline"><span class="ov-dot a"></span>QuickBooks not connected</div>';
+      html += '<p class="ov-note">No sync yet — Finance OS shows the connect step.</p>';
+    }
+    if (f.invoices) {
+      html += rowsHtml([
+        ['Synced invoices', num(f.invoices.count)],
+        ['Open invoices', num(f.invoices.openCount)],
+        ['Outstanding', money(f.invoices.outstandingCents)]
+      ]);
+    }
+  }
+  if (s && s.payments) {
+    html += rowsHtml([
+      ['Card payments (Stripe)', s.payments.configured ? 'Configured' : 'Not configured'],
+      ['Paid online', num(s.payments.paidOnline)]
+    ]);
+  }
+  el('ovFinance').innerHTML = html || '<p class="ov-note">No finance data returned.</p>';
+}
+
+function renderMarketing(){
+  var pages = OV.slow.pages, pub = OV.slow.pub;
+  if (!pages && !pub && OV.serr.ads) { tileState('ovMarketing', 'Marketing data could not load just now — open Marketing OS for the live library.'); return; }
+  var html = '';
+  if (Array.isArray(pages)) html += bigRow(num(pages.length), 'published landing pages');
+  var pairs = [];
+  if (Array.isArray(pub) && pub.length) pairs.push(['Latest publish', (pub[0].title || 'Page') + ' · ' + ago(pub[0].at)]);
+  if (Array.isArray(pub)) pairs.push(['Publish events on record', num(pub.length)]);
+  if (pairs.length) html += rowsHtml(pairs);
+  if (OV.adCounts) {
+    var chips = [['Campaigns', num(OV.adCounts.total)]];
+    if (OV.adCounts.byStatus) Object.keys(OV.adCounts.byStatus).forEach(function(k){ chips.push([humanize(k), num(OV.adCounts.byStatus[k]), k.toUpperCase().indexOf('PENDING') >= 0 && Number(OV.adCounts.byStatus[k]) > 0]); });
+    html += chipsHtml(chips);
+    html += '<p class="ov-note">Ad Studio counts — campaigns the team builds in-house.</p>';
+  } else if (OV.serr.ads === 403) {
+    html += '<p class="ov-note">Ad Studio campaign counts need a manager or owner account — this sign-in can watch the rest of the platform here.</p>';
+  }
+  el('ovMarketing').innerHTML = html || '<p class="ov-note">No marketing data returned.</p>';
+}
+
+function renderReferrals(){
+  var r = OV.slow.ref;
+  if (!r || !r.all) { tileState('ovReferrals', 'Referral data could not load just now — approvals live in Book OS.'); return; }
+  var a = r.all;
+  el('ovReferrals').innerHTML =
+    bigRow(num(a.pendingApproval), 'rewards awaiting approval') +
+    rowsHtml([
+      ['Credits issued', num(a.creditsIssued) + ' · ' + money(a.creditsIssuedCents)],
+      ['Credits available to spend', num(a.creditsAvailable)],
+      ['Credits redeemed', num(a.creditsRedeemed)],
+      ['Codes issued', num(a.codesIssued)],
+      ['Bookings via referral', num(a.bookingsViaReferral)]
+    ]);
+}
+
+function renderParts(){
+  var p = OV.slow.parts;
+  if (!p) { tileState('ovParts', OV.serr.parts === 403 ? 'Parts numbers are limited to manager and owner accounts.' : 'Parts data could not load just now — open Parts Supply OS for live orders.'); return; }
+  el('ovParts').innerHTML =
+    bigRow(num(p.openPurchaseOrders), 'open purchase orders · ' + money(p.openPurchaseOrdersCents) + ' open') +
+    rowsHtml([
+      ['Low-stock parts', num(p.lowStockCount), Number(p.lowStockCount) > 0 ? 'warn' : ''],
+      ['Suppliers', num(p.suppliers)],
+      ['Catalog parts', num(p.parts)],
+      ['Units on hand', num(p.inventoryUnits)]
+    ]);
+}
+
+function provState(list, name){
+  var hit = (list || []).filter(function(x){ return String(x.provider || '').toLowerCase() === name; })[0];
+  return hit ? !!hit.configured : null;
+}
+function renderHealth(){
+  var h = OV.fast.health;
+  if (!h) { tileState('ovHealth', 'Health check did not answer — the API may be waking up. It retries every minute.'); return; }
+  var ok = h.status === 'ok';
+  var sp = h.speedy || {};
+  var emailOk = provState(h.notifications && h.notifications.email, 'resend');
+  var smsOk = provState(h.notifications && h.notifications.sms, 'twilio');
+  var pairs = [
+    ['Database', (h.database || '—') + (h.mode ? ' · ' + h.mode + ' mode' : '')],
+    ['Speedy AI', sp.configured ? 'Key configured · ' + (sp.model || '') : 'Not configured'],
+    ['Speedy knowledge base', sp.knowledge ? num(sp.knowledge.total) + ' entries' : '—'],
+    ['Email (Resend)', emailOk === null ? '—' : (emailOk ? 'Configured' : 'Not configured')],
+    ['SMS (Twilio)', smsOk === null ? '—' : (smsOk ? 'Configured' : 'Not configured')]
+  ];
+  el('ovHealth').innerHTML =
+    '<div class="ov-statusline"><span class="ov-dot ' + (ok ? 'g' : 'r') + '"></span>' + (ok ? 'API operational' : 'API reports a problem') + '</div>' +
+    rowsHtml(pairs) +
+    '<p class="ov-note">Speedy answers from live AI when the provider responds, and from the built-in knowledge base whenever it cannot — customers always get an answer.</p>';
+}
+
+function renderMessages(){
+  var n = OV.fast.notif;
+  if (!n) { tileState('ovMessages', 'Outbox data could not load just now — open Notifications for delivery status.'); return; }
+  el('ovMessages').innerHTML =
+    bigRow(num(n.queued), 'messages queued right now') +
+    rowsHtml([
+      ['Sent', num(n.sent)],
+      ['Failed', num(n.failed), Number(n.failed) > 0 ? 'warn' : ''],
+      ['Held by sending rules', num(n.gated), Number(n.gated) > 0 ? 'amber' : ''],
+      ['Volume — last 24 hours', num(n.last24h)]
+    ]);
+}
+
+var EV_LABELS = {
+  INTAKE_RECEIVED: 'New request received',
+  BOOKING_CREATED: 'New booking created',
+  BOOKING_UPDATED: 'Booking updated',
+  BOOKING_COMPLETED: 'Job completed',
+  DISPATCH_ASSIGNED: 'Technician assigned',
+  DISPATCH_APPROVED: 'Dispatch approved',
+  SETTER_ASSIGNED: 'Service Setter assigned',
+  REFERRAL_ISSUED: 'Referral code issued',
+  REFERRAL_REDEEMED: 'Referral credit redeemed'
+};
+function renderFeed(){
+  var items = [];
+  var evs = OV.fast.events;
+  if (Array.isArray(evs)) {
+    evs.forEach(function(ev){
+      var label = EV_LABELS[ev.type] || humanize(ev.type || 'Platform event');
+      var sub = [];
+      if (ev.referenceCode) sub.push(ev.referenceCode);
+      if (ev.source) sub.push(humanize(ev.source));
+      items.push({ at: ev.at, html: '<b>' + esc(label) + '</b>' + (sub.length ? ' <span class="sub">' + esc(sub.join(' · ')) + '</span>' : ''), href: ev.referenceCode ? '/dispatch-dashboard' : '/applianceman', go: 'Open' });
+    });
+  }
+  var pub = OV.slow.pub;
+  if (Array.isArray(pub)) {
+    pub.forEach(function(p){
+      items.push({ at: p.at, html: '<b>Published</b> ' + esc(p.title || 'Page update') + ' <span class="sub">Publish Center</span>', href: p.url || '/publish-center', go: 'View' });
+    });
+  }
+  items.sort(function(a, b){ return new Date(b.at) - new Date(a.at); });
+  items = items.slice(0, 28);
+  if (!items.length) {
+    el('feedList').innerHTML = '<p class="ov-note" style="padding:8px 0">' + (OV.ferr.events ? 'The activity feed could not load just now — it retries every minute.' : 'No platform activity recorded yet.') + '</p>';
+    return;
+  }
+  el('feedList').innerHTML = items.map(function(it){
+    return '<div class="ov-ev"><span class="when">' + esc(ago(it.at)) + '</span><span class="what">' + it.html + '</span><a class="go" href="' + esc(it.href) + '">' + esc(it.go) + '</a></div>';
+  }).join('');
+}
+</script>
+</body>
+</html>

@@ -169,6 +169,7 @@ section.page.on{display:block}
         <p>MANAGER CONSOLES</p>
         <a class="cc-nav-link" href="/book-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4"/></svg><span>Book OS</span></a>
         <a class="cc-nav-link" href="/dispatch-dashboard"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg><span>Dispatch Dashboard</span></a>
+        <a class="cc-nav-link" href="/oversight"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Management Oversight</span></a>
         <a class="cc-nav-link" href="/crm"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>CRM / Service Book</span></a>
         <a class="cc-nav-link" href="/publish-center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M6 10l6-6 6 6"/><path d="M4 20h16"/></svg><span>Publish Center</span></a>
         <a class="cc-nav-link" href="/marketing-os"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5l3.8-4.2 3 2.4 4.6-5.9"/><path d="M14.6 7.6h3.3v3.3"/></svg><span>Marketing OS</span></a>
@@ -397,8 +398,6 @@ function loginGate(msg){
     fetch(API + '/auth/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
-      if (res.j && res.j.code === 'SPEEDY_VERIFY_NO_CODE'){ err.textContent = res.j.error; err.style.display = 'block'; return; }
-      if (res.j && res.j.verifyRequired && res.j.challenge){ verifyGate(res.j.challenge, res.j.user); return; }
       if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
       try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();
@@ -407,30 +406,10 @@ function loginGate(msg){
   });
 }
 
-function verifyGate(challenge, who){
-  showGate('<div class="gate"><h2>Speedy Verify — enter your access code</h2><p>Your password checked out' + (who && who.email ? ' for ' + esc(who.email) : '') + '. Speedy Verify: enter the 8-digit access code the office issued for your account.</p>' +
-  '<form id="verifyForm"><label>ACCESS CODE</label><input id="svCode" inputmode="numeric" autocomplete="one-time-code" placeholder="1234 5678" required>' +
-  '<div class="err" id="svErr"></div><button type="submit">Verify &amp; sign in</button></form>' +
-  '<p style="margin-top:12px">No code yet? Accounts wait for the office to issue their code — contact the office.</p></div>');
-  document.getElementById('verifyForm').addEventListener('submit', function(ev){
-    ev.preventDefault();
-    var err = document.getElementById('svErr'); err.style.display = 'none';
-    fetch(API + '/speedy-verify/verify', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ challenge: challenge, code: document.getElementById('svCode').value }) })
-    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
-    .then(function(res){
-      if (!res.ok || !res.j || !res.j.token){ err.textContent = (res.j && res.j.error) ? res.j.error : 'That code did not work — check it and try again.'; err.style.display = 'block'; return; }
-      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
-      boot();
-    })
-    .catch(function(){ err.textContent = 'Could not reach the verification service — check your connection and try again.'; err.style.display = 'block'; });
-  });
-}
-
 function boot(){
   var t = token();
   if (!t){ loginGate(''); return; }
   get('/auth/me', true).then(function(res){
-    if (!res.ok && res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ try { localStorage.removeItem('tsos_token'); } catch(e){} loginGate('Speedy Verify required — sign in and complete the access-code step.'); return; }
     var me = data(res.j);
     if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
     var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
