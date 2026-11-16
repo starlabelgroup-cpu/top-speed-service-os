@@ -5,6 +5,7 @@ import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512 } from '../assets/appIcons.js';
+import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP } from '../assets/serviceImages.js';
 
 const router = Router();
 
@@ -91,6 +92,30 @@ router.get('/app/icons/:name', (req, res) => {
   if (!encoded) return res.status(404).json({ error: 'Icon not found' });
   res.set({
     'Content-Type': 'image/png',
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  return res.send(Buffer.from(encoded, 'base64'));
+});
+
+/**
+ * Service Network page photos (Ramone's own branded-technician shots).
+ * Same text-only-pipeline constraint as the icons above: the WebP
+ * bytes live in assets/serviceImages.js as base64 text and this route
+ * serves the decoded bytes as image/webp. The /service page points
+ * its hero + Commercial Track photos here. Public brand assets.
+ */
+const SERVICE_IMAGE_FILES = {
+  'hero-tech.webp': SERVICE_HERO_WEBP,
+  'commercial.webp': SERVICE_COMMERCIAL_WEBP,
+  'van-banner.webp': SERVICE_VAN_WEBP,
+};
+
+router.get('/app/service-images/:name', (req, res) => {
+  const encoded = SERVICE_IMAGE_FILES[req.params.name];
+  if (!encoded) return res.status(404).json({ error: 'Image not found' });
+  res.set({
+    'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
   });

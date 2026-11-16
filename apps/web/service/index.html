@@ -121,6 +121,10 @@ h2.title{font-size:clamp(36px,4.5vw,54px);margin:8px 0 10px;color:var(--navy)}
 .city-chip{border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer}
 .city-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .city-chip.miami{border-color:var(--red);color:var(--red)} .city-chip.miami.active{background:var(--red);color:#fff}
+.city-link{display:inline-block;border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:999px;font-weight:700;color:inherit;text-decoration:none;font-size:14px}
+.city-link:hover{border-color:var(--red)}
+.city-link.core{border-color:var(--red)}
+.city-link .cdot{color:var(--red);font-weight:800}
 .mapbox{background:radial-gradient(circle at 30% 30%, rgba(25,181,255,.25), transparent 40%), linear-gradient(180deg,#0A265C,#06173A);color:#fff;border-radius:22px;padding:22px;position:relative;overflow:hidden;min-height:320px}
 .pin{position:absolute;background:#fff;color:var(--navy);font-weight:800;font-size:12px;padding:6px 9px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.25);transform:translate(-50%,-50%)}
 .pin:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid #fff}
@@ -177,7 +181,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
         <span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Same-Day Windows</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Photo Triage</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Live Status Texts</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Jobs — Not Leads</span>
       </div>
-      <div class="hero-img" style="margin-top:22px"><img src="/service/hero-tech.webp" alt="Top Speed technician with tablet repairing a refrigerator in a South Florida home"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 12 Broward areas + Miami</span></div></div>
+      <div class="hero-img" style="margin-top:22px"><img src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/hero-tech.webp" alt="Top Speed Appliance technician in branded uniform repairing a refrigerator compressor"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 65 cities across Broward, Palm Beach &amp; Miami-Dade</span></div></div>
     </div>
 
     <!-- QUICK REQUEST MINI -->
@@ -209,7 +213,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 
 <!-- TRUST BAND -->
 <div style="background:#fff;border-bottom:1px solid var(--line)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px">
-  <b>Licensed &amp; EPA Certified Technicians</b><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg> Same-Day Service</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.2 2.6v5.6c0 4.6-3 7.9-7.2 9.8-4.2-1.9-7.2-5.2-7.2-9.8V5.6z"/><path d="M8.8 11.8l2.3 2.3 4.2-4.4" stroke="#E8322E"/></svg> 90-Day Warranty</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg> $99 Diagnostic Credited Toward Repair</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> 12 Broward Areas + Miami</span><a href="/" target="_blank" rel="noopener" style="font-weight:800;color:var(--blue)">Customer site: topspeedappliance.net ↗</a>
+  <b>Licensed &amp; EPA Certified Technicians</b><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg> Same-Day Service</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.2 2.6v5.6c0 4.6-3 7.9-7.2 9.8-4.2-1.9-7.2-5.2-7.2-9.8V5.6z"/><path d="M8.8 11.8l2.3 2.3 4.2-4.4" stroke="#E8322E"/></svg> 90-Day Warranty</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg> $99 Diagnostic Credited Toward Repair</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> 65 Cities • Tri-County Coverage</span><a href="/" target="_blank" rel="noopener" style="font-weight:800;color:var(--blue)">Customer site: topspeedappliance.net ↗</a>
 </div></div>
 
 <!-- SERVICES -->
@@ -231,7 +235,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
     <div class="card"><div class="stepnum">7</div><h3>Invoice + Warranty</h3><p style="color:var(--muted);margin:0">$99 credited toward repair. 90-day parts + labor warranty on invoice.</p></div>
     <div class="card"><div class="stepnum">8</div><h3>Review Engine</h3><p style="color:var(--muted);margin:0">Completed jobs trigger a review request at the happiest moment.</p></div>
   </div>
-  <div style="margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid var(--line)"><img src="/service/van-banner.png" alt="Top Speed Appliance service van banner — Get Top Speed" style="width:100%;height:180px;object-fit:cover"></div>
+  <div style="margin-top:18px;border-radius:18px;overflow:hidden;border:1px solid var(--line)"><img src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/van-banner.webp" alt="Top Speed Appliance service van banner — Get Top Speed" style="width:100%;height:180px;object-fit:cover"></div>
 </div></section>
 
 <section class="section" id="providers"><div class="wrap">
@@ -269,7 +273,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
     <div><div class="card" style="padding:22px"><h3 style="margin:0 0 8px">The Provider App — Tech App</h3><p style="color:var(--muted);margin:0 0 10px">Real offers from Service Setters dispatch land in the Tech App: matched jobs with the diagnosis photos attached, your route for the day, job-status updates and live-location sharing for Track My Tech. Payout terms, onboarding requirements (license/insurance verification) and launch timing are confirmed directly with the Top Speed team — nothing here is a sample job.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-red" href="/tech">Open the Tech App</a><a class="btn btn-outline" href="/network">Provider Network</a></div></div></div>
     <div>
       <div class="notice" style="margin-top:14px">Provider preview: payout terms, onboarding requirements (license/insurance verification), and launch timing are confirmed directly with applicants — nothing is promised on this page beyond the model described.</div>
-      <img src="/service/commercial.webp" alt="Technician servicing commercial kitchen equipment" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
+      <img src="https://top-speed-service-os.vercel.app/api/v1/app/service-images/commercial.webp" alt="Top Speed Appliance technician in branded uniform repairing the back of a commercial range" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
     </div>
   </div>
 </div></section>
@@ -304,21 +308,100 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 
 <!-- COVERAGE -->
 <section class="section" id="coverage"><div class="wrap">
-  <div class="eyebrow blue">Network Coverage</div><h2 class="title">12 Broward Areas + Miami Reach</h2><p class="sub">Tap any area to see its coverage detail. The core network is Broward — Miami is extended coverage from the current live site's reach.</p>
+  <div class="eyebrow blue">Network Coverage</div><h2 class="title">65 Cities — Tri-County Coverage</h2><p class="sub">Tap a Core 12 city to see its coverage detail. The full network now covers 65 cities across Broward, Palm Beach and Miami-Dade — every city is listed below with a link to its own landing page.</p>
   <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:20px" id="covGrid">
     <div class="mapbox" id="mapBox">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b style="letter-spacing:.1em">BROWARD COUNTY • SERVICE OS COVERAGE MAP</b><span class="badge">Not a live map — illustrative layout</span></div>
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b style="letter-spacing:.1em">TRI-COUNTY • SERVICE OS COVERAGE MAP</b><span class="badge">Not a live map — illustrative layout</span></div>
       <p style="color:#BFD6F5;font-size:14px;max-width:520px">Pins show relative coverage zones, not exact boundaries. Dispatch matches by ZIP, drive time, and provider skills in production.</p>
       <!-- pins positioned approximately NW->SE -->
       <span class="pin" style="left:22%;top:32%">Coral Springs</span><span class="pin" style="left:38%;top:28%">Margate</span><span class="pin" style="left:58%;top:24%">Pompano Beach</span>
       <span class="pin" style="left:30%;top:50%">Tamarac</span><span class="pin" style="left:48%;top:46%">N. Lauderdale</span><span class="pin" style="left:70%;top:44%">Oakland Park</span>
       <span class="pin" style="left:24%;top:68%">Sunrise</span><span class="pin" style="left:44%;top:66%">Lauderhill</span><span class="pin" style="left:64%;top:64%">Lauderdale Lakes</span><span class="pin" style="left:82%;top:62%">Fort Lauderdale</span>
       <span class="pin" style="left:36%;top:86%">Plantation</span><span class="pin" style="left:56%;top:88%">Davie</span>
-      <span class="pin" style="left:84%;top:88%;background:var(--red);color:#fff">Miami ↓ Extended</span>
+      <span class="pin" style="left:84%;top:88%;background:var(--red);color:#fff">Miami-Dade ↓</span>
     </div>
     <div><div class="card" id="cityDetail"><h3 id="cityName" style="margin-top:0">Fort Lauderdale</h3><p id="cityDesc" style="color:var(--muted)">Core Broward coverage — residential + commercial dispatch, same-day windows, full 9-service catalog and provider matching.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill green">Same-Day Windows</span><span class="pill bluep">Residential + Commercial</span><span class="pill bluep" id="cityTag">Core Network</span></div><a href="#request" class="btn btn-navy btn-sm" style="margin-top:14px">Request Service Here →</a></div>
       <div class="city-grid" id="cityGrid"></div>
     </div>
+  </div>
+  <div style="margin-top:30px">
+    <h3 style="font-family:'Barlow Condensed';font-size:32px;margin:0">Full Network — All 65 Cities</h3>
+    <p class="sub" style="margin-top:6px">The Core 12 above are our original Broward network. The full network covers 65 cities across Broward, Palm Beach and Miami-Dade — every city below links to its own landing page, part of 131 published landing pages across the network. Core 12 cities are outlined in red.</p>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Broward County <span style="color:var(--muted);font-size:16px">31 cities</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/coconut-creek/">Coconut Creek</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/cooper-city/">Cooper City</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/coral-springs/">Coral Springs <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/dania-beach/">Dania Beach</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/davie/">Davie <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/deerfield-beach/">Deerfield Beach</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/fort-lauderdale/">Fort Lauderdale <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hallandale-beach/">Hallandale Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hillsboro-beach/">Hillsboro Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hollywood/">Hollywood</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/lauderdale-lakes/">Lauderdale Lakes <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lauderdale-by-the-sea/">Lauderdale-by-the-Sea</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/lauderhill/">Lauderhill <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lazy-lake/">Lazy Lake</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lighthouse-point/">Lighthouse Point</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/margate/">Margate <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miramar/">Miramar</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/north-lauderdale/">North Lauderdale <span class="cdot">• Core 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/oakland-park/">Oakland Park <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/parkland/">Parkland</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/pembroke-park/">Pembroke Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/pembroke-pines/">Pembroke Pines</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/plantation/">Plantation <span class="cdot">• Core 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/pompano-beach/">Pompano Beach <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sea-ranch-lakes/">Sea Ranch Lakes</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/southwest-ranches/">Southwest Ranches</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/sunrise/">Sunrise <span class="cdot">• Core 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/tamarac/">Tamarac <span class="cdot">• Core 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/west-park/">West Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/weston/">Weston</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/wilton-manors/">Wilton Manors</a>
+    </div>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Palm Beach County <span style="color:var(--muted);font-size:16px">16 cities</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/belle-glade/">Belle Glade</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/boca-raton/">Boca Raton</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/boynton-beach/">Boynton Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/delray-beach/">Delray Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/greenacres/">Greenacres</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/jupiter/">Jupiter</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lake-park/">Lake Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lake-worth-beach/">Lake Worth Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-palm-beach/">North Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-beach/">Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-beach-gardens/">Palm Beach Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-springs/">Palm Springs</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/riviera-beach/">Riviera Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/royal-palm-beach/">Royal Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/wellington/">Wellington</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/west-palm-beach/">West Palm Beach</a>
+    </div>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Miami-Dade County <span style="color:var(--muted);font-size:16px">18 cities</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/aventura/">Aventura</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/bal-harbour/">Bal Harbour</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/coral-gables/">Coral Gables</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/cutler-bay/">Cutler Bay</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/doral/">Doral</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/florida-city/">Florida City</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hialeah/">Hialeah</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hialeah-gardens/">Hialeah Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/homestead/">Homestead</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/key-biscayne/">Key Biscayne</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami/">Miami</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami-beach/">Miami Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami-gardens/">Miami Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-miami/">North Miami</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-miami-beach/">North Miami Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sunny-isles-beach/">Sunny Isles Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/surfside/">Surfside</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sweetwater/">Sweetwater</a>
+    </div>
+    <p style="margin-top:20px"><a href="/service-areas-directory" style="font-weight:800">Browse the full Service Areas Directory →</a></p>
   </div>
 </div></section>
 
@@ -385,13 +468,13 @@ var CITIES=[
  {n:"Pompano Beach",t:"Core Network",d:"Northeast Broward coverage — coastal homes, rentals and commercial accounts."},
  {n:"Oakland Park",t:"Core Network",d:"Central-east Broward coverage — quick routing into Fort Lauderdale jobs."},
  {n:"Margate",t:"Core Network",d:"Northwest Broward coverage — residential dispatch and property work orders."},
- {n:"Miami",t:"Extended Coverage",d:"Extended coverage from the live site's reach — availability confirmed on review. Miami-Dade requests are triaged and routed based on provider availability."}
+ {n:"Miami",t:"Miami-Dade Network",d:"Full Miami-Dade coverage — residential + commercial dispatch and provider matching across all 18 Miami-Dade cities in the network."}
 ];
 // Service cards
 document.getElementById('serviceCards').innerHTML=SERVICES.map(function(s){return '<div class="card" style="cursor:pointer" onclick="prefillService(\''+s.n+'\')"><div class="icon">'+s.e+'</div><h3>'+s.n+' Repair</h3><p style="color:var(--muted);margin:0 0 10px">'+s.d+'</p><div style="display:flex;gap:6px;flex-wrap:wrap">'+s.issues.map(function(i){return '<span class="pill bluep">'+i+'</span>'}).join('')+'</div><div style="margin-top:12px;font-weight:800;color:var(--blue)">Request this repair →</div></div>'}).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<span class="brand">'+b+'</span>'}).join('');
 // City chips
-document.getElementById('cityGrid').innerHTML=CITIES.map(function(c,i){return '<button class="city-chip '+(c.n==='Miami'?'miami ':'')+(i===4?'active':'')+'" onclick="selectCity('+i+',this)">'+c.n+(c.n==='Miami'?' • Extended':'')+'</button>'}).join('');
+document.getElementById('cityGrid').innerHTML=CITIES.map(function(c,i){return '<button class="city-chip '+(c.n==='Miami'?'miami ':'')+(i===4?'active':'')+'" onclick="selectCity('+i+',this)">'+c.n+'</button>'}).join('');
 function selectCity(i,el){document.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active')});el.classList.add('active');var c=CITIES[i];document.getElementById('cityName').textContent=c.n;document.getElementById('cityDesc').textContent=c.d;document.getElementById('cityTag').textContent=c.t;document.getElementById('qCity').value=c.n;}
 function prefillService(name){document.getElementById('qAppliance').value=name==='Oven / Range'?'Oven / Range':name;runTriage();document.getElementById('quick').scrollIntoView({behavior:'smooth',block:'center'});}
 // Track toggle
