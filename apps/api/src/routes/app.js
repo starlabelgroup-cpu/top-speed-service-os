@@ -6,6 +6,7 @@ import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512 } from '../assets/appIcons.js';
 import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP } from '../assets/serviceImages.js';
+import { PL_SELL_WEBP, PL_BOOK_WEBP } from '../assets/pepperListsImages.js';
 
 const router = Router();
 
@@ -120,6 +121,22 @@ router.get('/app/service-images/:name', (req, res) => {
     'Access-Control-Allow-Origin': '*',
   });
   return res.send(Buffer.from(encoded, 'base64'));
+});
+
+const PEPPER_LISTS_IMAGE_FILES = {
+  'sell.webp': PL_SELL_WEBP,
+  'book.webp': PL_BOOK_WEBP,
+};
+
+router.get('/app/pepper-lists-images/:name', (req, res) => {
+  const bytes = PEPPER_LISTS_IMAGE_FILES[req.params.name];
+  if (!bytes) return res.status(404).json({ error: 'Image not found' });
+  res.set({
+    'Content-Type': 'image/webp',
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  return res.send(bytes);
 });
 
 router.get('/app/current-version', (req, res) => {

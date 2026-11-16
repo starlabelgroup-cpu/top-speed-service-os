@@ -3,13 +3,13 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(183,227,60,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pepper Lists It — Snap it. Pepper lists it, everywhere. | Top Speed OS</title>
-<meta name="description" content="Pepper Lists It by Top Speed OS: snap a photo of anything you sell — ackee, mangoes, trees, produce — and Pepper drafts the listing and posts it to Facebook Marketplace for you, always after your confirmation. Fort Lauderdale, FL.">
+<title>Pepper Lists It — Sell it. Book it. One customer app. | Top Speed OS</title>
+<meta name="description" content="Pepper Lists It by Top Speed OS is the Top Speed customer app for Fort Lauderdale: snap a photo to sell — ackee, mangoes, trees, produce — and Pepper drafts and posts your Marketplace listing after your yes; or book appliance repair, track your tech, and review your service. One app, both ways.">
 <link rel="canonical" href="https://pepperlists.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Pepper Lists It">
-<meta property="og:title" content="Pepper Lists It — Snap it. Pepper lists it, everywhere.">
-<meta property="og:description" content="Photo in, listing out. Pepper drafts your listing with AI and posts it after you say yes. A Top Speed OS product, Fort Lauderdale, FL.">
+<meta property="og:title" content="Pepper Lists It — Sell it. Book it. One customer app.">
+<meta property="og:description" content="The Top Speed customer app: sell your products from a photo — Pepper drafts and posts your listing after you say yes — and book appliance repair with live tracking and reviews. A Top Speed OS product, Fort Lauderdale, FL.">
 <meta property="og:url" content="https://pepperlists.com/">
 <meta property="og:image" content="https://topspeedserviceos.com/icon-512.png">
 <meta name="twitter:card" content="summary">
@@ -224,6 +224,22 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <button type="button" class="plb-lane" id="plbLaneBtn-scan" onclick="plbShow('scan')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/></svg>Scan &amp; Send</h3><p>Photos or a short video of the problem, sent to the Service Setters office.</p></button>
       <button type="button" class="plb-lane" id="plbLaneBtn-plate" onclick="plbShow('plate')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>Model &amp; Serial Scan</h3><p>Snap the rating plate — Speedy reads the model and serial for your garage.</p></button>
       <button type="button" class="plb-lane hot" id="plbLaneBtn-live" onclick="plbShow('live')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="7" width="12.5" height="10.5" rx="2"/><path d="M15.5 10.8 L21 7.8 L21 16.7 L15.5 13.7"/></svg>Request Live Video</h3><p>Know what you need? The fast lane — request a live video session with the office.</p></button>
+      <button type="button" class="plb-lane" id="plbLaneBtn-ads" onclick="plbShow('ads');plAdsMine()"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 10.5 L14.5 4.5 L14.5 19.5 L3 13.5 Z"/><path d="M6.8 13.9 L8.2 20 L11.2 20 L10.2 14.8"/><path d="M17.5 9.5 a4 4 0 0 1 0 5"/></svg>Advertise</h3><p>Selling something? Put an ad for it inside Pepper Lists — the office reviews every ad before it runs.</p></button>
+    </div>
+
+    <div class="plb-panel" id="plbPanel-ads" style="display:none">
+      <h3>Advertise inside Pepper Lists</h3>
+      <p class="plb-note">Your ad can appear on the Pepper Lists page and in the Flywheel mini banner across Top Speed sites. Every ad is reviewed by the Top Speed office before anything runs — submitting is free, and nothing is ever charged or shown without office approval.</p>
+      <label class="plb-lab">Your name or business<input id="plAdName" type="text" maxlength="60" placeholder="e.g. Maria's Mango Trees"></label>
+      <label class="plb-lab">Headline<input id="plAdHeadline" type="text" maxlength="90" placeholder="e.g. Fresh ackee by the box — Fort Lauderdale pickup"></label>
+      <label class="plb-lab">Ad text<textarea id="plAdCopy" rows="3" maxlength="240" placeholder="Say what you're selling, where, and how buyers reach you." style="display:block;width:100%;margin-top:5px;padding:12px 14px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500"></textarea></label>
+      <div class="plb-row">
+        <label class="plb-lab">Button text<input id="plAdCta" type="text" maxlength="24" placeholder="e.g. See the listing"></label>
+        <label class="plb-lab">Button link<input id="plAdUrl" type="text" placeholder="https://… your listing or page"></label>
+      </div>
+      <div class="plb-btnrow"><button class="btn small" type="button" onclick="plAdsSubmit()">Send my ad for review</button></div>
+      <p class="plb-msg" id="plAdMsg" role="status"></p>
+      <div id="plAdMine"></div>
     </div>
 
     <div class="plb-panel" id="plbPanel-rec" style="display:none">
@@ -454,25 +470,49 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <div class="hero">
   <div class="herocard">
     <span class="plg-herobadge">Top Speed OS · Consumer App</span>
-    <h1>Snap it. Pepper lists it — everywhere.</h1>
-    <p>Take a photo of anything you sell. Pepper's AI names the item and drafts the listing — title, category, condition, description — then posts it for you. Nothing ever goes live without your yes.</p>
+    <h1>Sell it. Book it. One app does both.</h1>
+    <p>Pepper Lists It is the Top Speed customer app, and it works both ways. <b>Selling?</b> Snap a photo of anything you sell — Pepper's AI drafts the listing and posts it for you, nothing live without your yes. <b>Need a repair?</b> Book appliance service right here — send Speedy a photo of the problem, track your tech on the day, and review the job when it's done.</p>
     <div class="cta">
       <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+      <a class="btn alt" href="https://topspeedserviceos.com/book">Book a Repair</a>
       <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
     </div>
-    <p class="note">Built for Fort Lauderdale sellers — produce, trees, and whatever's in the yard today.</p>
+    <p class="note">Built for Fort Lauderdale — sell produce, trees, and whatever's in the yard today, or book a repair and let Top Speed come to you.</p>
   </div>
 </div>
 
+<style>
+.pl-laneimg{width:100%;border-radius:18px;border:1px solid #22301f;display:block;margin:16px 0 20px}
+.plad-card{background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:24px}
+.plad-pill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.14em;color:var(--amber);border:1px solid rgba(245,197,24,.55);border-radius:5px;padding:2.5px 7px;margin-bottom:10px}
+.plad-card h3{font-size:17.5px;margin:0 0 6px}
+.plad-card p{color:var(--muted);font-size:14.5px;line-height:1.6;margin:0 0 12px}
+</style>
 <section id="how">
   <h2>How it <span class="lime">works</span></h2>
-  <p class="sub">Four steps from a photo on your phone to a live listing. You stay in control the whole way — Pepper prepares, you approve.</p>
+  <p class="sub">Two ways to use Pepper Lists — sell your products, or book a service. Either way you stay in control the whole way: Pepper prepares, you approve.</p>
+  <h3 style="font-size:21px;margin:26px 0 4px">Selling — four steps to a live listing</h3>
+  <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/sell.webp" alt="Illustration: a Fort Lauderdale seller photographing a crate of ackee, mangoes and avocados with a potted mango tree, while a listing card appears on a phone" loading="lazy">
   <div class="grid4">
     <div class="card"><div class="stepnum">1</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Snap a photo</h3><p>Point your camera at the item — a box of ackee, a mango tree, a stack of produce. One photo is enough to start.</p></div>
     <div class="card"><div class="stepnum">2</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>AI drafts the listing</h3><p>Pepper recognizes the item and drafts the title, category, condition and description, with a confidence score. Regulars are matched to their usual prices automatically.</p></div>
     <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><polyline points="8.2,12.2 11,15 15.8,9.2"/></svg></div><h3>You review</h3><p>Check the draft, fix anything, set the price if it's something new. If a price is missing, Pepper asks — it never invents one.</p></div>
     <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 3 L10.5 13.5"/><path d="M21 3 L14 21 L10.5 13.5 L3 10 Z"/><circle cx="10.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Pepper posts it</h3><p>Only after you confirm in chat does Pepper post the listing through your connected account. You get the live link back.</p></div>
   </div>
+  <h3 style="font-size:21px;margin:34px 0 4px">Booking — four steps to a fixed appliance</h3>
+  <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/book.webp" alt="Illustration: a Top Speed technician with a wrench beside an open refrigerator, with a phone showing the live tracking map and a chat bubble" loading="lazy">
+  <div class="grid4">
+    <div class="card"><div class="stepnum">1</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 5 L20 5 L20 15 L12 15 L6 19 L6 15 L4 15 Z"/><circle cx="8.6" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="12.4" cy="10" r="1.1" fill="currentColor" stroke="none"/><circle cx="16.2" cy="10" r="1.1" fill="currentColor" stroke="none"/></svg></div><h3>Say what's wrong</h3><p>Open the booking form or tell Speedy. Snap a photo of the appliance or its model plate — Speedy reads it and starts the booking with you.</p></div>
+    <div class="card"><div class="stepnum">2</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><polyline points="8.2,12.2 11,15 15.8,9.2"/></svg></div><h3>Confirm the visit</h3><p>The Service Setters confirm your details and time window. The residential diagnostic is $99, collected at booking and credited toward your repair.</p></div>
+    <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21 C12 21 5.5 14.8 5.5 9.8 A6.5 6.5 0 0 1 12 3.5 A6.5 6.5 0 0 1 18.5 9.8 C18.5 14.8 12 21 12 21 Z"/><circle cx="12" cy="9.8" r="2.3"/></svg></div><h3>Track your tech</h3><p>On the day, follow your technician live on the map — and message the office any time, right from here.</p></div>
+    <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg></div><h3>Review the repair</h3><p>When the job is done, rate it in Pepper Lists Reviews — Speedy answers every review personally.</p></div>
+  </div>
+</section>
+
+<section style="padding-top:0" id="ads">
+  <h2>Customer <span class="lime">ads</span></h2>
+  <p class="sub">Real ads from Pepper Lists sellers and Top Speed partners. Every ad is reviewed by the Top Speed office before it runs — nothing appears here unapproved.</p>
+  <div class="grid" id="plAdsWall"></div>
 </section>
 
 <section style="padding-top:0;" id="platforms">
@@ -508,6 +548,8 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <details><summary>Does Pepper post without asking me?</summary><p>No. Pepper drafts every listing and waits. A listing only goes live after you confirm it in chat — and posting runs through your own connected Facebook account, so it shows up in your Seller app like any listing you made yourself.</p></details>
   <details><summary>What if Pepper doesn't know the price?</summary><p>Then the listing is marked "Needs info" and Pepper asks you. Known regulars come back with their usual prices; anything new waits for your number. Pepper never invents a price.</p></details>
   <details><summary>Which platforms can I post to today?</summary><p>Facebook Marketplace is live. Instagram can be selected and queues until the owner's Instagram account is connected. TikTok, YouTube, eBay and OfferUp are coming soon — they're shown honestly as not live yet.</p></details>
+  <details><summary>Can I book appliance repair here too?</summary><p>Yes — that's the other half of Pepper Lists. It's the Top Speed customer app for both sides: sell your products, and book Top Speed appliance services. Book with the classic web form or with Speedy, track your technician live, keep your appliances in your Garage, and review your repair when it's done.</p></details>
+  <details><summary>How do I advertise inside Pepper Lists?</summary><p>Sign in, open the Advertise lane, and send your ad. The Top Speed office reviews every ad before it runs — submitting is free, and nothing is charged or shown without office approval. Approved ads appear in the Customer Ads section here and can rotate in the Flywheel mini banner across Top Speed sites.</p></details>
   <details><summary>Who is Pepper?</summary><p>Pepper is the AI assistant behind Top Speed Appliance in Fort Lauderdale, Florida — the same Pepper who runs the Service OS, with Speedy AI as the brain. Talk to Speedy any time with the button on this page.</p></details>
 </section>
 
@@ -764,7 +806,7 @@ function plbLoadMode(){
 }
 function plbShow(lane){
   plbLaneOpen=lane;
-  ['rec','scan','plate','live'].forEach(function(k){
+  ['rec','scan','plate','live','ads'].forEach(function(k){
     var p=plbEl('plbPanel-'+k); if(p) p.style.display=(k===lane)?'':'none';
     var b=plbEl('plbLaneBtn-'+k); if(b) b.className='plb-lane'+(k==='live'?' hot':'')+((k===lane)?' on':'');
   });
@@ -1399,7 +1441,67 @@ function plrPostComment(id){
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500} h1,h2,h3{font-weight:800}</style>
-<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" defer></script>
+<script>
+/* Pepper Lists customer ads: public wall (Flywheel display feed,
+   PEPPER_LISTS category) + signed-in submission form (the office
+   approves every ad before it runs). Dark and honest on any failure:
+   no feed, no ads — just the invitation card. */
+function plAdsEsc(t){return String(t==null?'':t).replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+(function(){
+  var wall=document.getElementById('plAdsWall');
+  if(!wall) return;
+  function invite(){
+    wall.innerHTML='<div class="plad-card"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
+  }
+  fetch(PL_API+'/ad-studio/display?category=PEPPER_LISTS').then(function(r){return r.json();}).then(function(j){
+    var list=(j&&j.data)||[];
+    if(!list.length){ invite(); return; }
+    wall.innerHTML=list.slice(0,3).map(function(ad){
+      var offer=ad.offering||ad.headline||'';
+      var copy=ad.copy||'';
+      return '<div class="plad-card"><span class="plad-pill">AD</span><h3>'+plAdsEsc(ad.advertiserName||'')+'</h3>'+
+        (offer?'<p style="color:var(--ink);font-weight:700">'+plAdsEsc(offer)+'</p>':'')+
+        (copy?'<p>'+plAdsEsc(copy)+'</p>':'')+
+        (ad.ctaText&&ad.ctaUrl?'<a class="btn small" href="'+plAdsEsc(ad.ctaUrl)+'">'+plAdsEsc(ad.ctaText)+'</a>':'')+'</div>';
+    }).join('');
+  }).catch(function(){ invite(); });
+})();
+function plAdsMsg(t,err){ var m=document.getElementById('plAdMsg'); if(m){ m.textContent=t||''; m.className='plb-msg'+(err?' err':''); } }
+function plAdsSubmit(){
+  var body={
+    advertiserName:(document.getElementById('plAdName').value||'').trim(),
+    headline:(document.getElementById('plAdHeadline').value||'').trim(),
+    copy:(document.getElementById('plAdCopy').value||'').trim(),
+    ctaText:(document.getElementById('plAdCta').value||'').trim(),
+    ctaUrl:(document.getElementById('plAdUrl').value||'').trim()
+  };
+  if(!body.advertiserName||!body.headline||!body.copy){ plAdsMsg('Please fill in your name or business, a headline, and the ad text.',true); return; }
+  plAdsMsg('Sending…');
+  fetch(PL_API+'/pepper-lists/ads',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+plTok()},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+    .then(function(res){
+      if(!res.ok){ plAdsMsg((res.j&&res.j.error)||'That did not send — please check the fields and try again.',true); return; }
+      plAdsMsg('Sent — your ad is in the office review queue. Nothing runs until it is approved.');
+      plAdsMine();
+    })
+    .catch(function(){ plAdsMsg('That did not send — the ad service may still be warming up. Please try again in a few minutes.',true); });
+}
+function plAdsMine(){
+  var box=document.getElementById('plAdMine'); if(!box) return;
+  fetch(PL_API+'/pepper-lists/ads/mine',{headers:{'Authorization':'Bearer '+plTok()}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      var list=(j&&j.data)||[];
+      if(!list.length){ box.innerHTML=''; return; }
+      box.innerHTML='<h3 style="margin-top:20px">My ads</h3>'+list.map(function(a){
+        var st=a.status==='ACTIVE'?'Live':(a.status==='PENDING_APPROVAL'?'In office review':a.status);
+        return '<p class="plb-note" style="margin:6px 0"><b style="color:var(--ink)">'+plAdsEsc(a.headline||a.advertiserName||'Ad')+'</b> — '+plAdsEsc(st)+'</p>';
+      }).join('');
+    })
+    .catch(function(){ box.innerHTML=''; });
+}
+</script>
+<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>
 <script src="/speedy-guide.js" defer></script>
 <!-- TOP SPEED TYPE SYSTEM (Futuristic Font System 2026-11-16) -->
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1,h2,h3{font-family:'Manrope','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
