@@ -14,6 +14,7 @@ import speedyRouter from './routes/speedy.js';
 import videoRouter from './routes/video.js';
 import connectionsRouter from './routes/connections.js';
 import connectRouter from './routes/connect.js';
+import pepperListsRouter from './routes/pepperLists.js';
 import crmRouter from './routes/crm.js';
 import chatsRouter from './routes/chats.js';
 import bannersRouter from './routes/banners.js';
@@ -74,6 +75,10 @@ app.use(cors({ origin: corsOrigin, credentials: false }));
 // so this path gets a raw parser BEFORE any JSON parser runs.
 app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json', limit: '1mb' }));
 app.use('/api/v1/speedy/diagnose', express.json({ limit: '6mb' }));
+// Pepper Lists Speedy Brain submissions carry base64 photos/videos to
+// the Service Setters (route-capped: photos 6 MB, videos 15 MB, 18 MB
+// total), so that path gets its own larger parser, before the global one.
+app.use('/api/v1/pepper-lists', express.json({ limit: '30mb' }));
 // Twilio voice webhooks post application/x-www-form-urlencoded, which the
 // JSON parsers below would leave unparsed; give that path its own parser.
 app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));
@@ -146,6 +151,7 @@ app.use('/api/v1', marketingRouter);
 app.use('/api/v1', videoRouter);
 app.use('/api/v1', connectionsRouter);
 app.use('/api/v1', connectRouter);
+app.use('/api/v1', pepperListsRouter);
 app.use('/api/v1', crmRouter);
 app.use('/api/v1', chatsRouter);
 app.use('/api/v1', bannersRouter);

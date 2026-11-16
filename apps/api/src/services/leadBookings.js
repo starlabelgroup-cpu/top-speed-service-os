@@ -40,6 +40,13 @@ const LEAD_TYPES = {
   SERVICE_REQUEST: { segment: 'RESIDENTIAL', source: 'WEB_FORM', label: 'Service request' },
   PM_SERVICE_REQUEST: { segment: 'RESIDENTIAL', source: 'WEB_FORM', label: 'Property-manager service request' },
   PM_WALKTHROUGH_REQUEST: { segment: 'RESIDENTIAL', source: 'WEB_FORM', label: 'Portal walkthrough request' },
+  // Pepper Lists Speedy Brain (2026-11-16): a signed-in customer's
+  // scan & send submission (photos/videos of an appliance issue) and
+  // their live-video request both land in the same setter queue as
+  // residential leads — the media rides on the connection record's
+  // SubmissionMedia rows, the facts ride in the message verbatim.
+  PEPPER_LISTS_SCAN: { segment: 'RESIDENTIAL', source: 'WEB_FORM', label: 'Pepper Lists scan submission' },
+  PEPPER_LISTS_LIVE_VIDEO: { segment: 'RESIDENTIAL', source: 'WEB_FORM', label: 'Live video request' },
 };
 
 export function leadTypeOf(type) {

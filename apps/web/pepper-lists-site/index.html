@@ -146,6 +146,184 @@ footer a{color:var(--lime)}
 </section>
 <div id="plApp">
 <div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
+<!-- SPEEDY BRAIN — Speedy AI (the assistant) is the commander inside
+     Pepper Lists: it recommends the right Top Speed platform, reads
+     rating plates, takes scan & send submissions and live video
+     requests, and routes them all into the Service Setters queue.
+     Signed-in only — this whole section stays hidden until the
+     account gate opens the app. -->
+<style>
+.plb{max-width:1020px;margin:0 auto;padding:26px 24px 4px}
+.plb-card{background:linear-gradient(160deg,#16241b,#101a13);border:1px solid rgba(183,227,60,.35);border-radius:20px;padding:28px 26px}
+.plb-head{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.plb-spark{width:54px;height:54px;border-radius:16px;background:var(--lime);color:#0C130E;display:flex;align-items:center;justify-content:center;flex:none}
+.plb-spark svg{width:30px;height:30px}
+.plb h2{font-family:'Sora','Manrope',sans-serif;font-size:27px;margin-bottom:6px}
+.plb-sub{color:var(--muted);font-size:15px;line-height:1.6;max-width:720px}
+.plb-mode{margin-top:12px;font-size:13.5px;line-height:1.55;color:var(--amber);background:rgba(249,186,71,.08);border:1px solid rgba(249,186,71,.35);border-radius:11px;padding:9px 13px;display:none}
+.plb-mode.live{color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)}
+.plb-lanes{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-top:20px}
+.plb-lane{background:var(--panel2);border:1.5px solid #2c4232;border-radius:15px;padding:18px;text-align:left;color:var(--ink);font:inherit;cursor:pointer;width:100%}
+.plb-lane:hover{border-color:rgba(183,227,60,.6)}
+.plb-lane.on{border-color:var(--lime);background:#22331f}
+.plb-lane h3{font-size:16.5px;margin-bottom:5px;display:flex;align-items:center;gap:8px}
+.plb-lane h3 svg{width:20px;height:20px;color:var(--lime);flex:none}
+.plb-lane p{color:var(--muted);font-size:13.5px;line-height:1.5}
+.plb-lane.hot{border-color:var(--amber)}
+.plb-lane.hot h3 svg{color:var(--amber)}
+.plb-panel{margin-top:18px;background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:22px}
+.plb-panel h3{font-size:19px;margin-bottom:6px}
+.plb-note{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:14px}
+.plb-lab{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:0 0 12px}
+.plb-lab input,.plb-lab select,.plb-lab textarea{display:block;width:100%;margin-top:5px;padding:12px 14px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500}
+.plb-lab input:focus,.plb-lab select:focus,.plb-lab textarea:focus{outline:none;border-color:var(--lime)}
+.plb-row{display:flex;gap:10px;flex-wrap:wrap}.plb-row .plb-lab{flex:1;min-width:150px}
+.plb-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.plb-chip{background:var(--panel2);color:var(--ink);border:1.5px solid #2c4232;border-radius:999px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.plb-chip:hover{border-color:var(--lime)}
+.plb-msg{font-size:13.5px;line-height:1.5;min-height:18px;color:var(--amber);margin:6px 0 10px}
+.plb-msg.err{color:#ff9a8a}
+.plb-rec{background:var(--panel2);border:1px solid rgba(183,227,60,.35);border-radius:13px;padding:16px 18px;margin-top:12px}
+.plb-rec h4{font-size:16px;margin-bottom:5px}
+.plb-rec p{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:10px}
+.plb-rec a{margin-right:8px;margin-bottom:6px}
+.plb-media{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.plb-thumb{position:relative;width:104px;border:1px solid #2c4232;border-radius:11px;overflow:hidden;background:var(--bg)}
+.plb-thumb img,.plb-thumb video{width:100%;height:74px;object-fit:cover;display:block}
+.plb-thumb span{display:block;font-size:11px;color:var(--muted);padding:5px 7px;line-height:1.35}
+.plb-thumb button{position:absolute;top:4px;right:4px;background:rgba(12,19,14,.85);color:var(--ink);border:1px solid #2c4232;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:1;cursor:pointer}
+.plb-cam{display:none;margin:12px 0;background:#000;border-radius:13px;overflow:hidden;border:1px solid #2c4232}
+.plb-cam video{width:100%;max-height:340px;display:block}
+.plb-camrow{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:var(--panel2)}
+.plb-btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.plb-summary{margin-top:18px;background:#22331f;border:1.5px solid var(--lime);border-radius:15px;padding:20px 22px;display:none}
+.plb-summary h3{font-size:17px;margin-bottom:10px}
+.plb-summary ul{list-style:none;margin-bottom:14px}
+.plb-summary li{font-size:14.5px;line-height:1.55;color:var(--ink);padding:3px 0;border-bottom:1px solid rgba(183,227,60,.14)}
+.plb-summary li b{color:var(--lime);font-weight:700}
+.plb-success{display:none;margin-top:16px;background:rgba(183,227,60,.08);border:1.5px solid var(--lime);border-radius:13px;padding:16px 18px;font-size:14.5px;line-height:1.6}
+.plb-success b{color:var(--lime)}
+.plb-applist{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.plb-appchip{background:var(--panel2);border:1px solid #2c4232;border-radius:999px;padding:7px 13px;font-size:13px;color:var(--ink)}
+.plb-appchip b{color:var(--lime)}
+input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
+@media(max-width:560px){.plb{padding:20px 14px 2px}.plb-card{padding:22px 17px}.plb-panel{padding:18px 15px}}
+</style>
+<section class="plb" id="plBrain" style="display:none" aria-label="Speedy Brain">
+  <div class="plb-card">
+    <div class="plb-head">
+      <div class="plb-spark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+      <div style="flex:1;min-width:240px">
+        <h2>Speedy Brain — your commander</h2>
+        <p class="plb-sub"><b>Speedy — Assistant Manager</b> of the Top Speed Service OS, at your service inside Pepper Lists. Tell Speedy what you need and it routes you to the right Top Speed platform, reads your appliance's model plate, and sends your photos, videos and requests straight to the Service Setters office. When a request leaves this app it lands in the Service Setters queue — operations there are managed by <b>Pepper Agent, System Operations Manager</b>, who runs the follow-through behind the scenes.</p>
+        <p class="plb-mode" id="plbMode" role="status"></p>
+      </div>
+    </div>
+    <div class="plb-lanes" role="tablist" aria-label="Speedy Brain lanes">
+      <button type="button" class="plb-lane" id="plbLaneBtn-rec" onclick="plbShow('rec')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.6"/><path d="M15.5 8.5 L13 13 L8.5 15.5 L11 11 Z"/></svg>Speedy Recommends</h3><p>Not sure where to go? Speedy points you to the right app, service or partner.</p></button>
+      <button type="button" class="plb-lane" id="plbLaneBtn-scan" onclick="plbShow('scan')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/></svg>Scan &amp; Send</h3><p>Photos or a short video of the problem, sent to the Service Setters office.</p></button>
+      <button type="button" class="plb-lane" id="plbLaneBtn-plate" onclick="plbShow('plate')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>Model &amp; Serial Scan</h3><p>Snap the rating plate — Speedy reads the model and serial for your garage.</p></button>
+      <button type="button" class="plb-lane hot" id="plbLaneBtn-live" onclick="plbShow('live')"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="7" width="12.5" height="10.5" rx="2"/><path d="M15.5 10.8 L21 7.8 L21 16.7 L15.5 13.7"/></svg>Request Live Video</h3><p>Know what you need? The fast lane — request a live video session with the office.</p></button>
+    </div>
+
+    <div class="plb-panel" id="plbPanel-rec" style="display:none">
+      <h3>What do you need?</h3>
+      <p class="plb-note">Tap a category, or describe it in your own words — Speedy recommends the right Top Speed platform or service, with the link to go straight there.</p>
+      <div class="plb-chips">
+        <button type="button" class="plb-chip" onclick="plbRecommend('repair')">Fix my appliance</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('sell')">Sell something</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('commercial')">Service for my business</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('pm')">Property manager</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('vent')">Dryer vent cleaning</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('parts')">A part for my appliance</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('track')">Track my technician</button>
+        <button type="button" class="plb-chip" onclick="plbRecommend('refer')">Refer &amp; earn</button>
+      </div>
+      <label class="plb-lab">Or describe it<input id="plbRecText" type="text" placeholder="e.g. My dryer is loud and the vent looks clogged"></label>
+      <div class="plb-btnrow"><button class="btn small" type="button" onclick="plbRecommendText()">Ask Speedy</button></div>
+      <p class="plb-msg" id="plbRecMsg" role="status"></p>
+      <div id="plbRecOut"></div>
+    </div>
+
+    <div class="plb-panel" id="plbPanel-plate" style="display:none">
+      <h3>Scan your model &amp; serial plate</h3>
+      <p class="plb-note">Every appliance has a rating plate — usually inside the door, on the back, or on the side. The web camera is your device's own camera through the browser — a traditional photo snapshot — and Speedy works as your upload assistant: it guides the capture, confirms what you got, then reads the plate and fills in the model and serial. You confirm every character before anything is saved — and you can always type them in by hand.</p>
+      <div class="plb-btnrow">
+        <button class="btn small dark" type="button" onclick="plbCamOpen('plate')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera</button>
+        <label class="btn small dark" style="cursor:pointer">Upload a photo<input class="plb-file" id="plbPlateFile" type="file" accept="image/*" style="display:none" onchange="plbPlateFilePicked()"></label>
+      </div>
+      <div class="plb-cam" id="plbPlateCam"><video id="plbPlateVideo" autoplay playsinline muted></video><div class="plb-camrow"><button class="btn small" type="button" onclick="plbPlateCapture()">Capture photo</button><button class="btn small dark" type="button" onclick="plbCamClose('plate')">Close camera</button></div></div>
+      <img id="plbPlatePreview" alt="Your rating plate photo" style="display:none;max-width:280px;width:100%;border-radius:11px;border:1px solid #2c4232;margin-top:12px">
+      <p class="plb-msg" id="plbPlateMsg" role="status"></p>
+      <div class="plb-btnrow"><button class="btn small" type="button" id="plbPlateReadBtn" onclick="plbPlateRead()" disabled>Read my plate with Speedy</button></div>
+      <div class="plb-row">
+        <label class="plb-lab">Appliance type<input id="plbPlateType" type="text" placeholder="Refrigerator"></label>
+        <label class="plb-lab">Brand<input id="plbPlateBrand" type="text" placeholder="Brand"></label>
+      </div>
+      <div class="plb-row">
+        <label class="plb-lab">Model number<input id="plbPlateModel" type="text" placeholder="Model"></label>
+        <label class="plb-lab">Serial number<input id="plbPlateSerial" type="text" placeholder="Serial"></label>
+      </div>
+      <div class="plb-btnrow">
+        <button class="btn small" type="button" onclick="plbPlateSave()">Save to my appliances</button>
+        <button class="btn small dark" type="button" onclick="plbPlateUse()">Use for my requests (no save)</button>
+      </div>
+      <div class="plb-applist" id="plbAppliances" aria-label="My saved appliances"></div>
+    </div>
+
+    <div class="plb-panel" id="plbPanel-scan" style="display:none">
+      <h3>Scan &amp; send to the Service Setters</h3>
+      <p class="plb-note">Show the office what's happening: add photos or a short video of the appliance and the problem, describe it, review Speedy's summary, and send. The web camera is your device's own camera through the browser — traditional snapshot and short-clip capture — with Speedy as your upload assistant: it confirms each capture, reads your first photo for the setters, and runs the summary before anything sends. Works the same on a computer (webcam) and a phone (camera) — file upload is always there too.</p>
+      <div class="plb-row">
+        <label class="plb-lab">Appliance<input id="plbScanAppliance" type="text" placeholder="Refrigerator"></label>
+        <label class="plb-lab">Phone for the office<input id="plbScanPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+      </div>
+      <div class="plb-row">
+        <label class="plb-lab">Brand<input id="plbScanBrand" type="text" placeholder="Brand"></label>
+        <label class="plb-lab">Model<input id="plbScanModel" type="text" placeholder="Model"></label>
+        <label class="plb-lab">Serial<input id="plbScanSerial" type="text" placeholder="Serial"></label>
+      </div>
+      <label class="plb-lab">What's happening?<textarea id="plbScanIssue" rows="3" placeholder="e.g. Fridge is warm on top, cold below, and the fan is loud"></textarea></label>
+      <div class="plb-btnrow">
+        <button class="btn small dark" type="button" onclick="plbCamOpen('scan')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera — Speedy upload assistant</button>
+        <label class="btn small dark" style="cursor:pointer">Upload photos / video<input class="plb-file" id="plbScanFile" type="file" accept="image/*,video/*" multiple style="display:none" onchange="plbScanFilesPicked()"></label>
+      </div>
+      <div class="plb-cam" id="plbScanCam"><video id="plbScanVideo" autoplay playsinline muted></video><div class="plb-camrow"><button class="btn small" type="button" onclick="plbScanCapturePhoto()">Capture photo</button><button class="btn small" type="button" id="plbRecVidBtn" onclick="plbScanToggleRecord()">Record video</button><button class="btn small dark" type="button" onclick="plbCamClose('scan')">Close camera</button></div></div>
+      <div class="plb-media" id="plbMediaList"></div>
+      <p class="plb-msg" id="plbScanMsg" role="status"></p>
+      <div class="plb-btnrow"><button class="btn" type="button" onclick="plbScanReview()">Review &amp; send</button></div>
+      <div class="plb-success" id="plbScanDone" role="status"></div>
+    </div>
+
+    <div class="plb-panel" id="plbPanel-live" style="display:none">
+      <h3>Request a live video session</h3>
+      <p class="plb-note">For when you already know what you need. This sends a <b>request</b> to the Service Setters office — a setter contacts you at your number to start the live video session. It is not an instant call, and nothing rings until the office responds.</p>
+      <div class="plb-row">
+        <label class="plb-lab">Appliance<input id="plbLiveAppliance" type="text" placeholder="Washer"></label>
+        <label class="plb-lab">Phone<input id="plbLivePhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+      </div>
+      <div class="plb-row">
+        <label class="plb-lab">Model<input id="plbLiveModel" type="text" placeholder="Model"></label>
+        <label class="plb-lab">Serial<input id="plbLiveSerial" type="text" placeholder="Serial"></label>
+        <label class="plb-lab">Preferred time<select id="plbLiveTime"><option>As soon as possible</option><option>Today</option><option>Tomorrow morning</option><option>Tomorrow afternoon</option></select></label>
+      </div>
+      <label class="plb-lab">What do you need?<textarea id="plbLiveIssue" rows="2" placeholder="e.g. I need a quote to replace the drain pump — I have the model ready"></textarea></label>
+      <p class="plb-msg" id="plbLiveMsg" role="status"></p>
+      <div class="plb-btnrow"><button class="btn" type="button" onclick="plbLiveReview()">Review &amp; request</button></div>
+      <div class="plb-success" id="plbLiveDone" role="status"></div>
+    </div>
+
+    <div class="plb-summary" id="plbSummary" role="dialog" aria-label="Review before sending">
+      <h3>Here's what I'll send to our Service Setters office</h3>
+      <ul id="plbSummaryList"></ul>
+      <div class="plb-btnrow">
+        <button class="btn" type="button" onclick="plbSummaryConfirm()">Looks right — send it</button>
+        <button class="btn dark" type="button" onclick="plbSummaryFix()">Fix something</button>
+      </div>
+      <p class="plb-msg" id="plbSummaryMsg" role="status"></p>
+    </div>
+  </div>
+</section>
 <header>
   <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed Appliance</small></span></a>
   <nav>
@@ -293,6 +471,7 @@ function plPublic(){
   var g=document.getElementById('plGate'); if(g) g.style.display='none';
   var app=document.getElementById('plApp'); if(app) app.style.display='';
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='none';
+  if(window.plbHide) plbHide();
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -365,6 +544,7 @@ function plEnterApp(u){
   document.getElementById('plApp').style.display='';
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='';
   var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
+  if(window.plbEnter) plbEnter(u);
 }
 function plBoot(){
   if(!plTok()){ plPublic(); return; }
@@ -393,6 +573,392 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+<script>
+/* SPEEDY BRAIN — Speedy AI as commander inside Pepper Lists.
+   Four lanes, all on the real platform machinery: recommendations
+   grounded in the ecosystem panel's own links; plate reads through
+   POST /pepper-lists/plate-read (the customer counterpart of the
+   tech plate read); scan & send + live video through
+   POST /pepper-lists/submissions, which lands in the Service
+   Setters queue via the universal intake. Sends to the office are
+   gated by the summary card (standing rule): nothing goes until
+   the customer taps "Looks right — send it". */
+function plbEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function plbEl(id){ return document.getElementById(id); }
+function plbMsg(id,text,isErr){ var m=plbEl(id); if(!m) return; m.textContent=text||''; m.className='plb-msg'+(isErr?' err':''); }
+var plbUser=null, plbPlate=null, plbMedia=[], plbPendingSubmit=null, plbLaneOpen='';
+var PLB_PHOTO_MAX=6*1024*1024, PLB_VIDEO_MAX=15*1024*1024, PLB_TOTAL_MAX=18*1024*1024, PLB_MEDIA_MAX=4;
+
+function plbEnter(u){
+  plbUser=u||{};
+  var b=plbEl('plBrain'); if(b) b.style.display='';
+  var phone=(u&&u.phone)||'';
+  if(phone){ var sp=plbEl('plbScanPhone'); if(sp&&!sp.value) sp.value=phone; var lp=plbEl('plbLivePhone'); if(lp&&!lp.value) lp.value=phone; }
+  plbLoadMode(); plbLoadAppliances();
+}
+function plbHide(){ var b=plbEl('plBrain'); if(b) b.style.display='none'; plbCamClose('plate'); plbCamClose('scan'); }
+window.plbEnter=plbEnter; window.plbHide=plbHide;
+
+function plbLoadMode(){
+  plApi('/speedy/status').then(function(j){
+    var d=j.data||{}; var m=plbEl('plbMode'); if(!m) return;
+    m.style.display='block';
+    if(d.configured){ m.className='plb-mode live'; m.textContent='Live AI is on — Speedy reads plates and photos in real time.'; }
+    else { m.className='plb-mode'; m.textContent='Knowledge mode: live AI is being restored, so Speedy answers from the built-in knowledge base and photo reads are paused. Every lane still works — the office receives your photos, videos and requests either way.'; }
+  }).catch(function(){});
+}
+function plbShow(lane){
+  plbLaneOpen=lane;
+  ['rec','scan','plate','live'].forEach(function(k){
+    var p=plbEl('plbPanel-'+k); if(p) p.style.display=(k===lane)?'':'none';
+    var b=plbEl('plbLaneBtn-'+k); if(b) b.className='plb-lane'+(k==='live'?' hot':'')+((k===lane)?' on':'');
+  });
+  var s=plbEl('plbSummary'); if(s) s.style.display='none';
+  var panel=plbEl('plbPanel-'+lane); if(panel) panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+/* ---------- Lane 1: Speedy Recommends ---------- */
+var PLB_RECS={
+  repair:{title:'Book a repair — Top Speed Appliance',why:'A broken appliance goes to the Service Setters: book online in a couple of minutes, or send Speedy a scan of the problem right here and the office calls you back.',links:[['Book a repair','https://topspeedserviceos.com/book'],['Open the customer app','https://topspeedserviceos.com/app']],lane:'scan',laneLabel:'Or scan & send from here'},
+  sell:{title:'You are in the right app — Pepper Lists It',why:'Snap a photo of what you are selling and Pepper drafts the listing; nothing posts without your yes. Marketplace posting runs through the connected account after you confirm in chat.',links:[['See how it works','#how']]},
+  commercial:{title:'Appliance Pro — commercial service',why:'Businesses run on Appliance Pro: facilities, equipment registry and custom-quoted commercial work — no residential diagnostic pricing, ever.',links:[['Open Appliance Pro','https://topspeedserviceos.com/appliance-pro-site']]},
+  pm:{title:'Appliance Connect Pro — property managers',why:'Connect Pro is the service hub for homeowners and property managers: units, work orders and tracking across your portfolio.',links:[['Open Connect Pro','https://topspeedserviceos.com/connect-pro-site']]},
+  vent:{title:'Cleanout Vents — our dryer-vent partner',why:'Dryer-vent cleaning is handled by Cleanout Vents, a registered partner in the Top Speed network. Speedy routes vent work to them — call 954-931-7997 or open their page.',links:[['Open Cleanout Vents','https://topspeedserviceos.com/cleanout-vents-site']]},
+  parts:{title:'Parts — confirmed by the Parts Supply team',why:'There is no customer parts store: the exact part for your model is confirmed by our Parts Supply team at order time, so nothing is ever guessed. Appliance Plug is our technicians\u2019 tool app, not a shop. Book the repair, or scan & send a photo of the plate and the problem, and the office takes it from there.',links:[['Book a repair','https://topspeedserviceos.com/book']],lane:'scan',laneLabel:'Scan & send the plate + problem'},
+  track:{title:'Track My Tech',why:'Every booked job has live 8-stage tracking — see where things stand and when your technician is on the way.',links:[['Track my visit','https://topspeedserviceos.com/track']]},
+  refer:{title:'Refer & Earn',why:'Share your personal link: friends get $25 off their first repair, and you earn a $25 credit for every completed referral.',links:[['Open Refer & Earn','https://topspeedserviceos.com/refer']]}
+};
+function plbRenderRec(key,note){
+  var r=PLB_RECS[key]; if(!r) return;
+  var h='<div class="plb-rec"><h4>'+plbEsc(r.title)+'</h4><p>'+plbEsc(r.why)+'</p><div class="plb-btnrow">';
+  r.links.forEach(function(l){ h+='<a class="btn small" href="'+plbEsc(l[1])+'">'+plbEsc(l[0])+'</a>'; });
+  if(r.lane) h+='<button class="btn small dark" type="button" onclick="plbShow(\''+r.lane+'\')">'+plbEsc(r.laneLabel||'Open the lane')+'</button>';
+  h+='</div>'+(note?'<p style="margin-top:8px">'+plbEsc(note)+'</p>':'')+'</div>';
+  plbEl('plbRecOut').innerHTML=h;
+}
+function plbRecommend(key){ plbMsg('plbRecMsg',''); plbRenderRec(key); }
+function plbRecommendText(){
+  var t=(plbEl('plbRecText').value||'').toLowerCase().trim();
+  if(!t){ plbMsg('plbRecMsg','Describe what you need, or tap a category above.',true); return; }
+  var key=null;
+  if(/vent|lint|dryer vent/.test(t)) key='vent';
+  else if(/tenant|rent|property|landlord|units?\b/.test(t)) key='pm';
+  else if(/business|restaurant|office|commercial|laundromat|hotel/.test(t)) key='commercial';
+  else if(/sell|listing|marketplace|post/.test(t)) key='sell';
+  else if(/part|pump|element|motor|belt|filter/.test(t)) key='parts';
+  else if(/track|technician|appointment|on the way|eta/.test(t)) key='track';
+  else if(/refer|friend|earn|credit/.test(t)) key='refer';
+  else if(/fridge|refrigerator|washer|dryer|oven|stove|dishwasher|freezer|microwave|ac\b|air condition|leak|noise|warm|cold|broken|fix|repair/.test(t)) key='repair';
+  if(key){ plbMsg('plbRecMsg',''); plbRenderRec(key); return; }
+  plbMsg('plbRecMsg','Asking Speedy…');
+  plApi('/speedy/chat',{method:'POST',body:JSON.stringify({message:plbEl('plbRecText').value.trim(),source:'pepper-lists-recommends'})})
+    .then(function(j){
+      var d=j.data||{};
+      plbMsg('plbRecMsg', d.answeredBy==='knowledge-fallback' ? 'Answered from the built-in knowledge base while live AI is being restored.' : '');
+      plbEl('plbRecOut').innerHTML='<div class="plb-rec"><h4>Speedy says</h4><p style="white-space:pre-line">'+plbEsc(d.reply||'')+'</p><div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair</a><button class="btn small dark" type="button" onclick="plbShow(\'scan\')">Scan &amp; send instead</button></div></div>';
+    })
+    .catch(function(e){ plbMsg('plbRecMsg','Speedy could not answer just now — tap a category above, or call (954) 931-7997.',true); });
+}
+
+/* ---------- Shared camera (desktop webcam + mobile camera) ---------- */
+var plbStreams={};
+function plbCamOpen(which){
+  var msgId=which==='plate'?'plbPlateMsg':'plbScanMsg';
+  var box=plbEl(which==='plate'?'plbPlateCam':'plbScanCam');
+  var video=plbEl(which==='plate'?'plbPlateVideo':'plbScanVideo');
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    plbMsg(msgId,'Camera is not available in this browser — please use the upload button instead; it works on every device.',true);
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+    .then(function(stream){
+      plbStreams[which]=stream; video.srcObject=stream; box.style.display='block';
+      plbMsg(msgId,'Camera is on — line up the shot, then capture.');
+    })
+    .catch(function(){
+      plbMsg(msgId,'The camera was denied or is unavailable — no problem: use the upload button instead; it works on every device.',true);
+    });
+}
+function plbCamClose(which){
+  var s=plbStreams[which];
+  if(s){ s.getTracks().forEach(function(t){ t.stop(); }); delete plbStreams[which]; }
+  var box=plbEl(which==='plate'?'plbPlateCam':'plbScanCam'); if(box) box.style.display='none';
+  if(which==='scan' && plbRecorder && plbRecorder.state!=='inactive'){ try{ plbRecorder.stop(); }catch(e){} }
+}
+function plbSnap(videoEl){
+  return new Promise(function(resolve){
+    var c=document.createElement('canvas');
+    var w=videoEl.videoWidth||640, h=videoEl.videoHeight||480;
+    var scale=Math.min(1,1600/Math.max(w,h));
+    c.width=Math.round(w*scale); c.height=Math.round(h*scale);
+    c.getContext('2d').drawImage(videoEl,0,0,c.width,c.height);
+    c.toBlob(function(b){ resolve(b); },'image/jpeg',0.85);
+  });
+}
+function plbDownscalePhoto(file){
+  return new Promise(function(resolve){
+    if(!/^image\//.test(file.type||'')){ resolve(file); return; }
+    var url=URL.createObjectURL(file);
+    var img=new Image();
+    img.onload=function(){
+      var w=img.naturalWidth, h=img.naturalHeight;
+      var scale=Math.min(1,1600/Math.max(w,h));
+      if(scale>=1 && file.size<=PLB_PHOTO_MAX){ URL.revokeObjectURL(url); resolve(file); return; }
+      var c=document.createElement('canvas');
+      c.width=Math.round(w*scale); c.height=Math.round(h*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(function(b){ resolve(b||file); },'image/jpeg',0.82);
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); resolve(file); };
+    img.src=url;
+  });
+}
+function plbBlobToB64(blob){
+  return new Promise(function(resolve,reject){
+    var r=new FileReader();
+    r.onload=function(){ var s=String(r.result||''); resolve(s.slice(s.indexOf(',')+1)); };
+    r.onerror=reject;
+    r.readAsDataURL(blob);
+  });
+}
+</script>
+<script>
+/* ---------- Lane 3: Model & Serial Scan ---------- */
+var plbPlateBlob=null;
+function plbPlateFilePicked(){
+  var f=plbEl('plbPlateFile').files[0]; if(!f) return;
+  plbDownscalePhoto(f).then(function(b){
+    plbPlateBlob=b;
+    var img=plbEl('plbPlatePreview'); img.src=URL.createObjectURL(b); img.style.display='';
+    plbEl('plbPlateReadBtn').disabled=false;
+    plbMsg('plbPlateMsg','Photo ready — read it with Speedy, or type the details in by hand below.');
+  });
+}
+function plbPlateCapture(){
+  plbSnap(plbEl('plbPlateVideo')).then(function(b){
+    if(!b){ plbMsg('plbPlateMsg','The camera did not return a photo — try again, or upload one instead.',true); return; }
+    plbPlateBlob=b;
+    var img=plbEl('plbPlatePreview'); img.src=URL.createObjectURL(b); img.style.display='';
+    plbEl('plbPlateReadBtn').disabled=false;
+    plbCamClose('plate');
+    plbMsg('plbPlateMsg','Photo captured — read it with Speedy, or type the details in by hand below.');
+  });
+}
+function plbPlateRead(){
+  if(!plbPlateBlob){ plbMsg('plbPlateMsg','Add a plate photo first — camera or upload.',true); return; }
+  plbMsg('plbPlateMsg','Speedy is reading the plate…');
+  plbBlobToB64(plbPlateBlob).then(function(b64){
+    return plApi('/pepper-lists/plate-read',{method:'POST',body:JSON.stringify({imageDataUrl:'data:image/jpeg;base64,'+b64})});
+  }).then(function(j){
+    var p=(j.data&&j.data.plate)||{};
+    if(p.appliance_type) plbEl('plbPlateType').value=p.appliance_type;
+    if(p.brand) plbEl('plbPlateBrand').value=p.brand;
+    if(p.model) plbEl('plbPlateModel').value=p.model;
+    if(p.serial) plbEl('plbPlateSerial').value=p.serial;
+    plbMsg('plbPlateMsg','Speedy read the plate — check every character below, fix anything, then save. Anything Speedy could not read was left blank, never guessed.');
+  }).catch(function(e){
+    plbMsg('plbPlateMsg',(e.message||'Plate reading is unavailable right now')+' — type the model and serial in by hand below; everything else still works.',true);
+  });
+}
+function plbPlateValues(){
+  return {
+    type:plbEl('plbPlateType').value.trim(),
+    brand:plbEl('plbPlateBrand').value.trim(),
+    model:plbEl('plbPlateModel').value.trim(),
+    serial:plbEl('plbPlateSerial').value.trim()
+  };
+}
+function plbApplyPlate(v){
+  plbPlate=v;
+  if(v.type) plbEl('plbScanAppliance').value=v.type;
+  if(v.brand) plbEl('plbScanBrand').value=v.brand;
+  if(v.model){ plbEl('plbScanModel').value=v.model; plbEl('plbLiveModel').value=v.model; }
+  if(v.serial){ plbEl('plbScanSerial').value=v.serial; plbEl('plbLiveSerial').value=v.serial; }
+}
+function plbPlateUse(){
+  var v=plbPlateValues();
+  if(!v.model && !v.serial){ plbMsg('plbPlateMsg','Enter at least the model or serial first.',true); return; }
+  plbApplyPlate(v);
+  plbMsg('plbPlateMsg','Loaded into your Scan & Send and Live Video forms below.');
+}
+function plbPlateSave(){
+  var v=plbPlateValues();
+  if(!v.type){ plbMsg('plbPlateMsg','Add the appliance type (Refrigerator, Washer…) so the office can file it.',true); return; }
+  plbMsg('plbPlateMsg','Saving to your appliances…');
+  plApi('/connect/appliances',{method:'POST',body:JSON.stringify({type:v.type,brand:v.brand||undefined,model:v.model||undefined,serial:v.serial||undefined})})
+    .then(function(){ plbApplyPlate(v); plbMsg('plbPlateMsg','Saved to your appliances — and loaded into the other lanes.'); plbLoadAppliances(); })
+    .catch(function(e){ plbMsg('plbPlateMsg',e.message||'Could not save that appliance.',true); });
+}
+function plbLoadAppliances(){
+  plApi('/connect/appliances').then(function(j){
+    var list=(j.data||[]);
+    var box=plbEl('plbAppliances'); if(!box) return;
+    if(!list.length){ box.innerHTML='<span class="plb-note" style="margin:0">No saved appliances yet — scan a plate and save it, and it will be here for every request.</span>'; return; }
+    box.innerHTML=list.map(function(a){
+      return '<span class="plb-appchip"><b>'+plbEsc(a.type)+'</b>'+(a.brand?' · '+plbEsc(a.brand):'')+(a.model?' · '+plbEsc(a.model):'')+'</span>';
+    }).join('');
+  }).catch(function(){});
+}
+
+/* ---------- Lane 2: Scan & Send ---------- */
+var plbRecorder=null, plbRecChunks=[], plbRecording=false;
+function plbMediaTotal(){ return plbMedia.reduce(function(s,m){ return s+m.blob.size; },0); }
+function plbRenderMedia(){
+  var box=plbEl('plbMediaList'); if(!box) return;
+  box.innerHTML='';
+  plbMedia.forEach(function(m,i){
+    var d=document.createElement('div'); d.className='plb-thumb';
+    var url=URL.createObjectURL(m.blob);
+    if(m.kind==='photo'){ var img=document.createElement('img'); img.src=url; img.alt='Attached photo '+(i+1); d.appendChild(img); }
+    else { var v=document.createElement('video'); v.src=url; v.muted=true; d.appendChild(v); }
+    var s=document.createElement('span'); s.textContent=(m.kind==='photo'?'Photo':'Video')+' · '+Math.max(1,Math.round(m.blob.size/1024))+' KB';
+    var x=document.createElement('button'); x.type='button'; x.textContent='×'; x.setAttribute('aria-label','Remove attachment');
+    x.onclick=function(){ plbMedia.splice(i,1); plbRenderMedia(); };
+    d.appendChild(s); d.appendChild(x); box.appendChild(d);
+  });
+}
+function plbAddMedia(kind,blob){
+  if(plbMedia.length>=PLB_MEDIA_MAX){ plbMsg('plbScanMsg','Up to '+PLB_MEDIA_MAX+' files per send — remove one to add another.',true); return false; }
+  if(kind==='photo' && blob.size>PLB_PHOTO_MAX){ plbMsg('plbScanMsg','That photo is over 6 MB even after shrinking — retake it a little further back.',true); return false; }
+  if(kind==='video' && blob.size>PLB_VIDEO_MAX){ plbMsg('plbScanMsg','That video is over 15 MB — keep clips short (under about 20 seconds) and try again.',true); return false; }
+  if(plbMediaTotal()+blob.size>PLB_TOTAL_MAX){ plbMsg('plbScanMsg','The files together would go over 18 MB — remove one and try again.',true); return false; }
+  plbMedia.push({kind:kind,blob:blob,mime:(blob.type||'').split(';')[0]||(kind==='photo'?'image/jpeg':'video/webm')});
+  plbRenderMedia();
+  plbMsg('plbScanMsg','Attached. Add more, or review & send.');
+  return true;
+}
+function plbScanFilesPicked(){
+  var files=[].slice.call(plbEl('plbScanFile').files||[]);
+  files.forEach(function(f){
+    if(/^image\//.test(f.type)){ plbDownscalePhoto(f).then(function(b){ plbAddMedia('photo',b); }); }
+    else if(/^video\//.test(f.type)){ plbAddMedia('video',f); }
+    else plbMsg('plbScanMsg','That file is not a photo or video — it was not attached.',true);
+  });
+  plbEl('plbScanFile').value='';
+}
+function plbScanCapturePhoto(){
+  plbSnap(plbEl('plbScanVideo')).then(function(b){
+    if(!b){ plbMsg('plbScanMsg','The camera did not return a photo — try again, or upload one instead.',true); return; }
+    plbAddMedia('photo',b);
+  });
+}
+function plbScanToggleRecord(){
+  var btn=plbEl('plbRecVidBtn');
+  if(plbRecording){ if(plbRecorder) plbRecorder.stop(); return; }
+  var stream=plbStreams['scan'];
+  if(!stream){ plbMsg('plbScanMsg','Open the camera first, then record.',true); return; }
+  if(!window.MediaRecorder){ plbMsg('plbScanMsg','Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
+  var mime='';
+  ['video/webm','video/mp4'].forEach(function(m){ if(!mime && window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) mime=m; });
+  try{ plbRecorder=new MediaRecorder(stream, mime?{mimeType:mime}:undefined); }
+  catch(e){ plbMsg('plbScanMsg','Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
+  plbRecChunks=[];
+  plbRecorder.ondataavailable=function(ev){ if(ev.data && ev.data.size) plbRecChunks.push(ev.data); };
+  plbRecorder.onstop=function(){
+    plbRecording=false; btn.textContent='Record video';
+    var blob=new Blob(plbRecChunks,{type:plbRecorder.mimeType||'video/webm'});
+    if(blob.size) plbAddMedia('video',blob);
+  };
+  plbRecorder.start();
+  plbRecording=true; btn.textContent='Stop recording';
+  plbMsg('plbScanMsg','Recording — tap Stop when you are done (keep it under about 20 seconds).');
+  setTimeout(function(){ if(plbRecording && plbRecorder && plbRecorder.state!=='inactive') plbRecorder.stop(); },20000);
+}
+function plbScanReview(){
+  var v={
+    lane:'SCAN_SEND',
+    appliance:plbEl('plbScanAppliance').value.trim(),
+    issue:plbEl('plbScanIssue').value.trim(),
+    phone:plbEl('plbScanPhone').value.trim(),
+    brand:plbEl('plbScanBrand').value.trim(),
+    model:plbEl('plbScanModel').value.trim(),
+    serial:plbEl('plbScanSerial').value.trim()
+  };
+  if(!v.appliance){ plbMsg('plbScanMsg','Which appliance is it? Add it above.',true); return; }
+  if(v.issue.length<3){ plbMsg('plbScanMsg','Tell the office what is happening in a few words.',true); return; }
+  if(v.phone.length<7){ plbMsg('plbScanMsg','Add the phone number the office should call.',true); return; }
+  var rows=[['Sending to','Service Setters office (scan & send)'],['Appliance',v.appliance],['Issue',v.issue],['Phone',v.phone]];
+  if(v.brand) rows.push(['Brand',v.brand]);
+  if(v.model) rows.push(['Model',v.model]);
+  if(v.serial) rows.push(['Serial',v.serial]);
+  rows.push(['Media', plbMedia.length? plbMedia.map(function(m){ return (m.kind==='photo'?'Photo':'Video')+' ('+Math.max(1,Math.round(m.blob.size/1024))+' KB)'; }).join(', ') : 'None — description only']);
+  rows.push(['Speedy photo read','Speedy will try to read your first photo; if the read is unavailable, your media still goes to the office.']);
+  plbShowSummary(rows,function(done){
+    var jobs=plbMedia.map(function(m){ return plbBlobToB64(m.blob).then(function(b64){ return {kind:m.kind,mime:m.mime,dataBase64:b64}; }); });
+    Promise.all(jobs).then(function(media){
+      return plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify({lane:'SCAN_SEND',appliance:v.appliance,issue:v.issue,phone:v.phone,brand:v.brand||undefined,model:v.model||undefined,serial:v.serial||undefined,media:media})});
+    }).then(function(j){ done(null,j); }).catch(function(e){ done(e); });
+  },function(j){
+    var d=j.data||{};
+    var box=plbEl('plbScanDone'); box.style.display='block';
+    box.innerHTML='<b>Sent to the Service Setters office.</b><br>Your reference is <b>'+plbEsc(d.reference||'')+'</b>'+(d.bookingReference?' and your queue reference is <b>'+plbEsc(d.bookingReference)+'</b>':'')+'.<br>'+plbEsc(d.diagnosis||'');
+    plbMedia=[]; plbRenderMedia();
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+}
+
+/* ---------- Lane 4: Live Video Request ---------- */
+function plbLiveReview(){
+  var v={
+    lane:'LIVE_VIDEO',
+    appliance:plbEl('plbLiveAppliance').value.trim(),
+    issue:plbEl('plbLiveIssue').value.trim(),
+    phone:plbEl('plbLivePhone').value.trim(),
+    model:plbEl('plbLiveModel').value.trim(),
+    serial:plbEl('plbLiveSerial').value.trim(),
+    preferredTime:plbEl('plbLiveTime').value
+  };
+  if(!v.appliance){ plbMsg('plbLiveMsg','Which appliance is it about? Add it above.',true); return; }
+  if(v.issue.length<3){ plbMsg('plbLiveMsg','Say in a few words what you need.',true); return; }
+  if(v.phone.length<7){ plbMsg('plbLiveMsg','Add the phone number the office should contact to start the session.',true); return; }
+  var rows=[['Sending to','Service Setters office (live video request)'],['Appliance',v.appliance],['What you need',v.issue],['Phone',v.phone],['Preferred time',v.preferredTime]];
+  if(v.model) rows.push(['Model',v.model]);
+  if(v.serial) rows.push(['Serial',v.serial]);
+  rows.push(['How it works','This is a request — a Service Setter contacts you to start the live video session. Nothing rings until they respond.']);
+  plbShowSummary(rows,function(done){
+    plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify({lane:'LIVE_VIDEO',appliance:v.appliance,issue:v.issue,phone:v.phone,model:v.model||undefined,serial:v.serial||undefined,preferredTime:v.preferredTime})})
+      .then(function(j){ done(null,j); }).catch(function(e){ done(e); });
+  },function(j){
+    var d=j.data||{};
+    var box=plbEl('plbLiveDone'); box.style.display='block';
+    box.innerHTML='<b>Live video requested.</b><br>Your reference is <b>'+plbEsc(d.reference||'')+'</b>'+(d.bookingReference?' (queue reference <b>'+plbEsc(d.bookingReference)+'</b>)':'')+'. A Service Setter will contact you at the number you gave to start the session — keep your phone nearby.';
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  });
+}
+
+/* ---------- Summary gate (standing rule: confirm before any send) ---------- */
+function plbShowSummary(rows,submit,onDone){
+  var ul=plbEl('plbSummaryList');
+  ul.innerHTML='';
+  rows.forEach(function(r){
+    var li=document.createElement('li');
+    var b=document.createElement('b'); b.textContent=r[0]+': ';
+    li.appendChild(b); li.appendChild(document.createTextNode(r[1]));
+    ul.appendChild(li);
+  });
+  plbPendingSubmit={submit:submit,onDone:onDone};
+  plbMsg('plbSummaryMsg','');
+  var s=plbEl('plbSummary'); s.style.display='block';
+  s.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function plbSummaryConfirm(){
+  if(!plbPendingSubmit) return;
+  var job=plbPendingSubmit;
+  plbMsg('plbSummaryMsg','Sending…');
+  job.submit(function(err,j){
+    if(err){ plbMsg('plbSummaryMsg',err.message||'That did not send — check your connection and try again.',true); return; }
+    plbEl('plbSummary').style.display='none';
+    plbPendingSubmit=null;
+    job.onDone(j);
+  });
+}
+function plbSummaryFix(){
+  plbEl('plbSummary').style.display='none';
+  plbPendingSubmit=null;
+  var p=plbEl('plbPanel-'+(plbLaneOpen||'scan')); if(p) p.scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>/* TYPE SYSTEM V2 */ body{font-weight:500} h1,h2,h3{font-weight:800}</style>
 <script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" defer></script>

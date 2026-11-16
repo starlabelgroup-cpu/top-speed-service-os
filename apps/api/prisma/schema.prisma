@@ -603,6 +603,26 @@ model CustomerAppliance {
   createdAt DateTime @default(now())
 }
 
+// Pepper Lists Speedy Brain (2026-11-16): the actual photo/video bytes
+// a signed-in customer sends to the Service Setters with a scan & send
+// submission. One row per media item, keyed to the Connection record
+// the submission created; the setter queue booking carries the facts
+// and the manifest, staff fetch the media itself through the staff-
+// gated pepper-lists media endpoint. Bytes are stored as a data URL
+// (the same shape the vision endpoints already accept), size-capped
+// at the route: photos 6 MB, videos 15 MB, 4 items per submission.
+model SubmissionMedia {
+  id           String   @id @default(uuid()) @db.Uuid
+  connectionId String   @db.Uuid
+  kind         String
+  mime         String
+  sizeBytes    Int
+  dataUrl      String
+  createdAt    DateTime @default(now())
+
+  @@index([connectionId])
+}
+
 model Banner {
   id             String   @id @default(uuid()) @db.Uuid
   placement      String   @default("FOOTER")
