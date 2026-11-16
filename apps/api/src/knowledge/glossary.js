@@ -145,10 +145,10 @@ export const GLOSSARY_PACK = [
   },
   {
     id: 'gloss-speedy',
-    topic: 'Speedy — the AI assistant (who you are talking to)',
+    topic: 'Speedy — the Assistant Manager (who you are talking to)',
     keywords: ['speedy', 'who are you', 'what are you', 'ai assistant', 'are you a robot', 'are you ai'],
     answer:
-      `Speedy is Top Speed's AI assistant — the front door of the platform. Speedy answers questions, helps you book, reads photos of appliance problems (a preliminary read), and connects you to the team. Speedy has hard limits by design: it never approves a refund, never certifies that a repair is safe, never overrides technician credentials, and never changes a compliance status — those belong to humans, and Speedy will say so and hand off when they come up.`,
+      `Speedy is the Top Speed Service OS Assistant Manager — the AI assistant and front door of the platform. Speedy answers questions, helps you book, reads photos of appliance problems (a preliminary read), and connects you to the team. Speedy has hard limits by design: it never approves a refund, never certifies that a repair is safe, never overrides technician credentials, and never changes a compliance status — those belong to humans, and Speedy will say so and hand off when they come up.`,
     link: `${SITE}/speedy`,
   },
   {

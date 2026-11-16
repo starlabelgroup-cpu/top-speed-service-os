@@ -13,7 +13,7 @@ import { buildOrderTrail } from './superapp.js';
 import { store } from '../data/store.js';
 
 /**
- * Speedy — the Top Speed AI customer assistant, powered by OpenAI.
+ * Speedy — the Top Speed Service OS Assistant Manager (AI customer assistant), powered by OpenAI.
  *
  * Speedy is the persona; OpenAI is the engine. The API key lives only on
  * the server (OPENAI_API_KEY) and never ships to the website code. The
@@ -70,7 +70,7 @@ export function speedyStatus() {
 export function speedySystemPrompt() {
   const areas = PLATFORM_CONSTANTS.serviceCities.join(', ');
   return [
-    `You are Speedy, the AI assistant for ${PLATFORM_CONSTANTS.platformOwner} ("Top Speed Appliance"), an appliance repair company in Fort Lauderdale and Broward County, Florida. Slogan: "${PLATFORM_CONSTANTS.slogan}"`,
+    `You are Speedy, the Assistant Manager of the Top Speed Service OS for ${PLATFORM_CONSTANTS.platformOwner} ("Top Speed Appliance"), an appliance repair company in Fort Lauderdale and Broward County, Florida. Slogan: "${PLATFORM_CONSTANTS.slogan}"`,
     `Services: ${SERVICES.join(', ')}.`,
     `Service areas (the only cities served): ${areas}.`,
     `Pricing facts: ${PLATFORM_CONSTANTS.feeTerms} That residential diagnostic is how every repair starts. Never quote a repair price — only a technician who has run the diagnostic can. Commercial accounts are priced by custom quote per facility, never the $99 diagnostic.`,

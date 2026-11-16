@@ -31,7 +31,7 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink
   <h1>Marketing OS — Tri-County Expander</h1>
   <p class="sub">Staff tool. Builds and publishes the owner-directed expansion: 53 tri-county city pages, 5 commercial repair categories, problem pages for every service, and 15 installation categories. Runs from your signed-in staff session — every step is logged below, existing pages are never modified, and duplicates are skipped automatically.</p>
   <div id="status">Checking session…</div>
-  <div class="warn">Run one phase at a time and let it finish. If a phase reports errors, copy the log and send it to Pepper — do not re-run blindly; the tool is idempotent, so a re-run safely skips what already exists.</div>
+  <div class="warn">Run one phase at a time and let it finish. If a phase reports errors, copy the log and send it to Pepper Agent — do not re-run blindly; the tool is idempotent, so a re-run safely skips what already exists.</div>
   <div class="panel">
     <h2>Phases</h2>
     <p>1) Cities — seeds each city as service-covered, creates and publishes its landing page.<br>
@@ -396,7 +396,7 @@ function refreshCounts(){
   else {
     api('GET','/marketing-os/admin/taxonomy').then(function(r){
       if(r.status<300){ st.innerHTML = '<span class="ok">Staff session active.</span> Ready to run.'; refreshCounts(); }
-      else st.innerHTML = '<span class="bad">Session found but the admin API returned '+r.status+'.</span> The account may lack a marketing/staff role — send the log to Pepper.';
+      else st.innerHTML = '<span class="bad">Session found but the admin API returned '+r.status+'.</span> The account may lack a marketing/staff role — send the log to Pepper Agent.';
     });
   }
   document.getElementById('btnCities').onclick = function(){ runCities(this); };

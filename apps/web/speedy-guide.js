@@ -256,7 +256,7 @@
       '<div class="sg-avatar">' + SPARK + '</div>' +
       '<div class="sg-bubble">' +
         '<button class="sg-x" type="button" aria-label="Close">&times;</button>' +
-        '<p class="sg-q">Hi, I&rsquo;m Speedy &mdash; need help with anything?</p>' +
+        '<p class="sg-q">Hi, I&rsquo;m Speedy, Top Speed&rsquo;s Assistant Manager &mdash; need help with anything?</p>' +
         '<p class="sg-ctx">' + esc(ctx.here) + '. I can show you around.</p>' +
         '<div class="sg-row">' +
           '<button class="sg-act sg-act-yes" type="button">Yes &mdash; show me</button>' +

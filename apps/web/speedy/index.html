@@ -3,8 +3,8 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Talk to Speedy — Top Speed AI Assistant | Top Speed Appliance</title>
-<meta name="description" content="Chat with Speedy, the Top Speed Appliance AI assistant. Ask about repairs, the $99 diagnostic, your city — or book a real visit right in the chat." />
+<title>Talk to Speedy — Top Speed Service OS Assistant Manager | Top Speed Appliance</title>
+<meta name="description" content="Chat with Speedy, the Top Speed Service OS Assistant Manager. Ask about repairs, the $99 diagnostic, your city — or book a real visit right in the chat." />
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="manifest" href="/manifest.webmanifest" />
@@ -83,12 +83,12 @@ h1{font-family:"Archivo";font-size:clamp(28px,5vw,40px);margin:6px 0 8px;color:v
 
 <main class="wrap">
   <h1>Talk to Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg></h1>
-  <p class="lede">Speedy is Top Speed's AI assistant — the real one, powered by the Service OS. Ask about a broken appliance, the $99 diagnostic, or your city, and Speedy can book your visit right here in the chat. No app, no login, no forms unless you want one.</p>
+  <p class="lede">Speedy is the Top Speed Service OS Assistant Manager — the real one, powered by the Service OS. Ask about a broken appliance, the $99 diagnostic, or your city, and Speedy can book your visit right here in the chat. No app, no login, no forms unless you want one.</p>
 
   <div id="speedyPanel" role="dialog" aria-label="Ask Speedy chat assistant">
     <div class="sp-head">
       <div class="av"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg></div>
-      <div><b>Speedy</b><small>Top Speed AI assistant • Live</small></div>
+      <div><b>Speedy</b><small>Top Speed Service OS · Assistant Manager • Live</small></div>
       <a href="/">← top speed home</a>
     </div>
     <div class="sp-quick">
@@ -121,7 +121,7 @@ var spOpen=true, spGreeted=false;
 function toggleSpeedy(){
   spOpen=!spOpen;
   document.getElementById('speedyPanel').classList.toggle('open',spOpen);
-  if(spOpen&&!spGreeted){spGreeted=true;botSay('Hey, I\u2019m Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg> — Top Speed\u2019s assistant. Ask me about the $99 diagnostic, your city, a broken appliance, or type "book" and I\u2019ll walk you to an appointment.');}
+  if(spOpen&&!spGreeted){spGreeted=true;botSay('Hey, I\u2019m Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg> — Top Speed\u2019s Assistant Manager. Ask me about the $99 diagnostic, your city, a broken appliance, or type "book" and I\u2019ll walk you to an appointment.');}
   if(spOpen){ spLoadRecs(); setTimeout(function(){document.getElementById('spText').focus();},80); }
 }
 function addMsg(text,me,html){
@@ -314,7 +314,7 @@ wireVoice('spMic','spText');
 /* Standalone page: the panel is always open — greet + load recs on arrival. */
 (function(){
   spGreeted=true;
-  botSay('Hey, I\u2019m Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg> — Top Speed\u2019s assistant. Ask me about the $99 diagnostic, your city, a broken appliance, or type "book" and I\u2019ll walk you to an appointment.');
+  botSay('Hey, I\u2019m Speedy <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15.5l1.6-4.4A2 2 0 0 1 6.5 9.7h3.1l1.8-2.4h5.4l2.6 3.4 1.6 4.8M3 15.5h18M3 15.5a2.4 2.4 0 0 0 2.4 2.4h1M21 15.5a2.4 2.4 0 0 1-2.4 2.4h-1"/><circle cx="7.6" cy="17.9" r="1.8"/><circle cx="16.4" cy="17.9" r="1.8"/><path d="M11.3 9.7h6" stroke="#E8322E"/></svg> — Top Speed\u2019s Assistant Manager. Ask me about the $99 diagnostic, your city, a broken appliance, or type "book" and I\u2019ll walk you to an appointment.');
   spLoadRecs();
   var q=new URLSearchParams(location.search).get('q');
   if(q){ setTimeout(function(){ askSpeedy(q); }, 450); }
