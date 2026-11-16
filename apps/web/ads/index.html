@@ -369,8 +369,7 @@ document.getElementById('advForm').addEventListener('submit',function(ev){
     'Channels: '+chans,
     'Website: '+(document.getElementById('afSite').value||'—'),
     'Preferred contact: '+document.getElementById('afContact').value,
-    'Goals: '+(document.getElementById('afGoals').value||'—')].join('
-');
+    'Goals: '+(document.getElementById('afGoals').value||'—')].join('\n');
   var body={name:document.getElementById('afName').value.trim(),email:document.getElementById('afEmail').value.trim(),
     phone:document.getElementById('afPhone').value.trim()||undefined,type:'ADVERTISER_CONTACT',source:'ads-page-advanced-form',message:lines};
   fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})

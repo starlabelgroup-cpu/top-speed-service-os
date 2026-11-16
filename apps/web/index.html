@@ -2181,7 +2181,7 @@ function hubEmailSend(btn){
   function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
   function render(b){
     slot.innerHTML='<div style="max-width:1180px;margin:0 auto;padding:26px 20px;display:flex;gap:22px;align-items:center;flex-wrap:wrap;">'
-      +(b.imageUrl?'<img src="'+esc(b.imageUrl)+'" alt="" style="width:104px;height:104px;object-fit:cover;border-radius:14px;flex:0 0 auto;" onerror="this.style.display='none'">':'')
+      +(b.imageUrl?'<img src="'+esc(b.imageUrl)+'" alt="" style="width:104px;height:104px;object-fit:cover;border-radius:14px;flex:0 0 auto;" onerror="this.style.display=\'none\'">':'')
       +'<div style="flex:1;min-width:240px;"><div class="michroma" style="color:#fff;font-size:clamp(20px,3.4vw,30px);letter-spacing:.02em;">'+esc(b.headline)+'</div>'
       +(b.copy?'<p style="color:#b9cdf0;margin-top:6px;font-size:15.5px;line-height:1.5;">'+esc(b.copy)+'</p>':'')
       +'</div>'
