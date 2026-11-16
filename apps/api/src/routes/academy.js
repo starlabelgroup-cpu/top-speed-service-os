@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
+import { store } from '../data/store.js';
 import { specialistsRoster } from '../knowledge/specialists.js';
 import { academyCoachChat, coachProviderConfigured } from '../services/academyCoach.js';
 import {
@@ -13,14 +14,25 @@ import {
 /**
  * Top Speed Academy — AI Specialists & Strategists (2026-11-16).
  *
+ *   GET  /academy/curriculum    the training modules (Media OS library,
+ *                               read-only, scoped to the training tag)
  *   GET  /academy/specialists   the department → category → specialist roster
  *   POST /academy/coach         one coach turn with a chosen specialist
  *
- * The gate is IDENTICAL to the Academy's own: the /academy page only
- * opens its staff zone for sessions that pass the Media OS admin check
- * (MARKETING_MANAGER / COMPANY_ADMIN / COMPANY_OWNER / PLATFORM_ADMIN),
- * so the coach endpoints use the same role set — a session that cannot
- * open the Academy cannot reach its specialists.
+ * Access — the TRAINEE gate (widened 2026-11-16 at Ramone's direction:
+ * Service Setters enter the Academy as trainees, "same thing with the
+ * other roles"): every staff role (STAFF_ROLES) plus the provider roles
+ * (PROVIDER_TECH / PROVIDER_OWNER), plus MARKETING_MANAGER, which the
+ * original gate already admitted. Trainee means LEARNING only: the
+ * curriculum read, Speedy Class, and these coaches.
+ *
+ * Media OS ADMIN capabilities are NOT widened. Creating, editing,
+ * transitioning, or deleting library content stays behind the separate
+ * admin gate in routes/mediaOs.js (MARKETING_MANAGER / COMPANY_ADMIN /
+ * COMPANY_OWNER / PLATFORM_ADMIN), which this file does not touch.
+ * That separation is exactly why the curriculum is served here —
+ * read-only and scoped to the training-academy tag — instead of the
+ * Academy page reading the Media OS admin library endpoint.
  *
  * Coaches explain and guide only: the coach service holds no tools and
  * performs no operations (see services/academyCoach.js). Answers are
@@ -30,13 +42,43 @@ import {
  */
 const router = Router();
 
-const academyStaff = [
-  authenticate,
-  requireCompany,
-  requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
+const ACADEMY_TRAINEE_ROLES = [
+  ...STAFF_ROLES,
+  ROLES.PROVIDER_TECH,
+  ROLES.PROVIDER_OWNER,
+  ROLES.MARKETING_MANAGER,
 ];
 
-router.get('/academy/specialists', ...academyStaff, (req, res) => {
+const academyTrainee = [
+  authenticate,
+  requireCompany,
+  requireRole(...ACADEMY_TRAINEE_ROLES),
+];
+
+function learnerContent(record) {
+  return {
+    id: record.id,
+    slug: record.slug,
+    type: record.type,
+    division: record.division,
+    title: record.title,
+    description: record.description || null,
+    assetUrl: record.assetUrl || null,
+    thumbnailUrl: record.thumbnailUrl || null,
+    durationSec: record.durationSec ?? null,
+    status: record.status,
+    tags: Array.isArray(record.tags) ? record.tags : [],
+  };
+}
+
+router.get('/academy/curriculum', ...academyTrainee, (req, res) => {
+  const items = store.mediaContent.filter(
+    (c) => Array.isArray(c.tags) && c.tags.includes('training-academy'),
+  );
+  return res.json({ data: items.map(learnerContent) });
+});
+
+router.get('/academy/specialists', ...academyTrainee, (req, res) => {
   const roster = specialistsRoster();
   const categories = roster.departments.reduce((sum, dept) => sum + dept.categories.length, 0);
   return res.json({
@@ -67,7 +109,7 @@ const coachSchema = z.object({
   sessionId: z.string().trim().max(64).optional(),
 });
 
-router.post('/academy/coach', ...academyStaff, async (req, res) => {
+router.post('/academy/coach', ...academyTrainee, async (req, res) => {
   const parsed = coachSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid coach message', details: parsed.error.flatten() });

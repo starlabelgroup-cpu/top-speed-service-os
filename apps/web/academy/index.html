@@ -248,7 +248,7 @@ function showGate(note){
   document.getElementById('staffZone').style.display = 'none';
   var zone = document.getElementById('gateZone');
   zone.innerHTML = '<div class="gate"><h2>Staff sign-in</h2>' +
-    '<p>The Academy is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
+    '<p>The Academy is for Top Speed staff and provider trainees. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
     (note ? ' ' + esc(note) : '') + '</p>' +
     '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
     '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
@@ -268,7 +268,7 @@ function showGate(note){
   });
 }
 
-/* ── Curriculum (from the Media OS admin library) ──────── */
+/* ── Curriculum (Media OS library, via the trainee endpoint) ── */
 function renderTracks(records){
   var mods = records.filter(function(r){
     return Array.isArray(r.tags) && r.tags.indexOf('training-academy') !== -1;
@@ -553,12 +553,12 @@ function loadSpecialists(){
   });
 }
 
-/* ── Boot: the staff zone opens only on a real staff session ── */
+/* ── Boot: the staff zone opens only on a real trainee session ── */
 function boot(){
   if (!tok()){ showGate(); return; }
-  authFetch('/media-os/admin/content?q=' + encodeURIComponent('training-academy')).then(function(r){
+  authFetch('/academy/curriculum').then(function(r){
     if (r.status === 401){ showGate('Your session has expired — sign in again.'); return null; }
-    if (r.status === 403){ showGate('That account is not a staff account, so the Academy stays closed for it.'); return null; }
+    if (r.status === 403){ showGate('That account does not have Academy access, so the Academy stays closed for it.'); return null; }
     if (!r.ok){ showGate('The Academy library could not be checked just now — try signing in again.'); return null; }
     return r.json();
   }).then(function(j){
