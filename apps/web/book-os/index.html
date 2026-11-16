@@ -245,6 +245,13 @@ body:not(.live) .gated{display:none!important}</style>
 </form>
 </div></section>
 
+<!-- PEPPER LISTS REVIEWS — moderation (staff only, live data) -->
+<section class="panel gated" id="plrPanel" style="margin-top:14px"><div class="ph"><div><h2>· Pepper Lists Reviews — Moderation</h2><p>Customer reviews posted from Pepper Lists. Speedy answers every review first: happy reviews publish themselves to the public wall; anything flagged (low rating or a complaint keyword) waits here, escalated, with Speedy's holding reply on the thread. Publishing keeps Speedy's reply — follow up with the office reply so a human voice lands too. Refunds and compensation are always human decisions, never Speedy's.</p></div><span class="badge" id="plrCount">STAFF</span></div>
+<div style="padding:14px 16px">
+<div id="plrMsg" style="font-size:13.5px;margin-bottom:10px"></div>
+<div id="plrList"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the review queue.</p></div>
+</div></section>
+
 <section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div class="remgrid" id="rems"></div></section>
 
@@ -475,6 +482,7 @@ function renderScorecard(d){
 }
 function loadLive(){
   if(!LIVE) return;
+  if(window.plrLoadReviews) plrLoadReviews();
   apiFetch('/bookos/scorecard').then(function(j){ renderScorecard(j.data); }).catch(function(e){ toast('Scorecard error: '+e.message); });
   Promise.all([apiFetch('/bookos/setter-queue'+sbpQuery()),apiFetch('/bookos/dispatch-board'+sbpQuery())])
     .then(function(res){
@@ -940,6 +948,102 @@ var refWatcher=setInterval(function(){ if(document.body.classList.contains('live
   setInterval(load,60000);
   var watcher=setInterval(function(){ if(document.body.classList.contains('live')){ load(); if(loaded) clearInterval(watcher); } },2500);
 })();
+</script>
+<script>
+/* ============ PEPPER LISTS REVIEWS — moderation ============
+   The queue is the staff lane of /pepper-lists/reviews/admin: by
+   default it returns what needs a human (PENDING or escalated).
+   Media follows the queue viewer's discipline — manifest first,
+   bytes only when a card is opened, staff token in the header. */
+var plrReviews=[], plrMediaLoaded={}, plrMediaUrls=[];
+function plrStars(n){ var s=''; for(var i=1;i<=5;i++) s+=(i<=n?'\u2605':'\u2606'); return s; }
+function plrLoadReviews(){
+  if(!LIVE) return;
+  apiFetch('/pepper-lists/reviews/admin')
+    .then(function(j){ plrReviews=j.data||[]; plrRenderReviews(); })
+    .catch(function(e){ var el=document.getElementById('plrList'); if(el) el.innerHTML='<p style="color:var(--mut);font-size:13.5px">Reviews could not load ('+escH(e.message)+').</p>'; });
+}
+window.plrLoadReviews=plrLoadReviews;
+function plrRenderReviews(){
+  var el=document.getElementById('plrList'); if(!el) return;
+  var badge=document.getElementById('plrCount');
+  if(badge) badge.textContent=plrReviews.length? (plrReviews.length+' NEED REVIEW') : 'CLEAR';
+  plrMediaUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} }); plrMediaUrls=[]; plrMediaLoaded={};
+  if(!plrReviews.length){ el.innerHTML='<div class="empty">No reviews waiting — published reviews are on the public wall, and anything flagged will land here.</div>'; return; }
+  el.innerHTML=plrReviews.map(function(r,i){
+    var c=r.customer||{};
+    var survey='';
+    if(r.survey){
+      survey='<div style="font-size:13px;color:var(--mut);margin-top:6px">Survey — Overall '+r.survey.overall+'/5 · Technician '+r.survey.technician+'/5 · Timeliness '+r.survey.timeliness+'/5 · Cleanliness '+r.survey.cleanliness+'/5 · Recommends: '+(r.survey.recommend?'Yes':'Not yet')+(r.survey.comments?'<br>“'+escH(r.survey.comments)+'”':'')+'</div>';
+    }
+    var comments=(r.comments||[]).map(function(cm){
+      var who=cm.authorKind==='SPEEDY'?'Speedy — Assistant Manager':(cm.authorKind==='STAFF'?'Top Speed Appliance — Office':(c.name||'Customer'));
+      return '<div style="margin-top:8px;border-top:1px solid var(--line);padding-top:8px"><span style="font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)">'+escH(who)+'</span><div style="font-size:13.5px;line-height:1.55">'+escH(cm.body)+'</div></div>';
+    }).join('');
+    var tags='<span class="tag">'+escH(r.status)+'</span>'+(r.verifiedRepair?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d">VERIFIED REPAIR</span>':'')+(r.escalated?'<span class="tag" style="background:#fde8e8;color:#b00020">ESCALATED'+(r.escalationReason?' · '+escH(r.escalationReason):'')+'</span>':'');
+    var actions='';
+    if(r.status!=='PUBLISHED') actions+='<button class="btn primary" onclick="plrSetStatus('+i+',\'PUBLISHED\')">Publish</button>';
+    if(r.status!=='HIDDEN') actions+='<button class="btn ghost" onclick="plrSetStatus('+i+',\'HIDDEN\')">Hide</button>';
+    if(r.media&&r.media.length) actions+='<button class="btn ghost" id="plrmb-'+i+'" aria-expanded="false" onclick="plrToggleMedia('+i+')">Media ('+r.media.length+')</button>';
+    var mediaSec=(r.media&&r.media.length)?'<div id="plrm-'+i+'" hidden style="margin-top:10px"></div>':'';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(c.name||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(c.phone||'')+'</span></b><span class="age">'+escH(plrStars(r.rating))+' '+r.rating+'/5</span></div>'+
+      '<div class="meta"><b>'+escH(r.title)+'</b><br>'+escH(r.body)+(r.booking?'<br>'+escH(r.booking.appliance||'Repair')+' · '+escH(r.booking.city||'')+' · '+escH(r.booking.referenceCode||''):'')+'</div>'+
+      survey+'<div class="tags">'+tags+'</div>'+comments+
+      '<div class="actions">'+actions+'</div>'+mediaSec+
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="plrReply-'+i+'" type="text" maxlength="4000" placeholder="Office reply — posts as Top Speed Appliance — Office" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><button class="btn navy" onclick="plrPostReply('+i+')">Post office reply</button></div></article>';
+  }).join('');
+}
+function plrSetStatus(i,status){
+  var r=plrReviews[i]; if(!r) return;
+  apiFetch('/pepper-lists/reviews/admin/'+r.id,{method:'PATCH',body:JSON.stringify({status:status})})
+    .then(function(){ toast('Review '+status.toLowerCase()+' — '+(r.customer&&r.customer.name||'customer'),ICO_CHECK); plrLoadReviews(); })
+    .catch(function(e){ toast('Could not update the review: '+e.message); });
+}
+function plrPostReply(i){
+  var r=plrReviews[i]; if(!r) return;
+  var input=document.getElementById('plrReply-'+i);
+  var body=(input&&input.value||'').trim();
+  if(!body){ toast('Write the office reply first'); return; }
+  apiFetch('/pepper-lists/reviews/admin/'+r.id+'/reply',{method:'POST',body:JSON.stringify({body:body})})
+    .then(function(){ toast('Office reply posted',ICO_CHECK); plrLoadReviews(); })
+    .catch(function(e){ toast('Reply failed: '+e.message); });
+}
+function plrToggleMedia(i){
+  var sec=document.getElementById('plrm-'+i); if(!sec) return;
+  var btn=document.getElementById('plrmb-'+i);
+  if(!sec.hidden){ sec.hidden=true; if(btn) btn.setAttribute('aria-expanded','false'); return; }
+  sec.hidden=false; if(btn) btn.setAttribute('aria-expanded','true');
+  if(!plrMediaLoaded[i]) plrLoadMedia(i);
+}
+function plrLoadMedia(i){
+  var r=plrReviews[i]; var sec=document.getElementById('plrm-'+i); if(!r||!sec) return;
+  sec.innerHTML='<div style="font-size:13px;color:var(--mut)">Loading review media…</div>';
+  apiFetch('/pepper-lists/reviews/admin/'+r.id+'/media?meta=1')
+    .then(function(j){
+      var items=j.data||[];
+      plrMediaLoaded[i]=items;
+      if(!items.length){ sec.innerHTML='<div style="font-size:13px;color:var(--mut)">No media on this review.</div>'; return; }
+      sec.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'+items.map(function(m,mi){
+        return '<figure style="margin:0" id="plrf-'+i+'-'+mi+'">'+(m.kind==='video'
+          ? '<video id="plrv-'+i+'-'+mi+'" controls preload="metadata" playsinline style="width:150px;height:110px;object-fit:cover;border-radius:10px;border:1px solid var(--line);background:#000"></video>'
+          : '<img id="plri-'+i+'-'+mi+'" alt="Review '+(m.kind||'media')+'" style="width:150px;height:110px;object-fit:cover;border-radius:10px;border:1px solid var(--line)">')+
+          '<figcaption style="font-size:11.5px;color:var(--mut)">'+(m.kind==='video'?'Video':'Photo')+' '+(mi+1)+' · '+fmtKB(m.sizeBytes)+'</figcaption></figure>';
+      }).join('')+'</div>';
+      items.forEach(function(m,mi){
+        apiBlob('/pepper-lists/reviews/admin/'+r.id+'/media/'+m.id)
+          .then(function(blob){
+            var url=URL.createObjectURL(blob); plrMediaUrls.push(url);
+            var el=document.getElementById(m.kind==='video'?('plrv-'+i+'-'+mi):('plri-'+i+'-'+mi));
+            if(el) el.src=url;
+          })
+          .catch(function(){
+            var f=document.getElementById('plrf-'+i+'-'+mi);
+            if(f) f.insertAdjacentHTML('beforeend','<div style="font-size:12px;color:#b00020">Could not load this file.</div>');
+          });
+      });
+    })
+    .catch(function(e){ sec.innerHTML='<div style="font-size:13px;color:#b00020">Could not load media ('+escH(e.message)+').</div>'; });
+}
 </script>
 </body>
 </html>

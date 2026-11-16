@@ -623,6 +623,74 @@ model SubmissionMedia {
   @@index([connectionId])
 }
 
+// Pepper Lists Reviews (2026-11-16): customer reviews of completed
+// repairs, posted from inside the signed-in Pepper Lists app with
+// photos/videos and an optional post-service survey. Speedy (the AI
+// assistant) is the first responder on every review and comment:
+// positive reviews publish automatically with a Speedy thank-you;
+// anything flagged (rating <= 3 or a complaint keyword) stays PENDING
+// for the office, escalated, with a holding reply that promises
+// nothing — refunds and compensation are human decisions only
+// (services/speedyPolicy.js). Like SubmissionMedia above, the id
+// columns are plain references (no FK relations): the working set is
+// the in-memory store with write-through persistence, and a review
+// must never fail to save because a referenced row lives only in
+// memory. bookingId references a ServiceRequest (the booking record).
+model Review {
+  id               String    @id @default(uuid()) @db.Uuid
+  companyId        String    @db.Uuid
+  customerId       String    @db.Uuid
+  bookingId        String?   @db.Uuid
+  rating           Int
+  title            String
+  body             String
+  status           String    @default("PENDING")
+  verifiedRepair   Boolean   @default(false)
+  escalated        Boolean   @default(false)
+  escalationReason String?
+  speedyReply      String?
+  speedyReplyAt    DateTime?
+  speedyReplyMode  String?
+  survey           Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([customerId, createdAt])
+  @@index([status, createdAt])
+  @@index([bookingId])
+}
+
+// One photo/video attached to a review. Bytes are stored raw (Bytes),
+// capped at the route: photos 6 MB, videos 15 MB, 4 items per review,
+// magic-byte validated. Public serving is restricted to media of
+// PUBLISHED reviews; staff and the review's owner use gated routes.
+model ReviewMedia {
+  id        String   @id @default(uuid()) @db.Uuid
+  reviewId  String   @db.Uuid
+  kind      String
+  mimeType  String
+  sizeBytes Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}
+
+// One message in a review thread. authorKind is CUSTOMER (the review's
+// owner), SPEEDY (the AI responder — also mirrored onto the Review's
+// speedyReply fields when it is the review-level reply) or STAFF (the
+// office, shown to the customer as "Top Speed Appliance — Office").
+model ReviewComment {
+  id         String   @id @default(uuid()) @db.Uuid
+  reviewId   String   @db.Uuid
+  authorId   String?  @db.Uuid
+  authorKind String
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([reviewId, createdAt])
+}
+
 model Banner {
   id             String   @id @default(uuid()) @db.Uuid
   placement      String   @default("FOOTER")

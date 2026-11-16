@@ -324,6 +324,122 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     </div>
   </div>
 </section>
+<!-- PEPPER LISTS REVIEWS — customers review their repairs here, with
+     photos/videos and a post-service survey. Speedy (Assistant
+     Manager) is the responder: happy reviews publish to the public
+     wall with Speedy's thank-you; anything flagged waits for the
+     office — Speedy never promises refunds or compensation, those
+     are human decisions. Signed-in only, like the Speedy Brain. -->
+<style>
+.plr{max-width:1020px;margin:0 auto;padding:10px 24px 4px}
+.plr-card{background:linear-gradient(160deg,#16241b,#101a13);border:1px solid rgba(183,227,60,.35);border-radius:20px;padding:28px 26px}
+.plr h2{font-family:'Sora','Manrope',sans-serif;font-size:27px;margin-bottom:6px}
+.plr-sub{color:var(--muted);font-size:15px;line-height:1.6;max-width:720px}
+.plr-panel{margin-top:18px;background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:22px}
+.plr-panel h3{font-size:19px;margin-bottom:6px}
+.plr-note{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:14px}
+.plr-lab{display:block;font-size:13px;font-weight:700;color:var(--ink);margin:0 0 12px}
+.plr-lab input,.plr-lab select,.plr-lab textarea{display:block;width:100%;margin-top:5px;padding:12px 14px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15.5px;font-weight:500}
+.plr-lab input:focus,.plr-lab select:focus,.plr-lab textarea:focus{outline:none;border-color:var(--lime)}
+.plr-stars{display:flex;gap:6px;margin:4px 0 14px}
+.plr-stars button{background:none;border:none;padding:2px;cursor:pointer;color:#41543f}
+.plr-stars button.on{color:var(--amber)}
+.plr-stars svg{width:30px;height:30px;display:block}
+.plr-survey{border:1px dashed rgba(183,227,60,.4);border-radius:13px;padding:16px;margin:6px 0 14px}
+.plr-survey h4{font-size:15.5px;margin-bottom:4px}
+.plr-srow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.plr-srow span{font-size:13.5px;font-weight:700;min-width:130px}
+.plr-srow .plr-stars{margin:0}
+.plr-srow .plr-stars svg{width:22px;height:22px}
+.plr-recbtns{display:flex;gap:8px}
+.plr-recbtns button{background:var(--panel2);color:var(--ink);border:1.5px solid #2c4232;border-radius:999px;padding:8px 16px;font:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
+.plr-recbtns button.on{background:var(--lime);color:#0C130E;border-color:var(--lime)}
+.plr-media{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.plr-thumb{position:relative;width:104px;border:1px solid #2c4232;border-radius:11px;overflow:hidden;background:var(--bg)}
+.plr-thumb img,.plr-thumb video{width:100%;height:74px;object-fit:cover;display:block}
+.plr-thumb span{display:block;font-size:11px;color:var(--muted);padding:5px 7px;line-height:1.35}
+.plr-thumb button{position:absolute;top:4px;right:4px;background:rgba(12,19,14,.85);color:var(--ink);border:1px solid #2c4232;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:1;cursor:pointer}
+.plr-cam{display:none;margin:12px 0;background:#000;border-radius:13px;overflow:hidden;border:1px solid #2c4232}
+.plr-cam video{width:100%;max-height:340px;display:block}
+.plr-camrow{display:flex;gap:8px;flex-wrap:wrap;padding:10px;background:var(--panel2)}
+.plr-btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.plr-msg{font-size:13.5px;line-height:1.5;min-height:18px;color:var(--amber);margin:6px 0 10px}
+.plr-msg.err{color:#ff9a8a}
+.plr-success{display:none;margin-top:16px;background:rgba(183,227,60,.08);border:1.5px solid var(--lime);border-radius:13px;padding:16px 18px;font-size:14.5px;line-height:1.6}
+.plr-success b{color:var(--lime)}
+.plr-review{background:var(--panel2);border:1px solid #2c4232;border-radius:15px;padding:18px;margin-top:14px}
+.plr-review h4{font-size:16.5px;margin:4px 0 6px}
+.plr-review .plr-body{color:var(--ink);font-size:14.5px;line-height:1.6;white-space:pre-line}
+.plr-meta{color:var(--muted);font-size:12.5px;line-height:1.5}
+.plr-starline{display:inline-flex;gap:2px;vertical-align:-3px}
+.plr-starline svg{width:16px;height:16px;color:#41543f}
+.plr-starline .on svg{color:var(--amber)}
+.plr-pill{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:4px 10px;margin-left:8px;vertical-align:2px}
+.plr-pill.pub{background:var(--lime);color:#0C130E}
+.plr-pill.pend{background:transparent;color:var(--amber);border:1.5px solid var(--amber)}
+.plr-pill.hid{background:transparent;color:var(--grey);border:1.5px solid #33473a}
+.plr-verified{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime);border:1.5px solid rgba(183,227,60,.55);border-radius:99px;padding:4px 10px;margin-left:8px;vertical-align:2px}
+.plr-reply{margin-top:12px;background:rgba(183,227,60,.06);border:1px solid rgba(183,227,60,.3);border-radius:12px;padding:13px 15px}
+.plr-reply .who{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime);margin-bottom:5px}
+.plr-reply p{font-size:14px;line-height:1.6;color:var(--ink)}
+.plr-comment{margin-top:10px;border-top:1px solid #22301f;padding-top:10px}
+.plr-comment .who{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.plr-comment .who.staff{color:var(--amber)}
+.plr-comment p{font-size:14px;line-height:1.6;color:var(--ink)}
+.plr-commentrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.plr-commentrow input{flex:1;min-width:200px;padding:11px 13px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:14.5px}
+.plr-commentrow input:focus{outline:none;border-color:var(--lime)}
+.plr-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.plr-thumbs img,.plr-thumbs video{width:96px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #2c4232;background:#000}
+@media(max-width:560px){.plr{padding:16px 14px 2px}.plr-card{padding:22px 17px}.plr-panel{padding:18px 15px}}
+</style>
+<section class="plr" id="plReviews" style="display:none" aria-label="Pepper Lists Reviews">
+  <div class="plr-card">
+    <div class="plb-head">
+      <div class="plb-spark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/></svg></div>
+      <div>
+        <h2>Pepper Lists <span style="color:var(--lime)">Reviews</span></h2>
+        <p class="plr-sub">Review your repair — photos, video and a quick survey after service. Speedy, our Assistant Manager, answers every review. Happy reviews go straight onto the public wall; anything that needs a human goes to the office team, who follow up personally.</p>
+      </div>
+    </div>
+
+    <div class="plr-panel" id="plrWritePanel">
+      <h3>Review your repair</h3>
+      <p class="plr-note">Pick the finished repair this is about and it posts as a <b>Verified Repair</b> review, with the short survey. No finished repair to pick? Post a general review instead.</p>
+      <label class="plr-lab">Which repair?<select id="plrBookingSel" onchange="plrBookingChanged()"><option value="">General review — no specific repair</option></select></label>
+      <div class="plr-lab" style="margin-bottom:0">Your rating
+        <div class="plr-stars" id="plrStars" role="radiogroup" aria-label="Star rating"></div>
+      </div>
+      <label class="plr-lab">Headline<input id="plrTitle" type="text" maxlength="120" placeholder="e.g. Fridge is ice cold again"></label>
+      <label class="plr-lab">Your review<textarea id="plrBody" rows="3" maxlength="4000" placeholder="How did it go? What was repaired, how was the technician, anything we should know?"></textarea></label>
+      <div class="plr-survey" id="plrSurvey" style="display:none">
+        <h4>After-service survey</h4>
+        <p class="plr-note" style="margin-bottom:2px">Five quick ones — they go to the office with your review and help us coach the team.</p>
+        <div class="plr-srow"><span>Overall service</span><div class="plr-stars" data-survey="overall"></div></div>
+        <div class="plr-srow"><span>Technician</span><div class="plr-stars" data-survey="technician"></div></div>
+        <div class="plr-srow"><span>Timeliness</span><div class="plr-stars" data-survey="timeliness"></div></div>
+        <div class="plr-srow"><span>Cleanliness</span><div class="plr-stars" data-survey="cleanliness"></div></div>
+        <div class="plr-srow"><span>Recommend us?</span><div class="plr-recbtns"><button type="button" id="plrRecYes" onclick="plrSetRecommend(true)">Yes</button><button type="button" id="plrRecNo" onclick="plrSetRecommend(false)">Not yet</button></div></div>
+        <label class="plr-lab" style="margin-top:12px">Anything else for the office? (optional)<input id="plrSurveyComments" type="text" maxlength="1000" placeholder="Optional — goes with the survey"></label>
+      </div>
+      <div class="plr-btnrow">
+        <button class="btn small dark" type="button" onclick="plrCamOpen()">Use camera</button>
+        <label class="btn small dark" style="cursor:pointer">Upload photos / video<input type="file" accept="image/*,video/*" multiple style="display:none" onchange="plrFilesPicked(this)"></label>
+      </div>
+      <div class="plr-cam" id="plrCam"><video id="plrCamVideo" autoplay playsinline muted></video><div class="plr-camrow"><button class="btn small" type="button" onclick="plrCamCapture()">Capture photo</button><button class="btn small" type="button" id="plrRecBtn" onclick="plrToggleRecord()">Record video</button><button class="btn small dark" type="button" onclick="plrCamClose()">Close camera</button></div></div>
+      <div class="plr-media" id="plrMediaList"></div>
+      <p class="plr-msg" id="plrMsg" role="status"></p>
+      <div class="plr-btnrow"><button class="btn" type="button" id="plrSubmitBtn" onclick="plrSubmit()">Post my review</button></div>
+      <div class="plr-success" id="plrDone" role="status"></div>
+    </div>
+
+    <div class="plr-panel">
+      <h3>My reviews</h3>
+      <p class="plr-note">Everything you have posted, with Speedy's replies and the office's. Add a comment on any of your reviews and Speedy will answer there too.</p>
+      <div id="plrMine"><p class="plr-note" style="margin:0">Loading your reviews…</p></div>
+    </div>
+  </div>
+</section>
 <header>
   <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></a>
   <nav>
@@ -393,6 +509,43 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <details><summary>What if Pepper doesn't know the price?</summary><p>Then the listing is marked "Needs info" and Pepper asks you. Known regulars come back with their usual prices; anything new waits for your number. Pepper never invents a price.</p></details>
   <details><summary>Which platforms can I post to today?</summary><p>Facebook Marketplace is live. Instagram can be selected and queues until the owner's Instagram account is connected. TikTok, YouTube, eBay and OfferUp are coming soon — they're shown honestly as not live yet.</p></details>
   <details><summary>Who is Pepper?</summary><p>Pepper is the AI assistant behind Top Speed Appliance in Fort Lauderdale, Florida — the same Pepper who runs the Service OS, with Speedy AI as the brain. Talk to Speedy any time with the button on this page.</p></details>
+</section>
+
+<!-- PEPPER LISTS REVIEWS — public wall. Only reviews the system has
+     published appear here, and the average is computed live from
+     those real published reviews: with none, there are no numbers,
+     just the invitation. Speedy (Assistant Manager) answers every
+     review; office replies show as the office. -->
+<style>
+.plw-agg{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.plw-agg .big{font-size:34px;font-weight:800;color:var(--lime)}
+.plw-agg .of{color:var(--muted);font-size:15px;line-height:1.5}
+.plw-stars{display:inline-flex;gap:2px;vertical-align:-2px}
+.plw-stars svg{width:18px;height:18px;color:#41543f}
+.plw-stars .on svg{color:var(--amber)}
+.plw-card{background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:24px}
+.plw-card h3{font-size:17.5px;margin:6px 0 6px}
+.plw-card .who{color:var(--muted);font-size:13px}
+.plw-card .body{color:var(--ink);font-size:15px;line-height:1.6;white-space:pre-line}
+.plw-verified{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime);border:1.5px solid rgba(183,227,60,.55);border-radius:99px;padding:4px 10px;margin-left:8px;vertical-align:2px}
+.plw-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.plw-thumbs img,.plw-thumbs video{width:110px;height:82px;object-fit:cover;border-radius:10px;border:1px solid #2c4232;background:#000}
+.plw-reply{margin-top:14px;background:rgba(183,227,60,.06);border:1px solid rgba(183,227,60,.3);border-radius:12px;padding:13px 15px}
+.plw-reply .who{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime);margin-bottom:5px}
+.plw-reply .who.staff{color:var(--amber)}
+.plw-reply p{font-size:14px;line-height:1.6;color:var(--ink)}
+.plw-empty{background:var(--panel);border:1px dashed rgba(183,227,60,.45);border-radius:16px;padding:30px;text-align:center}
+.plw-empty p{color:var(--muted);font-size:15.5px;line-height:1.6;max-width:560px;margin:0 auto 18px}
+</style>
+<section style="padding-top:0;" id="reviews">
+  <h2>Pepper Lists <span class="lime">Reviews</span></h2>
+  <p class="sub">Real reviews from real repairs, posted by customers from inside Pepper Lists after their service — photos, video and all. Speedy, our Assistant Manager, answers every one.</p>
+  <div class="plw-agg" id="plwAgg"></div>
+  <div class="grid" id="plwGrid"></div>
+  <div class="plw-empty" id="plwEmpty" style="display:none">
+    <p>Real reviews from real repairs — be the first after your service. Had a repair with Top Speed? Open the app, pick the finished job, and tell the next neighbor how it went.</p>
+    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+  </div>
 </section>
 
 <section style="padding-top:0;">
@@ -472,6 +625,7 @@ function plPublic(){
   var app=document.getElementById('plApp'); if(app) app.style.display='';
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='none';
   if(window.plbHide) plbHide();
+  if(window.plrHide) plrHide();
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -545,6 +699,7 @@ function plEnterApp(u){
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='';
   var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
   if(window.plbEnter) plbEnter(u);
+  if(window.plrEnter) plrEnter(u);
 }
 function plBoot(){
   if(!plTok()){ plPublic(); return; }
@@ -957,6 +1112,289 @@ function plbSummaryFix(){
   plbEl('plbSummary').style.display='none';
   plbPendingSubmit=null;
   var p=plbEl('plbPanel-'+(plbLaneOpen||'scan')); if(p) p.scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+<script>
+/* PEPPER LISTS REVIEWS — the public wall (everyone) + the signed-in
+   review studio (write a review, my reviews, comment threads).
+   Speedy answers every review server-side; this page only renders
+   what the API returns — statuses, replies and the wall aggregate
+   are all real, and an empty wall shows no numbers at all. */
+var PLR_STAR='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/></svg>';
+var PL_ORIGIN=PL_API.replace(/\/api\/v1$/,'');
+function plrStarsHtml(n,cls){ var h='<span class="'+(cls||'plw-stars')+'" aria-label="'+n+' of 5 stars">'; for(var i=1;i<=5;i++) h+='<span style="display:inline-flex" class="'+(i<=n?'on':'')+'">'+PLR_STAR+'</span>'; return h+'</span>'; }
+function plrDate(s){ try{ return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }catch(e){ return ''; } }
+
+/* ---------------- Public wall ---------------- */
+function plwCard(r){
+  var svc=r.booking?plbEsc(r.booking.appliance||'Repair')+(r.booking.city?' · '+plbEsc(r.booking.city):''):'';
+  var media=(r.media||[]).map(function(m){
+    var url=PL_ORIGIN+m.url;
+    return m.kind==='video'
+      ? '<video src="'+plbEsc(url)+'" controls preload="metadata" playsinline></video>'
+      : '<img src="'+plbEsc(url)+'" alt="Customer photo for this review" loading="lazy">';
+  }).join('');
+  var replies=(r.comments||[]).map(function(c){
+    var who=c.authorKind==='STAFF'?'Top Speed Appliance — Office':'Speedy — Assistant Manager';
+    return '<div class="plw-reply"><div class="who'+(c.authorKind==='STAFF'?' staff':'')+'">'+who+' replied</div><p>'+plbEsc(c.body)+'</p></div>';
+  }).join('');
+  return '<article class="plw-card">'+plrStarsHtml(r.rating)+(r.verifiedRepair?'<span class="plw-verified">Verified Repair</span>':'')+
+    '<h3>'+plbEsc(r.title)+'</h3><p class="body">'+plbEsc(r.body)+'</p>'+
+    '<p class="who" style="margin-top:10px">'+plbEsc(r.customerName||'Top Speed customer')+(svc?' · '+svc:'')+' · '+plrDate(r.createdAt)+'</p>'+
+    (media?'<div class="plw-thumbs">'+media+'</div>':'')+replies+'</article>';
+}
+function plwLoad(){
+  var grid=document.getElementById('plwGrid'); if(!grid) return;
+  fetch(PL_API+'/pepper-lists/reviews/public?limit=20').then(function(r){ return r.json(); }).then(function(j){
+    var agg=j.aggregate||{count:0,average:null};
+    var aggBox=document.getElementById('plwAgg');
+    if(agg.count>0 && agg.average!=null){
+      aggBox.innerHTML='<span class="big">'+agg.average.toFixed(1)+'</span>'+plrStarsHtml(Math.round(agg.average))+'<span class="of">average from '+agg.count+' published review'+(agg.count===1?'':'s')+' — every one from a real Top Speed repair customer.</span>';
+    } else { aggBox.innerHTML=''; }
+    var list=j.data||[];
+    if(!list.length){ grid.innerHTML=''; document.getElementById('plwEmpty').style.display=''; return; }
+    document.getElementById('plwEmpty').style.display='none';
+    grid.innerHTML=list.map(plwCard).join('');
+  }).catch(function(){ /* wall stays quiet if the API is unreachable — no invented content */ });
+}
+document.addEventListener('DOMContentLoaded',plwLoad);
+
+/* ---------------- Signed-in review studio ---------------- */
+var plrRating=0, plrSurvey={overall:0,technician:0,timeliness:0,cleanliness:0}, plrRecommend=null, plrMedia=[], plrStream=null, plrRecorder=null, plrRecChunks=[], plrRecording=false, plrObjUrls=[];
+function plrEl(id){ return document.getElementById(id); }
+function plrMsg(text,isErr){ var m=plrEl('plrMsg'); if(!m) return; m.textContent=text||''; m.className='plr-msg'+(isErr?' err':''); }
+function plrEnter(u){
+  var s=plrEl('plReviews'); if(s) s.style.display='';
+  plrInitPickers(); plrLoadBookings(); plrLoadMine();
+}
+function plrHide(){ var s=plrEl('plReviews'); if(s) s.style.display='none'; plrCamClose(); }
+window.plrEnter=plrEnter; window.plrHide=plrHide;
+
+function plrPickerHtml(box,value,onPick){
+  box.innerHTML='';
+  for(var i=1;i<=5;i++){
+    (function(n){
+      var b=document.createElement('button');
+      b.type='button'; b.setAttribute('role','radio'); b.setAttribute('aria-checked', n===value?'true':'false');
+      b.setAttribute('aria-label', n+' star'+(n===1?'':'s'));
+      b.className=n<=value?'on':'';
+      b.innerHTML=PLR_STAR;
+      b.onclick=function(){ onPick(n); };
+      box.appendChild(b);
+    })(i);
+  }
+}
+function plrInitPickers(){
+  plrPickerHtml(plrEl('plrStars'),plrRating,function(n){ plrRating=n; plrInitPickers(); });
+  document.querySelectorAll('#plrSurvey .plr-stars[data-survey]').forEach(function(box){
+    var key=box.getAttribute('data-survey');
+    plrPickerHtml(box,plrSurvey[key],function(n){ plrSurvey[key]=n; plrInitPickers(); });
+  });
+}
+function plrSetRecommend(v){
+  plrRecommend=v;
+  plrEl('plrRecYes').className=v===true?'on':'';
+  plrEl('plrRecNo').className=v===false?'on':'';
+}
+function plrLoadBookings(){
+  plApi('/pepper-lists/reviews/my-bookings').then(function(j){
+    var sel=plrEl('plrBookingSel'); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">General review — no specific repair</option>'+(j.data||[]).map(function(b){
+      return '<option value="'+plbEsc(b.id)+'">'+plbEsc(b.appliance||'Repair')+(b.city?' · '+plbEsc(b.city):'')+(b.referenceCode?' · '+plbEsc(b.referenceCode):'')+(b.completedAt?' · '+plrDate(b.completedAt):'')+'</option>';
+    }).join('');
+    sel.value=cur||'';
+    plrBookingChanged();
+  }).catch(function(){});
+}
+function plrBookingChanged(){
+  var sel=plrEl('plrBookingSel');
+  plrEl('plrSurvey').style.display=(sel&&sel.value)?'':'none';
+}
+
+/* ----- media attach: same camera + upload pattern as Scan & Send ----- */
+function plrRenderMedia(){
+  var box=plrEl('plrMediaList'); if(!box) return;
+  box.innerHTML='';
+  plrMedia.forEach(function(m,i){
+    var d=document.createElement('div'); d.className='plr-thumb';
+    var url=URL.createObjectURL(m.blob);
+    if(m.kind==='photo'){ var img=document.createElement('img'); img.src=url; img.alt='Review photo '+(i+1); d.appendChild(img); }
+    else { var v=document.createElement('video'); v.src=url; v.muted=true; d.appendChild(v); }
+    var s=document.createElement('span'); s.textContent=(m.kind==='photo'?'Photo':'Video')+' · '+Math.max(1,Math.round(m.blob.size/1024))+' KB';
+    var x=document.createElement('button'); x.type='button'; x.textContent='×'; x.setAttribute('aria-label','Remove attachment');
+    x.onclick=function(){ plrMedia.splice(i,1); plrRenderMedia(); };
+    d.appendChild(s); d.appendChild(x); box.appendChild(d);
+  });
+}
+function plrAddMedia(kind,blob){
+  if(plrMedia.length>=4){ plrMsg('Up to 4 photos/videos per review — remove one to add another.',true); return false; }
+  if(kind==='photo' && blob.size>6*1024*1024){ plrMsg('That photo is over 6 MB even after shrinking — retake it a little further back.',true); return false; }
+  if(kind==='video' && blob.size>15*1024*1024){ plrMsg('That video is over 15 MB — keep clips short and try again.',true); return false; }
+  plrMedia.push({kind:kind,blob:blob,mime:(blob.type||'').split(';')[0]||(kind==='photo'?'image/jpeg':'video/webm')});
+  plrRenderMedia();
+  plrMsg('Attached. Add more, or post the review.');
+  return true;
+}
+function plrFilesPicked(input){
+  var files=[].slice.call(input.files||[]);
+  files.forEach(function(f){
+    if(/^image\//.test(f.type)){ plbDownscalePhoto(f).then(function(b){ plrAddMedia('photo',b); }); }
+    else if(/^video\//.test(f.type)){ plrAddMedia('video',f); }
+    else plrMsg('That file is not a photo or video — it was not attached.',true);
+  });
+  input.value='';
+}
+function plrCamOpen(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    plrMsg('Camera is not available in this browser — please use the upload button instead; it works on every device.',true);
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
+    .then(function(stream){
+      plrStream=stream;
+      plrEl('plrCamVideo').srcObject=stream;
+      plrEl('plrCam').style.display='block';
+      plrMsg('Camera is on — line up the shot, then capture.');
+    })
+    .catch(function(){ plrMsg('The camera was denied or is unavailable — no problem: use the upload button instead; it works on every device.',true); });
+}
+function plrCamClose(){
+  if(plrStream){ plrStream.getTracks().forEach(function(t){ t.stop(); }); plrStream=null; }
+  var box=plrEl('plrCam'); if(box) box.style.display='none';
+  if(plrRecorder && plrRecorder.state!=='inactive'){ try{ plrRecorder.stop(); }catch(e){} }
+}
+function plrCamCapture(){
+  plbSnap(plrEl('plrCamVideo')).then(function(b){
+    if(!b){ plrMsg('The camera did not return a photo — try again, or upload one instead.',true); return; }
+    plrAddMedia('photo',b);
+  });
+}
+function plrToggleRecord(){
+  var btn=plrEl('plrRecBtn');
+  if(plrRecording){ if(plrRecorder) plrRecorder.stop(); return; }
+  if(!plrStream){ plrMsg('Open the camera first, then record.',true); return; }
+  if(!window.MediaRecorder){ plrMsg('Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
+  var mime='';
+  ['video/webm','video/mp4'].forEach(function(m){ if(!mime && window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) mime=m; });
+  try{ plrRecorder=new MediaRecorder(plrStream, mime?{mimeType:mime}:undefined); }
+  catch(e){ plrMsg('Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
+  plrRecChunks=[];
+  plrRecorder.ondataavailable=function(ev){ if(ev.data && ev.data.size) plrRecChunks.push(ev.data); };
+  plrRecorder.onstop=function(){
+    plrRecording=false; btn.textContent='Record video';
+    var blob=new Blob(plrRecChunks,{type:plrRecorder.mimeType||'video/webm'});
+    if(blob.size) plrAddMedia('video',blob);
+  };
+  plrRecorder.start();
+  plrRecording=true; btn.textContent='Stop recording';
+  plrMsg('Recording — tap Stop when you are done (keep it under about 20 seconds).');
+  setTimeout(function(){ if(plrRecording && plrRecorder && plrRecorder.state!=='inactive') plrRecorder.stop(); },20000);
+}
+
+/* ----- submit ----- */
+function plrSurveyTouched(){
+  return plrSurvey.overall>0||plrSurvey.technician>0||plrSurvey.timeliness>0||plrSurvey.cleanliness>0||plrRecommend!==null||(plrEl('plrSurveyComments').value||'').trim().length>0;
+}
+function plrSubmit(){
+  var bookingId=plrEl('plrBookingSel').value||'';
+  var title=plrEl('plrTitle').value.trim();
+  var body=plrEl('plrBody').value.trim();
+  if(!plrRating){ plrMsg('Tap the stars to rate the service first.',true); return; }
+  if(title.length<2){ plrMsg('Give your review a short headline.',true); return; }
+  if(body.length<3){ plrMsg('Tell us how it went in a few words.',true); return; }
+  var survey=null;
+  if(bookingId && plrSurveyTouched()){
+    if(!(plrSurvey.overall&&plrSurvey.technician&&plrSurvey.timeliness&&plrSurvey.cleanliness)){
+      plrMsg('The survey needs all four star rows — or clear them to post without a survey.',true); return;
+    }
+    if(plrRecommend===null){ plrMsg('One more survey tap: would you recommend us?',true); return; }
+    survey={overall:plrSurvey.overall,technician:plrSurvey.technician,timeliness:plrSurvey.timeliness,cleanliness:plrSurvey.cleanliness,recommend:plrRecommend};
+    var sc=(plrEl('plrSurveyComments').value||'').trim();
+    if(sc) survey.comments=sc;
+  }
+  var btn=plrEl('plrSubmitBtn'); btn.disabled=true;
+  plrMsg('Posting your review…');
+  var payload={rating:plrRating,title:title,body:body};
+  if(bookingId) payload.bookingId=bookingId;
+  if(survey) payload.survey=survey;
+  plApi('/pepper-lists/reviews',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){
+      var review=j.data;
+      var jobs=plrMedia.map(function(m){
+        return plbBlobToB64(m.blob).then(function(b64){
+          return plApi('/pepper-lists/reviews/'+review.id+'/media',{method:'POST',body:JSON.stringify({kind:m.kind,mime:m.mime,dataBase64:b64})});
+        });
+      });
+      return Promise.all(jobs).then(function(){ return review; });
+    })
+    .then(function(review){
+      btn.disabled=false;
+      plrMedia=[]; plrRenderMedia();
+      var box=plrEl('plrDone'); box.style.display='block';
+      var statusLine=review.status==='PUBLISHED'
+        ? 'It is <b>live on the public wall</b> below — thank you!'
+        : 'It is posted to your account and marked <b>under office review</b> — a member of the office team will follow up personally.';
+      box.innerHTML='<b>Review posted.</b> '+statusLine+(review.speedyReply?'<br><br><b>Speedy — Assistant Manager replied:</b><br>'+plbEsc(review.speedyReply):'');
+      plrMsg('');
+      plrLoadMine(); plwLoad();
+      box.scrollIntoView({behavior:'smooth',block:'nearest'});
+    })
+    .catch(function(e){ btn.disabled=false; plrMsg(e.message||'That did not post — check your connection and try again.',true); });
+}
+
+/* ----- my reviews ----- */
+function plrBlob(path){
+  return fetch(PL_API+path,{headers:{'Authorization':'Bearer '+plTok()}})
+    .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.blob(); });
+}
+function plrStatusPill(st){
+  if(st==='PUBLISHED') return '<span class="plr-pill pub">Published</span>';
+  if(st==='HIDDEN') return '<span class="plr-pill hid">Hidden by the office</span>';
+  return '<span class="plr-pill pend">Under office review</span>';
+}
+function plrMineCard(r){
+  var svc=r.booking?plbEsc(r.booking.appliance||'Repair')+(r.booking.city?' · '+plbEsc(r.booking.city):'')+(r.booking.referenceCode?' · '+plbEsc(r.booking.referenceCode):''):'';
+  var comments=(r.comments||[]).map(function(c){
+    var who=c.authorKind==='SPEEDY'?'Speedy — Assistant Manager':(c.authorKind==='STAFF'?'Top Speed Appliance — Office':'You');
+    return '<div class="plr-comment"><div class="who'+(c.authorKind==='STAFF'?' staff':'')+'">'+who+' · '+plrDate(c.createdAt)+'</div><p>'+plbEsc(c.body)+'</p></div>';
+  }).join('');
+  var media=(r.media||[]).length?'<div class="plr-thumbs" id="plrThumbs-'+r.id+'"></div>':'';
+  var survey='';
+  if(r.survey){
+    survey='<p class="plr-meta" style="margin-top:8px">Survey — Overall '+r.survey.overall+'/5 · Technician '+r.survey.technician+'/5 · Timeliness '+r.survey.timeliness+'/5 · Cleanliness '+r.survey.cleanliness+'/5 · Recommends: '+(r.survey.recommend?'Yes':'Not yet')+(r.survey.comments?' · “'+plbEsc(r.survey.comments)+'”':'')+'</p>';
+  }
+  return '<article class="plr-review"><span class="plr-starline">'+[1,2,3,4,5].map(function(i){ return '<span style="display:inline-flex" class="'+(i<=r.rating?'on':'')+'">'+PLR_STAR+'</span>'; }).join('')+'</span>'+plrStatusPill(r.status)+(r.verifiedRepair?'<span class="plr-verified">Verified Repair</span>':'')+
+    '<h4>'+plbEsc(r.title)+'</h4><p class="plr-body">'+plbEsc(r.body)+'</p>'+
+    '<p class="plr-meta">'+(svc?svc+' · ':'')+plrDate(r.createdAt)+'</p>'+survey+media+comments+
+    '<div class="plr-commentrow"><input id="plrComment-'+r.id+'" type="text" maxlength="2000" placeholder="Add a comment — Speedy answers here" aria-label="Add a comment"><button class="btn small dark" type="button" onclick="plrPostComment(\''+r.id+'\')">Comment</button></div></article>';
+}
+function plrLoadMine(){
+  var box=plrEl('plrMine'); if(!box) return;
+  plrObjUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(e){} }); plrObjUrls=[];
+  plApi('/pepper-lists/reviews/mine').then(function(j){
+    var list=j.data||[];
+    if(!list.length){ box.innerHTML='<p class="plr-note" style="margin:0">No reviews yet — after your next repair, post the first one above and Speedy will answer it.</p>'; return; }
+    box.innerHTML=list.map(plrMineCard).join('');
+    list.forEach(function(r){
+      (r.media||[]).forEach(function(m){
+        plrBlob('/pepper-lists/reviews/'+r.id+'/media/'+m.id).then(function(blob){
+          var holder=plrEl('plrThumbs-'+r.id); if(!holder) return;
+          var url=URL.createObjectURL(blob); plrObjUrls.push(url);
+          if(m.kind==='video'){ var v=document.createElement('video'); v.src=url; v.controls=true; v.playsInline=true; holder.appendChild(v); }
+          else { var img=document.createElement('img'); img.src=url; img.alt='Your review photo'; holder.appendChild(img); }
+        }).catch(function(){});
+      });
+    });
+  }).catch(function(){ box.innerHTML='<p class="plr-note" style="margin:0">Your reviews could not load just now — refresh in a moment.</p>'; });
+}
+function plrPostComment(id){
+  var input=plrEl('plrComment-'+id);
+  var body=(input&&input.value||'').trim();
+  if(!body){ return; }
+  plApi('/pepper-lists/reviews/'+id+'/comments',{method:'POST',body:JSON.stringify({body:body})})
+    .then(function(){ plrLoadMine(); })
+    .catch(function(e){ plrMsg(e.message||'That comment did not post.',true); });
 }
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
