@@ -55,6 +55,40 @@ function publicBooking(booking) {
   return { ...booking, payment: paymentSummary(booking.id) };
 }
 
+const digits10 = (value) => String(value || '').replace(/\D/g, '').slice(-10);
+
+/**
+ * Ownership test for one booking — the same linkage the signed-in
+ * tracking view (routes/tracking.js bookingsForUser) already uses, so
+ * every surface agrees on whose booking a job is: the booking's
+ * customer record carries the account's userId when one is linked, and
+ * otherwise the account's email or phone must match the contact details
+ * on the booking. Commercial bookings embed the commercial account's
+ * contact record as their customer, so a business / property-manager
+ * account matches its own portfolio's jobs the same way.
+ */
+function bookingBelongsToUser(booking, user) {
+  const record = store.users.get(user.id) || {};
+  const email = String(record.email || user.email || '').toLowerCase();
+  const phone = digits10(record.phone || user.phone || '');
+  const c = booking.customer || {};
+  if (c.userId && c.userId === user.id) return true;
+  if (email && String(c.email || '').toLowerCase() === email) return true;
+  if (phone && digits10(c.phone || booking.phone || '') === phone) return true;
+  return false;
+}
+
+/**
+ * Who may read a full booking (contact details included): staff
+ * (STAFF_ROLES) or the booking's own customer. Decided by Ramone
+ * 2026-11-16 — before this, any signed-in account presenting the
+ * booking's ID received the full record.
+ */
+function canReadBooking(req, booking) {
+  if ((req.user.roles || []).some((role) => STAFF_ROLES.includes(role))) return true;
+  return bookingBelongsToUser(booking, req.user);
+}
+
 router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   const parsed = bookingSchema.safeParse(req.body);
   if (!parsed.success) {
@@ -198,6 +232,9 @@ router.get('/bookings/track/:reference', (req, res) => {
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {
   const booking = store.bookings.get(req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (!canReadBooking(req, booking)) {
+    return res.status(403).json({ error: 'You do not have access to this booking' });
+  }
   return res.json({ data: publicBooking(booking) });
 });
 
