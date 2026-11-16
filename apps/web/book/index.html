@@ -68,6 +68,20 @@
 .locBtn:disabled{opacity:.6;cursor:wait}
 </style>
 <style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}div.top{background:#000!important}.menuBtn{color:#fff!important}</style><script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+<style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77;text-align:center;margin-top:24px}
+.rt-checker{height:10px;margin:16px 0 2px;background:repeating-conic-gradient(#fff 0 25%,transparent 0 50%);background-size:16px 16px;opacity:.85;border-radius:2px}
+.segLabels{counter-reset:cp;margin-top:12px}
+.segLabels span{counter-increment:cp;display:flex;flex-direction:column;align-items:center;gap:6px}
+.segLabels span::before{content:counter(cp);width:27px;height:27px;border-radius:50%;border:2px solid #7e93b5;color:#7e93b5;background:#0A1628;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none}
+.segLabels span.now::before{background:#E8322E;border-color:#E8322E;color:#fff;box-shadow:0 0 12px rgba(232,50,46,.55)}
+.segLabels span.done::before{content:"✓";background:#22C55E;border-color:#22C55E;color:#fff}
+.rt-lights{display:inline-flex;gap:6px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:6px 10px;vertical-align:middle;margin-right:9px}
+.rt-lights i{width:11px;height:11px;border-radius:50%;background:#40202B;display:block}
+.rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 8px rgba(233,78,92,.85)}
+.rt-lights i.on-g{background:#22C55E;box-shadow:0 0 8px rgba(34,197,94,.85)}
+</style>
 </head>
 <body>
 <div class="col">
@@ -82,8 +96,10 @@
     <a href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call 954-931-7997</a>
   </nav>
 
+  <div class="rt-kicker">Pit Stop Booking</div>
   <h1>Book Your Appliance Repair</h1>
   <div class="tagline">Fast • Reliable • Local Service</div>
+  <div class="rt-checker" aria-hidden="true"></div>
 
   <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="segLabels" id="segLabels"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
@@ -177,7 +193,7 @@
     <div class="sbpromo-top">
       <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
       <div>
-        <span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
+        <span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span><span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
         <h3 class="sbpromo-h">Book the smart way — with Speedy AI</h3>
         <p class="sbpromo-p">Prefer the high-tech way? Just tell Speedy what's wrong — type it, say it, or snap a photo. Speedy asks a couple of quick questions and books your visit right in the chat.</p>
       </div>

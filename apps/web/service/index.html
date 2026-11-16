@@ -149,6 +149,30 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 </style>
 <style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script><style>@media(max-width:700px){#providerGrid,#commGrid,.cards-2col{grid-template-columns:1fr !important}}</style>
 <link rel="stylesheet" href="/fonts.css">
+<style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.rt-herorow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.rt-lights{display:inline-flex;gap:7px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:7px 12px}
+.rt-lights i{width:13px;height:13px;border-radius:50%;background:#40202B;display:block}
+.rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 9px rgba(233,78,92,.85)}
+.rt-lights i.on-g{background:#22C55E;box-shadow:0 0 9px rgba(34,197,94,.85)}
+.rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77}
+.rt-tele{position:relative}
+.rt-tele .rtc{position:absolute;width:26px;height:26px;border:3px solid #E94E5C;z-index:3;pointer-events:none}
+.rt-tele .rtc.tl{top:10px;left:10px;border-right:none;border-bottom:none;border-top-left-radius:8px}
+.rt-tele .rtc.tr{top:10px;right:10px;border-left:none;border-bottom:none;border-top-right-radius:8px}
+.rt-tele .rtc.bl{bottom:10px;left:10px;border-right:none;border-top:none;border-bottom-left-radius:8px}
+.rt-tele .rtc.br{bottom:10px;right:10px;border-left:none;border-top:none;border-bottom-right-radius:8px}
+.rt-chips{position:absolute;top:14px;left:46px;right:46px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+.rt-chip{background:rgba(6,13,26,.85);color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:6px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+.rt-chip-go{position:absolute;left:46px;bottom:14px;z-index:2;background:#E94E5C;color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:7px 12px;border-radius:8px}
+.rt-tracklabel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 8px}
+.toggle{border:1.5px solid var(--line)}
+#tgRes.active{background:#E30613;color:#fff}
+.rt-lap{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;color:#E94E5C;margin-bottom:6px}
+.eyebrow::before{content:"";display:inline-block;width:17px;height:12px;background:repeating-conic-gradient(#0C162B 0 25%,#fff 0 50%);background-size:8.5px 8.5px;border:1px solid rgba(12,22,43,.3);border-radius:2px;margin-right:8px;vertical-align:-1px}
+@media(prefers-color-scheme:dark){.eyebrow::before{border-color:rgba(255,255,255,.35)}}
+</style>
 </head>
 <body>
 <div class="topbar"><div class="wrap" style="padding-left:0;padding-right:0">
@@ -165,7 +189,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
 <!-- HERO -->
 <section class="hero" id="top"><div class="wrap">
   <div class="hero-grid">
-    <div><span class="badge blue">● Service OS Online — Hybrid Dispatch</span>
+    <div><div class="rt-herorow"><span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span><span class="rt-kicker">Service · Repair &amp; Installation</span></div><span class="badge blue">● Service OS Online — Hybrid Dispatch</span>
       <h1>Appliance Broken?<br><em>Top Speed</em> <span class="red">Ready.</span></h1>
       <p class="lead">The next-generation service-request + provider-network home of <strong style="color:#fff">topspeedapplianceservice.com</strong> — 60-second requests with photo triage, Service Setters hybrid dispatch, and qualified local providers. One platform behind both doors, owned by Top Speed Appliance LLC.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
@@ -182,13 +206,14 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
       <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
         <span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Same-Day Windows</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Photo Triage</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Live Status Texts</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Jobs — Not Leads</span>
       </div>
-      <div class="hero-img" style="margin-top:22px"><img data-tsheal src="/api/v1/app/service-images/hero-tech.webp" alt="Top Speed Appliance technician in branded uniform repairing a refrigerator compressor"/><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 65 cities across Broward, Palm Beach &amp; Miami-Dade</span></div></div>
+      <div class="hero-img" style="margin-top:22px"><div class="rt-tele"><span class="rtc tl" aria-hidden="true"></span><span class="rtc tr" aria-hidden="true"></span><span class="rtc bl" aria-hidden="true"></span><span class="rtc br" aria-hidden="true"></span><span class="rt-chips" aria-hidden="true"><span class="rt-chip">Status · Live Dispatch</span><span class="rt-chip">Coverage · 65 Cities</span></span><span class="rt-chip-go" aria-hidden="true">Same-Day Slots · Mon–Fri 8–7</span><img data-tsheal src="/api/v1/app/service-images/hero-tech.webp" alt="Top Speed Appliance technician in branded uniform repairing a refrigerator compressor"/></div><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residential • Commercial • Provider Network</b><span>Lauderhill HQ — serving 65 cities across Broward, Palm Beach &amp; Miami-Dade</span></div></div>
     </div>
 
     <!-- QUICK REQUEST MINI -->
     <div class="hero-form" id="quick">
       <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3>Request Service in 60 Seconds</h3><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Residential or commercial — add a photo and get instant triage guidance.</p></div><span class="pill bluep">LIVE</span></div>
-      <div class="toggle" style="margin:16px 0" role="tablist"><button class="active" id="tgRes" onclick="setTrack('res')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Residential</button><button id="tgCom" onclick="setTrack('com')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg> Commercial</button></div>
+      <div class="rt-tracklabel"><span class="rt-kicker" style="color:var(--red)">Choose Your Track</span><span style="font-size:13px;font-weight:700;color:var(--muted)">Residential lane — homeowners &amp; renters · Commercial lane — businesses &amp; property managers</span></div>
+      <div class="toggle" style="margin:0 0 16px" role="tablist"><button class="active" id="tgRes" onclick="setTrack('res')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Residential</button><button id="tgCom" onclick="setTrack('com')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg> Commercial</button></div>
       <form id="quickForm" onsubmit="submitQuick(event)">
         <div class="grid2"><div class="field"><label>Your name</label><input id="qName" placeholder="Full name" required></div><div class="field"><label>Phone *</label><input id="qPhone" placeholder="(954) 000-0000" required></div></div>
         <div class="field" id="bizField" style="display:none"><label>Business / Property name</label><input id="qBiz" placeholder="e.g. Sunrise Plaza — Building B"></div>
@@ -274,7 +299,7 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
     <div><div class="card" style="padding:22px"><h3 style="margin:0 0 8px">The Provider App — Tech App</h3><p style="color:var(--muted);margin:0 0 10px">Real offers from Service Setters dispatch land in the Tech App: matched jobs with the diagnosis photos attached, your route for the day, job-status updates and live-location sharing for Track My Tech. Payout terms, onboarding requirements (license/insurance verification) and launch timing are confirmed directly with the Top Speed team — nothing here is a sample job.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-red" href="/tech">Open the Tech App</a><a class="btn btn-outline" href="/network">Provider Network</a></div></div></div>
     <div>
       <div class="notice" style="margin-top:14px">Provider preview: payout terms, onboarding requirements (license/insurance verification), and launch timing are confirmed directly with applicants — nothing is promised on this page beyond the model described.</div>
-      <img data-tsheal src="/api/v1/app/service-images/commercial.webp" alt="Top Speed Appliance technician in branded uniform repairing the back of a commercial range" style="border-radius:18px;margin-top:14px;height:220px;width:100%;object-fit:cover">
+      <div class="rt-tele" style="margin-top:14px"><span class="rtc tl" aria-hidden="true"></span><span class="rtc tr" aria-hidden="true"></span><span class="rtc bl" aria-hidden="true"></span><span class="rtc br" aria-hidden="true"></span><img data-tsheal src="/api/v1/app/service-images/commercial.webp" alt="Top Speed Appliance technician in branded uniform repairing the back of a commercial range" style="border-radius:18px;height:220px;width:100%;object-fit:cover"></div>
     </div>
   </div>
 </div></section>
@@ -472,7 +497,7 @@ var CITIES=[
  {n:"Miami",t:"Miami-Dade Network",d:"Full Miami-Dade coverage — residential + commercial dispatch and provider matching across all 18 Miami-Dade cities in the network."}
 ];
 // Service cards
-document.getElementById('serviceCards').innerHTML=SERVICES.map(function(s){return '<div class="card" style="cursor:pointer" onclick="prefillService(\''+s.n+'\')"><div class="icon">'+s.e+'</div><h3>'+s.n+' Repair</h3><p style="color:var(--muted);margin:0 0 10px">'+s.d+'</p><div style="display:flex;gap:6px;flex-wrap:wrap">'+s.issues.map(function(i){return '<span class="pill bluep">'+i+'</span>'}).join('')+'</div><div style="margin-top:12px;font-weight:800;color:var(--blue)">Request this repair →</div></div>'}).join('');
+document.getElementById('serviceCards').innerHTML=SERVICES.map(function(s,i){return '<div class="card" style="cursor:pointer" onclick="prefillService(\''+s.n+'\')"><span class="rt-lap" aria-hidden="true">LAP '+(i+1)+'</span><div class="icon">'+s.e+'</div><h3>'+s.n+' Repair</h3><p style="color:var(--muted);margin:0 0 10px">'+s.d+'</p><div style="display:flex;gap:6px;flex-wrap:wrap">'+s.issues.map(function(i){return '<span class="pill bluep">'+i+'</span>'}).join('')+'</div><div style="margin-top:12px;font-weight:800;color:var(--blue)">Request this repair →</div></div>'}).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<span class="brand">'+b+'</span>'}).join('');
 // City chips
 document.getElementById('cityGrid').innerHTML=CITIES.map(function(c,i){return '<button class="city-chip '+(c.n==='Miami'?'miami ':'')+(i===4?'active':'')+'" onclick="selectCity('+i+',this)">'+c.n+'</button>'}).join('');

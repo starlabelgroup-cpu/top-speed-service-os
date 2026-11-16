@@ -288,6 +288,18 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
 
 </style>
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
+<style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.hero-speedy{position:relative; overflow:hidden;}
+.hero-speedy::before{content:""; position:absolute; top:0; left:0; right:0; height:7px; background:repeating-conic-gradient(#fff 0 25%, #0C162B 0 50%); background-size:14px 14px;}
+.rt-lights{display:inline-flex; gap:6px; align-items:center; background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.28); border-radius:99px; padding:6px 10px; margin-left:auto; flex:none;}
+.rt-lights i{width:11px; height:11px; border-radius:50%; background:#40202B; display:block;}
+.rt-lights i.on-r{background:#E94E5C; box-shadow:0 0 8px rgba(233,78,92,.9);}
+.rt-lights i.on-g{background:#22C55E; box-shadow:0 0 8px rgba(34,197,94,.9);}
+h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeating-conic-gradient(#0C162B 0 25%, #fff 0 50%); background-size:8.5px 8.5px; border:1px solid #C9D6EA; border-radius:2px;}
+.bnav::before{content:""; position:absolute; top:0; left:0; right:0; height:5px; background:repeating-conic-gradient(#0C162B 0 25%, #fff 0 50%); background-size:10px 10px; opacity:.9; pointer-events:none;}
+.rt-gauge-card{display:flex; gap:12px; align-items:center; text-decoration:none; color:var(--ink); margin-bottom:12px;}
+</style>
 </head>
 <body>
 <div class="page">
@@ -464,7 +476,7 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
           <h2 class="greet"><span id="greetWord">Good evening</span> — what needs fixing?</h2>
           <p class="sub">Same-day slots across Broward County. A Service Setter confirms every booking by text.</p>
           <div class="card hero-speedy">
-            <div style="display:flex; align-items:center; gap:12px;"><span class="hero-disc"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.6l1.9 6.2 6.2 1.9-6.2 1.9L12 18.8l-1.9-6.2L3.9 10.7l6.2-1.9z" fill="#fff"/><circle cx="12" cy="10.7" r="1.35" fill="#E94E5C"/></svg></span><b style="font-size:18px; font-family:'Sora'; font-weight:800;">Tell Speedy</b></div>
+            <div style="display:flex; align-items:center; gap:12px;"><span class="hero-disc"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2.6l1.9 6.2 6.2 1.9-6.2 1.9L12 18.8l-1.9-6.2L3.9 10.7l6.2-1.9z" fill="#fff"/><circle cx="12" cy="10.7" r="1.35" fill="#E94E5C"/></svg></span><b style="font-size:18px; font-family:'Sora'; font-weight:800;">Tell Speedy</b><span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span></div>
             <p style="margin:10px 0 14px; font-size:14px; line-height:1.5; opacity:.92;">The high-tech way to book: just say what's wrong — "My fridge stopped cooling, can someone come today?" Speedy asks the few details needed and books your $99 diagnostic visit right in the chat.</p>
             <div class="btnrow">
               <button class="btn" style="background:var(--red); color:#fff; border-radius:99px;" onclick="showTab('book')">Book a repair</button>
@@ -495,6 +507,12 @@ textarea:focus, input[type=text]:focus{outline:2px solid var(--blue); border-col
             <span class="o-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg></span>
             <div><b style="font-size:15.5px;">$99 diagnostic — credited toward your repair</b><p class="sub" style="margin:3px 0 0;">Diagnostic collected at booking and credited in full toward your approved repair. 90-day parts &amp; labor warranty on every repair.</p></div>
           </div>
+
+<a class="card rt-gauge-card" href="/service-areas-directory">
+            <svg width="54" height="54" viewBox="0 0 60 60" aria-hidden="true" style="flex:none;"><rect width="60" height="60" rx="14" fill="#0C162B"/><path d="M 15.3 38.5 A 17 17 0 1 1 44.7 38.5" fill="none" stroke="#33507E" stroke-width="4.5"/><path d="M 15.3 38.5 A 17 17 0 0 1 43.5 19.7" fill="none" stroke="#E94E5C" stroke-width="4.5"/><line x1="27.2" y1="32.1" x2="38.8" y2="23.3" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><circle cx="30" cy="30" r="3.2" fill="#E94E5C" stroke="#fff" stroke-width="1.6"/><text x="30" y="54" text-anchor="middle" font-family="Orbitron, sans-serif" font-weight="800" font-size="10.5" fill="#fff">65</text></svg>
+            <div style="flex:1; min-width:0;"><b style="font-size:15.5px;">65 cities · 131 landing pages</b><p class="sub" style="margin:3px 0 0;">Tri-county coverage across Broward, Palm Beach &amp; Miami-Dade — every city has its own local page with real services and booking.</p></div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B7C3D6" stroke-width="2" style="flex:none;"><path d="M9 5l7 7-7 7"/></svg>
+          </a>
 
 <h3 class="sec">Why Appliance Connect</h3>
           <div class="card" style="display:grid; gap:10px;">

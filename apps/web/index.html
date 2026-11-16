@@ -355,6 +355,25 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
 
 <!-- HERO -->
 <style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.rt-herorow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.rt-lights{display:inline-flex;gap:7px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:7px 12px}
+.rt-lights i{width:13px;height:13px;border-radius:50%;background:#40202B;display:block}
+.rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 9px rgba(233,78,92,.85)}
+.rt-lights i.on-g{background:#22C55E;box-shadow:0 0 9px rgba(34,197,94,.85)}
+.rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77}
+.rt-hud{display:flex;gap:28px;align-items:center;flex-wrap:wrap;padding:6px 0 26px}
+.rt-hud svg{flex:none;width:min(200px,54vw);height:auto}
+.rt-hudtxt{max-width:520px;flex:1;min-width:min(300px,100%)}
+.rt-hudtxt h3{color:#fff;font-family:'Orbitron','Rajdhani',sans-serif;font-size:21px;letter-spacing:.02em;margin:6px 0 8px}
+.rt-hudtxt p{color:#C4D6F6;margin:0;font-size:16px}
+.rt-ticks{height:12px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.35) 0 2px,transparent 2px 26px);margin-bottom:14px}
+.rt-micro{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:#FF6B77;margin-top:12px}
+.sec-head .tag::before{content:"";width:17px;height:12px;flex:none;background:repeating-conic-gradient(#0C162B 0 25%,#fff 0 50%);background-size:8.5px 8.5px;border:1px solid rgba(12,22,43,.3);border-radius:2px}
+.svc{border-top:4px solid #0C162B}
+.svc:nth-child(odd){border-top-color:#E94E5C}
+.rt-lap{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.1em;color:#E94E5C;margin-bottom:8px}
+@media(prefers-color-scheme:dark){.sec-head .tag::before{border-color:rgba(255,255,255,.35)}.svc{border-top-color:#33507E}.svc:nth-child(odd){border-top-color:#E94E5C}}
 .nh{max-width:880px;margin:0 auto}
 .nh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
 .nh-brand{display:flex;flex-direction:column}
@@ -396,6 +415,7 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
 <div class="hero" id="top">
   <div class="wrap">
     <div class="nh">
+      <div class="rt-herorow"><span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span><span class="rt-kicker">Fort Lauderdale · Tri-County Service</span></div>
       <div class="nh-top">
         <div class="nh-brand">
           <span class="nh-brand-red">TOP SPEED</span>
@@ -447,6 +467,18 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
 function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInput').value||'').trim(); if(t){ quickAsk(t); } else { toggleSpeedy(); } return false; }
 </script>
 
+  <div class="wrap">
+    <div class="rt-hud">
+      <svg viewBox="0 0 220 176" role="img" aria-label="Speedometer gauge showing 65 cities served"><line x1="42.5" y1="141.0" x2="32.1" y2="147.0" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="32.7" y1="122.7" x2="26.0" y2="124.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="30.0" y1="102.0" x2="23.0" y2="102.0" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="34.7" y1="81.8" x2="23.1" y2="78.7" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="40.7" y1="62.0" x2="34.7" y2="58.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="53.4" y1="45.4" x2="48.5" y2="40.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="71.0" y1="34.5" x2="65.0" y2="24.1" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="89.3" y1="24.7" x2="87.5" y2="18.0" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="110.0" y1="22.0" x2="110.0" y2="15.0" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="130.2" y1="26.7" x2="133.3" y2="15.1" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="150.0" y1="32.7" x2="153.5" y2="26.7" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="166.6" y1="45.4" x2="171.5" y2="40.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="177.5" y1="63.0" x2="187.9" y2="57.0" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="187.3" y1="81.3" x2="194.0" y2="79.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="190.0" y1="102.0" x2="197.0" y2="102.0" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><line x1="185.3" y1="122.2" x2="196.9" y2="125.3" stroke="rgba(255,255,255,0.6)" stroke-width="3"/><line x1="179.3" y1="142.0" x2="185.3" y2="145.5" stroke="rgba(255,255,255,0.38)" stroke-width="2"/><path d="M 54.6 134.0 A 64 64 0 1 1 165.4 134.0" fill="none" stroke="#33507E" stroke-width="13"/><path d="M 54.6 134.0 A 64 64 0 0 1 161.0 63.3" fill="none" stroke="#E94E5C" stroke-width="13"/><line x1="100.4" y1="109.3" x2="146.6" y2="74.2" stroke="#fff" stroke-width="5" stroke-linecap="round"/><circle cx="110" cy="102" r="10.5" fill="#E94E5C" stroke="#fff" stroke-width="3"/><text x="110" y="152" text-anchor="middle" font-family="Orbitron, sans-serif" font-weight="800" font-size="32" fill="#fff">65</text><text x="110" y="169" text-anchor="middle" font-family="Rajdhani, sans-serif" font-weight="700" font-size="9.5" letter-spacing="3.5" fill="#9DB6DE">CITIES ON THE GRID</text></svg>
+      <div class="rt-hudtxt">
+        <div class="rt-ticks" aria-hidden="true"></div>
+        <span class="rt-kicker">The Circuit</span>
+        <h3>Red Light to Green Light</h3>
+        <p>Book in about a minute, a Service Setter confirms your visit, and you track your tech live to your door — across 65 cities in Broward, Palm Beach &amp; Miami-Dade.</p>
+        <div class="rt-micro">131 Local Landing Pages · Live Tech Tracking</div>
+      </div>
+    </div>
+  </div>
   <div class="stats">
     <div class="wrap">
       <div class="stat"><b>90-Day</b><span>Parts &amp; labor warranty</span></div>
@@ -1609,6 +1641,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 <p class="tse-insight"><b>Good to know:</b> the $99 diagnostic is credited in full toward your approved repair, and every booked job includes live 8-stage tracking.</p>
 </section>
 <!-- /TSE-PANEL -->
+<div class="checker" aria-hidden="true"></div>
 <footer>
   <div class="wrap">
     <div class="foot-grid">
@@ -1756,8 +1789,8 @@ var GARAGE=[
 
 /* ---------- render grids ---------- */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s){
- return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Book + get estimate →</div></button>';
+document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s,i){
+ return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><span class="rt-lap" aria-hidden="true">0'+(i+1)+'</span><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Book + get estimate →</div></button>';
 }).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<div class="card brand reveal">'+b+'<div style="font-family:Barlow;font-weight:600;font-size:13px;color:var(--muted);margin-top:4px">Repair • Parts • Smart models</div></div>';}).join('');
 document.getElementById('cityGrid').innerHTML=CITIES.map(function(c){return '<div class="card city reveal"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+c+'</div>';}).join('');
