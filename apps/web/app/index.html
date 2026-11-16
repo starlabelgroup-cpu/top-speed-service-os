@@ -1734,7 +1734,10 @@ if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
 </script>
 <script>
 /* SUPER APP handoff (Super Apps build): land signed in from another Top
-   Speed surface; jump to the other apps without re-typing a password. */
+   Speed surface. Outbound jumps to the business doors do NOT carry this
+   session (platform access rules, 2026-11-16) — Connect Pro and
+   Appliance Pro run their own business logins, and each door checks the
+   sign-in itself. */
 (function(){
   var API='https://top-speed-service-os.vercel.app/api/v1';
   var q=new URLSearchParams(location.search); var h=q.get('handoff');
@@ -1745,14 +1748,14 @@ if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
     .catch(function(){ history.replaceState(null,'',location.pathname); });
     return;
   }
+  /* ACCESS RULES (2026-11-16): a customer session is never handed off
+     into the business doors. Tapping through lands on that door's own
+     sign-in — Connect Pro checks for its business login, Appliance Pro
+     for its commercial login. (Managers & Service Setters hold the one
+     all-access exception, and it is honored at the door from their staff
+     roles — never by carrying a customer session across.) */
   window.saGoApp=function(aud){
-    var t=''; try{ t=localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){}
-    var dest=(aud==='appliance-pro'?'/appliance-pro':'/connect-pro-app');
-    if(!t){ location.href=dest; return; }
-    fetch(API+'/auth/handoff',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},body:JSON.stringify({audience:aud})})
-    .then(function(r){ return r.json(); })
-    .then(function(j){ location.href=(j.data&&j.data.url)||dest; })
-    .catch(function(){ location.href=dest; });
+    location.href=(aud==='appliance-pro'?'/appliance-pro':'/connect-pro-app');
   };
 })();
 </script>

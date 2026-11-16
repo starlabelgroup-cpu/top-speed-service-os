@@ -95,11 +95,22 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
 <div class="wrap">
   <div id="gate">
     <div class="hero-card">
-      <h1>Your home. Your properties. One login.</h1>
-      <p>The Appliance Connect Pro app for homeowners and property managers: your appliance registry, your service history, Speedy booking — and bulk tenant requests for managers. Sign in to open your workspace.</p>
+      <h1>Your home. Your properties. One business login.</h1>
+      <p>The Appliance Connect Pro app for homeowners and property managers: your appliance registry, your service history, Speedy booking — and bulk tenant requests for managers. Connect Pro has its own business sign-in, separate from the Appliance Connect customer app — sign in to open your workspace.</p>
+    </div>
+    <div class="card" id="laneGate" style="display:none; border:2px solid #E8322E;">
+      <h2>This area needs a business login</h2>
+      <p id="laneMsg"></p>
+      <p id="laneWho" style="color:#5A6B84;"></p>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" onclick="laneSignOut()">Sign in with a business account</button>
+        <a class="btn blue" id="lanePortal" style="text-decoration:none;" href="https://topspeedserviceos.com/signup">Create your account on the web portal</a>
+        <a class="btn ghost" id="laneAlt" style="text-decoration:none;" href="/app">Go to the customer app</a>
+      </div>
     </div>
     <div class="card">
-      <h2>Sign in</h2>
+      <h2>Business sign-in</h2>
+      <p>Use the account you created on the Connect Pro web portal. A sign-in from the customer app doesn't carry over — this door checks for its own business login.</p>
       <button class="btn google" onclick="googleGo()"><span style="font-weight:900;color:#4285F4;">G</span> Continue with Google</button>
       <label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="email" placeholder="you@email.com">
       <label for="liPass">Password</label><input id="liPass" type="password" autocomplete="current-password" placeholder="••••••••">
@@ -107,16 +118,10 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       <div class="msg" id="gateMsg"></div>
     </div>
     <div class="card">
-      <h2>New here? Create your free account</h2>
-      <p>Homeowners and property managers alike — one account holds your home's appliances and your properties' requests.</p>
-      <div class="row2">
-        <div><label for="rgName">Your name</label><input id="rgName" type="text" placeholder="Full name"></div>
-        <div><label for="rgPhone">Phone</label><input id="rgPhone" type="tel" placeholder="954-555-0100"></div>
-      </div>
-      <label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" placeholder="you@email.com">
-      <label for="rgPass">Create a password (10+ characters)</label><input id="rgPass" type="password" placeholder="••••••••••">
-      <div id="cpLegal"></div>
-      <div style="margin-top:16px;"><button class="btn blue" id="rgBtn" onclick="doRegister()">Create account &amp; open the app</button></div>
+      <h2>New to Connect Pro? Start on the web portal</h2>
+      <p>Connect Pro accounts are created on the <b>Appliance Connect Pro web portal</b> first — that's where you choose Homeowner, Business / Commercial, or Property Manager. This app doesn't create accounts: once your portal account exists, sign in here with it.</p>
+      <div style="margin-top:14px;"><a class="btn blue" style="text-decoration:none;" href="https://topspeedserviceos.com/signup">Create your account on the web portal</a></div>
+      <p style="color:#5A6B84; margin-top:10px;">Already created your account on the portal? Just sign in above.</p>
     </div>
   </div>
 
@@ -235,7 +240,6 @@ function showMode(m){
 <script>
 var API='https://top-speed-service-os.vercel.app/api/v1';
 var NEXT_PATH='/connect-pro-app';
-TSOSLegal.mountSigning('cpLegal','cp',{buttonId:'rgBtn'});
 function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function setTok(t){ try{ if(t) localStorage.setItem('tsos_token',t); }catch(e){} }
 function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
@@ -244,28 +248,70 @@ function api(path, opts){
   if(tok()) opts.headers['Authorization']='Bearer '+tok();
   return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.details=j.details; throw e; } return j; }); });
 }
-(function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); history.replaceState(null,'',location.pathname); } })();
+(function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} history.replaceState(null,'',location.pathname); } })();
 function gateErr(e){ var m=document.getElementById('gateMsg'); m.textContent=''+e.message; m.className='msg err'; }
 function doLogin(){
   api('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPass').value})})
-    .then(function(j){ setTok(j.token); boot(); }).catch(gateErr);
+    .then(function(j){ setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); }).catch(gateErr);
 }
-function doRegister(){
-  if(document.getElementById('rgPass').value.length<10){ gateErr(new Error('Password must be at least 10 characters.')); return; }
-  var acceptance=TSOSLegal.acceptance('cp');
-  if(!acceptance){ gateErr(new Error('Please review both legal documents, check both agreement boxes, and type your full name as your signature.')); return; }
-  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined,termsAcceptance:acceptance};
-  api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
-    .then(function(j){ setTok(j.token); if(window.afterRegisterHook) afterRegisterHook(); boot(); })
-    .catch(function(e){ if(e.details&&e.details.fieldErrors&&e.details.fieldErrors.password) e=new Error('Password must be at least 10 characters.'); gateErr(e); });
+/* ===== ACCESS RULES — the Connect Pro business-login gate (2026-11-16) =====
+   Connect Pro is a separate business door. A session that simply exists in
+   this browser (shared tsos_token, a cross-app handoff, a customer-app
+   sign-in) NEVER opens the workspace by itself. The workspace opens only
+   for: (1) STAFF roles — DISPATCHER / COMPANY_ADMIN / COMPANY_OWNER /
+   PLATFORM_ADMIN, the standing all-access exception (Managers & Service
+   Setters); (2) an account the API marks as a business-lane account
+   (signupAudience 'commercial' or 'property-manager', pinned server-side
+   when the account is created through a business/PM offer on the portal);
+   or (3) a CUSTOMER account that has performed the business sign-in in
+   THIS app (the login wall — new accounts are created on the web portal
+   first; this app is sign-in-only). Provider-only and marketing-only
+   accounts are routed to their own doors. */
+var CP_STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var CP_PROVIDER=['PROVIDER_OWNER','PROVIDER_TECH','TECHNICIAN'];
+var CP_MARKETING=['ADVERTISER','MARKETING_MANAGER','DEVELOPER'];
+function cpHas(roles,list){ for(var i=0;i<list.length;i++){ if(roles.indexOf(list[i])>=0) return true; } return false; }
+function cpAccess(u){
+  var roles=u.roles||[];
+  if(cpHas(roles,CP_STAFF)) return {ok:true,via:'staff'};
+  var aud=u.signupAudience||'';
+  if(aud==='commercial'||aud==='property-manager') return {ok:true,via:'audience'};
+  var hasCust=roles.indexOf('CUSTOMER')>=0;
+  if(cpHas(roles,CP_PROVIDER)&&!hasCust) return {ok:false,kind:'provider'};
+  if(cpHas(roles,CP_MARKETING)&&!hasCust) return {ok:false,kind:'marketing'};
+  var fresh=false; try{ fresh=sessionStorage.getItem('cp_fresh_login')==='1'; }catch(e){}
+  if(fresh){ try{ localStorage.setItem('cp_biz_login',u.id||''); sessionStorage.removeItem('cp_fresh_login'); }catch(e){} return {ok:true,via:'login'}; }
+  var flag=''; try{ flag=localStorage.getItem('cp_biz_login')||''; }catch(e){}
+  if(flag&&u.id&&flag===u.id) return {ok:true,via:'login'};
+  return {ok:false,kind:'residential'};
 }
+function showLaneGate(u,kind){
+  document.getElementById('app').style.display='none';
+  document.getElementById('gate').style.display='';
+  var card=document.getElementById('laneGate'); if(!card) return;
+  card.style.display='';
+  var who=document.getElementById('laneWho'); if(who) who.textContent='Signed in as '+(u.email||'');
+  var msg=document.getElementById('laneMsg'); var alt=document.getElementById('laneAlt');
+  if(kind==='provider'){
+    if(msg) msg.textContent='This sign-in is a provider account. Providers work in Speedy Pro — the Top Speed Tech App — not in Connect Pro. If you also hold a Connect Pro business account, sign in with that instead.';
+    if(alt){ alt.href='/tech'; alt.textContent='Open Speedy Pro — the Tech App'; }
+  } else if(kind==='marketing'){
+    if(msg) msg.textContent='This sign-in is a marketing-platform account. Your console is the Advertiser Console, not Connect Pro. If you also hold a Connect Pro business account, sign in with that instead.';
+    if(alt){ alt.href='/advertiser'; alt.textContent='Open the Advertiser Console'; }
+  } else {
+    if(msg) msg.textContent='This browser is signed in with a residential customer account. Connect Pro is a separate business door — a customer-app sign-in never carries into it. Sign in with your Connect Pro business account, or create one on the web portal first.';
+    if(alt){ alt.href='/app'; alt.textContent='Go to the customer app'; }
+  }
+  try{ card.scrollIntoView({behavior:'smooth',block:'start'}); }catch(e){}
+}
+function laneSignOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('cp_biz_login'); sessionStorage.removeItem('cp_fresh_login'); }catch(e){} location.reload(); }
 function googleGo(){
   fetch(API+'/auth/google/status').then(function(r){return r.json();}).then(function(j){
     if(j.configured){ location.href=API+'/auth/google?next='+encodeURIComponent(NEXT_PATH); }
     else { var m=document.getElementById('gateMsg'); m.textContent='Google sign-in is being connected \u2014 email sign-in works now, and it is the same account.'; m.className='msg'; }
   }).catch(function(){ var m=document.getElementById('gateMsg'); m.textContent='Could not check Google sign-in just now \u2014 email works.'; m.className='msg'; });
 }
-function signOut(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); }
+function signOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('cp_biz_login'); sessionStorage.removeItem('cp_fresh_login'); }catch(e){} location.reload(); }
 function boot(){
   if(!tok()){ document.getElementById('gate').style.display=''; return; }
   api('/auth/me').then(function(j){
@@ -274,11 +320,13 @@ function boot(){
       TSOSLegal.showTermsGate({api:API,token:tok(),onSignOut:signOut,onAccepted:function(){ boot(); }});
       return;
     }
+    var verdict=cpAccess(window.CUR);
+    if(!verdict.ok){ showLaneGate(window.CUR, verdict.kind); return; }
     document.getElementById('gate').style.display='none';
     document.getElementById('app').style.display='';
     var w=document.getElementById('who'); if(w) w.textContent=(CUR.email||'');
     onAppReady();
-  }).catch(function(){ try{localStorage.removeItem('tsos_token');}catch(e){} document.getElementById('gate').style.display=''; });
+  }).catch(function(){ try{localStorage.removeItem('tsos_token'); localStorage.removeItem('cp_biz_login');}catch(e){} document.getElementById('gate').style.display=''; });
 }
 document.addEventListener('DOMContentLoaded', boot);
 </script>
