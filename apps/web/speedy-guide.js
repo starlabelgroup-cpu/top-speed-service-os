@@ -51,6 +51,56 @@
     CALL
   ];
 
+  /* ---- Full catalog: EVERY customer option in the ecosystem (Ramone,
+     2026-11-17) — every platform door, app, website, and key page,
+     grouped the way a customer thinks. Staff/internal surfaces are
+     excluded by design (the team has the Navigator). Absolute URLs so
+     the guide is correct on every host that serves it. Items flagged
+     handoff:1 are receiver-ready signed-in doors — on vault-wired
+     surfaces they route through TSOSVault.handoffUrl() at click time;
+     everywhere else (and whenever signed out) they stay plain links. */
+  var CATALOG = [
+    { title: 'Book & track service', items: [
+      { label: 'Book a Repair', href: 'https://topspeedserviceos.com/book', keys: 'book repair appointment schedule form' },
+      { label: 'Book with Speedy Chat', href: 'https://topspeedserviceos.com/speedy', keys: 'chat speedy book ai assistant' },
+      { label: 'Track My Tech', href: 'https://topspeedserviceos.com/track', keys: 'track technician job status eta stages' },
+      { label: 'Services & Pricing', href: 'https://topspeedserviceos.com/home-appliance-services', keys: 'services pricing repair cost diagnostic labor installation' },
+      { label: 'Warranty & Terms', href: 'https://topspeedserviceos.com/legal', keys: 'warranty guarantee terms legal 90 day' },
+      { label: 'Reviews Wall', href: 'https://www.pepperlists.com', keys: 'reviews ratings wall pepper lists post verified' },
+      { label: 'Service Areas — 65 Cities', href: 'https://topspeedserviceos.com/service-areas-directory', keys: 'cities areas coverage near me landing pages directory' }
+    ]},
+    { title: 'Platforms', items: [
+      { label: 'Top Speed Service OS', href: 'https://topspeedserviceos.com/', keys: 'hub home main platform service os' },
+      { label: 'Top Speed Appliance (.net)', href: 'https://topspeedappliance.net', keys: 'website flagship residential repair net' },
+      { label: 'Provider Network — Join Us', href: 'https://topspeedapplianceservice.com', keys: 'join provider technician network work business' },
+      { label: 'Appliance Connect Pro', href: 'https://www.applianceconnectpro.com', keys: 'homeowners property managers portal connect pro', handoff: 1 },
+      { label: 'Appliance Pro — Commercial', href: 'https://www.appliancepro.net', keys: 'commercial business accounts facilities pro' },
+      { label: 'Cleanout Vents', href: 'https://www.cleanoutvents.com', keys: 'dryer vent cleaning vents partner' },
+      { label: 'Pepper Lists — Sell · Post · Book', href: 'https://www.pepperlists.com', keys: 'pepper lists sell post book marketplace reviews', handoff: 1 },
+      { label: 'Pepper Lists — How It Works', href: 'https://www.pepperlists.com/how-it-works', keys: 'pepper lists channels facebook ebay etsy walmart tiktok instagram youtube linkedin agent muse sell post book' },
+      { label: 'Refer & Earn', href: 'https://appliancereferral.com', keys: 'referral credit invite friend earn refer' },
+      { label: 'Advertise With Us', href: 'https://topspeedserviceos.com/advertise', keys: 'advertise flywheel business ads marketing' },
+      { label: 'Parts Supply — Appliance Plus', href: 'https://applianceplus.vercel.app', keys: 'parts catalog supply plus ai trade' },
+      { label: 'CocoCane', href: 'https://www.facebook.com/profile.php?id=61593313075645', keys: 'cococane coconut juice shop facebook drinks' }
+    ]},
+    { title: 'Apps', items: [
+      { label: 'Customer App', href: 'https://topspeedserviceos.com/app', keys: 'app account garage bookings appliance connect' },
+      { label: 'Appliance Connect Mobile', href: 'https://appliance-connect.vercel.app/mobile', keys: 'mobile sign in phone app connect', handoff: 1 },
+      { label: 'Pepper Lists App', href: 'https://www.pepperlists.com', keys: 'pepper lists app sell post book phone' },
+      { label: 'Appliance Plug — Clients Only', href: 'https://www.applianceplug.app', keys: 'appliance plug tech tool parts plate clients' },
+      { label: 'Speedy Pro — Tech App', href: 'https://topspeedserviceos.com/speedy-pro', keys: 'speedy pro technician provider app jobs' },
+      { label: 'Get the Apps', href: 'https://topspeedserviceos.com/download', keys: 'download install apps get' }
+    ]},
+    { title: 'Help & company info', items: [
+      { label: 'Photo Diagnosis', href: 'https://topspeedserviceos.com/speedy', keys: 'photo diagnosis speedy problem picture' },
+      { label: 'About Top Speed', href: 'https://topspeedserviceos.com/about', keys: 'about company how it works ecosystem hours' },
+      { label: 'Offers & Rewards', href: 'https://topspeedserviceos.com/offers-rewards', keys: 'offers discounts programs rewards deals' },
+      { label: 'Explore — Price Preview', href: 'https://topspeedserviceos.com/explore', keys: 'explore search compare estimate preview recommendations' },
+      { label: 'Memberships & Plans', href: 'https://topspeedserviceos.com/memberships', keys: 'memberships maintenance plans priority' },
+      { label: 'Call 954-931-7997', href: 'tel:+19549317997', keys: 'call phone contact team' }
+    ]}
+  ];
+
   /* ---- Contexts: where am I, the 3 nearest exits, and a calm insight line ---- */
   var L = {
     book: { label: 'Book a Repair', href: '/book' },
@@ -204,6 +254,10 @@
     '.sg-chat{width:100%;background:#fff;border:1.5px solid #0A265C;color:#0A265C;border-radius:12px;padding:11px 13px;font:800 14px Inter,system-ui,sans-serif;cursor:pointer;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:8px}',
     '.sg-chat svg{width:17px;height:17px}',
     '.sg-note{font-size:11.5px;color:#8496B3;text-align:center;margin:9px 0 0;line-height:1.45}',
+    /* catalog search */
+    '.sg-search{width:100%;margin:14px 0 2px;padding:11px 13px;border:1.5px solid #D9E3F2;border-radius:12px;font:600 14px Inter,system-ui,sans-serif;color:#0A265C;background:#F8FAFF;-webkit-appearance:none;appearance:none}',
+    '.sg-search:focus{outline:3px solid #1280FF;outline-offset:1px;border-color:#1280FF}',
+    '.sg-noresults{font-size:13px;color:#4A5D7E;line-height:1.45;margin:10px 0 0}',
     /* tour */
     '.sg-tour{padding:16px}',
     '.sg-tour .sg-step{font-size:11.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:#1280FF;margin:0 0 5px}',
@@ -222,6 +276,14 @@
 
   function linkRow(item) {
     return '<a class="sg-link" href="' + esc(item.href) + '">' + esc(item.label) + '<span class="sg-arrow" aria-hidden="true">&rarr;</span></a>';
+  }
+  function catLink(item) {
+    var attrs = item.handoff ? ' data-handoff="1"' : '';
+    var hay = (item.label + ' ' + (item.keys || '')).toLowerCase();
+    return '<a class="sg-link sg-cat-link" data-keys="' + esc(hay) + '"' + attrs + ' href="' + esc(item.href) + '">' + esc(item.label) + '<span class="sg-arrow" aria-hidden="true">&rarr;</span></a>';
+  }
+  function catGroup(group) {
+    return '<div class="sg-group"><div class="sg-sec">' + esc(group.title) + '</div>' + group.items.map(catLink).join('') + '</div>';
   }
   function tile(item) {
     var cls = item.href.indexOf('tel:') === 0 ? 'sg-tile sg-call' : 'sg-tile';
@@ -298,6 +360,9 @@
       ctx.exits.map(linkRow).join('') +
       '<div class="sg-sec">Main routes</div>' +
       '<div class="sg-grid">' + MAIN_ROUTES.map(tile).join('') + '</div>' +
+      '<input class="sg-search" type="search" placeholder="Search all options" aria-label="Search all options in the guide">' +
+      CATALOG.map(catGroup).join('') +
+      '<p class="sg-noresults" hidden>No match in the guide &mdash; Book and Call are always right above, and Speedy can help in chat.</p>' +
       '<button class="sg-tour-btn" type="button">Take the tour</button>' +
       '<button class="sg-chat" type="button">' + CHATICON + '<span>Talk to Speedy &mdash; chat</span></button>' +
       '<p class="sg-note">The guide is links only. Chat opens only if you tap Talk to Speedy.</p>' +
@@ -476,6 +541,49 @@
   panel.querySelector('.sg-head .sg-x').addEventListener('click', hidePanel);
   panel.querySelector('.sg-tour-btn').addEventListener('click', startTour);
   panel.querySelector('.sg-chat').addEventListener('click', openChat);
+
+  /* ---- Catalog search: filter the full-ecosystem groups in place.
+     Every word typed must appear in an item's label + keys; a group
+     header hides when none of its items match. Clearing restores all. */
+  var sgSearch = panel.querySelector('.sg-search');
+  var sgCatLinks = panel.querySelectorAll('.sg-cat-link');
+  var sgCatGroups = panel.querySelectorAll('.sg-group');
+  var sgNoRes = panel.querySelector('.sg-noresults');
+  sgSearch.addEventListener('input', function () {
+    var words = sgSearch.value.toLowerCase().split(/\s+/).filter(function (w) { return !!w; });
+    var anyVisible = false;
+    for (var g = 0; g < sgCatGroups.length; g++) {
+      var groupVisible = false;
+      var links = sgCatGroups[g].querySelectorAll('.sg-cat-link');
+      for (var i = 0; i < links.length; i++) {
+        var hay = links[i].getAttribute('data-keys') || '';
+        var match = true;
+        for (var w = 0; w < words.length; w++) {
+          if (hay.indexOf(words[w]) === -1) { match = false; break; }
+        }
+        links[i].style.display = match ? '' : 'none';
+        if (match) groupVisible = true;
+      }
+      sgCatGroups[g].style.display = groupVisible ? '' : 'none';
+      if (groupVisible) anyVisible = true;
+    }
+    sgNoRes.hidden = anyVisible || words.length === 0;
+  });
+
+  /* ---- Signed-in doors: receiver-ready cross-host catalog links ride
+     the multi-account handoff when the vault is present on this
+     surface and the holder is signed in. handoffUrl() no-ops in every
+     other case, so signed-out visitors and non-vault surfaces simply
+     keep the plain link. Rewriting at click time makes load order
+     between the vault script and the guide irrelevant. */
+  panel.addEventListener('click', function (e) {
+    var t = e.target;
+    var a = t && t.closest ? t.closest('a[data-handoff]') : null;
+    if (!a) return;
+    if (window.TSOSVault && typeof window.TSOSVault.handoffUrl === 'function') {
+      a.href = window.TSOSVault.handoffUrl(a.href);
+    }
+  });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') { hidePanel(); hidePop(); hideInsight(); stopTour(); }
   });

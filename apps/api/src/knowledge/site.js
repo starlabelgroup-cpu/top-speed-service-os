@@ -203,6 +203,421 @@ export function buildSitePack() {
         `Technicians service the major brands, including: ${MARKETING_BRANDS.map((b) => b.name).join(', ')}. ` +
         `Top Speed is an independent repair service: we repair these brands, but we are not the manufacturer and never claim factory authorization for a brand.`,
     },
+
+    /* ---- Full-ecosystem catalog (Ramone, 2026-11-17): one entry per
+       public customer option — every platform door, app, website, and
+       key page — so Speedy can navigate a customer anywhere in the
+       ecosystem and answer "where do I…" from grounded knowledge.
+       Published facts only; commercial entries never carry the $99
+       residential diagnostic; vent entries never carry a price. */
+    {
+      id: 'site-book-form',
+      topic: 'Book a repair — the Smart Booking form',
+      keywords: [
+        'booking form', 'book a repair form', 'smart booking', 'book online',
+        'book a repair online', 'schedule a repair online', 'booking page',
+      ],
+      answer:
+        `The classic way to book is the Smart Booking form: pick the appliance, describe what's happening, choose a two-hour window, and send it. ` +
+        `The $99 residential diagnostic is collected at booking and credited in full toward your approved repair, and a human Service Setter reviews and confirms every booking before a technician is dispatched.`,
+      link: `${SITE}/book`,
+    },
+    {
+      id: 'site-book-with-speedy',
+      topic: 'Book through Speedy chat',
+      keywords: [
+        'book with speedy', 'book in chat', 'chat booking', 'book through speedy',
+        'speedy booking', 'book by chatting',
+      ],
+      answer:
+        `You can also book right here in chat with Speedy: tell me the appliance, what's happening, and your city, and I'll collect the details. ` +
+        `Before anything is sent to the Service Setters office, I show you a summary of the booking and you confirm it — nothing is ever sent without your confirmation. The classic web form stays the primary booking path; chat booking is the high-tech option alongside it.`,
+      link: `${SITE}/speedy`,
+    },
+    {
+      id: 'site-photo-diagnosis',
+      topic: 'Photo diagnosis — send Speedy a photo of the problem',
+      keywords: [
+        'photo diagnosis', 'send a photo', 'photo of the problem', 'diagnose from a photo',
+        'picture of my appliance', 'speedy photo', 'photo read', 'model plate photo',
+      ],
+      answer:
+        `Send Speedy a photo of the problem — or of the appliance's model plate — and Speedy gives you a plain-language read of what it usually means and what happens next. ` +
+        `A photo read is preliminary: the technician confirms the actual cause in person during the diagnostic visit, and only that confirmed diagnosis sets your repair quote.`,
+      link: `${SITE}/speedy`,
+    },
+    {
+      id: 'site-service-refrigerator',
+      topic: 'Refrigerator repair — book Top Speed',
+      keywords: ['refrigerator repair', 'fridge repair', 'book refrigerator repair', 'refrigerator repair service', 'fix my fridge'],
+      answer:
+        `Refrigerator repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-washer',
+      topic: 'Washer repair — book Top Speed',
+      keywords: ['washer repair', 'washing machine repair', 'book washer repair', 'washer repair service', 'fix my washing machine'],
+      answer:
+        `Washer repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-dryer',
+      topic: 'Dryer repair — book Top Speed',
+      keywords: ['dryer repair', 'tumble dryer repair', 'clothes dryer repair', 'book dryer repair', 'dryer repair service', 'fix my dryer'],
+      answer:
+        `Dryer repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}. (A dryer that runs but dries slowly can also point at the vent path — vent cleaning itself is Cleanout Vents' work; ask me and I'll point you right.)`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-oven-range',
+      topic: 'Oven & range repair — book Top Speed',
+      keywords: ['oven repair', 'range repair', 'stove repair', 'book oven repair', 'oven repair service', 'fix my stove'],
+      answer:
+        `Oven and range repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-dishwasher',
+      topic: 'Dishwasher repair — book Top Speed',
+      keywords: ['dishwasher repair', 'book dishwasher repair', 'dishwasher repair service', 'fix my dishwasher'],
+      answer:
+        `Dishwasher repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-freezer-ice-maker',
+      topic: 'Freezer & ice maker repair — book Top Speed',
+      keywords: ['freezer repair', 'ice maker repair', 'book freezer repair', 'freezer repair service', 'fix my ice maker'],
+      answer:
+        `Freezer and ice maker repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-microwave',
+      topic: 'Microwave repair — book Top Speed',
+      keywords: ['microwave repair', 'book microwave repair', 'microwave repair service', 'fix my microwave'],
+      answer:
+        `Microwave repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Microwave internals hold a dangerous charge even unplugged — never open the cabinet yourself; that is technician-only work. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-garbage-disposal',
+      topic: 'Garbage disposal repair — book Top Speed',
+      keywords: ['garbage disposal repair', 'disposal repair', 'book disposal repair', 'garbage disposal service', 'fix my disposal'],
+      answer:
+        `Garbage disposal repair is one of Top Speed's nine core services. It starts with the $99 diagnostic (credited in full toward your approved repair): the technician finds the actual cause and gives you a written estimate before any repair work starts. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-service-installation',
+      topic: 'Appliance installation — book Top Speed',
+      keywords: ['appliance installation', 'installation service', 'install my appliance', 'new appliance install', 'book installation'],
+      answer:
+        `Installation is one of Top Speed's nine core services, at $150 flat labor: leveling, correct water, electrical, and gas connections, and leak and function checks before the job is called done. Parts and materials are extra and quoted in writing. Book on the form, in the app, or at ${PHONE}.`,
+      link: `${SITE}/home-appliance-services`,
+    },
+    {
+      id: 'site-landing-pages',
+      topic: 'Landing pages — 131 pages across 65 cities',
+      keywords: [
+        'landing pages', '131 landing pages', '65 cities', 'city pages',
+        'how many cities do you serve', 'local service pages',
+      ],
+      answer:
+        `Top Speed publishes 131 service landing pages covering 65 cities across Broward, Palm Beach, and Miami-Dade counties — a page for the services offered in each city. ` +
+        `The Service Areas directory lists every city and links to its pages, so you can start from your own city and book from there.`,
+      link: `${SITE}/service-areas-directory`,
+    },
+    {
+      id: 'site-hub',
+      topic: 'Top Speed Service OS — the hub at topspeedserviceos.com',
+      keywords: ['service os', 'topspeedserviceos.com', 'the hub', 'main website', 'the platform', 'top speed service os'],
+      answer:
+        `topspeedserviceos.com is the hub of Top Speed Service OS: booking, Track My Tech, your account and garage, the apps, offers, referrals, and every platform door run on this one system. ` +
+        `One account and one record — a job booked through any Top Speed door is the same job here.`,
+      link: `${SITE}/`,
+    },
+    {
+      id: 'site-dotnet',
+      topic: 'topspeedappliance.net — the customer flagship website',
+      keywords: ['topspeedappliance.net', 'top speed appliance website', 'flagship site', 'residential repair website'],
+      answer:
+        `topspeedappliance.net is Top Speed's customer flagship website: residential repair pages for every service and city, booking, pricing, and tracking. ` +
+        `It runs on the same Service OS as everything else, so a booking made there is the same record you track in the app.`,
+      link: 'https://topspeedappliance.net',
+    },
+    {
+      id: 'site-network-join',
+      topic: 'Join the provider network — topspeedapplianceservice.com',
+      keywords: [
+        'join the network', 'become a provider', 'provider network', 'topspeedapplianceservice.com',
+        'work for top speed', 'sign up as a technician', 'join as a provider',
+      ],
+      answer:
+        `Technicians and service businesses join the Top Speed Appliance Service Network at topspeedapplianceservice.com. ` +
+        `Providers are verified by the team before they receive work, and every job is dispatched by the human Service Setters — providers work in the Tech App (Speedy Pro) once they are on the network.`,
+      link: 'https://topspeedapplianceservice.com',
+    },
+    {
+      id: 'site-connect-pro',
+      topic: 'Appliance Connect Pro — homeowners & property managers',
+      keywords: [
+        'appliance connect pro', 'connect pro', 'applianceconnectpro.com',
+        'property manager portal', 'homeowner portal',
+      ],
+      answer:
+        `Appliance Connect Pro is the portal for homeowners and property managers: tenants can submit appliance requests straight into it, managers see every work order's live stage and a photo report after each job, and billing rolls into one consolidated monthly invoice. ` +
+        `New accounts are created on the Connect Pro web portal first; the app is sign-in only for existing accounts.`,
+      link: 'https://www.applianceconnectpro.com',
+    },
+    {
+      id: 'site-connect-portal',
+      topic: 'Appliance Connect — your customer account portal',
+      keywords: [
+        'appliance connect portal', 'customer portal', 'appliance connect login',
+        'my account portal', 'customer account login',
+      ],
+      answer:
+        `Your Appliance Connect customer account — your appliances, service history, bookings, and referral dashboard — lives in the Appliance Connect portal, free. ` +
+        `It is the same account you use on every Top Speed door, and the mobile version signs in with it too.`,
+      link: 'https://appliance-connect.vercel.app',
+    },
+    {
+      id: 'site-appliance-pro',
+      topic: 'Appliance Pro — commercial service accounts',
+      keywords: [
+        'appliance pro', 'appliancepro.net', 'commercial accounts',
+        'commercial service accounts', 'business accounts', 'commercial portal',
+        'commercial sign in', 'commercial login', 'commercial customers sign in',
+      ],
+      answer:
+        `Appliance Pro is Top Speed's commercial door: restaurants, hotels, laundromats, healthcare, offices, and other facilities open a commercial account with an equipment registry (a TS-EQ asset tag on every unit), priority dispatch through the Service Setters, a photo report at close, and one consolidated monthly invoice. ` +
+        `Commercial pricing is by custom quote for each facility — the residential diagnostic model never applies to commercial accounts.`,
+      link: 'https://www.appliancepro.net',
+    },
+    {
+      id: 'site-commercial-services',
+      topic: 'Commercial appliance services — what Top Speed covers',
+      keywords: [
+        'commercial appliance services', 'commercial refrigeration', 'commercial laundry',
+        'restaurant equipment repair', 'walk-in cooler repair', 'commercial kitchen repair',
+      ],
+      answer:
+        `Top Speed's commercial services cover commercial refrigeration (walk-ins, reach-ins, ice machines), commercial laundry, cooking lines, and commercial dish and sanitation machines. ` +
+        `Every facility is priced by custom quote through Appliance Pro — there is no residential-style diagnostic fee on commercial work. Building HVAC, plumbing mains, and electrical panels stay with the licensed trades for those systems.`,
+      link: `${SITE}/commercial-appliance-services`,
+    },
+    {
+      id: 'site-property-managers',
+      topic: 'Property managers — appliance service for every unit',
+      keywords: [
+        'property managers', 'property manager', 'rental units service',
+        'tenant appliance requests', 'manage my units', 'landlord appliance service',
+      ],
+      answer:
+        `Property managers run appliance service for every unit from Appliance Connect Pro: tenants submit requests day or night, Service Setters review and approve every booking, and you see each job's live stage with a photo report when it closes. ` +
+        `Billing is one consolidated monthly invoice itemized by unit. The Property Managers page explains the whole setup.`,
+      link: `${SITE}/property-managers`,
+    },
+    {
+      id: 'site-pepper-lists',
+      topic: 'Pepper Lists — Sell, Post, and Book',
+      keywords: [
+        'pepper lists', 'pepper lists it', 'pepperlists.com', 'pepper lists sell',
+        'pepper lists post', 'pepper lists book', 'sell post book',
+      ],
+      answer:
+        `Pepper Lists It is Top Speed's three-purpose platform at pepperlists.com. Pepper Lists Sell: list an item once and sell it on the marketplaces — Facebook Marketplace, Google Shopping, eBay, Etsy, and Walmart. ` +
+        `Pepper Lists Post: post to social media and search directories — TikTok, Facebook, YouTube, Instagram, X, and LinkedIn — and the Pepper Lists reviews wall is part of Post. ` +
+        `Pepper Lists Book: book appliance service with Speedy AI and Top Speed Service OS, with tracking included. One account covers all three.`,
+      link: 'https://www.pepperlists.com',
+    },
+    {
+      id: 'site-pepper-lists-how',
+      topic: 'How Pepper Lists works — Sell, Post, Book explained',
+      keywords: [
+        'how does pepper lists work', 'how pepper lists works', 'pepper lists how it works',
+        'pepper lists explained',
+      ],
+      answer:
+        `The Pepper Lists how-it-works page walks through all three purposes: Sell (connect your marketplace channels and list once), Post (connect your social and directory channels and share), and Book (book service — the classic web form first, Speedy AI booking as the high-tech option below it, and Speedy confirms a summary with you before anything reaches the Service Setters). ` +
+        `It also explains how Pepper, the Muse AI agent, can manage your channels for you when you grant access.`,
+      link: 'https://www.pepperlists.com/how-it-works',
+    },
+    {
+      id: 'site-pepper-lists-channels',
+      topic: 'Pepper Lists Channel Connections — Sell & Post channels',
+      keywords: [
+        'channel connections', 'connect my channels', 'pepper lists channels',
+        'sell on ebay', 'sell on etsy', 'sell on walmart', 'sell on google shopping',
+        'sell on facebook marketplace', 'post on tiktok', 'post on instagram',
+        'post on youtube', 'post on linkedin', 'connect facebook to pepper lists',
+        'muse agent access', 'agent access',
+      ],
+      answer:
+        `Channel Connections, inside your Pepper Lists account, is where you link the channels for the Sell and Post purposes. Sell channels: Facebook Marketplace, Google Shopping, eBay, Etsy, and Walmart. Post channels: TikTok, Facebook, YouTube, Instagram, X, LinkedIn, and search directories. ` +
+        `Tapping Connect files a connection request and the team completes the link on the platform side — a channel only ever shows Connected when the link is real. On each channel you can also grant Pepper, the Muse AI agent, access to manage it for you: off by default, revocable anytime, and every agent action is logged.`,
+      link: 'https://www.pepperlists.com/how-it-works',
+    },
+    {
+      id: 'site-pepper-lists-book',
+      topic: 'Pepper Lists Book — book service from Pepper Lists',
+      keywords: [
+        'pepper lists book', 'book a repair on pepper lists', 'pepper lists booking',
+        'book service on pepper lists',
+      ],
+      answer:
+        `Pepper Lists Book is the booking purpose inside Pepper Lists: book appliance service with Speedy AI and Top Speed Service OS from the same account you sell and post with. ` +
+        `The classic web form leads — it is the primary booking path — and Speedy AI booking sits below it as the high-tech option. When you book with Speedy, Speedy summarizes your details and you confirm before anything is sent to the Service Setters, and your job's tracking lives in the same account.`,
+      link: 'https://www.pepperlists.com',
+    },
+    {
+      id: 'site-pepper-lists-reviews',
+      topic: 'Pepper Lists reviews — the public wall (part of Post)',
+      keywords: [
+        'reviews', 'review wall', 'leave a review', 'read reviews',
+        'customer reviews', 'pepper lists reviews', 'verified repair review',
+      ],
+      answer:
+        `The reviews wall is part of Pepper Lists Post: after a completed repair, the customer reviews the job in Pepper Lists — a star rating, a title and story, repair photos or video, and a short post-service survey — and Speedy replies to every review personally. ` +
+        `A review tied to a finished job posts as a Verified Repair review, and published reviews appear on the public wall.`,
+      link: 'https://www.pepperlists.com',
+    },
+    {
+      id: 'site-referral',
+      topic: 'Refer & Earn — the referral program (appliancereferral.com)',
+      keywords: [
+        'referral program', 'refer a friend', 'refer and earn', 'appliancereferral.com',
+        'referral code', 'referral link', 'earn service credit', 'invite a friend',
+      ],
+      answer:
+        `Refer & Earn is Top Speed's referral program — its own door is appliancereferral.com. When your job completes, you automatically get a personal referral code and link. A friend who books through it gets $25 off their first eligible repair (the New Customer Welcome). ` +
+        `When the friend's job is completed and paid, you earn service credit: $25 per completed referral for the first four, $35 each from the 5th through the 9th, $50 each from the 10th on, plus one-time milestone bonuses of $100 at 10 and $250 at 25 lifetime completed referrals. A Service Setter approves each credit before it is issued, and credits expire 12 months after issuance.`,
+      link: `${SITE}/refer`,
+    },
+    {
+      id: 'site-advertise',
+      topic: 'Advertise with Top Speed — Flywheel',
+      keywords: [
+        'advertise', 'advertising', 'advertise with you', 'flywheel',
+        'run ads', 'advertiser', 'advertise my business',
+      ],
+      answer:
+        `Businesses advertise across the Top Speed platforms through Flywheel: open an advertiser account, build a campaign, and — once the owner approves it — it runs as mini banners across the customer app, booking pages, and partner sites. ` +
+        `The Advertise page explains the reach and how approval works.`,
+      link: `${SITE}/advertise`,
+    },
+    {
+      id: 'site-parts-supply',
+      topic: 'Appliance Plus Parts Supply — the parts partner platform',
+      keywords: [
+        'parts supply', 'appliance plus', 'buy parts', 'parts catalog',
+        'appliance parts', 'appliance plus parts supply',
+      ],
+      answer:
+        `Appliance Plus Parts Supply is the parts partner platform in the Top Speed network — a parts catalog and ordering door for the trade, powered by PLUS AI. Its public catalog is labeled as a demonstration catalog; live parts ordering runs through the team. ` +
+        `Parts used on a Top Speed job are recorded against that job from the parts warehouse.`,
+      link: 'https://applianceplus.vercel.app',
+    },
+    {
+      id: 'site-cococane',
+      topic: 'CocoCane — Top Speed\'s coconut juice shop',
+      keywords: ['cococane', 'coconut juice', 'coconut water', 'sugarcane sticks', 'buy coconuts', 'coconut drinks'],
+      answer:
+        `CocoCane is Top Speed's coconut juice shop, on Facebook: fresh coconut drinks at $5 / $15 / $30 by size, whole coconuts at $2–4, coconut meat at $7, and sugarcane sticks at $7.`,
+      link: 'https://www.facebook.com/profile.php?id=61593313075645',
+    },
+    {
+      id: 'site-customer-app',
+      topic: 'The Top Speed customer app — Appliance Connect',
+      keywords: ['customer app', 'the app', 'top speed app', 'mobile app', 'appliance connect app'],
+      answer:
+        `The Top Speed customer app is Appliance Connect: your appliances and their service history, booking, Track My Tech, offers, and your referral dashboard in one place. ` +
+        `It is free and runs on the same account as the website — a job booked anywhere shows up here.`,
+      link: `${SITE}/app`,
+    },
+    {
+      id: 'site-connect-mobile',
+      topic: 'Appliance Connect mobile — sign-in only',
+      keywords: ['appliance connect mobile', 'mobile sign in', 'connect app on my phone', 'mobile account'],
+      answer:
+        `Appliance Connect mobile is the phone version of your customer account — bookings, tracking, garage, and referrals on the go. ` +
+        `It is sign-in only: accounts are created on the web portal first, then the mobile app signs you in with the same account.`,
+      link: 'https://appliance-connect.vercel.app/mobile',
+    },
+    {
+      id: 'site-appliance-plug',
+      topic: 'Appliance Plug — the techs\' plate-to-parts tool (clients only)',
+      keywords: ['appliance plug', 'applianceplug.app', 'plate scan app', 'find parts by plate'],
+      answer:
+        `Appliance Plug is a tool for Top Speed technicians and clients: snap a photo of an appliance's model plate and it finds the matching parts. ` +
+        `It is a client tool — there is no public app-store listing for it.`,
+      link: 'https://www.applianceplug.app',
+    },
+    {
+      id: 'site-speedy-pro',
+      topic: 'Speedy Pro — the Tech App for providers & technicians',
+      keywords: ['speedy pro', 'tech app', 'technician app', 'provider app'],
+      answer:
+        `Speedy Pro is the Tech App where Top Speed network providers and technicians receive job offers, run their work orders, record job photos and diagnoses, and share live status with customers. ` +
+        `New technicians join through the provider network door at topspeedapplianceservice.com; the Speedy Pro page explains how the app works.`,
+      link: `${SITE}/speedy-pro`,
+    },
+    {
+      id: 'site-garage',
+      topic: 'My Garage — your appliances and their history',
+      keywords: ['my garage', 'garage', 'my appliances', 'appliance registry', 'service history'],
+      answer:
+        `My Garage is the appliance registry inside your account: every appliance you add, its model details, and its full service history in one place. ` +
+        `From the garage you can book a repair for any appliance on the list, or track a job already in progress.`,
+      link: `${SITE}/garage`,
+    },
+    {
+      id: 'site-account',
+      topic: 'Your account — dashboard & sign-in',
+      keywords: ['my account', 'account dashboard', 'customer dashboard', 'sign in', 'log in', 'my bookings'],
+      answer:
+        `Your customer dashboard shows your bookings, your appliances, your offers, and your account details. ` +
+        `One account works on every Top Speed door — sign in once and your record follows you, and if you hold more than one account, the account switcher moves between them without signing anyone out.`,
+      link: `${SITE}/account`,
+    },
+    {
+      id: 'site-download',
+      topic: 'Get the apps — the download page',
+      keywords: ['download', 'get the app', 'install the app', 'app download', 'download page'],
+      answer:
+        `The download page gathers the Top Speed apps: the customer app, Pepper Lists, Appliance Connect, and the pro doors — each one explained before you install anything, so you know exactly what each app is for.`,
+      link: `${SITE}/download`,
+    },
+    {
+      id: 'site-explore',
+      topic: 'Explore — search, price preview, recommendations, compare',
+      keywords: ['explore', 'price preview', 'compare services', 'search services', 'recommendations', 'cost estimate tool'],
+      answer:
+        `Explore is Top Speed's set of planning tools: search the services, get a price preview, see recommendations for your situation, and compare options side by side. ` +
+        `A price preview is a planning aid only — it is never a quote. Your actual repair price is set by the technician's written quote after the diagnostic.`,
+      link: `${SITE}/explore`,
+    },
+    {
+      id: 'site-about',
+      topic: 'About Top Speed — how the ecosystem works',
+      keywords: ['about top speed', 'how it works', 'how does top speed work', 'the ecosystem', 'about the company'],
+      answer:
+        `Top Speed Appliance LLC is an appliance repair and installation company based in Coconut Creek, Florida, and every Top Speed website and app runs on the one Service OS — so a job booked anywhere is the same job everywhere, watched over by the human Service Setters. ` +
+        `The About page maps the whole ecosystem: the customer doors, the provider network, and how a job flows from booking to completed repair.`,
+      link: `${SITE}/about`,
+    },
+    {
+      id: 'site-cleanout-vents-web',
+      topic: 'Cleanout Vents\' own website — cleanoutvents.com',
+      keywords: ['cleanoutvents.com', 'cleanout vents website', 'vent cleaning website'],
+      answer:
+        `Cleanout Vents has its own website at cleanoutvents.com: its three vent services, its Broward County service area, and its own booking door. ` +
+        `On the Top Speed side, the Service Setters also coordinate Cleanout Vents work at ${PHONE} — vent pricing is confirmed by the team when you call; there is no published vent price.`,
+      link: 'https://www.cleanoutvents.com',
+    },
   ];
 
   // Generic offer questions land on this overview — NOT on a random
