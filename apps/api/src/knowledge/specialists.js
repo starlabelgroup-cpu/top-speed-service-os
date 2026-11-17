@@ -837,7 +837,7 @@ export const DEPARTMENTS = [
       { name: 'Academy', path: '/academy' },
       { name: 'Media OS', path: '/media' },
     ],
-    blurb: 'The staff university itself: 29 modules in 8 role tracks, Speedy Class, and the specialists you are talking to now.',
+    blurb: 'The staff university itself: 38 modules in 9 role tracks, Speedy Class, and the specialists you are talking to now.',
     specialist: {
       name: 'Ada',
       title: 'Academy Specialist',
@@ -856,12 +856,12 @@ export const DEPARTMENTS = [
       {
         id: 'curriculum',
         name: 'Curriculum & Tracks',
-        blurb: '29 modules, 8 tracks, one order: Foundation first.',
-        explains: 'The eight tracks, their module ranges, and how modules live in Media OS.',
-        starters: ['What are the 8 tracks?', 'How many modules are there?', 'Where does the curriculum live?'],
+        blurb: '38 modules, 9 tracks, one order: Foundation first.',
+        explains: 'The nine tracks, their module ranges, and how modules live in Media OS.',
+        starters: ['What are the 9 tracks?', 'How many modules are there?', 'Where does the curriculum live?'],
         keywords: ['curriculum', 'tracks', 'modules', 'foundation', 'media os', 'training library'],
         answer:
-          'The Academy curriculum is 29 modules in 8 role tracks: Foundation (Modules 1–3, every role), Owner (4–7), Manager (8–11), Technician (12–15), Setter (16–19), Dispatcher (20–22), Ad Specialist (23–26), and Customer-Facing (27–29). The modules themselves are Media OS content records tagged "training-academy" — the Academy page reads the library live, so a module\'s status and video on its card are the Media OS truth, not a hard-coded list. Each module card states what it teaches; Ada and the department specialists can walk any module\'s content with you.',
+          'The Academy curriculum is 38 modules in 9 role tracks: Foundation (Modules 1–3, every role), Owner (4–7), Manager (8–11), Technician (12–15), Setter (16–19), Dispatcher (20–22), Ad Specialist (23–26), Customer-Facing (27–29), and System Navigator (30–38) — the ninth track is the "System Navigator: Know Your Platform" course. The modules themselves are Media OS content records tagged "training-academy" — the Academy page reads the library live, so a module\'s status and video on its card are the Media OS truth, not a hard-coded list. Each module card states what it teaches; Ada and the department specialists can walk any module\'s content with you.',
       },
       {
         id: 'speedy-class',
