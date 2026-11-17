@@ -507,6 +507,28 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 </div>
 <div class="checker" aria-hidden="true"></div>
 
+<!-- WHEN IT BREAKS — need-of-service band (scenario library round one, 2026-11-16) -->
+<section id="need" style="background:#fff;border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="tag">When it breaks</span>
+      <h2>The moment you <em>need us.</em></h2>
+      <p>It never picks a good time — the fridge warms up with a full load of groceries, or the washer lets go mid-cycle. That moment is exactly what Top Speed is built for.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px" class="reveal">
+      <figure style="margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;overflow:hidden">
+        <img src="/api/v1/app/scenario-images/need-warm-fridge.webp" alt="Illustration: a homeowner opening a refrigerator that has stopped cooling, with groceries warming inside — the moment a fridge repair is needed" style="width:100%;height:auto;display:block" loading="lazy">
+        <figcaption style="padding:12px 16px;font-size:14.5px;color:#42557A"><b style="color:var(--navy)">Fridge running warm?</b> Food is on the clock — book the $99 diagnostic (credited toward your repair) and a Service Setter confirms your window.</figcaption>
+      </figure>
+      <figure style="margin:0;background:var(--surface-2);border:1px solid var(--line);border-radius:16px;overflow:hidden">
+        <img src="/api/v1/app/scenario-images/need-washer-leak.webp" alt="Illustration: a washer leaking water across a laundry-room floor while a homeowner mops — the moment a washer repair is needed" style="width:100%;height:auto;display:block" loading="lazy">
+        <figcaption style="padding:12px 16px;font-size:14.5px;color:#42557A"><b style="color:var(--navy)">Washer leaking?</b> Shut the water off, then book — most leaks trace to a hose, pump or seal a tech can confirm on the first visit.</figcaption>
+      </figure>
+    </div>
+    <p style="text-align:center;margin-top:20px"><a class="btn btn-red" href="/book">Book a repair</a> <a class="btn btn-ghost" href="#diagnose">Ask Speedy first</a></p>
+  </div>
+</section>
+
 <!-- SERVICES -->
 <section id="services">
   <div class="wrap">
@@ -916,6 +938,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             <button class="btn btn-red" style="width:100%" onclick="runDiagnosis()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.4 15.4L21 21M8.4 10.8h4.8" stroke="#E8322E"/></svg> Run AI Diagnosis</button>
           </div>
           <div>
+            <img src="/api/v1/app/scenario-images/speedy-photo-fridge.webp" alt="Illustration: a customer taking a photo of an open refrigerator with a phone so Speedy can read the problem before the visit" style="width:100%;height:auto;border-radius:12px;display:block;margin-bottom:14px" loading="lazy">
             <div class="result" id="dgResult">
               <span class="tag live">● Live — Speedy AI</span>
               <h3 style="margin-top:10px">A head start before the visit</h3>
@@ -1537,6 +1560,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <h2>Know it <em>before it breaks.</em></h2>
       <p>What to check first for the problems we fix most — from our symptom guides for every service we run. Tap a guide for the full checks, and book straight from it if it is time for a tech.</p>
     </div>
+    <img src="/api/v1/app/scenario-images/speedy-symptom-guide.webp" alt="Illustration: Speedy guiding a homeowner through simple symptom checks on a phone before booking a technician" style="width:min(560px,100%);height:auto;border-radius:16px;display:block;margin:0 auto 22px" loading="lazy">
     <div class="res-grid reveal">
       <a class="card res-card" href="https://www.topspeedappliance.net/services/refrigerator-repair/not-cooling/">
         <img src="/api/v1/app/service-images/guide-fridge.webp" class="rc-banner" width="1536" height="438" alt="Top Speed Appliance banner — Fridge Not Cooling? Don't lose your food. Call Top Speed Appliance now for fast refrigerator repair." loading="lazy">
