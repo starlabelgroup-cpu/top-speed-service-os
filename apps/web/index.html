@@ -292,6 +292,11 @@ footer a{color:#D7E6FF}
 .res-card h3{font-size:18px;margin:0 0 8px}
 .res-card p{font-size:14.5px;margin:0 0 12px}
 .res-card .go{font-weight:700;color:var(--blue);font-size:14.5px;margin-top:auto}
+.poster-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.poster-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.poster-grid{grid-template-columns:1fr}}
+.poster-tile{display:block;border-radius:14px;overflow:hidden;border:1.5px solid var(--line);background:#fff;text-decoration:none}
+.poster-tile img{width:100%;height:auto;display:block}
 
 #speedyBtn{position:fixed;right:16px;bottom:22px;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:1190;background:var(--red);color:#fff;border:none;border-radius:999px;padding:14px 20px;font-weight:800;font-size:16px;box-shadow:0 14px 34px rgba(227,30,36,.4);display:flex;gap:9px;align-items:center;transition:opacity .18s ease,visibility .18s ease}
 body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-events:none}
@@ -619,38 +624,35 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <img src="/photo-disposal.jpg" alt="Garbage disposal installed under a kitchen sink" loading="lazy" style="width:100%; height:210px; object-fit:cover; display:block;" onerror="this.closest('figure').style.display='none'">
   <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Garbage disposal repair &amp; replacement</b></figcaption>
 </figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-hero.jpg" alt="Top Speed Appliance poster — Appliance Broken? Book Same-Day Repair in Broward County" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Appliance broken? Book same-day repair</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-book-now.jpg" alt="Top Speed Appliance poster — technician beside a leaking washer, Appliance Broken? Book Now" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Book now — we fix it fast</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-washer-dryer.jpg" alt="Top Speed Appliance poster — Washer or Dryer Not Working? We fix it FAST. Call 954-931-7997" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Washer &amp; dryer repair</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-fridge-not-cooling.jpg" alt="Top Speed Appliance poster — Fridge Not Cooling? Emergency service available. Call 954-931-7997" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Fridge not cooling?</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-same-day.jpg" alt="Top Speed Appliance poster — Same-Day Appliance Repair for refrigerators, washers, dryers, ovens and dishwashers" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Same-day appliance repair</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-diagnostic.jpg" alt="Top Speed Appliance poster — $99 diagnostic, credited toward your repair" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">$99 diagnostic — credited toward your repair</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-speedy.jpg" alt="Top Speed Appliance poster — Ask Speedy AI, book in about a minute" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Ask Speedy AI</b></figcaption>
-</figure>
-<figure style="margin:0; border-radius:14px; overflow:hidden; border:1.5px solid var(--line); background:#fff;">
-  <img src="/visual-cities.jpg" alt="Top Speed Appliance poster — serving cities across South Florida" loading="lazy" style="width:100%; height:210px; object-fit:cover; object-position:top; display:block;" onerror="this.closest('figure').style.display='none'">
-  <figcaption style="padding:10px 14px; font-size:13.5px; color:#42557A;"><b style="color:var(--navy);">Now serving 65 cities — Broward, Palm Beach &amp; Miami-Dade</b></figcaption>
-</figure>
+    </div>
+  </div>
+</section>
+
+<!-- POSTER SET — Ramone's six mockup posters, whole at natural aspect (2026-11-16) -->
+<section style="background:#fff; border-bottom:1px solid var(--line);">
+  <div class="wrap" style="padding-top:46px; padding-bottom:46px;">
+    <div style="letter-spacing:.22em; font-weight:800; color:var(--blue); font-size:13px; text-transform:uppercase;">From the field &bull; The 2026 poster set</div>
+    <h2 style="font-size:clamp(26px,4vw,36px); color:var(--navy); margin:8px 0 6px;">Real repairs. One fast call &mdash; 954-931-7997.</h2>
+    <p style="color:#5A6E94; max-width:640px;">The posters from our trucks and shop doors &mdash; tap one to book or ask Speedy.</p>
+    <div class="poster-grid" style="margin-top:22px;">
+      <a class="poster-tile" href="https://www.topspeedappliance.net/services/refrigerator-repair/not-cooling/">
+        <img src="/api/v1/app/poster-images/visual-fridge-not-cooling.webp" width="1200" height="1500" loading="lazy" alt="Top Speed Appliance poster — Fridge Not Cooling? Don't lose your food. Emergency service available, expert technicians. Call 954-931-7997">
+      </a>
+      <a class="poster-tile" href="/book">
+        <img src="/api/v1/app/poster-images/visual-same-day.webp" width="1200" height="1500" loading="lazy" alt="Top Speed Appliance poster — Same-Day Appliance Repair. Refrigerators, washers &amp; dryers, ovens &amp; stoves">
+      </a>
+      <a class="poster-tile" href="https://www.topspeedappliance.net/services/washer-repair/not-draining/">
+        <img src="/api/v1/app/poster-images/visual-washer-dryer.webp" width="1200" height="1500" loading="lazy" alt="Top Speed Appliance poster — Washer or Dryer Not Working? We fix it fast. No spin? No heat? No problem.">
+      </a>
+      <a class="poster-tile" href="#" onclick="toggleSpeedy();return false;">
+        <img src="/api/v1/app/poster-images/visual-ask-speedy.webp" width="1200" height="1500" loading="lazy" alt="Top Speed Appliance poster — Ask Speedy AI. Book in about a minute. Photo diagnosis, instant booking, human help when you need it">
+      </a>
+      <a class="poster-tile" href="/service">
+        <img src="/api/v1/app/poster-images/visual-cities.webp" width="1800" height="1200" loading="lazy" alt="Top Speed Appliance poster — Serving 12 Broward Cities. Same-day appliance repair across Broward County. Call now 954-931-7997">
+      </a>
+      <a class="poster-tile" href="/book">
+        <img src="/api/v1/app/poster-images/visual-diagnostic.webp" width="1800" height="1200" loading="lazy" alt="Top Speed Appliance poster — $99 Diagnostic, credited toward your repair. Book now">
+      </a>
     </div>
   </div>
 </section>
