@@ -97,6 +97,7 @@ model Company {
   referralJourneys        ReferralJourney[]
   referralCredits         ReferralCredit[]
   referralProgramSettings ReferralProgramSetting[]
+  dispatchSettings        DispatchSetting[]
   notificationOutbox      NotificationOutbox[]
   videoRequests           VideoConsultRequest[]
   payments                Payment[]
@@ -279,6 +280,15 @@ model ServiceRequest {
   diagnosticFee                     Decimal       @default(99.00) @db.Decimal(10, 2)
   diagnosticFeeCreditedTowardRepair Boolean       @default(true)
   feeStatus                         FeeStatus     @default(COLLECTED_AT_BOOKING)
+  // Service Setters priority tier (2026-11-17, Operations Blueprint §5):
+  // P1 critical commercial failure · P2 urgent household loss of
+  // essential function or active leak · P3 routine repair · P4 planned
+  // installation or maintenance. Nullable on purpose: an unset tier is
+  // derived at read time (installations → P4, everything else → P3);
+  // a value stored here is a tier a setter deliberately set, and it
+  // wins over the derivation. Derivation lives in
+  // services/dispatchOps.js (priorityTierOf).
+  priorityTier                      String?
   createdAt                         DateTime      @default(now())
   updatedAt                         DateTime      @updatedAt
 
@@ -541,6 +551,26 @@ model ReferralProgramSetting {
   updatedBy             String?
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// Service Setters capacity planning (2026-11-17, Operations Blueprint
+// §7): the office's own planning inputs for the daily booking ceiling —
+// ceiling = technicians × workingHoursPerTech × 60 × (1 − buffer/100)
+// ÷ minutesPerJob. One row per company; a missing row means the
+// blueprint defaults (25% buffer, 120 minutes per job incl. travel,
+// 8 working hours). These are planning estimates the office tunes —
+// they never block a booking by themselves.
+model DispatchSetting {
+  id                 String   @id @default(uuid()) @db.Uuid
+  companyId          String   @unique @db.Uuid
+  bufferPercent      Int      @default(25)
+  minutesPerJob      Int      @default(120)
+  workingHoursPerDay Float    @default(8)
+  updatedBy          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

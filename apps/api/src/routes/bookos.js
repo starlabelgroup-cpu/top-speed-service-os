@@ -4,7 +4,17 @@ import { z } from 'zod';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { areasForZip, effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
-import { persistBooking } from '../db/bookingsRepo.js';
+import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
+import {
+  OPS_THRESHOLDS,
+  capacityCeiling,
+  deriveExceptions,
+  deriveRecoveryQueues,
+  priorityTierOf,
+  rankAssignmentCandidates,
+} from '../services/dispatchOps.js';
+import { loadDispatchSettings, saveDispatchSettings } from '../db/dispatchOpsRepo.js';
+import { listReviewComments, listReviews } from '../db/reviewsRepo.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import { stripeConfigured } from '../services/stripe.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -168,6 +178,7 @@ router.get('/bookos/setter-queue', ...staffOnly, async (req, res) => {
       payment: paymentSummary(booking.id),
       issue: booking.issue,
       priority: booking.priority || false,
+      priorityTier: priorityTierOf(booking),
       preferredWindow: booking.preferredWindow || null,
       appointment: appointmentSummary(booking),
       lead,
@@ -387,6 +398,7 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
         areaStatus: effectiveAreaStatus(booking),
         serviceAddress: booking.serviceAddress || booking.customer?.address || null,
         appliance: booking.appliance,
+        priorityTier: priorityTierOf(booking),
         customerName: booking.customer?.name || null,
         payment: paymentSummary(booking.id),
         appointment: appointmentSummary(booking),
@@ -428,6 +440,7 @@ router.get('/bookos/area-day', ...staffOnly, (req, res) => {
     zip: booking.zip,
     appliance: booking.appliance,
     issue: booking.issue,
+    priorityTier: priorityTierOf(booking),
     appointment: appointmentSummary(booking),
     providerId: booking.dispatch?.providerId || null,
   });
@@ -608,6 +621,292 @@ router.get('/bookos/scorecard', ...staffOnly, async (req, res) => {
       },
     },
   });
+});
+
+/* =====================================================================
+ * Service Setters operations (2026-11-17, Operations Blueprint
+ * §§3/5/7/12): the exception queue, P1–P4 priority tiers with the
+ * ranked assignment aid, the recovery queues, and the capacity view.
+ * Every read here is derived from live job state by
+ * services/dispatchOps.js — no parallel lists to drift. Staff-gated,
+ * like everything else in Book OS. The only writes are a setter's own
+ * audited decisions: setting a tier, flagging a return visit, and
+ * cancelling a booking (the lifecycle state the recovery queue reads
+ * had no setter action that could reach it before this build).
+ * ===================================================================== */
+
+/**
+ * The platform's real complaint signal: a customer review the review
+ * pipeline escalated (Review.escalated) that the office has not
+ * answered yet — an office reply is a STAFF comment in the review
+ * queue, and it is what clears the signal.
+ */
+async function complaintSignals(req) {
+  const escalated = await listReviews({ escalatedOnly: true });
+  const mine = escalated.filter(
+    (review) =>
+      review.bookingId &&
+      (req.user.roles.includes(ROLES.PLATFORM_ADMIN) || review.companyId === req.companyId),
+  );
+  const open = [];
+  for (const review of mine) {
+    const comments = await listReviewComments(review.id);
+    if (comments.some((comment) => comment.authorKind === 'STAFF')) continue;
+    open.push({
+      reviewId: review.id,
+      bookingId: review.bookingId,
+      rating: review.rating,
+      escalationReason: review.escalationReason || null,
+      createdAt: review.createdAt,
+    });
+  }
+  return open;
+}
+
+/**
+ * Exception queue: every open work order that needs office
+ * intervention — missed acceptance, late arrival, parts delay,
+ * unresolved estimate, unanswered complaint — each with its owner,
+ * next action and due time. Derived per request; nothing is stored.
+ */
+router.get('/bookos/exceptions', ...staffOnly, async (req, res) => {
+  const complaints = await complaintSignals(req);
+  const items = deriveExceptions(visibleBookings(req), { complaints });
+  const counts = {};
+  for (const item of items) counts[item.type] = (counts[item.type] || 0) + 1;
+  return res.json({
+    data: {
+      generatedAt: new Date().toISOString(),
+      thresholds: OPS_THRESHOLDS,
+      counts,
+      total: items.length,
+      items,
+    },
+  });
+});
+
+/**
+ * Recovery queues (blueprint §12): awaiting parts, pending estimates,
+ * return visits, cancellations (the win-back list) and unpaid
+ * balances. Missed calls are reported as null with the reason: the
+ * platform keeps no call log to derive them from honestly.
+ */
+router.get('/bookos/recovery-queues', ...staffOnly, (req, res) => {
+  const queues = deriveRecoveryQueues(visibleBookings(req));
+  const counts = {};
+  for (const [key, rows] of Object.entries(queues)) counts[key] = rows.length;
+  return res.json({
+    data: {
+      generatedAt: new Date().toISOString(),
+      counts,
+      queues,
+      missedCalls: null,
+      notes: {
+        missedCalls:
+          'No missed-call queue: the platform keeps no call log (Twilio voice forwards calls and alerts the office on voicemail only), so there is no honest source to derive one from yet.',
+      },
+    },
+  });
+});
+
+const prioritySchema = z.object({
+  tier: z.enum(['P1', 'P2', 'P3', 'P4']),
+  setBy: z.string().trim().min(2).default('Service Setters'),
+});
+
+/**
+ * A setter sets a booking's priority tier (blueprint §5). The stored
+ * tier wins over the derived default (installations → P4, everything
+ * else → P3) everywhere the tier is shown.
+ */
+router.post('/bookos/bookings/:id/priority', ...staffOnly, async (req, res) => {
+  const parsed = prioritySchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid priority request', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const previous = priorityTierOf(booking);
+  booking.priorityTier = parsed.data.tier;
+  booking.updatedAt = new Date().toISOString();
+  addBookingEvent(booking, 'PRIORITY_SET', parsed.data.setBy, { tier: parsed.data.tier, previous });
+  appendEvent('PRIORITY_SET', {
+    source: booking.source || null,
+    actor: ROLES.DISPATCHER,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { team: 'Service Setters', setBy: parsed.data.setBy, tier: parsed.data.tier, previous },
+  });
+  await persistBooking(booking);
+  return res.json({
+    data: {
+      bookingId: booking.id,
+      referenceCode: booking.referenceCode || null,
+      priorityTier: booking.priorityTier,
+      previousTier: previous,
+    },
+  });
+});
+
+const returnVisitSchema = z.object({
+  needed: z.boolean(),
+  note: z.string().trim().max(500).optional(),
+  flaggedBy: z.string().trim().min(2).default('Service Setters'),
+});
+
+/**
+ * Flag (or clear) a booking as needing a return visit — the explicit
+ * signal the Return Visits recovery queue reads. The flag rides the
+ * booking's audited history like every other field state.
+ */
+router.post('/bookos/bookings/:id/return-visit', ...staffOnly, async (req, res) => {
+  const parsed = returnVisitSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid return-visit request', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (parsed.data.needed && booking.status === 'CANCELLED') {
+    return res.status(409).json({ error: 'A cancelled booking cannot need a return visit' });
+  }
+  booking.updatedAt = new Date().toISOString();
+  addBookingEvent(booking, parsed.data.needed ? 'RETURN_VISIT_FLAGGED' : 'RETURN_VISIT_CLEARED', parsed.data.flaggedBy, {
+    note: parsed.data.note || null,
+  });
+  appendEvent(parsed.data.needed ? 'RETURN_VISIT_FLAGGED' : 'RETURN_VISIT_CLEARED', {
+    source: booking.source || null,
+    actor: ROLES.DISPATCHER,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { team: 'Service Setters', flaggedBy: parsed.data.flaggedBy, note: parsed.data.note || null },
+  });
+  await persistBooking(booking);
+  return res.json({
+    data: { bookingId: booking.id, referenceCode: booking.referenceCode || null, returnVisitNeeded: parsed.data.needed },
+  });
+});
+
+const cancelSchema = z.object({
+  reason: z.string().trim().max(500).optional(),
+  cancelledBy: z.string().trim().min(2).default('Service Setters'),
+});
+
+/**
+ * A setter cancels a booking (customer cancelled, unreachable, booked
+ * in error…). The job leaves every working queue and lands on the
+ * Cancellations recovery list as a win-back candidate; any live
+ * assignment is released. Completed jobs cannot be cancelled.
+ */
+router.post('/bookos/bookings/:id/cancel', ...staffOnly, async (req, res) => {
+  const parsed = cancelSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid cancellation request', details: parsed.error.flatten() });
+  }
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (booking.status === 'COMPLETED') {
+    return res.status(409).json({ error: 'A completed job cannot be cancelled' });
+  }
+  if (booking.status === 'CANCELLED') {
+    return res.status(409).json({ error: 'Booking is already cancelled' });
+  }
+  booking.status = 'CANCELLED';
+  booking.updatedAt = new Date().toISOString();
+  addBookingEvent(booking, 'BOOKING_CANCELLED', parsed.data.cancelledBy, { reason: parsed.data.reason || null });
+  appendEvent('BOOKING_CANCELLED', {
+    source: booking.source || null,
+    actor: ROLES.DISPATCHER,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { team: 'Service Setters', cancelledBy: parsed.data.cancelledBy, reason: parsed.data.reason || null },
+  });
+  for (const assignment of store.dispatchAssignments.values()) {
+    if (
+      assignment.bookingId === booking.id &&
+      ['PROPOSED', 'APPROVED', 'ACCEPTED'].includes(assignment.status)
+    ) {
+      assignment.status = 'CANCELLED';
+      await persistAssignment(assignment);
+    }
+  }
+  await persistBooking(booking);
+  return res.json({
+    data: { bookingId: booking.id, referenceCode: booking.referenceCode || null, status: booking.status },
+  });
+});
+
+/**
+ * Ranked assignment aid (blueprint §5): eligible providers ranked by
+ * skill, credentials, availability, route proximity, van parts and
+ * service history, each with its reasons. READ-ONLY — the setter
+ * still picks the provider and confirms through the normal approval
+ * step. Nothing here dispatches, ever.
+ */
+router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, res) => {
+  const booking = store.bookings.get(req.params.id);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  return res.json({
+    data: {
+      bookingId: booking.id,
+      referenceCode: booking.referenceCode || null,
+      appliance: booking.appliance,
+      area: booking.area || booking.city,
+      priorityTier: priorityTierOf(booking),
+      candidates: rankAssignmentCandidates(booking),
+      note: 'Suggestions only — a Service Setter still picks the provider and confirms the assignment. Nothing here dispatches on its own.',
+    },
+  });
+});
+
+/**
+ * Capacity view (blueprint §7): today's booking ceiling from the
+ * office's planning inputs, with the day's appointed jobs counted
+ * against it. A planning estimate — it never blocks a booking.
+ */
+router.get('/bookos/capacity', ...staffOnly, async (req, res) => {
+  const parsed = z.object({ date: dateParam.optional() }).safeParse({ date: req.query.date });
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'A valid date query (?date=YYYY-MM-DD) is required', details: parsed.error.flatten() });
+  }
+  const date = parsed.data.date || todayDateString();
+  const settings = await loadDispatchSettings(req.companyId);
+  const technicians = (store.providers || []).filter((provider) => provider.active).length;
+  const bookedToday = visibleBookings(req).filter(
+    (booking) =>
+      booking.appointment?.status === 'SET' && booking.appointment.date === date && booking.status !== 'CANCELLED',
+  ).length;
+  const ceilingJobs = capacityCeiling({ technicians, settings });
+  return res.json({
+    data: {
+      date,
+      settings,
+      technicians,
+      ceilingJobs,
+      bookedToday,
+      remainingJobs: Math.max(0, ceilingJobs - bookedToday),
+      label:
+        'Planning estimate — technicians × working hours × 60 × (1 − buffer) ÷ minutes per job incl. travel (Operations Blueprint §7). It informs the office; it never blocks a booking.',
+    },
+  });
+});
+
+const capacitySettingsSchema = z.object({
+  bufferPercent: z.number().int().min(0).max(90),
+  minutesPerJob: z.number().int().min(30).max(480),
+  workingHoursPerDay: z.number().min(1).max(16),
+});
+
+/** The office tunes its own capacity planning inputs. */
+router.put('/bookos/capacity-settings', ...staffOnly, async (req, res) => {
+  const parsed = capacitySettingsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid capacity settings', details: parsed.error.flatten() });
+  }
+  const settings = await saveDispatchSettings(req.companyId, parsed.data, req.user.email);
+  return res.json({ data: { settings } });
 });
 
 export default router;

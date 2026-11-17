@@ -54,6 +54,32 @@
   .pill.com{color:#7a3b00;background:#fdf0dd;border-color:#f2d5a4}
   .pill.area{color:#fff;background:#e94e5c;border-color:#e94e5c}
   .pill.door{color:#42506a;background:#f2f5fa}
+  .pill.p1{color:#fff;background:#c81e1e;border-color:#c81e1e}
+  .pill.p2{color:#7a2b00;background:#fde8d7;border-color:#f5c491}
+  .pill.p3{color:#34445c;background:#eef2f7}
+  .pill.p4{color:#5b6b82;background:#f2f5fa}
+  .pill.xtype{color:#fff;background:#182742;border-color:#182742}
+  .pill.overdue{color:#fff;background:#c81e1e;border-color:#c81e1e}
+  .xrow{display:flex;gap:14px;align-items:flex-start;padding:13px 4px;border-bottom:1px solid var(--cc-line)}
+  .xrow:last-child{border-bottom:0}
+  .xmain{flex:1;min-width:0}
+  .xmain .top{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .xsub{font-size:12.5px;color:#8591a4;line-height:1.55;margin-top:4px;overflow-wrap:anywhere}
+  .xnext{font-size:12.5px;color:#34445c;line-height:1.55;margin-top:3px}
+  .rec-group{margin-bottom:18px}
+  .rec-group h3{margin:0 0 4px;color:#182742;font-size:14.5px;font-family:'Rajdhani',sans-serif}
+  .rec-group h3 .cnt{color:#e94e5c}
+  .sug{border:1px solid var(--cc-line);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:#fbfcfe}
+  .sug .stop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .sug .reasons{font-size:12px;line-height:1.6;margin-top:5px;color:#5b6b82}
+  .sug .reasons .pro{color:#14532d}
+  .sug .reasons .con{color:#b3261e}
+  .capform{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+  .capform label{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#65758e;display:flex;flex-direction:column;gap:5px}
+  .capform input{width:110px;padding:8px 10px;border:1px solid var(--cc-line);border-radius:9px;font:inherit;font-size:13.5px;text-transform:none;letter-spacing:0}
+  .ops-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:14px;border-top:1px solid var(--cc-line);padding-top:14px}
+  .ops-actions label{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#65758e;display:flex;flex-direction:column;gap:5px}
+  .ops-actions select,.ops-actions input{padding:8px 10px;border:1px solid var(--cc-line);border-radius:9px;font:inherit;font-size:13.5px;text-transform:none;letter-spacing:0}
   .qrow{display:flex;gap:14px;align-items:flex-start;padding:13px 4px;border-bottom:1px solid var(--cc-line)}
   .qrow:last-child{border-bottom:0}
   .qmain{flex:1;min-width:0}
@@ -140,6 +166,9 @@
         <p>DISPATCH</p>
         <a class="cc-nav-link active" href="#sec-stats"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-4M11 15.5V8M15.5 15.5v-6M20 15.5V5.5"/></svg><span>Overview</span></a>
         <a class="cc-nav-link" href="#sec-queue"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg><span>Intake Queue</span></a>
+        <a class="cc-nav-link" href="#sec-exceptions"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 2.8 20h18.4z"/><path d="M12 10v4.4M12 17.2v.2"/></svg><span>Exception Queue</span></a>
+        <a class="cc-nav-link" href="#sec-recovery"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.6 3.8v4.4h4.4"/></svg><span>Recovery Queues</span></a>
+        <a class="cc-nav-link" href="#sec-capacity"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-3M11 15.5V6.5M15.5 15.5v-5M20 15.5V4"/></svg><span>Capacity</span></a>
         <a class="cc-nav-link" href="#sec-assign"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg><span>Assignment</span></a>
         <a class="cc-nav-link" href="#sec-board"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="4.6" height="16" rx="1.4"/><rect x="9.7" y="4" width="4.6" height="11" rx="1.4"/><rect x="15.9" y="4" width="4.6" height="14" rx="1.4"/></svg><span>Today's Board</span></a>
         <a class="cc-nav-link" href="#sec-roster"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>Provider Roster</span></a>
@@ -213,6 +242,27 @@
         </div>
       </section>
 
+      <!-- CAPACITY -->
+      <section class="dd-section" id="sec-capacity">
+        <div class="dd-sec-head"><h2>Today's capacity</h2><p>The day's booking ceiling from the Operations Blueprint formula — a planning estimate for the office. It never blocks a booking.</p></div>
+        <div class="dd-stats">
+          <div class="dd-stat"><div class="n" id="capCeiling">—</div><div class="l">Booking ceiling</div><div class="s">Jobs today's team can hold, by the formula.</div></div>
+          <div class="dd-stat"><div class="n" id="capBooked">—</div><div class="l">Appointed today</div><div class="s">Jobs holding an appointment today.</div></div>
+          <div class="dd-stat"><div class="n" id="capRemaining">—</div><div class="l">Room remaining</div><div class="s">Ceiling minus appointed jobs.</div></div>
+          <div class="dd-stat"><div class="n" id="capTechs">—</div><div class="l">Active technicians</div><div class="s">Active providers counted in the formula.</div></div>
+        </div>
+        <div class="dd-card" style="margin-top:14px">
+          <div class="capform">
+            <label>Buffer %<input id="capBuffer" type="number" min="0" max="90" step="1"></label>
+            <label>Minutes per job (incl. travel)<input id="capMinutes" type="number" min="30" max="480" step="5"></label>
+            <label>Working hours per tech<input id="capHours" type="number" min="1" max="16" step="0.5"></label>
+            <button class="btn2" type="button" id="capSave" onclick="ddSaveCapacity()">Save planning inputs</button>
+          </div>
+          <div id="capMsg"></div>
+          <p class="empty" id="capLabel" style="margin-top:8px"></p>
+        </div>
+      </section>
+
       <!-- FILTERS -->
       <section class="dd-section" id="sec-filters">
         <div class="dd-sec-head"><h2>Search &amp; filters</h2><p>Applies to the intake queue and today's board. Segment and door filters use the fields the queue carries.</p></div>
@@ -234,6 +284,12 @@
         <div class="dd-card"><div id="queueList"><p class="empty">Loading the queue…</p></div><div id="queueErr"></div></div>
       </section>
 
+      <!-- EXCEPTIONS -->
+      <section class="dd-section" id="sec-exceptions">
+        <div class="dd-sec-head"><h2>Exception queue</h2><p>Every open job that needs the office — derived live from job state, never a hand-kept list. Missed acceptances, late arrivals, parts delays, unresolved estimates and unanswered complaints, most overdue first, each with its owner and next action.</p></div>
+        <div class="dd-card"><div id="exceptionList"><p class="empty">Loading the exception queue…</p></div><div id="exceptionErr"></div></div>
+      </section>
+
       <!-- ASSIGNMENT -->
       <section class="dd-section" id="sec-assign">
         <div class="dd-sec-head"><h2>Assignment — the setters' approval step</h2><p>Pick a job, pick a provider, assign. The booking is confirmed and the provider is notified through the Service OS. Nothing here auto-dispatches.</p></div>
@@ -245,6 +301,7 @@
           </div>
           <div class="dd-card">
             <h3 style="margin:0 0 8px;color:#182742;font-size:15px;font-family:'Rajdhani',sans-serif">2 · The provider</h3>
+            <div id="assignSuggest"></div>
             <div id="assignProviders"><p class="empty">Loading providers…</p></div>
             <button class="btn2 red" type="button" id="assignBtn" disabled style="width:100%;padding:12px">Assign this job</button>
             <div id="assignMsg"></div>
@@ -259,6 +316,12 @@
         <div class="strip" id="boardStrip"></div>
         <div class="board-wrap"><div class="board" id="boardCols"></div></div>
         <div id="boardErr"></div>
+      </section>
+
+      <!-- RECOVERY -->
+      <section class="dd-section" id="sec-recovery">
+        <div class="dd-sec-head"><h2>Recovery queues</h2><p>The follow-up work that keeps revenue from leaking — each list fed from real job state: parts waits, estimates awaiting a customer decision, return visits, cancellations to win back, and unpaid balances.</p></div>
+        <div class="dd-card"><div id="recoveryList"><p class="empty">Loading the recovery queues…</p></div><div id="recoveryErr"></div></div>
       </section>
 
       <!-- ROSTER -->
@@ -279,6 +342,7 @@
             <button class="btn2" type="button" id="detailBtn">Load booking</button>
           </div>
           <div id="detailOut"><p class="empty">No booking loaded yet.</p></div>
+          <div id="detailActions"></div>
         </div>
       </section>
 
@@ -309,7 +373,7 @@ var API = 'https://top-speed-service-os.vercel.app/api/v1';
 var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 var STAGES = ['Request received','Appointment confirmed','Technician assigned','Technician en route','Technician arrived','Diagnosis in progress','Estimate approved','Repair completed'];
 var DOORS = { 'appliance-connect':'Appliance Connect', 'appliance-connect-pro':'Appliance Connect Pro', 'connect-pro':'Appliance Connect Pro', 'appliance-pro':'Appliance Pro', 'appliance-plug':'Appliance Plug', 'pepper-lists':'Pepper Lists', 'web':'Website', 'website':'Website', 'speedy':'Speedy AI', 'phone':'Phone' };
-var DD = { queue:[], jobs:[], providers:[], summary:null, boardGroups:[], selBooking:null, selRef:null, selProvider:null, user:null };
+var DD = { queue:[], jobs:[], providers:[], summary:null, boardGroups:[], selBooking:null, selRef:null, selProvider:null, user:null, exceptions:[], recovery:null, capacity:null, detail:null };
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
@@ -323,6 +387,19 @@ function post(path, body){
   return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body || {}) })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
     .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function put(path, body){
+  return fetch(API + path, { method: 'PUT', headers: hdr(), body: JSON.stringify(body || {}) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+function tierPill(tier){
+  if(!tier) return '';
+  return '<span class="pill ' + String(tier).toLowerCase() + '">' + esc(tier) + '</span>';
+}
+function fmtMoney(cents){
+  if(cents == null) return '';
+  return '$' + (cents / 100).toFixed(2);
 }
 function data(j){ return (j && j.data) ? j.data : j; }
 function errText(res, fallback){ return (res && res.j && res.j.error) ? res.j.error : fallback; }
@@ -416,6 +493,7 @@ function renderQueue(){
       + segPill(it.segment)
       + '<span class="pill door">' + esc(doorLabel(it.source)) + '</span>'
       + (it.needsAreaReview ? '<span class="pill area">AREA REVIEW</span>' : '<span class="pill">Pending dispatch</span>')
+      + tierPill(it.priorityTier)
       + (it.priority ? '<span class="pill">' + esc(it.priority) + '</span>' : '')
       + '</div><div class="qsub">' + bits.join(' · ')
       + (win ? '<br>' + win : '') + (age ? ' · ' + age : '')
@@ -444,7 +522,7 @@ function ddSelectJob(bookingId){
   if(it.appliance) bits.push(esc(it.appliance));
   if(it.issue) bits.push(esc(it.issue));
   document.getElementById('assignJob').innerHTML =
-    '<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><b style="color:#182742;font-size:15px">' + esc(it.referenceCode) + '</b>' + segPill(it.segment) + '<span class="pill door">' + esc(doorLabel(it.source)) + '</span>' + (it.needsAreaReview ? '<span class="pill area">AREA REVIEW</span>' : '') + '</div>'
+    '<div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center"><b style="color:#182742;font-size:15px">' + esc(it.referenceCode) + '</b>' + segPill(it.segment) + tierPill(it.priorityTier) + '<span class="pill door">' + esc(doorLabel(it.source)) + '</span>' + (it.needsAreaReview ? '<span class="pill area">AREA REVIEW</span>' : '') + '</div>'
     + '<p style="font-size:13px;color:#8591a4;line-height:1.6;margin:8px 0 0">' + bits.join(' · ')
     + (it.preferredWindow ? '<br>Window: ' + esc(it.preferredWindow) : '')
     + (it.serviceAddress ? '<br>' + esc(it.serviceAddress) : '')
@@ -452,7 +530,34 @@ function ddSelectJob(bookingId){
     + '</p>';
   document.getElementById('assignMsg').innerHTML = '';
   syncAssignBtn();
+  loadSuggestions(it.bookingId);
   document.getElementById('sec-assign').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+/* Ranked assignment aid: read-only suggestions from the Service OS —
+   ranked by skill, credentials, availability, area, van stock and
+   history, each with its reasons. Picking one only fills the provider
+   selection; the Assign button above stays the human confirmation. */
+function loadSuggestions(bookingId){
+  var el = document.getElementById('assignSuggest');
+  el.innerHTML = '<p class="empty">Ranking providers for this job…</p>';
+  get('/bookos/bookings/' + encodeURIComponent(bookingId) + '/assignment-suggestions', true).then(function(res){
+    if(!res.ok){ el.innerHTML = ''; return; }
+    var d = data(res.j) || {};
+    var cands = d.candidates || [];
+    if(!cands.length){ el.innerHTML = '<p class="empty">No active providers to rank yet — pick from the full list below.</p>'; return; }
+    el.innerHTML = '<h4 style="margin:2px 0 8px;color:#182742;font-size:13px">Ranked suggestions — advice only; you still assign</h4>' + cands.map(function(c, i){
+      var reasons = (c.reasons || []).map(function(r){
+        var mark = r.kind === 'pro' ? '✓ ' : (r.kind === 'con' ? '— ' : '· ');
+        return '<span class="' + esc(r.kind) + '">' + mark + esc(r.label) + '</span>';
+      }).join('<br>');
+      return '<div class="sug"><div class="stop"><b>' + (i + 1) + '. ' + esc(c.businessName || 'Provider') + '</b>'
+        + '<span class="pill">Score ' + c.score + '</span>'
+        + (c.eligible ? '<span class="pill res">Matcher-eligible</span>' : '<span class="pill p2">Long shot</span>')
+        + '<span style="flex:1"></span>'
+        + '<button class="btn2 ghost" type="button" onclick="ddPickProvider(\'' + esc(c.providerId) + '\')">Use this provider</button></div>'
+        + '<div class="reasons">' + reasons + '</div></div>';
+    }).join('');
+  });
 }
 function syncAssignBtn(){
   var b = document.getElementById('assignBtn');
@@ -475,6 +580,7 @@ function doAssign(){
       var d = data(res.j) || {};
       document.getElementById('assignMsg').innerHTML = '<div class="note-ok"><b>Assigned.</b> ' + esc(ref) + ' is now ' + esc(d.status || 'CONFIRMED') + ' with ' + esc(d.providerName || 'the provider') + (d.etaMinutes ? ' · ETA about ' + d.etaMinutes + ' min' : '') + '. The queue and board have been refreshed.</div>';
       DD.selBooking = null; DD.selRef = null; DD.selProvider = null;
+      document.getElementById('assignSuggest').innerHTML = '';
       document.getElementById('assignJob').innerHTML = '<p class="empty">Assigned. Pick the next job from the intake queue.</p>';
       loadAll();
     });
@@ -489,7 +595,7 @@ function renderBoard(){
       var jobs = DD.jobs.filter(function(j){ return j.stageIndex === stage && jobMatch(j, f); });
       html += '<div class="bcol"><h4>' + (stage + 1) + ' · ' + esc(STAGES[stage]) + '</h4><div class="cnt">' + jobs.length + ' job' + (jobs.length === 1 ? '' : 's') + '</div>'
         + (jobs.length ? jobs.map(function(j){
-            return '<div class="chip2"><b>' + esc(j.reference) + '</b>' + esc(j.appliance || '') + (j.city ? ' · ' + esc(j.city) : '') + '<br><span>' + esc(j.technician || 'Unassigned') + '</span></div>';
+            return '<div class="chip2"><b>' + esc(j.reference) + '</b>' + (j.priorityTier ? ' <span class="pill ' + String(j.priorityTier).toLowerCase() + '">' + esc(j.priorityTier) + '</span>' : '') + '<br>' + esc(j.appliance || '') + (j.city ? ' · ' + esc(j.city) : '') + '<br><span>' + esc(j.technician || 'Unassigned') + '</span></div>';
           }).join('') : '<div class="chip2"><span>—</span></div>')
         + '</div>';
     })(st);
@@ -515,20 +621,28 @@ function ddDetail(bookingId){
   loadDetail();
   document.getElementById('sec-detail').scrollIntoView({ behavior:'smooth', block:'start' });
 }
+function derivedTierOf(b){
+  var a = String((b && b.appliance) || '').trim().toLowerCase();
+  return (a === 'installation' || a.indexOf('installation') === 0) ? 'P4' : 'P3';
+}
 function loadDetail(){
   ddResetUrls();
   var id = (document.getElementById('detailId').value || '').trim();
   var out = document.getElementById('detailOut');
+  document.getElementById('detailActions').innerHTML = '';
+  DD.detail = null;
   if(!id){ out.innerHTML = '<p class="empty">Enter a booking ID first — every queue row has one behind its Detail button.</p>'; return; }
   out.innerHTML = '<p class="empty">Loading the booking…</p>';
   get('/bookings/' + encodeURIComponent(id), true).then(function(res){
     if(!res.ok){ out.innerHTML = '<div class="note-err">Could not load that booking: ' + esc(errText(res, 'booking not found.')) + '</div>'; return; }
     var b = data(res.j) || {};
+    DD.detail = b;
     var c = b.customer || {};
     var rows = '';
     function row(k, v){ if(v) rows += '<dt>' + esc(k) + '</dt><dd>' + esc(v) + '</dd>'; }
     row('Reference', b.referenceCode);
     row('Status', b.status);
+    row('Priority tier', b.priorityTier ? (b.priorityTier + ' (set by a setter)') : (derivedTierOf(b) + ' (derived — no tier set)'));
     row('Segment', b.segment ? String(b.segment).charAt(0) + String(b.segment).slice(1).toLowerCase() : '');
     row('Door', doorLabel(b.source));
     row('Customer', c.name);
@@ -551,6 +665,7 @@ function loadDetail(){
       }).join('') + '</div>';
     }
     out.innerHTML = '<dl class="kv">' + rows + '</dl>' + hist;
+    renderDetailActions(b);
     var mlink = ddMediaLink(b);
     if(mlink){
       ddMediaCtx = { link: mlink, issue: b.issue || '' };
@@ -640,6 +755,136 @@ function ddLightbox(mi){
 function ddCloseLb(){ var lb = document.getElementById('ddmLb'); if(lb) lb.classList.remove('on'); }
 document.addEventListener('keydown', function(ev){ if(ev.key === 'Escape') ddCloseLb(); });
 
+/* ---------- job detail: setter ops actions ----------
+   The setter's own audited decisions on one job: set its P1–P4
+   priority tier, flag/clear a return visit (feeds the Recovery
+   queues), and cancel the booking (feeds the win-back list). */
+function renderDetailActions(b){
+  var el = document.getElementById('detailActions');
+  if(!b || !b.id){ el.innerHTML = ''; return; }
+  var rv = false;
+  (b.history || []).forEach(function(h){ if(h.type === 'RETURN_VISIT_FLAGGED') rv = true; if(h.type === 'RETURN_VISIT_CLEARED') rv = false; });
+  var closed = (b.status === 'COMPLETED' || b.status === 'CANCELLED');
+  var opts = ['P1','P2','P3','P4'].map(function(t){ return '<option value="' + t + '"' + (b.priorityTier === t ? ' selected' : '') + '>' + t + '</option>'; }).join('');
+  el.innerHTML = '<div class="ops-actions">'
+    + '<label>Priority tier<select id="daTier"><option value="">Derived (' + esc(derivedTierOf(b)) + ')</option>' + opts + '</select></label>'
+    + '<button class="btn2" type="button" onclick="ddSetPriority()">Set priority</button>'
+    + (rv
+      ? '<button class="btn2 ghost" type="button" onclick="ddReturnVisit(false)">Clear return-visit flag</button>'
+      : '<button class="btn2 ghost" type="button" onclick="ddReturnVisit(true)">Flag return visit</button>')
+    + (closed ? '' : '<label>Cancel reason<input id="daCancelReason" type="text" placeholder="Optional — e.g. customer cancelled"></label><button class="btn2 red" type="button" onclick="ddCancelJob()">Cancel this job</button>')
+    + '</div><div id="daMsg"></div>'
+    + '<p class="empty" style="margin-top:6px">P1 critical commercial failure · P2 urgent household loss of function or active leak · P3 routine repair · P4 planned installation / maintenance. Unset jobs derive their tier: installations P4, everything else P3.</p>';
+}
+function daMsg(html){ document.getElementById('daMsg').innerHTML = html; }
+function ddSetPriority(){
+  var b = DD.detail; if(!b) return;
+  var tier = document.getElementById('daTier').value;
+  if(!tier){ daMsg('<div class="note-err">Pick a tier (P1–P4) to set it — an unset job already follows its derived tier.</div>'); return; }
+  post('/bookos/bookings/' + encodeURIComponent(b.id) + '/priority', { tier: tier }).then(function(res){
+    if(!res.ok){ daMsg('<div class="note-err">Could not set the priority: ' + esc(errText(res, 'request failed.')) + '</div>'); return; }
+    daMsg('<div class="note-ok"><b>Priority set.</b> ' + esc(b.referenceCode || '') + ' is now ' + esc(tier) + ' across the queue, board and exception views.</div>');
+    loadDetail(); loadAll();
+  });
+}
+function ddReturnVisit(needed){
+  var b = DD.detail; if(!b) return;
+  post('/bookos/bookings/' + encodeURIComponent(b.id) + '/return-visit', { needed: needed }).then(function(res){
+    if(!res.ok){ daMsg('<div class="note-err">Could not update the return-visit flag: ' + esc(errText(res, 'request failed.')) + '</div>'); return; }
+    daMsg('<div class="note-ok"><b>' + (needed ? 'Return visit flagged.' : 'Return-visit flag cleared.') + '</b> The Recovery queues have been refreshed.</div>');
+    loadDetail(); loadAll();
+  });
+}
+function ddCancelJob(){
+  var b = DD.detail; if(!b) return;
+  if(!window.confirm('Cancel ' + (b.referenceCode || 'this booking') + '? It leaves every working queue and lands on the cancellations win-back list.')) return;
+  var reason = (document.getElementById('daCancelReason').value || '').trim();
+  post('/bookos/bookings/' + encodeURIComponent(b.id) + '/cancel', reason ? { reason: reason } : {}).then(function(res){
+    if(!res.ok){ daMsg('<div class="note-err">Could not cancel: ' + esc(errText(res, 'request failed.')) + '</div>'); return; }
+    daMsg('<div class="note-ok"><b>Cancelled.</b> ' + esc(b.referenceCode || '') + ' is on the cancellations win-back list.</div>');
+    loadDetail(); loadAll();
+  });
+}
+
+/* ---------- exceptions / recovery / capacity ---------- */
+function renderExceptions(){
+  var el = document.getElementById('exceptionList');
+  var items = DD.exceptions || [];
+  if(!items.length){ el.innerHTML = '<p class="empty">No exceptions — every open job is inside its window. A job appears here the moment it crosses one: an offer unaccepted for 60 minutes, a missed arrival window, 48 hours awaiting parts, an estimate undecided for 24 hours, or an escalated review with no office reply.</p>'; return; }
+  el.innerHTML = items.map(function(x){
+    var ownerBits = [];
+    if(x.owner && x.owner.providerName) ownerBits.push(x.owner.providerName);
+    if(x.owner && x.owner.setterName) ownerBits.push('Setter: ' + x.owner.setterName);
+    var owner = ownerBits.length ? ownerBits.join(' · ') : 'Service Setters office';
+    var overdue = (typeof x.overdueMinutes === 'number' && x.overdueMinutes > 0);
+    var meta = [x.customerName, x.city, x.appliance].filter(Boolean).map(esc).join(' · ');
+    return '<div class="xrow"><div class="xmain"><div class="top"><b>' + esc(x.referenceCode || '—') + '</b>'
+      + '<span class="pill xtype">' + esc(x.typeLabel || x.type) + '</span>' + tierPill(x.priorityTier) + segPill(x.segment)
+      + (overdue ? '<span class="pill overdue">Overdue ' + x.overdueMinutes + ' min</span>' : '')
+      + '</div><div class="xsub">' + meta
+      + (x.sinceAt ? '<br>Since ' + esc(fmtTime(x.sinceAt)) : '') + (x.dueAt ? ' · Due ' + esc(fmtTime(x.dueAt)) : '')
+      + '<br>Owner: ' + esc(owner) + '</div>'
+      + '<div class="xnext"><b>Next:</b> ' + esc(x.nextAction || '') + '</div></div>'
+      + '<div class="qact"><button class="btn2 ghost" type="button" onclick="ddDetail(\'' + esc(x.bookingId) + '\')">Detail</button></div></div>';
+  }).join('');
+}
+function recRow(r, extra){
+  var meta = [r.customerName, r.city, r.appliance].filter(Boolean).map(esc).join(' · ');
+  var when = r.sinceAt ? (' · since ' + esc(fmtTime(r.sinceAt))) : '';
+  return '<div class="xrow"><div class="xmain"><div class="top"><b>' + esc(r.referenceCode || '—') + '</b>' + tierPill(r.priorityTier) + segPill(r.segment) + '</div>'
+    + '<div class="xsub">' + meta + when + (extra ? '<br>' + extra : '') + '</div></div>'
+    + '<div class="qact"><button class="btn2 ghost" type="button" onclick="ddDetail(\'' + esc(r.bookingId) + '\')">Detail</button></div></div>';
+}
+function renderRecovery(){
+  var el = document.getElementById('recoveryList');
+  var rec = DD.recovery;
+  if(!rec || !rec.queues){ el.innerHTML = '<p class="empty">The recovery queues could not be loaded.</p>'; return; }
+  var q = rec.queues;
+  var groups = [
+    { key: 'awaitingParts', title: 'Awaiting parts', extra: function(r){ return 'Waiting on parts' + (r.appointment ? ' · appt ' + esc(r.appointment.date) + ' ' + esc(r.appointment.windowLabel) : ''); } },
+    { key: 'pendingEstimates', title: 'Pending estimates', extra: function(r){ return 'Estimate ' + esc(fmtMoney(r.detail && r.detail.estimateTotalCents)) + ' — no customer authorization recorded yet'; } },
+    { key: 'returnVisits', title: 'Return visits', extra: function(r){ return r.detail && r.detail.note ? ('Note: ' + esc(r.detail.note)) : 'Flagged as needing a return visit'; } },
+    { key: 'cancellations', title: 'Cancellations — win-back list', extra: function(r){ return r.detail && r.detail.reason ? ('Reason: ' + esc(r.detail.reason)) : 'Cancelled — a win-back candidate'; } },
+    { key: 'unpaid', title: 'Unpaid balances', extra: function(r){ var d = r.detail || {}; return 'Estimate ' + esc(fmtMoney(d.estimateTotalCents)) + ' · received ' + esc(fmtMoney(d.receiptsTotalCents)) + ' · <b>balance ' + esc(fmtMoney(d.balanceDueCents)) + '</b>'; } }
+  ];
+  var html = groups.map(function(g){
+    var rows = q[g.key] || [];
+    return '<div class="rec-group"><h3>' + esc(g.title) + ' <span class="cnt">(' + rows.length + ')</span></h3>'
+      + (rows.length ? rows.map(function(r){ return recRow(r, g.extra(r)); }).join('') : '<p class="empty">Nothing here right now.</p>') + '</div>';
+  }).join('');
+  if(rec.notes && rec.notes.missedCalls){
+    html += '<p class="empty" style="border-top:1px solid var(--cc-line);padding-top:10px">' + esc(rec.notes.missedCalls) + '</p>';
+  }
+  el.innerHTML = html;
+}
+function renderCapacity(){
+  var c = DD.capacity;
+  if(!c) return;
+  document.getElementById('capCeiling').textContent = c.ceilingJobs;
+  document.getElementById('capBooked').textContent = c.bookedToday;
+  document.getElementById('capRemaining').textContent = c.remainingJobs;
+  document.getElementById('capTechs').textContent = c.technicians;
+  var s = c.settings || {};
+  var b = document.getElementById('capBuffer'), m = document.getElementById('capMinutes'), h = document.getElementById('capHours');
+  if(document.activeElement !== b) b.value = s.bufferPercent;
+  if(document.activeElement !== m) m.value = s.minutesPerJob;
+  if(document.activeElement !== h) h.value = s.workingHoursPerDay;
+  document.getElementById('capLabel').textContent = c.label || '';
+}
+function ddSaveCapacity(){
+  var body = {
+    bufferPercent: parseInt(document.getElementById('capBuffer').value, 10),
+    minutesPerJob: parseInt(document.getElementById('capMinutes').value, 10),
+    workingHoursPerDay: parseFloat(document.getElementById('capHours').value)
+  };
+  var msg = document.getElementById('capMsg');
+  put('/bookos/capacity-settings', body).then(function(res){
+    if(!res.ok){ msg.innerHTML = '<div class="note-err">Could not save the planning inputs: ' + esc(errText(res, 'check the values (buffer 0–90, minutes 30–480, hours 1–16).')) + '</div>'; return; }
+    msg.innerHTML = '<div class="note-ok"><b>Saved.</b> The ceiling now uses the office\'s updated planning inputs.</div>';
+    loadAll();
+  });
+}
+
 /* ---------- data ---------- */
 function loadAll(){
   document.getElementById('queueErr').innerHTML = '';
@@ -660,9 +905,22 @@ function loadAll(){
     var d = data(res.j) || {};
     DD.boardGroups = (d.groups || []).map(function(g){ return { label: g.label || g.status || 'Jobs', count: (typeof g.count === 'number') ? g.count : (g.items || []).length }; });
   });
-  return Promise.all([p1, p2, p3]).then(function(){
+  var p4 = get('/bookos/exceptions', true).then(function(res){
+    if(!res.ok){ document.getElementById('exceptionErr').innerHTML = '<div class="note-err">Exception queue failed to load: ' + esc(errText(res, 'request failed.')) + '</div>'; return; }
+    DD.exceptions = (data(res.j) || {}).items || [];
+  });
+  var p5 = get('/bookos/recovery-queues', true).then(function(res){
+    if(!res.ok){ document.getElementById('recoveryErr').innerHTML = '<div class="note-err">Recovery queues failed to load: ' + esc(errText(res, 'request failed.')) + '</div>'; return; }
+    DD.recovery = data(res.j) || null;
+  });
+  var p6 = get('/bookos/capacity', true).then(function(res){
+    if(!res.ok){ return; }
+    DD.capacity = data(res.j) || null;
+  });
+  return Promise.all([p1, p2, p3, p4, p5, p6]).then(function(){
     populateFilters();
     renderStats(); renderQueue(); renderAssignProviders(); renderBoard(); renderRoster(); syncAssignBtn();
+    renderExceptions(); renderRecovery(); renderCapacity();
     document.getElementById('liveTxt').textContent = failed.length ? 'PARTIAL DATA' : 'LIVE DATA';
   });
 }

@@ -7,6 +7,7 @@ import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { activeAssignmentFor, computeTracking, providerById } from '../services/tracking.js';
+import { priorityTierOf } from '../services/dispatchOps.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
 import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
@@ -79,6 +80,7 @@ function consoleJob(booking) {
     address: c.address || booking.address || null,
     zip: booking.zip ?? null,
     issue: booking.issue ?? null,
+    priorityTier: priorityTierOf(booking),
     feeStatus: booking.feeStatus ?? null,
     assignmentId: assignment?.id ?? null,
     providerId: assignment?.providerId ?? null,

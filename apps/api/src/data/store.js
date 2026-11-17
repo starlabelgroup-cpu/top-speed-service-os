@@ -56,6 +56,12 @@ export const store = {
   referralJourneys: [],
   referralCredits: [],
   referralSettings: new Map(),
+  // Service Setters capacity settings (2026-11-17): per-company
+  // planning inputs for the daily booking ceiling (buffer %, minutes
+  // per job, working hours per tech), keyed by companyId. A missing
+  // entry means the blueprint defaults in services/dispatchOps.js.
+  // Hydrated from the DispatchSetting table via db/dispatchOpsRepo.
+  dispatchSettings: new Map(),
   // Speedy Live Video: consultation requests and their rooms.
   videoRequests: new Map(),
   payments: new Map(),

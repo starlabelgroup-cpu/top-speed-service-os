@@ -117,6 +117,7 @@ function bookingToRow(booking) {
     diagnosticFee: booking.diagnosticFee ?? 99,
     diagnosticFeeCreditedTowardRepair: booking.diagnosticFeeCreditedTowardRepair ?? true,
     feeStatus: FEE_TO_ENUM[booking.feeStatus] ?? 'COLLECTED_AT_BOOKING',
+    priorityTier: booking.priorityTier ?? null,
   };
 }
 
@@ -147,6 +148,9 @@ function bookingFromRow(row, customerRecord) {
     diagnosticFeeCurrency: 'USD',
     diagnosticFeeCreditedTowardRepair: row.diagnosticFeeCreditedTowardRepair,
     feeStatus: FEE_FROM_ENUM[row.feeStatus] ?? 'collected_at_booking',
+    // Service Setters priority tier: null when no setter has set one —
+    // services/dispatchOps.priorityTierOf derives the display tier.
+    priorityTier: row.priorityTier ?? null,
     status: row.status,
     dispatch: row.dispatch ?? { mode: 'HYBRID', stage: 'AWAITING_MATCH', candidateProviderIds: [], assignmentIds: [] },
     appointment: row.appointment ?? undefined,
