@@ -63,7 +63,12 @@ export function registrationStartsUnverified(draft, adminCreated) {
   if (isSpeedyVerifyCovered(draft)) return true;
   if (!adminCreated) return false;
   const roles = Array.isArray(draft.roles) ? draft.roles : [];
-  return roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role));
+  // Flywheel AI Advertising (2026-11-17): an office-issued Flywheel
+  // Marketing Manager is a workforce account, so it starts unverified
+  // like the admin-created contractor accounts beside it. Self-serve
+  // marketing signups (adminCreated false) never reach this branch —
+  // the agency-client door keeps its existing posture.
+  return roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role) || role === ROLES.MARKETING_MANAGER);
 }
 
 export function isMasterAccount(user) {
@@ -78,6 +83,14 @@ export function isSpeedyVerifyCovered(user) {
   // accounts — a business's ADVERTISER account starts unverified and
   // waits for the Master's code exactly like a commercial / PM account.
   if (roles.includes(ROLES.ADVERTISER)) return true;
+  // Flywheel AI Advertising (2026-11-17): MARKETING_MANAGER is
+  // deliberately NOT added here — coverage would also flip self-serve
+  // marketing signups to starts-unverified (the covered branch of
+  // registrationStartsUnverified ignores adminCreated), changing the
+  // agency-client door. Office-issued Flywheel Marketing Managers
+  // instead start flagged unverified through the adminCreated branch
+  // of registrationStartsUnverified — the provider Phase-1 posture:
+  // listed in the Master's panel, code issuable, Layer 2 enforced.
   return BUSINESS_AUDIENCES.includes(user.signupAudience || '');
 }
 

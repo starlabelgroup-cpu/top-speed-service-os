@@ -109,9 +109,26 @@ export const ACCESS_SURFACES = [
   },
   {
     key: 'advertiser',
-    label: 'Advertiser (Pepper Lists)',
-    detail: 'A Pepper Lists / Flywheel advertiser account — runs ads with Top Speed.',
+    label: 'Advertiser — Flywheel AI Advertising',
+    detail: 'A Flywheel AI Advertising account — the business runs its ads in the Advertiser Console (the Pepper Lists / Flywheel advertise lane) with Top Speed.',
     role: ROLES.ADVERTISER,
+    signupAudience: null,
+  },
+  {
+    // Flywheel AI Advertising (2026-11-17): the marketing agency's own
+    // staff surface. Ramone directed Flywheel into Work Time "with same
+    // ability" — a marketing manager account is office-issued here like
+    // every other workforce account, with the same 2-step defaults
+    // (Speedy Verify starts unverified, Layer 2 on) computed by the same
+    // helpers as every surface below. The self-serve marketing signup
+    // door (PUBLIC_SELF_SERVE_ROLES) is the agency-client path and is
+    // untouched — this surface is the office-issued staff path. Under
+    // the existing employee-numbering rule, marketing roles are NOT
+    // employee accounts, so no TS- number is minted for this surface.
+    key: 'flywheel-manager',
+    label: 'Flywheel Marketing Manager',
+    detail: 'Flywheel AI Advertising staff — the agency marketing manager: Marketing OS, Page Studio, the SEO dashboard and Ad Studio.',
+    role: ROLES.MARKETING_MANAGER,
     signupAudience: null,
   },
 ];
