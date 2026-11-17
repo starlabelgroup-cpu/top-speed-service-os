@@ -193,6 +193,9 @@ model User {
 
   channelLinks ChannelLink[]
 
+  sellerChannelConnections SellerChannelConnection[]
+  sellerChannelAudits      SellerChannelAudit[]
+
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
 
@@ -1539,4 +1542,80 @@ model DepartmentReport {
 
   @@index([department, status])
   @@index([createdAt])
+}
+
+// Pepper Lists Channel Connections (2026-11-17, Phase 1): one row per
+// external channel a Pepper Lists seller account has connected or
+// requested. SELL channels syndicate listings (Facebook Marketplace,
+// Google Shopping, eBay, Etsy, Walmart); POST channels publish posts
+// (TikTok, Facebook, YouTube, Instagram, X, LinkedIn). Phase 1 is the
+// registry + request workflow ONLY: a connect files a PENDING request
+// the office completes on the platform side, exactly like the
+// Advertiser Console's ChannelLink system. A row may read CONNECTED
+// only after a real completed connect flow — never by default, and
+// Phase 1 stores NO third-party tokens anywhere (meta carries only
+// non-secret request context). agentAccessGranted is the seller's
+// explicit, revocable per-channel grant for the Muse agent (Pepper)
+// to manage that channel for them; every change lands in
+// SellerChannelAudit.
+enum SellerChannel {
+  FACEBOOK
+  GOOGLE_SHOPPING
+  EBAY
+  ETSY
+  WALMART
+  TIKTOK
+  YOUTUBE
+  INSTAGRAM
+  X
+  LINKEDIN
+}
+
+enum SellerChannelKind {
+  SELL
+  POST
+}
+
+enum SellerChannelStatus {
+  NOT_CONNECTED
+  PENDING
+  CONNECTED
+  ERROR
+  REVOKED
+}
+
+model SellerChannelConnection {
+  id                   String              @id @default(uuid()) @db.Uuid
+  userId               String              @db.Uuid
+  channel              SellerChannel
+  kind                 SellerChannelKind
+  status               SellerChannelStatus @default(NOT_CONNECTED)
+  externalAccountLabel String?
+  agentAccessGranted   Boolean             @default(false)
+  connectedAt          DateTime?
+  lastSyncAt           DateTime?
+  meta                 Json?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  user  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  audit SellerChannelAudit[]
+
+  @@unique([userId, channel])
+  @@index([status])
+}
+
+model SellerChannelAudit {
+  id           String   @id @default(uuid()) @db.Uuid
+  connectionId String   @db.Uuid
+  userId       String   @db.Uuid
+  action       String
+  detail       String?
+  createdAt    DateTime @default(now())
+
+  connection SellerChannelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  user       User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, createdAt])
+  @@index([userId, createdAt])
 }

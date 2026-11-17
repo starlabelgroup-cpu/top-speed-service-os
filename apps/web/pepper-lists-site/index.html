@@ -200,6 +200,11 @@ footer a{color:var(--lime)}
           </div>
         </div>
       </div>
+      <div style="margin-top:18px;background:var(--panel2);border:1px solid #2c4232;border-radius:13px;padding:16px 18px">
+        <h4 style="font-size:16px;margin-bottom:5px;color:var(--lime)">Reach more marketplaces</h4>
+        <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px">Connect your Facebook, Google Shopping, eBay, Etsy and Walmart accounts — plus your posting channels — in Channel Connections, right below in your account. One account, every channel, and you can grant the Pepper Lists agent access channel by channel.</p>
+        <button class="btn small" type="button" onclick="var s=document.getElementById('plChannels'); if(s) s.scrollIntoView({behavior:'smooth',block:'start'});">Open Channel Connections</button>
+      </div>
     </div>
 
     <div class="plb-panel" id="plCatPanel-post" style="display:none">
@@ -527,10 +532,64 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     </div>
   </div>
 </section>
+<!-- CHANNEL CONNECTIONS — Pepper Lists sellers connect the places
+     they sell and post (Phase 1, 2026-11-17): the registry lives in
+     the Service OS (GET/POST /pepper-lists/channels), scoped to the
+     signed-in account. A Connect files a request the Top Speed team
+     completes on the platform side — the same honest pattern as the
+     Advertiser Console — so a channel reads Pending until the link
+     is real, and Connected only when it truly is. The per-channel
+     toggle is the seller's explicit grant for the Muse agent
+     (Pepper) to manage that channel for them: default off,
+     revocable any time, every change logged. Signed-in only, shown
+     and hidden with the Speedy Brain (plbEnter / plbHide). -->
+<style>
+.plch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:16px}
+.plch-card{background:var(--panel2);border:1.5px solid #2c4232;border-radius:15px;padding:18px;text-align:left;color:var(--ink)}
+.plch-top{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.plch-top svg{width:22px;height:22px;color:var(--lime);flex:none}
+.plch-top h3{font-size:16.5px;flex:1}
+.plch-chip{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border-radius:99px;padding:4px 10px;flex:none}
+.plch-chip.none{color:var(--muted);border:1.5px solid #33473a}
+.plch-chip.pend{color:var(--amber);border:1.5px solid rgba(249,186,71,.6)}
+.plch-chip.live{color:#0C130E;background:var(--lime)}
+.plch-card p{color:var(--muted);font-size:13.5px;line-height:1.55}
+.plch-steps{margin-top:10px;font-size:13px;line-height:1.55;color:var(--amber);background:rgba(249,186,71,.07);border:1px solid rgba(249,186,71,.3);border-radius:11px;padding:9px 12px}
+.plch-acct{margin-top:9px;font-size:13px;color:var(--muted)}
+.plch-acct b{color:var(--ink)}
+.plch-lab{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin:12px 0 0}
+.plch-lab input{display:block;width:100%;margin-top:5px;padding:11px 13px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:14.5px;font-weight:500}
+.plch-lab input:focus{outline:none;border-color:var(--lime)}
+.plch-btnrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.plch-grant{display:flex;gap:11px;align-items:flex-start;margin-top:14px;padding-top:13px;border-top:1px solid #22301f;cursor:pointer}
+.plch-grant input{position:absolute;opacity:0;width:0;height:0}
+.plch-sw{width:42px;height:24px;border-radius:99px;background:#2c4232;flex:none;position:relative;transition:background .15s;margin-top:1px}
+.plch-sw:after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--ink);transition:left .15s}
+.plch-grant input:checked + .plch-sw{background:var(--lime)}
+.plch-grant input:checked + .plch-sw:after{left:21px;background:#0C130E}
+.plch-grant input:focus-visible + .plch-sw{outline:2px solid var(--lime);outline-offset:2px}
+.plch-grant b{display:block;font-size:13.5px;color:var(--ink);line-height:1.4}
+.plch-grant span{display:block;font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:2px}
+.plch-group{font-size:13px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--amber);margin:22px 0 0}
+@media(max-width:560px){.plch-card{padding:16px 14px}}
+</style>
+<section class="plb" id="plChannels" style="display:none" aria-label="Channel Connections">
+  <div class="plb-card">
+    <h2>Channel <span style="color:var(--lime)">Connections</span></h2>
+    <p class="plb-sub">Connect the places you sell and post. Send a request for a channel and the Top Speed team completes the link on that platform's side — <b style="color:var(--ink)">no password sharing, ever</b>. A channel shows <b style="color:var(--ink)">Pending</b> until the link is real, and <b style="color:var(--ink)">Connected</b> only when it truly is. Connections belong to your account, not to this browser — sign in anywhere and they are yours.</p>
+    <p class="plb-msg" id="plchMsg" role="status"></p>
+    <h3 class="plch-group">Sell on</h3>
+    <div class="plch-grid" id="plchSell"><p class="plb-note" style="margin:0">Loading your channels…</p></div>
+    <h3 class="plch-group">Post on</h3>
+    <div class="plch-grid" id="plchPost"></div>
+    <p class="plb-note" style="margin-top:16px">The switch on each channel is your grant for <b style="color:var(--ink)">Pepper — the Muse AI agent</b> behind Pepper Lists — to manage that channel for you. It is off unless you turn it on, you can revoke it any time, and every agent action on your channels is logged on your account.</p>
+  </div>
+</section>
 <header>
   <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></a>
   <nav>
     <a href="#how">How It Works</a>
+    <a href="#channels">Channels</a>
     <a href="#platforms">Platforms</a>
     <a href="#catalog">Catalog Regulars</a>
     <a href="#faq">FAQ</a>
@@ -617,6 +676,47 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21 C12 21 5.5 14.8 5.5 9.8 A6.5 6.5 0 0 1 12 3.5 A6.5 6.5 0 0 1 18.5 9.8 C18.5 14.8 12 21 12 21 Z"/><circle cx="12" cy="9.8" r="2.3"/></svg></div><h3>Track your tech</h3><p>On the day, follow your technician live on the map — and message the office any time, right from here.</p></div>
     <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg></div><h3>Review the repair</h3><p>When the job is done, rate it in Pepper Lists Reviews — Speedy answers every review personally.</p></div>
   </div>
+</section>
+
+<!-- CHANNEL CONNECTIONS PROMO (2026-11-17): how Pepper Lists It works
+     with a seller's own accounts — Facebook, Marketplace, the seller
+     app, and the Muse AI agent. Copy matches Phase 1 exactly:
+     sellers can connect/request channels and grant agent access
+     today; per-channel sync engines roll out channel by channel and
+     are never claimed live here before they are. -->
+<section style="padding-top:0" id="channels">
+  <h2>One account, <span class="lime">every channel</span></h2>
+  <p class="sub">Pepper Lists It works with the accounts you already have. Connect them once in your seller account and your listings have a path to the marketplaces and feeds your buyers actually use — here is exactly how each piece works.</p>
+  <div class="grid4">
+    <div class="card">
+      <div class="fchip"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 21.5v-6.9h2.3l.4-2.7h-2.7V10c0-.8.3-1.3 1.4-1.3h1.3V6.2c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7v2.1H8.3v2.7h2.3v6.9a10 10 0 0 0 3 0z"/></svg></div>
+      <h3>With your Facebook account</h3>
+      <p>Your Pepper Lists account connects to your own Facebook — no password sharing, ever. Send the connection request in your account, our team completes the link on Facebook's side, and the status flips to Connected in your account when it's real.</p>
+      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Connect Facebook</a>
+    </div>
+    <div class="card">
+      <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+      <h3>Sell on Facebook Marketplace</h3>
+      <p>List once in Pepper Lists — snap the photo, approve the draft — and your listing has its path to Marketplace buyers through your connected Facebook account, showing in your Seller app like any listing you made yourself. Nothing posts without your yes.</p>
+      <a class="btn small" href="https://pepperlists.com/how-it-works" style="margin-top:14px">See how it works</a>
+    </div>
+    <div class="card">
+      <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M7.5 3.5h9V20.5h-9z"/><path d="M10.8 17.8h2.4"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg></div>
+      <h3>The seller app</h3>
+      <p>List from your phone: snap a photo and talk it through with Speedy — the listing drafts itself from your photo. Your channel connections live in the same account, on any screen, so the whole shop travels with you.</p>
+      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Open the seller app</a>
+    </div>
+    <div class="card">
+      <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div>
+      <h3>The Muse AI agent</h3>
+      <p>Pepper — the Muse AI agent behind Pepper Lists — can manage your channels and listings for you. You grant access channel by channel; it's off by default, revocable any time, and every action Pepper takes on your channels is logged on your account.</p>
+      <a class="btn small" href="https://pepperlists.com/how-it-works#agent" style="margin-top:14px">How agent access works</a>
+    </div>
+  </div>
+  <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/sell.webp" alt="Illustration: a Fort Lauderdale seller photographing produce and a potted tree to list for sale — one listing, prepared once in Pepper Lists" loading="lazy">
+  <p class="sub" style="margin-bottom:16px">Also connecting from the same account page: <b style="color:var(--ink)">Google Shopping · eBay · Etsy · Walmart Marketplace · TikTok · YouTube · Instagram · X · LinkedIn</b> — each channel shows its real first step before you send anything (an eBay seller account, Walmart's own seller approval, your Merchant Center ID), so nothing is promised that isn't true.</p>
+  <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Channel Connections</a>
+  <a class="btn dark" href="https://pepperlists.com/how-it-works" style="margin-left:10px">The full walkthrough</a>
 </section>
 
 <section style="padding-top:0" id="ads">
@@ -921,11 +1021,13 @@ function plbEnter(u){
   plbUser=u||{};
   var c=plbEl('plCats'); if(c) c.style.display='';
   var b=plbEl('plBrain'); if(b) b.style.display='';
+  var ch=plbEl('plChannels'); if(ch) ch.style.display='';
+  if(window.plchLoad) plchLoad();
   var phone=(u&&u.phone)||'';
   if(phone){ var sp=plbEl('plbScanPhone'); if(sp&&!sp.value) sp.value=phone; var lp=plbEl('plbLivePhone'); if(lp&&!lp.value) lp.value=phone; }
   plbLoadMode(); plbLoadAppliances();
 }
-function plbHide(){ var c=plbEl('plCats'); if(c) c.style.display='none'; var b=plbEl('plBrain'); if(b) b.style.display='none'; plbCamClose('plate'); plbCamClose('scan'); }
+function plbHide(){ var c=plbEl('plCats'); if(c) c.style.display='none'; var b=plbEl('plBrain'); if(b) b.style.display='none'; var ch=plbEl('plChannels'); if(ch) ch.style.display='none'; plbCamClose('plate'); plbCamClose('scan'); }
 window.plbEnter=plbEnter; window.plbHide=plbHide;
 
 function plbLoadMode(){
@@ -1645,6 +1747,103 @@ function plAdsMine(){
       }).join('');
     })
     .catch(function(){ box.innerHTML=''; });
+}
+</script>
+<script>
+/* CHANNEL CONNECTIONS — the seller's channel registry (Phase 1,
+   2026-11-17). All state comes from GET /pepper-lists/channels,
+   scoped by the API to the signed-in account; this script only
+   renders it and sends the three mutations (connect request,
+   disconnect, agent-access grant). A channel can only ever show
+   what the server says — Pending until the office completes a real
+   link, Connected only when one truly exists. Facebook appears in
+   both groups on purpose: one connection to your Facebook account
+   covers Marketplace selling AND Page/profile posting. */
+function plchEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function plchMsg(text,isErr){ var m=document.getElementById('plchMsg'); if(!m) return; m.textContent=text||''; m.className='plb-msg'+(isErr?' err':''); }
+var PLCH_ICONS={
+  FACEBOOK:'<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 21.5v-6.9h2.3l.4-2.7h-2.7V10c0-.8.3-1.3 1.4-1.3h1.3V6.2c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7v2.1H8.3v2.7h2.3v6.9a10 10 0 0 0 3 0z"/></svg>',
+  GOOGLE_SHOPPING:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 8h14l-1.1 11.2a2 2 0 0 1-2 1.8H8.1a2 2 0 0 1-2-1.8L5 8z"/><path d="M8.6 10.5V6.8a3.4 3.4 0 0 1 6.8 0v3.7"/></svg>',
+  EBAY:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  ETSY:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.5v11M6.5 12h11M8.1 8.1l7.8 7.8M15.9 8.1l-7.8 7.8"/></svg>',
+  WALMART:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5v4M12 16.5v4M3.5 12h4M16.5 12h4M6 6l2.8 2.8M15.2 15.2L18 18M18 6l-2.8 2.8M8.8 15.2L6 18"/></svg>',
+  TIKTOK:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M14.5 4v10.8"/><path d="M14.5 4c.4 2.3 1.9 3.9 4.3 4.3"/><circle cx="11" cy="17.8" r="3.3"/></svg>',
+  YOUTUBE:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="3"/><path d="M10.2 9.6 L15.4 12.2 L10.2 14.9 Z" fill="currentColor" stroke="none"/></svg>',
+  INSTAGRAM:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="4.4"/><circle cx="12" cy="12" r="3.9"/><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"/></svg>',
+  X:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4.5 4.5 L19.5 19.5 M19.5 4.5 L4.5 19.5"/></svg>',
+  LINKEDIN:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="3"/><path d="M7.6 10.4v6.2M7.6 7.2v.2M11.4 16.6v-3.4c0-1.1.8-1.9 1.9-1.9s1.9.8 1.9 1.9v3.4"/></svg>'
+};
+var PLCH_PLACEHOLDERS={
+  FACEBOOK:'The name on your Facebook account',
+  GOOGLE_SHOPPING:'Merchant Center account name or ID',
+  EBAY:'Your eBay user ID',
+  ETSY:'Your Etsy shop name',
+  WALMART:'Your Walmart seller name',
+  TIKTOK:'Your TikTok @handle',
+  YOUTUBE:'Your channel handle, like @YourChannel',
+  INSTAGRAM:'Your Instagram @handle',
+  X:'Your X @handle',
+  LINKEDIN:'Your profile or company page name'
+};
+var PLCH_STATUS={NOT_CONNECTED:['Not connected','none'],PENDING:['Pending','pend'],CONNECTED:['Connected','live'],ERROR:['Needs attention','pend'],REVOKED:['Disconnected','none']};
+function plchCard(ch){
+  var conn=ch.connection||{}; var st=PLCH_STATUS[conn.status]||PLCH_STATUS.NOT_CONNECTED;
+  var key=ch.key;
+  var h='<div class="plch-card" data-plch="'+key+'">';
+  h+='<div class="plch-top">'+(PLCH_ICONS[key]||'')+'<h3>'+plchEsc(ch.label)+'</h3><span class="plch-chip '+st[1]+'">'+st[0]+'</span></div>';
+  h+='<p>'+plchEsc(ch.blurb)+'</p>';
+  if(conn.externalAccountLabel){ h+='<p class="plch-acct">Account: <b>'+plchEsc(conn.externalAccountLabel)+'</b></p>'; }
+  if(conn.status==='PENDING'){ h+='<div class="plch-steps">'+plchEsc(ch.nextSteps)+'</div>'; }
+  if(conn.status==='CONNECTED'){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">This channel is connected to your account.</div>'; }
+  if(conn.status!=='PENDING'&&conn.status!=='CONNECTED'){
+    h+='<label class="plch-lab">Your account on this channel<input type="text" maxlength="120" data-plch-label="'+key+'" placeholder="'+plchEsc(PLCH_PLACEHOLDERS[key]||'Your account name or ID')+'"></label>';
+    h+='<div class="plch-btnrow"><button class="btn small" type="button" onclick="plchConnect(this,\''+key+'\')">Request connection</button></div>';
+  } else {
+    h+='<div class="plch-btnrow"><button class="btn small dark" type="button" onclick="plchDisconnect(this,\''+key+'\')">Disconnect</button></div>';
+  }
+  h+='<label class="plch-grant"><input type="checkbox" data-plch-grant="'+key+'" '+(conn.agentAccessGranted?'checked':'')+' onchange="plchGrant(this,\''+key+'\')"><span class="plch-sw" aria-hidden="true"></span><span><b>Allow the Pepper Lists agent (Pepper) to manage this channel for me</b><span>Off unless you turn it on. Revoke any time — every agent action on your channels is logged on your account.</span></span></label>';
+  h+='</div>';
+  return h;
+}
+function plchLoad(){
+  var sell=document.getElementById('plchSell'), post=document.getElementById('plchPost');
+  if(!sell||!post) return;
+  plApi('/pepper-lists/channels').then(function(j){
+    var chans=(j.data&&j.data.channels)||[];
+    sell.innerHTML=''; post.innerHTML='';
+    chans.forEach(function(ch){
+      if(ch.kind==='SELL') sell.innerHTML+=plchCard(ch);
+      else post.innerHTML+=plchCard(ch);
+      if(ch.key==='FACEBOOK') post.innerHTML+=plchCard(ch); /* one Facebook connection covers Marketplace selling + posting */
+    });
+    if(!chans.length){ sell.innerHTML='<p class="plb-note" style="margin:0">No channels are available right now.</p>'; }
+  }).catch(function(e){ plchMsg('Could not load your channels — '+(e.message||'please try again'),true); });
+}
+window.plchLoad=plchLoad;
+function plchBusy(btn,on){ if(!btn) return; btn.disabled=!!on; btn.style.opacity=on?'.55':''; }
+function plchConnect(btn,key){
+  var card=btn.closest('[data-plch]');
+  var input=card?card.querySelector('[data-plch-label]'):null;
+  var label=input?input.value.trim():'';
+  plchBusy(btn,true); plchMsg('Sending your connection request…');
+  plApi('/pepper-lists/channels/'+key+'/connect',{method:'POST',body:JSON.stringify(label?{accountLabel:label}:{})})
+    .then(function(){ plchMsg('Request sent — the Top Speed team will complete the link and the status will flip here when it is real.'); plchLoad(); })
+    .catch(function(e){ plchBusy(btn,false); plchMsg(e.message||'Could not send that request',true); });
+}
+function plchDisconnect(btn,key){
+  plchBusy(btn,true); plchMsg('Disconnecting…');
+  plApi('/pepper-lists/channels/'+key+'/disconnect',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ plchMsg('Disconnected. Your agent grant for this channel was cleared too.'); plchLoad(); })
+    .catch(function(e){ plchBusy(btn,false); plchMsg(e.message||'Could not disconnect',true); });
+}
+function plchGrant(box,key){
+  var granted=!!box.checked;
+  plApi('/pepper-lists/channels/'+key+'/agent-access',{method:'PATCH',body:JSON.stringify({granted:granted})})
+    .then(function(){
+      plchMsg(granted?'Agent access granted for this channel — Pepper can manage it for you, and every action is logged.':'Agent access revoked for this channel.');
+      document.querySelectorAll('[data-plch-grant="'+key+'"]').forEach(function(b){ b.checked=granted; });
+    })
+    .catch(function(e){ box.checked=!granted; plchMsg(e.message||'Could not update the grant',true); });
 }
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>

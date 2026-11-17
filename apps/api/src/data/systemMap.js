@@ -432,6 +432,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['pepper lists', 'pepperlists', 'pepper lists it', 'sell category', 'post category', 'listings', 'reviews wall'],
   },
   {
+    id: 'pepper-lists-channels',
+    name: 'Pepper Lists Channel Connections',
+    group: 'Pepper Lists',
+    location: 'pepperlists.com — signed-in seller account → Channel Connections (explained publicly at pepperlists.com/how-it-works)',
+    url: 'https://www.pepperlists.com',
+    purpose: 'Where Pepper Lists sellers connect the channels they sell and post on: SELL — Facebook Marketplace, Google Shopping, eBay, Etsy, Walmart; POST — TikTok, Facebook, YouTube, Instagram, X, LinkedIn. Phase 1 (2026-11-17) is the registry + request workflow: a connect files a PENDING request the office completes on the platform side (the Advertiser Console pattern), each channel shows its real prerequisite, and a row reads CONNECTED only after a real completed flow — no third-party tokens are stored. Sellers can also grant the Muse agent (Pepper) per-channel access (default off, revocable, every change in the SellerChannelAudit log). Per-channel sync/posting engines are Phase 2.',
+    access: 'Signed-in Pepper Lists sellers (own connections only); office oversight is a read-only staff API view (statuses + labels, no token material)',
+    actions: ['Request a channel connection from your account', 'Grant or revoke Muse-agent access per channel', 'Disconnect a channel (clears the grant too)', 'Office: read connection statuses + audit trail in the oversight view'],
+    related: ['pepper-lists', 'advertiser-console'],
+    keywords: ['channel connections', 'pepper lists channels', 'connect facebook', 'marketplace connection', 'seller channels', 'agent access grant', 'ebay', 'etsy', 'walmart', 'google shopping', 'tiktok'],
+  },
+  {
     id: 'review-moderation',
     name: 'Review Moderation Queue',
     group: 'Pepper Lists',
