@@ -128,6 +128,7 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <div class="tch-sec">ACCOUNT</div>
     <button class="tch-item" type="button" onclick="tchAvail()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span class="grow">Availability<small>Uses the Available / Offline switch in the header</small></span></button>
     <button class="tch-item" type="button" onclick="tchSettings()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span class="grow">Settings</span></button>
+    <a class="tch-item" href="/academy"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8" stroke="#E8322E"/></svg><span class="grow">Training Academy<small>Your courses — you enter as a trainee</small></span></a>
     <a class="tch-item" href="tel:+19549317997"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg><span class="grow">Support — Call dispatch<small>954-931-7997 · Mon–Fri 8am–7pm</small></span></a>
     <button class="tch-item" type="button" onclick="techSignOut()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14 4h5.5v16H14M10.5 8L5 12l5.5 4M5 12h11"/></svg><span class="grow">Sign out</span></button>
   </aside>
@@ -136,11 +137,18 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <!-- TECH SIGN-IN / LIVE MODE -->
     <div class="card" id="techAuth" style="margin:12px 12px 0">
       <h3 style="font-size:14px;color:var(--navy)">Technician sign-in \u2014 live jobs</h3>
-      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch.</p>
+      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch. Sign-in runs password first, then \u2014 only when the office has switched them on for your account \u2014 your Speedy Verify access code and a one-time code by email (Layer 2).</p>
       <div id="techLogin">
         <input id="techEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <input id="techPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <button class="btn go" type="button" onclick="techSignIn()" style="width:100%">Sign in to live jobs \u2192</button>
+      </div>
+      <div id="techVerify" style="display:none">
+        <p class="note" style="margin:4px 0 10px">Password accepted. <b>Speedy Verify:</b> enter the 8-digit access code the office issued for your account.</p>
+        <input id="techSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="Access code" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
+        <button class="btn go" type="button" onclick="techVerifySubmit()" style="width:100%">Verify &amp; sign in \u2192</button>
+        <div class="btnrow" style="margin-top:8px"><button class="btn no" type="button" onclick="techVerifyCancel()">Back</button></div>
+        <p class="note" style="margin:8px 0 0">No code yet? Accounts wait for the office to issue their code \u2014 contact the office.</p>
       </div>
       <div id="techBar" style="display:none">
         <p class="note" id="techWho" style="margin:0 0 8px;font-weight:700"></p>
@@ -176,6 +184,7 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
       <div class="card">
         <h3 style="font-size:14px;color:var(--navy)">Snap the plate. Order the right parts.</h3>
         <p class="note" style="margin:4px 0 10px">Appliance Plug runs inside each job's workspace: snap the model plate, Speedy reads it, you confirm every field, Parts Finder lines up part categories with fitment notes, and the order draft carries the job's TS reference — Appliance Plus Parts Supply first, other distributors second. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p>
+        <img src="/api/v1/app/scenario-images/speedy-serial-scan.webp" alt="Illustration: a technician scanning an appliance model plate with a phone — Appliance Plug reads the plate, the technician confirms it" style="width:100%;height:auto;border-radius:12px;display:block;margin:4px 0 10px" loading="lazy">
         <div class="btnrow"><button class="btn navy" type="button" onclick="go('today')">Pick a job to start</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/appliance-plug-app">Open Plug app</a></div>
       </div>
       <h2 class="sec">My parts orders</h2>
@@ -223,7 +232,8 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E8322E"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Service OS web portal <a href="/portal">Open</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Appliance Plug — model &amp; parts <a href="/appliance-plug-app">Open</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8" stroke="#E8322E"/><circle cx="12" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg> Parts Supply OS <a href="/parts">Open</a></div>
-        <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Customer app <a href="/app">Appliance Pro</a></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4.5h13.5L20 6v13.5H5z"/><path d="M8.5 9h8M8.5 12.5h8M8.5 16h5" stroke="#E8322E"/></svg> Training Academy <a href="/academy">Open</a></div>
+        <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Customer app <a href="/app">Appliance Connect</a></div>
       </div>
       <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Live jobs flow when your provider account is signed in.</p>
     </section>
@@ -307,19 +317,62 @@ function tFetch(path,opts){
   return fetch(T_API+path,opts).then(function(r){ if(!r.ok){ return r.json().catch(function(){return {};}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
 }
 function tDateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+function techSession(token){ try{ localStorage.setItem('tsos_tech_token',token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); }
 function techSignIn(){
   var email=document.getElementById('techEmail').value.trim();
   var pw=document.getElementById('techPw').value;
   if(!email||!pw){ toast('Enter your email and password'); return; }
   fetch(T_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
-    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
-    .then(function(j){
-      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
-        TSOSLayer2.run(j, { api: T_API, onSession: function(s){ try{ localStorage.setItem('tsos_tech_token',s.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); }, onCancel: function(){ toast('Sign-in cancelled — the 2-step code is required to finish'); } });
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+    .then(function(res){
+      var j=res.j||{};
+      // Pipeline order (server): password \u2192 Speedy Verify gate \u2192 Layer 2 \u2192 session.
+      if(j.code==='SPEEDY_VERIFY_NO_CODE'){ toast(j.error||'Speedy Verify required \u2014 no access code has been issued for this account yet. Contact the office.'); return; }
+      if(!res.ok){ toast('Sign-in failed: '+(j.error||'check your email and password')); return; }
+      if(j.verifyRequired && j.challenge){ techVerifyGate(j.challenge); return; }
+      if(j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j, { api: T_API, onSession: function(s){ techSession(s.token); }, onCancel: function(){ toast('Sign-in cancelled \u2014 the 2-step code is required to finish'); } });
         return;
       }
-      try{ localStorage.setItem('tsos_tech_token',j.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); })
+      if(!j.token){ toast('Sign-in failed \u2014 unexpected response from the sign-in service'); return; }
+      techSession(j.token);
+    })
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
+}
+/* Speedy Verify code step \u2014 mirrors the other consoles: the login
+   challenge is exchanged at /speedy-verify/verify, and a Layer 2
+   challenge can follow it before the session token is issued. */
+var _techChallenge=null;
+function techVerifyGate(challenge){
+  _techChallenge=challenge;
+  document.getElementById('techLogin').style.display='none';
+  var v=document.getElementById('techVerify'); if(v) v.style.display='';
+  var inp=document.getElementById('techSvCode'); if(inp){ inp.value=''; inp.focus(); }
+  toast('Speedy Verify \u2014 enter your access code');
+}
+function techVerifyCancel(){
+  _techChallenge=null;
+  var v=document.getElementById('techVerify'); if(v) v.style.display='none';
+  document.getElementById('techLogin').style.display='';
+}
+function techVerifySubmit(){
+  var inp=document.getElementById('techSvCode');
+  var code=(inp&&inp.value||'').trim();
+  if(!code){ toast('Enter your access code'); return; }
+  if(!_techChallenge){ techVerifyCancel(); toast('Sign in again to get a fresh code step'); return; }
+  fetch(T_API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:_techChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+    .then(function(res){
+      var j=res.j||{};
+      if(j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j, { api: T_API, onSession: function(s){ techVerifyCancel(); techSession(s.token); }, onCancel: function(){ toast('Sign-in cancelled \u2014 the 2-step code is required to finish'); } });
+        return;
+      }
+      if(!res.ok || !j.token){ toast(j.error||'That code did not work \u2014 check it and try again'); return; }
+      techVerifyCancel();
+      techSession(j.token);
+    })
+    .catch(function(e){ toast('Verification failed: '+e.message); });
 }
 function techSignOut(){ try{ localStorage.removeItem('tsos_tech_token'); }catch(e){} location.reload(); }
 function loadTech(){
@@ -332,7 +385,13 @@ function loadTech(){
       }
       renderTech(res[0].data.provider,res[1].data.assignments||[],me.user);
     })
-    .catch(function(e){ toast('Live jobs unavailable: '+e.message); });
+    .catch(function(e){
+      // The office switched Speedy Verify on for this account mid-session:
+      // /auth/me refuses the old session \u2014 clear it and send the tech back
+      // to sign-in, where the access-code step now runs.
+      if(/Speedy Verify required/.test(e.message||'')){ toast('Speedy Verify is now required on your account \u2014 sign in again to enter your access code'); techSignOut(); return; }
+      toast('Live jobs unavailable: '+e.message);
+    });
 }
 function renderTech(provider,assignments,user){
   window._techAssignments=assignments||[]; window._techProvider=provider||null;
