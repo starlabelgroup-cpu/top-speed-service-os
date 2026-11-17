@@ -258,6 +258,7 @@ function api(path, opts){
   return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.details=j.details; throw e; } return j; }); });
 }
 (function(){ var q=new URLSearchParams(location.search); var t=q.get('token'); if(t){ setTok(t); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} history.replaceState(null,'',location.pathname); } })();
+(function(){ if(!window.TSOSLayer2) return; var em=TSOSLayer2.popAuthError(); if(em){ gateErr(new Error(em)); } TSOSLayer2.bootFromUrl({api:API,onSession:function(s){ setTok(s.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); },onCancel:function(){ gateErr(new Error('Sign-in cancelled — the 2-step code is required to finish.')); }}); })();
 function gateErr(e){ var m=document.getElementById('gateMsg'); m.textContent=''+e.message; m.className='msg err'; }
 var svChallenge=null;
 function doLogin(){
@@ -270,13 +271,23 @@ function doLogin(){
         var ci=document.getElementById('svCode'); if(ci) ci.focus();
         return;
       }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j,{api:API,onSession:function(s){ setTok(s.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); },onCancel:function(){ gateErr(new Error('Sign-in cancelled — the 2-step code is required to finish.')); }});
+        return;
+      }
       setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot();
     }).catch(gateErr);
 }
 function doVerify(){
   if(!svChallenge){ gateErr(new Error('Sign in with your password first, then enter your code.')); return; }
   api('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:svChallenge,code:document.getElementById('svCode').value})})
-    .then(function(j){ svChallenge=null; document.getElementById('svStep').style.display='none'; setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        svChallenge=null; document.getElementById('svStep').style.display='none';
+        TSOSLayer2.run(j,{api:API,onSession:function(s){ setTok(s.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); },onCancel:function(){ gateErr(new Error('Sign-in cancelled — the 2-step code is required to finish.')); }});
+        return;
+      }
+      svChallenge=null; document.getElementById('svStep').style.display='none'; setTok(j.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); })
     .catch(gateErr);
 }
 /* ===== ACCESS RULES — the Connect Pro business-login gate (2026-11-16) =====
@@ -838,7 +849,7 @@ function loadReferral(){
 }
 (function(){ var prev=window.onAppReady; window.onAppReady=function(){ if(prev) prev(); loadReferral(); }; })();
 </script>
-<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
 <script>

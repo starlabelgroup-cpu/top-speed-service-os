@@ -195,7 +195,9 @@ document.getElementById('loginForm').addEventListener('submit',function(ev){
   var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPw').value;
   fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
-    .then(function(j){ try{ localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ setMsg('loginMsg',false,'Sign-in cancelled — the 2-step code is required to finish.'); }}); return; }
+      try{ localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
     .catch(function(e){ setMsg('loginMsg',false,'Sign-in failed: '+e.message); });
 });
 document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
@@ -304,6 +306,6 @@ if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
 }
 </script>
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 </body>
 </html>

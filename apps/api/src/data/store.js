@@ -32,6 +32,11 @@ export const store = {
   // mode uses the SpeedyVerifyCode table). Keyed by userId; the record
   // holds only the scrypt hash of the code, never the plain code.
   speedyVerifyCodes: new Map(),
+  // Layer 2 — 2-step sign-in challenges (skeleton-mode fallback; the
+  // database mode uses the LoginChallenge table). Keyed by challenge
+  // id; the record holds only the scrypt hash of the 6-digit code,
+  // never the plain code.
+  loginChallenges: new Map(),
   // Legal gate: signed TermsAcceptance rows in skeleton mode (the
   // database mode uses the TermsAcceptance table). Plain array of
   // { id, userId, document, version, signatureName, acceptedAt }.

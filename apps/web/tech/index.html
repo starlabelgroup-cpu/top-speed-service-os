@@ -313,7 +313,12 @@ function techSignIn(){
   if(!email||!pw){ toast('Enter your email and password'); return; }
   fetch(T_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
-    .then(function(j){ try{ localStorage.setItem('tsos_tech_token',j.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j, { api: T_API, onSession: function(s){ try{ localStorage.setItem('tsos_tech_token',s.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); }, onCancel: function(){ toast('Sign-in cancelled — the 2-step code is required to finish'); } });
+        return;
+      }
+      try{ localStorage.setItem('tsos_tech_token',j.token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); })
     .catch(function(e){ toast('Sign-in failed: '+e.message); });
 }
 function techSignOut(){ try{ localStorage.removeItem('tsos_tech_token'); }catch(e){} location.reload(); }
@@ -885,6 +890,6 @@ function loadPlugOrders(){
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
-<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 </body>
 </html>

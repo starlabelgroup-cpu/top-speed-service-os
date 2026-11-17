@@ -27,6 +27,11 @@ import {
   registrationStartsUnverified,
   verifyGateApplies,
 } from '../services/speedyVerify.js';
+import {
+  beginLayer2Challenge,
+  layer2Applies,
+  registrationLayer2Required,
+} from '../services/layer2.js';
 
 /**
  * The Service OS login system.
@@ -135,6 +140,9 @@ const usersRepo = DATABASE_ENABLED
             serviceArea: user.serviceArea ?? null,
             serviceAreaStatus: user.serviceAreaStatus ?? null,
             verifyRequired: user.verifyRequired ?? false,
+            layer2Required: user.layer2Required ?? false,
+            layer2Phone: user.layer2Phone ?? null,
+            layer2Channel: user.layer2Channel ?? null,
           },
         });
       },
@@ -213,6 +221,8 @@ export function publicUser(user) {
     serviceAreaStatus: user.serviceAreaStatus ?? null,
     // Speedy Verify: the account's activation switch (never the code).
     verifyRequired: user.verifyRequired === true,
+    // Layer 2 — 2-step sign-in: the account's per-login code switch.
+    layer2Required: user.layer2Required === true,
     createdAt: iso(user.createdAt),
   };
 }
@@ -345,6 +355,13 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
     // self-registered customer accounts are untouched.
     draft.verifyRequired = registrationStartsUnverified(draft, adminCreated);
 
+    // Layer 2 — 2-step sign-in (2026-11-16): EVERY new account starts
+    // with the per-login email/text code step on — all roles,
+    // customers included (the Master tier is exempt by construction).
+    // Accounts that existed before this launch keep the default off
+    // (grandfathered) and opt in from their account settings.
+    draft.layer2Required = registrationLayer2Required(draft);
+
     let user;
     try {
       // With a signed acceptance, the account and its TermsAcceptance
@@ -412,6 +429,22 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
         },
       });
     }
+    // Layer 2 (2026-11-16): a SELF-REGISTERED account's first session
+    // is granted only after the 2-step code — the response carries a
+    // challenge instead of a token, mirroring the Speedy Verify
+    // pending branch above. Administrator-created accounts differ:
+    // the admin is not the holder, so no challenge opens here; the
+    // holder meets Layer 2 at their first sign-in.
+    if (!adminCreated && layer2Applies(user)) {
+      const layer2 = await beginLayer2Challenge(user, { req });
+      return res.status(201).json({
+        ...layer2,
+        user: publicUser(user),
+        emailVerification: emailVerificationState(user),
+        terms,
+        termsStatus: terms,
+      });
+    }
     return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
     return next(error);
@@ -472,6 +505,16 @@ router.post('/auth/login', async (req, res, next) => {
           lastName: user.lastName ?? null,
         },
       });
+    }
+
+    // Layer 2 — 2-step sign-in (2026-11-16): factor 1 passed (and
+    // Speedy Verify, when its gate applied, is handled above — it
+    // returns its own challenge first). A Layer-2 account now owes a
+    // one-time code by email or text before a session is issued.
+    // Pipeline order: password → Speedy Verify → Layer 2 → session.
+    if (layer2Applies(user)) {
+      const layer2 = await beginLayer2Challenge(user, { req });
+      return res.json(layer2);
     }
 
     const terms = await termsStatusForUser(user.id);
@@ -865,6 +908,9 @@ router.get('/auth/google/callback', async (req, res, next) => {
         // verified — no outbox link needed.
         emailVerifiedAt: new Date().toISOString(),
         signupSource: 'GOOGLE_SIGNIN',
+        // Layer 2 (2026-11-16): new accounts start with the per-login
+        // code step on — Google-created accounts included.
+        layer2Required: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -873,6 +919,31 @@ router.get('/auth/google/callback', async (req, res, next) => {
       // account is still a sign-up — welcome email + staff alert.
       // (The email starts verified, so no verification email follows.)
       notifyAccountCreated(user, 'GOOGLE_SIGNUP');
+    }
+    // Sign-in pipeline (2026-11-16): factor 1 here is Google, and the
+    // same gates as password sign-in apply before a session exists —
+    // Speedy Verify first, then Layer 2. (Before this, the callback
+    // issued a session directly, so an existing gated account could
+    // bypass both steps through Google.) A Speedy Verify challenge
+    // cannot be completed inside this redirect flow, so that account
+    // is sent back with an honest explanation and no session; Layer 2
+    // rides the redirect as a challenge the app completes.
+    const gate = await speedyLoginGate(user);
+    if (gate.action === 'deny') {
+      const dest = new URL(webOrigin() + nextPath);
+      dest.searchParams.set('authError', 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.');
+      return res.redirect(dest.toString());
+    }
+    if (gate.action === 'challenge') {
+      const dest = new URL(webOrigin() + nextPath);
+      dest.searchParams.set('authError', 'This account uses Speedy Verify — sign in with your email and password to complete the access-code step.');
+      return res.redirect(dest.toString());
+    }
+    if (layer2Applies(user)) {
+      const layer2 = await beginLayer2Challenge(user, { req });
+      const dest = new URL(webOrigin() + nextPath);
+      dest.searchParams.set('layer2', layer2.challenge);
+      return res.redirect(dest.toString());
     }
     const issued = signAccessToken(user);
     const dest = new URL(webOrigin() + nextPath);

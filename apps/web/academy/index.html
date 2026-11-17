@@ -164,7 +164,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div style="margin-top:8px">Top Speed Appliance LLC · Top Speed Academy — the University of the Service OS · Powered by Speedy AI</div>
 </footer>
 
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script>
 var API = 'https://top-speed-service-os.vercel.app/api/v1';
 function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -262,6 +262,7 @@ function showGate(note){
     fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
       .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(res){
+        if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
         try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();

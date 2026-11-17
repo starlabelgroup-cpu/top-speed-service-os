@@ -140,6 +140,18 @@ model User {
   // the account's first code turns it on automatically); new staff and
   // business accounts are created with it on and wait for his code.
   verifyRequired Boolean @default(false)
+  // Layer 2 — 2-step sign-in (2026-11-16): after ANY first factor
+  // (password or Google), a one-time 6-digit code by email or text
+  // completes the sign-in. Default false — every account that existed
+  // at launch is grandfathered (password-only, unchanged); NEW
+  // accounts are created with it on (routes/auth.js). layer2Phone is
+  // the text destination when it differs from the profile phone;
+  // layer2Channel is the preferred channel ('EMAIL' | 'SMS'). The
+  // Master (COMPANY_OWNER) is exempt by construction (Rule Zero) —
+  // services/layer2.js short-circuits before any flag is read.
+  layer2Required Boolean @default(false)
+  layer2Phone    String?
+  layer2Channel  String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -154,6 +166,8 @@ model User {
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
+
+  loginChallenges LoginChallenge[]
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -830,6 +844,37 @@ model SpeedyVerifyCode {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status])
+}
+
+// Layer 2 — 2-step sign-in challenges (2026-11-16). One row per
+// sign-in that passed its first factor on a Layer-2-required account:
+// created when the challenge is issued (login / register / Google
+// callback / Speedy Verify exchange), it carries the delivery channel
+// once a code is sent, the scrypt hash of the 6-digit code (the plain
+// code is never stored or logged), the send/attempt counters that
+// enforce the resend cooldown, the 5-send cap, and the 5-attempt
+// invalidation. status is PENDING | CONSUMED | INVALIDATED |
+// SUPERSEDED. Rows are per-LOGIN (fresh code every sign-in) — unlike
+// SpeedyVerifyCode, which is a per-ACCOUNT standing access code.
+model LoginChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @db.Uuid
+  channel    String?
+  codeHash   String?
+  status     String    @default("PENDING")
+  attempts   Int       @default(0)
+  sends      Int       @default(0)
+  lastSentAt DateTime?
+  expiresAt  DateTime
+  consumedAt DateTime?
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
 }
 
 // Legal gate (2026-11-12): one row per document version a user has

@@ -679,6 +679,7 @@ function loginGate(msg){
     .then(function(res){
       if (res.j && res.j.code === 'SPEEDY_VERIFY_NO_CODE'){ err.textContent = res.j.error; err.style.display = 'block'; return; }
       if (res.j && res.j.verifyRequired && res.j.challenge){ verifyGate(res.j.challenge, res.j.user); return; }
+      if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(j){ try { localStorage.setItem('tsos_token', j.token); } catch(e){} boot(); }, onCancel: function(){ loginGate(''); } }); return; }
       if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
       try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();
@@ -697,6 +698,7 @@ function verifyGate(challenge, who){
     fetch(API + '/speedy-verify/verify', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ challenge: challenge, code: document.getElementById('svCode').value }) })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
+      if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(j){ try { localStorage.setItem('tsos_token', j.token); } catch(e){} boot(); }, onCancel: function(){ loginGate(''); } }); return; }
       if (!res.ok || !res.j || !res.j.token){ err.textContent = (res.j && res.j.error) ? res.j.error : 'That code did not work — check it and try again.'; err.style.display = 'block'; return; }
       try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();
@@ -763,5 +765,6 @@ var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListene
 if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
 boot();
 </script>
+<script src="/layer2.js"></script>
 </body>
 </html>

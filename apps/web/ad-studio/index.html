@@ -208,7 +208,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div style="margin-top:8px">Top Speed Appliance LLC · Ad Studio — in-house advertising on the Service OS · System Operations Manager: Pepper Agent · Owner &amp; approver: Ramone (MASTER)</div>
 </footer>
 
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script>
 var API = 'https://top-speed-service-os.vercel.app/api/v1';
 function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
@@ -459,6 +459,7 @@ document.getElementById('signinForm').addEventListener('submit', function(ev){
     body: JSON.stringify({ email: document.getElementById('siEmail').value.trim(), password: document.getElementById('siPass').value })
   }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
+      if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ setMsg('signinMsg', 'Sign-in cancelled — the 2-step code is required to finish.', false); } }); return; }
       if (!res.ok || !res.j || !res.j.token){ setMsg('signinMsg', (res.j && res.j.error) || 'Sign-in failed — check the email and password.', false); return; }
       try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();

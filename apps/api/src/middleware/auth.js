@@ -67,6 +67,14 @@ export function authenticate(req, res, next) {
 
   try {
     const payload = verifyHs256(token, process.env.JWT_SECRET);
+    // Sign-in challenge tokens (Speedy Verify purpose 'speedy-verify',
+    // Layer 2 purpose 'layer2') are NOT sessions: they exist only to
+    // be exchanged at their code-step endpoints. Refusing them here
+    // means a challenge token can never call an authenticated
+    // endpoint. Real session tokens never carry a purpose claim.
+    if (payload.purpose) {
+      return res.status(401).json({ error: 'This is a sign-in challenge, not a session — complete the verification step first.' });
+    }
     req.user = {
       id: payload.sub,
       companyId: payload.companyId,
@@ -97,6 +105,8 @@ export function optionalAuthenticate(req, res, next) {
 
   try {
     const payload = verifyHs256(token, process.env.JWT_SECRET);
+    // Challenge tokens are not sessions (see authenticate above).
+    if (payload.purpose) return next();
     req.user = {
       id: payload.sub,
       companyId: payload.companyId,

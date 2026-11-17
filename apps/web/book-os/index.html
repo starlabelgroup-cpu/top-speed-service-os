@@ -414,6 +414,10 @@ function staffSignIn(){
         var ci=document.getElementById('staffCode'); if(ci) ci.focus();
         return;
       }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j, { api: TSOS_API, onSession: function(s){ localStorage.setItem('tsos_token',s.token); enterLive(s.user); toast('Welcome — Live Book OS connected'); loadLive(); }, onCancel: function(){ toast('Sign-in cancelled — enter your password to try again'); } });
+        return;
+      }
       localStorage.setItem('tsos_token',j.token);
       enterLive(j.user);
       toast('Welcome — Live Book OS connected');
@@ -428,6 +432,12 @@ function staffVerify(){
   fetch(TSOS_API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:staffChallenge,code:code})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
     .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        staffChallenge=null;
+        document.getElementById('staffCodeRow').style.display='none';
+        TSOSLayer2.run(j, { api: TSOS_API, onSession: function(s){ localStorage.setItem('tsos_token',s.token); enterLive(s.user); toast('Welcome — Live Book OS connected'); loadLive(); }, onCancel: function(){ toast('Sign-in cancelled — enter your password to try again'); } });
+        return;
+      }
       staffChallenge=null;
       document.getElementById('staffCodeRow').style.display='none';
       localStorage.setItem('tsos_token',j.token);
@@ -1176,5 +1186,6 @@ function inboxComposeSend(){
     .catch(function(e){ if(msg) msg.textContent='Could not send: '+e.message; });
 }
 </script>
+<script src="/layer2.js"></script>
 </body>
 </html>

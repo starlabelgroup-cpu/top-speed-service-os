@@ -369,13 +369,16 @@ function pgLogin(){
         var ci=document.getElementById('pgSvCode'); if(ci) ci.focus();
         return;
       }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:PG_API,onSession:function(s){ pgSaveTok(s.token); pgBoot(); },onCancel:function(){ pgMsg('pgMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
       pgSaveTok(j.token); pgBoot();
     }).catch(function(e){ pgMsg('pgMsg',e.message,true); });
 }
 function pgVerify(){
   if(!pgSvChallenge){ pgMsg('pgMsg','Sign in with your password first, then enter your code.',true); return; }
   pgApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:pgSvChallenge,code:document.getElementById('pgSvCode').value})})
-    .then(function(j){ pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; pgSaveTok(j.token); pgBoot(); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; TSOSLayer2.run(j,{api:PG_API,onSession:function(s){ pgSaveTok(s.token); pgBoot(); },onCancel:function(){ pgMsg('pgMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; pgSaveTok(j.token); pgBoot(); })
     .catch(function(e){ pgMsg('pgMsg',e.message,true); });
 }
 var pgFreshUser=null;
@@ -393,6 +396,10 @@ function pgRegister(){
   pgMsg('pgUpMsg','Creating your account…');
   pgApi('/auth/register',{method:'POST',body:JSON.stringify(body)})
     .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
+        TSOSLayer2.run(j,{api:PG_API,onSession:function(s){ pgSaveTok(s.token); pgFreshUser=s.user||null; document.getElementById('pgInForm').style.display='none'; document.getElementById('pgUpForm').style.display='none'; document.getElementById('pgDone').style.display=''; },onCancel:function(){ pgMsg('pgUpMsg','Account created — sign in and complete the 2-step code to finish.',true); }});
+        return;
+      }
       if(!j.token){
         document.getElementById('pgInForm').style.display='none';
         document.getElementById('pgUpForm').style.display='none';
@@ -437,7 +444,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
-<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" data-category="PARTS_SUPPLY" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" data-category="PARTS_SUPPLY" defer></script>
 <script>
 function plgToggle(open){
   document.getElementById('plgDrawer').classList.toggle('on', !!open);

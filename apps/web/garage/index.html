@@ -223,6 +223,12 @@ async function doLogin(email, password, errEl, btn) {
   try {
     const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
     const body = await res.json();
+    if (body && body.layer2Required && body.challenge && window.TSOSLayer2) {
+      await new Promise(function (resolve) {
+        TSOSLayer2.run(body, { api: API, onSession: function (s) { try { localStorage.setItem('tsos_token', s.token); } catch (e) {} loadGarage().then(resolve, resolve); }, onCancel: function () { errEl.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; errEl.style.display = 'block'; resolve(); } });
+      });
+      return;
+    }
     if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
     localStorage.setItem('tsos_token', body.token);
     await loadGarage();
@@ -267,7 +273,7 @@ $('signOutBtn').addEventListener('click', () => { localStorage.removeItem('tsos_
 
 if (token()) loadGarage().catch(() => { localStorage.removeItem('tsos_token'); });
 </script>
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
 </body>

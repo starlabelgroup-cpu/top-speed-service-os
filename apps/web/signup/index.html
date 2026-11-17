@@ -37,7 +37,7 @@
   .alt a{color:#fff;font-weight:700}
   .fine{color:#7e93b5;font-size:12.5px;text-align:center;margin-top:14px;line-height:1.6}
 </style>
-<script src="/google-tag.js"></script><script src="/speedy-widget.js" defer></script><link rel="stylesheet" href="/fonts.css">
+<script src="/google-tag.js"></script><script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
 <div class="col">
@@ -121,6 +121,10 @@
         // sign-in. Say so plainly instead of failing the sign-up.
         btn.textContent='Account created';
         fail(x.j.speedyVerify.message||'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.');
+        return;
+      }
+      if(x.ok&&x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){
+        TSOSLayer2.run(x.j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); localStorage.setItem('tsos_account_type',type); }catch(e){} location.href=DEST[type]; },onCancel:function(){ fail('Account created — sign in and complete the 2-step code to finish.'); }});
         return;
       }
       if(!x.ok||!x.j.token){

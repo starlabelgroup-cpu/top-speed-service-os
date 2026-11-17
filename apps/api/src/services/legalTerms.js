@@ -165,6 +165,9 @@ export async function createUserWithTerms(draft, validated) {
           serviceArea: draft.serviceArea ?? null,
           serviceAreaStatus: draft.serviceAreaStatus ?? null,
           verifyRequired: draft.verifyRequired ?? false,
+          layer2Required: draft.layer2Required ?? false,
+          layer2Phone: draft.layer2Phone ?? null,
+          layer2Channel: draft.layer2Channel ?? null,
         },
       });
       await tx.termsAcceptance.createMany({

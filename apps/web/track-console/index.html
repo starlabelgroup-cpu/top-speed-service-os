@@ -218,9 +218,15 @@ $('loginForm').addEventListener('submit', async (e) => {
   try {
     const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('email').value.trim(), password: $('password').value }) });
     const body = await res.json();
-    if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
-    localStorage.setItem('tsos_token', body.token);
-    enter();
+    if (body && body.layer2Required && body.challenge && window.TSOSLayer2) {
+      await new Promise((resolve) => {
+        TSOSLayer2.run(body, { api: API, onSession: (s) => { try { localStorage.setItem('tsos_token', s.token); } catch (e) {} enter(); resolve(); }, onCancel: () => { err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; resolve(); } });
+      });
+    } else {
+      if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
+      localStorage.setItem('tsos_token', body.token);
+      enter();
+    }
   } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
   finally { btn.disabled = false; }
 });
@@ -231,6 +237,6 @@ setInterval(() => { if (token() && !$('board').classList.contains('hidden')) loa
 
 if (token()) enter();
 </script>
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 </body>
 </html>

@@ -256,6 +256,7 @@
     fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})})
     .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
+      if(x.j&&x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){ TSOSLayer2.run(x.j,{api:API,onSession:function(s){ localStorage.setItem('tsos_token',s.token); enter(); },onCancel:function(){ el.textContent='Sign-in cancelled — the 2-step code is required to finish.'; el.style.display='block'; }}); return; }
       if(!x.ok||!x.j.token) throw new Error((x.j&&x.j.error)||'Sign-in failed');
       localStorage.setItem('tsos_token',x.j.token); enter();
     })
@@ -274,6 +275,6 @@
   if(token()) enter();
 })();
 </script>
-<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 </body>
 </html>

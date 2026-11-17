@@ -273,6 +273,7 @@ function loginGate(msg){
     fetch(API + '/auth/login', { method:'POST', headers: hdr(false), body: JSON.stringify({ email: email, password: pass }) })
       .then(function(r){ return r.json().catch(function(){ return null; }).then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(res){
+        if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ el('lgBtn').textContent = 'Sign in'; err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (!res.ok || !res.j || !res.j.token) throw new Error((res.j && res.j.error) || 'Sign-in failed.');
         try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();
@@ -615,5 +616,6 @@ function renderFeed(){
   }).join('');
 }
 </script>
+<script src="/layer2.js"></script>
 </body>
 </html>

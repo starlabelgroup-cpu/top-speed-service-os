@@ -395,14 +395,14 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
       function save(j){ try{ localStorage.setItem('tsos_cust_token',j.token); localStorage.setItem('tsos_token',j.token); }catch(e){} location.reload(); }
       function post(path,body){
         return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-        .then(function(r){ return r.json().then(function(j){ if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; throw e; } return j; }); });
+        .then(function(r){ return r.json().then(function(j){ if(j&&j.layer2Required&&j.challenge) return j; if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; throw e; } return j; }); });
       }
       $('laInForm').addEventListener('submit',function(e){
         e.preventDefault();
         var em=$('laInEmail').value.trim(), pw=$('laInPw').value;
         if(!em||!pw) return fail('Enter your email and password.');
         var b=$('laInBtn'); b.disabled=true; b.textContent='Signing in…';
-        post('/auth/login',{email:em,password:pw}).then(save).catch(function(x){ fail('Sign-in failed: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Sign in'; });
+        post('/auth/login',{email:em,password:pw}).then(function(j){ if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }}); return; } save(j); }).catch(function(x){ fail('Sign-in failed: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Sign in'; });
       });
       $('laUpForm').addEventListener('submit',function(e){
         e.preventDefault();
@@ -417,7 +417,7 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
         var body={email:em,password:pw,firstName:parts[0],phone:ph,role:'CUSTOMER',termsAcceptance:acceptance};
         if(parts.length>1) body.lastName=parts.slice(1).join(' ');
         var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
-        post('/auth/register',body).then(save).catch(function(x){
+        post('/auth/register',body).then(function(j){ if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Account created — sign in and complete the 2-step code to finish.'); }}); return; } save(j); }).catch(function(x){
           var m=x.message; if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.password) m='Password must be at least 10 characters.'; else if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
           fail(m);
         }).finally(function(){ b.disabled=false; b.textContent='Create my account'; });
@@ -818,6 +818,13 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
               <label class="fl">Current password</label><input id="pwCur" type="password" autocomplete="current-password" placeholder="Current password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
               <label class="fl">New password — 10+ characters</label><input id="pwNew" type="password" autocomplete="new-password" placeholder="New password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
               <div class="btnrow" style="margin-top:10px;"><button class="btn blue small" onclick="mnuChangePw()">Change password</button></div>
+            </div>
+            <button class="menu-row" onclick="mnuLayer2()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l6.5 2.6v5.1c0 4.2-2.8 7.9-6.5 9.3-3.7-1.4-6.5-5.1-6.5-9.3V6.1z"/><path d="M9.2 12l2 2 3.6-3.8"/></svg></span><span>2-step sign-in<span class="m-sub">Text or email code at every sign-in</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div id="l2Form" style="display:none; padding:4px 2px 12px;">
+              <p class="sub" style="margin:4px 0 10px;" id="l2Status">Loading…</p>
+              <label class="fl">Code by</label><select id="l2Chan" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"><option value="EMAIL">Email</option><option value="SMS">Text message</option></select>
+              <label class="fl">Phone for text codes</label><input id="l2Phone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div class="btnrow" style="margin-top:10px;"><button class="btn blue small" onclick="mnuLayer2Save()">Save 2-step sign-in</button><button class="btn ghost small" onclick="mnuLayer2Off()">Turn off</button></div>
             </div>
             <button class="menu-row" onclick="openInstall()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 4v10.2M7.9 10.6L12 14.7l4.1-4.1"/><path d="M5 19.5h14"/></svg></span><span>Install the app<span class="m-sub">Add Appliance Connect to your home screen</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
@@ -1290,7 +1297,12 @@ function custToggleLogin(e){
 function doCustLogin(email,pw){
   return fetch(C_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
-    .then(function(j){ setCustSession(j); toast('Welcome back \u2014 signed in'); refreshMyBooking(); });
+    .then(function(j){
+      if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
+        TSOSLayer2.run(j,{onSession:function(s){ setCustSession(s); toast('Welcome back \u2014 signed in'); refreshMyBooking(); },onCancel:function(){ toast('Sign-in cancelled — the 2-step code is required to finish.'); }});
+        return;
+      }
+      setCustSession(j); toast('Welcome back \u2014 signed in'); refreshMyBooking(); });
 }
 function custLogin(){ var em=cVal('acEmail'), pw=cVal('acPw'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
 function custLoginFromBook(){ var em=cVal('cdEmail2'), pw=cVal('cdPw2'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
@@ -1373,7 +1385,12 @@ function confirmBooking(){
   var parts=name.split(' ');
   fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
-    .then(function(j){ setCustSession(j); payload.customer.email=email; doBook(); })
+    .then(function(j){
+      if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
+        TSOSLayer2.run(j,{onSession:function(s){ setCustSession(s); payload.customer.email=email; doBook(); },onCancel:function(){ setBtn('Confirm booking',true); toast('Account created — sign in above and complete the 2-step code, then confirm your booking.'); }});
+        return;
+      }
+      setCustSession(j); payload.customer.email=email; doBook(); })
     .catch(function(e){ setBtn('Confirm booking',true); toast(e.message); });
 }
 /* Auto-resume a customer session */
@@ -1783,8 +1800,16 @@ if(cTok()){ setTimeout(function(){ window.refLoad(); },800); }
   };
 })();
 </script>
-<script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  if(!window.TSOSLayer2) return;
+  var em = TSOSLayer2.popAuthError();
+  if(em) setTimeout(function(){ toast(em); }, 700);
+  TSOSLayer2.bootFromUrl({ onSession: function(s){ try{ localStorage.setItem('tsos_cust_token', s.token); localStorage.setItem('tsos_token', s.token); }catch(e){} location.replace(location.pathname); }, onCancel: function(){ toast('Sign-in cancelled — the 2-step code is required to finish.'); } });
+});
+</script>
 <script src="/speedy-guide.js" defer></script>
 <script>
 /* ============ HEADER SIGN-IN BUTTON + APP STORE BUTTONS (2026-11-15) ============ */
@@ -1895,6 +1920,38 @@ function mnuChangePw(){
   cFetch('/auth/change-password',{method:'POST',body:JSON.stringify({currentPassword:cur,newPassword:nw})}).then(function(){
     document.getElementById('pwCur').value=''; document.getElementById('pwNew').value=''; toast('Password updated');
   }).catch(function(e){ toast(e.message||'Could not change password'); });
+}
+var l2On=false;
+function l2LoadStatus(){
+  cFetch('/auth/layer2/status').then(function(j){
+    var d=j.data||{};
+    l2On=!!d.required;
+    var st=document.getElementById('l2Status'); if(!st) return;
+    if(d.masterExempt){ st.textContent='The owner account is protected by the office recovery path and does not use sign-in codes.'; }
+    else if(d.required){ st.textContent='On — a code is required at every sign-in.'+(d.phone?(' Text codes go to '+d.phone+'.'):''); }
+    else { st.textContent='Off — turn it on for a text or email code at every sign-in. Your account email always works for codes.'; }
+    if(d.channel) document.getElementById('l2Chan').value=d.channel;
+    if(d.phone && !document.getElementById('l2Phone').value) document.getElementById('l2Phone').value=d.phone;
+  }).catch(function(){ var st=document.getElementById('l2Status'); if(st) st.textContent='Could not load your 2-step settings just now.'; });
+}
+function mnuLayer2(){
+  if(!cTok()){ mnuNeedSignIn('Sign in to manage 2-step sign-in'); return; }
+  mnuToggle('l2Form');
+  l2LoadStatus();
+}
+function mnuLayer2Save(){
+  var chan=document.getElementById('l2Chan').value;
+  var phone=document.getElementById('l2Phone').value.trim();
+  if(chan==='SMS' && !phone){ toast('Add the phone number for text codes first'); return; }
+  var body={channel:chan}; if(phone) body.phone=phone;
+  cFetch(l2On?'/auth/layer2/update':'/auth/layer2/enroll',{method:'POST',body:JSON.stringify(body)}).then(function(){
+    toast('2-step sign-in saved'); l2LoadStatus();
+  }).catch(function(e){ toast(e.message||'Could not save — try again'); });
+}
+function mnuLayer2Off(){
+  cFetch('/auth/layer2/disable',{method:'POST',body:'{}'}).then(function(){
+    toast('2-step sign-in is off'); l2LoadStatus();
+  }).catch(function(e){ toast(e.message||'Could not turn it off — try again'); });
 }
 function mnuNotifications(){
   var c=document.getElementById('acctCard'); if(c){ c.scrollIntoView({behavior:'smooth', block:'start'}); }

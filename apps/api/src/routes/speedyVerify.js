@@ -14,6 +14,11 @@ import {
   setRequirement,
   verifyChallengeCode,
 } from '../services/speedyVerify.js';
+import {
+  beginLayer2Challenge,
+  invalidatePendingChallenges,
+  layer2Applies,
+} from '../services/layer2.js';
 
 /**
  * Speedy Verify routes (Phase 1, 2026-11-16) — mounted at
@@ -61,6 +66,10 @@ async function sessionResponse(res, user, { speedyVerified }) {
 }
 
 // The code step: challenge (from login) + the 8-digit code → session.
+// Layer 2 (2026-11-16) sits AFTER this step in the pipeline: when the
+// account also has the per-login email/text code on, the exchange
+// returns a Layer 2 challenge instead of the session, and the Layer 2
+// verify issues the session with the sv claim carried through.
 router.post('/verify', async (req, res) => {
   const parsed = verifySchema.safeParse(req.body);
   if (!parsed.success) {
@@ -68,6 +77,10 @@ router.post('/verify', async (req, res) => {
   }
   try {
     const { user, alreadySatisfied } = await verifyChallengeCode(parsed.data.challenge, parsed.data.code);
+    if (layer2Applies(user)) {
+      const layer2 = await beginLayer2Challenge(user, { speedyVerified: !alreadySatisfied, req });
+      return res.json(layer2);
+    }
     return sessionResponse(res, user, { speedyVerified: !alreadySatisfied });
   } catch (error) {
     return serviceError(res, error);
@@ -96,6 +109,12 @@ router.post('/recover/confirm', async (req, res) => {
   if (!token) return res.status(400).json({ error: 'A recovery token is required' });
   try {
     const user = await confirmMasterRecovery(token);
+    // Rule Zero hygiene (2026-11-16): owner-email recovery also
+    // clears Layer 2 for the recovered account — any pending
+    // challenge is invalidated, and the Master is exempt from the
+    // layer by construction, so the recovery session is never
+    // blocked by it.
+    await invalidatePendingChallenges(user.id);
     return sessionResponse(res, user, { speedyVerified: false });
   } catch (error) {
     return serviceError(res, error);
