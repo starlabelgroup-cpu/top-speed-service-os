@@ -196,9 +196,12 @@ function coachSystemPrompt(scope, retrievedSection) {
 }
 
 function openAiConfig() {
+  // Key precedence (Ramone, 2026-11-17): production runs on the V2 key
+  // ("Speedy AI — New Version"); the original key is the fallback.
+  const apiKey = process.env.OPENAI_API_KEY_V2 || process.env.OPENAI_API_KEY;
   return {
-    configured: Boolean(process.env.OPENAI_API_KEY),
-    apiKey: process.env.OPENAI_API_KEY,
+    configured: Boolean(apiKey),
+    apiKey,
     model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
     base: process.env.OPENAI_API_BASE || 'https://api.openai.com',
   };
