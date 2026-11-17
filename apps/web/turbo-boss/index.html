@@ -176,6 +176,7 @@
         <a class="cc-nav-link" href="#sec-team"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>Team Board</span></a>
         <a class="cc-nav-link" href="#sec-money"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/><path d="M7 15.5h4"/></svg><span>Money Snapshot</span></a>
         <a class="cc-nav-link" href="#sec-accounts" id="navAccounts" style="display:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8.4" r="3.4"/><path d="M4.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M18.5 5.5v6M15.5 8.5h6"/></svg><span>Accounts — Create</span></a>
+        <a class="cc-nav-link" href="/work-time-access" id="navWorkTime" style="display:none"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3"/><path d="M15.5 7.5l3 3M18 5l2.2 2.2"/></svg><span>Work Time Account Access</span></a>
         <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.4" r="3.6"/><path d="M5 20.2a7.4 7.4 0 0 1 14 0"/></svg><span>My Account</span></a>
       </div>
       <div class="cc-nav-section">
@@ -718,6 +719,7 @@ function createAccount(prefix, role, companyId){
 function buildAccounts(){
   if (!TB.isOwner) return;
   document.getElementById('navAccounts').style.display = '';
+  document.getElementById('navWorkTime').style.display = '';
   document.getElementById('accountsMount').innerHTML =
     '<section class="tb-section" id="sec-accounts">'
     + '<div class="tb-sec-head"><div><h2>Accounts — create team logins</h2><p>President-only. Employee and contractor accounts are created here, never by self-registration. The owner role is never offered — only the President\'s account holds it, and only the President can grant roles.</p></div></div>'

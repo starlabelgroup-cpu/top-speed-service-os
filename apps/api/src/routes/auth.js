@@ -32,6 +32,7 @@ import {
   layer2Applies,
   registrationLayer2Required,
 } from '../services/layer2.js';
+import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
 
 /**
  * The Service OS login system.
@@ -373,6 +374,19 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
         return res.status(409).json({ error: 'An account with this email already exists' });
       }
       throw error;
+    }
+
+    // Employee numbers (Work Time Account Access, 2026-11-17): staff /
+    // provider accounts created here (e.g. from the Portal Team
+    // accounts panel) are numbered at issuance, exactly like accounts
+    // created in the Access Control Center. Guarded — a numbering
+    // failure never fails the registration.
+    if (isEmployeeAccount(user)) {
+      try {
+        user = await assignEmployeeNumber(user);
+      } catch (error) {
+        console.error(JSON.stringify({ level: 'error', message: 'employee number assignment failed', error: String(error?.message || error) }));
+      }
     }
 
     // A customer account also gets a linked Customer record so bookings, the

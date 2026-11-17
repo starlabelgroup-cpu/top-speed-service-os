@@ -280,6 +280,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
       <h2 class="sec" id="sec-verify">Speedy Verify — Access Codes &amp; Approvals</h2>
       <div class="grid"><div class="card wide">
         <p class="small mut" style="margin-top:0">Speedy Verify is the Master's access-code system: staff and business accounts sign in with a password <b>plus</b> an 8-digit code that only the Master issues. New staff and business accounts start unverified and wait here. Revoking a code denies sign-in immediately. Codes are stored hashed — a code is shown once, when it is issued.</p>
+        <p class="small" id="wtAccessRow" style="display:none;margin:0 0 10px"><a href="/work-time-access" style="color:#e94e5c;font-weight:800">Work Time Account Access — create accounts &amp; choose passwords for every platform, employee numbers &amp; 2-step control →</a></p>
         <div id="svCodeOnce"></div>
         <div id="svPanel"><span class="mut small"><span class="spin"></span> Loading access codes…</span></div>
       </div></div>
@@ -388,6 +389,7 @@ function boot(){
     if (isMaster){ rb.textContent = 'MASTER'; rb.className = 'badge master'; }
     else { rb.textContent = 'MANAGER'; rb.className = 'badge mgr'; }
     rb.style.display = '';
+    var wtRow = document.getElementById('wtAccessRow'); if (wtRow && isMaster) wtRow.style.display = '';
     var nm = me.user.name || me.user.fullName || '';
     document.getElementById('acctPanel').innerHTML =
       '<div><span class="k">SIGNED IN</span>' + esc(nm ? nm : (me.user.email || '')) + '</div>' +

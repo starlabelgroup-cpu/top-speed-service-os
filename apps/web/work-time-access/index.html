@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Work Time Account Access — Top Speed Service OS</title>
+<meta name="description" content="Work Time Account Access: the Master console for creating accounts, choosing passwords, employee numbers and 2-step sign-in across every Top Speed platform, website, landing page and app.">
+<meta name="theme-color" content="#060B18">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--red:#e94e5c;--navy:#1c2b46;--ink:#1b2840;--mut:#8591a4;--line:#e7ecf3;--bg:#f5f7fb}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 40px}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none}
+header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+h1{font-family:'Rajdhani',sans-serif;font-size:clamp(24px,4.5vw,34px);font-weight:800;letter-spacing:-.5px;color:var(--navy);display:flex;align-items:center;gap:10px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:640px;margin-top:4px}
+.who{font-size:12.5px;color:#52647c;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.who b{color:var(--navy)}
+.btn{background:var(--red);border:1px solid var(--red);color:#fff;border-radius:8px;padding:10px 16px;font-size:12.5px;font-weight:800;cursor:pointer;font-family:inherit}
+.btn:hover{background:#d83d4d}
+.btn.ghost{background:#fff;color:#34445c;border-color:#dee5ef}
+.btn.ghost:hover{border-color:#ed6372}
+.btn.small{padding:7px 11px;font-size:11.5px}
+.btn:disabled{opacity:.55;cursor:wait}
+h2.sec{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:800;letter-spacing:-.3px;color:var(--navy);margin:30px 0 12px;display:flex;align-items:center;gap:9px}
+.card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:20px;min-width:0}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.step{border:1px solid var(--line);border-radius:11px;padding:14px;background:#fbfcfe}
+.step .n{font-family:'Rajdhani',sans-serif;font-weight:800;color:var(--red);font-size:12px;letter-spacing:1.5px}
+.step b{display:block;color:var(--navy);font-size:14px;margin:5px 0 4px}
+.step p{font-size:12.5px;color:#52647c;line-height:1.55}
+.note{font-size:12.5px;color:#52647c;line-height:1.6;margin-top:12px}
+.links{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,235px),1fr));gap:12px}
+.link{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px;transition:border-color .15s,transform .15s}
+.link:hover{border-color:#ee8290;transform:translateY(-1px)}
+.link b{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px}
+.link span{font-size:12px;color:var(--mut);line-height:1.5}
+.link .opn{margin-top:auto;padding-top:9px}
+.link .opn i{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.07em;color:#fff;background:var(--red);border-radius:999px;padding:5px 11px;display:inline-block}
+form .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+label.fl{display:block;font-size:10px;font-weight:800;color:#65758e;letter-spacing:1.1px;margin-bottom:6px}
+input.fi,select.fi{width:100%;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:var(--ink);padding:11px 12px;font-size:14px;font-family:inherit}
+input.fi:focus,select.fi:focus{outline:none;border-color:#ed6372}
+.pwrow{display:flex;gap:8px}
+.pwrow input{flex:1;min-width:0}
+.policy{font-size:12.5px;color:#52647c;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.6;margin-top:12px}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:13px;color:#25364f;line-height:1.5;margin-top:12px}
+.check input{margin-top:2px;width:16px;height:16px;accent-color:var(--red)}
+.msg{font-size:13px;line-height:1.55;margin-top:12px;display:none}
+.msg.ok{display:block;background:#eefaf3;border:1px solid #cdeeda;color:#0f6a38;border-radius:10px;padding:12px 14px}
+.msg.err{display:block;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;border-radius:10px;padding:12px 14px}
+.codebanner{display:none;margin-top:12px;background:#0c162b;color:#fff;border-radius:11px;padding:14px 16px;font-size:13.5px;line-height:1.6}
+.codebanner.show{display:block}
+.codebanner .code{font-family:'Space Mono',monospace;font-size:22px;font-weight:700;letter-spacing:3px;color:#ffd7db}
+.search{width:100%;background:#fff;border:1px solid #e2e8f0;border-radius:8px;color:#253a57;padding:11px 12px;font-size:13.5px;font-family:inherit}
+.search:focus{outline:none;border-color:#ed6372}
+.acct{background:#fff;border:1px solid var(--line);border-radius:13px;padding:15px 16px;margin-bottom:10px}
+.acct .r1{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between}
+.acct .nm{font-weight:800;color:var(--navy);font-size:14.5px}
+.acct .em{color:#52647c;font-size:13px;word-break:break-all}
+.acct .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.pill{font-size:9.5px;font-weight:800;letter-spacing:.4px;padding:6px 9px;border-radius:5px;background:#f1f4f8;border:1px solid #e9edf3;color:#65758f;white-space:nowrap}
+.pill.ok{color:#138f79;background:#e6f8f2;border-color:#d9f4e9}
+.pill.warn{color:#b0802f;background:#fff5e4;border-color:#f9eac7}
+.pill.master{color:#fff;background:var(--red);border-color:transparent}
+.pill.emp{color:#fff;background:#4b95e2;border-color:transparent}
+.acct .acts{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.resetbox{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:12px}
+.resetbox.show{display:block}
+.gate{max-width:430px;margin:9vh auto;background:#fff;border:1px solid var(--line);border-radius:16px;padding:26px 22px;box-shadow:0 12px 34px rgba(12,22,43,.07)}
+.gate h2{font-family:'Rajdhani',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.4px;color:var(--navy);margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.55}
+.gate label{display:block;font-size:10px;font-weight:800;color:#65758e;margin:14px 0 6px;letter-spacing:1.2px}
+.gate input{width:100%;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:var(--ink);padding:11px 12px;font-size:14px;font-family:inherit}
+.gate input:focus{outline:none;border-color:#ed6372}
+.gate button{width:100%;margin-top:18px;background:var(--red);color:#fff;border:1px solid var(--red);border-radius:8px;padding:12px 15px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit}
+.err{display:none;margin-top:12px;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;font-size:13px;border-radius:9px;padding:10px 12px;line-height:1.5}
+footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:#697cf0;border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:760px){.gate{margin:4vh 14px}.card{padding:16px}}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div id="gate"></div>
+
+<div id="console" style="display:none">
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4.5"/><path d="M11.2 11.8 20 3"/><path d="M15.5 7.5l3 3M18 5l2.2 2.2"/></svg>Work Time Account Access</h1>
+      <p class="sub">The Master's account console for the whole Top Speed ecosystem — create accounts and choose passwords for every platform, website, landing page and app access point, manage employee numbers, and control each account's 2-step sign-in. Master account only.</p>
+    </div>
+    <div class="who" id="whoBox"></div>
+  </header>
+
+  <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>How sign-in works — one 2-step system</h2>
+  <div class="card">
+    <div class="steps">
+      <div class="step"><span class="n">STEP 1</span><b>Password</b><p>The account holder signs in with their email and the password set here (they can change it later from their own account).</p></div>
+      <div class="step"><span class="n">STEP 2</span><b>Verification code</b><p>Speedy Verify first, where the account requires it: the 8-digit access code only the Master issues. Then Layer 2: a 6-digit code sent to the holder's email or phone.</p></div>
+      <div class="step"><span class="n">STEP 3</span><b>Signed in</b><p>Both steps passed — the session opens on the account's own surface, and nowhere else. Portal doors stay separated by account type.</p></div>
+    </div>
+    <p class="note">New staff and business / property-manager accounts start with Speedy Verify required and wait for your code before their first sign-in. Every new account starts with Layer 2 on. The Master account is exempt from both steps by Rule Zero — it can never be locked out.</p>
+  </div>
+
+  <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.2"/><circle cx="12" cy="6" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="5" cy="18" r="2.2"/><circle cx="12" cy="18" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M7.2 6h2.6M14.2 6h2.6M7.2 18h2.6M14.2 18h2.6M5 8.2v7.6M12 8.2v7.6M19 8.2v7.6"/></svg>Access directory — every sign-in door</h2>
+  <div class="links" id="dirInternal"></div>
+  <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6"/><path d="M20 4L11 13"/><path d="M19 13.5V19a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 3 19V6a1.5 1.5 0 0 1 1.5-1.5H10"/></svg>Outside dashboards — you sign in there yourself</h2>
+  <div class="links" id="dirExternal"></div>
+
+  <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="8" r="3.6"/><path d="M4.5 19.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5"/><path d="M18.5 5.5v6M15.5 8.5h6"/></svg>Create an account — you choose the password</h2>
+  <div class="card">
+    <form id="createForm">
+      <div class="grid">
+        <div>
+          <label class="fl" for="cSurface">ACCESS POINT / ACCOUNT TYPE</label>
+          <select class="fi" id="cSurface" required></select>
+        </div>
+        <div>
+          <label class="fl" for="cEmail">EMAIL — THE SIGN-IN NAME</label>
+          <input class="fi" id="cEmail" type="email" autocomplete="off" placeholder="name@example.com" required>
+        </div>
+        <div>
+          <label class="fl" for="cFirst">FIRST NAME</label>
+          <input class="fi" id="cFirst" autocomplete="off" placeholder="First">
+        </div>
+        <div>
+          <label class="fl" for="cLast">LAST NAME</label>
+          <input class="fi" id="cLast" autocomplete="off" placeholder="Last">
+        </div>
+        <div>
+          <label class="fl" for="cPhone">PHONE (OPTIONAL)</label>
+          <input class="fi" id="cPhone" autocomplete="off" placeholder="(954) 555-0100">
+        </div>
+        <div>
+          <label class="fl" for="cPass">PASSWORD — YOU CHOOSE IT (10+ CHARACTERS)</label>
+          <div class="pwrow">
+            <input class="fi" id="cPass" type="password" autocomplete="new-password" placeholder="Type the password" required>
+            <button class="btn ghost small" type="button" id="cShow">Show</button>
+            <button class="btn ghost small" type="button" id="cGen">Generate</button>
+          </div>
+        </div>
+      </div>
+      <div class="policy" id="cPolicy"></div>
+      <label class="check"><input type="checkbox" id="cVerify"><span><b>Speedy Verify required</b> — the holder also needs the 8-digit access code you issue before they can sign in. The default for the chosen access point is already set; change it only if you mean to.</span></label>
+      <div style="margin-top:16px;display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn" type="submit" id="cSubmit">Create account</button>
+      </div>
+      <div class="msg" id="cMsg"></div>
+      <div class="codebanner" id="cBanner"></div>
+    </form>
+  </div>
+
+  <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 19.5c.6-2.9 2.7-4.4 5.5-4.4s4.9 1.5 5.5 4.4"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.3M18.5 15.4c1.2.7 1.9 1.9 2.1 4.1"/></svg>Accounts — passwords, codes &amp; 2-step</h2>
+  <input class="search" id="aSearch" type="search" placeholder="Search by name, email, or employee number (TS-1001)…">
+  <div id="aList" style="margin-top:14px"><p class="note"><span class="spin"></span> Loading accounts…</p></div>
+  <div class="codebanner" id="aBanner"></div>
+
+  <footer>Work Time Account Access is a Master-only console. The Master (COMPANY_OWNER) account can never be created, deactivated, demoted, or deleted here — and resetting its password always requires the current password. Access codes and passwords are stored hashed only; a code is shown once, when it is issued.</footer>
+</div>
+</div>
+
+<script>
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
+  var surfaces=[], accounts=[];
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function api(method, path, body){
+    var opts={ method: method, headers: { 'Content-Type':'application/json' } };
+    if(tok) opts.headers['Authorization']='Bearer '+tok;
+    if(body) opts.body=JSON.stringify(body);
+    return fetch(API+path, opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return { status:r.status, j:j }; }); });
+  }
+  function nameOf(u){ return (((u.firstName||'')+' '+(u.lastName||'')).trim()) || u.email; }
+
+  /* ---------------- Access directory ---------------- */
+  var INTERNAL=[
+    ['Service OS Home','/','The flagship home — every surface connects here.'],
+    ['Book OS','/book-os','Bookings, dispatch queue, Email Manager and the Service Book.'],
+    ['ApplianceMan','/applianceman','Super Manager hub — every manager system under the Master account.'],
+    ['Turbo Boss','/turbo-boss','Manager command — decision queue, scorecards, team load and money.'],
+    ['Dispatch Dashboard','/dispatch-dashboard','Live dispatch board for the Service Setters.'],
+    ['Oversight','/oversight','Management oversight across the whole operation.'],
+    ['CRM','/crm','Customer records, history and follow-ups.'],
+    ['Portal','/portal','The owner portal — team accounts and platform links.'],
+    ['Appliance Connect','/app','The customer app — homeowner accounts sign in here.'],
+    ['Connect Pro Portal','/connect-pro','Business and property-manager accounts sign in here (business login).'],
+    ['Appliance Pro Portal','/appliance-pro','Commercial accounts — the flagship-side Appliance Pro door.'],
+    ['Speedy Pro — Tech App','/tech','Providers and technicians sign in here.'],
+    ['Marketing OS','/marketing-os','Marketing agency hub, Page Studio and the SEO dashboard.'],
+    ['Training Academy','/academy','Staff and provider training — every role enters as a trainee.'],
+    ['Media OS','/media','Media library and publishing.'],
+    ['Pepper Lists','/pepper-lists-site','Pepper Lists — Sell and Post, reviews and the public wall.'],
+    ['Parts Supply OS','/parts','Parts partners and fast parts shopping (PLUS AI).'],
+    ['Appliance Referral','/refer','The referral home — share links and credits.'],
+    ['Cleanout Vents — Partner Page','/cleanout-vents-site','The Cleanout Vents partner page inside the Service OS.']
+  ];
+  var EXTERNAL=[
+    ['Appliance Pro (appliancepro.net)','https://www.appliancepro.net/','The commercial portal on its own domain — sign in there.'],
+    ['TopSpeedAppliance.net','https://www.topspeedappliance.net/','The customer site — Portal Login is in its header.'],
+    ['Cleanout Vents (cleanoutvents.com)','https://cleanoutvents.com/','The partner\u2019s own site, connected to the Service OS booking page.'],
+    ['Vercel','https://vercel.com/dashboard','Hosting, deployments and domains for every platform.'],
+    ['GitHub','https://github.com/starlabelgroup-cpu','All Top Speed repositories.'],
+    ['Stripe','https://dashboard.stripe.com/','Payments, payouts and the live account.'],
+    ['Porkbun','https://porkbun.com/account','Domain registrar for the .com platform domains.'],
+    ['Network Solutions','https://www.networksolutions.com/','Registrar for appliancereferral.com and appliancepro.net.'],
+    ['Resend','https://resend.com/login','Email sending and the receiving inboxes.'],
+    ['Meta Business Suite','https://business.facebook.com/','Facebook Pages, Marketplace and ads.'],
+    ['Google','https://myaccount.google.com/','The Google account behind Gmail, Business Profile and sign-ins.']
+  ];
+  function linkCard(item, external){
+    return '<a class="link" href="'+esc(item[1])+'"'+(external?' target="_blank" rel="noopener"':'')+'><b>'+esc(item[0])+'</b><span>'+esc(item[2])+'</span><span class="opn"><i>'+(external?'OPEN \u2197':'OPEN')+'</i></span></a>';
+  }
+  document.getElementById('dirInternal').innerHTML=INTERNAL.map(function(i){ return linkCard(i,false); }).join('');
+  document.getElementById('dirExternal').innerHTML=EXTERNAL.map(function(i){ return linkCard(i,true); }).join('');
+
+  /* ---------------- Gates ---------------- */
+  var gateEl=document.getElementById('gate');
+  function showGate(msg){
+    document.getElementById('console').style.display='none';
+    gateEl.innerHTML='<div class="gate"><h2>Work Time Account Access</h2><p>Master account only. Sign in with the owner account to create accounts, choose passwords, and manage access codes.</p>' +
+      (msg?'<div class="err" style="display:block">'+esc(msg)+'</div>':'') +
+      '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
+      '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+      '<div class="err" id="liErr"></div><button type="submit">Sign in</button></form></div>';
+    document.getElementById('loginForm').addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var err=document.getElementById('liErr'); err.style.display='none';
+      api('POST','/auth/login',{ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value })
+        .then(function(res){
+          if(res.j && res.j.token){ tok=res.j.token; try{ localStorage.setItem('tsos_token', tok); }catch(e){} boot(); return; }
+          if(res.j && (res.j.verifyRequired || res.j.challenge)){
+            err.textContent='That account signs in with a verification-code step. This console opens only for the Master account, which signs in directly.';
+          } else {
+            err.textContent=(res.j && res.j.error) || 'Sign-in failed.';
+          }
+          err.style.display='block';
+        })
+        .catch(function(){ err.textContent='Could not reach the Service OS. Try again.'; err.style.display='block'; });
+    });
+  }
+  function showNotMaster(email){
+    document.getElementById('console').style.display='none';
+    gateEl.innerHTML='<div class="gate"><h2>Master account only</h2><p>You are signed in as '+esc(email||'another account')+'. Work Time Account Access opens only for the Master (owner) account.</p><button id="nmOut" type="button">Sign out</button></div>';
+    document.getElementById('nmOut').addEventListener('click', function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} tok=''; showGate(); });
+  }
+  function boot(){
+    if(!tok){ showGate(); return; }
+    api('GET','/auth/me').then(function(res){
+      var u=res.j && res.j.user;
+      if(res.status!==200 || !u){ tok=''; try{ localStorage.removeItem('tsos_token'); }catch(e){} showGate('Your session has expired — sign in again.'); return; }
+      if((u.roles||[]).indexOf('COMPANY_OWNER')<0){ showNotMaster(u.email); return; }
+      gateEl.innerHTML='';
+      document.getElementById('console').style.display='';
+      document.getElementById('whoBox').innerHTML='<span>Signed in as <b>'+esc(u.email)+'</b></span><span class="pill master">MASTER</span><button class="btn ghost small" id="signOut" type="button">Sign out</button>';
+      document.getElementById('signOut').addEventListener('click', function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} tok=''; showGate(); });
+      loadSurfaces(); loadAccounts('');
+    }).catch(function(){ showGate('Could not reach the Service OS. Try again.'); });
+  }
+
+  /* ---------------- Create account ---------------- */
+  var surfSel=document.getElementById('cSurface');
+  function currentSurface(){ for(var i=0;i<surfaces.length;i++){ if(surfaces[i].key===surfSel.value) return surfaces[i]; } return null; }
+  function syncPolicy(){
+    var s=currentSurface(); if(!s) return;
+    var parts=[];
+    parts.push(s.defaults.speedyVerifyRequired ? 'Speedy Verify: REQUIRED — starts unverified, waiting for your code' : 'Speedy Verify: not required');
+    parts.push(s.defaults.layer2Required ? 'Layer 2: REQUIRED — 6-digit email/text code at every sign-in' : 'Layer 2: not required');
+    parts.push(s.employee ? 'Employee number: issued at creation (TS-…)' : 'Employee number: none — not an employee account');
+    document.getElementById('cPolicy').innerHTML='<b>'+esc(s.label)+'</b> — '+esc(s.detail)+'<br>2-step defaults for this access point: '+esc(parts.join(' · '))+'.';
+    document.getElementById('cVerify').checked=!!s.defaults.speedyVerifyRequired;
+  }
+  function loadSurfaces(){
+    api('GET','/access-control/surfaces').then(function(res){
+      surfaces=(res.j && res.j.data)||[];
+      surfSel.innerHTML=surfaces.map(function(s){ return '<option value="'+esc(s.key)+'">'+esc(s.label)+'</option>'; }).join('');
+      syncPolicy();
+    }).catch(function(){});
+  }
+  surfSel.addEventListener('change', syncPolicy);
+  document.getElementById('cShow').addEventListener('click', function(){
+    var p=document.getElementById('cPass'); var show=p.type==='password';
+    p.type=show?'text':'password'; this.textContent=show?'Hide':'Show';
+  });
+  document.getElementById('cGen').addEventListener('click', function(){
+    var chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#', pw='';
+    for(var i=0;i<14;i++) pw+=chars[Math.floor(Math.random()*chars.length)];
+    var p=document.getElementById('cPass'); p.value=pw; p.type='text'; document.getElementById('cShow').textContent='Hide';
+  });
+  document.getElementById('createForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var msg=document.getElementById('cMsg'); msg.className='msg'; msg.textContent='';
+    var banner=document.getElementById('cBanner'); banner.className='codebanner'; banner.innerHTML='';
+    var body={
+      surface: surfSel.value,
+      email: document.getElementById('cEmail').value.trim(),
+      password: document.getElementById('cPass').value,
+      firstName: document.getElementById('cFirst').value.trim()||undefined,
+      lastName: document.getElementById('cLast').value.trim()||undefined,
+      phone: document.getElementById('cPhone').value.trim()||undefined,
+      verifyRequired: document.getElementById('cVerify').checked
+    };
+    if(!/.+@.+\..+/.test(body.email)){ msg.className='msg err'; msg.textContent='Add a valid email — it is the sign-in name.'; return; }
+    if(!body.password || body.password.length<10){ msg.className='msg err'; msg.textContent='The password needs at least 10 characters.'; return; }
+    var btn=document.getElementById('cSubmit'); btn.disabled=true; btn.textContent='Creating…';
+    api('POST','/access-control/accounts', body).then(function(res){
+      btn.disabled=false; btn.textContent='Create account';
+      if(res.status!==201){ msg.className='msg err'; msg.textContent='Could not create: '+((res.j && res.j.error)||('status '+res.status)); return; }
+      var u=res.j.user||{};
+      msg.className='msg ok';
+      msg.textContent='Account created for '+nameOf(u)+' ('+u.email+') — '+u.surfaceLabel+'. '+(res.j.note||'');
+      if(res.j.employeeNumber){
+        banner.className='codebanner show';
+        banner.innerHTML='Employee number for this account: <span class="code">'+esc(res.j.employeeNumber)+'</span><br>It is permanent — write it on the employee\u2019s record. The holder signs in with the email and the password you set.';
+      }
+      document.getElementById('cPass').value='';
+      loadAccounts(document.getElementById('aSearch').value.trim());
+    }).catch(function(){ btn.disabled=false; btn.textContent='Create account'; msg.className='msg err'; msg.textContent='Could not reach the Service OS. Try again.'; });
+  });
+
+  /* ---------------- Accounts list ---------------- */
+  function verifyChip(u){
+    if(u.master) return '<span class="pill master">VERIFY — MASTER EXEMPT</span>';
+    var v=u.verify||{};
+    if(v.required && v.hasActiveCode) return '<span class="pill ok">SPEEDY VERIFY — REQUIRED · CODE ACTIVE</span>';
+    if(v.required) return '<span class="pill warn">SPEEDY VERIFY — REQUIRED · WAITING FOR CODE</span>';
+    if(v.hasActiveCode) return '<span class="pill">SPEEDY VERIFY — CODE ISSUED · NOT REQUIRED</span>';
+    return '<span class="pill">SPEEDY VERIFY — OFF</span>';
+  }
+  function layer2Chip(u){
+    if(u.master) return '<span class="pill master">LAYER 2 — MASTER EXEMPT</span>';
+    var l=u.layer2||{};
+    if(l.flagOn) return '<span class="pill ok">LAYER 2 — REQUIRED</span>';
+    return '<span class="pill">LAYER 2 — GRANDFATHERED (OFF)</span>';
+  }
+  function rowHtml(u){
+    var h='<div class="acct" data-uid="'+esc(u.id)+'">';
+    h+='<div class="r1"><div><span class="nm">'+esc(nameOf(u))+'</span><br><span class="em">'+esc(u.email)+'</span></div>';
+    h+='<div>'+(u.master?'<span class="pill master">MASTER — OWNER ACCOUNT</span>':(u.employeeNumber?'<span class="pill emp">'+esc(u.employeeNumber)+'</span>':''))+'</div></div>';
+    h+='<div class="meta"><span class="pill">'+esc(u.surfaceLabel||'')+'</span>'+verifyChip(u)+layer2Chip(u)+(u.active?'':'<span class="pill warn">INACTIVE</span>')+'</div>';
+    h+='<div class="acts">';
+    h+='<button class="btn ghost small" data-act="reset" type="button">Reset password</button>';
+    if(!u.master){
+      h+='<button class="btn ghost small" data-act="issue" type="button">'+((u.verify&&u.verify.hasActiveCode)?'Reset access code':'Issue access code')+'</button>';
+      if(u.verify&&u.verify.hasActiveCode) h+='<button class="btn ghost small" data-act="revoke" type="button">Revoke code</button>';
+      h+='<button class="btn ghost small" data-act="vtoggle" type="button">Speedy Verify: '+((u.verify&&u.verify.required)?'on → turn off':'off → turn on')+'</button>';
+      h+='<button class="btn ghost small" data-act="ltoggle" type="button">Layer 2: '+((u.layer2&&u.layer2.flagOn)?'on → turn off':'off → turn on')+'</button>';
+    }
+    h+='</div>';
+    h+='<div class="resetbox" data-resetbox><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">';
+    if(u.master) h+='<div><label class="fl">YOUR CURRENT PASSWORD (REQUIRED FOR THE MASTER)</label><input class="fi" type="password" data-cur autocomplete="current-password"></div>';
+    h+='<div><label class="fl">NEW PASSWORD — YOU CHOOSE IT (10+)</label><div class="pwrow"><input class="fi" type="password" data-newp autocomplete="new-password"><button class="btn ghost small" type="button" data-showpw>Show</button></div></div>';
+    h+='</div><div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-doreset>Set new password</button><button class="btn ghost small" type="button" data-cancelreset>Cancel</button></div><div class="msg" data-resetmsg></div></div>';
+    h+='</div>';
+    return h;
+  }
+  function loadAccounts(q){
+    var list=document.getElementById('aList');
+    api('GET','/access-control/accounts'+(q?('?q='+encodeURIComponent(q)):'' )).then(function(res){
+      if(res.status!==200){ list.innerHTML='<p class="note">Could not load accounts ('+esc((res.j&&res.j.error)||res.status)+').</p>'; return; }
+      accounts=res.j.data||[];
+      if(!accounts.length){ list.innerHTML='<p class="note">No accounts match.</p>'; return; }
+      list.innerHTML=accounts.map(rowHtml).join('');
+    }).catch(function(){ list.innerHTML='<p class="note">Could not reach the Service OS.</p>'; });
+  }
+  var searchTimer=null;
+  document.getElementById('aSearch').addEventListener('input', function(){
+    var v=this.value.trim();
+    if(searchTimer) clearTimeout(searchTimer);
+    searchTimer=setTimeout(function(){ loadAccounts(v); }, 250);
+  });
+  function banner(html){
+    var b=document.getElementById('aBanner'); b.className='codebanner show'; b.innerHTML=html;
+    b.scrollIntoView({ behavior:'smooth', block:'center' });
+  }
+  document.getElementById('aList').addEventListener('click', function(ev){
+    var t=ev.target;
+    var acctEl=t.closest ? t.closest('.acct') : null;
+    if(!acctEl) return;
+    var uid=acctEl.getAttribute('data-uid');
+    var u=null; for(var i=0;i<accounts.length;i++){ if(accounts[i].id===uid) u=accounts[i]; }
+    if(!u) return;
+    if(t.hasAttribute('data-showpw')){
+      var inp=acctEl.querySelector('[data-newp]'); var show=inp.type==='password';
+      inp.type=show?'text':'password'; t.textContent=show?'Hide':'Show'; return;
+    }
+    if(t.hasAttribute('data-cancelreset')){ acctEl.querySelector('[data-resetbox]').classList.remove('show'); return; }
+    if(t.hasAttribute('data-doreset')){
+      var msg=acctEl.querySelector('[data-resetmsg]'); msg.className='msg'; msg.textContent='';
+      var body={ userId: uid, newPassword: acctEl.querySelector('[data-newp]').value };
+      var cur=acctEl.querySelector('[data-cur]'); if(cur) body.currentPassword=cur.value;
+      if(!body.newPassword || body.newPassword.length<10){ msg.className='msg err'; msg.textContent='The new password needs at least 10 characters.'; return; }
+      if(cur && !body.currentPassword){ msg.className='msg err'; msg.textContent='Enter your current password too — the Master password always requires it.'; return; }
+      t.disabled=true;
+      api('POST','/access-control/reset-password', body).then(function(res){
+        t.disabled=false;
+        if(res.status!==200){ msg.className='msg err'; msg.textContent='Could not reset: '+((res.j&&res.j.error)||('status '+res.status)); return; }
+        msg.className='msg ok'; msg.textContent='Password updated for '+u.email+'. They sign in with the new password you set.';
+        acctEl.querySelector('[data-newp]').value=''; if(cur) cur.value='';
+      }).catch(function(){ t.disabled=false; msg.className='msg err'; msg.textContent='Could not reach the Service OS.'; });
+      return;
+    }
+    var act=t.getAttribute('data-act');
+    if(!act) return;
+    if(act==='reset'){ acctEl.querySelector('[data-resetbox]').classList.toggle('show'); return; }
+    if(act==='issue'){
+      t.disabled=true;
+      api('POST','/speedy-verify/issue',{ userId: uid }).then(function(res){
+        t.disabled=false;
+        if(res.status!==200){ banner('Could not issue a code for '+esc(u.email)+': '+esc((res.j&&res.j.error)||('status '+res.status))); return; }
+        banner('Speedy Verify access code for <b>'+esc(u.email)+'</b>: <span class="code">'+esc(res.j.code)+'</span><br>Shown once — hand it to the account holder. It is stored hashed and cannot be looked up later; issue a new one if it is lost.');
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      }).catch(function(){ t.disabled=false; });
+      return;
+    }
+    if(act==='revoke'){
+      if(!window.confirm('Revoke the access code for '+u.email+'? If their account requires Speedy Verify, they cannot sign in until you issue a new code.')) return;
+      api('POST','/speedy-verify/revoke',{ userId: uid }).then(function(){ loadAccounts(document.getElementById('aSearch').value.trim()); });
+      return;
+    }
+    if(act==='vtoggle'){
+      api('POST','/speedy-verify/requirement',{ userId: uid, required: !(u.verify&&u.verify.required) }).then(function(res){
+        if(res.status!==200) banner('Could not change Speedy Verify for '+esc(u.email)+': '+esc((res.j&&res.j.error)||('status '+res.status)));
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      });
+      return;
+    }
+    if(act==='ltoggle'){
+      api('POST','/access-control/layer2-requirement',{ userId: uid, required: !(u.layer2&&u.layer2.flagOn) }).then(function(res){
+        if(res.status!==200) banner('Could not change Layer 2 for '+esc(u.email)+': '+esc((res.j&&res.j.error)||('status '+res.status)));
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      });
+      return;
+    }
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>

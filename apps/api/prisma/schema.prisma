@@ -152,6 +152,13 @@ model User {
   layer2Required Boolean @default(false)
   layer2Phone    String?
   layer2Channel  String?
+  // Employee number (Work Time Account Access, 2026-11-17): permanent,
+  // unique, never reused — 'TS-' + sequential number starting at
+  // TS-1001, assigned server-side at creation to EMPLOYEE accounts
+  // (Service Setters, Managers, Providers/Techs, other staff). Null for
+  // customer / business / PM / advertiser accounts, and null on the
+  // Master account (COMPANY_OWNER displays "MASTER" instead).
+  employeeNumber String? @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

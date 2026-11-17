@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import { fileURLToPath } from 'node:url';
 import authRouter from './routes/auth.js';
 import speedyVerifyRouter from './routes/speedyVerify.js';
+import accessControlRouter from './routes/accessControl.js';
 import layer2Router from './routes/layer2.js';
 import bookingsRouter from './routes/bookings.js';
 import integrationsRouter from './routes/integrations.js';
@@ -96,6 +97,9 @@ app.use('/api/v1/auth', authRateLimit);
 // Speedy Verify shares the auth rate limiter: code entry and recovery
 // are credential-shaped surfaces and get the same throttle as login.
 app.use('/api/v1/speedy-verify', authRateLimit);
+// Work Time Account Access: account creation + password resets are
+// credential-shaped too — same throttle as login.
+app.use('/api/v1/access-control', authRateLimit);
 // Layer 2 — 2-step sign-in: its endpoints live under /auth/layer2/*,
 // so the /api/v1/auth auth-rate-limit mount above already throttles
 // them (a second mount of the same limiter would double-count).
@@ -150,6 +154,7 @@ app.use('/api/v1', async (req, res, next) => {
 
 app.use('/api/v1', authRouter);
 app.use('/api/v1/speedy-verify', speedyVerifyRouter);
+app.use('/api/v1', accessControlRouter);
 app.use('/api/v1', layer2Router);
 app.use('/api/v1', bookingsRouter);
 app.use('/api/v1', integrationsRouter);
