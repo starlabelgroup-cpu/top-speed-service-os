@@ -316,6 +316,11 @@ export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = n
  * Copy is written from the type alone — never from invented facts.
  */
 export const SUBMISSION_TYPES = {
+  PEPPER_LISTS_SELL: {
+    label: 'Pepper Lists listing',
+    next: 'Pepper posts your confirmed listing to Facebook Marketplace and sends you the live link.',
+    consolePath: '/crm',
+  },
   SERVICE_REQUEST: {
     label: 'service request',
     next: 'A Service Setter will review your request and reach out to confirm your appointment window.',

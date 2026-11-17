@@ -825,6 +825,71 @@ const PLATE_FORMAT = {
   },
 };
 
+/* ---------------- Pepper Lists: listing draft from a photo ----------------
+ * The Sell lane of the Pepper Lists camera platform (2026-11-17).
+ * A seller photographs an item and Speedy drafts the Marketplace
+ * listing from ONLY what is visible — the same structured-vision
+ * machinery as the plate read, pointed at a sale item instead of a
+ * rating plate. The schema deliberately has NO price field: a price
+ * is never invented for an item (Pepper Lists rule) — the seller sets
+ * their own number in the draft form, and nothing posts until the
+ * seller confirms the final listing.
+ */
+
+export const LISTING_CATEGORIES = [
+  'Produce & fruit',
+  'Trees & plants',
+  'Appliances',
+  'Furniture',
+  'Electronics',
+  'Home & garden',
+  'Vehicles & parts',
+  'Clothing',
+  'Other',
+];
+
+export const LISTING_CONDITIONS = ['New', 'Used - like new', 'Used - good', 'Used - fair'];
+
+const LISTING_DRAFT_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_listing_draft',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      item: { type: ['string', 'null'], description: 'What the item in the photo appears to be, in a few words, or null if it cannot be identified.' },
+      title: { type: ['string', 'null'], description: 'A short, factual Marketplace listing title (max ~80 characters) built only from what is visible, or null if the item cannot be identified.' },
+      description: { type: ['string', 'null'], description: 'A plain, factual listing description of what is visible — quantity, size or ripeness ONLY when clearly visible. Never invent details, or null if the item cannot be identified.' },
+      category: { type: ['string', 'null'], enum: [...LISTING_CATEGORIES, null], description: 'The listing category that best fits the item, or null.' },
+      condition: { type: ['string', 'null'], enum: [...LISTING_CONDITIONS, null], description: 'A condition suggestion from visible wear only, or null when condition cannot be judged from the photo.' },
+      confidence: { type: 'number', description: '0 to 1 — how clearly the item can be identified from this photo.' },
+    },
+    required: ['item', 'title', 'description', 'category', 'condition', 'confidence'],
+  },
+};
+
+export async function speedyDraftListing(imageUrl) {
+  assertImageDataUrl(imageUrl);
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nListing mode: a Pepper Lists seller photographed an item they want to sell on Facebook Marketplace. Identify ONLY what is visibly in the photo and draft the listing in the required structured format: a short factual title, a plain description, the best-fit category and a condition suggestion from visible wear only. Never invent a price, brand, model, quantity or any detail you cannot see — return null for anything not visible. This is a draft: the seller edits and confirms every field, and sets their own price, before anything posts.',
+    input: [
+      {
+        role: 'user',
+        content: [
+          { type: 'input_text', text: 'Draft a Marketplace listing for the item in this photo.' },
+          { type: 'input_image', image_url: imageUrl },
+        ],
+      },
+    ],
+    text: { format: LISTING_DRAFT_FORMAT },
+    max_output_tokens: 500,
+  });
+  return JSON.parse(extractText(body));
+}
+
 export async function speedyExtractModelPlate(imageUrl) {
   assertImageDataUrl(imageUrl);
   const body = await responsesRequest({

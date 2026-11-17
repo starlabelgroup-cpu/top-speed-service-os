@@ -5,7 +5,7 @@ import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { getSubmissionMediaItem, listSubmissionMedia, saveSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
-import { assertImageDataUrl, speedyDiagnose, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
+import { assertImageDataUrl, LISTING_CATEGORIES, LISTING_CONDITIONS, speedyDiagnose, speedyDraftListing, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
 import { notifySubmission } from '../services/notifications.js';
 
 /**
@@ -29,6 +29,18 @@ import { notifySubmission } from '../services/notifications.js';
  *   submission is a REQUEST — a setter responds to start the session;
  *   nothing here simulates a call.
  * - GET /pepper-lists/submissions/:connectionId/media: staff only.
+ * - POST /pepper-lists/listing-draft: the Sell lane's twin of the
+ *   plate read — a signed-in seller photographs an item and Speedy
+ *   drafts the Marketplace listing (speedyDraftListing; the schema
+ *   has no price field, so a price is never invented). The seller
+ *   edits the draft and sets their own price.
+ * - POST /pepper-lists/listings: the seller's CONFIRMED listing.
+ *   It lands as a PEPPER_LISTS_SELL connection record in the same
+ *   universal intake (facts verbatim in the message, photo on
+ *   SubmissionMedia rows) so the office/Pepper posting flow works
+ *   it exactly like the owner's chat-confirmed listings. It is
+ *   deliberately NOT a lead type: a sale must never become a
+ *   repair booking in the Service Setters dispatch queue.
  *
  * Governance (unchanged): Speedy never invents a diagnosis or a
  * price; when the AI provider is down the plate read says so (503)
@@ -66,6 +78,26 @@ const mediaItemSchema = z.object({
   kind: z.enum(['photo', 'video']),
   mime: z.string().trim().max(60),
   dataBase64: z.string().min(16).max(21_000_000),
+});
+
+const listingDraftSchema = z.object({
+  imageDataUrl: z.string().trim().min(32).max(12_000_000),
+});
+
+router.post('/pepper-lists/listing-draft', authenticate, async (req, res) => {
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy listing drafts are unavailable right now — fill the listing in by hand; posting works the same' });
+  }
+  const parsed = listingDraftSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid item photo', details: parsed.error.flatten() });
+  }
+  try {
+    const draft = await speedyDraftListing(parsed.data.imageDataUrl);
+    return res.json({ data: { draft } });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not draft from that photo — retake it or fill the listing in by hand', detail: String(error?.message || error) });
+  }
 });
 
 const submissionSchema = z.object({
@@ -213,6 +245,92 @@ router.post('/pepper-lists/submissions', authenticate, async (req, res) => {
       lane: data.lane,
       mediaCount: media.length,
       diagnosis: data.lane === 'SCAN_SEND' ? diagnosisNote : null,
+    },
+  });
+});
+
+const listingSchema = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(2000).optional(),
+  category: z.enum(LISTING_CATEGORIES),
+  condition: z.enum(LISTING_CONDITIONS),
+  // The seller's own number, always — the draft never carries a
+  // price, and this route rejects a listing without one.
+  priceCents: z.number().int().min(1).max(100_000_000),
+  phone: z.string().trim().min(7).max(30),
+  name: z.string().trim().min(2).max(120).optional(),
+  email: z.string().email().max(200).optional(),
+  media: z.array(mediaItemSchema).max(MEDIA_MAX_ITEMS).optional(),
+});
+
+router.post('/pepper-lists/listings', authenticate, async (req, res) => {
+  const parsed = listingSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid listing', details: parsed.error.flatten() });
+  }
+  const data = parsed.data;
+
+  let media = [];
+  try {
+    media = (data.media || []).map((item) => {
+      if (item.kind !== 'photo') throw new Error('Listings take photos only — remove the video and try again');
+      return validateMediaItem(item);
+    });
+  } catch (error) {
+    return res.status(400).json({ error: String(error?.message || error) });
+  }
+  const totalBytes = media.reduce((sum, item) => sum + item.sizeBytes, 0);
+  if (totalBytes > MEDIA_TOTAL_MAX_BYTES) {
+    return res.status(400).json({ error: 'The files together are over the 18 MB limit — remove one and try again' });
+  }
+
+  const account = store.users.get(req.user.id) || {};
+  const name = data.name || [account.firstName, account.lastName].filter(Boolean).join(' ').trim() || account.email || req.user.email || 'Pepper Lists seller';
+  const email = data.email || account.email || req.user.email || undefined;
+
+  const mediaLine = media.length
+    ? `Media attached: ${media.map((item) => `${item.kind} (${item.mime}, ${Math.max(1, Math.round(item.sizeBytes / 1024))} KB)`).join(', ')} — staff can open it from this record (reference below).`
+    : 'Media attached: none';
+  const lines = [
+    `Listing title: ${data.title}`,
+    `Category: ${data.category}`,
+    `Condition: ${data.condition}`,
+    `Price: $${(data.priceCents / 100).toFixed(2)} (set by the seller)`,
+    ...(data.description ? [`Description: ${data.description}`] : []),
+    mediaLine,
+    'Confirmed by the seller in Pepper Lists after reviewing the Speedy draft — post to Facebook Marketplace.',
+    `Submitted by signed-in Pepper Lists account ${email || ''}`.trim(),
+  ];
+
+  const record = await createConnectionRecord({
+    name,
+    phone: data.phone,
+    email,
+    type: 'PEPPER_LISTS_SELL',
+    source: 'pepper-lists',
+    message: lines.join('\n'),
+  });
+  if (media.length) {
+    await saveSubmissionMedia(record.id, media);
+  }
+
+  try {
+    notifySubmission({
+      kind: 'PEPPER_LISTS_SELL',
+      reference: record.reference,
+      submitter: { name, phone: data.phone, email },
+      lines: lines.slice(0, 5),
+      source: 'pepper-lists',
+    });
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'pepper lists listing notify failed', error: String(error?.message || error) }));
+  }
+
+  return res.status(201).json({
+    data: {
+      reference: record.reference,
+      bookingReference: null,
+      mediaCount: media.length,
     },
   });
 });
