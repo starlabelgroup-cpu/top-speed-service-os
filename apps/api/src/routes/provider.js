@@ -5,7 +5,10 @@ import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
-import { notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
+import { notifyReviewRequest, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
+import { persistPartUsage, persistVanStock } from '../db/partsRepo.js';
+import { issueReferralForBooking } from '../services/flywheel.js';
+import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
 import { speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
@@ -74,6 +77,22 @@ function appointmentSummary(booking) {
   };
 }
 
+function jobFlags(booking) {
+  // Tech Pro field states (2026-11-17): the latest word on each waiting
+  // state, read off the job's event history — a later progress event
+  // (work started, diagnosis started, a new stage) clears a wait.
+  const flags = { workStarted: false, awaitingParts: false, awaitingDiagnosis: false };
+  if (!booking) return flags;
+  for (const event of booking.history || []) {
+    if (event.type === 'TECH_WORK_STARTED') { flags.workStarted = true; flags.awaitingParts = false; flags.awaitingDiagnosis = false; }
+    if (event.type === 'JOB_AWAITING_PARTS') flags.awaitingParts = true;
+    if (event.type === 'JOB_AWAITING_DIAGNOSIS') flags.awaitingDiagnosis = true;
+    if (event.type === 'DIAGNOSIS_STARTED' || event.type === 'DIAGNOSIS_RECORDED') flags.awaitingDiagnosis = false;
+    if (event.type === 'PART_USED_FROM_VAN' || event.type === 'PLUG_ORDER_CREATED') flags.awaitingParts = false;
+  }
+  return flags;
+}
+
 function publicAssignment(assignment) {
   const booking = store.bookings.get(assignment.bookingId);
   return {
@@ -84,6 +103,7 @@ function publicAssignment(assignment) {
     createdAt: assignment.createdAt,
     approvedBy: assignment.approvedBy ?? null,
     approvedAt: assignment.approvedAt ?? null,
+    jobFlags: jobFlags(booking),
     booking: booking
       ? {
           referenceCode: booking.referenceCode || null,
@@ -299,7 +319,7 @@ router.post('/provider/assignments/:id/ai-note', ...providerOnly, async (req, re
  * stay on their existing actions.
  */
 const jobStatusSchema = z.object({
-  action: z.enum(['EN_ROUTE', 'ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED']),
+  action: z.enum(['EN_ROUTE', 'ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED', 'WORK_STARTED', 'AWAITING_PARTS', 'AWAITING_DIAGNOSIS']),
   etaMinutes: z.number().int().min(1).max(600).optional(),
 });
 const JOB_EVENT_TYPES = {
@@ -307,6 +327,14 @@ const JOB_EVENT_TYPES = {
   ARRIVED: 'TECH_ARRIVED',
   DIAGNOSIS_STARTED: 'DIAGNOSIS_STARTED',
   ESTIMATE_APPROVED: 'ESTIMATE_APPROVED',
+  // Tech Pro field states (2026-11-17, from the Top Speed Tech Pro
+  // guide's job-status module): the repair itself in progress, and the
+  // two honest waiting states. They record on the job's history like
+  // every other stage; the customer's 8-stage timeline keeps reading
+  // the stages it already knows.
+  WORK_STARTED: 'TECH_WORK_STARTED',
+  AWAITING_PARTS: 'JOB_AWAITING_PARTS',
+  AWAITING_DIAGNOSIS: 'JOB_AWAITING_DIAGNOSIS',
 };
 
 router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req, res) => {
@@ -341,9 +369,12 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   // notified through the same outbox as every other platform message.
   if (parsed.data.action === 'EN_ROUTE') {
     notifyTechEnRoute(booking, 'TECH_APP');
-  } else {
+  } else if (['ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED'].includes(parsed.data.action)) {
     notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:${type}:${booking.updatedAt}`);
   }
+  // WORK_STARTED / AWAITING_* are field states: they land on the job
+  // record and the office report above, but the customer's tracking
+  // stage has not moved, so no customer notification is queued.
   emitReport({
     department: 'field',
     type: 'JOB_STAGE_UPDATE',
@@ -471,8 +502,91 @@ function workspaceNotes(booking) {
     }));
 }
 
+/* ------------- Tech Pro field record (2026-11-17) -------------
+ * The Top Speed Tech Pro guide's modules that the workspace did not
+ * have yet — structured diagnosis, the field estimate with its
+ * authorization log, categorized repair photos, external receipts and
+ * the close-out quality gate — all ride the booking's history, the
+ * platform's audit trail, in exactly the pattern the checklist, notes
+ * and Plug orders already use. The read models below fold the events
+ * back into current state; the write routes live at the end of this
+ * file. Pricing is computed server-side from the real Launch Pack
+ * structure only — the client never sets a total.
+ */
+function latestDiagnosis(booking) {
+  let found = null;
+  for (const event of booking.history || []) {
+    if (event.type === 'DIAGNOSIS_RECORDED' && event.diagnosis) found = event.diagnosis;
+  }
+  return found;
+}
+
+function diagnosisComplete(booking) {
+  const d = latestDiagnosis(booking);
+  return Boolean(d && d.confirmedFault && d.recommendedRepair);
+}
+
+function latestEstimate(booking) {
+  let found = null;
+  for (const event of booking.history || []) {
+    if (event.type === 'ESTIMATE_SAVED' && event.estimate) found = event.estimate;
+  }
+  return found;
+}
+
+function authorizationLog(booking) {
+  return (booking.history || [])
+    .filter((event) => event.type === 'ESTIMATE_APPROVED')
+    .map((event) => ({
+      at: event.at || null,
+      actor: event.actor || null,
+      method: event.method || 'RECORDED_IN_APP',
+      authorizedByName: event.authorizedByName || null,
+      estimateId: event.estimateId || null,
+      note: event.note || null,
+    }))
+    .reverse();
+}
+
+function jobPhotos(booking) {
+  const byId = new Map();
+  const removed = new Set();
+  for (const event of booking.history || []) {
+    if (event.type === 'JOB_PHOTO_ADDED' && event.photo && event.photo.id) byId.set(event.photo.id, event.photo);
+    if (event.type === 'JOB_PHOTO_REMOVED' && event.photoId) removed.add(event.photoId);
+  }
+  return [...byId.values()].filter((photo) => !removed.has(photo.id)).slice(-60);
+}
+
+function jobReceipts(booking) {
+  return (booking.history || [])
+    .filter((event) => event.type === 'RECEIPT_RECORDED' && event.receipt)
+    .map((event) => event.receipt)
+    .reverse();
+}
+
+function jobPartsUsed(booking) {
+  return (booking.history || [])
+    .filter((event) => event.type === 'PART_USED_FROM_VAN')
+    .map((event) => ({
+      partId: event.partId,
+      sku: event.sku || null,
+      name: event.name || null,
+      qty: event.qty,
+      at: event.at || null,
+      actor: event.actor || null,
+    }))
+    .reverse();
+}
+
 function workspaceView(assignment, booking) {
   const history = booking.history || [];
+  const estimate = latestEstimate(booking);
+  const receipts = jobReceipts(booking);
+  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
+  const estimateTotalCents = estimate ? estimate.totalCents : null;
+  const authorized = history.some((event) => event.type === 'ESTIMATE_APPROVED');
+  const diagDone = diagnosisComplete(booking);
   return {
     assignment: publicAssignment(assignment),
     checklist: fieldChecklist(booking),
@@ -480,7 +594,7 @@ function workspaceView(assignment, booking) {
     stageEvents: history
       .filter((event) => STAGE_EVENT_TYPES.includes(event.type))
       .map((event) => ({ type: event.type, at: event.at || null })),
-    estimateApproved: history.some((event) => event.type === 'ESTIMATE_APPROVED'),
+    estimateApproved: authorized,
     pricing: {
       segment: booking.segment || 'RESIDENTIAL',
       diagnosticFee: booking.diagnosticFee ?? 99,
@@ -489,6 +603,30 @@ function workspaceView(assignment, booking) {
     },
     completedAt: booking.completedAt || null,
     partsOrders: plugOrders(booking),
+    // Tech Pro (2026-11-17): the field record.
+    diagnosis: latestDiagnosis(booking),
+    estimate,
+    authorizationLog: authorizationLog(booking),
+    photos: jobPhotos(booking),
+    receipts,
+    partsUsed: jobPartsUsed(booking),
+    payments: {
+      estimateTotalCents,
+      receiptsTotalCents,
+      // The balance is information, never a gate: the guide's rule is
+      // that payment may remain outstanding and is tracked separately.
+      balanceDueCents: estimateTotalCents == null ? null : Math.max(0, estimateTotalCents - receiptsTotalCents),
+    },
+    gate: {
+      diagnosisRecorded: Boolean(latestDiagnosis(booking)),
+      diagnosisComplete: diagDone,
+      estimateAuthorized: authorized,
+      canComplete: diagDone && authorized && booking.status !== 'COMPLETED',
+    },
+    activity: history
+      .slice(-60)
+      .map((event) => ({ type: event.type, at: event.at || null, actor: event.actor || null }))
+      .reverse(),
   };
 }
 
@@ -809,4 +947,562 @@ router.get('/provider/parts-orders', ...providerOnly, (req, res) => {
   }
   mine.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
   return res.json({ data: { orders: mine } });
+});
+
+/* ================= Tech Pro field workflow (2026-11-17) =================
+ * Built from Ramone's Top Speed Tech Pro product guide: structured
+ * diagnosis, the field estimate + authorization log, categorized
+ * repair photos, van stock, external receipts, and the close-out
+ * quality gate. Everything writes onto the booking's audited history
+ * (van stock has its own table — it is provider state, not job state)
+ * and follows the workspace's existing rule: the technician confirms
+ * every record; nothing here auto-dispatches, self-assigns, or moves
+ * money. Completion NEVER waits on payment.
+ */
+
+const diagnosisSchema = z.object({
+  applianceBrand: z.string().trim().max(80).nullable().optional(),
+  model: z.string().trim().max(80).nullable().optional(),
+  serial: z.string().trim().max(80).nullable().optional(),
+  symptoms: z.string().trim().min(3).max(2000),
+  confirmedFault: z.string().trim().min(3).max(1000),
+  recommendedRepair: z.string().trim().min(3).max(1000),
+  readings: z.array(z.object({
+    label: z.string().trim().min(1).max(80),
+    value: z.string().trim().min(1).max(120),
+  })).max(20).optional(),
+  testChecklist: z.array(z.object({
+    id: z.string().trim().min(1).max(60),
+    label: z.string().trim().min(1).max(160),
+    done: z.boolean(),
+  })).max(30).optional(),
+  safetyConfirmed: z.boolean().optional(),
+});
+
+router.post('/provider/assignments/:id/diagnosis', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = diagnosisSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid diagnosis record', details: parsed.error.flatten() });
+  }
+  const t = new Date().toISOString();
+  const diagnosis = {
+    applianceBrand: parsed.data.applianceBrand || null,
+    model: parsed.data.model || null,
+    serial: parsed.data.serial || null,
+    symptoms: parsed.data.symptoms,
+    confirmedFault: parsed.data.confirmedFault,
+    recommendedRepair: parsed.data.recommendedRepair,
+    readings: parsed.data.readings || [],
+    testChecklist: parsed.data.testChecklist || [],
+    safetyConfirmed: parsed.data.safetyConfirmed === true,
+    recordedBy: req.user.email,
+    recordedAt: t,
+  };
+  addBookingEvent(booking, 'DIAGNOSIS_RECORDED', req.user.email, {
+    assignmentId: assignment.id,
+    diagnosis,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('DIAGNOSIS_RECORDED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { confirmedFault: diagnosis.confirmedFault },
+  });
+  return res.status(201).json({ data: { diagnosis } });
+});
+
+/* ---------------- Field estimate + authorization log ----------------
+ * The estimate is the job's written quote, built from the real price
+ * structure ONLY: $99 residential diagnostic (credited in full toward
+ * an approved repair), $210 flat repair labor, $150 flat installation,
+ * parts at the quoted per-line price. Commercial jobs carry no $99 —
+ * their labor is the custom-quoted amount the tech enters. Tax is a
+ * tech-entered rate applied to parts. The server computes the total;
+ * the client can preview but never set it.
+ */
+const ESTIMATE_LABOR_CENTS = { REPAIR: 21000, INSTALLATION: 15000 };
+
+const estimateSchema = z.object({
+  kind: z.enum(['REPAIR', 'INSTALLATION']),
+  laborCents: z.number().int().min(0).max(100000000).optional(),
+  parts: z.array(z.object({
+    description: z.string().trim().min(2).max(160),
+    qty: z.number().int().min(1).max(999),
+    unitPriceCents: z.number().int().min(0).max(100000000),
+  })).max(30).optional(),
+  discountCents: z.number().int().min(0).max(100000000).optional(),
+  taxRatePercent: z.number().min(0).max(30).optional(),
+  notes: z.string().trim().max(500).nullable().optional(),
+});
+
+function computeEstimate(booking, input) {
+  const segment = booking.segment || 'RESIDENTIAL';
+  const commercial = segment === 'COMMERCIAL';
+  const diagnosticFeeCents = commercial ? 0 : Math.round(Number(booking.diagnosticFee ?? 99) * 100);
+  const laborCents = commercial ? (input.laborCents ?? null) : ESTIMATE_LABOR_CENTS[input.kind];
+  const parts = (input.parts || []).map((line) => ({
+    description: line.description,
+    qty: line.qty,
+    unitPriceCents: line.unitPriceCents,
+    lineTotalCents: line.qty * line.unitPriceCents,
+  }));
+  const partsSubtotalCents = parts.reduce((sum, line) => sum + line.lineTotalCents, 0);
+  const taxRatePercent = input.taxRatePercent || 0;
+  const taxCents = Math.round((partsSubtotalCents * taxRatePercent) / 100);
+  const discountCents = input.discountCents || 0;
+  // The $99 diagnostic is credited toward an approved REPAIR (Launch
+  // Pack terms). It is not credited on a standalone installation, and
+  // it never exists on a commercial job.
+  const diagnosticCreditCents =
+    !commercial && input.kind === 'REPAIR' && booking.diagnosticFeeCreditedTowardRepair !== false
+      ? diagnosticFeeCents
+      : 0;
+  const totalCents = Math.max(
+    0,
+    (laborCents || 0) + partsSubtotalCents + taxCents - discountCents - diagnosticCreditCents,
+  );
+  return {
+    segment,
+    kind: input.kind,
+    diagnosticFeeCents,
+    diagnosticCreditCents,
+    laborCents,
+    parts,
+    partsSubtotalCents,
+    taxRatePercent,
+    taxCents,
+    discountCents,
+    totalCents,
+    notes: input.notes || null,
+  };
+}
+
+router.post('/provider/assignments/:id/estimate', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = estimateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid estimate', details: parsed.error.flatten() });
+  }
+  const computed = computeEstimate(booking, parsed.data);
+  if (computed.segment === 'COMMERCIAL' && computed.laborCents == null) {
+    return res.status(400).json({ error: 'Commercial jobs are priced by custom quote — enter the quoted labor amount' });
+  }
+  const t = new Date().toISOString();
+  const prior = (booking.history || []).filter((e) => e.type === 'ESTIMATE_SAVED').length;
+  const estimate = {
+    id: createId(),
+    version: prior + 1,
+    ...computed,
+    createdBy: req.user.email,
+    createdAt: t,
+  };
+  addBookingEvent(booking, 'ESTIMATE_SAVED', req.user.email, {
+    assignmentId: assignment.id,
+    estimate,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('ESTIMATE_SAVED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { estimateId: estimate.id, version: estimate.version, totalCents: estimate.totalCents },
+  });
+  return res.status(201).json({ data: { estimate } });
+});
+
+const authorizeSchema = z.object({
+  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER']),
+  authorizedByName: z.string().trim().max(120).nullable().optional(),
+  note: z.string().trim().max(300).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/estimate/authorize', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = authorizeSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid authorization record', details: parsed.error.flatten() });
+  }
+  const estimate = latestEstimate(booking);
+  if (!estimate) {
+    return res.status(409).json({ error: 'Save the estimate first — an authorization must attach to a written quote' });
+  }
+  const t = new Date().toISOString();
+  // Same ESTIMATE_APPROVED event the tracking timeline and the Quote
+  // tab already read — now carrying the authorization log details
+  // (method, who authorized, when) the guide requires.
+  addBookingEvent(booking, 'ESTIMATE_APPROVED', req.user.email, {
+    assignmentId: assignment.id,
+    estimateId: estimate.id,
+    method: parsed.data.method,
+    authorizedByName: parsed.data.authorizedByName || null,
+    note: parsed.data.note || null,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('ESTIMATE_APPROVED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { estimateId: estimate.id, method: parsed.data.method },
+  });
+  notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:ESTIMATE_APPROVED:${t}`);
+  return res.status(201).json({ data: { authorizationLog: authorizationLog(booking) } });
+});
+
+/* ---------------- Repair photos (before / during / after) ---------------- */
+const photoSchema = z.object({
+  category: z.enum(['BEFORE', 'DURING', 'AFTER']),
+  dataUrl: z.string().trim().min(32).max(12000000),
+  caption: z.string().trim().max(200).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/photos', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = photoSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid photo', details: parsed.error.flatten() });
+  }
+  if (!/^data:image\/(jpeg|jpg|png|webp);base64,/.test(parsed.data.dataUrl)) {
+    return res.status(400).json({ error: 'Photo must be a JPEG, PNG or WebP image' });
+  }
+  const t = new Date().toISOString();
+  const photo = {
+    id: createId(),
+    category: parsed.data.category,
+    dataUrl: parsed.data.dataUrl,
+    caption: parsed.data.caption || null,
+    at: t,
+    by: req.user.email,
+  };
+  addBookingEvent(booking, 'JOB_PHOTO_ADDED', req.user.email, {
+    assignmentId: assignment.id,
+    photo,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('JOB_PHOTO_ADDED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { photoId: photo.id, category: photo.category },
+  });
+  return res.status(201).json({ data: { photo: { ...photo, dataUrl: undefined }, photos: jobPhotos(booking).map((p) => ({ ...p })) } });
+});
+
+router.post('/provider/assignments/:id/photos/:photoId/remove', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const photo = jobPhotos(booking).find((p) => p.id === req.params.photoId);
+  if (!photo) return res.status(404).json({ error: 'Photo not found' });
+  const t = new Date().toISOString();
+  addBookingEvent(booking, 'JOB_PHOTO_REMOVED', req.user.email, {
+    assignmentId: assignment.id,
+    photoId: photo.id,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  return res.json({ data: { photos: jobPhotos(booking) } });
+});
+
+/* ---------------- Van stock + allocate to job ---------------- */
+function vanStockView(providerId) {
+  return (store.vanStock || [])
+    .filter((entry) => entry.providerId === providerId)
+    .map((entry) => {
+      const part = store.parts.find((p) => p.id === entry.partId);
+      return {
+        id: entry.id,
+        partId: entry.partId,
+        sku: part ? part.sku : null,
+        name: part ? part.name : null,
+        category: part ? part.category : null,
+        brand: part ? part.brand : null,
+        sellPriceCents: part ? part.sellPriceCents ?? null : null,
+        qty: entry.qty,
+        updatedAt: entry.updatedAt,
+      };
+    })
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+router.get('/provider/van-stock', ...providerOnly, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const catalog = store.parts
+    .filter((part) => part.active !== false)
+    .map((part) => ({
+      id: part.id,
+      sku: part.sku,
+      name: part.name,
+      category: part.category,
+      brand: part.brand || null,
+      sellPriceCents: part.sellPriceCents ?? null,
+      stockOnHand: part.stockOnHand || 0,
+    }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  return res.json({ data: { items: vanStockView(provider.id), catalog } });
+});
+
+const vanStockSetSchema = z.object({
+  partId: z.string().uuid(),
+  qty: z.number().int().min(0).max(100000),
+});
+
+router.post('/provider/van-stock', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = vanStockSetSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid van stock update', details: parsed.error.flatten() });
+  }
+  const part = store.parts.find((p) => p.id === parsed.data.partId);
+  if (!part) return res.status(404).json({ error: 'Part not found in the Parts Supply OS catalog' });
+  const t = new Date().toISOString();
+  let entry = (store.vanStock || []).find((e) => e.providerId === provider.id && e.partId === part.id);
+  if (!entry) {
+    entry = { id: createId(), providerId: provider.id, partId: part.id, qty: 0, createdAt: t, updatedAt: t };
+    store.vanStock.push(entry);
+  }
+  entry.qty = parsed.data.qty;
+  entry.updatedAt = t;
+  await persistVanStock(entry);
+  appendEvent('VAN_STOCK_UPDATED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'PROVIDER',
+    entityId: provider.id,
+    details: { partId: part.id, sku: part.sku, qty: entry.qty },
+  });
+  return res.json({ data: { items: vanStockView(provider.id) } });
+});
+
+const partsUsedSchema = z.object({
+  partId: z.string().uuid(),
+  qty: z.number().int().min(1).max(999),
+});
+
+router.post('/provider/assignments/:id/parts-used', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { provider, assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = partsUsedSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid parts-used record', details: parsed.error.flatten() });
+  }
+  const part = store.parts.find((p) => p.id === parsed.data.partId);
+  if (!part) return res.status(404).json({ error: 'Part not found in the Parts Supply OS catalog' });
+  const entry = (store.vanStock || []).find((e) => e.providerId === provider.id && e.partId === part.id);
+  if (!entry || entry.qty < parsed.data.qty) {
+    return res.status(409).json({
+      error: `Only ${entry ? entry.qty : 0} on the van — record what you actually have before allocating it to the job`,
+    });
+  }
+  const t = new Date().toISOString();
+  entry.qty -= parsed.data.qty;
+  entry.updatedAt = t;
+  await persistVanStock(entry);
+  const usage = {
+    id: createId(),
+    bookingReference: booking.referenceCode || booking.id,
+    partId: part.id,
+    qty: parsed.data.qty,
+    unitCostCents: part.unitCostCents || 0,
+    recordedBy: req.user.email,
+    createdAt: t,
+  };
+  store.partUsages.push(usage);
+  await persistPartUsage(usage);
+  addBookingEvent(booking, 'PART_USED_FROM_VAN', req.user.email, {
+    assignmentId: assignment.id,
+    partId: part.id,
+    sku: part.sku,
+    name: part.name,
+    qty: parsed.data.qty,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('PART_USED_FROM_VAN', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { partId: part.id, sku: part.sku, qty: parsed.data.qty },
+  });
+  return res.status(201).json({ data: { partsUsed: jobPartsUsed(booking), vanStock: vanStockView(provider.id) } });
+});
+
+/* ---------------- External receipts (money taken outside the app) ----------------
+ * Field money that never touches the platform's Stripe: cash, check,
+ * or a payment the customer made through an external channel. The app
+ * records THAT it was received, by whom, and how — it never collects
+ * or stores card numbers (the guide's data-safety rule).
+ */
+const receiptSchema = z.object({
+  method: z.enum(['CASH', 'CHECK', 'CARD_EXTERNAL', 'ZELLE', 'VENMO', 'OTHER']),
+  amountCents: z.number().int().min(1).max(100000000),
+  note: z.string().trim().max(300).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = receiptSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid receipt', details: parsed.error.flatten() });
+  }
+  const t = new Date().toISOString();
+  const receipt = {
+    id: createId(),
+    method: parsed.data.method,
+    amountCents: parsed.data.amountCents,
+    note: parsed.data.note || null,
+    at: t,
+    recordedBy: req.user.email,
+  };
+  addBookingEvent(booking, 'RECEIPT_RECORDED', req.user.email, {
+    assignmentId: assignment.id,
+    receipt,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('RECEIPT_RECORDED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { receiptId: receipt.id, method: receipt.method, amountCents: receipt.amountCents },
+  });
+  const receipts = jobReceipts(booking);
+  const estimate = latestEstimate(booking);
+  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
+  return res.status(201).json({
+    data: {
+      receipt,
+      receipts,
+      payments: {
+        estimateTotalCents: estimate ? estimate.totalCents : null,
+        receiptsTotalCents,
+        balanceDueCents: estimate ? Math.max(0, estimate.totalCents - receiptsTotalCents) : null,
+      },
+    },
+  });
+});
+
+/* ---------------- Close-out: the Tech Pro quality gate ----------------
+ * The guide's signature rule, enforced server-side: a job may be
+ * marked Completed ONLY when (1) a confirmed diagnosis with a
+ * recommended repair is on the record, and (2) a recorded estimate
+ * authorization exists. Payment is NOT part of the gate — an
+ * outstanding balance is tracked separately and never blocks closing.
+ * On completion the same flywheel effects as the office completion
+ * fire (review request + the customer's referral code).
+ */
+const completeJobSchema = z.object({
+  notes: z.string().trim().max(1000).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/complete', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = completeJobSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid completion request', details: parsed.error.flatten() });
+  }
+  if (booking.status === 'COMPLETED') {
+    return res.status(409).json({ error: 'Booking is already completed' });
+  }
+  const missing = [];
+  if (!diagnosisComplete(booking)) missing.push('CONFIRMED_DIAGNOSIS');
+  if (!authorizationLog(booking).length) missing.push('ESTIMATE_AUTHORIZATION');
+  if (missing.length) {
+    return res.status(409).json({
+      error: 'Quality gate: this job cannot close yet — a completed job requires a confirmed diagnosis with a recommended repair, and a recorded estimate authorization. Payment is not required to close.',
+      missing,
+    });
+  }
+  const t = new Date().toISOString();
+  booking.status = 'COMPLETED';
+  booking.completedAt = t;
+  booking.completedBy = req.user.email;
+  booking.updatedAt = t;
+  addBookingEvent(booking, 'JOB_COMPLETED', req.user.email, {
+    assignmentId: assignment.id,
+    notes: parsed.data.notes || null,
+    gate: { diagnosis: true, authorization: true },
+    confirmedBy: 'TECHNICIAN',
+  });
+  appendEvent('JOB_COMPLETED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { status: booking.status },
+  });
+  emitReport({
+    department: 'field',
+    type: 'JOB_COMPLETED',
+    title: `Job completed — ${booking.referenceCode || booking.id}`,
+    detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, customerName: booking.customer?.name || null, service: booking.appliance || null, city: booking.city || null, completedBy: req.user.email, completedAt: t, notes: parsed.data.notes || null },
+    source: 'TECH_APP',
+    reference: booking.referenceCode || null,
+    eventKey: `booking:${booking.id}:completed:report`,
+  });
+  const reviewRequests = notifyReviewRequest(booking, 'TECH_APP');
+  const { referral, created: referralCreated } = issueReferralForBooking(booking, 'TECH_APP');
+  try {
+    await advanceReferralOnCompletion(booking, 'TECH_APP');
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'referral completion advance failed', error: String(error?.message || error) }));
+  }
+  await persistBooking(booking);
+  return res.json({
+    data: {
+      completed: true,
+      referenceCode: booking.referenceCode || null,
+      completedAt: t,
+      notificationsQueued: reviewRequests.map((entry) => ({ id: entry.id, channel: entry.channel, template: entry.template, to: entry.to })),
+      referral: { code: referral.code, created: referralCreated },
+    },
+  });
 });

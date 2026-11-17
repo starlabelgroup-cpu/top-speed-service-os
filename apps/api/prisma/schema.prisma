@@ -365,6 +365,7 @@ model Provider {
 
   company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   dispatchAssignments DispatchAssignment[]
+  vanStock            VanStock[]
 
   @@index([companyId])
   @@index([active])
@@ -1118,6 +1119,7 @@ model Part {
   supplier Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
   poLines  PurchaseOrderLine[]
   usages   PartUsage[]
+  vanStock VanStock[]
 
   @@index([supplierId])
 }
@@ -1169,6 +1171,28 @@ model PartUsage {
 
   @@index([partId])
   @@index([createdAt])
+}
+
+// Tech Pro van stock (2026-11-17, from the Top Speed Tech Pro field
+// guide): the parts a provider's technicians physically carry on the
+// van. The Parts Supply OS catalog (Part) stays the system of record
+// for what a part IS; a VanStock row says how many of it this provider
+// has on the truck. Allocating a part to a job decrements the van row
+// and writes a PartUsage (the installed record) — the van can never go
+// negative. Set/read through the provider-gated Tech App routes only.
+model VanStock {
+  id         String   @id @default(uuid()) @db.Uuid
+  providerId String   @db.Uuid
+  partId     String   @db.Uuid
+  qty        Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  part     Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, partId])
+  @@index([providerId])
 }
 
 // QuickBooks finance integration (2026-11-11), BUILT DARK: the deployed

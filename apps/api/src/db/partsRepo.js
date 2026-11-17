@@ -85,6 +85,34 @@ function toStoreUsage(row) {
   };
 }
 
+function toStoreVanStock(row) {
+  return {
+    id: row.id,
+    providerId: row.providerId,
+    partId: row.partId,
+    qty: row.qty || 0,
+    createdAt: iso(row.createdAt),
+    updatedAt: iso(row.updatedAt),
+  };
+}
+
+export async function persistVanStock(entry) {
+  if (!DATABASE_ENABLED || !entry?.id) return;
+  try {
+    const row = {
+      id: entry.id,
+      providerId: entry.providerId,
+      partId: entry.partId,
+      qty: entry.qty || 0,
+      createdAt: new Date(entry.createdAt),
+      updatedAt: new Date(entry.updatedAt || entry.createdAt),
+    };
+    await db().vanStock.upsert({ where: { id: row.id }, update: row, create: row });
+  } catch (error) {
+    console.error('persistVanStock failed', error?.message || error);
+  }
+}
+
 export async function persistSupplier(supplier) {
   if (!DATABASE_ENABLED || !supplier?.id) return;
   try {
@@ -208,12 +236,13 @@ export async function hydrateParts() {
   } catch (error) {
     console.error('ensurePartnerVendors failed (partner vendors degraded, parts hydration continues)', error?.message || error);
   }
-  const [supplierRows, partRows, poRows, lineRows, usageRows] = await Promise.all([
+  const [supplierRows, partRows, poRows, lineRows, usageRows, vanStockRows] = await Promise.all([
     prisma.supplier.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.part.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.purchaseOrder.findMany({ orderBy: { createdAt: 'asc' } }),
     prisma.purchaseOrderLine.findMany(),
     prisma.partUsage.findMany({ orderBy: { createdAt: 'asc' } }),
+    prisma.vanStock.findMany({ orderBy: { createdAt: 'asc' } }),
   ]);
   store.suppliers = supplierRows.map(toStoreSupplier);
   store.parts = partRows.map(toStorePart);
@@ -224,5 +253,6 @@ export async function hydrateParts() {
   }
   store.purchaseOrders = poRows.map((row) => toStorePurchaseOrder(row, linesByPo.get(row.id) || []));
   store.partUsages = usageRows.map(toStoreUsage);
+  store.vanStock = vanStockRows.map(toStoreVanStock);
   return store.parts.length;
 }

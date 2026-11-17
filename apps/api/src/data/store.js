@@ -107,6 +107,9 @@ export const store = {
   parts: [],
   purchaseOrders: [],
   partUsages: [],
+  // Tech Pro van stock (2026-11-17): per-provider on-van quantities,
+  // hydrated from the VanStock table alongside the rest of Parts OS.
+  vanStock: [],
   // QuickBooks finance integration (built dark): connection state +
   // synced snapshots + invoice mirror, hydrated from the Finance*
   // tables. financeConnection stays null until the first real sync —
