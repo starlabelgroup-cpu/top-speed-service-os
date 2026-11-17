@@ -40,6 +40,7 @@ import twilioVoiceRouter from './routes/twilioVoice.js';
 import referralsRouter from './routes/referrals.js';
 import superappRouter from './routes/superapp.js';
 import handoffRouter from './routes/handoff.js';
+import enginesRouter from './routes/engines.js';
 import { authRateLimit, generalRateLimit } from './middleware/rateLimit.js';
 import { DATABASE_ENABLED, databaseStatus } from './db/client.js';
 import { hydrateStore } from './db/bookingsRepo.js';
@@ -181,6 +182,7 @@ app.use('/api/v1', twilioVoiceRouter);
 app.use('/api/v1', referralsRouter);
 app.use('/api/v1', superappRouter);
 app.use('/api/v1', handoffRouter);
+app.use('/api/v1', enginesRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

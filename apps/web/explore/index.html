@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explore Top Speed — Search, Recommendations, Price Preview &amp; Honest Comparisons | Top Speed Appliance</title>
+<meta name="description" content="Four tools, one page: search every Top Speed service, symptom, city, offer and app; get a recommendation for your situation; preview exactly how Top Speed pricing works (never a made-up quote); and compare published facts against other local repair companies.">
+<link rel="canonical" href="https://topspeedserviceos.com/explore">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Top Speed Appliance">
+<meta property="og:title" content="Explore Top Speed — Search · Recommend · Preview · Compare">
+<meta property="og:description" content="Search the whole platform, get a recommendation, preview the real price structure, and compare published facts — 65 cities, 131 landing pages, one honest page.">
+<meta property="og:url" content="https://topspeedserviceos.com/explore">
+<meta property="og:image" content="https://topspeedserviceos.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#0C162B">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--navy:#0C162B;--navy2:#12233d;--red:#E94E5C;--red2:#E8322E;--blue:#1473ff;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--line:#dbe5f1;--green:#0f7a3d;--amber:#9a6a00}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none;color:var(--blue)}
+header.site{background:#000;color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap;border-bottom:3px solid var(--red2)}
+header.site .brand{color:#fff;font-family:var(--font-head);font-weight:700;font-size:20px;letter-spacing:.02em}
+header.site .brand span{color:var(--red)}
+header.site nav{margin-left:auto;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+header.site nav a{color:#cfe0f5;font-size:15px}
+.tse-call{background:var(--red2);color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;display:inline-block;white-space:nowrap}
+.checker{height:12px;background:repeating-conic-gradient(#0C162B 0 25%,#fff 0 50%);background-size:16px 16px;border-top:1px solid #d5dde8;border-bottom:1px solid #d5dde8}
+.hero{background:linear-gradient(180deg,#081226,#0C162B 60%,#12233d);color:#fff;text-align:center;padding:54px 24px 46px}
+.hero h1{font-size:clamp(30px,5vw,46px);margin-bottom:12px}
+.hero h1 .accent{color:var(--red)}
+.hero p{color:#b9cdf0;font-size:17.5px;max-width:780px;margin:0 auto;line-height:1.55}
+.stats{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+.stat{background:#0a1a33;border:1px solid #1d3a6e;border-radius:14px;padding:13px 22px;min-width:150px}
+.stat .n{font-size:25px;font-weight:800;color:#fff;font-family:var(--font-display)}
+.stat .l{color:#9db6d8;font-size:13px;margin-top:2px}
+.wrap{max-width:1060px;margin:0 auto;padding:0 22px}
+section.engine{padding:52px 0 8px}
+section.engine h2{font-size:clamp(24px,3.6vw,33px);margin-bottom:8px}
+section.engine h2 .accent{color:var(--red2)}
+section.engine .lede{color:var(--muted);font-size:16.5px;line-height:1.6;max-width:820px;margin-bottom:22px}
+.searchbar{display:flex;gap:10px;flex-wrap:wrap}
+.searchbar input{flex:1;min-width:240px;padding:16px 18px;border-radius:12px;border:2px solid #c4d3e6;font-size:17px;font-family:inherit;color:var(--ink);background:#fff}
+.searchbar input:focus{outline:none;border-color:var(--blue)}
+.btn{background:var(--red2);color:#fff;padding:14px 26px;border-radius:10px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:2px solid #c4d3e6}
+.btn:disabled{opacity:.55;cursor:wait}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.chips .clabel{color:var(--muted);font-size:13.5px;margin-right:2px}
+.chip{background:#eef3fa;color:var(--navy);border:1px solid #c9d8ec;border-radius:99px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit}
+.chip:hover{background:#dde9f8}
+.results{margin-top:20px;display:none}
+.results.open{display:block}
+.rcount{font-size:14px;color:var(--muted);margin-bottom:12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{border:1px solid var(--line);border-radius:14px;padding:18px;background:#fff;display:flex;flex-direction:column;gap:8px}
+.card:hover{border-color:#a9c2e2;box-shadow:0 4px 18px rgba(12,22,43,.07)}
+.card .top{display:flex;align-items:center;gap:10px}
+.card h3{font-size:17.5px;line-height:1.3}
+.card p{color:var(--muted);font-size:14.5px;line-height:1.55;flex:1}
+.card .go{font-weight:700;font-size:14.5px}
+.badge{flex:none;font-size:11px;font-weight:800;border-radius:99px;padding:3px 9px;letter-spacing:.04em;text-transform:uppercase}
+.badge.service{background:#e2f4e8;color:#0f7a3d}
+.badge.city{background:#e3edff;color:#0a3a8a}
+.badge.symptom{background:#fde8e8;color:#a3121a}
+.badge.offer{background:#fff3d6;color:var(--amber)}
+.badge.app{background:#e7e3ff;color:#3d2f9e}
+.badge.answer{background:#eef1f5;color:#43536b}
+.badge.safety{background:#a3121a;color:#fff}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:16px}
+.field label{display:block;font-size:13px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field input,.field select{width:100%;padding:13px 14px;border-radius:10px;border:2px solid #c4d3e6;font-size:16px;font-family:inherit;color:var(--ink);background:#fff}
+.field input:focus,.field select:focus{outline:none;border-color:var(--blue)}
+.rec .why{border-left:3px solid var(--blue);padding-left:10px}
+.kind{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.preview{border:2px solid var(--navy);border-radius:16px;overflow:hidden;display:none}
+.preview.open{display:block}
+.preview .phead{background:var(--navy);color:#fff;padding:16px 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.preview .phead b{font-family:var(--font-head);font-size:19px}
+.pill{font-size:11.5px;font-weight:800;letter-spacing:.06em;background:var(--red);color:#fff;border-radius:99px;padding:4px 11px;text-transform:uppercase}
+.preview table{width:100%;border-collapse:collapse}
+.preview td{padding:14px 22px;border-bottom:1px solid var(--line);font-size:15.5px;vertical-align:top}
+.preview td.amt{text-align:right;font-weight:800;white-space:nowrap;font-size:16.5px}
+.preview td .note{display:block;color:var(--muted);font-size:13.5px;font-weight:400;margin-top:3px;line-height:1.5}
+.disclaimer{background:#fff8e6;border-top:1px solid #ecd9a0;padding:16px 22px;font-size:14.5px;line-height:1.6;color:#5c4a12}
+.disclaimer b{color:#7a5d00}
+.pcta{padding:16px 22px;background:var(--light)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;display:none}
+.tablewrap.open{display:block}
+table.compare{border-collapse:collapse;min-width:860px;width:100%;font-size:14px}
+table.compare th,table.compare td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;line-height:1.5}
+table.compare thead th{background:var(--navy);color:#fff;font-family:var(--font-head);font-size:15.5px;position:sticky;top:0}
+table.compare thead th.us{background:var(--red2)}
+table.compare td.dim{font-weight:700;background:#f7fafd;min-width:170px}
+table.compare td.us{background:#fdf1f1;font-weight:600}
+table.compare .src{display:block;margin-top:5px;font-size:12px;color:var(--muted);font-weight:400}
+.method{font-size:13.5px;color:var(--muted);line-height:1.6;margin-top:12px;display:none}
+.method.open{display:block}
+.err{background:#fdecec;border:1px solid #f0b9b9;color:#7c1414;border-radius:12px;padding:14px 18px;font-size:15px;display:none;margin-top:16px}
+.err.open{display:block}
+footer.site{margin-top:64px;background:var(--navy);color:#b9cdf0;padding:38px 24px 30px}
+footer.site .cols{max-width:1060px;margin:0 auto;display:flex;gap:34px;flex-wrap:wrap}
+footer.site h4{color:#fff;margin-bottom:10px;font-size:15px}
+footer.site a{color:#b9cdf0;display:block;font-size:14px;padding:3px 0}
+footer.site .fine{max-width:1060px;margin:24px auto 0;border-top:1px solid #1d3a6e;padding-top:16px;font-size:13px;line-height:1.6;color:#8ea6c9}
+@media(max-width:640px){header.site{padding:10px 16px}header.site nav{gap:12px}.preview td{padding:12px 14px}}
+</style>
+</head>
+<body>
+<header class="site">
+  <a class="brand" href="/">TOP SPEED <span>APPLIANCE</span></a>
+  <nav>
+    <a href="/service">Services</a>
+    <a href="/explore">Explore</a>
+    <a href="/track">Track My Tech</a>
+    <a href="/book">Book</a>
+    <a class="tse-call" href="tel:+19549317997">Call 954-931-7997</a>
+  </nav>
+</header>
+<div class="checker" aria-hidden="true"></div>
+
+<div class="hero">
+  <h1>Explore Top Speed — <span class="accent">find it, compare it, know the price structure</span></h1>
+  <p>Four tools that run on Top Speed's published facts — nothing invented, nothing estimated behind your back. Search the whole platform, get a recommendation for your situation, preview exactly how pricing works, and compare us against the field on facts each company publishes itself.</p>
+  <div class="stats">
+    <div class="stat"><div class="n">65</div><div class="l">cities covered</div></div>
+    <div class="stat"><div class="n">131</div><div class="l">landing pages published</div></div>
+    <div class="stat"><div class="n">9</div><div class="l">core repair services</div></div>
+    <div class="stat"><div class="n">12</div><div class="l">published offers</div></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- ============================ SEARCH ============================ -->
+  <section class="engine" id="search">
+    <h2>Speedy <span class="accent">Search</span></h2>
+    <p class="lede">One search box over everything Top Speed publishes — the 9 services, common symptoms, all 65 cities and their landing pages, the 12 offers, every app, and Speedy's 82-entry knowledge base. It runs on keyword + synonym matching (try "fridge"), so it answers even when the AI provider is down.</p>
+    <form class="searchbar" id="searchForm">
+      <input id="searchInput" type="search" placeholder="Try: fridge not cooling · dryer vent · sell my mangoes · washer repair pompano" aria-label="Search Top Speed">
+      <button class="btn" type="submit" id="searchBtn">Search</button>
+    </form>
+    <div class="chips">
+      <span class="clabel">Popular:</span>
+      <button class="chip" type="button" data-q="fridge not cooling">fridge not cooling</button>
+      <button class="chip" type="button" data-q="dryer vent cleaning">dryer vent</button>
+      <button class="chip" type="button" data-q="sell my mangoes">sell my mangoes</button>
+      <button class="chip" type="button" data-q="how much is the diagnostic">diagnostic price</button>
+      <button class="chip" type="button" data-q="property manager units">property managers</button>
+      <button class="chip" type="button" data-q="track my technician">track my tech</button>
+    </div>
+    <div class="err" id="searchErr"></div>
+    <div class="results" id="searchResults"></div>
+  </section>
+
+  <!-- ========================== RECOMMEND =========================== -->
+  <section class="engine" id="recommend">
+    <h2>Recommendations <span class="accent">Engine</span></h2>
+    <p class="lede">Answer three quick questions and get the right door — the right service, the right booking path (the classic form first, always), and the right app or partner for your situation. Every recommendation says <i>why</i>, in plain words.</p>
+    <form id="recForm">
+      <div class="form">
+        <div class="field">
+          <label for="recAppliance">Appliance</label>
+          <select id="recAppliance">
+            <option value="">Not sure / other</option>
+            <option>Refrigerator</option>
+            <option>Washer</option>
+            <option>Dryer</option>
+            <option>Oven/Range</option>
+            <option>Dishwasher</option>
+            <option>Freezer/Ice Maker</option>
+            <option>Microwave</option>
+            <option>Garbage Disposal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="recSymptom">What's it doing?</label>
+          <input id="recSymptom" type="text" placeholder="e.g. not cooling, leaking, vent clogged with lint">
+        </div>
+        <div class="field">
+          <label for="recAudience">I am a…</label>
+          <select id="recAudience">
+            <option value="homeowner">Homeowner</option>
+            <option value="business">Business</option>
+            <option value="property-manager">Property manager</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="recCity">City (optional)</label>
+          <input id="recCity" type="text" placeholder="e.g. Pompano Beach">
+        </div>
+      </div>
+      <button class="btn blue" type="submit" id="recBtn">Get my recommendation</button>
+    </form>
+    <div class="err" id="recErr"></div>
+    <div class="results" id="recResults"></div>
+  </section>
+
+  <!-- =========================== ESTIMATOR =========================== -->
+  <section class="engine" id="estimator">
+    <h2>Price Estimator <span class="accent">Preview</span></h2>
+    <p class="lede">This is a <b>preview of how Top Speed pricing works</b> — the published structure, shown exactly as published. It is <b>not</b> a repair quote and never invents a total for your job: your exact price is set in the written quote after the diagnostic visit, and no work begins without your approval.</p>
+    <form id="estForm">
+      <div class="form">
+        <div class="field">
+          <label for="estAppliance">Appliance</label>
+          <select id="estAppliance">
+            <option>Refrigerator</option>
+            <option>Washer</option>
+            <option>Dryer</option>
+            <option>Oven/Range</option>
+            <option>Dishwasher</option>
+            <option>Freezer/Ice Maker</option>
+            <option>Microwave</option>
+            <option>Garbage Disposal</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="estType">Service type</label>
+          <select id="estType">
+            <option value="repair">Repair</option>
+            <option value="installation">Installation</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="estAudience">Customer type</label>
+          <select id="estAudience">
+            <option value="homeowner">Residential</option>
+            <option value="business">Commercial / business</option>
+            <option value="property-manager">Property manager</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn" type="submit" id="estBtn">Show the preview</button>
+    </form>
+    <div class="err" id="estErr"></div>
+    <div class="preview" id="estPreview" style="margin-top:20px"></div>
+  </section>
+
+  <!-- ============================ COMPARE ============================ -->
+  <section class="engine" id="compare">
+    <h2>Comparison <span class="accent">Engine</span></h2>
+    <p class="lede">Top Speed against the companies Broward customers actually compare — on <b>published facts only</b>. Every figure was read on that company's own public pages on the date shown, and every cell links its source. Where a company publishes no figure, the cell says so instead of guessing.</p>
+    <button class="btn blue" type="button" id="cmpBtn">Load the comparison</button>
+    <div class="err" id="cmpErr"></div>
+    <div class="tablewrap" id="cmpWrap" style="margin-top:20px"></div>
+    <p class="method" id="cmpMethod"></p>
+  </section>
+
+</div>
+
+<footer class="site">
+  <div class="cols">
+    <div>
+      <h4>Book &amp; Track</h4>
+      <a href="/book">Book a Repair</a>
+      <a href="/track">Track My Tech</a>
+      <a href="/service">Services</a>
+      <a href="/service-areas-directory">Service Areas — 65 Cities</a>
+    </div>
+    <div>
+      <h4>Apps &amp; Doors</h4>
+      <a href="/app">Appliance Connect</a>
+      <a href="/connect-pro-app">Appliance Connect Pro</a>
+      <a href="/appliance-pro">Appliance Pro (Commercial)</a>
+      <a href="https://www.pepperlists.com">Pepper Lists</a>
+      <a href="https://www.cleanoutvents.com">Cleanout Vents</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="/offers-rewards">Offers &amp; Rewards</a>
+      <a href="/refer">Refer &amp; Earn</a>
+      <a href="/about">About Top Speed</a>
+      <a href="/legal">Legal</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+    <div>
+      <h4>Contact</h4>
+      <a href="tel:+19549317997">(954) 931-7997</a>
+      <a href="mailto:service@topspeedappliance.net">service@topspeedappliance.net</a>
+      <a href="/speedy">Ask Speedy</a>
+    </div>
+  </div>
+  <p class="fine">Top Speed Appliance LLC · 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073 · Open Monday–Friday, 8 AM–7 PM · Coverage: 65 cities and 131 landing pages across Broward, Palm Beach &amp; Miami-Dade. Residential pricing: $99 diagnostic (collected at booking, credited toward your repair) · $210 flat repair labor · $150 flat installation labor · parts priced in your written quote. Commercial work is custom-quoted.</p>
+</footer>
+
+<script>
+var API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:4499/api/v1'
+  : 'https://top-speed-service-os.vercel.app/api/v1';
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function showErr(id,msg){var e=document.getElementById(id);e.textContent=msg||'';e.className='err'+(msg?' open':'');}
+function badge(type,safety){
+  if(safety) return '<span class="badge safety">Safety</span>';
+  return '<span class="badge '+esc(type.toLowerCase())+'">'+esc(type)+'</span>';
+}
+
+/* ------------------------------ SEARCH ------------------------------ */
+function runSearch(q){
+  if(!q) return;
+  var btn=document.getElementById('searchBtn'); btn.disabled=true;
+  showErr('searchErr','');
+  fetch(API+'/engines/search?q='+encodeURIComponent(q))
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ showErr('searchErr',(res.j&&res.j.error)||'Search failed — please try again.'); return; }
+      var d=res.j.data||{}; var list=d.results||[];
+      var box=document.getElementById('searchResults');
+      var html='<p class="rcount">'+list.length+' result'+(list.length===1?'':'s')+' for &ldquo;'+esc(d.query||q)+'&rdquo; — ranked from Top Speed\'s published services, symptoms, cities, offers, apps and knowledge base.</p>';
+      if(!list.length){
+        html+='<div class="cards"><div class="card"><h3>No direct match</h3><p>Try an appliance (fridge, washer), a symptom (not cooling, leaking), a city, or ask Speedy — Speedy always has an answer.</p><a class="go" href="/speedy">Ask Speedy &rarr;</a></div></div>';
+      } else {
+        html+='<div class="cards">'+list.map(function(r){
+          return '<div class="card"><div class="top">'+badge(r.type,r.safety)+'</div><h3>'+esc(r.title)+'</h3><p>'+esc(r.snippet)+'</p>'
+            +(r.url?'<a class="go" href="'+esc(r.url)+'">Open &rarr;</a>':'<a class="go" href="/speedy">Ask Speedy about this &rarr;</a>')
+            +'</div>';
+        }).join('')+'</div>';
+      }
+      box.innerHTML=html; box.className='results open';
+    })
+    .catch(function(){ btn.disabled=false; showErr('searchErr','Search could not reach the platform just now — please try again in a moment.'); });
+}
+document.getElementById('searchForm').addEventListener('submit',function(ev){
+  ev.preventDefault(); runSearch(document.getElementById('searchInput').value.trim());
+});
+Array.prototype.forEach.call(document.querySelectorAll('.chip[data-q]'),function(chip){
+  chip.addEventListener('click',function(){
+    document.getElementById('searchInput').value=chip.getAttribute('data-q');
+    runSearch(chip.getAttribute('data-q'));
+  });
+});
+
+/* ----------------------------- RECOMMEND ----------------------------- */
+document.getElementById('recForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var btn=document.getElementById('recBtn'); btn.disabled=true;
+  showErr('recErr','');
+  var payload={
+    appliance:document.getElementById('recAppliance').value,
+    symptom:document.getElementById('recSymptom').value.trim(),
+    audience:document.getElementById('recAudience').value,
+    city:document.getElementById('recCity').value.trim()
+  };
+  fetch(API+'/engines/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ showErr('recErr','The recommendation engine could not answer just now — please try again.'); return; }
+      var recs=(res.j.data&&res.j.data.recommendations)||[];
+      var box=document.getElementById('recResults');
+      var html='<p class="rcount">'+recs.length+' recommendation'+(recs.length===1?'':'s')+' — in the order Top Speed would route you:</p><div class="cards">'
+        +recs.map(function(r,i){
+          return '<div class="card rec"><div class="top"><span class="kind">'+(i+1)+'. '+esc(r.kind)+'</span></div><h3>'+esc(r.title)+'</h3><p class="why">'+esc(r.why)+'</p>'
+            +(r.action&&r.action.type==='call'?'<a class="go" href="tel:+1'+esc(r.action.phone.replace(/\D/g,''))+'">'+esc(r.action.label)+' &rarr;</a>':'')
+            +(r.url?'<a class="go" href="'+esc(r.url)+'">Open &rarr;</a>':'')
+            +'</div>';
+        }).join('')+'</div>';
+      box.innerHTML=html; box.className='results open';
+    })
+    .catch(function(){ btn.disabled=false; showErr('recErr','The recommendation engine could not reach the platform just now — please try again in a moment.'); });
+});
+
+/* ----------------------------- ESTIMATOR ----------------------------- */
+document.getElementById('estForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var btn=document.getElementById('estBtn'); btn.disabled=true;
+  showErr('estErr','');
+  var payload={
+    appliance:document.getElementById('estAppliance').value,
+    serviceType:document.getElementById('estType').value,
+    audience:document.getElementById('estAudience').value
+  };
+  fetch(API+'/engines/estimate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ showErr('estErr','The preview could not load just now — please try again.'); return; }
+      var d=res.j.data||{};
+      var rows=(d.lines||[]).map(function(l){
+        return '<tr><td>'+esc(l.label)+'<span class="note">'+esc(l.note)+'</span></td><td class="amt">'+esc(l.display)+'</td></tr>';
+      }).join('');
+      var box=document.getElementById('estPreview');
+      box.innerHTML='<div class="phead"><b>'+esc(d.label||'Price Estimator Preview')+'</b><span class="pill">Preview — not a quote</span>'
+        +(d.appliance?'<span>'+esc(d.appliance)+' · '+esc(d.serviceType)+'</span>':'')
+        +'</div><table>'+rows+'</table>'
+        +'<div class="disclaimer"><b>Read this first:</b> '+esc(d.disclaimer||'')+'</div>'
+        +(d.cta?'<div class="pcta"><a class="btn" href="'+esc(d.cta.url)+'">'+esc(d.cta.label)+'</a></div>':'');
+      box.className='preview open';
+    })
+    .catch(function(){ btn.disabled=false; showErr('estErr','The preview could not reach the platform just now — please try again in a moment.'); });
+});
+
+/* ------------------------------ COMPARE ------------------------------ */
+document.getElementById('cmpBtn').addEventListener('click',function(){
+  var btn=this; btn.disabled=true;
+  showErr('cmpErr','');
+  fetch(API+'/engines/compare')
+    .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ showErr('cmpErr','The comparison could not load just now — please try again.'); return; }
+      var d=res.j.data||{}; var dims=d.dimensions||[]; var companies=d.companies||[];
+      var html='<table class="compare"><thead><tr><th>What you\'re comparing</th>'
+        +companies.map(function(c){return '<th class="'+(c.highlight?'us':'')+'">'+esc(c.name)+'</th>';}).join('')
+        +'</tr></thead><tbody>'
+        +dims.map(function(dim){
+          return '<tr><td class="dim">'+esc(dim.label)+'</td>'
+            +companies.map(function(c){
+              var cell=(c.cells||{})[dim.id]||{};
+              var src='';
+              if(cell.sourceUrl) src='<a class="src" href="'+esc(cell.sourceUrl)+'" target="_blank" rel="noopener">Source · checked '+esc(cell.checkedDate||'')+'</a>';
+              else if(cell.sourceNote) src='<span class="src">Checked '+esc(cell.checkedDate||'')+'</span>';
+              return '<td class="'+(c.highlight?'us':'')+'">'+esc(cell.value||'—')+src+'</td>';
+            }).join('')+'</tr>';
+        }).join('')+'</tbody></table>';
+      var wrap=document.getElementById('cmpWrap');
+      wrap.innerHTML=html; wrap.className='tablewrap open';
+      var m=document.getElementById('cmpMethod');
+      m.textContent=(d.method||'')+' Overall check date: '+(d.checkedDate||'')+'.';
+      m.className='method open';
+      btn.textContent='Refresh the comparison';
+    })
+    .catch(function(){ btn.disabled=false; showErr('cmpErr','The comparison could not reach the platform just now — please try again in a moment.'); });
+});
+
+/* Deep links: /explore?q=... runs the search on arrival. */
+(function(){
+  var params=new URLSearchParams(location.search);
+  var q=params.get('q');
+  if(q){ document.getElementById('searchInput').value=q; runSearch(q); }
+  if(location.hash==='#compare'){ document.getElementById('cmpBtn').click(); }
+})();
+</script>
+<script src="/speedy-widget.js" defer></script>
+</body>
+</html>
