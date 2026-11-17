@@ -11,6 +11,7 @@ import {
   updateLayer2Settings,
   verifyLayer2Code,
 } from '../services/layer2.js';
+import { changeStateJson } from '../services/tempPasswords.js';
 
 /**
  * Layer 2 — 2-step sign-in routes (2026-11-16). Mounted at /api/v1 so
@@ -77,7 +78,13 @@ router.post('/auth/layer2/verify', async (req, res) => {
     return res.status(400).json({ error: 'Invalid code-step request', details: parsed.error.flatten() });
   }
   try {
-    const { user, speedyVerified } = await verifyLayer2Code(parsed.data.challenge, parsed.data.code);
+    const { user, speedyVerified, tempAuth } = await verifyLayer2Code(parsed.data.challenge, parsed.data.code);
+    // Temporary-password sign-in (2026-11-17): the code step passed,
+    // but a temporary password never opens a session — the pipeline
+    // ends in the forced password change.
+    if (tempAuth) {
+      return res.json(await changeStateJson(user, { speedyVerified }));
+    }
     const terms = await termsStatusForUser(user.id);
     return res.json({
       user: publicUser(user),

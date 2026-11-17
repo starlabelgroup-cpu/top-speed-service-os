@@ -159,6 +159,32 @@ model User {
   // customer / business / PM / advertiser accounts, and null on the
   // Master account (COMPANY_OWNER displays "MASTER" instead).
   employeeNumber String? @unique
+  // Temporary passwords (2026-11-17): the office (Master, via Work Time
+  // Account Access) can issue a TEMPORARY password for any account.
+  // The holder signs in with it, passes the same gates as always
+  // (Speedy Verify, then Layer 2), and is then FORCED to set their own
+  // password — no session exists until they do, and the temporary
+  // password dies at that moment. tempPasswordHash is a scrypt hash
+  // (services/passwords format); the plain temporary password is shown
+  // to the Master exactly once at issue and never stored or logged.
+  // mustChangePassword marks an account mid-flow. tempFailedAttempts /
+  // tempLockedUntil give the temporary credential the platform's
+  // lockout discipline (5 wrong → 15 minutes, mirroring Speedy
+  // Verify). tempChangeJti is the single-use id of the live
+  // change-token the completed sign-in pipeline hands out.
+  // tempIssuedAt / tempIssuedById / passwordChangedAt are the office's
+  // audit trail, surfaced as status chips in Work Time. The Master
+  // account is exempt by construction (Rule Zero): issuance to a
+  // COMPANY_OWNER account is refused and login never temp-gates him.
+  tempPasswordHash      String?
+  tempPasswordExpiresAt DateTime?
+  mustChangePassword    Boolean   @default(false)
+  tempIssuedAt          DateTime?
+  tempIssuedById        String?   @db.Uuid
+  tempFailedAttempts    Int       @default(0)
+  tempLockedUntil       DateTime?
+  tempChangeJti         String?
+  passwordChangedAt     DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

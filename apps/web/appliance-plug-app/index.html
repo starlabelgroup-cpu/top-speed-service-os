@@ -362,6 +362,7 @@ function pgLogin(){
   pgMsg('pgMsg','Signing in…');
   pgApi('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('pgLiEmail').value.trim(),password:document.getElementById('pgLiPass').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/appliance-plug-app'); return; }
       if(j && j.verifyRequired && j.challenge){
         pgSvChallenge=j.challenge;
         document.getElementById('pgSvStep').style.display='';
@@ -377,6 +378,7 @@ function pgVerify(){
   if(!pgSvChallenge){ pgMsg('pgMsg','Sign in with your password first, then enter your code.',true); return; }
   pgApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:pgSvChallenge,code:document.getElementById('pgSvCode').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/appliance-plug-app'); return; }
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; TSOSLayer2.run(j,{api:PG_API,onSession:function(s){ pgSaveTok(s.token); pgBoot(); },onCancel:function(){ pgMsg('pgMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
       pgSvChallenge=null; document.getElementById('pgSvStep').style.display='none'; pgSaveTok(j.token); pgBoot(); })
     .catch(function(e){ pgMsg('pgMsg',e.message,true); });
@@ -444,7 +446,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" data-category="PARTS_SUPPLY" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PARTS_SUPPLY" defer></script>
 <script>
 function plgToggle(open){
   document.getElementById('plgDrawer').classList.toggle('on', !!open);

@@ -162,11 +162,12 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
   </div>
 
   <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 19.5c.6-2.9 2.7-4.4 5.5-4.4s4.9 1.5 5.5 4.4"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.3M18.5 15.4c1.2.7 1.9 1.9 2.1 4.1"/></svg>Accounts — passwords, codes &amp; 2-step</h2>
-  <input class="search" id="aSearch" type="search" placeholder="Search by name, email, or employee number (TS-1001)…">
+  <p class="note" style="margin:0 0 12px">Every account — employees, contractors, customers and vendors — is monitored here. <b>Temporary passwords:</b> issue one on any account below and hand it to the holder. They sign in with it, pass the same Speedy Verify and Layer 2 steps as always, and must set their own password before anything opens — the temporary password then stops working. It expires 72 hours after issue; reissuing replaces it. This console is office-only: holders never see it.</p>
+  <input class="search" id="aSearch" type="search" placeholder="Search by name, email, employee number (TS-1001), group or access point…">
   <div id="aList" style="margin-top:14px"><p class="note"><span class="spin"></span> Loading accounts…</p></div>
   <div class="codebanner" id="aBanner"></div>
 
-  <footer>Work Time Account Access is a Master-only console. The Master (COMPANY_OWNER) account can never be created, deactivated, demoted, or deleted here — and resetting its password always requires the current password. Access codes and passwords are stored hashed only; a code is shown once, when it is issued.</footer>
+  <footer>Work Time Account Access is a Master-only console. The Master (COMPANY_OWNER) account can never be created, deactivated, demoted, or deleted here — and resetting its password always requires the current password. Access codes, passwords and temporary passwords are stored hashed only; a code or temporary password is shown once, when it is issued.</footer>
 </div>
 </div>
 
@@ -346,14 +347,25 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
     if(l.flagOn) return '<span class="pill ok">LAYER 2 — REQUIRED</span>';
     return '<span class="pill">LAYER 2 — GRANDFATHERED (OFF)</span>';
   }
+  function fmtWhen(iso){ try { return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e){ return ''; } }
+  function tempChip(u){
+    if(u.master) return '<span class="pill master">TEMP PASSWORD — MASTER EXEMPT</span>';
+    var t=u.temp||{};
+    if(t.status==='ACTIVE') return '<span class="pill warn">TEMP PASSWORD — ACTIVE UNTIL '+esc(fmtWhen(t.expiresAt))+'</span>';
+    if(t.status==='EXPIRED') return '<span class="pill warn">TEMP PASSWORD — EXPIRED</span>';
+    if(t.status==='PASSWORD_SET_BY_USER') return '<span class="pill ok">PASSWORD SET BY USER'+(t.passwordChangedAt?' · '+esc(fmtWhen(t.passwordChangedAt)):'')+'</span>';
+    return '<span class="pill">TEMP PASSWORD — NONE</span>';
+  }
   function rowHtml(u){
     var h='<div class="acct" data-uid="'+esc(u.id)+'">';
     h+='<div class="r1"><div><span class="nm">'+esc(nameOf(u))+'</span><br><span class="em">'+esc(u.email)+'</span></div>';
     h+='<div>'+(u.master?'<span class="pill master">MASTER — OWNER ACCOUNT</span>':(u.employeeNumber?'<span class="pill emp">'+esc(u.employeeNumber)+'</span>':''))+'</div></div>';
-    h+='<div class="meta"><span class="pill">'+esc(u.surfaceLabel||'')+'</span>'+verifyChip(u)+layer2Chip(u)+(u.active?'':'<span class="pill warn">INACTIVE</span>')+'</div>';
+    h+='<div class="meta"><span class="pill">'+esc(u.surfaceLabel||'')+'</span>'+verifyChip(u)+layer2Chip(u)+tempChip(u)+(u.active?'':'<span class="pill warn">INACTIVE</span>')+'</div>';
     h+='<div class="acts">';
     h+='<button class="btn ghost small" data-act="reset" type="button">Reset password</button>';
     if(!u.master){
+      h+='<button class="btn ghost small" data-act="tissue" type="button">'+((u.temp&&(u.temp.status==='ACTIVE'||u.temp.status==='EXPIRED'))?'Reissue temp password':'Issue temp password')+'</button>';
+      if(u.temp&&(u.temp.status==='ACTIVE'||u.temp.status==='EXPIRED')) h+='<button class="btn ghost small" data-act="trevoke" type="button">Revoke temp</button>';
       h+='<button class="btn ghost small" data-act="issue" type="button">'+((u.verify&&u.verify.hasActiveCode)?'Reset access code':'Issue access code')+'</button>';
       if(u.verify&&u.verify.hasActiveCode) h+='<button class="btn ghost small" data-act="revoke" type="button">Revoke code</button>';
       h+='<button class="btn ghost small" data-act="vtoggle" type="button">Speedy Verify: '+((u.verify&&u.verify.required)?'on → turn off':'off → turn on')+'</button>';
@@ -386,6 +398,18 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
     var b=document.getElementById('aBanner'); b.className='codebanner show'; b.innerHTML=html;
     b.scrollIntoView({ behavior:'smooth', block:'center' });
   }
+  document.getElementById('aBanner').addEventListener('click', function(ev){
+    var t=ev.target;
+    var pw=t && t.getAttribute ? t.getAttribute('data-copytemp') : null;
+    if(!pw) return;
+    function done(){ t.textContent='Copied'; setTimeout(function(){ t.textContent='Copy'; }, 1600); }
+    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(pw).then(done).catch(done); }
+    else {
+      var ta=document.createElement('textarea'); ta.value=pw; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta); done();
+    }
+  });
   document.getElementById('aList').addEventListener('click', function(ev){
     var t=ev.target;
     var acctEl=t.closest ? t.closest('.acct') : null;
@@ -416,6 +440,24 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
     var act=t.getAttribute('data-act');
     if(!act) return;
     if(act==='reset'){ acctEl.querySelector('[data-resetbox]').classList.toggle('show'); return; }
+    if(act==='tissue'){
+      t.disabled=true;
+      api('POST','/access-control/temp-password/issue',{ userId: uid }).then(function(res){
+        t.disabled=false;
+        if(res.status!==201){ banner('Could not issue a temporary password for '+esc(u.email)+': '+esc((res.j&&res.j.error)||('status '+res.status))); return; }
+        banner('Temporary password for <b>'+esc(u.email)+'</b>: <span class="code" style="letter-spacing:1px">'+esc(res.j.tempPassword)+'</span> <button class="btn ghost small" type="button" data-copytemp="'+esc(res.j.tempPassword)+'">Copy</button><br>Shown once — hand it to the account holder now. It signs them in like a password, walks them through the usual Speedy Verify / Layer 2 steps, and then makes them set their own password — it never opens the app by itself. Good until <b>'+esc(fmtWhen(res.j.expiresAt))+'</b> (72 hours). Issuing a new one replaces this one.');
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      }).catch(function(){ t.disabled=false; banner('Could not reach the Service OS. Try again.'); });
+      return;
+    }
+    if(act==='trevoke'){
+      if(!window.confirm('Revoke the temporary password for '+u.email+'? It stops working immediately. Their own password (if they already set one) is not affected.')) return;
+      api('POST','/access-control/temp-password/revoke',{ userId: uid }).then(function(res){
+        if(res.status!==200) banner('Could not revoke the temporary password for '+esc(u.email)+': '+esc((res.j&&res.j.error)||('status '+res.status)));
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      });
+      return;
+    }
     if(act==='issue'){
       t.disabled=true;
       api('POST','/speedy-verify/issue',{ userId: uid }).then(function(res){

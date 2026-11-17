@@ -242,7 +242,7 @@ function jwtSecret() {
   return process.env.JWT_SECRET;
 }
 
-export function signVerifyChallenge(user) {
+export function signVerifyChallenge(user, { tempAuth = false } = {}) {
   const secret = jwtSecret();
   if (!secret) throw new Error('JWT_SECRET is not configured');
   const now = Math.floor(Date.now() / 1000);
@@ -253,6 +253,10 @@ export function signVerifyChallenge(user) {
     email: user.email,
     roles: Array.isArray(user.roles) ? user.roles : [],
     purpose: 'speedy-verify',
+    // Temporary-password sign-ins (2026-11-17): true when factor 1
+    // was an office-issued temporary password — the pipeline then
+    // ends in the forced password change, never a direct session.
+    ...(tempAuth ? { ta: true } : {}),
     iat: now,
     exp: now + SPEEDY_VERIFY.challengeTtlSeconds,
   };
@@ -286,11 +290,11 @@ export function readVerifyChallenge(challenge) {
 //   { action: 'deny', state }                           — no live code
 //   { action: 'challenge', challenge, expiresInSeconds, state }
 // ---------------------------------------------------------------------------
-export async function loginGate(user) {
+export async function loginGate(user, { tempAuth = false } = {}) {
   if (!verifyGateApplies(user)) return { action: 'pass' };
   const state = await getVerifyState(user);
   if (!state.hasActiveCode) return { action: 'deny', state };
-  const { challenge, expiresInSeconds } = signVerifyChallenge(user);
+  const { challenge, expiresInSeconds } = signVerifyChallenge(user, { tempAuth });
   return { action: 'challenge', challenge, expiresInSeconds, state };
 }
 
@@ -318,7 +322,7 @@ export async function verifyChallengeCode(challenge, rawCode) {
   if (!verifyGateApplies(user)) {
     // The account's gate changed mid-challenge (waived, or the Master):
     // the honest outcome is a normal session, not a code demand.
-    return { user, alreadySatisfied: true };
+    return { user, alreadySatisfied: true, tempAuth: payload.ta === true };
   }
   const record = await verifyCodesRepo.findByUserId(user.id);
   if (!record || record.status !== 'ACTIVE') {
@@ -354,7 +358,7 @@ export async function verifyChallengeCode(challenge, rawCode) {
     lockedUntil: null,
     lastUsedAt: new Date(),
   });
-  return { user, alreadySatisfied: false };
+  return { user, alreadySatisfied: false, tempAuth: payload.ta === true };
 }
 
 // ---------------------------------------------------------------------------

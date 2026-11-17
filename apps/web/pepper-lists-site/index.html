@@ -812,6 +812,7 @@ function plLogin(){
   plMsg('plMsg','Signing in…');
   plApi('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('plLiEmail').value.trim(),password:document.getElementById('plLiPass').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/pepper-lists-site'); return; }
       if(j && j.verifyRequired && j.challenge){
         plSvChallenge=j.challenge;
         document.getElementById('plSvStep').style.display='';
@@ -827,6 +828,7 @@ function plVerify(){
   if(!plSvChallenge){ plMsg('plMsg','Sign in with your password first, then enter your code.',true); return; }
   plApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:plSvChallenge,code:document.getElementById('plSvCode').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/pepper-lists-site'); return; }
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ plSvChallenge=null; document.getElementById('plSvStep').style.display='none'; TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
       plSvChallenge=null; document.getElementById('plSvStep').style.display='none'; plSaveTok(j.token); plBoot(); })
     .catch(function(e){ plMsg('plMsg',e.message,true); });
@@ -1645,7 +1647,7 @@ function plAdsMine(){
     .catch(function(){ box.innerHTML=''; });
 }
 </script>
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>
 <script src="/speedy-guide.js" defer></script>
 <!-- TOP SPEED TYPE SYSTEM (Futuristic Font System 2026-11-16) -->
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1,h2,h3{font-family:'Manrope','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>

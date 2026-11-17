@@ -19,6 +19,7 @@ import {
   invalidatePendingChallenges,
   layer2Applies,
 } from '../services/layer2.js';
+import { changeStateJson } from '../services/tempPasswords.js';
 
 /**
  * Speedy Verify routes (Phase 1, 2026-11-16) — mounted at
@@ -76,10 +77,16 @@ router.post('/verify', async (req, res) => {
     return res.status(400).json({ error: 'Invalid code-step request', details: parsed.error.flatten() });
   }
   try {
-    const { user, alreadySatisfied } = await verifyChallengeCode(parsed.data.challenge, parsed.data.code);
+    const { user, alreadySatisfied, tempAuth } = await verifyChallengeCode(parsed.data.challenge, parsed.data.code);
     if (layer2Applies(user)) {
-      const layer2 = await beginLayer2Challenge(user, { speedyVerified: !alreadySatisfied, req });
+      const layer2 = await beginLayer2Challenge(user, { speedyVerified: !alreadySatisfied, tempAuth, req });
       return res.json(layer2);
+    }
+    // Temporary-password sign-in (2026-11-17): the code step passed,
+    // but a temporary password never opens a session — the pipeline
+    // ends in the forced password change.
+    if (tempAuth) {
+      return res.json(await changeStateJson(user, { speedyVerified: !alreadySatisfied }));
     }
     return sessionResponse(res, user, { speedyVerified: !alreadySatisfied });
   } catch (error) {

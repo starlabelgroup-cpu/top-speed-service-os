@@ -209,6 +209,20 @@
     post(s.api, '/auth/layer2/verify', { challenge: s.challenge, code: code })
       .then(function (res) {
         if (!state || state !== s) return;
+        // Temporary-password sign-in (2026-11-17): a temp sign-in
+        // that passes Layer 2 ends in the forced password change,
+        // not a session — the response carries a changeToken instead
+        // of a token. Stash it and route to the shared change page.
+        if (res.ok && res.j && res.j.mustChangePassword === true && res.j.changeToken) {
+          var changeReturn = window.location.pathname;
+          close();
+          try {
+            sessionStorage.setItem('tsos_change_token', res.j.changeToken);
+            sessionStorage.setItem('tsos_change_return', changeReturn);
+          } catch (e) {}
+          window.location.assign('/set-password/');
+          return;
+        }
         if (res.ok && res.j && res.j.token) {
           var onSession = s.onSession;
           close();

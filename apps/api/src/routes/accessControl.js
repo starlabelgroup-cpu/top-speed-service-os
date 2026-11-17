@@ -13,6 +13,11 @@ import {
   registrationStartsUnverified,
 } from '../services/speedyVerify.js';
 import { layer2StatusView, registrationLayer2Required, updateLayer2Settings } from '../services/layer2.js';
+import {
+  issueTempPassword,
+  revokeTempPassword,
+  tempStatusView,
+} from '../services/tempPasswords.js';
 import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
 import { publicUser } from './auth.js';
 
@@ -232,6 +237,9 @@ async function accountRow(user) {
     surfaceLabel: surfaceLabelFor(user),
     verify,
     layer2: layer2StatusView(user),
+    // Temporary passwords (2026-11-17): status + audit view for the
+    // office's anytime monitoring — never the hash.
+    temp: tempStatusView(user),
   };
 }
 
@@ -275,7 +283,13 @@ router.get('/access-control/accounts', async (req, res, next) => {
         return (
           String(user.email || '').toLowerCase().includes(query) ||
           name.includes(query) ||
-          String(user.employeeNumber || '').toLowerCase().includes(query)
+          String(user.employeeNumber || '').toLowerCase().includes(query) ||
+          // The accounts list is the office's anytime window across
+          // all four populations (employees, contractors, customers,
+          // vendors) — searching a group or surface name finds its
+          // accounts too.
+          surfaceLabelFor(user).toLowerCase().includes(query) ||
+          (Array.isArray(user.roles) ? user.roles : []).some((role) => String(role).toLowerCase().includes(query))
         );
       });
     }
@@ -471,6 +485,64 @@ router.post('/access-control/layer2-requirement', async (req, res, next) => {
     try {
       const layer2 = await updateLayer2Settings(target, { required: parsed.data.required });
       return res.json({ layer2 });
+    } catch (error) {
+      if (error?.status) {
+        return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+      }
+      throw error;
+    }
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Temporary passwords (2026-11-17): issue / revoke. OFFICE-SIDE ONLY —
+// these routes inherit the Master gate above (every non-owner role,
+// managers and setters included, is refused 401/403), and no employee
+// or contractor surface links here. The holder's experience is
+// receive-only: temporary password → the usual sign-in gates → set
+// their own password → in. Works for every population equally —
+// employees, contractors, customers and vendors — because it operates
+// on the account row, not on any surface. The Master account itself
+// is refused (Rule Zero) inside the service.
+// ---------------------------------------------------------------------------
+const tempPasswordSchema = z.object({
+  userId: z.string().uuid(),
+});
+
+router.post('/access-control/temp-password/issue', async (req, res, next) => {
+  try {
+    const parsed = tempPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid temporary password request', details: parsed.error.flatten() });
+    }
+    try {
+      const issued = await issueTempPassword(req.user, parsed.data.userId);
+      // tempPassword is the plain temporary password — returned ONLY
+      // in this response, ONLY to the Master, exactly once. It is
+      // never stored or logged; the account row holds only its hash.
+      return res.status(201).json(issued);
+    } catch (error) {
+      if (error?.status) {
+        return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+      }
+      throw error;
+    }
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/access-control/temp-password/revoke', async (req, res, next) => {
+  try {
+    const parsed = tempPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid temporary password request', details: parsed.error.flatten() });
+    }
+    try {
+      const temp = await revokeTempPassword(parsed.data.userId);
+      return res.json({ temp });
     } catch (error) {
       if (error?.status) {
         return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });

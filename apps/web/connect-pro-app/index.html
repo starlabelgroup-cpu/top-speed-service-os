@@ -264,6 +264,7 @@ var svChallenge=null;
 function doLogin(){
   api('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPass').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/connect-pro-app'); return; }
       if(j && j.verifyRequired && j.challenge){
         svChallenge=j.challenge;
         document.getElementById('svStep').style.display='';
@@ -282,6 +283,7 @@ function doVerify(){
   if(!svChallenge){ gateErr(new Error('Sign in with your password first, then enter your code.')); return; }
   api('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:svChallenge,code:document.getElementById('svCode').value})})
     .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/connect-pro-app'); return; }
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
         svChallenge=null; document.getElementById('svStep').style.display='none';
         TSOSLayer2.run(j,{api:API,onSession:function(s){ setTok(s.token); try{ sessionStorage.setItem('cp_fresh_login','1'); }catch(e){} boot(); },onCancel:function(){ gateErr(new Error('Sign-in cancelled — the 2-step code is required to finish.')); }});
@@ -849,7 +851,7 @@ function loadReferral(){
 }
 (function(){ var prev=window.onAppReady; window.onAppReady=function(){ if(prev) prev(); loadReferral(); }; })();
 </script>
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
 <script>

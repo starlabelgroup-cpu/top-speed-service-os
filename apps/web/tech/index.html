@@ -329,6 +329,7 @@ function techSignIn(){
       // Pipeline order (server): password \u2192 Speedy Verify gate \u2192 Layer 2 \u2192 session.
       if(j.code==='SPEEDY_VERIFY_NO_CODE'){ toast(j.error||'Speedy Verify required \u2014 no access code has been issued for this account yet. Contact the office.'); return; }
       if(!res.ok){ toast('Sign-in failed: '+(j.error||'check your email and password')); return; }
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/tech'); return; }
       if(j.verifyRequired && j.challenge){ techVerifyGate(j.challenge); return; }
       if(j.layer2Required && j.challenge && window.TSOSLayer2){
         TSOSLayer2.run(j, { api: T_API, onSession: function(s){ techSession(s.token); }, onCancel: function(){ toast('Sign-in cancelled \u2014 the 2-step code is required to finish'); } });
@@ -364,6 +365,7 @@ function techVerifySubmit(){
     .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
     .then(function(res){
       var j=res.j||{};
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/tech'); return; }
       if(j.layer2Required && j.challenge && window.TSOSLayer2){
         TSOSLayer2.run(j, { api: T_API, onSession: function(s){ techVerifyCancel(); techSession(s.token); }, onCancel: function(){ toast('Sign-in cancelled \u2014 the 2-step code is required to finish'); } });
         return;
@@ -949,6 +951,6 @@ function loadPlugOrders(){
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
+<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 </body>
 </html>

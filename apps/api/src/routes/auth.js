@@ -32,6 +32,13 @@ import {
   layer2Applies,
   registrationLayer2Required,
 } from '../services/layer2.js';
+import {
+  changeStateJson,
+  clearTempLoginFailures,
+  completePasswordChange,
+  recordTempLoginFailure,
+  tempCredentialState,
+} from '../services/tempPasswords.js';
 import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
 
 /**
@@ -153,6 +160,9 @@ const usersRepo = DATABASE_ENABLED
       async updatePassword(id, passwordHash) {
         return db().user.update({ where: { id }, data: { passwordHash } });
       },
+      async updateFields(id, fields) {
+        return db().user.update({ where: { id }, data: fields });
+      },
       async listForCompany(companyId, includeAll) {
         return db().user.findMany({ where: includeAll ? {} : { companyId } });
       },
@@ -178,6 +188,14 @@ const usersRepo = DATABASE_ENABLED
         const user = store.users.get(id);
         if (user) {
           user.passwordHash = passwordHash;
+          user.updatedAt = new Date().toISOString();
+        }
+        return user;
+      },
+      async updateFields(id, fields) {
+        const user = store.users.get(id);
+        if (user) {
+          Object.assign(user, fields);
           user.updatedAt = new Date().toISOString();
         }
         return user;
@@ -224,6 +242,10 @@ export function publicUser(user) {
     verifyRequired: user.verifyRequired === true,
     // Layer 2 — 2-step sign-in: the account's per-login code switch.
     layer2Required: user.layer2Required === true,
+    // Temporary passwords (2026-11-17): true while an office-issued
+    // temporary password is outstanding and the holder still owes the
+    // platform a password of their own.
+    mustChangePassword: user.mustChangePassword === true,
     createdAt: iso(user.createdAt),
   };
 }
@@ -487,8 +509,68 @@ router.post('/auth/login', async (req, res, next) => {
     for (const candidate of candidates) {
       if (await verifyPassword(password, candidate.passwordHash)) { user = candidate; break; }
     }
+    // Temporary passwords (2026-11-17): when the real password did not
+    // match, an office-issued temporary password is an ADDITIONAL
+    // accepted credential — it carries the sign-in through the same
+    // gates but ends in the forced password change, never a session.
+    // The Master account is never temp-matched (Rule Zero). A matched
+    // but expired temporary password gets its own clear error; wrong
+    // attempts against a live temporary credential count toward the
+    // 5-fail → 15-minute lock on that credential (the real password,
+    // when one exists, keeps working throughout).
+    let tempAuth = false;
+    let tempExpiredUser = null;
+    let tempLocked = null;
+    if (!user) {
+      for (const candidate of candidates) {
+        if (isMasterAccount(candidate)) continue;
+        const state = tempCredentialState(candidate);
+        if (!state.hasTemp) continue;
+        const matches = await verifyPassword(password, candidate.tempPasswordHash);
+        if (!matches) continue;
+        if (state.locked) {
+          tempLocked = { lockedUntil: state.lockedUntil };
+        } else if (state.expired) {
+          tempExpiredUser = candidate;
+        } else {
+          user = candidate;
+          tempAuth = true;
+        }
+        break;
+      }
+      if (!user && !tempExpiredUser && !tempLocked) {
+        const holder = candidates.find((candidate) => {
+          if (isMasterAccount(candidate)) return false;
+          const state = tempCredentialState(candidate);
+          return state.hasTemp && !state.expired && !state.locked;
+        });
+        if (holder) {
+          try {
+            const outcome = await recordTempLoginFailure(holder);
+            if (outcome.locked) tempLocked = { lockedUntil: outcome.lockedUntil };
+          } catch { /* failure counting must never break sign-in */ }
+        }
+      }
+    }
+    if (!user && tempLocked) {
+      const retryAfterSeconds = Math.max(1, Math.ceil((new Date(tempLocked.lockedUntil).getTime() - Date.now()) / 1000));
+      return res.status(403).json({
+        error: 'Too many wrong temporary-password attempts — temporary sign-in is locked for a few minutes. Try again shortly, or contact the office for a new temporary password.',
+        code: 'TEMP_PASSWORD_LOCKED',
+        retryAfterSeconds,
+      });
+    }
+    if (!user && tempExpiredUser) {
+      return res.status(403).json({
+        error: 'Your temporary password has expired — ask the office to issue a new one.',
+        code: 'TEMP_PASSWORD_EXPIRED',
+      });
+    }
     if (!user) {
       return res.status(401).json({ error: 'Email or password is incorrect' });
+    }
+    if (tempAuth) {
+      try { await clearTempLoginFailures(user); } catch { /* non-fatal */ }
     }
     if (!user.active) {
       return res.status(403).json({ error: 'This account is inactive' });
@@ -499,7 +581,7 @@ router.post('/auth/login', async (req, res, next) => {
     // No live code → denied here; live code → a 10-minute challenge the
     // client exchanges at POST /speedy-verify/verify. Every other
     // account (including the Master, always) signs in exactly as before.
-    const gate = await speedyLoginGate(user);
+    const gate = await speedyLoginGate(user, { tempAuth });
     if (gate.action === 'deny') {
       return res.status(403).json({
         error: 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.',
@@ -527,13 +609,50 @@ router.post('/auth/login', async (req, res, next) => {
     // one-time code by email or text before a session is issued.
     // Pipeline order: password → Speedy Verify → Layer 2 → session.
     if (layer2Applies(user)) {
-      const layer2 = await beginLayer2Challenge(user, { req });
+      const layer2 = await beginLayer2Challenge(user, { req, tempAuth });
       return res.json(layer2);
+    }
+
+    // Temporary-password sign-in with no further gates: the pipeline
+    // ends in the forced password change, never a direct session.
+    if (tempAuth) {
+      return res.json(await changeStateJson(user, { speedyVerified: false }));
     }
 
     const terms = await termsStatusForUser(user.id);
     return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
   } catch (error) {
+    return next(error);
+  }
+});
+
+// Temporary passwords (2026-11-17): complete the forced password
+// change. The ONLY credential accepted here is the single-use
+// changeToken the sign-in pipeline issued after a temporary password
+// (and any required Verify / Layer 2 steps) passed — middleware/auth
+// refuses purpose-carrying tokens as sessions, so this token can
+// never open a normal endpoint. On success the account password is
+// replaced, every temp field is cleared, and the response is the
+// normal login response (user + session token): the holder lands
+// signed in with a password of their own.
+const setPasswordSchema = z.object({
+  changeToken: z.string().min(10).max(4096),
+  newPassword: z.string().min(10).max(200),
+});
+
+router.post('/auth/set-password', async (req, res, next) => {
+  try {
+    const parsed = setPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'A new password of at least 10 characters is required' });
+    }
+    const { user, speedyVerified } = await completePasswordChange(parsed.data.changeToken, parsed.data.newPassword);
+    const terms = await termsStatusForUser(user.id);
+    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user, { speedyVerified }) });
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+    }
     return next(error);
   }
 });

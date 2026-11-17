@@ -213,7 +213,7 @@ function jwtSecret() {
   return process.env.JWT_SECRET;
 }
 
-export function signLayer2Challenge(user, challengeId, { speedyVerified } = {}) {
+export function signLayer2Challenge(user, challengeId, { speedyVerified, tempAuth } = {}) {
   const secret = jwtSecret();
   if (!secret) throw new Error('JWT_SECRET is not configured');
   const now = Math.floor(Date.now() / 1000);
@@ -228,6 +228,10 @@ export function signLayer2Challenge(user, challengeId, { speedyVerified } = {}) 
     // True when this sign-in already passed the Speedy Verify code
     // step upstream; the final session inherits it as the sv claim.
     sv: speedyVerified === true,
+    // Temporary-password sign-ins (2026-11-17): true when factor 1
+    // was an office-issued temporary password — the pipeline then
+    // ends in the forced password change, never a direct session.
+    ta: tempAuth === true,
     iat: now,
     exp: now + LAYER2.challengeTtlSeconds,
   };
@@ -285,7 +289,7 @@ function challengeView(user, challenge, expiresInSeconds) {
  * superseded — only the newest sign-in can complete. Returns the
  * response payload the routes merge into their sign-in response.
  */
-export async function beginLayer2Challenge(user, { speedyVerified = false, req = null } = {}) {
+export async function beginLayer2Challenge(user, { speedyVerified = false, tempAuth = false, req = null } = {}) {
   await challengesRepo.supersedePendingForUser(user.id, null);
   const record = {
     id: createId(),
@@ -304,7 +308,7 @@ export async function beginLayer2Challenge(user, { speedyVerified = false, req =
     updatedAt: new Date(),
   };
   await challengesRepo.create(record);
-  const { challenge, expiresInSeconds } = signLayer2Challenge(user, record.id, { speedyVerified });
+  const { challenge, expiresInSeconds } = signLayer2Challenge(user, record.id, { speedyVerified, tempAuth });
   return challengeView(user, challenge, expiresInSeconds);
 }
 
@@ -442,7 +446,7 @@ export async function verifyLayer2Code(challengeToken, rawCode) {
     // Master): the honest outcome is a normal session, not a code
     // demand. (Same contract as Speedy Verify's verifyChallengeCode.)
     await challengesRepo.update(record.id, { status: 'CONSUMED', consumedAt: new Date() });
-    return { user, speedyVerified: payload.sv === true, alreadySatisfied: true };
+    return { user, speedyVerified: payload.sv === true, alreadySatisfied: true, tempAuth: payload.ta === true };
   }
   if (!record.codeHash) {
     fail(400, 'LAYER2_CODE_NOT_SENT', 'Request a code first — choose email or text and we will send one.');
@@ -463,7 +467,7 @@ export async function verifyLayer2Code(challengeToken, rawCode) {
     });
   }
   await challengesRepo.update(record.id, { status: 'CONSUMED', consumedAt: new Date() });
-  return { user, speedyVerified: payload.sv === true, alreadySatisfied: false };
+  return { user, speedyVerified: payload.sv === true, alreadySatisfied: false, tempAuth: payload.ta === true };
 }
 
 /**
