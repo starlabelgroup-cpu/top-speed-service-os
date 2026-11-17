@@ -374,6 +374,13 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
 .svc{border-top:4px solid #0C162B}
 .svc:nth-child(odd){border-top-color:#E94E5C}
 .rt-lap{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12.5px;letter-spacing:.1em;color:#E94E5C;margin-bottom:8px}
+.rti{display:inline-block;vertical-align:-3px;flex:none}
+.rt-mascot{display:flex;gap:24px;align-items:center;flex-wrap:wrap;padding:2px 0 28px}
+.rt-mascot img{width:min(360px,100%);height:auto;border-radius:18px;border:1px solid #33507E;display:block}
+.rt-mascot-txt{flex:1;min-width:min(280px,100%);max-width:520px}
+.rt-mascot-txt h3{color:#fff;font-family:'Orbitron','Rajdhani',sans-serif;font-size:21px;letter-spacing:.02em;margin:6px 0 8px}
+.rt-mascot-txt p{color:#C4D6F6;margin:0 0 12px;font-size:16px}
+.rt-mascot-txt a{color:#FF6B77;font-weight:700;text-decoration:none}
 @media(prefers-color-scheme:dark){.sec-head .tag::before{border-color:rgba(255,255,255,.35)}.svc{border-top-color:#33507E}.svc:nth-child(odd){border-top-color:#E94E5C}}
 .nh{max-width:880px;margin:0 auto}
 .nh-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
@@ -476,7 +483,16 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
         <span class="rt-kicker">The Circuit</span>
         <h3>Red Light to Green Light</h3>
         <p>Book in about a minute, a Service Setter confirms your visit, and you track your tech live to your door — across 65 cities in Broward, Palm Beach &amp; Miami-Dade.</p>
-        <div class="rt-micro">131 Local Landing Pages · Live Tech Tracking</div>
+        <div class="rt-micro"><svg class="rti" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(1.25 4.28) scale(0.5513)"><path d="M2.5 25.4161C1.55602 22.7035 1.27484 19.8044 1.67997 16.961C2.0851 14.1176 3.16477 11.4124 4.82878 9.07142C6.4928 6.73044 8.69284 4.82163 11.2451 3.50446C13.7974 2.18729 16.6279 1.5 19.5 1.5C22.3721 1.5 25.2026 2.18729 27.7549 3.50446C30.3072 4.82163 32.5072 6.73044 34.1712 9.07142C35.8352 11.4124 36.9149 14.1176 37.32 16.961C37.7252 19.8044 37.444 22.7035 36.5 25.4161" stroke-width="3.3"/><path d="M2.5 25.4161H6.5" stroke-width="3.3"/><path d="M8 13.9161L10.5 16.4161" stroke-width="3.3"/><path d="M19.5 7.41608V11.4161" stroke-width="3.3"/><path d="M31 13.9161L28.5 16.4161" stroke-width="3.3"/><path d="M36.5 25.4161H32.5" stroke-width="3.3"/><path d="M19.5 25.4161L27.5 16.4161" stroke="#E94E5C" stroke-width="3.5"/><circle cx="19.5" cy="25.4161" r="2.6" fill="currentColor" stroke="none"/></g></svg> 131 Local Landing Pages · <svg class="rti" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(1.25 1.25) scale(0.5811)"><circle cx="18.5" cy="18.5" r="17" stroke-width="3.1"/><circle cx="18.5" cy="18.5" r="6" stroke-width="3.1"/><path d="M18.5 24.5V34.5" stroke-width="3.1"/><path d="M13.5 21.5L6.5 27.5" stroke-width="3.1"/><path d="M23.5 21.5L30.5 27.5" stroke-width="3.1"/><path d="M8 9C10.9947 6.64813 14.6922 5.36974 18.5 5.36974C22.3078 5.36974 26.0053 6.64813 29 9" stroke="#E94E5C" stroke-width="3.1"/></g></svg> Live Tech Tracking</div>
+      </div>
+    </div>
+    <div class="rt-mascot">
+      <img src="/api/v1/app/mascot-images/mascot-hero.webp" alt="The Top Speed racing horse — a navy racing horse with a red saddle cloth trimmed in checkered flag, galloping at full speed" loading="lazy">
+      <div class="rt-mascot-txt">
+        <span class="rt-kicker">Top Speed Network</span>
+        <h3>The Top Speed Racing Horse</h3>
+        <p>The Top Speed racing horse — mascot of the Top Speed network. The same speed runs every booking, dispatch and repair across the platform.</p>
+        <a href="/network-site">Meet the network →</a>
       </div>
     </div>
   </div>
@@ -495,7 +511,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 <section id="services">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag">What we fix</span>
+      <span class="tag"><svg class="rti" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(4.32 1.5) scale(0.5122)"><path d="M1.5 1.5V39.5" stroke-width="3.5"/><path d="M1.5 3.5H28.5V20.5H1.5V3.5Z" stroke-width="3.5"/><path d="M10.5 3.5H1.5V12H10.5V3.5Z" fill="currentColor" stroke="none"/><path d="M28.5 3.5H19.5V12H28.5V3.5Z" fill="currentColor" stroke="none"/><path d="M19.5 12H10.5V20.5H19.5V12Z" fill="currentColor" stroke="none"/></g></svg> What we fix</span>
       <h2>Nine services. <em>One fast call.</em></h2>
       <p>Tap any service to pre-fill your booking and get an instant estimate range. Residential and commercial — every major brand.</p>
     </div>
@@ -940,7 +956,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 <section id="track">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag live">● Live Tracking — Real Jobs</span>
+      <span class="tag live"><svg class="rti" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(1.25 1.25) scale(0.5811)"><circle cx="18.5" cy="18.5" r="17" stroke-width="3.1"/><circle cx="18.5" cy="18.5" r="10.5" stroke="#8FA5C4" stroke-width="3.1"/><path d="M22.3 19.7L28 21.6" stroke-width="3.1"/><path d="M18.5 22.5V28.5" stroke-width="3.1"/><path d="M14.7 19.7L9 21.6" stroke-width="3.1"/><path d="M16.2 15.3L12.6 10" stroke-width="3.1"/><path d="M20.8 15.3L24.4 10" stroke-width="3.1"/><circle cx="18.5" cy="18.5" r="2.6" fill="#E94E5C" stroke="none"/></g></svg> ● Live Tracking — Real Jobs</span>
       <h2>Know exactly when <em>help arrives.</em></h2>
       <p>No more four-hour guessing games. Enter the booking reference from your confirmation (it looks like TS-XXXXXX) and the phone number on the booking — your real job status appears here, the same record our dispatch team works from.</p>
     </div>
