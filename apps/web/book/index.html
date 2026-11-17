@@ -147,6 +147,7 @@
         <label><input type="radio" name="wwin" value="16-18"><span class="wc">4–6 PM</span></label>
       </div>
       <img src="/api/v1/app/scenario-images/book-calendar-pick.webp" alt="Illustration: a customer picking an appointment day on a calendar while booking an appliance repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
+      <img src="/api/v1/app/scenario-images/book-window-choice.webp" alt="Illustration: a customer choosing their two-hour arrival window while booking an appliance repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
       <label for="wNote">Anything else? (optional)</label><input id="wNote" placeholder="Gate code, parking, pets…">
     </div>
     <div class="pane" data-pane="5" hidden>
@@ -154,6 +155,12 @@
       <div class="review" id="review" style="margin-top:12px"></div>
       <p style="font-size:13.5px;color:var(--mut);margin-top:14px">The <b>$99 diagnostic</b> is collected at booking and <b>credited in full toward your repair</b>. A Service Setter reviews every request and confirms by phone/text — then you can follow the visit live in Track My Tech.</p>
       <img src="/api/v1/app/scenario-images/pay-quote-tablet.webp" alt="Illustration: a customer reviewing the written quote on a tablet before approving the repair — no work starts without an approved quote" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:14px" loading="lazy">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-approve-tap.webp" alt="Illustration: a customer tapping to approve the written quote before any repair work starts" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Approve the quote</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-phone-tap.webp" alt="Illustration: a customer paying for the repair with a tap of their phone" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Tap to pay</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-card-reader.webp" alt="Illustration: a customer paying by card on the technician's card reader" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Or pay by card</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-no-surprise.webp" alt="Illustration: a customer calmly reviewing the final bill — the approved quote with no surprise charges" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">No surprises — the price you approved</figcaption></figure>
+      </div>
     </div>
     <div class="err" id="err"></div>
     <div class="nav">
@@ -171,6 +178,7 @@
     <div class="ref" id="doneRef">TS-XXXXXX</div>
     <p style="color:var(--mut)">Your request is in the Service Setters dispatch queue and your confirmation is on its way by text/email. A setter confirms your window shortly.</p>
     <img src="/api/v1/app/platform-images/booking-dispatch.webp" alt="Illustration: a Service Setters dispatcher with a headset handing a job card toward a service van — your request enters the dispatch queue" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
+    <img src="/api/v1/app/scenario-images/book-confirmation.webp" alt="Illustration: a customer receiving their booking confirmation by text and email after booking a repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
     <div class="doneBtns">
       <a href="/track" style="background:var(--red2);color:#fff"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Track this job</a>
       <a href="/garage" style="background:#0A265C;color:#fff">My Appliances</a>
@@ -208,6 +216,7 @@
       <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3.5 3.5H11L20.5 13 13 20.5 3.5 11z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 13.4l1.9 1.9 3.5-3.8"/></svg>$99 diagnostic — credited toward your repair</span>
       <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21L6.6 11.6a5.4 5.4 0 1 1 10.8 0z"/><circle cx="12" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg>Live 8-stage tracking after you book</span>
     </div>
+    <img src="/api/v1/app/scenario-images/book-speedy-chat.webp" alt="Illustration: a customer booking a repair by chatting with Speedy AI — typing, speaking or sending a photo of the problem" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:16px" loading="lazy">
     <div class="sbpromo-row">
       <button type="button" class="sbpromo-cta" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}else{var b=document.querySelector('.tsw-btn');if(b){b.click();}else{location.href='/speedy';}}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#fff" stroke="none"/></svg>Book with Speedy</button>
       <span class="sbpromo-note">The classic form above is how most customers book — same queue, same confirmation either way.</span>

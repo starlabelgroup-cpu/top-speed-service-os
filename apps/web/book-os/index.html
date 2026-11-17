@@ -192,6 +192,7 @@ body:not(.live) .gated{display:none!important}</style>
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
 <section class="panel" gated"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div style="padding:14px 16px 0"><img src="/api/v1/app/platform-images/dispatch-setters.webp" alt="Illustration: a Service Setter coordinating dispatch at a desk with a city map of route pins behind her" style="width:min(320px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
+<div style="padding:10px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-emergency-triage.webp" alt="Illustration: a Service Setter triaging an urgent emergency request at the front of the queue" style="width:min(320px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div id="queue"></div></section>
 
 <aside class="panel"><div class="ph"><div><h2>Call Guide</h2><p>The 60-second setter script</p></div><span class="badge">SCRIPT</span></div>
@@ -210,14 +211,17 @@ body:not(.live) .gated{display:none!important}</style>
 
 <!-- TODAY -->
 <section class="panel board" gated"><div class="ph"><div><h2>2 · Today’s Appointments</h2><p>Thursday’s confirmed jobs by arrival window. Tap a status chip to advance it.</p></div><span class="badge">12 AREAS • BROWARD</span></div>
+<div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/pay-invoice-door.webp" alt="Illustration: a technician presenting the final invoice at the customer's door at the end of the visit" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div class="windows" id="windows"></div></section>
 
 <!-- DISPATCH -->
 <section class="panel dispatch" gated"><div class="ph"><div><h2>3 · Dispatch Board — Hybrid Dispatch</h2><p>AI auto-matches · <b>Service Setters approve every job</b> before a provider rolls. That human check is the quality difference.</p></div><span class="badge">SETTER APPROVAL REQUIRED</span></div>
+<div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-assign-tech.webp" alt="Illustration: a Service Setter assigning a job to the right technician on the dispatch board" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div style="padding:12px 14px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label style="font-size:12.5px;font-weight:700">Area<br><select id="sbpArea" style="padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"><option value="">All areas</option></select></label><label style="font-size:12.5px;font-weight:700">Window<br><select id="sbpWindow" style="padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"><option value="">All windows</option><option value="08-10">8–10 AM</option><option value="10-12">10 AM–12 PM</option><option value="12-14">12–2 PM</option><option value="14-16">2–4 PM</option><option value="16-18">4–6 PM</option></select></label><button class="btn navy" onclick="loadLive()">Apply filters</button><button class="btn ghost" onclick="sbpClearFilters()">Clear</button><span id="sbpFilterEcho" style="font-size:12.5px;color:var(--mut)"></span></div><div id="sbpSuggest" style="display:none;margin:12px 14px 0;background:var(--chip);border-radius:12px;padding:12px 14px;font-size:13.5px;max-height:38vh;overflow-y:auto;-webkit-overflow-scrolling:touch"></div><div class="cols" id="dispatchCols"></div></section>
 
 <!-- AREA DAY — Service Book Pro (book by area) -->
 <section class="panel gated" style="margin-top:14px"><div class="ph"><div><h2>· Area Day — Route View</h2><p>One area, one day: its jobs in window order, so a setter can sanity-check the route before dispatch. Book by area, end to end.</p></div><span class="badge">BOOK BY AREA</span></div>
+<div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-route-plan.webp" alt="Illustration: a Service Setter planning the day's route by area and window on a map" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div style="padding:12px 14px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:end"><label style="font-size:12.5px;font-weight:700">Date<br><input type="date" id="adDate" style="padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></label><label style="font-size:12.5px;font-weight:700">Area<br><select id="adArea" style="padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"><option value="">Pick an area…</option></select></label><button class="btn navy" onclick="loadAreaDay()">View area day</button></div>
 <div id="areaDayOut" style="padding:12px 14px 16px"><p style="color:var(--mut);font-size:13.5px">Sign in and pick an area to see its day.</p></div></section>
 <!-- REMINDERS -->
@@ -225,6 +229,7 @@ body:not(.live) .gated{display:none!important}</style>
 
 <!-- REFERRALS — ApplianceReferral (staff only, live data) -->
 <section class="panel gated" id="referralsPanel" style="margin-top:14px"><div class="ph"><div><h2>· Referrals — ApplianceReferral</h2><p>Completed referrals waiting on a human <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> before credit is issued. Approved terms (both tracks): $25 base credit · $35 from the 5th completed referral · $50 from the 10th · milestone bonuses $100 @ 10 / $250 @ 25 · credits expire 12 months after issue. Customer and partner (business / property manager) referrals run on the same terms.</p></div><span class="badge" id="refCount">STAFF</span></div>
+<div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/pay-office-billing.webp" alt="Illustration: the office handling billing — invoices and credits reconciled at the Service Setters desk" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div style="padding:14px 16px">
 <div id="refMsg" style="font-size:13.5px;margin-bottom:10px"></div>
 <div id="refFunnel" style="font-size:13.5px;margin-bottom:12px;color:var(--mut)"></div>
@@ -278,6 +283,7 @@ body:not(.live) .gated{display:none!important}</style>
 </div></section>
 
 <section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
+<div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-customer-update.webp" alt="Illustration: a Service Setter sending a customer a live update about their appointment" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div class="remgrid" id="rems"></div></section>
 
 <!-- FLYWHEEL -->
