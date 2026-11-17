@@ -263,6 +263,47 @@ model CrmNote {
   @@index([companyId])
 }
 
+// Book OS Inbox (2026-11-16): every email the platform receives through
+// the Resend inbound webhook (service@ forwards a copy of every message
+// to the Resend receiving address), plus the staff replies sent back
+// out through Resend. One row per message, direction INBOUND or
+// OUTBOUND; an outbound reply points at the inbound row it answers via
+// threadRootId. Plain columns in the CrmNote style — no FK relations,
+// the row's customerId / connectionId are the record. customerId is
+// null for mail whose sender matches no CRM customer: the message is
+// still queued (status UNREAD) so no customer mail is ever dropped.
+// providerEmailId is the Resend email id and is unique per message so
+// webhook retries dedupe instead of double-filing.
+model InboxMessage {
+  id               String    @id @default(uuid()) @db.Uuid
+  companyId        String    @db.Uuid
+  direction        String    @default("INBOUND")
+  providerEmailId  String?   @unique
+  fromEmail        String
+  fromName         String?
+  toEmail          String
+  mailbox          String?
+  subject          String
+  textBody         String?
+  htmlBody         String?
+  snippet          String?
+  customerId       String?   @db.Uuid
+  connectionId     String?   @db.Uuid
+  threadRootId     String?   @db.Uuid
+  messageIdHeader  String?
+  inReplyToHeader  String?
+  status           String    @default("UNREAD")
+  author           String?
+  receivedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([companyId, status, createdAt])
+  @@index([companyId, mailbox, createdAt])
+  @@index([customerId, createdAt])
+  @@index([threadRootId])
+}
+
 model Provider {
   id            String       @id @default(uuid()) @db.Uuid
   companyId     String       @db.Uuid

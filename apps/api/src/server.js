@@ -6,6 +6,7 @@ import authRouter from './routes/auth.js';
 import speedyVerifyRouter from './routes/speedyVerify.js';
 import bookingsRouter from './routes/bookings.js';
 import integrationsRouter from './routes/integrations.js';
+import inboxRouter from './routes/inbox.js';
 import bookosRouter from './routes/bookos.js';
 import providerRouter from './routes/provider.js';
 import flywheelRouter from './routes/flywheel.js';
@@ -76,6 +77,9 @@ app.use(cors({ origin: corsOrigin, credentials: false }));
 // Stripe webhook: signature verification needs the untouched bytes,
 // so this path gets a raw parser BEFORE any JSON parser runs.
 app.use('/api/v1/payments/webhook', express.raw({ type: 'application/json', limit: '1mb' }));
+// Resend inbound webhook: Svix signature verification needs the
+// untouched bytes, same discipline as the Stripe webhook above.
+app.use('/api/v1/intake/email-received', express.raw({ type: 'application/json', limit: '2mb' }));
 app.use('/api/v1/speedy/diagnose', express.json({ limit: '6mb' }));
 // Pepper Lists Speedy Brain submissions carry base64 photos/videos to
 // the Service Setters (route-capped: photos 6 MB, videos 15 MB, 18 MB
@@ -143,6 +147,7 @@ app.use('/api/v1', authRouter);
 app.use('/api/v1/speedy-verify', speedyVerifyRouter);
 app.use('/api/v1', bookingsRouter);
 app.use('/api/v1', integrationsRouter);
+app.use('/api/v1', inboxRouter);
 app.use('/api/v1', bookosRouter);
 app.use('/api/v1', providerRouter);
 app.use('/api/v1', flywheelRouter);

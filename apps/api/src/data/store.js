@@ -79,6 +79,10 @@ export const store = {
   // Top Speed CRM staff notes on customer records (CrmNote table),
   // newest appended last; the CRM 360 sorts when it renders.
   crmNotes: [],
+  // Book OS Inbox: inbound email received via the Resend webhook plus
+  // staff replies sent back out (InboxMessage table), oldest appended
+  // first; the inbox queue and the CRM 360 sort when they render.
+  inboxMessages: [],
   // Speedy chat capture: every customer conversation with Speedy,
   // keyed by session id; messages ride inside the session record
   // (oldest first), mirroring the booking-history pattern. Hydrated

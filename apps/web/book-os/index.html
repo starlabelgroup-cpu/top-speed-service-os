@@ -253,6 +253,29 @@ body:not(.live) .gated{display:none!important}</style>
 <div id="plrList"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the review queue.</p></div>
 </div></section>
 
+<section class="panel gated" id="inboxPanel" style="margin-top:14px"><div class="ph"><div><h2>· Email Manager — Inbox</h2><p>Every email to the managed mailboxes in one console: the <b>forwarded service@ inbox</b> (service@topspeedappliance.net forwards a copy of everything it receives here), plus <b>service@topspeedserviceos.com</b> and <b>booking@topspeedserviceos.com</b>. Mail from a known customer files onto their CRM record; anything else waits here unmatched — nothing is dropped. Replies go out through Resend from the address the mail was sent to, and only when you click send.</p></div><span class="badge" id="inboxCount">STAFF</span></div>
+<div style="padding:14px 16px">
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+<button class="btn navy" data-inboxfilter="" onclick="inboxSetFilter('')">All mail</button>
+<button class="btn ghost" data-inboxfilter="service@topspeedserviceos.com" onclick="inboxSetFilter('service@topspeedserviceos.com')">service@topspeedserviceos.com</button>
+<button class="btn ghost" data-inboxfilter="booking@topspeedserviceos.com" onclick="inboxSetFilter('booking@topspeedserviceos.com')">booking@topspeedserviceos.com</button>
+<button class="btn ghost" data-inboxfilter="inbox@updates.topspeedapplianceservice.com" onclick="inboxSetFilter('inbox@updates.topspeedapplianceservice.com')">Forwarded service@ inbox</button>
+<button class="btn primary" style="margin-left:auto" onclick="inboxToggleCompose()">Compose</button>
+</div>
+<div id="inboxCompose" style="display:none;border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<label style="font-size:12.5px;font-weight:700">From<br><select id="inboxComposeFrom" style="padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></select></label>
+<label style="font-size:12.5px;font-weight:700;flex:1;min-width:200px">To<br><input id="inboxComposeTo" type="email" placeholder="customer@example.com" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></label>
+</div>
+<label style="font-size:12.5px;font-weight:700;display:block;margin-top:8px">Subject<br><input id="inboxComposeSubject" type="text" maxlength="200" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></label>
+<label style="font-size:12.5px;font-weight:700;display:block;margin-top:8px">Message<br><textarea id="inboxComposeBody" rows="5" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></textarea></label>
+<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn navy" onclick="inboxComposeSend()">Send email</button><button class="btn ghost" onclick="inboxToggleCompose()">Cancel</button></div>
+<div id="inboxComposeMsg" style="font-size:13px;margin-top:8px"></div>
+</div>
+<div id="inboxList"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the inbox.</p></div>
+<div id="inboxDetail" style="margin-top:12px"></div>
+</div></section>
+
 <section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div class="remgrid" id="rems"></div></section>
 
@@ -484,6 +507,7 @@ function renderScorecard(d){
 function loadLive(){
   if(!LIVE) return;
   if(window.plrLoadReviews) plrLoadReviews();
+  if(window.inboxLoad) inboxLoad();
   apiFetch('/bookos/scorecard').then(function(j){ renderScorecard(j.data); }).catch(function(e){ toast('Scorecard error: '+e.message); });
   Promise.all([apiFetch('/bookos/setter-queue'+sbpQuery()),apiFetch('/bookos/dispatch-board'+sbpQuery())])
     .then(function(res){
@@ -1044,6 +1068,112 @@ function plrLoadMedia(i){
       });
     })
     .catch(function(e){ sec.innerHTML='<div style="font-size:13px;color:#b00020">Could not load media ('+escH(e.message)+').</div>'; });
+}
+
+/* ============ EMAIL MANAGER — INBOX ============
+   The staff console for the managed mailboxes: the forwarded
+   service@ inbox plus service@ / booking@ on topspeedserviceos.com.
+   List + detail come from /bookos/inbox; opening a message marks it
+   read on the server. Replies and composed mail send through Resend
+   only on the button click — nothing auto-sends. All message content
+   renders through escH (text, never raw HTML). */
+var inboxMessages=[], inboxMailbox='', inboxOpenId=null, inboxSendable=[];
+function inboxLoad(){
+  if(!LIVE) return;
+  apiFetch('/bookos/inbox/mailboxes').then(function(j){
+    inboxSendable=(j.data&&j.data.sendable)||[];
+    var sel=document.getElementById('inboxComposeFrom');
+    if(sel && !sel.options.length){ sel.innerHTML=inboxSendable.map(function(a){ return '<option value="'+escH(a)+'">'+escH(a)+'</option>'; }).join(''); }
+  }).catch(function(){});
+  var q=inboxMailbox?('?mailbox='+encodeURIComponent(inboxMailbox)):'';
+  apiFetch('/bookos/inbox'+q)
+    .then(function(j){
+      inboxMessages=(j.data&&j.data.messages)||[];
+      var badge=document.getElementById('inboxCount');
+      if(badge) badge.textContent=(j.data&&j.data.unread)?(j.data.unread+' UNREAD'):'CLEAR';
+      inboxRender();
+    })
+    .catch(function(e){ var el=document.getElementById('inboxList'); if(el) el.innerHTML='<p style="color:var(--mut);font-size:13.5px">Inbox could not load ('+escH(e.message)+').</p>'; });
+}
+window.inboxLoad=inboxLoad;
+function inboxSetFilter(mb){
+  inboxMailbox=mb; inboxOpenId=null;
+  var det=document.getElementById('inboxDetail'); if(det) det.innerHTML='';
+  document.querySelectorAll('[data-inboxfilter]').forEach(function(b){
+    b.className='btn '+(b.getAttribute('data-inboxfilter')===mb?'navy':'ghost');
+  });
+  inboxLoad();
+}
+function inboxWhen(m){ var s=(m&&(m.receivedAt||m.createdAt))||''; if(!s) return ''; var d=new Date(s); return isNaN(d)?'':d.toLocaleString(); }
+function inboxRender(){
+  var el=document.getElementById('inboxList'); if(!el) return;
+  if(!inboxMessages.length){ el.innerHTML='<div class="empty">No mail in this view yet — new email to the managed mailboxes lands here.</div>'; return; }
+  el.innerHTML=inboxMessages.map(function(m){
+    var who=m.direction==='OUTBOUND'?('To '+escH(m.toEmail)):escH(m.fromName?(m.fromName+' <'+m.fromEmail+'>'):m.fromEmail);
+    var tag=m.customer?('<span class="badge">'+escH(m.customer.name)+'</span>'):(m.connection?('<span class="badge">'+escH(m.connection.reference)+'</span>'):(m.direction==='INBOUND'?'<span class="badge">UNMATCHED</span>':''));
+    var unread=m.status==='UNREAD'?'<b>Unread</b> · ':'';
+    return '<article style="border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:9px;cursor:pointer" onclick="inboxOpen(\''+m.id+'\')">'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-weight:700">'+who+'</span>'+tag+'<span style="margin-left:auto;font-size:12.5px;color:var(--mut)">'+escH(inboxWhen(m))+'</span></div>'+
+      '<div style="font-weight:600;margin-top:3px">'+unread+escH(m.subject)+'</div>'+
+      '<div style="color:var(--mut);font-size:13px;margin-top:2px">'+escH(m.snippet||'')+'</div>'+
+      '<div style="color:var(--mut);font-size:12px;margin-top:3px">'+(m.direction==='OUTBOUND'?'Sent from ':'To ')+escH(m.mailbox||m.toEmail)+'</div></article>';
+  }).join('');
+}
+function inboxOpen(id){
+  inboxOpenId=id;
+  apiFetch('/bookos/inbox/'+encodeURIComponent(id)).then(function(j){
+    var m=j.data; var det=document.getElementById('inboxDetail'); if(!det) return;
+    var thread=(m.thread||[]).map(function(t){
+      return '<div style="border-top:1px solid var(--line);padding:9px 0"><div style="font-size:12.5px;color:var(--mut)">'+(t.direction==='OUTBOUND'?'Reply sent':'Also in this thread')+' · '+escH(inboxWhen(t))+'</div><div style="font-weight:600">'+escH(t.subject)+'</div><div style="color:var(--mut);font-size:13px">'+escH(t.snippet||'')+'</div></div>';
+    }).join('');
+    var body=m.textBody?('<pre style="white-space:pre-wrap;word-break:break-word;font:inherit;font-size:14px;background:var(--bg);border-radius:10px;padding:12px;max-height:46vh;overflow:auto;margin:0">'+escH(m.textBody)+'</pre>'):'<p style="color:var(--mut);font-size:13.5px">No plain-text body was stored for this message.</p>';
+    var filed=m.customer?('CRM record: '+escH(m.customer.name)):(m.connection?('Web lead '+escH(m.connection.reference)):'Unmatched — no CRM record for this sender');
+    var reply='';
+    if(m.direction==='INBOUND'){
+      reply='<div style="margin-top:12px"><label style="font-size:12.5px;font-weight:700">Reply — sends from '+escH(m.replyFrom||'')+'<br><textarea id="inboxReplyBody" rows="5" style="width:100%;box-sizing:border-box;padding:9px;border:1px solid var(--line);border-radius:10px;font-size:14px;margin-top:3px"></textarea></label>'+
+      '<div style="display:flex;gap:8px;margin-top:9px;flex-wrap:wrap"><button class="btn navy" onclick="inboxSendReply()">Send reply</button>'+(m.status!=='ARCHIVED'?'<button class="btn ghost" onclick="inboxArchive()">Archive</button>':'')+'</div>'+
+      '<div id="inboxReplyMsg" style="font-size:13px;margin-top:8px"></div></div>';
+    }
+    det.innerHTML='<article style="border:1.5px solid var(--navy);border-radius:14px;padding:14px 16px">'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><b style="font-size:16px">'+escH(m.subject)+'</b><span style="margin-left:auto;font-size:12.5px;color:var(--mut)">'+escH(inboxWhen(m))+'</span></div>'+
+      '<div style="font-size:13.5px;color:var(--mut);margin:4px 0 10px">From '+escH(m.fromEmail)+' · To '+escH(m.toEmail)+' · '+filed+'</div>'+
+      body+thread+reply+'</article>';
+    inboxLoad();
+  }).catch(function(e){ toast('Could not open message: '+e.message); });
+}
+function inboxSendReply(){
+  if(!inboxOpenId) return;
+  var field=document.getElementById('inboxReplyBody');
+  var body=field?field.value:'';
+  var msg=document.getElementById('inboxReplyMsg');
+  if(!body.trim()){ if(msg) msg.textContent='Write the reply first.'; return; }
+  if(msg) msg.textContent='Sending…';
+  apiFetch('/bookos/inbox/'+encodeURIComponent(inboxOpenId)+'/reply',{method:'POST',body:JSON.stringify({body:body})})
+    .then(function(){ if(msg) msg.textContent='Reply sent.'; inboxOpen(inboxOpenId); })
+    .catch(function(e){ if(msg) msg.textContent='Could not send: '+e.message; });
+}
+function inboxArchive(){
+  if(!inboxOpenId) return;
+  apiFetch('/bookos/inbox/'+encodeURIComponent(inboxOpenId)+'/status',{method:'POST',body:JSON.stringify({status:'ARCHIVED'})})
+    .then(function(){ toast('Message archived'); var det=document.getElementById('inboxDetail'); if(det) det.innerHTML=''; inboxOpenId=null; inboxLoad(); })
+    .catch(function(e){ toast('Archive failed: '+e.message); });
+}
+function inboxToggleCompose(){
+  var el=document.getElementById('inboxCompose'); if(!el) return;
+  el.style.display=(el.style.display==='none'||!el.style.display)?'block':'none';
+}
+function inboxComposeSend(){
+  var fromF=document.getElementById('inboxComposeFrom');
+  var toF=document.getElementById('inboxComposeTo');
+  var subF=document.getElementById('inboxComposeSubject');
+  var bodyF=document.getElementById('inboxComposeBody');
+  var msg=document.getElementById('inboxComposeMsg');
+  var from=fromF?fromF.value:'', to=toF?toF.value:'', subject=subF?subF.value:'', body=bodyF?bodyF.value:'';
+  if(!to.trim()||!subject.trim()||!body.trim()){ if(msg) msg.textContent='To, subject and message are all required.'; return; }
+  if(msg) msg.textContent='Sending…';
+  apiFetch('/bookos/inbox/compose',{method:'POST',body:JSON.stringify({from:from,to:to,subject:subject,body:body})})
+    .then(function(){ if(msg) msg.textContent='Email sent from '+from+'.'; if(toF)toF.value=''; if(subF)subF.value=''; if(bodyF)bodyF.value=''; inboxLoad(); })
+    .catch(function(e){ if(msg) msg.textContent='Could not send: '+e.message; });
 }
 </script>
 </body>

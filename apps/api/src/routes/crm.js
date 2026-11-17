@@ -227,6 +227,26 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
     .map((n) => ({ id: n.id, author: n.author, body: n.body, createdAt: n.createdAt }));
 
+  // Email conversation: every Book OS Inbox message matched to this
+  // customer (inbound mail they sent service@ / the managed
+  // mailboxes, plus the staff replies filed on those threads),
+  // newest first. Managed in the Book OS Email Manager console.
+  const emails = (store.inboxMessages || [])
+    .filter((m) => m.customerId === customer.id)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+    .slice(0, 50)
+    .map((m) => ({
+      id: m.id,
+      direction: m.direction,
+      fromEmail: m.fromEmail,
+      toEmail: m.toEmail,
+      mailbox: m.mailbox || null,
+      subject: m.subject,
+      snippet: m.snippet || null,
+      status: m.status,
+      createdAt: m.createdAt,
+    }));
+
   // Account block: signup attribution + email-verification state live
   // on the linked User record, not the Customer record — surface them
   // here so an offer sign-up reads as one story in the 360 (which
@@ -263,6 +283,7 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
       bookings,
       intake,
       communications,
+      emails,
       referrals: {
         ownCode: referralCode ? { code: referralCode.code, status: referralCode.status, redemptions: (referralCode.redemptions || []).length } : null,
         journeys: journeys.map((j) => ({ id: j.id, status: j.status, code: j.code || null, createdAt: j.createdAt })),

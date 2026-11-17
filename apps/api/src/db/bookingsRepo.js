@@ -2,6 +2,7 @@ import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { hydrateCrmNotes } from './crmRepo.js';
+import { hydrateInboxMessages } from './inboxRepo.js';
 import { hydrateChatSessions } from './chatsRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
@@ -313,6 +314,13 @@ export async function hydrateStore() {
     await hydrateChatSessions();
   } catch (error) {
     console.error('hydrateChatSessions failed (chat insights degraded, platform continues)', error?.message || error);
+  }
+  // The Book OS Inbox is an add-on too: a missing InboxMessage table
+  // mid-deploy degrades to an empty inbox, never blocks hydration.
+  try {
+    await hydrateInboxMessages();
+  } catch (error) {
+    console.error('hydrateInboxMessages failed (inbox degraded, platform continues)', error?.message || error);
   }
   // The Google account registry is an add-on too: a missing table
   // mid-deploy degrades to an empty registry, never blocks hydration.
