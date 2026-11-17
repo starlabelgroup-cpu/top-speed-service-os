@@ -212,6 +212,10 @@ footer a{color:var(--lime)}
             <button class="btn small" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Start a listing with Speedy</button>
             <button class="btn small dark" type="button" onclick="plbShow('rec');plbRecommend('sell')">How selling works</button>
           </div>
+          <div class="plb-btnrow">
+            <button class="btn small" type="button" onclick="plsCamOpen()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>List with your camera</button>
+            <label class="btn small dark" style="cursor:pointer">Upload a photo<input type="file" accept="image/*" style="display:none" onchange="plsFilePicked(this)"></label>
+          </div>
         </div>
         <div class="plc-block">
           <h4>Selling as a business</h4>
@@ -223,6 +227,59 @@ footer a{color:var(--lime)}
           </div>
         </div>
       </div>
+    <div class="plb-panel" id="plSellPanel" style="display:none;margin-top:18px">
+      <h3>List it with your camera</h3>
+      <p class="plb-note">Snap a photo of what you are selling — your device's camera through the browser, with Speedy as your upload assistant. Speedy drafts the listing from the photo; you edit it, set your own price (Pepper never invents one), and confirm. Nothing posts before your confirm tap. If the camera is not available, upload a photo instead — every path lands in the same draft.</p>
+      <div class="plb-btnrow">
+        <button class="btn small" type="button" onclick="plsCamOpen()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera</button>
+        <label class="btn small dark" style="cursor:pointer">Upload a photo<input type="file" accept="image/*" style="display:none" onchange="plsFilePicked(this)"></label>
+      </div>
+      <img id="plSellPreview" alt="Your item photo" style="display:none;max-width:280px;width:100%;border-radius:11px;border:1px solid #2c4232;margin-top:12px">
+      <p class="plb-msg" id="plSellMsg" role="status"></p>
+      <div class="plb-btnrow"><button class="btn small" type="button" id="plSellDraftBtn" onclick="plsDraft()" disabled>Draft my listing with Speedy</button></div>
+      <div id="plSellForm" style="display:none">
+        <label class="plb-lab">Listing title<input id="plSellTitle" type="text" maxlength="120" placeholder="e.g. Fresh ackee by the box"></label>
+        <div class="plb-row">
+          <label class="plb-lab">Category
+            <select id="plSellCategory">
+              <option>Produce &amp; fruit</option>
+              <option>Trees &amp; plants</option>
+              <option>Appliances</option>
+              <option>Furniture</option>
+              <option>Electronics</option>
+              <option>Home &amp; garden</option>
+              <option>Vehicles &amp; parts</option>
+              <option>Clothing</option>
+              <option>Other</option>
+            </select>
+          </label>
+          <label class="plb-lab">Condition
+            <select id="plSellCondition">
+              <option>New</option>
+              <option>Used - like new</option>
+              <option>Used - good</option>
+              <option>Used - fair</option>
+            </select>
+          </label>
+        </div>
+        <div class="plb-row">
+          <label class="plb-lab">Your price ($)<input id="plSellPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
+          <label class="plb-lab">Phone for the office<input id="plSellPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+        </div>
+        <label class="plb-lab">Description<textarea id="plSellDesc" rows="3" maxlength="2000" placeholder="What it is, how many, pickup details — in your words"></textarea></label>
+        <div class="plb-btnrow"><button class="btn" type="button" onclick="plsReview()">Review &amp; confirm listing</button></div>
+      </div>
+      <div class="plb-summary" id="plSellSummary">
+        <h3>Check your listing before it posts</h3>
+        <ul id="plSellSummaryList"></ul>
+        <p class="plb-msg" id="plSellSummaryMsg" role="status"></p>
+        <div class="plb-btnrow">
+          <button class="btn" type="button" onclick="plsConfirm()">Looks right — post my listing</button>
+          <button class="btn dark" type="button" onclick="plsFix()">Let me fix that</button>
+        </div>
+      </div>
+      <div class="plb-success" id="plSellDone" role="status"></div>
+    </div>
       <div style="margin-top:18px;background:var(--panel2);border:1px solid #2c4232;border-radius:13px;padding:16px 18px">
         <h4 style="font-size:16px;margin-bottom:5px;color:var(--lime)">Reach more marketplaces</h4>
         <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px">Connect your Facebook, Google Shopping, eBay, Etsy and Walmart accounts — plus your posting channels — in Channel Connections, right below in your account. One account, every channel, and you can grant the Pepper Lists agent access channel by channel.</p>
@@ -312,6 +369,10 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
         <h2>Speedy Brain — your commander</h2>
         <p class="plb-sub"><b>Speedy — Assistant Manager</b> of the Top Speed Service OS, at your service inside Pepper Lists. Tell Speedy what you need and it routes you to the right Top Speed platform, reads your appliance's model plate, and sends your photos, videos and requests straight to the Service Setters office. When a request leaves this app it lands in the Service Setters queue — operations there are managed by <b>Pepper Agent, System Operations Manager</b>, who runs the follow-through behind the scenes.</p>
         <p class="plb-mode" id="plbMode" role="status"></p>
+        <div class="plb-btnrow" style="margin-top:12px">
+          <button class="btn small" type="button" onclick="plSellCamHome()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>List with your camera</button>
+          <span style="align-self:center;font-size:13px;color:var(--mut)">Selling something? Point your camera at it — Speedy drafts the listing.</span>
+        </div>
       </div>
     </div>
     <div class="plb-lanes" role="tablist" aria-label="Speedy Brain lanes">
@@ -362,10 +423,9 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <p class="plb-note">Every appliance has a rating plate — usually inside the door, on the back, or on the side. The web camera is your device's own camera through the browser — a traditional photo snapshot — and Speedy works as your upload assistant: it guides the capture, confirms what you got, then reads the plate and fills in the model and serial. You confirm every character before anything is saved — and you can always type them in by hand.</p>
       <img src="/api/v1/app/platform-images/scan-serial.webp" alt="Illustration: a customer photographing the rating plate inside a refrigerator door so Speedy can read the model and serial" style="width:min(300px,100%);height:auto;border-radius:14px;display:block;margin-bottom:14px" loading="lazy">
       <div class="plb-btnrow">
-        <button class="btn small dark" type="button" onclick="plbCamOpen('plate')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera</button>
+        <button class="btn small dark" type="button" onclick="plPlateCamOpen()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera</button>
         <label class="btn small dark" style="cursor:pointer">Upload a photo<input class="plb-file" id="plbPlateFile" type="file" accept="image/*" style="display:none" onchange="plbPlateFilePicked()"></label>
       </div>
-      <div class="plb-cam" id="plbPlateCam"><video id="plbPlateVideo" autoplay playsinline muted></video><div class="plb-camrow"><button class="btn small" type="button" onclick="plbPlateCapture()">Capture photo</button><button class="btn small dark" type="button" onclick="plbCamClose('plate')">Close camera</button></div></div>
       <img id="plbPlatePreview" alt="Your rating plate photo" style="display:none;max-width:280px;width:100%;border-radius:11px;border:1px solid #2c4232;margin-top:12px">
       <p class="plb-msg" id="plbPlateMsg" role="status"></p>
       <div class="plb-btnrow"><button class="btn small" type="button" id="plbPlateReadBtn" onclick="plbPlateRead()" disabled>Read my plate with Speedy</button></div>
@@ -398,10 +458,9 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       </div>
       <label class="plb-lab">What's happening?<textarea id="plbScanIssue" rows="3" placeholder="e.g. Fridge is warm on top, cold below, and the fan is loud"></textarea></label>
       <div class="plb-btnrow">
-        <button class="btn small dark" type="button" onclick="plbCamOpen('scan')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera — Speedy upload assistant</button>
+        <button class="btn small dark" type="button" onclick="plScanCamOpen()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.1" fill="currentColor" stroke="none"/><path d="M6.2 16.4 L8.6 16.4 L10 14.6" stroke="#B7E33C"/></svg>Use camera — Speedy upload assistant</button>
         <label class="btn small dark" style="cursor:pointer">Upload photos / video<input class="plb-file" id="plbScanFile" type="file" accept="image/*,video/*" multiple style="display:none" onchange="plbScanFilesPicked()"></label>
       </div>
-      <div class="plb-cam" id="plbScanCam"><video id="plbScanVideo" autoplay playsinline muted></video><div class="plb-camrow"><button class="btn small" type="button" onclick="plbScanCapturePhoto()">Capture photo</button><button class="btn small" type="button" id="plbRecVidBtn" onclick="plbScanToggleRecord()">Record video</button><button class="btn small dark" type="button" onclick="plbCamClose('scan')">Close camera</button></div></div>
       <div class="plb-media" id="plbMediaList"></div>
       <p class="plb-msg" id="plbScanMsg" role="status"></p>
       <div class="plb-btnrow"><button class="btn" type="button" onclick="plbScanReview()">Review &amp; send</button></div>
@@ -538,10 +597,9 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
         <label class="plr-lab" style="margin-top:12px">Anything else for the office? (optional)<input id="plrSurveyComments" type="text" maxlength="1000" placeholder="Optional — goes with the survey"></label>
       </div>
       <div class="plr-btnrow">
-        <button class="btn small dark" type="button" onclick="plrCamOpen()">Use camera</button>
+        <button class="btn small dark" type="button" onclick="plrCamOpenModule()">Use camera</button>
         <label class="btn small dark" style="cursor:pointer">Upload photos / video<input type="file" accept="image/*,video/*" multiple style="display:none" onchange="plrFilesPicked(this)"></label>
       </div>
-      <div class="plr-cam" id="plrCam"><video id="plrCamVideo" autoplay playsinline muted></video><div class="plr-camrow"><button class="btn small" type="button" onclick="plrCamCapture()">Capture photo</button><button class="btn small" type="button" id="plrRecBtn" onclick="plrToggleRecord()">Record video</button><button class="btn small dark" type="button" onclick="plrCamClose()">Close camera</button></div></div>
       <div class="plr-media" id="plrMediaList"></div>
       <p class="plr-msg" id="plrMsg" role="status"></p>
       <div class="plr-btnrow"><button class="btn" type="button" id="plrSubmitBtn" onclick="plrSubmit()">Post my review</button></div>
@@ -1081,6 +1139,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+<script src="/pepper-lists-site/pl-camera.js"></script>
 <script>
 /* SPEEDY BRAIN — Speedy AI as commander inside Pepper Lists.
    Four lanes, all on the real platform machinery: recommendations
@@ -1107,7 +1166,7 @@ function plbEnter(u){
   if(phone){ var sp=plbEl('plbScanPhone'); if(sp&&!sp.value) sp.value=phone; var lp=plbEl('plbLivePhone'); if(lp&&!lp.value) lp.value=phone; }
   plbLoadMode(); plbLoadAppliances();
 }
-function plbHide(){ var c=plbEl('plCats'); if(c) c.style.display='none'; var b=plbEl('plBrain'); if(b) b.style.display='none'; var ch=plbEl('plChannels'); if(ch) ch.style.display='none'; var w=plbEl('plWelcome'); if(w) w.style.display='none'; plbCamClose('plate'); plbCamClose('scan'); }
+function plbHide(){ var c=plbEl('plCats'); if(c) c.style.display='none'; var b=plbEl('plBrain'); if(b) b.style.display='none'; var ch=plbEl('plChannels'); if(ch) ch.style.display='none'; var w=plbEl('plWelcome'); if(w) w.style.display='none'; if(window.PLCamera) PLCamera.close(); }
 window.plbEnter=plbEnter; window.plbHide=plbHide;
 
 function plbLoadMode(){
@@ -1184,40 +1243,20 @@ function plbRecommendText(){
     .catch(function(e){ plbMsg('plbRecMsg','Speedy could not answer just now — tap a category above, or call (954) 931-7997.',true); });
 }
 
-/* ---------- Shared camera (desktop webcam + mobile camera) ---------- */
-var plbStreams={};
-function plbCamOpen(which){
-  var msgId=which==='plate'?'plbPlateMsg':'plbScanMsg';
-  var box=plbEl(which==='plate'?'plbPlateCam':'plbScanCam');
-  var video=plbEl(which==='plate'?'plbPlateVideo':'plbScanVideo');
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    plbMsg(msgId,'Camera is not available in this browser — please use the upload button instead; it works on every device.',true);
-    return;
-  }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
-    .then(function(stream){
-      plbStreams[which]=stream; video.srcObject=stream; box.style.display='block';
-      plbMsg(msgId,'Camera is on — line up the shot, then capture.');
-    })
-    .catch(function(){
-      plbMsg(msgId,'The camera was denied or is unavailable — no problem: use the upload button instead; it works on every device.',true);
-    });
+/* ---------- Camera platform (shared pl-camera.js, 2026-11-17) ----------
+   One camera for every lane: live getUserMedia -> native capture input ->
+   plain file picker, all converging on each lane's existing media sink.
+   Scan & Send and the review studio accept photo + short video; the plate
+   lane is photo-only. Speedy is the upload assistant on every path. */
+function plScanCamOpen(){
+  if(!window.PLCamera){ plbMsg('plbScanMsg','Camera is still loading — try again in a moment, or use the upload button; it works on every device.',true); return; }
+  PLCamera.open({ title:'Scan & Send — camera', allowVideo:true, accept:'image/*,video/*', stayOpenAfterUse:true,
+    onPhoto:function(b){ plbAddMedia('photo',b); }, onVideo:function(b){ plbAddMedia('video',b); } });
 }
-function plbCamClose(which){
-  var s=plbStreams[which];
-  if(s){ s.getTracks().forEach(function(t){ t.stop(); }); delete plbStreams[which]; }
-  var box=plbEl(which==='plate'?'plbPlateCam':'plbScanCam'); if(box) box.style.display='none';
-  if(which==='scan' && plbRecorder && plbRecorder.state!=='inactive'){ try{ plbRecorder.stop(); }catch(e){} }
-}
-function plbSnap(videoEl){
-  return new Promise(function(resolve){
-    var c=document.createElement('canvas');
-    var w=videoEl.videoWidth||640, h=videoEl.videoHeight||480;
-    var scale=Math.min(1,1600/Math.max(w,h));
-    c.width=Math.round(w*scale); c.height=Math.round(h*scale);
-    c.getContext('2d').drawImage(videoEl,0,0,c.width,c.height);
-    c.toBlob(function(b){ resolve(b); },'image/jpeg',0.85);
-  });
+function plPlateCamOpen(){
+  if(!window.PLCamera){ plbMsg('plbPlateMsg','Camera is still loading — try again in a moment, or use the upload button; it works on every device.',true); return; }
+  PLCamera.open({ title:'Plate scan — camera', allowVideo:false, accept:'image/*',
+    onPhoto:function(b){ plbPlateSetPhoto(b); } });
 }
 function plbDownscalePhoto(file){
   return new Promise(function(resolve){
@@ -1250,24 +1289,15 @@ function plbBlobToB64(blob){
 <script>
 /* ---------- Lane 3: Model & Serial Scan ---------- */
 var plbPlateBlob=null;
+function plbPlateSetPhoto(b){
+  plbPlateBlob=b;
+  var img=plbEl('plbPlatePreview'); img.src=URL.createObjectURL(b); img.style.display='';
+  plbEl('plbPlateReadBtn').disabled=false;
+  plbMsg('plbPlateMsg','Photo ready — read it with Speedy, or type the details in by hand below.');
+}
 function plbPlateFilePicked(){
   var f=plbEl('plbPlateFile').files[0]; if(!f) return;
-  plbDownscalePhoto(f).then(function(b){
-    plbPlateBlob=b;
-    var img=plbEl('plbPlatePreview'); img.src=URL.createObjectURL(b); img.style.display='';
-    plbEl('plbPlateReadBtn').disabled=false;
-    plbMsg('plbPlateMsg','Photo ready — read it with Speedy, or type the details in by hand below.');
-  });
-}
-function plbPlateCapture(){
-  plbSnap(plbEl('plbPlateVideo')).then(function(b){
-    if(!b){ plbMsg('plbPlateMsg','The camera did not return a photo — try again, or upload one instead.',true); return; }
-    plbPlateBlob=b;
-    var img=plbEl('plbPlatePreview'); img.src=URL.createObjectURL(b); img.style.display='';
-    plbEl('plbPlateReadBtn').disabled=false;
-    plbCamClose('plate');
-    plbMsg('plbPlateMsg','Photo captured — read it with Speedy, or type the details in by hand below.');
-  });
+  plbDownscalePhoto(f).then(plbPlateSetPhoto);
 }
 function plbPlateRead(){
   if(!plbPlateBlob){ plbMsg('plbPlateMsg','Add a plate photo first — camera or upload.',true); return; }
@@ -1326,7 +1356,6 @@ function plbLoadAppliances(){
 }
 
 /* ---------- Lane 2: Scan & Send ---------- */
-var plbRecorder=null, plbRecChunks=[], plbRecording=false;
 function plbMediaTotal(){ return plbMedia.reduce(function(s,m){ return s+m.blob.size; },0); }
 function plbRenderMedia(){
   var box=plbEl('plbMediaList'); if(!box) return;
@@ -1360,34 +1389,6 @@ function plbScanFilesPicked(){
     else plbMsg('plbScanMsg','That file is not a photo or video — it was not attached.',true);
   });
   plbEl('plbScanFile').value='';
-}
-function plbScanCapturePhoto(){
-  plbSnap(plbEl('plbScanVideo')).then(function(b){
-    if(!b){ plbMsg('plbScanMsg','The camera did not return a photo — try again, or upload one instead.',true); return; }
-    plbAddMedia('photo',b);
-  });
-}
-function plbScanToggleRecord(){
-  var btn=plbEl('plbRecVidBtn');
-  if(plbRecording){ if(plbRecorder) plbRecorder.stop(); return; }
-  var stream=plbStreams['scan'];
-  if(!stream){ plbMsg('plbScanMsg','Open the camera first, then record.',true); return; }
-  if(!window.MediaRecorder){ plbMsg('plbScanMsg','Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
-  var mime='';
-  ['video/webm','video/mp4'].forEach(function(m){ if(!mime && window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) mime=m; });
-  try{ plbRecorder=new MediaRecorder(stream, mime?{mimeType:mime}:undefined); }
-  catch(e){ plbMsg('plbScanMsg','Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
-  plbRecChunks=[];
-  plbRecorder.ondataavailable=function(ev){ if(ev.data && ev.data.size) plbRecChunks.push(ev.data); };
-  plbRecorder.onstop=function(){
-    plbRecording=false; btn.textContent='Record video';
-    var blob=new Blob(plbRecChunks,{type:plbRecorder.mimeType||'video/webm'});
-    if(blob.size) plbAddMedia('video',blob);
-  };
-  plbRecorder.start();
-  plbRecording=true; btn.textContent='Stop recording';
-  plbMsg('plbScanMsg','Recording — tap Stop when you are done (keep it under about 20 seconds).');
-  setTimeout(function(){ if(plbRecording && plbRecorder && plbRecorder.state!=='inactive') plbRecorder.stop(); },20000);
 }
 function plbScanReview(){
   var v={
@@ -1484,6 +1485,114 @@ function plbSummaryFix(){
 }
 </script>
 <script>
+/* PEPPER LISTS SELL — camera listing flow (2026-11-17).
+   Photo (shared camera platform or upload) -> Speedy drafts the listing
+   (POST /pepper-lists/listing-draft; blank manual form when Speedy is
+   unavailable) -> seller edits and sets their OWN price -> summary ->
+   CONFIRM TAP is the only caller of POST /pepper-lists/listings.
+   The confirmed listing records through the universal intake as a
+   PEPPER_LISTS_SELL connection — never a dispatch booking. */
+var plsPhotoBlob=null, plsPhotoUrl=null;
+function plsEl(id){ return document.getElementById(id); }
+function plsMsg(t,e){ plbMsg('plSellMsg',t,e); }
+function plsShowPanel(){ var p=plsEl('plSellPanel'); if(p) p.style.display=''; }
+function plSellCamHome(){
+  if(window.plCatShow) plCatShow('sell');
+  plsShowPanel();
+  var p=plsEl('plSellPanel'); if(p) p.scrollIntoView({behavior:'smooth',block:'start'});
+  plsCamOpen();
+}
+function plsCamOpen(){
+  plsShowPanel();
+  if(!window.PLCamera){ plsMsg('Camera is still loading — try again in a moment, or upload a photo instead.',true); return; }
+  PLCamera.open({ title:'List with your camera', allowVideo:false, accept:'image/*',
+    onPhoto:function(b){ plsSetPhoto(b); } });
+}
+function plsFilePicked(input){
+  var f=input.files&&input.files[0]; input.value='';
+  if(!f) return;
+  if(!/^image\//.test(f.type||'')){ plsMsg('That file is not a photo — it was not attached.',true); return; }
+  plbDownscalePhoto(f).then(plsSetPhoto);
+}
+function plsSetPhoto(b){
+  plsPhotoBlob=b;
+  if(plsPhotoUrl) URL.revokeObjectURL(plsPhotoUrl);
+  plsPhotoUrl=URL.createObjectURL(b);
+  var img=plsEl('plSellPreview'); img.src=plsPhotoUrl; img.style.display='';
+  plsEl('plSellDraftBtn').disabled=false;
+  plsEl('plSellForm').style.display='';
+  var ph=plsEl('plSellPhone'), sp=plsEl('plbScanPhone');
+  if(ph&&!ph.value&&sp&&sp.value) ph.value=sp.value;
+  var done=plsEl('plSellDone'); if(done) done.style.display='none';
+  plsMsg('Photo ready. Draft it with Speedy, or fill the listing in by hand — then review & confirm.');
+}
+function plsDraft(){
+  if(!plsPhotoBlob){ plsMsg('Add a photo of your item first — camera or upload.',true); return; }
+  plsMsg('Speedy is drafting your listing…');
+  var btn=plsEl('plSellDraftBtn'); btn.disabled=true;
+  plbBlobToB64(plsPhotoBlob).then(function(b64){
+    var mime=(plsPhotoBlob.type||'image/jpeg').split(';')[0];
+    return plApi('/pepper-lists/listing-draft',{method:'POST',body:JSON.stringify({imageDataUrl:'data:'+mime+';base64,'+b64})});
+  }).then(function(j){
+    btn.disabled=false;
+    var d=(j.data&&j.data.draft)||{};
+    if(d.title) plsEl('plSellTitle').value=d.title;
+    if(d.description) plsEl('plSellDesc').value=d.description;
+    if(d.category) plsEl('plSellCategory').value=d.category;
+    if(d.condition) plsEl('plSellCondition').value=d.condition;
+    var conf=(typeof d.confidence==='number')?(' Speedy is about '+Math.round(d.confidence*100)+'% sure of the item.'):'';
+    plsMsg('Draft ready — check every word, set your price, then review & confirm.'+conf);
+  }).catch(function(e){
+    btn.disabled=false;
+    plsMsg(((e&&e.message)||'Speedy could not draft from that photo')+' — fill the listing in by hand; posting works the same.',true);
+  });
+}
+function plsValues(){
+  var priceRaw=plsEl('plSellPrice').value.trim();
+  return {
+    title:plsEl('plSellTitle').value.trim(),
+    category:plsEl('plSellCategory').value,
+    condition:plsEl('plSellCondition').value,
+    priceCents: priceRaw===''? NaN : Math.round(parseFloat(priceRaw)*100),
+    description:plsEl('plSellDesc').value.trim(),
+    phone:plsEl('plSellPhone').value.trim()
+  };
+}
+function plsReview(){
+  var v=plsValues();
+  if(v.title.length<3){ plsMsg('Give your listing a title first.',true); return; }
+  if(!(v.priceCents>0)){ plsMsg('Set your price — Pepper never invents one, so the listing needs your number.',true); return; }
+  if(v.phone.length<7){ plsMsg('Add the phone number the office should reach you at.',true); return; }
+  var rows=[['Posting to','Facebook Marketplace (via Pepper, after your confirm)'],['Title',v.title],['Category',v.category],['Condition',v.condition],['Price','$'+(v.priceCents/100).toFixed(2)+' — your number'],['Phone',v.phone],['Photo', plsPhotoBlob?('Attached ('+Math.max(1,Math.round(plsPhotoBlob.size/1024))+' KB)'):'None attached']];
+  if(v.description) rows.push(['Description',v.description]);
+  var ul=plsEl('plSellSummaryList'); ul.innerHTML='';
+  rows.forEach(function(r){ var li=document.createElement('li'); var b=document.createElement('b'); b.textContent=r[0]+': '; li.appendChild(b); li.appendChild(document.createTextNode(r[1])); ul.appendChild(li); });
+  plbMsg('plSellSummaryMsg','');
+  var s=plsEl('plSellSummary'); s.style.display='block'; s.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function plsFix(){
+  plsEl('plSellSummary').style.display='none';
+  plsEl('plSellPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
+/* The ONLY caller of POST /pepper-lists/listings — fires from the confirm tap. */
+function plsConfirm(){
+  var v=plsValues();
+  plbMsg('plSellSummaryMsg','Posting your listing…');
+  var mediaJob=plsPhotoBlob? plbBlobToB64(plsPhotoBlob).then(function(b64){ return [{kind:'photo',mime:(plsPhotoBlob.type||'image/jpeg').split(';')[0]||'image/jpeg',dataBase64:b64}]; }) : Promise.resolve([]);
+  mediaJob.then(function(media){
+    return plApi('/pepper-lists/listings',{method:'POST',body:JSON.stringify({title:v.title,description:v.description||undefined,category:v.category,condition:v.condition,priceCents:v.priceCents,phone:v.phone,media:media})});
+  }).then(function(j){
+    plsEl('plSellSummary').style.display='none';
+    var d=j.data||{};
+    var box=plsEl('plSellDone'); box.style.display='block';
+    box.innerHTML='<b>Listing confirmed — it is with Pepper now.</b><br>Your reference is <b>'+plbEsc(d.reference||'')+'</b>. Pepper posts it to Facebook Marketplace from here; nothing was live before your confirm tap.';
+    box.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }).catch(function(e){
+    plbMsg('plSellSummaryMsg',(e&&e.message)||'That did not post — check your connection and try again.',true);
+  });
+}
+</script>
+<script>
 /* PEPPER LISTS REVIEWS — the public wall (everyone) + the signed-in
    review studio (write a review, my reviews, comment threads).
    Speedy answers every review server-side; this page only renders
@@ -1536,7 +1645,7 @@ function plrEnter(u){
   var s=plrEl('plReviews'); if(s) s.style.display='';
   plrInitPickers(); plrLoadBookings(); plrLoadMine();
 }
-function plrHide(){ var s=plrEl('plReviews'); if(s) s.style.display='none'; plrCamClose(); }
+function plrHide(){ var s=plrEl('plReviews'); if(s) s.style.display='none'; if(window.PLCamera) PLCamera.close(); }
 window.plrEnter=plrEnter; window.plrHide=plrHide;
 
 function plrPickerHtml(box,value,onPick){
@@ -1614,51 +1723,12 @@ function plrFilesPicked(input){
   });
   input.value='';
 }
-function plrCamOpen(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    plrMsg('Camera is not available in this browser — please use the upload button instead; it works on every device.',true);
-    return;
-  }
-  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false})
-    .then(function(stream){
-      plrStream=stream;
-      plrEl('plrCamVideo').srcObject=stream;
-      plrEl('plrCam').style.display='block';
-      plrMsg('Camera is on — line up the shot, then capture.');
-    })
-    .catch(function(){ plrMsg('The camera was denied or is unavailable — no problem: use the upload button instead; it works on every device.',true); });
-}
-function plrCamClose(){
-  if(plrStream){ plrStream.getTracks().forEach(function(t){ t.stop(); }); plrStream=null; }
-  var box=plrEl('plrCam'); if(box) box.style.display='none';
-  if(plrRecorder && plrRecorder.state!=='inactive'){ try{ plrRecorder.stop(); }catch(e){} }
-}
-function plrCamCapture(){
-  plbSnap(plrEl('plrCamVideo')).then(function(b){
-    if(!b){ plrMsg('The camera did not return a photo — try again, or upload one instead.',true); return; }
-    plrAddMedia('photo',b);
-  });
-}
-function plrToggleRecord(){
-  var btn=plrEl('plrRecBtn');
-  if(plrRecording){ if(plrRecorder) plrRecorder.stop(); return; }
-  if(!plrStream){ plrMsg('Open the camera first, then record.',true); return; }
-  if(!window.MediaRecorder){ plrMsg('Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
-  var mime='';
-  ['video/webm','video/mp4'].forEach(function(m){ if(!mime && window.MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) mime=m; });
-  try{ plrRecorder=new MediaRecorder(plrStream, mime?{mimeType:mime}:undefined); }
-  catch(e){ plrMsg('Video recording is not supported in this browser — you can still upload a video file instead.',true); return; }
-  plrRecChunks=[];
-  plrRecorder.ondataavailable=function(ev){ if(ev.data && ev.data.size) plrRecChunks.push(ev.data); };
-  plrRecorder.onstop=function(){
-    plrRecording=false; btn.textContent='Record video';
-    var blob=new Blob(plrRecChunks,{type:plrRecorder.mimeType||'video/webm'});
-    if(blob.size) plrAddMedia('video',blob);
-  };
-  plrRecorder.start();
-  plrRecording=true; btn.textContent='Stop recording';
-  plrMsg('Recording — tap Stop when you are done (keep it under about 20 seconds).');
-  setTimeout(function(){ if(plrRecording && plrRecorder && plrRecorder.state!=='inactive') plrRecorder.stop(); },20000);
+/* Review photos come through the shared camera platform (pl-camera.js):
+   photo + short video, same ladder as every other lane. */
+function plrCamOpenModule(){
+  if(!window.PLCamera){ plrMsg('Camera is still loading — try again in a moment, or use the upload button; it works on every device.',true); return; }
+  PLCamera.open({ title:'Review photos — camera', allowVideo:true, accept:'image/*,video/*', stayOpenAfterUse:true,
+    onPhoto:function(b){ plrAddMedia('photo',b); }, onVideo:function(b){ plrAddMedia('video',b); } });
 }
 
 /* ----- submit ----- */
