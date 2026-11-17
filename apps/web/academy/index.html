@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Top Speed Academy — Staff University | Top Speed Appliance</title>
-<meta name="description" content="Top Speed Academy: the staff university of the Top Speed Service OS — 29 training modules in 8 role tracks, with Speedy Class, the AI instructor built on Speedy.">
+<meta name="description" content="Top Speed Academy: the staff university of the Top Speed Service OS — 38 training modules in 9 tracks, including the System Navigator course, with Speedy Class, the AI instructor built on Speedy.">
 <link rel="icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/google-tag.js"></script>
@@ -112,7 +112,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div class="hero">
     <div class="kicker">Top Speed University — Education OS</div>
     <h1>Top Speed <span>Academy</span></h1>
-    <p>The staff university of the Top Speed Service OS: 29 training modules in 8 role tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works. Below it, the AI Specialists &amp; Strategists give every department — and every category inside it — its own coach for running that part of the ecosystem.</p>
+    <p>The staff university of the Top Speed Service OS: 38 training modules in 9 tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers, plus the System Navigator course (modules 30–38) that teaches the whole platform map from the same system map the Navigator answers from. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works. Below it, the AI Specialists &amp; Strategists give every department — and every category inside it — its own coach for running that part of the ecosystem.</p>
   </div>
 
   <img src="/api/v1/app/platform-images/academy-learning.webp" alt="Illustration: a young technician learning with a tablet beside an open refrigerator — Top Speed Academy" style="width:min(340px,100%);height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
@@ -191,7 +191,8 @@ var TRACKS = [
   { name: 'Setter Track', sub: 'Service Setters — the dispatch team', lo: 16, hi: 19 },
   { name: 'Dispatcher Track', sub: 'Dispatchers', lo: 20, hi: 22 },
   { name: 'Ad Specialist Track', sub: 'Ads & marketing', lo: 23, hi: 26 },
-  { name: 'Customer-Facing', sub: 'Everyone who talks to customers', lo: 27, hi: 29 }
+  { name: 'Customer-Facing', sub: 'Everyone who talks to customers', lo: 27, hi: 29 },
+  { name: 'System Navigator', sub: 'Know Your Platform — every role', lo: 30, hi: 38 }
 ];
 var TITLES = {
   1: 'Welcome to Top Speed Service OS', 2: 'The Job Journey & Track My Tech', 3: 'Working With Speedy AI',
@@ -201,7 +202,10 @@ var TITLES = {
   16: 'Service Book Pro: The Setter Queue', 17: 'Taking Bookings', 18: 'Areas, Windows & The Waitlist', 19: 'CRM 360 & Speedy Drafts',
   20: 'The Dispatch Board', 21: 'Live Tracking & Exceptions', 22: 'Escalations & Out-of-Area',
   23: 'Advertiser Console & Media OS', 24: 'Google Ads', 25: 'Facebook Ads & Lead Ads', 26: 'Attribution & Offline Conversions',
-  27: 'The Four Front Doors, In Depth', 28: 'Offers & The Referral Program', 29: 'Pricing, Terms & The $99 Diagnostic'
+  27: 'The Four Front Doors, In Depth', 28: 'Offers & The Referral Program', 29: 'Pricing, Terms & The $99 Diagnostic',
+  30: 'System Navigator — Where Things Live', 31: 'System Navigator — Bookings & Dispatch', 32: 'System Navigator — Accounts & Work Time Access',
+  33: 'System Navigator — Payments', 34: 'System Navigator — Marketing OS & Ad Studio', 35: 'System Navigator — Email Manager',
+  36: 'System Navigator — Pepper Lists', 37: 'System Navigator — Parts', 38: 'System Navigator — Speedy & AI Tools'
 };
 var TEACHES = {
   1: 'The platform map: one backend, four front doors, how every job flows — plus the standing rules and numbers.',
@@ -232,7 +236,16 @@ var TEACHES = {
   26: 'Attribution on every booking, offline conversions and the gclid, the weekly rhythm.',
   27: 'Routing every customer in one sentence and the navigation promises.',
   28: 'The twelve offers and the referral economics, exactly as published.',
-  29: 'The $99 diagnostic word for word, flat labor and installation, the standing terms.'
+  29: 'The $99 diagnostic word for word, flat labor and installation, the standing terms.',
+  30: 'The platform map: every console, what it is for, who can open it — and the Navigator that answers "where is…?" from this same map.',
+  31: "A booking's road: web form first, the setter queue, dispatch, the tech in Speedy Pro, and the customer tracking it.",
+  32: 'Issuing accounts and passwords in Work Time Account Access, employee numbers, Speedy Verify codes, and the Layer 2 step at sign-in.',
+  33: 'Checking Stripe status, the $99 diagnostic, Finance OS, and why payouts are a separate switch in the Stripe dashboard.',
+  34: 'Publishing pages from the taxonomy in Page Studio, reading the SEO dashboard, and approving the house ad so the Flywheel banner lights up.',
+  35: 'The three managed mailboxes in Book OS, finding any customer thread, and how mail files itself onto the CRM record.',
+  36: 'The two categories — Sell and Post — the Advertise lane, and moderating the Reviews wall from Book OS.',
+  37: 'Ordering through Parts Supply OS and the Appliance Plus partner — and what "verified fitment" actually means.',
+  38: 'How Speedy answers customers, what fallback mode means, the engines on /explore, and the one owner step that turns live AI back on.'
 };
 function moduleNum(rec){
   var m = /training-module-(\d+)-/.exec(rec.slug || '');
@@ -280,7 +293,7 @@ function renderTracks(records){
     .sort(function(a, b){ return a.n - b.n; });
   var withVideo = mods.filter(function(x){ return !!x.rec.assetUrl; }).length;
   document.getElementById('currSummary').textContent =
-    mods.length + ' modules · 8 tracks · ' + withVideo + ' with video attached' +
+    mods.length + ' modules · ' + TRACKS.length + ' tracks · ' + withVideo + ' with video attached' +
     (withVideo < mods.length ? ' — the rest attach the moment permanent video hosting is set up.' : '.');
   var zone = document.getElementById('tracksZone');
   if (!mods.length){
@@ -293,12 +306,19 @@ function renderTracks(records){
     var cards = inTrack.map(function(x){
       var r = x.rec;
       var title = TITLES[x.n] || String(r.title || '').replace(/^Module\s+\d+\s*:\s*/, '');
+      var isArticle = r.type === 'ARTICLE';
       var media = r.assetUrl
         ? '<video controls preload="metadata" src="' + esc(r.assetUrl) + '"></video>'
-        : '<div class="hosting">' + CLOCK_ICON + '<div>Video hosting is being set up — this module\'s video is ready to attach.</div></div>';
+        : isArticle
+          ? (r.transcript
+              ? '<details><summary style="cursor:pointer;font-weight:600;font-size:13px">Read the lesson</summary><p style="white-space:pre-wrap;margin-top:8px">' + esc(r.transcript) + '</p></details>'
+              : (r.description ? '<p>' + esc(r.description) + '</p>' : ''))
+          : '<div class="hosting">' + CLOCK_ICON + '<div>Video hosting is being set up — this module\'s video is ready to attach.</div></div>';
+      var dest = r.destinationUrl
+        ? '<div><a class="btn ghost sm" href="' + esc(r.destinationUrl) + '">Open the System Navigator</a></div>' : '';
       return '<div class="card"><h3><span class="mnum">' + x.n + '</span><span>' + esc(title) + '</span></h3>' +
-        '<div>' + statusPill(r.status) + ' <span class="pill">Video</span></div>' +
-        (TEACHES[x.n] ? '<p>' + esc(TEACHES[x.n]) + '</p>' : '') + media + '</div>';
+        '<div>' + statusPill(r.status) + ' <span class="pill">' + (isArticle ? 'Article' : 'Video') + '</span></div>' +
+        (TEACHES[x.n] ? '<p>' + esc(TEACHES[x.n]) + '</p>' : '') + media + dest + '</div>';
     }).join('');
     return '<h2 class="sec">' + BOOK_ICON + esc(tr.name) + '<span class="count pill">' + inTrack.length + ' modules</span></h2>' +
       '<p class="sub">' + esc(tr.sub) + ' · Modules ' + tr.lo + '–' + tr.hi + '</p>' +

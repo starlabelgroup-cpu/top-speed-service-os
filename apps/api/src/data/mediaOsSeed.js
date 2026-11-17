@@ -1,3 +1,5 @@
+import { buildNavigatorLessonRecords } from './systemMap.js';
+
 // Top Speed Media OS — Phase 1 seed content (2026-11-14).
 //
 // Create-only by slug (prisma/seed.mjs checks existence first, exactly
@@ -98,4 +100,9 @@ export const MEDIA_CONTENT_SEEDS = [
     publishedAt: null,
     tags: ['training-academy'],
   })),
+  // System Navigator course (modules 30–38, added 2026-11-17):
+  // generated from data/systemMap.js — the same source the System
+  // Navigator answers from — so the course and the live guide can
+  // never drift apart. ARTICLE lessons, PUBLISHED from day one.
+  ...buildNavigatorLessonRecords(),
 ];

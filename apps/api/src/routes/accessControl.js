@@ -42,7 +42,14 @@ import { publicUser } from './auth.js';
 const router = Router();
 
 const masterOnly = [authenticate, requireRole(ROLES.COMPANY_OWNER)];
-router.use(...masterOnly);
+// Path-scoped to /access-control ON PURPOSE (hotfix 2026-11-17): this
+// router is mounted at /api/v1 ahead of most other routers, and an
+// UNSCOPED router.use(masterOnly) here answered every later router's
+// traffic first — public routes (Speedy chat/status, payments status,
+// the /app image routes, the engines) all returned 401/403 in
+// production. Scoped, the gate still covers every route below (they
+// all live under /access-control/*) and nothing else.
+router.use('/access-control', ...masterOnly);
 
 // ---------------------------------------------------------------------------
 // The surface catalog: what the create form offers, in plain words.

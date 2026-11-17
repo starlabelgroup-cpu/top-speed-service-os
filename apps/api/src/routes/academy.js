@@ -66,6 +66,12 @@ function learnerContent(record) {
     description: record.description || null,
     assetUrl: record.assetUrl || null,
     thumbnailUrl: record.thumbnailUrl || null,
+    destinationUrl: record.destinationUrl || null,
+    // Lesson body for text content (the System Navigator course,
+    // modules 30–38, is ARTICLE-type): trainees read the lesson from
+    // the record itself. Video modules carry no transcript today, so
+    // this stays null for them.
+    transcript: record.transcript || null,
     durationSec: record.durationSec ?? null,
     status: record.status,
     tags: Array.isArray(record.tags) ? record.tags : [],

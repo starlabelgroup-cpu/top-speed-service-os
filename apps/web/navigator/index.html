@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>System Navigator — Back-Office Guide | Top Speed Service OS</title>
+<meta name="description" content="The System Navigator: the staff-only guide to the Top Speed Service OS — where everything lives, how everything is done, with a link to every console.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:14px 2px 4px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Rajdhani";font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:720px;line-height:1.6}
+h2.sec{font-family:"Rajdhani";font-size:20px;margin:28px 0 6px;display:flex;align-items:center;gap:9px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:780px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Rajdhani";font-size:16px;line-height:1.3}
+.card p{color:var(--mut);font-size:13px;line-height:1.55}
+.card .loc{font-size:12px;color:#B9CFF2;word-break:break-word}
+.card ul{margin:2px 0 0 16px;color:var(--mut);font-size:12.5px;line-height:1.6}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase}
+.card .openrow{margin-top:auto;padding-top:6px}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:14px}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+.console h3{font-family:"Rajdhani";font-size:16px;margin-bottom:4px}
+.btn{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter;display:inline-block}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.gate{max-width:460px;margin:26px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px}
+.gate h2{font-family:"Rajdhani";font-size:19px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.6}
+.gate label{display:block;font-size:11px;font-weight:700;color:var(--mut);letter-spacing:.05em;margin:14px 0 5px;text-transform:uppercase}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+.gate .btn{width:100%;margin-top:16px;padding:11px}
+.gerr{display:none;color:#F08A88;font-size:13px;margin-top:10px;line-height:1.5}
+.msg{font-size:13px;margin-top:10px;line-height:1.5}
+.msg.err{color:#F08A88}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.chatlog{display:flex;flex-direction:column;gap:10px;max-height:460px;overflow-y:auto;padding:6px 2px;margin-top:12px}
+.bubble{max-width:86%;padding:11px 14px;border-radius:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.bubble.me{align-self:flex-end;background:rgba(18,128,255,.18);border:1px solid rgba(18,128,255,.45);border-bottom-right-radius:4px}
+.bubble.sp{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.bubble .who{display:block;font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}
+.bubble .links{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;white-space:normal}
+.bubble .links a{background:rgba(232,50,46,.14);border:1px solid rgba(232,50,46,.5);color:#FFD9D7;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700}
+.chatform{display:flex;gap:8px;margin-top:12px}
+.chatform input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:11px 13px;font-size:14px;font-family:Inter;min-width:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--txt);border-radius:999px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Inter;text-align:left}
+.chip:hover{border-color:var(--blue)}
+.modebar{font-size:12px;color:var(--mut);margin-top:10px;display:flex;gap:7px;align-items:center}
+.modebar .dot{width:8px;height:8px;border-radius:50%;background:var(--grn);flex:none}
+.modebar.kb .dot{background:var(--yel)}
+.govnote{border:1px solid rgba(234,179,8,.45);background:rgba(234,179,8,.07);border-radius:var(--rad);padding:13px 15px;margin-top:14px;font-size:13.5px;line-height:1.6;color:var(--txt);display:flex;gap:10px;align-items:flex-start}
+.govnote .fxi{width:19px;height:19px;margin-top:1px;color:var(--yel)}
+.searchrow{margin-top:14px}
+.searchrow input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:11px 13px;font-size:14px;font-family:Inter}
+details.howto{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:14px 16px;margin-top:10px}
+details.howto summary{cursor:pointer;font-family:"Rajdhani";font-size:15.5px;font-weight:600;line-height:1.35}
+details.howto ol{margin:10px 0 0 20px;color:var(--mut);font-size:13.5px;line-height:1.65}
+details.howto .note{color:var(--txt);font-size:13px;line-height:1.6;margin-top:10px;border-left:3px solid var(--red);padding-left:10px}
+details.howto .where{margin-top:10px}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Back Office — Staff Only</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+19549317997">Call 954-931-7997</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Top Speed Service OS — Back Office</div>
+    <h1>System <span>Navigator</span></h1>
+    <p>Your guide to the whole platform: ask where anything lives and get the exact console with a link, or ask how anything is done and get the steps as they work in the live system. The directory below is the same system map the Navigator answers from — and the same map the Academy course “System Navigator: Know Your Platform” (modules 30–38) is generated from, so the guide and the course never drift apart.</p>
+  </div>
+
+  <div id="gateZone"></div>
+
+  <div id="staffZone" style="display:none">
+    <div class="console" id="navPanel">
+      <h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z" stroke="#E8322E"/></svg>Ask the Navigator</h3>
+      <p class="small mut">“Where is the Email Manager?” · “How do I issue a Speedy Verify code?” · “Where do I approve ads?” — every answer names the console and carries its link.</p>
+      <div class="modebar" id="navMode"><span class="dot"></span><span>Loading the Navigator…</span></div>
+      <div class="chips" id="navStarters"></div>
+      <div class="chatlog" id="chatLog"></div>
+      <form class="chatform" id="chatForm">
+        <input id="chatInput" type="text" maxlength="2000" placeholder="Where is…? / How do I…?" autocomplete="off">
+        <button class="btn" id="chatSend" type="submit">Ask</button>
+      </form>
+      <div class="msg" id="chatMsg"></div>
+    </div>
+
+    <div class="govnote"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M12 8v4" stroke="#E8322E"/><circle cx="12" cy="15.4" r=".4" fill="#E8322E"/></svg><div><strong>Guide only, by design.</strong> The Navigator explains and links — it never runs operations. Dispatch, approvals, refunds, account and code issuance are done by people in the consoles; the Navigator gives you the exact steps and walks you to the right one.</div></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13.5H6.7A2.7 2.7 0 0 0 4 20.2z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20" stroke="#E8322E"/></svg>The system directory</h2>
+    <p class="sub" id="dirSummary"><span class="spin"></span> Loading the system map…</p>
+    <div class="searchrow"><input id="dirSearch" type="text" placeholder="Filter the directory — try “email”, “verify”, “ads”, “parts”…" autocomplete="off"></div>
+    <div id="dirZone"></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h13M4 12h16M4 18.5h10"/><circle cx="19.5" cy="18.5" r="1.6" stroke="#E8322E"/></svg>How things are done</h2>
+    <p class="sub">The procedures, step by step, exactly as they work in the live system.</p>
+    <div id="howtoZone"></div>
+
+    <div style="margin-top:18px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
+  </div>
+</main>
+
+<footer>
+  <a href="/applianceman">ApplianceMan</a><a href="/turbo-boss">Turbo Boss</a><a href="/oversight">Oversight</a><a href="/book-os">Book OS</a><a href="/crm">CRM</a><a href="/academy">Academy</a><a href="/">Platform Home</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · System Navigator — the back-office guide to the Service OS · Staff only</div>
+</footer>
+
+<script src="/layer2.js" defer></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+function isExternal(url){ return /^https?:\/\//i.test(url || ''); }
+
+/* ── Sign-in gate (same pattern as the Academy) ─────────────── */
+function showGate(note){
+  document.getElementById('staffZone').style.display = 'none';
+  var zone = document.getElementById('gateZone');
+  zone.innerHTML = '<div class="gate"><h2>Staff sign-in</h2>' +
+    '<p>The System Navigator is for Top Speed staff. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
+    (note ? ' ' + esc(note) : '') + '</p>' +
+    '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
+    '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">Sign in to the Navigator</button><div class="gerr" id="liErr"></div></form></div>';
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr');
+    err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
+        if (res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ err.textContent = 'Your account needs its Speedy Verify code step — complete sign-in on a console that shows the code step (Book OS), then return here.'; err.style.display = 'block'; return; }
+        if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+/* ── Chat ───────────────────────────────────────────────────── */
+var navHistory = [];
+var welcomed = false;
+function navSessionId(){
+  try {
+    var id = sessionStorage.getItem('tsos_nav_session');
+    if (!id || !/^[0-9a-f-]{36}$/i.test(id)){
+      id = (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c){ var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }));
+      sessionStorage.setItem('tsos_nav_session', id);
+    }
+    return id;
+  } catch(e){ return undefined; }
+}
+function addBubble(who, text, mine, links){
+  var log = document.getElementById('chatLog');
+  var div = document.createElement('div');
+  div.className = 'bubble ' + (mine ? 'me' : 'sp');
+  var html = '<span class="who">' + esc(who) + '</span>' + esc(text);
+  if (links && links.length){
+    html += '<span class="links">' + links.map(function(l){
+      return '<a href="' + esc(l.url) + '"' + (isExternal(l.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(l.name) + '</a>';
+    }).join('') + '</span>';
+  }
+  div.innerHTML = html;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+  return div;
+}
+function postNav(message, attempt){
+  var body = { message: message, sessionId: navSessionId(), history: navHistory.slice(-10) };
+  return authFetch('/navigator/chat', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); throw new Error('expired'); }
+      if (res.status === 403){ showGate('That account is not a staff account, so the Navigator stays closed for it.'); throw new Error('forbidden'); }
+      if (res.status >= 500 && attempt < 1){ return postNav(message, attempt + 1); }
+      if (res.status !== 200 || !res.j || !res.j.data || !res.j.data.reply){
+        throw new Error((res.j && res.j.error) || ('HTTP ' + res.status));
+      }
+      return res.j.data;
+    });
+}
+function askNav(text){
+  var msg = document.getElementById('chatMsg');
+  msg.textContent = '';
+  addBubble('You', text, true);
+  navHistory.push({ role: 'user', content: text });
+  var send = document.getElementById('chatSend');
+  send.disabled = true;
+  postNav(text, 0)
+    .then(function(data){
+      addBubble('Navigator', data.reply, false, data.links || []);
+      navHistory.push({ role: 'assistant', content: data.reply });
+    })
+    .catch(function(e){
+      if (e && (e.message === 'expired' || e.message === 'forbidden')) return;
+      msg.textContent = 'The Navigator could not answer just now — try again in a moment.';
+      msg.className = 'msg err';
+    })
+    .finally(function(){ send.disabled = false; });
+}
+
+/* ── Directory + how-tos ────────────────────────────────────── */
+var MAPDATA = null;
+function areaCard(a){
+  var actions = (a.actions && a.actions.length)
+    ? '<ul>' + a.actions.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '';
+  return '<div class="card" data-search="' + esc((a.name + ' ' + a.location + ' ' + a.purpose + ' ' + (a.actions || []).join(' ')).toLowerCase()) + '">' +
+    '<h3>' + esc(a.name) + '</h3>' +
+    '<div class="loc">' + esc(a.location) + '</div>' +
+    '<p>' + esc(a.purpose) + '</p>' + actions +
+    '<div><span class="pill">' + esc(a.access) + '</span></div>' +
+    '<div class="openrow"><a class="btn sm" href="' + esc(a.url) + '"' + (isExternal(a.url) ? ' target="_blank" rel="noopener"' : '') + '>Open</a></div>' +
+    '</div>';
+}
+function renderDirectory(filter){
+  var zone = document.getElementById('dirZone');
+  if (!MAPDATA){ zone.innerHTML = '<div class="empty">The directory could not be loaded — refresh to try again.</div>'; return; }
+  var f = String(filter || '').trim().toLowerCase();
+  var html = MAPDATA.groups.map(function(g){
+    var cards = g.areas.filter(function(a){
+      if (!f) return true;
+      var hay = (a.name + ' ' + a.location + ' ' + a.purpose + ' ' + a.access + ' ' + (a.actions || []).join(' ')).toLowerCase();
+      return hay.indexOf(f) !== -1;
+    }).map(areaCard).join('');
+    if (!cards) return '';
+    return '<h2 class="sec">' + esc(g.name) + '</h2><div class="grid">' + cards + '</div>';
+  }).join('');
+  zone.innerHTML = html || '<div class="empty">Nothing in the directory matches that filter — clear it to see the whole map.</div>';
+}
+function renderHowtos(){
+  var zone = document.getElementById('howtoZone');
+  if (!MAPDATA) { zone.innerHTML = ''; return; }
+  zone.innerHTML = MAPDATA.howtos.map(function(h){
+    var steps = h.steps.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
+    var note = h.note ? '<div class="note">' + esc(h.note) + '</div>' : '';
+    var where = h.url ? '<div class="where"><a class="btn ghost sm" href="' + esc(h.url) + '"' + (isExternal(h.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(h.areaName || 'Console') + '</a></div>' : '';
+    return '<details class="howto"><summary>' + esc(h.title) + '</summary><ol>' + steps + '</ol>' + note + where + '</details>';
+  }).join('');
+}
+
+/* ── Boot ───────────────────────────────────────────────────── */
+function boot(){
+  if (!tok()){ showGate(''); return; }
+  authFetch('/navigator/status')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status === 403){ showGate('That account is not a staff account, so the Navigator stays closed for it.'); return; }
+      if (res.status !== 200 || !res.j || !res.j.data){ showGate('The Navigator could not be reached — sign in again.'); return; }
+      document.getElementById('gateZone').innerHTML = '';
+      document.getElementById('staffZone').style.display = 'block';
+      var d = res.j.data;
+      var mode = document.getElementById('navMode');
+      if (d.mode === 'knowledge-fallback'){
+        mode.className = 'modebar kb';
+        mode.innerHTML = '<span class="dot"></span><span>Answering from the system map — ' + esc(String(d.areas)) + ' areas · ' + esc(String(d.howtos)) + ' procedures (live AI is off; map answers are exact).</span>';
+      } else {
+        mode.innerHTML = '<span class="dot"></span><span>Live AI + system map — ' + esc(String(d.areas)) + ' areas · ' + esc(String(d.howtos)) + ' procedures.</span>';
+      }
+      var starters = ['Where is the Email Manager?', 'How do I issue a Speedy Verify code?', 'Where do I approve ads?', 'How do I create an account for a new employee?', 'How does a booking flow end to end?', 'Speedy is on fallback — what does that mean?'];
+      document.getElementById('navStarters').innerHTML = starters.map(function(s){ return '<button class="chip" type="button" data-q="' + esc(s) + '">' + esc(s) + '</button>'; }).join('');
+      Array.prototype.forEach.call(document.querySelectorAll('#navStarters .chip'), function(ch){
+        ch.addEventListener('click', function(){ askNav(ch.getAttribute('data-q')); });
+      });
+      if (!welcomed){
+        welcomed = true;
+        addBubble('Navigator', 'Hi — I\'m the System Navigator. Ask me where anything lives or how anything is done, and I\'ll answer from the system map with the link. The full directory is below.', false, [{ name: 'Training Academy — System Navigator course', url: '/academy' }]);
+      }
+      return authFetch('/navigator/map');
+    })
+    .then(function(r){
+      if (!r) return null;
+      return r.json().then(function(j){ return { status: r.status, j: j }; });
+    })
+    .then(function(res){
+      if (!res || res.status !== 200 || !res.j || !res.j.data) return;
+      MAPDATA = res.j.data;
+      document.getElementById('dirSummary').textContent = MAPDATA.counts.areas + ' areas · ' + MAPDATA.counts.howtos + ' procedures — one map for the Navigator, this directory, and Academy modules 30–38.';
+      renderDirectory('');
+      renderHowtos();
+    })
+    .catch(function(){ showGate('The Navigator could not be reached — sign in again.'); });
+}
+
+document.getElementById('chatForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var input = document.getElementById('chatInput');
+  var text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  askNav(text);
+});
+document.getElementById('dirSearch').addEventListener('input', function(ev){ renderDirectory(ev.target.value); });
+document.getElementById('btnSignOut').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+</body>
+</html>
