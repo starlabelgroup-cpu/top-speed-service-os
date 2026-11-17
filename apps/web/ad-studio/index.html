@@ -271,6 +271,27 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <div class="console">
       <div id="extBody"><span class="mut small"><span class="spin"></span> Loading the external board…</span></div>
       <div class="msg" id="extMsg"></div>
+
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18" stroke="#E8322E"/><path d="M7 15h4"/></svg>Advertiser plans</h2>
+    <p class="sub">The Flywheel plan tiers advertisers subscribe to — Starter, Growth, Pro. Plans ship as structure: <b style="color:var(--txt)">a price exists only when the owner sets it here</b>, and setting one creates that plan's Stripe Product &amp; Price with exactly that amount. An unpriced plan shows "Pricing launching soon" in the Advertiser Console and cannot be checked out. Existing advertiser accounts are grandfathered on the baseline — plans only gate features above it. Price and structure changes are owner-only.</p>
+    <div class="console">
+      <div class="small mut" id="plansAdminStatus">Loading plans…</div>
+      <div class="rows" id="plansAdminRows" style="margin-top:6px"></div>
+      <div class="cform" style="margin-top:14px">
+        <div><label>Past-due grace window (days)</label><input id="graceDaysInput" type="number" min="0" max="30" step="1"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn ghost sm" type="button" id="graceSaveBtn">Save grace window</button></div>
+      </div>
+      <div class="msg" id="plansAdminMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 19.5c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5" /><path d="M16 8.5h5M18.5 6v5" stroke="#E8322E"/></svg>Advertiser subscriptions</h2>
+    <p class="sub">Every advertiser's plan state. The owner can grant any plan without payment (office grant — audited, for house accounts and deals closed offline) or revoke a grant; a revoked account falls back to its own baseline. Past-due accounts sit in the grace window, then go read-only (SUSPENDED) until the plan is reactivated.</p>
+    <div class="console">
+      <div class="small mut" id="subsStatus">Loading subscriptions…</div>
+      <div class="rows" id="subsRows" style="margin-top:6px"></div>
+      <div class="msg" id="subsMsg"></div>
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 1 1-3.4-6.6L21 5.5l-.6 3.3A8.4 8.4 0 0 1 21 12z"/><path d="M8.5 10.8h7M8.5 13.8h4.5" stroke="#E8322E"/></svg>Ask Pepper</h2>
@@ -763,6 +784,158 @@ function loadExternal(){
     .catch(function(){ document.getElementById('extBody').innerHTML = '<span class="mut small">The external board could not be loaded — connection error.</span>'; });
 }
 
+
+
+/* ── Advertiser plans admin (Flywheel Advertiser Plans) ── */
+var PLAN_FEATURE_LABEL = { campaigns:'Campaigns', display:'Display placements', streaming:'Streaming Ads channel', aiDrafter:'AI copy drafter', attribution:'Attribution view', loopView:'Flywheel loop view', creativePicker:'Creative picker' };
+var SUB_STATUS_LABEL = { NONE:'No plan', GRANDFATHERED:'Grandfathered baseline', ACTIVE:'Active', TRIALING:'Trial', PAST_DUE:'Past due', GRACE:'Past due — grace', SUSPENDED:'Suspended', OFFICE_GRANTED:'Office granted' };
+var adminPlans = [];
+var adminSubs = [];
+function planMoney(cents){ return cents == null ? null : '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2 }) + '/mo'; }
+function subPill(s){
+  var cls = (s === 'ACTIVE' || s === 'TRIALING' || s === 'OFFICE_GRANTED' || s === 'GRANDFATHERED') ? 'active'
+    : (s === 'PAST_DUE' || s === 'GRACE') ? 'pending' : s === 'SUSPENDED' ? 'ended' : 'draft';
+  return '<span class="pill ' + cls + '">' + esc(SUB_STATUS_LABEL[s] || s) + '</span>';
+}
+function loadPlansAdmin(){
+  Promise.all([
+    authFetch('/ad-studio/plans').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+    authFetch('/ad-studio/subscriptions').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+  ]).then(function(res){
+    if (res[0] && res[0].data){
+      adminPlans = res[0].data.plans || [];
+      document.getElementById('graceDaysInput').value = (res[0].data.settings && res[0].data.settings.graceDays) != null ? res[0].data.settings.graceDays : 7;
+    }
+    if (res[1] && res[1].data){ adminSubs = res[1].data.subscriptions || []; }
+    renderPlansAdmin(res[1] && res[1].data ? res[1].data.counts : null);
+    renderSubs();
+  });
+}
+function renderPlansAdmin(counts){
+  var status = document.getElementById('plansAdminStatus');
+  var rows = document.getElementById('plansAdminRows');
+  status.textContent = adminPlans.length + ' plan tier(s)' + (counts ? ' · ' + counts.total + ' advertiser subscription(s) · ' + counts.pastDue + ' past due' : '');
+  if (!adminPlans.length){ rows.innerHTML = '<span class="mut small">No plans exist yet.</span>'; return; }
+  rows.innerHTML = adminPlans.map(function(p){
+    var feats = Object.keys(PLAN_FEATURE_LABEL).filter(function(k){ return p.features && p.features[k]; }).map(function(k){ return PLAN_FEATURE_LABEL[k]; }).join(' · ') || '—';
+    var cap = p.limits && p.limits.maxCampaigns != null ? 'Up to ' + p.limits.maxCampaigns + ' campaigns' : 'Unlimited campaigns';
+    var priceBit = p.monthlyPriceCents != null
+      ? '<b style="color:var(--txt)">' + esc(planMoney(p.monthlyPriceCents)) + '</b> · Stripe: ' + (p.stripeSynced ? 'price synced' : 'NOT synced')
+      : '<b style="color:var(--yel)">Pricing not set</b> — checkout closed for this plan';
+    var controls = '';
+    if (isOwner){
+      controls = '<div class="acts">'
+        + '<input type="number" min="1" step="1" placeholder="$ / month" id="priceInput-' + esc(p.key) + '" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:6px 9px;font-size:12.5px;width:110px">'
+        + '<button class="btn sm" type="button" data-pact="set-price" data-key="' + esc(p.key) + '">Set price</button>'
+        + (p.monthlyPriceCents != null ? '<button class="btn ghost sm" type="button" data-pact="unset-price" data-key="' + esc(p.key) + '">Unset price</button>' : '')
+        + '<button class="btn ghost sm" type="button" data-pact="toggle-active" data-key="' + esc(p.key) + '">' + (p.isActive ? 'Hide plan' : 'Show plan') + '</button>'
+        + '</div>';
+    } else {
+      controls = '<div class="acts"><span class="pill">Owner-only controls</span></div>';
+    }
+    return '<div class="crow"><div class="meta"><b>' + esc(p.name) + '</b> <span class="pill ' + (p.isActive ? 'active' : 'ended') + '">' + (p.isActive ? 'Shown' : 'Hidden') + '</span>'
+      + '<div class="slug">key <span class="tag">' + esc(p.key) + '</span></div>'
+      + '<div class="desc">' + esc(p.description || '') + '</div>'
+      + '<div class="desc">Price: ' + priceBit + '</div>'
+      + '<div class="desc">Includes: ' + esc(feats) + '</div>'
+      + '<div class="desc">' + esc(cap) + ' · Channels: ' + esc(((p.limits && p.limits.channels) || ['DISPLAY']).join(', ')) + '</div>'
+      + '</div>' + controls + '</div>';
+  }).join('');
+}
+function renderSubs(){
+  var status = document.getElementById('subsStatus');
+  var rows = document.getElementById('subsRows');
+  if (!adminSubs.length){ status.textContent = 'No advertiser subscriptions yet — rows appear when an advertiser opens Plans & Billing, subscribes, or is granted a plan.'; rows.innerHTML = ''; return; }
+  status.textContent = adminSubs.length + ' advertiser(s) with plan state';
+  var planOptions = adminPlans.map(function(p){ return '<option value="' + esc(p.key) + '">' + esc(p.name) + '</option>'; }).join('');
+  rows.innerHTML = adminSubs.map(function(s){
+    var who = (s.user && (s.user.name || s.user.email)) || s.userId;
+    var controls = '';
+    if (isOwner){
+      controls = '<div class="acts"><select id="grantSel-' + esc(s.userId) + '" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:6px 9px;font-size:12.5px">' + planOptions + '</select>'
+        + '<button class="btn blue sm" type="button" data-sact="grant" data-user="' + esc(s.userId) + '">Grant plan</button>'
+        + (s.effectiveStatus === 'OFFICE_GRANTED' ? '<button class="btn ghost sm" type="button" data-sact="revoke" data-user="' + esc(s.userId) + '">Revoke grant</button>' : '')
+        + '</div>';
+    }
+    return '<div class="crow"><div class="meta"><b>' + esc(who) + '</b> ' + subPill(s.effectiveStatus)
+      + '<div class="slug">' + esc((s.user && s.user.email) || '') + '</div>'
+      + '<div class="desc">Plan: <b style="color:var(--txt)">' + esc(s.planName || '—') + '</b>'
+      + (s.currentPeriodEnd ? ' · Period ends ' + esc(String(s.currentPeriodEnd).slice(0, 10)) : '')
+      + (s.cancelAtPeriodEnd ? ' · Cancels at period end' : '')
+      + (s.pendingPlanKey ? ' · Downgrade to ' + esc(s.pendingPlanKey) + ' scheduled' : '')
+      + (s.pastDueAt ? ' · Past due since ' + esc(String(s.pastDueAt).slice(0, 10)) : '')
+      + (s.hasStripeSubscription ? ' · Stripe subscription on file' : ' · No Stripe subscription')
+      + '</div></div>' + controls + '</div>';
+  }).join('');
+}
+function planAction(act, key, btn){
+  btn.disabled = true;
+  var done = function(ok, text){ setMsg('plansAdminMsg', text, ok); btn.disabled = false; if (ok) loadPlansAdmin(); };
+  if (act === 'set-price'){
+    var raw = document.getElementById('priceInput-' + key).value;
+    var dollars = parseFloat(raw);
+    if (!dollars || dollars < 1){ done(false, 'Enter a monthly price of at least $1.'); return; }
+    var cents = Math.round(dollars * 100);
+    authFetch('/ad-studio/plans/' + key + '/price', { method: 'POST', body: JSON.stringify({ monthlyPriceCents: cents }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ done(res.ok, res.ok ? 'Price set and synced to Stripe.' : ((res.j && (res.j.message || res.j.error)) || 'Price was not saved.')); })
+      .catch(function(){ done(false, 'Price save failed — connection error.'); });
+    return;
+  }
+  if (act === 'unset-price'){
+    authFetch('/ad-studio/plans/' + key + '/price', { method: 'POST', body: JSON.stringify({ monthlyPriceCents: null }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ done(res.ok, res.ok ? 'Pricing unset — checkout for this plan is closed.' : ((res.j && (res.j.message || res.j.error)) || 'Unset failed.')); })
+      .catch(function(){ done(false, 'Unset failed — connection error.'); });
+    return;
+  }
+  if (act === 'toggle-active'){
+    var plan = adminPlans.filter(function(p){ return p.key === key; })[0];
+    authFetch('/ad-studio/plans/' + key, { method: 'PATCH', body: JSON.stringify({ isActive: !(plan && plan.isActive) }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ done(res.ok, res.ok ? 'Plan visibility updated.' : ((res.j && (res.j.message || res.j.error)) || 'Update failed.')); })
+      .catch(function(){ done(false, 'Update failed — connection error.'); });
+    return;
+  }
+  btn.disabled = false;
+}
+function subAction(act, userId, btn){
+  btn.disabled = true;
+  var done = function(ok, text){ setMsg('subsMsg', text, ok); btn.disabled = false; if (ok) loadPlansAdmin(); };
+  if (act === 'grant'){
+    var sel = document.getElementById('grantSel-' + userId);
+    authFetch('/ad-studio/subscriptions/' + userId + '/grant', { method: 'POST', body: JSON.stringify({ planKey: sel ? sel.value : '' }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ done(res.ok, res.ok ? 'Plan granted (office grant — no payment taken).' : ((res.j && (res.j.message || res.j.error)) || 'Grant failed.')); })
+      .catch(function(){ done(false, 'Grant failed — connection error.'); });
+    return;
+  }
+  if (act === 'revoke'){
+    authFetch('/ad-studio/subscriptions/' + userId + '/revoke', { method: 'POST', body: '{}' })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ done(res.ok, res.ok ? 'Grant revoked — the account is back on its own baseline.' : ((res.j && (res.j.message || res.j.error)) || 'Revoke failed.')); })
+      .catch(function(){ done(false, 'Revoke failed — connection error.'); });
+    return;
+  }
+  btn.disabled = false;
+}
+document.addEventListener('click', function(ev){
+  var pbtn = ev.target.closest('button[data-pact]');
+  if (pbtn){ planAction(pbtn.getAttribute('data-pact'), pbtn.getAttribute('data-key'), pbtn); return; }
+  var sbtn = ev.target.closest('button[data-sact]');
+  if (sbtn){ subAction(sbtn.getAttribute('data-sact'), sbtn.getAttribute('data-user'), sbtn); }
+});
+document.addEventListener('click', function(ev){
+  if (ev.target && ev.target.id === 'graceSaveBtn'){
+    var days = parseInt(document.getElementById('graceDaysInput').value, 10);
+    if (isNaN(days) || days < 0 || days > 30){ setMsg('plansAdminMsg', 'Grace window must be a whole number of days between 0 and 30.', false); return; }
+    authFetch('/ad-studio/plans/settings', { method: 'PATCH', body: JSON.stringify({ graceDays: days }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){ setMsg('plansAdminMsg', res.ok ? 'Grace window saved: ' + days + ' day(s).' : ((res.j && (res.j.message || res.j.error)) || 'Save failed.'), res.ok); })
+      .catch(function(){ setMsg('plansAdminMsg', 'Save failed — connection error.', false); });
+  }
+});
+
 /* ── Session gate: show the studio only to a real staff session ── */
 function showSignedOut(){
   document.getElementById('staffZone').style.display = 'none';
@@ -772,7 +945,7 @@ function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
   loadAll(); loadCreatives(); loadDestinations(); loadPack();
-  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal();
+  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal(); loadPlansAdmin();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();

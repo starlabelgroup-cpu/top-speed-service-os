@@ -196,6 +196,8 @@ model User {
   sellerChannelConnections SellerChannelConnection[]
   sellerChannelAudits      SellerChannelAudit[]
 
+  advertiserSubscription AdvertiserSubscription?
+
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
 
@@ -1535,6 +1537,101 @@ model AdCampaign {
 
   @@index([status])
   @@index([businessLine, status])
+}
+
+// Flywheel Advertiser Plans (2026-11-17): the paid-plan layer of the
+// Flywheel AI Advertising ecosystem. AdPlan rows are STRUCTURE — tiers
+// with a feature matrix and limits. monthlyPriceCents stays NULL until
+// the OWNER sets a price in Ad Studio; an unpriced plan can never be
+// checked out, and a Stripe Product/Price exists only because the
+// owner set a price (the sync happens in routes/adPlans.js at that
+// moment — never from seed data, never invented).
+//
+// AdvertiserSubscription is one row per advertiser account. The stored
+// status is the billing state machine's durable state; the EFFECTIVE
+// status is computed at read time in services/adPlans.js (a stored
+// PAST_DUE reads GRACE inside the owner-configured grace window and
+// SUSPENDED beyond it — GRACE exists in the enum for that computed
+// value and for any future stored use). Existing advertiser accounts
+// are GRANDFATHERED (baseline = today's access, forever theirs); the
+// owner can also OFFICE_GRANTED any plan without payment (grantedById
+// + grantedAt are the audit trail, alongside the management report
+// every grant files). The owner and staff are never plan-gated.
+enum AdSubscriptionStatus {
+  NONE
+  GRANDFATHERED
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  OFFICE_GRANTED
+}
+
+model AdPlan {
+  id                String   @id @default(uuid()) @db.Uuid
+  key               String   @unique
+  name              String
+  description       String?
+  // NULL = pricing not set by the owner yet — checkout is refused
+  // with an honest "pricing not set" state everywhere it appears.
+  monthlyPriceCents Int?
+  currency          String   @default("usd")
+  // Feature matrix: { <featureKey>: true|false } over the keys in
+  // services/adPlans.js PLAN_FEATURES. Limits: { maxCampaigns:
+  // number|null (null = unlimited), channels: string[] }.
+  features          Json     @default("{}")
+  limits            Json     @default("{}")
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  // Set only by the owner price flow (Stripe sync at price-set time).
+  stripeProductId   String?
+  stripePriceId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions AdvertiserSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+model AdvertiserSubscription {
+  id                   String             @id @default(uuid()) @db.Uuid
+  userId               String             @unique @db.Uuid
+  planId               String?            @db.Uuid
+  status               AdSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  // When the first failed invoice landed; the grace clock starts here.
+  pastDueAt            DateTime?
+  // Scheduled downgrade: applied lazily at currentPeriodEnd.
+  pendingPlanId        String?            @db.Uuid
+  pendingEffectiveAt   DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
+  // Revocation clears the plan and falls back to the account's own
+  // baseline (GRANDFATHERED or NONE by eligibility).
+  grantedById          String?            @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan AdPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+// Owner-configurable billing settings (singleton row, id 'default'):
+// the past-due grace window in days (default 7, per the plan spec).
+model AdBillingSetting {
+  id        String   @id
+  graceDays Int      @default(7)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // Management department reports (2026-11-14): every request any platform

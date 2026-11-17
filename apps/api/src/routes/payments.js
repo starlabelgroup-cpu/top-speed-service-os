@@ -7,6 +7,7 @@ import { findPaymentBySessionId, latestPaymentForBooking, persistPayment } from 
 import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
 import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, verifyWebhookSignature, webhookConfigured } from '../services/stripe.js';
+import { handleStripePlanEvent } from '../services/adPlans.js';
 
 /**
  * Payments — the built-in checkout (Route B, approved by Ramone
@@ -174,6 +175,14 @@ router.post('/payments/webhook', async (req, res) => {
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'payment webhook handling failed', error: String(error?.message || error) }));
   }
+
+  // Flywheel Advertiser Plans (2026-11-17): subscription lifecycle
+  // events (plan checkouts, subscription updates/deletes, failed
+  // invoices) are handled by the plans service. It runs AFTER the
+  // diagnostic handling above, never throws, and plan checkout
+  // sessions have no diagnostic Payment row — the two flows share
+  // only the endpoint and the signature check.
+  await handleStripePlanEvent(event);
   return res.json({ received: true });
 });
 

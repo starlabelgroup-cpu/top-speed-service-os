@@ -415,6 +415,18 @@ export const SYSTEM_MAP_AREAS = [
     related: ['ad-studio', 'pepper-lists', 'flywheel'],
     keywords: ['advertiser console', 'advertise', 'advertiser', 'business ads', 'advertise lane', 'flywheel ai advertising'],
   },
+  {
+    id: 'advertiser-plans',
+    name: 'Advertiser Plans & Billing (Flywheel)',
+    group: 'Marketing, Media & Ads',
+    location: 'topspeedserviceos.com/advertiser (Plans & Billing) + topspeedserviceos.com/ad-studio (Advertiser plans)',
+    url: '/advertiser',
+    purpose: 'The paid-plan layer of Flywheel AI Advertising: Starter / Growth / Pro plan tiers gate advertiser features (campaign caps, the Streaming Ads channel, the AI copy drafter, attribution and loop views, the creative picker) above the grandfathered baseline every existing advertiser keeps. Advertisers subscribe through Stripe Checkout; failed payments run ACTIVE → PAST_DUE → GRACE (owner-set window, default 7 days) → SUSPENDED (read-only). Plan PRICES are owner-configured only: a plan with no price set cannot be checked out, and its Stripe Product/Price is created at the moment the owner sets the price — nothing is ever priced by default.',
+    access: 'Advertisers manage their own plan in the Advertiser Console; prices, plan structure, the grace window and office grants are Master (owner) only',
+    actions: ['Compare plans and subscribe (advertiser)', 'Upgrade, schedule a downgrade, or cancel at period end (advertiser)', 'Set a plan price — syncs to Stripe (Master only)', 'Edit plan features and campaign caps (Master only)', 'Grant or revoke a plan without payment (Master only, audited)', 'See every advertiser\'s plan status and the past-due list'],
+    related: ['ad-studio', 'advertiser-console', 'flywheel', 'streaming-ads'],
+    keywords: ['advertiser plans', 'plans', 'billing', 'subscription', 'subscribe', 'plan price', 'starter', 'growth', 'pro plan', 'past due', 'grace period', 'office grant', 'flywheel plans'],
+  },
 
   /* -------------------------------- Training -------------------------------- */
   {

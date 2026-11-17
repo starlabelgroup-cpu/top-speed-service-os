@@ -169,6 +169,7 @@ footer strong{color:#fff}
         <button class="g-nav" data-nav="campaigns" id="navCampaigns" onclick="showView('campaigns')">My Campaigns</button>
         <button class="g-nav" data-nav="editor" id="navEditor" onclick="newCampaign()">Create Campaign</button>
         <button class="g-nav" data-nav="channels" onclick="showView('channels')">Channel Connections</button>
+        <button class="g-nav" data-nav="plans" id="navPlans" onclick="showView('plans')">Plans &amp; Billing</button>
         <button class="g-nav" data-nav="tools" onclick="showView('tools')">Tools</button>
         <div class="g-railfoot"><b id="railName">Your account</b><br><span id="railRole">Advertiser account</span><br><br><button class="g-link" onclick="advLogout()">Sign out</button></div>
       </aside>
@@ -270,6 +271,20 @@ footer strong{color:#fff}
             <p class="g-sub">Add the account reference for each channel you run. Connection requests go to the Top Speed team, who complete the manager/partner link on the platform side — no password sharing, ever. You'll see the status flip to Connected here.</p>
             <div class="g-grid" id="chanGrid"></div>
             <div id="chanMsg" class="g-msg"></div>
+          </div>
+        </section>
+
+        <!-- PLANS & BILLING -->
+        <section class="g-view hidden" id="view-plans">
+          <div class="g-card">
+            <h3>Your plan</h3>
+            <div id="planCurrent"><p class="g-sub">Loading your plan…</p></div>
+            <div id="planMsg" class="g-msg"></div>
+          </div>
+          <div class="g-card">
+            <h3>Compare plans</h3>
+            <p class="g-sub">Every plan runs on the same Flywheel platform — the tiers open more of it. Prices appear here the moment the office publishes them; until then your current access continues exactly as it is.</p>
+            <div class="g-grid" id="planGrid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div>
           </div>
         </section>
 
@@ -397,14 +412,15 @@ function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Market
 function isAdvertiser(){ return !!currentUser&&(currentUser.roles||[]).indexOf('ADVERTISER')>=0; }
 
 /* ── Console shell ── */
-var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard']};
+var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],plans:['Plans & Billing','Your Flywheel plan — what it opens, what it costs, when it renews'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard']};
 function showView(name){
-  ['overview','campaigns','editor','channels','tools'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
+  ['overview','campaigns','editor','channels','plans','tools'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
   document.querySelectorAll('.g-nav').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-nav')===name); });
   var t=VIEW_TITLES[name]; document.getElementById('topTitle').textContent=t[0]; document.getElementById('topSub').textContent=t[1];
   document.getElementById('topNewBtn').style.display=(name==='editor'||!isAdvertiser())?'none':'';
   if(name==='campaigns') renderCampaigns();
   if(name==='overview') renderOverview();
+  if(name==='plans') loadPlans();
 }
 function showConsole(user){
   if(user) currentUser=user;
@@ -415,10 +431,13 @@ function showConsole(user){
     document.getElementById('railRole').textContent=(currentUser.roles||[]).map(roleLabel).join(', ');
     document.getElementById('ovGreet').textContent='Welcome, '+name; }
   var adv=isAdvertiser();
+  var staffish=!!currentUser&&(currentUser.roles||[]).some(function(r){return ['COMPANY_OWNER','COMPANY_ADMIN','PLATFORM_ADMIN','DISPATCHER','MARKETING_MANAGER'].indexOf(r)>=0;});
+  document.getElementById('navPlans').style.display=(adv||staffish)?'':'none';
   document.getElementById('navCampaigns').style.display=adv?'':'none';
   document.getElementById('navEditor').style.display=adv?'':'none';
   document.getElementById('topNewBtn').style.display=adv?'':'none';
   loadChannels();
+  loadPlans();
   if(adv) loadMyCampaigns(function(){ showView('overview'); });
   else showView('channels');
 }
@@ -456,7 +475,10 @@ function renderOverview(){
 }
 function renderCampaigns(){
   var pend=myCampaigns.filter(function(c){return c.status==='PENDING_APPROVAL';});
-  document.getElementById('pendingBanner').innerHTML=pend.length?'<div class="g-banner-note"><b>Submitted for approval.</b> '+pend.map(function(c){return '&ldquo;'+esc(c.name)+'&rdquo;';}).join(', ')+' is with the Top Speed team. Nothing runs until the owner approves it — the status updates here.</div>':'';
+  var note='';
+  if(window.myAccess&&myAccess.readOnly) note='<div class="g-banner-note"><b>Your plan is read-only right now.</b> You can view your campaigns, but creating and submitting needs a Flywheel plan — see <b>Plans &amp; Billing</b> to pick one. Pausing a live campaign always works.</div>';
+  else if(window.myAccess&&myAccess.effectiveStatus==='GRACE') note='<div class="g-banner-note"><b>Payment past due — grace period.</b> Your plan keeps running while the payment is sorted out. Update your payment method from <b>Plans &amp; Billing</b> to stay live.</div>';
+  document.getElementById('pendingBanner').innerHTML=note+(pend.length?'<div class="g-banner-note"><b>Submitted for approval.</b> '+pend.map(function(c){return '&ldquo;'+esc(c.name)+'&rdquo;';}).join(', ')+' is with the Top Speed team. Nothing runs until the owner approves it — the status updates here.</div>':'');
   var rows=myCampaigns.map(function(c){
     var act='';
     if(c.status==='DRAFT') act='<button class="g-link" onclick="editCampaign(\''+c.id+'\')">Edit</button>';
@@ -519,12 +541,12 @@ function saveCampaign(submit){
   if(!body.name||!body.advertiserName||!body.offering||!body.destinationUrl) return msg('edMsg','Campaign name, business name, product or service, and destination URL are required.');
   var save=id?api('/ad-studio/my-campaigns/'+id,{method:'PATCH',body:JSON.stringify(body)}):api('/ad-studio/my-campaigns',{method:'POST',body:JSON.stringify(body)});
   save.then(function(x){
-    if(!(x.status===200||x.status===201)){ msg('edMsg',(x.j&&x.j.error)||'Save failed.'); return; }
+    if(!(x.status===200||x.status===201)){ msg('edMsg',(x.j&&(x.j.message||x.j.error))||'Save failed.'); return; }
     var rec=x.j.data; edGet('edId').value=rec.id;
     if(!submit){ msg('edMsg','Draft saved.',true); loadMyCampaigns(function(){ fillEditor(rec); }); return; }
     api('/ad-studio/my-campaigns/'+rec.id+'/submit',{method:'POST',body:JSON.stringify({})}).then(function(y){
       if(y.status===200){ loadMyCampaigns(function(){ showView('campaigns'); msg('campMsg','Submitted for approval — the Top Speed team reviews every campaign before it runs.',true); }); }
-      else msg('edMsg',(y.j&&y.j.error)||'Submit failed.'); });
+      else msg('edMsg',(y.j&&(y.j.message||y.j.error))||'Submit failed.'); });
   });
 }
 
@@ -550,6 +572,105 @@ function advConnect(i,key){ var ref=document.getElementById('chanRef'+i).value.t
   api('/marketing/channels',{method:'POST',body:JSON.stringify({channel:key,accountRef:ref})}).then(function(x){
     if(x.status===201){ msg('chanMsg','Connection requested — the Top Speed team will complete the link and the status will flip to Connected here.',true); loadChannels(); }
     else msg('chanMsg',(x.j&&x.j.error)||'Request failed.'); }); }
+
+/* ── Plans & Billing (Flywheel Advertiser Plans) ── */
+var myPlans=[], myAccess=null;
+var PLAN_FEATURE_LABELS={campaigns:'Campaigns — create, edit & submit',display:'Display placements — mini banner network',streaming:'Streaming Ads channel',aiDrafter:'AI copy drafter (Speedy drafts, you approve)',attribution:'Attribution view — which ads bring bookings',loopView:'Flywheel loop view',creativePicker:'Creative picker — house creative library'};
+var PLAN_FEATURE_ORDER=['campaigns','display','streaming','aiDrafter','attribution','loopView','creativePicker'];
+var PLAN_STATUS_LABEL={NONE:'No plan',GRANDFATHERED:'Founding advertiser — baseline included',ACTIVE:'Active',TRIALING:'Trial',PAST_DUE:'Past due',GRACE:'Past due — grace period',SUSPENDED:'Suspended — read-only',OFFICE_GRANTED:'Granted by the Top Speed office',STAFF:'Staff account'};
+function planMoney(cents){ return cents==null?null:'$'+(cents/100).toLocaleString('en-US',{minimumFractionDigits:cents%100?2:0,maximumFractionDigits:2})+'/mo'; }
+function planStatusChip(a){
+  if(!a) return '';
+  var s=a.effectiveStatus;
+  if(s==='ACTIVE'||s==='TRIALING'||s==='OFFICE_GRANTED') return '<span class="g-chip ok">'+PLAN_STATUS_LABEL[s]+'</span>';
+  if(s==='GRACE'||s==='PAST_DUE') return '<span class="g-chip pend">'+PLAN_STATUS_LABEL[s]+'</span>';
+  if(s==='SUSPENDED') return '<span class="g-chip end">'+PLAN_STATUS_LABEL[s]+'</span>';
+  if(s==='GRANDFATHERED') return '<span class="g-chip ok">'+PLAN_STATUS_LABEL[s]+'</span>';
+  return '<span class="g-chip none">'+(PLAN_STATUS_LABEL[s]||s)+'</span>';
+}
+function loadPlans(){
+  if(!currentUser) return;
+  api('/advertiser/plans').then(function(x){
+    if(x.status!==200||!x.j.data){ return; }
+    myPlans=x.j.data.plans||[]; myAccess=x.j.data.access||null;
+    renderPlans();
+  });
+}
+function renderPlans(){
+  var cur=document.getElementById('planCurrent'); if(!cur) return;
+  var a=myAccess;
+  var planName='—';
+  if(a&&a.planKey){ var p=myPlans.filter(function(x){return x.key===a.planKey;})[0]; planName=p?p.name:a.planKey; }
+  var lines=[];
+  if(!a){ lines.push('<p class="g-sub">Your plan could not be loaded right now.</p>'); }
+  else if(a.bypass){ lines.push('<p class="g-sub">You are signed in with a staff account — plans never gate staff.</p>'); }
+  else if(a.effectiveStatus==='GRANDFATHERED'){
+    lines.push('<p class="g-sub"><b style="color:#202124">Founding advertiser baseline</b> '+planStatusChip(a)+'</p>');
+    lines.push('<p class="g-sub" style="margin-top:6px">Your account predates Flywheel plans, so the access you have always had — unlimited campaigns on the display network — stays yours. The plans below only <i>add</i> platform features (Streaming Ads, the AI copy drafter, attribution) if you want them.</p>');
+  } else if(a.planKey){
+    lines.push('<p class="g-sub"><b style="color:#202124">'+esc(planName)+'</b> '+planStatusChip(a)+(a.effectiveStatus==='OFFICE_GRANTED'?' <span class="g-sub">— no payment on file; the office granted this plan.</span>':'')+'</p>');
+    if(a.currentPeriodEnd) lines.push('<p class="g-sub" style="margin-top:6px">'+(a.cancelAtPeriodEnd?'Ends':'Renews')+' '+fmtDate(a.currentPeriodEnd)+(a.cancelAtPeriodEnd?' — cancellation is scheduled; the plan stays live until then.':'')+'</p>');
+    if(a.pendingPlanKey){ var pp=myPlans.filter(function(x){return x.key===a.pendingPlanKey;})[0]; lines.push('<p class="g-sub" style="margin-top:6px">Scheduled change: moves to <b>'+esc(pp?pp.name:a.pendingPlanKey)+'</b> at the end of the current period.</p>'); }
+    if(a.effectiveStatus==='GRACE') lines.push('<p class="g-sub" style="margin-top:6px"><b>Payment past due.</b> Your plan keeps running during the grace window — please update your payment method with Stripe or contact the office at 954-931-7997.</p>');
+    if(a.effectiveStatus==='SUSPENDED') lines.push('<p class="g-sub" style="margin-top:6px"><b>Plan suspended.</b> Your campaigns are read-only until the plan is reactivated.</p>');
+  } else {
+    lines.push('<p class="g-sub"><b style="color:#202124">No plan yet</b> '+planStatusChip(a)+'</p>');
+    lines.push('<p class="g-sub" style="margin-top:6px">Your account can browse everything, but creating campaigns needs a Flywheel plan. Pick one below — checkout opens as soon as the office publishes pricing.</p>');
+  }
+  if(a&&!a.readOnly&&a.planKey&&a.effectiveStatus!=='GRANDFATHERED'&&!a.cancelAtPeriodEnd) lines.push('<div style="margin-top:14px"><button class="g-btn ghost small" onclick="planCancel()">Cancel plan (at period end)</button></div>');
+  if(a&&a.cancelAtPeriodEnd) lines.push('<p class="g-sub" style="margin-top:10px">Cancellation scheduled — the plan ends '+fmtDate(a.currentPeriodEnd)+'.</p>');
+  cur.innerHTML=lines.join('');
+  var grid=document.getElementById('planGrid');
+  grid.innerHTML=myPlans.map(function(p){
+    var price=planMoney(p.monthlyPriceCents);
+    var feats=PLAN_FEATURE_ORDER.map(function(k){
+      var on=p.features&&p.features[k];
+      return '<div class="copyrow"><span>'+(on?'':'<span style="color:#9aa0a6">')+PLAN_FEATURE_LABELS[k]+(on?'':'</span>')+'</span><span class="count">'+(on?'Included':'—')+'</span></div>';
+    }).join('');
+    var cap=p.limits&&p.limits.maxCampaigns!=null?('Up to '+p.limits.maxCampaigns+' campaigns'):'Unlimited campaigns';
+    var mine=a&&a.planKey===p.key&&['ACTIVE','TRIALING','OFFICE_GRANTED','GRACE'].indexOf(a.effectiveStatus)>=0;
+    var curPlan=a&&a.planKey?myPlans.filter(function(x){return x.key===a.planKey;})[0]:null;
+    var btn='';
+    if(mine) btn='<span class="g-chip ok">Your plan</span>';
+    else if(!price) btn='<button class="g-btn small" disabled>Pricing launching soon</button>';
+    else if(!a||a.readOnly||a.effectiveStatus==='GRANDFATHERED'||!a.planKey) btn='<button class="g-btn small" onclick="planCheckout(\''+p.key+'\')">Subscribe — '+price+'</button>';
+    else if(curPlan&&curPlan.monthlyPriceCents!=null&&p.monthlyPriceCents<curPlan.monthlyPriceCents) btn='<button class="g-btn ghost small" onclick="planChange(\''+p.key+'\')">Downgrade — '+price+'</button>';
+    else btn='<button class="g-btn small" onclick="planChange(\''+p.key+'\')">Upgrade — '+price+'</button>';
+    return '<div class="g-chan"><h4>'+esc(p.name)+'</h4><div class="hint">'+esc(p.description||'')+'</div>'
+      +'<div style="font-size:22px;font-weight:500;margin:6px 0">'+(price||'Pricing launching soon')+'</div>'
+      +'<div class="hint">'+cap+' · Channels: '+((p.limits&&p.limits.channels)||['DISPLAY']).join(', ')+'</div>'
+      +feats+'<div style="margin-top:12px">'+btn+'</div></div>';
+  }).join('');
+}
+function planCheckout(key){
+  msg('planMsg','Opening secure checkout…',true);
+  api('/advertiser/plans/checkout',{method:'POST',body:JSON.stringify({planKey:key})}).then(function(x){
+    if((x.status===200||x.status===201)&&x.j.data&&x.j.data.url){ location.href=x.j.data.url; return; }
+    msg('planMsg',(x.j&&(x.j.message||x.j.error))||'Checkout could not be opened.');
+  });
+}
+function planChange(key){
+  msg('planMsg','Working on your plan change…',true);
+  api('/advertiser/plans/change',{method:'POST',body:JSON.stringify({planKey:key})}).then(function(x){
+    if((x.status===200||x.status===201)&&x.j.data){
+      if(x.j.data.action==='checkout'&&x.j.data.url){ location.href=x.j.data.url; return; }
+      msg('planMsg',x.j.data.message||'Plan change scheduled.',true); loadPlans(); return;
+    }
+    msg('planMsg',(x.j&&(x.j.message||x.j.error))||'Plan change failed.');
+  });
+}
+function planCancel(){
+  if(!window.confirm('Cancel your plan at the end of the current billing period? Your campaigns stay visible (read-only) afterwards.')) return;
+  api('/advertiser/plans/cancel',{method:'POST',body:JSON.stringify({})}).then(function(x){
+    if(x.status===200&&x.j.data){ msg('planMsg',x.j.data.message||'Cancellation scheduled.',true); loadPlans(); }
+    else msg('planMsg',(x.j&&(x.j.message||x.j.error))||'Cancellation failed.');
+  });
+}
+(function(){
+  var q=new URLSearchParams(location.search).get('plan');
+  if(q==='success') setTimeout(function(){ msg('planMsg','Payment received — your plan activates as soon as Stripe confirms (seconds). Refresh Plans & Billing if it does not update.',true); loadPlans(); },600);
+  if(q==='cancelled') setTimeout(function(){ msg('planMsg','Checkout cancelled — nothing was charged and your plan is unchanged.'); },600);
+})();
 
 /* ── Tools (existing Advertiser Console system) ── */
 function money(n){ return '$'+Math.round(n).toLocaleString(); }

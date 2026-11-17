@@ -61,6 +61,104 @@ export async function createDiagnosticCheckout({ booking, successUrl, cancelUrl 
 }
 
 /**
+ * Generic Stripe REST call (Flywheel Advertiser Plans, 2026-11-17).
+ * Same transport as the diagnostic checkout above — form-encoded
+ * POST/GET/DELETE against the account the env key belongs to. Used
+ * for plan customers, products, prices and subscriptions ONLY; the
+ * diagnostic flow keeps its own function and behavior.
+ */
+function encodeForm(params, prefix, out) {
+  const target = out || new URLSearchParams();
+  for (const [key, value] of Object.entries(params || {})) {
+    if (value === undefined || value === null) continue;
+    const name = prefix ? `${prefix}[${key}]` : key;
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        if (item && typeof item === 'object') encodeForm(item, `${name}[${index}]`, target);
+        else target.set(`${name}[${index}]`, String(item));
+      });
+    } else if (typeof value === 'object') {
+      encodeForm(value, name, target);
+    } else {
+      target.set(name, String(value));
+    }
+  }
+  return target;
+}
+
+export async function stripeApi(method, path, params) {
+  const isQuery = method === 'GET' || method === 'DELETE';
+  const encoded = params ? encodeForm(params).toString() : '';
+  const url = API_BASE + path + (isQuery && encoded ? `?${encoded}` : '');
+  const response = await fetch(url, {
+    method,
+    headers: authHeaders(),
+    body: !isQuery && encoded ? encoded : undefined,
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data?.error?.message || ('Stripe returned ' + response.status);
+    const error = new Error(message);
+    error.code = 'stripe_error';
+    throw error;
+  }
+  return data;
+}
+
+/** One Stripe customer per advertiser account (id stored on the subscription row). */
+export async function createStripeCustomer({ email, name, userId }) {
+  return stripeApi('POST', '/v1/customers', {
+    email: email || undefined,
+    name: name || undefined,
+    metadata: { purpose: 'AD_PLAN', userId },
+  });
+}
+
+/**
+ * Plan Product + Price sync — called ONLY from the owner price flow
+ * in routes/adPlans.js, with the owner's own amount. Nothing here is
+ * ever seeded or defaulted: no owner price, no Stripe objects.
+ */
+export async function createStripeProduct({ name, planKey }) {
+  return stripeApi('POST', '/v1/products', { name, metadata: { purpose: 'AD_PLAN', planKey } });
+}
+
+export async function createStripePrice({ productId, amountCents, currency }) {
+  return stripeApi('POST', '/v1/prices', {
+    product: productId,
+    unit_amount: amountCents,
+    currency: currency || 'usd',
+    recurring: { interval: 'month' },
+  });
+}
+
+/** Subscription-mode Checkout Session for an advertiser plan. */
+export async function createPlanCheckout({ customerId, priceId, userId, planKey, successUrl, cancelUrl }) {
+  return stripeApi('POST', '/v1/checkout/sessions', {
+    mode: 'subscription',
+    customer: customerId,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    line_items: [{ price: priceId, quantity: 1 }],
+    client_reference_id: userId,
+    metadata: { purpose: 'AD_PLAN', userId, planKey },
+    subscription_data: { metadata: { purpose: 'AD_PLAN', userId, planKey } },
+  });
+}
+
+export async function retrieveStripeSubscription(id) {
+  return stripeApi('GET', `/v1/subscriptions/${encodeURIComponent(id)}`);
+}
+
+export async function updateStripeSubscription(id, params) {
+  return stripeApi('POST', `/v1/subscriptions/${encodeURIComponent(id)}`, params);
+}
+
+export async function cancelStripeSubscription(id) {
+  return stripeApi('DELETE', `/v1/subscriptions/${encodeURIComponent(id)}`);
+}
+
+/**
  * Verify a Stripe webhook signature header against the raw body.
  * Header shape: t=<timestamp>,v1=<hex hmac>[,v1=...]. Five-minute
  * tolerance, matching Stripe's own libraries.

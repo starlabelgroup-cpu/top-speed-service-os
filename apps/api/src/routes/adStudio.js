@@ -11,6 +11,7 @@ import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
 import { speedyDraftAdCopy, speedyStatus } from '../services/speedy.js';
 import { EXTERNAL_ADS, EXTERNAL_ADS_BOARD_LABEL, EXTERNAL_ADS_VERIFIED_ON } from '../data/externalAds.js';
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
+import { requirePlanFeature } from '../services/adPlans.js';
 
 /**
  * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
@@ -1003,9 +1004,25 @@ const advertiserCreateSchema = z.object({
   notes: z.string().trim().max(2000).nullable().optional(),
 });
 
-router.post('/ad-studio/my-campaigns', ...advertiserOnly, async (req, res) => {
+router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
   const parsed = advertiserCreateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign', details: parsed.error.flatten() });
+  // Plan campaign cap (Flywheel Advertiser Plans, 2026-11-17): the
+  // effective plan's maxCampaigns counts the advertiser's campaigns
+  // that have not ended. Grandfathered accounts are unlimited —
+  // exactly the access they have always had.
+  const access = req.planAccess;
+  if (access && !access.bypass && access.maxCampaigns != null) {
+    const ownerId = actorIdOf(req);
+    const live = store.adCampaigns.filter((c) => c.createdById === ownerId && c.status !== 'ENDED').length;
+    if (live >= access.maxCampaigns) {
+      return res.status(403).json({
+        error: 'plan_limit_reached',
+        message: `Your ${access.plan ? `${access.plan.name} ` : ''}plan allows up to ${access.maxCampaigns} campaign(s) at a time — end one, or upgrade in Plans & Billing in the Advertiser Console.`,
+        upgradeUrl: '/advertiser',
+      });
+    }
+  }
   const now = new Date().toISOString();
   const record = {
     id: createId(),
@@ -1046,7 +1063,7 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, async (req, res) => {
 
 const advertiserPatchSchema = advertiserCreateSchema.partial();
 
-router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, async (req, res) => {
+router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
   const record = findOwnCampaign(req);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   if (req.body && ('status' in req.body || 'sourceTag' in req.body || 'businessLine' in req.body)) {
@@ -1065,7 +1082,7 @@ router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, async (req, res) 
   return res.json({ data: myCampaignView(record) });
 });
 
-router.post('/ad-studio/my-campaigns/:id/submit', ...advertiserOnly, async (req, res) => {
+router.post('/ad-studio/my-campaigns/:id/submit', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
   const record = findOwnCampaign(req);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   if (record.status !== 'DRAFT') {
