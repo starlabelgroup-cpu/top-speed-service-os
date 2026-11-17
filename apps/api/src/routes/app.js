@@ -8,6 +8,7 @@ import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECT
 import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP, PM_VISIT_WEBP, GUIDE_FRIDGE_WEBP } from '../assets/serviceImages.js';
 import { PL_SELL_WEBP, PL_BOOK_WEBP } from '../assets/pepperListsImages.js';
 import { MASCOT_HERO_WEBP, MASCOT_HERO_LIGHT_WEBP, MASCOT_HEAD_WEBP } from '../assets/mascotImages.js';
+import { LOGO_LOCKUP_A_WEBP, LOGO_LOCKUP_B_WEBP, LOGO_HORSE_HEAD_WEBP } from '../assets/logoImages.js';
 import { POSTER_FRIDGE_NOT_COOLING_WEBP, POSTER_SAME_DAY_WEBP, POSTER_WASHER_DRYER_WEBP, POSTER_ASK_SPEEDY_WEBP, POSTER_CITIES_WEBP, POSTER_DIAGNOSTIC_WEBP } from '../assets/posterImages.js';
 import { SCENE_NEED_WARM_FRIDGE, SCENE_NEED_WASHER_LEAK, SCENE_REPAIR_FRIDGE_DIAGNOSIS, SCENE_INSTALL_DELIVERY_ARRIVAL, SCENE_BOOK_CALENDAR_PICK, SCENE_SPEEDY_SYMPTOM_GUIDE, SCENE_SPEEDY_PHOTO_FRIDGE, SCENE_TRACK_MAP_PHONE, SCENE_TRACK_DOORBELL, SCENE_REVIEW_STARS_PHONE, SCENE_DISPATCH_MORNING_BOARD, SCENE_PAY_QUOTE_TABLET, SCENE_BOOK_FORM_PHONE, SCENE_NEED_DRYER_NO_HEAT, SCENE_CARE_PLAN_CALENDAR, SCENE_PAY_RECEIPT_PHONE, SCENE_SPEEDY_CHAT_COUCH, SCENE_NEED_RESTAURANT_COOLER_DOWN, SCENE_NEED_LAUNDROMAT_STOPPED, SCENE_COMMERCIAL_RESTAURANT_RANGE, SCENE_COMMERCIAL_LAUNDROMAT_ROWS, SCENE_PAY_COMMERCIAL_PORTAL, SCENE_BOOK_PM_BATCH, SCENE_NEED_NEIGHBOR_DRYER_DIED, SCENE_REVIEW_NEIGHBOR_CHAT, SCENE_REVIEW_REFER_FRIEND, SCENE_NEED_TENANT_DISCOVERY, SCENE_REVIEW_REPEAT_CUSTOMER } from '../assets/scenarioImages.js';
 import { IMG_SELL_INDIVIDUAL, IMG_SELL_BUSINESS, IMG_POST_REVIEWS, IMG_BOOKING_DISPATCH, IMG_LIVE_TRACKING, IMG_SPEEDY_DIAGNOSIS, IMG_REFER_EARN, IMG_COMMERCIAL_PM, IMG_SPEEDY_PRO_TECH, IMG_FLYWHEEL_ADS, IMG_RESIDENTIAL_FRIDGE, IMG_RESIDENTIAL_LAUNDRY, IMG_RESIDENTIAL_OVEN, IMG_COMMERCIAL_RESTAURANT, IMG_COMMERCIAL_LAUNDROMAT, IMG_COMMERCIAL_HOTEL, IMG_CLEANOUT_VENTS, IMG_APPLIANCE_PLUG, IMG_LOCAL_FORT_LAUDERDALE, IMG_FLYWHEEL_DISPLAY_AD } from '../assets/platformImages.js';
@@ -157,6 +158,34 @@ const MASCOT_IMAGE_FILES = {
 
 router.get('/app/mascot-images/:name', (req, res) => {
   const bytes = MASCOT_IMAGE_FILES[req.params.name];
+  if (!bytes) return res.status(404).json({ error: 'Image not found' });
+  res.set({
+    'Content-Type': 'image/webp',
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  return res.send(bytes);
+});
+
+/**
+ * Top Speed Appliance logo lockup (2026-11-16): Ramone's new brand
+ * lockup artwork, embedded as base64 in assets/logoImages.js (same
+ * text-only pipeline constraint as the mascot images above) and
+ * served here as image/webp. Web surfaces reference them same-origin
+ * via /api/v1/app/logo-images/<name> (vercel.json rewrite).
+ * Public brand assets.
+ */
+const LOGO_IMAGE_FILES = {
+  'lockup-a': LOGO_LOCKUP_A_WEBP,
+  'lockup-b': LOGO_LOCKUP_B_WEBP,
+  'horse-head': LOGO_HORSE_HEAD_WEBP,
+  'lockup-a.webp': LOGO_LOCKUP_A_WEBP,
+  'lockup-b.webp': LOGO_LOCKUP_B_WEBP,
+  'horse-head.webp': LOGO_HORSE_HEAD_WEBP,
+};
+
+router.get('/app/logo-images/:name', (req, res) => {
+  const bytes = LOGO_IMAGE_FILES[req.params.name];
   if (!bytes) return res.status(404).json({ error: 'Image not found' });
   res.set({
     'Content-Type': 'image/webp',
