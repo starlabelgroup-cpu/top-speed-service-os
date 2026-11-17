@@ -1462,6 +1462,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             if(wizDiag) issue+='\n[Speedy photo diagnosis: '+wizDiag+']';
             var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
             var em=val('wEmail'); if(em) payload.customer.email=em;
+            try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
             busy=true; var btn=$('wizNextBtn'); btn.disabled=true; btn.textContent='Booking…';
             fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
             .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
@@ -2195,7 +2196,9 @@ function spFixCard(){
 function spBookIt(btn){
   var d=window._spBook; if(!d)return;
   btn.disabled=true; btn.textContent='Booking\u2026';
-  fetch(SP_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,sessionId:spSessionId()})})
+  var bp={customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,sessionId:spSessionId()};
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(bp); }catch(e){}
+  fetch(SP_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bp)})
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
       window._spBooked=true; window._spRef=j.data.referenceCode;
@@ -2460,6 +2463,6 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
 })();
 </script>
 <script src="/speedy-guide.js" defer></script><script src="/flywheel-banner.js" defer></script>
-<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script>
 </body>
 </html>

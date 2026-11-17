@@ -540,6 +540,12 @@ router.get('/app/poster-images/:name', (req, res) => {
   return res.send(bytes);
 });
 
+// Top Speed Ads creative picker (2026-11-17): the served file names,
+// exported so Ad Studio can offer the house creative library as
+// pickable campaign images without a second copy of the lists.
+export const SCENARIO_IMAGE_NAMES = Object.keys(SCENARIO_IMAGE_FILES);
+export const POSTER_IMAGE_NAMES = Object.keys(POSTER_IMAGE_FILES);
+
 router.get('/app/current-version', (req, res) => {
   return res.json({
     data: {

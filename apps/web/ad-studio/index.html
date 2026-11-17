@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ad Studio — Top Speed Appliance</title>
-<meta name="description" content="Top Speed Ad Studio: the in-house advertising system of the Top Speed ecosystem — build campaigns from the creative library, run them on our own platform surfaces, and count real bookings by source. Pepper Agent manages, Ramone approves.">
+<title>Top Speed Ads — Ad Studio | Flywheel AI Advertising</title>
+<meta name="description" content="Top Speed Ads — the in-house ads system of Flywheel AI Advertising: build campaigns from the creative library, run them on our own platform surfaces, count real serves, clicks and bookings by source, and draft copy with Speedy. Pepper Agent manages, Ramone approves.">
 <link rel="icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/google-tag.js"></script>
@@ -136,9 +136,9 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 
 <main>
   <div class="hero">
-    <div class="kicker">In-House Advertising — No Outside Spend</div>
-    <h1>Ad <span>Studio</span></h1>
-    <p>Our own advertising system, on the same Service OS as booking and dispatch. Campaigns are built from the Media OS creative library, send traffic to our own landing pages, and run as placements on our own platform surfaces — the flagship footer banner rotation. The Streaming Ads channel adds Google-style text and display ads aimed at streaming TV providers, reviewed here as exact previews. Every lead and booking a campaign produces is counted by its source tag. Nothing goes live without the owner's approval.</p>
+    <div class="kicker">Top Speed Ads — Flywheel AI Advertising · In-House, No Outside Spend</div>
+    <h1>Top Speed <span>Ads</span></h1>
+    <p>Our own advertising system — the Ad Studio of Flywheel AI Advertising — on the same Service OS as booking and dispatch. Campaigns are built from the Media OS creative library and the house poster and scenario images, send traffic to our own landing pages, and run as placements on our own platform surfaces — the flagship footer banner rotation. The Streaming Ads channel adds Google-style text and display ads aimed at streaming TV providers, reviewed here as exact previews. Every lead and booking a campaign produces is counted by its source tag, and ad clicks are now traced end to end: first-touch attribution (UTM tags and the Google, Meta and Microsoft click IDs) rides along with bookings, and the banner feed counts its own raw serves and clicks. Speedy can draft campaign copy — drafts always land in the owner's approval queue, never live. Nothing goes live without the owner's approval.</p>
   </div>
 
   <div class="roles">
@@ -221,6 +221,9 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
         </div>
         <div class="full"><label>Objective — what this campaign is for</label><input id="bObjective" required maxlength="600" placeholder="Bookings for refrigerator repair from the published city pages"></div>
         <div><label>Creative (Media OS)</label><select id="bCreative"><option value="">— no creative —</option></select></div>
+        <div><label>House creative image — posters &amp; scenarios</label><select id="bImage"><option value="">— no house image —</option></select>
+          <div class="small mut" style="margin-top:4px">Pick from the house poster set and the scenario library served by the API — no URL typing. A picked image is used by the banner unless a Media OS creative above overrides it.</div>
+          <img id="bImagePreview" alt="" style="display:none;max-width:100%;height:auto;border-radius:10px;margin-top:8px"></div>
         <div><label>Destination — published landing page</label><select id="bDest"><option value="">Loading published pages…</option></select></div>
         <div class="full"><label>…or paste any of our own URLs</label><input id="bDestCustom" type="url" maxlength="1000" placeholder="https://topspeedserviceos.com/book"></div>
         <div class="full"><label>Notes (optional)</label><textarea id="bNotes" rows="2" maxlength="2000" placeholder="Rotation notes, who asked for it, anything the approver should know."></textarea></div>
@@ -228,6 +231,12 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
         <div class="full"><button class="btn" type="submit">Create draft campaign</button></div>
       </form>
       <div class="msg" id="buildMsg"></div>
+      <div style="border-top:1px solid #dbe4f5;margin-top:14px;padding-top:12px">
+        <div class="small" style="font-weight:800">Draft with Speedy — AI copy drafter</div>
+        <p class="small mut" style="margin:6px 0 10px">Speedy writes headline and description options from the campaign name, business line, placement and destination above, bound by the brand rules: no invented reviews, ratings or prices, no $99 outside residential Top Speed repair copy, no vent prices, and the platform character limits enforced by the server. The draft is created straight into the owner approval queue as PENDING APPROVAL — Speedy never publishes. If Speedy AI is not configured, this shows an honest unavailable note and manual creation above works as always.</p>
+        <button class="btn ghost" type="button" id="draftBtn">Draft with Speedy</button>
+        <div class="msg" id="draftMsg"></div>
+      </div>
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5V10M12 19.5V4.5M20 19.5v-8" stroke="#E8322E"/><path d="M2.5 19.5h19"/></svg>Campaigns &amp; results</h2>
@@ -236,6 +245,32 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
       <div class="small mut" id="campCounts">Loading…</div>
       <div class="rows" id="campRows" style="margin-top:6px"><span class="mut small"><span class="spin"></span> Loading campaigns…</span></div>
       <div class="msg" id="campMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 13.5L3 21M14 4l6 6M8.5 6.5l3-3 6 6-3 3M5 11l3-3 5 5-3 3" stroke="#E8322E"/></svg>Attribution — where bookings came from</h2>
+    <p class="sub">First-touch attribution, captured on the landing page and attached to the booking: UTM source, medium and campaign, plus the platform click IDs (Google gclid, Meta fbclid, Microsoft msclkid). Counts below are real bookings in the window — nothing is estimated.</p>
+    <div class="console">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="small mut" for="attrDays">Window</label>
+        <select id="attrDays"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
+        <button class="btn ghost" type="button" id="attrReload">Refresh</button>
+      </div>
+      <div id="attrBody" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading attribution…</span></div>
+      <div class="msg" id="attrMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1" stroke="#E8322E"/><path d="M21 3.5v4h-4"/></svg>The Flywheel loop</h2>
+    <p class="sub">The loop this system turns: placements served, clicks, attributed bookings — then the stages that connect as real jobs complete. A stage with no data yet says so instead of inventing a number.</p>
+    <div class="console">
+      <div id="loopBody"><span class="mut small"><span class="spin"></span> Loading the loop…</span></div>
+      <div class="msg" id="loopMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="13" rx="2.5"/><path d="M8 21h8" stroke="#E8322E"/></svg>External platforms — readiness board</h2>
+    <p class="sub">Mirror of campaigns built in each platform — status as last verified <b>2026-11-17</b>; manage budgets and launch inside the platform. Nothing here spends money. Each campaign also lists the concrete steps still missing before it can go live — the ones marked Ramone-only are the owner's calls alone.</p>
+    <div class="console">
+      <div id="extBody"><span class="mut small"><span class="spin"></span> Loading the external board…</span></div>
+      <div class="msg" id="extMsg"></div>
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 1 1-3.4-6.6L21 5.5l-.6 3.3A8.4 8.4 0 0 1 21 12z"/><path d="M8.5 10.8h7M8.5 13.8h4.5" stroke="#E8322E"/></svg>Ask Pepper</h2>
@@ -255,7 +290,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 
 <footer>
   <a href="/">Platform Home</a><a href="/ad-studio">Ad Studio</a><a href="/media">Media OS</a><a href="/marketing-os">Marketing OS</a><a href="/manager">Remote Manager</a><a href="/advertiser">Advertiser Console</a><a href="/book">Book Service</a>
-  <div style="margin-top:8px">Top Speed Appliance LLC · Ad Studio — in-house advertising on the Service OS · System Operations Manager: Pepper Agent · Owner &amp; approver: Ramone (MASTER)</div>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Top Speed Ads — the Ad Studio of Flywheel AI Advertising, in-house on the Service OS · System Operations Manager: Pepper Agent · Owner &amp; approver: Ramone (MASTER)</div>
 </footer>
 
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
@@ -320,6 +355,15 @@ function streamingPreview(c){
     '<div class="ghead">' + esc((c.headlines || []).join(' | ')) + '</div>' +
     '<div class="gdesc">' + esc((c.descriptions || []).join(' ')) + '</div></div>';
 }
+/* Banner counters are raw serves/clicks (no bot filtering); CTR is
+   shown only once the banner has actually been served. */
+function bannerStats(b){
+  var impressions = b.impressions || 0;
+  var clicks = b.clicks || 0;
+  var bit = ' · ' + impressions + ' served · ' + clicks + ' clicked (raw serves/clicks)';
+  if (impressions > 0) bit += ' · CTR ' + ((clicks / impressions) * 100).toFixed(2) + '%';
+  return bit;
+}
 function campaignMeta(c){
   var r = resultsById[c.id] || { bookings: 0, connections: 0, total: 0 };
   var placementBit = c.placement === 'BANNER' ? ' · Placement: flagship footer banner'
@@ -331,7 +375,7 @@ function campaignMeta(c){
     (c.creative ? ' · Creative: ' + esc(c.creative.title) : ' · No creative attached') +
     placementBit + '</div>' + streamingPreview(c) +
     '<div class="desc">Results so far: <b style="color:var(--txt)">' + (r.bookings || 0) + ' booking(s)</b> · <b style="color:var(--txt)">' + (r.connections || 0) + ' lead(s)</b> attributed' +
-    (c.banner ? ' · Banner: ' + (c.banner.active ? 'rotating' : 'off') + ' · ' + (c.banner.impressions || 0) + ' impressions · ' + (c.banner.clicks || 0) + ' clicks' : '') +
+    (c.banner ? ' · Banner: ' + (c.banner.active ? 'rotating' : 'off') + bannerStats(c.banner) : '') +
     (c.approvedAt ? ' · Approved ' + esc(String(c.approvedAt).slice(0, 10)) : '') + '</div>';
   return bits;
 }
@@ -477,6 +521,7 @@ document.getElementById('buildForm').addEventListener('submit', function(ev){
     businessLine: document.getElementById('bLine').value,
     objective: document.getElementById('bObjective').value.trim(),
     creativeId: document.getElementById('bCreative').value || null,
+    imageUrl: document.getElementById('bImage').value || null,
     destinationUrl: custom || document.getElementById('bDest').value,
     placement: document.getElementById('bPlacement').value,
     notes: document.getElementById('bNotes').value.trim() || null
@@ -586,6 +631,138 @@ document.getElementById('chatForm').addEventListener('submit', function(ev){
     });
 });
 
+/* ── Top Speed Ads: house creative picker ──────────────── */
+function loadCreativeLibrary(){
+  authFetch('/ad-studio/creative-library').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    var sel = document.getElementById('bImage');
+    if (!j || !j.data){ sel.innerHTML = '<option value="">— house library unavailable —</option>'; return; }
+    var posters = (j.data.posters || []).map(function(p){
+      return '<option value="' + esc(p.url) + '">' + esc(p.name) + '</option>';
+    }).join('');
+    var scenarios = (j.data.scenarios || []).map(function(p){
+      return '<option value="' + esc(p.url) + '">' + esc(p.name) + '</option>';
+    }).join('');
+    sel.innerHTML = '<option value="">— no house image —</option>' +
+      (posters ? '<optgroup label="House posters">' + posters + '</optgroup>' : '') +
+      (scenarios ? '<optgroup label="Scenario library">' + scenarios + '</optgroup>' : '');
+  }).catch(function(){});
+}
+document.getElementById('bImage').addEventListener('change', function(){
+  var img = document.getElementById('bImagePreview');
+  if (this.value){ img.src = API + this.value; img.style.display = ''; }
+  else { img.removeAttribute('src'); img.style.display = 'none'; }
+});
+
+/* ── Top Speed Ads: Draft with Speedy ──────────────────── */
+document.getElementById('draftBtn').addEventListener('click', function(){
+  var btn = this;
+  var custom = document.getElementById('bDestCustom').value.trim();
+  var body = {
+    name: document.getElementById('bName').value.trim(),
+    businessLine: document.getElementById('bLine').value,
+    placement: document.getElementById('bPlacement').value,
+    destinationUrl: custom || document.getElementById('bDest').value,
+    imageUrl: document.getElementById('bImage').value || undefined,
+    topic: document.getElementById('bObjective').value.trim() || document.getElementById('bName').value.trim() || undefined
+  };
+  if (body.placement === 'STREAMING'){
+    body.streamingFormat = document.getElementById('bSFormat').value;
+    body.streamingProviders = checkedValues('bSProviders');
+    if (!body.streamingProviders.length){ setMsg('draftMsg', 'Pick at least one streaming provider target first.', false); return; }
+  }
+  if (!body.destinationUrl){ setMsg('draftMsg', 'Pick a destination page first — Speedy drafts toward a real page.', false); return; }
+  btn.disabled = true;
+  setMsg('draftMsg', 'Speedy is drafting…', true);
+  authFetch('/ad-studio/draft-copy', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      btn.disabled = false;
+      if (!res.ok){ setMsg('draftMsg', (res.j && res.j.error) || 'Speedy could not draft just now — manual creation above works as always.', false); return; }
+      setMsg('draftMsg', 'Speedy drafted "' + res.j.data.name + '" — it is in the owner approval queue as PENDING APPROVAL (tag ' + res.j.data.sourceTag + '). Nothing is live until the owner approves it.', true);
+      loadAll();
+    })
+    .catch(function(){ btn.disabled = false; setMsg('draftMsg', 'Draft failed — connection error. Manual creation above works as always.', false); });
+});
+
+/* ── Top Speed Ads: attribution view ───────────────────── */
+function attrGroupRows(title, rows, keyOf){
+  if (!rows || !rows.length) return '';
+  return '<div class="small" style="font-weight:800;margin-top:12px">' + esc(title) + '</div>' +
+    rows.map(function(r){
+      return '<div class="crow"><div class="meta"><b>' + esc(keyOf(r)) + '</b><div class="desc">' +
+        r.bookings + ' attributed booking(s)</div></div></div>';
+    }).join('');
+}
+function loadAttribution(){
+  var days = document.getElementById('attrDays').value || '30';
+  authFetch('/ad-studio/attribution?days=' + encodeURIComponent(days)).then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var body = document.getElementById('attrBody');
+      if (!j || !j.data){ body.innerHTML = '<span class="mut small">Attribution could not be loaded for this session.</span>'; return; }
+      var d = j.data;
+      if (!d.withAttribution){
+        body.innerHTML = '<div class="empty">No attributed bookings yet — capture is live as of today; ads are still paused. When a booking arrives carrying a source tag, UTM tags or a click ID, it will be counted here.</div>';
+        return;
+      }
+      body.innerHTML =
+        '<div class="desc">Last ' + d.windowDays + ' days: <b style="color:var(--txt)">' + d.withAttribution + ' attributed booking(s)</b> of ' + d.totalBookings + ' total in the window. Click IDs seen: Google gclid on ' + d.clickIds.gclid + ' · Meta fbclid on ' + d.clickIds.fbclid + ' · Microsoft msclkid on ' + d.clickIds.msclkid + ' · any click ID on ' + d.clickIds.any + '.</div>' +
+        attrGroupRows('By source', d.bySource, function(r){ return r.source; }) +
+        attrGroupRows('By campaign (UTM)', d.byCampaign, function(r){ return r.campaign; });
+    })
+    .catch(function(){ document.getElementById('attrBody').innerHTML = '<span class="mut small">Attribution could not be loaded — connection error.</span>'; });
+}
+document.getElementById('attrDays').addEventListener('change', loadAttribution);
+document.getElementById('attrReload').addEventListener('click', loadAttribution);
+
+/* ── Top Speed Ads: the Flywheel loop ──────────────────── */
+function loadLoop(){
+  authFetch('/ad-studio/loop').then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var body = document.getElementById('loopBody');
+      if (!j || !j.data){ body.innerHTML = '<span class="mut small">The loop could not be loaded for this session.</span>'; return; }
+      body.innerHTML = '<div class="rows">' + (j.data.stages || []).map(function(s){
+        var value = s.value === null || s.value === undefined
+          ? '<span class="pill draft">Not connected yet</span>'
+          : '<b style="color:var(--txt);font-size:17px">' + s.value + '</b>';
+        return '<div class="crow"><div class="meta"><b>' + esc(s.label) + '</b> ' + value +
+          (s.note ? '<div class="desc">' + esc(s.note) + '</div>' : '') + '</div></div>';
+      }).join('') + '</div>';
+    })
+    .catch(function(){ document.getElementById('loopBody').innerHTML = '<span class="mut small">The loop could not be loaded — connection error.</span>'; });
+}
+
+/* ── Top Speed Ads: external readiness board ───────────── */
+var EXT_PLATFORM_LABEL = { google: 'Google Ads', meta: 'Meta (Facebook / Instagram)', microsoft: 'Microsoft Ads (Bing)' };
+function loadExternal(){
+  authFetch('/ad-studio/external-board').then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var body = document.getElementById('extBody');
+      if (!j || !j.data){ body.innerHTML = '<span class="mut small">The external board could not be loaded for this session.</span>'; return; }
+      var d = j.data;
+      var counts = d.counts || { total: 0, byPlatform: {} };
+      var html = '<div class="desc">' + esc(d.label) + '</div>' +
+        '<div class="desc" style="margin-top:4px">' + counts.total + ' campaigns of record: ' +
+        Object.keys(counts.byPlatform || {}).map(function(p){ return (EXT_PLATFORM_LABEL[p] || p) + ' ' + counts.byPlatform[p]; }).join(' · ') + '</div>';
+      var lastPlatform = '';
+      (d.campaigns || []).forEach(function(c){
+        if (c.platform !== lastPlatform){
+          lastPlatform = c.platform;
+          html += '<div class="small" style="font-weight:800;margin-top:14px">' + esc(EXT_PLATFORM_LABEL[c.platform] || c.platform) + ' — ' + esc(c.accountLabel) + '</div>';
+        }
+        html += '<div class="crow"><div class="meta"><b>' + esc(c.name) + '</b> <span class="pill">' + esc(c.status) + '</span>' +
+          '<div class="desc">$' + c.dailyBudgetUsd + '/day budget (set in the platform) · Destination: <a href="' + esc(c.destinationUrl) + '" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">' + esc(c.destinationUrl) + '</a></div>' +
+          ((c.missingSteps && c.missingSteps.length)
+            ? '<div class="desc">Still missing before it can go live:</div>' + c.missingSteps.map(function(s){
+                return '<div class="desc">— ' + esc(s.label) + (s.ownerOnly ? ' <span class="pill pending">Ramone-only</span>' : '') + '</div>';
+              }).join('')
+            : '<div class="desc">Nothing missing — ready for the owner\'s launch call inside the platform.</div>') +
+          '</div></div>';
+      });
+      body.innerHTML = html;
+    })
+    .catch(function(){ document.getElementById('extBody').innerHTML = '<span class="mut small">The external board could not be loaded — connection error.</span>'; });
+}
+
 /* ── Session gate: show the studio only to a real staff session ── */
 function showSignedOut(){
   document.getElementById('staffZone').style.display = 'none';
@@ -595,6 +772,7 @@ function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
   loadAll(); loadCreatives(); loadDestinations(); loadPack();
+  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();

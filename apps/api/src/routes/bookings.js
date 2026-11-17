@@ -19,6 +19,7 @@ import {
 import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
+import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 
 const router = Router();
 
@@ -34,6 +35,12 @@ const bookingSchema = z.object({
   appliance: z.string().trim().min(2),
   issue: z.string().trim().min(3),
   preferredWindow: z.string().trim().optional(),
+  // Top Speed Ads attribution (2026-11-17): the same optional
+  // first-touch capture the guest twin (POST /speedy/book) accepts —
+  // landing page, UTM fields and the platform click IDs. Absent or
+  // malformed attribution never fails a booking; see
+  // services/attribution.js for the accepted shapes.
+  ...attributionFields,
 });
 
 const matchSchema = z.object({
@@ -96,6 +103,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   }
 
   const { customer, city, zip, appliance, issue, preferredWindow } = parsed.data;
+  const attribution = normalizeAttribution(parsed.data);
   // Service Book book-by-area: the address resolves into the area model
   // instead of being rejected at the border. Covered addresses book as
   // always; out-of-area leads are recorded on the expansion waitlist
@@ -122,6 +130,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     referenceCode: createReferenceCode(),
     source: 'API',
     segment: 'RESIDENTIAL',
+    ...(attribution ? { attribution } : {}),
     city: canonicalCity,
     zip,
     area: resolution.area,

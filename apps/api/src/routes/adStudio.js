@@ -7,10 +7,18 @@ import { slugify } from '../data/marketingTaxonomy.js';
 import { persistAdCampaign } from '../db/adStudioRepo.js';
 import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS } from '../data/streamingPack.js';
 import { emitReport } from '../services/managementReports.js';
-import { persistBanner } from '../db/bannersRepo.js';
+import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
+import { speedyDraftAdCopy, speedyStatus } from '../services/speedy.js';
+import { EXTERNAL_ADS, EXTERNAL_ADS_BOARD_LABEL, EXTERNAL_ADS_VERIFIED_ON } from '../data/externalAds.js';
+import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
 
 /**
- * Ad Studio — the in-house advertising system (2026-11-14).
+ * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
+ * Advertising in-house ads system (2026-11-14; Top Speed Ads
+ * upgrade 2026-11-17: first-touch attribution with click IDs, raw
+ * impression/click counting on the display feed, the external
+ * platforms readiness board, the flywheel loop view, the Speedy
+ * copy drafter and the house creative picker).
  *
  * Ramone asked for the real version of a prototype he saw elsewhere:
  * an ad system that lives on the Service OS, spends nothing outside,
@@ -146,7 +154,10 @@ function displayFields(campaign) {
     advertiserName: campaign.advertiserName || LINE_LABELS[campaign.businessLine] || 'Top Speed Appliance',
     headline: (campaign.headline || creative?.title || campaign.name).slice(0, 120),
     copy: (campaign.copy || creative?.description || campaign.objective || '').slice(0, 400) || null,
-    imageUrl: creative?.thumbnailUrl || creative?.assetUrl || null,
+    // A house image picked from the creative library wins over the
+    // Media OS creative's image; campaigns that never picked one
+    // resolve exactly as before.
+    imageUrl: campaign.imageUrl || creative?.thumbnailUrl || creative?.assetUrl || null,
     ctaText: campaign.ctaText || LINE_CTA[campaign.businessLine] || 'Learn More',
     ctaUrl: taggedUrl(campaign.destinationUrl, campaign.sourceTag),
   };
@@ -265,6 +276,7 @@ function publicCampaign(record) {
     copy: record.copy || null,
     ctaText: record.ctaText || null,
     category: record.category || null,
+    imageUrl: record.imageUrl || null,
     ...streamingValues(record),
     bannerId: record.bannerId || null,
     banner: banner
@@ -307,6 +319,275 @@ router.get('/ad-studio/results', ...staffOnly, (req, res) => {
   return res.json({ data });
 });
 
+// ─── Top Speed Ads: attribution view (2026-11-17) ───────────────────
+
+/**
+ * Every booking in the window, grouped the way an advertiser asks:
+ * how many arrived with any first-touch attribution, where they
+ * came from (utm_source, falling back to the [via:] surface tag),
+ * which campaign they carried, and which platform click IDs were
+ * present. Counts come from the bookings' stored attribution — the
+ * same records the intake wrote — so an empty window honestly
+ * reports zeros (capture only exists from the day it shipped).
+ */
+router.get('/ad-studio/attribution', ...staffOnly, (req, res) => {
+  const days = Math.min(365, Math.max(1, Number(req.query.days) || 30));
+  const since = Date.now() - days * 24 * 60 * 60 * 1000;
+  const inWindow = [...store.bookings.values()].filter((b) => {
+    const t = new Date(b.createdAt || 0).getTime();
+    return Number.isFinite(t) && t >= since;
+  });
+  const bySource = new Map();
+  const byCampaign = new Map();
+  const clickIds = { gclid: 0, fbclid: 0, msclkid: 0, any: 0 };
+  let withAttribution = 0;
+  for (const booking of inWindow) {
+    const a = booking.attribution;
+    if (!a || !Object.keys(a).length) continue;
+    withAttribution += 1;
+    const source = a.utmSource || a.via || '(tagged, no source)';
+    bySource.set(source, (bySource.get(source) || 0) + 1);
+    if (a.utmCampaign) byCampaign.set(a.utmCampaign, (byCampaign.get(a.utmCampaign) || 0) + 1);
+    let anyClick = false;
+    for (const key of ['gclid', 'fbclid', 'msclkid']) {
+      if (a[key]) { clickIds[key] += 1; anyClick = true; }
+    }
+    if (anyClick) clickIds.any += 1;
+  }
+  const rows = (map, key) => [...map.entries()]
+    .map(([value, bookings]) => ({ [key]: value, bookings }))
+    .sort((x, y) => y.bookings - x.bookings);
+  return res.json({
+    data: {
+      windowDays: days,
+      totalBookings: inWindow.length,
+      withAttribution,
+      bySource: rows(bySource, 'source'),
+      byCampaign: rows(byCampaign, 'campaign'),
+      clickIds,
+    },
+  });
+});
+
+// ─── Top Speed Ads: flywheel loop view (2026-11-17) ─────────────────
+
+/**
+ * The flywheel as it actually stands: placements served → clicks →
+ * attributed bookings, counted from the same counters and records
+ * as everything else in this studio. The stages the loop has not
+ * reached yet (completed jobs, reviews, referrals) are returned as
+ * explicit placeholders with value null — never invented numbers.
+ */
+router.get('/ad-studio/loop', ...staffOnly, (req, res) => {
+  let impressions = 0;
+  let clicks = 0;
+  for (const campaign of store.adCampaigns) {
+    if (!campaign.bannerId) continue;
+    const banner = store.banners.find((b) => b.id === campaign.bannerId);
+    if (!banner) continue;
+    impressions += banner.impressions || 0;
+    clicks += banner.clicks || 0;
+  }
+  let attributedBookings = 0;
+  for (const booking of store.bookings.values()) {
+    if (booking.attribution && Object.keys(booking.attribution).length) attributedBookings += 1;
+  }
+  return res.json({
+    data: {
+      stages: [
+        { id: 'served', label: 'Placements served', value: impressions, note: 'Raw impressions counted on the in-house banner placements (one per display feed serve).' },
+        { id: 'clicks', label: 'Clicks', value: clicks, note: 'Raw clicks counted on the placements, through to their destinations.' },
+        { id: 'attributedBookings', label: 'Attributed bookings', value: attributedBookings, note: 'Bookings whose intake carried first-touch attribution — a source tag, UTM tags or a platform click ID (all time; the Attribution view above breaks the recent window down).' },
+        { id: 'completedJobs', label: 'Completed jobs', value: null, note: 'Connects when jobs complete — job outcomes join the loop as real jobs finish.' },
+        { id: 'reviews', label: 'Reviews', value: null, note: 'Connects when jobs complete — reviews are earned from real completed jobs only, never invented.' },
+        { id: 'referrals', label: 'Referrals', value: null, note: 'Connects when jobs complete — referral credit follows completed referred jobs.' },
+      ],
+      ctr: impressions > 0 ? clicks / impressions : null,
+    },
+  });
+});
+
+// ─── Top Speed Ads: external platforms readiness board ──────────────
+
+/**
+ * The campaigns of record in the outside platforms (Google, Meta,
+ * Microsoft), from the single registry in data/externalAds.js.
+ * Read-only mirror — no external API is called, nothing can be
+ * funded, launched or edited from here.
+ */
+router.get('/ad-studio/external-board', ...staffOnly, (req, res) => {
+  const byPlatform = {};
+  for (const campaign of EXTERNAL_ADS) {
+    byPlatform[campaign.platform] = (byPlatform[campaign.platform] || 0) + 1;
+  }
+  return res.json({
+    data: {
+      verifiedOn: EXTERNAL_ADS_VERIFIED_ON,
+      label: EXTERNAL_ADS_BOARD_LABEL,
+      counts: { total: EXTERNAL_ADS.length, byPlatform },
+      campaigns: EXTERNAL_ADS,
+    },
+  });
+});
+
+// ─── Top Speed Ads: house creative library (picker) ─────────────────
+
+/**
+ * The pickable house creative for campaign images: the poster set
+ * and the scenario library, exactly as the API already serves them.
+ * The picker stores the chosen URL on the campaign (imageUrl); the
+ * display resolution prefers it over the Media OS creative's image.
+ */
+router.get('/ad-studio/creative-library', ...staffOnly, (req, res) => {
+  const posters = POSTER_IMAGE_NAMES.map((name) => ({ kind: 'poster', name, url: `/api/v1/app/poster-images/${name}` }));
+  const scenarios = SCENARIO_IMAGE_NAMES.map((name) => ({ kind: 'scenario', name, url: `/api/v1/app/scenario-images/${name}` }));
+  return res.json({ data: { posters, scenarios, total: posters.length + scenarios.length } });
+});
+
+// ─── Top Speed Ads: Draft with Speedy (AI copy drafter) ─────────────
+
+/**
+ * Speedy drafts the copy; the draft becomes a campaign in
+ * PENDING_APPROVAL — the owner's queue — exactly like a staff
+ * submit. The AI never publishes: approval stays the owner-only
+ * action it has always been. Platform limits are enforced HERE, on
+ * the AI's output, the same way the streaming pack enforces them on
+ * human input (headlines 30 / descriptions 90 streaming; headline
+ * 120 / copy 400 banner), and the brand rules are enforced again
+ * here too: any line carrying a review/rating claim is dropped, and
+ * any line carrying a price is dropped unless it is the Top Speed
+ * line's $99 residential diagnostic.
+ */
+function copyLineAllowed(line, businessLine) {
+  if (/\bstars?\b|\brated\b|\breviews?\b/i.test(line)) return false;
+  const amounts = line.match(/\$\s?\d[\d,]*(?:\.\d{2})?/g) || [];
+  if (!amounts.length) return true;
+  if (businessLine !== 'TOP_SPEED') return false;
+  return amounts.every((a) => a.replace(/[\s,]/g, '') === '$99');
+}
+
+function fitDraftLines(lines, maxLen, cap, businessLine) {
+  const out = [];
+  for (const raw of Array.isArray(lines) ? lines : []) {
+    if (typeof raw !== 'string') continue;
+    const line = raw.trim().slice(0, maxLen);
+    if (!line || !copyLineAllowed(line, businessLine)) continue;
+    out.push(line);
+    if (out.length >= cap) break;
+  }
+  return out;
+}
+
+function fitDraftLine(value, maxLen, businessLine) {
+  if (typeof value !== 'string') return null;
+  const line = value.trim().slice(0, maxLen);
+  return line && copyLineAllowed(line, businessLine) ? line : null;
+}
+
+const draftCopySchema = z.object({
+  name: z.string().trim().min(3).max(160).optional(),
+  businessLine: z.enum(BUSINESS_LINES),
+  topic: z.string().trim().min(3).max(600).optional(),
+  destinationUrl: z.string().trim().min(1).max(1000),
+  placement: z.enum(PLACEMENTS).optional(),
+  streamingFormat: z.enum(STREAMING_FORMATS).nullable().optional(),
+  streamingProviders: z.array(z.enum(STREAMING_PROVIDER_IDS)).max(STREAMING_PROVIDER_IDS.length).nullable().optional(),
+});
+
+router.post('/ad-studio/draft-copy', ...staffOnly, async (req, res) => {
+  const parsed = draftCopySchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid draft request', details: parsed.error.flatten() });
+  const placement = parsed.data.placement || 'BANNER';
+  // The topic is what Speedy drafts about: the builder's objective
+  // when given, else the campaign name. One of the two is required.
+  const topic = parsed.data.topic || parsed.data.name || '';
+  if (!topic) return res.status(400).json({ error: 'Give the draft a campaign name or an objective first — Speedy drafts from that.' });
+  if (placement === 'STREAMING') {
+    if (!parsed.data.streamingFormat) return res.status(400).json({ error: 'A streaming draft needs a format (TEXT or DISPLAY)' });
+    if (!Array.isArray(parsed.data.streamingProviders) || parsed.data.streamingProviders.length === 0) {
+      return res.status(400).json({ error: 'Pick at least one streaming provider target before drafting' });
+    }
+  }
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy copy drafting is unavailable right now — build the campaign by hand in the builder above; it works exactly as before.' });
+  }
+  let draft;
+  try {
+    draft = await speedyDraftAdCopy({
+      businessLine: parsed.data.businessLine,
+      topic,
+      destinationUrl: parsed.data.destinationUrl,
+      placement,
+      streamingFormat: parsed.data.streamingFormat || null,
+    });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not draft copy just now — try again, or write it by hand in the builder.', detail: String(error?.message || error) });
+  }
+  const line = parsed.data.businessLine;
+  const streaming = placement === 'STREAMING';
+  const headlines = fitDraftLines(draft?.headlines, streaming ? 30 : 120, 15, line);
+  const descriptions = fitDraftLines(draft?.descriptions, streaming ? 90 : 400, 4, line);
+  const longHeadline = streaming ? fitDraftLine(draft?.longHeadline, 90, line) : null;
+  const headline = streaming ? null : (fitDraftLine(draft?.headline, 120, line) || headlines[0] || null);
+  const copy = streaming ? (descriptions[0] || null) : (fitDraftLine(draft?.copy, 400, line) || descriptions[0] || null);
+  if (streaming && (!headlines.length || !descriptions.length)) {
+    return res.status(502).json({ error: 'Speedy did not return usable streaming copy inside the platform limits — try again, or write it by hand in the builder.' });
+  }
+  if (!streaming && !headline && !copy) {
+    return res.status(502).json({ error: 'Speedy did not return usable copy — try again, or write it by hand in the builder.' });
+  }
+  const now = new Date().toISOString();
+  const record = {
+    id: createId(),
+    name: parsed.data.name || `${topic} — Speedy draft`.slice(0, 160),
+    businessLine: line,
+    objective: topic,
+    status: 'PENDING_APPROVAL',
+    creativeId: null,
+    destinationUrl: parsed.data.destinationUrl,
+    sourceTag: generateSourceTag(parsed.data.name || topic),
+    placement,
+    ...(streaming
+      ? { streamingFormat: parsed.data.streamingFormat, streamingProviders: [...parsed.data.streamingProviders], headlines, descriptions, displayPath: null, longHeadline, displaySizes: [] }
+      : streamingValues({})),
+    bannerId: null,
+    advertiserName: parsed.data.businessLine === 'EXTERNAL' ? null : (LINE_LABELS[line] || null),
+    offering: topic.slice(0, 200),
+    headline,
+    copy,
+    ctaText: LINE_CTA[line] || 'Learn More',
+    category: null,
+    imageUrl: null,
+    notes: 'Drafted by Speedy (Top Speed Ads AI copy drafter) from the topic in the objective — every word waits for the owner\'s approval; the AI never publishes.',
+    createdById: actorIdOf(req),
+    approvedById: null,
+    approvedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const streamErr = streamingError(record);
+  if (streamErr) return res.status(400).json({ error: streamErr });
+  store.adCampaigns.push(record);
+  await persistAdCampaign(record);
+  appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+    source: 'ad-studio-speedy-drafter',
+    actor: actorOf(req),
+    entityType: 'AD_CAMPAIGN',
+    entityId: record.id,
+    details: { sourceTag: record.sourceTag, placement: record.placement, ownerAction: false },
+  });
+  emitReport({
+    department: 'marketing',
+    type: 'AD_CAMPAIGN_SUBMITTED',
+    title: `Ad campaign submitted for approval — ${record.name}`,
+    detail: { campaignId: record.id, name: record.name, businessLine: record.businessLine, sourceTag: record.sourceTag, destinationUrl: record.destinationUrl, placement: record.placement, actor: actorOf(req), draftedBy: 'speedy' },
+    source: 'ad-studio-speedy-drafter',
+    reference: record.sourceTag,
+    eventKey: `ad-campaign:${record.id}:PENDING_APPROVAL:${record.updatedAt}`,
+  });
+  return res.status(201).json({ data: publicCampaign(record) });
+});
+
 // Flywheel advertiser fields, shared by the staff create/patch schemas
 // (all optional + nullable: house campaigns leave them null).
 const advertiserFields = {
@@ -316,6 +597,9 @@ const advertiserFields = {
   copy: z.string().trim().max(400).nullable().optional(),
   ctaText: z.string().trim().min(2).max(60).nullable().optional(),
   category: z.enum(AD_CATEGORIES).nullable().optional(),
+  // Creative picker (2026-11-17): a house creative image URL chosen
+  // from the scenario/poster library (see /ad-studio/creative-library).
+  imageUrl: z.string().trim().max(500).nullable().optional(),
 };
 
 const campaignCreateSchema = z.object({
@@ -357,6 +641,7 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
     copy: parsed.data.copy || null,
     ctaText: parsed.data.ctaText || null,
     category: parsed.data.category || null,
+    imageUrl: parsed.data.imageUrl || null,
     notes: parsed.data.notes || null,
     createdById: actorIdOf(req),
     approvedById: null,
@@ -604,12 +889,18 @@ function displayItem(campaign) {
     ...displayFields(campaign),
     offering: campaign.offering || null,
     category: campaign.category || null,
+    // Top Speed Ads click counting (2026-11-17): surfaces that render
+    // the feed send clicks through this path — the endpoint counts
+    // the click on the campaign's banner, then redirects to the
+    // (source-tagged) destination. ctaUrl stays the direct tagged
+    // destination for surfaces that link straight out.
+    clickPath: `/ad-studio/click/${campaign.id}`,
   };
 }
 
 router.get('/ad-studio/display', (req, res) => {
   const category = String(req.query.category || '').trim().toUpperCase();
-  const items = store.adCampaigns
+  const campaigns = store.adCampaigns
     .filter((c) => c.status === 'ACTIVE' && c.placement === 'BANNER')
     .sort((a, b) => {
       if (category) {
@@ -618,9 +909,34 @@ router.get('/ad-studio/display', (req, res) => {
         if (am !== bm) return am - bm;
       }
       return String(b.updatedAt).localeCompare(String(a.updatedAt));
-    })
-    .map(displayItem);
-  return res.json({ data: items });
+    });
+  // Performance counting (2026-11-17): a feed serve IS an impression
+  // of every placement it carries — counted raw, once per serve, on
+  // the linked banner counters (the same counters the banner event
+  // pings use). Surfaces rendering this feed no longer ping
+  // impressions themselves, so a serve is never double-counted.
+  for (const campaign of campaigns) {
+    if (campaign.bannerId) void bumpBannerCounter(campaign.bannerId, 'impressions');
+  }
+  return res.json({ data: campaigns.map(displayItem) });
+});
+
+/**
+ * Click-through counting (public, 2026-11-17): counts the click on
+ * the campaign's banner when the campaign is live, then redirects
+ * to the campaign's source-tagged destination — the visitor lands
+ * exactly where the direct link would have taken them. An unknown
+ * id redirects to the platform home; nothing here can be aimed at
+ * an arbitrary URL (the destination comes from the campaign record,
+ * never from the request).
+ */
+router.get('/ad-studio/click/:id', async (req, res) => {
+  const campaign = findCampaign(req.params.id);
+  if (!campaign) return res.redirect(302, 'https://topspeedserviceos.com/');
+  if (campaign.status === 'ACTIVE' && campaign.placement === 'BANNER' && campaign.bannerId) {
+    await bumpBannerCounter(campaign.bannerId, 'clicks');
+  }
+  return res.redirect(302, taggedUrl(campaign.destinationUrl, campaign.sourceTag));
 });
 
 // ─── Advertiser self-serve (Advertiser Console, 2026-11-16) ─────────

@@ -939,6 +939,80 @@ const PARTS_FINDER_FORMAT = {
   },
 };
 
+/*
+ * Top Speed Ads — Speedy copy drafter (2026-11-17).
+ *
+ * "Draft with Speedy" in Ad Studio: Speedy writes Google-style
+ * headlines/descriptions (streaming placements) or a banner
+ * headline/copy pair (banner placements) for a campaign the staff
+ * describe. The brand rules are HARD, in the instructions and again
+ * server-side in routes/adStudio.js (limits + price/claim filters):
+ * no reviews, ratings or stars; no invented prices, discounts,
+ * statistics or guarantees; the only price that may ever appear is
+ * the $99 residential diagnostic, credited toward the repair, and
+ * only for the Top Speed line — never commercial, never Cleanout
+ * Vents (no vent prices exist), never CocoCane. No phone numbers.
+ * A draft is only a draft: it lands in the owner's approval queue
+ * as a PENDING_APPROVAL campaign and the AI never publishes.
+ */
+
+const AD_COPY_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_ad_copy_draft',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      headlines: {
+        type: 'array',
+        maxItems: 15,
+        items: { type: 'string' },
+        description: 'Short ad headlines. For streaming text/display ads each is at most 30 characters; for other placements at most 120 characters.',
+      },
+      descriptions: {
+        type: 'array',
+        maxItems: 4,
+        items: { type: 'string' },
+        description: 'Ad descriptions. For streaming ads each is at most 90 characters; for other placements at most 400 characters.',
+      },
+      longHeadline: { type: ['string', 'null'], description: 'One longer headline for display ads (at most 90 characters), or null.' },
+      headline: { type: ['string', 'null'], description: 'For banner placements: the single banner headline (at most 120 characters), or null.' },
+      copy: { type: ['string', 'null'], description: 'For banner placements: the supporting banner copy (at most 400 characters), or null.' },
+    },
+    required: ['headlines', 'descriptions', 'longHeadline', 'headline', 'copy'],
+  },
+};
+
+export async function speedyDraftAdCopy({ businessLine, topic, destinationUrl, placement, streamingFormat }) {
+  const lineLabel = {
+    TOP_SPEED: 'Top Speed Appliance (appliance repair, installation, sales & delivery)',
+    CLEANOUT_VENTS: 'Cleanout Vents (dryer vent cleaning — a Top Speed network partner)',
+    COCOCANE: 'CocoCane (fresh coconut drinks and whole coconuts, Fort Lauderdale pickup)',
+    EXTERNAL: 'an outside advertiser on the Top Speed platforms',
+  }[businessLine] || 'Top Speed Appliance';
+  const streaming = placement === 'STREAMING';
+  const facts = [
+    `Business line: ${lineLabel}`,
+    `What is being advertised: ${topic}`,
+    destinationUrl ? `Destination page: ${destinationUrl}` : null,
+    `Placement: ${placement}${streaming ? ` (streaming ${streamingFormat || 'TEXT'} ad)` : ''}`,
+  ].filter(Boolean).join('\n');
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nAd copy mode: you are drafting advertising copy for Top Speed Ads, the in-house Flywheel AI Advertising system. Write in the house voice: fast, plain, factual. HARD RULES — never break these: no reviews, ratings, stars or testimonials; no invented prices, discounts, statistics, guarantees or claims; no phone numbers; if hours are mentioned they are exactly "Mon–Fri 8am–7pm". The ONLY price that may appear is the $99 diagnostic for RESIDENTIAL Top Speed appliance repair, always phrased as credited toward the repair — and only when the business line is Top Speed Appliance. Commercial work is custom-quoted: never attach the $99 (or any price) to it. Cleanout Vents has NO published prices: never state a vent price. CocoCane copy carries no prices in drafts. ' +
+      (streaming
+        ? 'This is a streaming ad: return up to 15 headlines of at most 30 characters each, up to 4 descriptions of at most 90 characters each, and one long headline of at most 90 characters. Set headline and copy to null.'
+        : 'This is a banner/link placement: return one headline (at most 120 characters) and one supporting copy text (at most 400 characters); also return a few short headlines (at most 120 characters each) and descriptions (at most 400 characters each) as alternates. Set longHeadline to null.') +
+      ' This is a draft for the owner approval queue: a human reviews and approves every word before anything runs.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: facts.slice(0, 2000) }] }],
+    text: { format: AD_COPY_FORMAT },
+    max_output_tokens: 700,
+  });
+  return JSON.parse(extractText(body));
+}
+
 export async function speedyPartsFinder({ brand, model, applianceType, issue }) {
   const facts = [
     brand ? `Brand: ${brand}` : null,

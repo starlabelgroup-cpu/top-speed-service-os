@@ -24,9 +24,19 @@ import { z } from 'zod';
  *   { page, via, utmSource, utmMedium, utmCampaign }  (present keys only)
  * Persistence flattens it to the sourcePage / viaTag / utmSource /
  * utmMedium / utmCampaign columns (see the intake_attribution migration).
+ *
+ * Top Speed Ads (2026-11-17): the platform click IDs ride along —
+ * gclid (Google), fbclid (Meta), msclkid (Microsoft) — captured
+ * first-touch on the landing page by shared/attribution-capture.js
+ * and stored in the matching ServiceRequest columns (see the
+ * top_speed_ads migration). The click-id fields are deliberately
+ * UNTYPED here (z.any): a malformed click id must never fail a
+ * booking — normalizeAttribution's clean() keeps real strings and
+ * drops everything else.
  */
 
 const shortText = (max) => z.string().trim().max(max).optional();
+const clickId = z.any().optional();
 
 export const attributionFields = {
   page: shortText(1000),
@@ -37,6 +47,9 @@ export const attributionFields = {
   utm_medium: shortText(200),
   utmCampaign: shortText(200),
   utm_campaign: shortText(200),
+  gclid: clickId,
+  fbclid: clickId,
+  msclkid: clickId,
   utm: z
     .union([
       z.string().trim().max(1000),
@@ -72,6 +85,9 @@ function parseRawUtm(raw) {
     found.utmSource = clean(params.get('utm_source'));
     found.utmMedium = clean(params.get('utm_medium'));
     found.utmCampaign = clean(params.get('utm_campaign'));
+    found.gclid = clean(params.get('gclid'));
+    found.fbclid = clean(params.get('fbclid'));
+    found.msclkid = clean(params.get('msclkid'));
   } catch {
     // An unparseable raw utm string is ignored, never an error.
   }
@@ -92,11 +108,17 @@ export function normalizeAttribution(data) {
   const utmSource = clean(data.utmSource ?? data.utm_source) ?? fromRaw.utmSource;
   const utmMedium = clean(data.utmMedium ?? data.utm_medium) ?? fromRaw.utmMedium;
   const utmCampaign = clean(data.utmCampaign ?? data.utm_campaign) ?? fromRaw.utmCampaign;
+  const gclid = clean(data.gclid) ?? fromRaw.gclid;
+  const fbclid = clean(data.fbclid) ?? fromRaw.fbclid;
+  const msclkid = clean(data.msclkid) ?? fromRaw.msclkid;
   if (page) attribution.page = page;
   if (via) attribution.via = via;
   if (utmSource) attribution.utmSource = utmSource;
   if (utmMedium) attribution.utmMedium = utmMedium;
   if (utmCampaign) attribution.utmCampaign = utmCampaign;
+  if (gclid) attribution.gclid = gclid;
+  if (fbclid) attribution.fbclid = fbclid;
+  if (msclkid) attribution.msclkid = msclkid;
   return Object.keys(attribution).length ? attribution : null;
 }
 
@@ -108,6 +130,9 @@ export function attributionToColumns(attribution) {
     utmSource: attribution?.utmSource ?? null,
     utmMedium: attribution?.utmMedium ?? null,
     utmCampaign: attribution?.utmCampaign ?? null,
+    gclid: attribution?.gclid ?? null,
+    fbclid: attribution?.fbclid ?? null,
+    msclkid: attribution?.msclkid ?? null,
   };
 }
 
@@ -120,5 +145,8 @@ export function attributionFromColumns(row) {
   if (row.utmSource) attribution.utmSource = row.utmSource;
   if (row.utmMedium) attribution.utmMedium = row.utmMedium;
   if (row.utmCampaign) attribution.utmCampaign = row.utmCampaign;
+  if (row.gclid) attribution.gclid = row.gclid;
+  if (row.fbclid) attribution.fbclid = row.fbclid;
+  if (row.msclkid) attribution.msclkid = row.msclkid;
   return Object.keys(attribution).length ? attribution : null;
 }

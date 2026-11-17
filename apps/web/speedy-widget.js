@@ -16,6 +16,30 @@
   if (document.getElementById('speedyBtn') || document.getElementById('speedyPanel')) return;
 
   var API = 'https://top-speed-service-os.vercel.app/api/v1';
+
+  /* Top Speed Ads first-touch attribution (2026-11-17): the widget
+     runs on nearly every surface, so it captures the landing URL's
+     UTM + click-ID parameters into the same localStorage record the
+     shared attribution-capture.js writes (first touch inside 30
+     days wins), and bookIt() attaches it to the booking. */
+  try {
+    var tswParams = new URLSearchParams(window.location.search || '');
+    var tswCap = {};
+    [['utm_source', 'utmSource'], ['utm_medium', 'utmMedium'], ['utm_campaign', 'utmCampaign'], ['gclid', 'gclid'], ['fbclid', 'fbclid'], ['msclkid', 'msclkid']].forEach(function (p) {
+      var v = tswParams.get(p[0]);
+      if (v) tswCap[p[1]] = String(v).slice(0, 500);
+    });
+    if (Object.keys(tswCap).length) {
+      var tswOld = null;
+      try { tswOld = JSON.parse(localStorage.getItem('tsos_attribution') || 'null'); } catch (e) {}
+      if (!tswOld || !tswOld.ts || (Date.now() - tswOld.ts) > 30 * 24 * 60 * 60 * 1000) {
+        tswCap.page = String(window.location.href || '').split('#')[0].slice(0, 1000);
+        tswCap.ts = Date.now();
+        localStorage.setItem('tsos_attribution', JSON.stringify(tswCap));
+      }
+    }
+  } catch (e) {}
+
   var css = [
     '.tsw-btn{position:fixed;right:18px;bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:9990;background:#0A265C;color:#fff;border:2px solid #1280FF;border-radius:999px;padding:13px 20px;font:700 15px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 10px 30px rgba(6,20,45,.45);animation:tswPulse 2.4s infinite;transition:opacity .18s ease,visibility .18s ease}',
     '@keyframes tswPulse{0%{box-shadow:0 0 0 0 rgba(18,128,255,.45)}70%{box-shadow:0 0 0 14px rgba(18,128,255,0)}100%{box-shadow:0 0 0 0 rgba(18,128,255,0)}}',
@@ -275,6 +299,10 @@
       sessionId: chatSessionId()
     };
     try { var refCode = sessionStorage.getItem('tsos_referral_code'); if (refCode) bookPayload.referralCode = refCode; } catch (e) {}
+    try {
+      var atStored = (window.TSOSAttribution && TSOSAttribution.get()) || JSON.parse(localStorage.getItem('tsos_attribution') || 'null');
+      if (atStored) ['page', 'utmSource', 'utmMedium', 'utmCampaign', 'gclid', 'fbclid', 'msclkid'].forEach(function (k) { if (atStored[k] && !(k in bookPayload)) bookPayload[k] = atStored[k]; });
+    } catch (e) {}
     post('/speedy/book', bookPayload).then(function (j) {
       bookedRef = j.data.referenceCode;
       bookedPhone = d.phone;

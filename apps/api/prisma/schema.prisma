@@ -255,6 +255,14 @@ model ServiceRequest {
   utmSource                         String?
   utmMedium                         String?
   utmCampaign                       String?
+  // Top Speed Ads click IDs (2026-11-17): the platform click
+  // identifiers a paid click carries into the landing page (Google
+  // gclid, Meta fbclid, Microsoft msclkid), captured first-touch by
+  // the client and stored beside the UTM fields. All optional — a
+  // booking that arrived without one simply carries nulls.
+  gclid                             String?
+  fbclid                            String?
+  msclkid                           String?
   // ApplianceReferral attribution (2026-11-12, Phase 1): the personal
   // TS-REF-XXXX code this booking arrived through, and the referrer's
   // customer id. Persisted so a referred booking stays attributable
@@ -710,6 +718,11 @@ model Connection {
   utmSource   String?
   utmMedium   String?
   utmCampaign String?
+  // Top Speed Ads click IDs (2026-11-17) — same columns as
+  // ServiceRequest; the shared attribution layer flattens both.
+  gclid       String?
+  fbclid      String?
+  msclkid     String?
   reference   String   @unique
   createdAt   DateTime @default(now())
 }
@@ -1500,6 +1513,11 @@ model AdCampaign {
   // later activation. headlines/descriptions follow Google Ads
   // limits (30 / 90 chars), enforced in routes/adStudio.js.
   streamingFormat    AdStreamingFormat?
+  // Top Speed Ads creative picker (2026-11-17): a house creative
+  // image chosen from the scenario/poster asset library, stored as
+  // its served URL. Wins over the Media OS creative's image in the
+  // display resolution; null keeps the pre-existing behavior.
+  imageUrl           String?
   streamingProviders String[]           @default([])
   headlines          String[]           @default([])
   descriptions       String[]           @default([])

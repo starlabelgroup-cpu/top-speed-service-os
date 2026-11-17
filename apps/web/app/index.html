@@ -1390,6 +1390,7 @@ function confirmBooking(){
   function setBtn(t,en){ if(btn){ btn.textContent=t; btn.disabled=!en; } }
   setBtn('Booking\u2026',false);
   var payload={customer:{name:name,phone:phone,address:addr||undefined},city:city,zip:zip,appliance:booking.appliance||'Refrigerator',issue:issue,preferredWindow:((booking.day||'')+' \u00b7 '+(booking.window||'')).trim()||undefined};
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   function doBook(){
     payload.customer.email=cUser?cUser.email:payload.customer.email;
     cFetch('/bookings',{method:'POST',body:JSON.stringify(payload)})
@@ -1572,6 +1573,7 @@ function aspBook(){
   var btn = document.getElementById('aspBookBtn');
   btn.disabled = true; btn.textContent = 'Booking…';
   var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   var done = function(ref){
     window._aspRef = ref;
     window._aspBookedRef = ref;
@@ -1993,6 +1995,6 @@ function mnuNotifications(){
   </div>
   <p style="font-size:12.5px;opacity:.75;margin:12px 0 0">Top Speed Appliance LLC — The Faster, The Better.</p>
 </footer>
-<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script>
 </body>
 </html>

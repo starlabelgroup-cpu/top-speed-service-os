@@ -356,6 +356,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['streaming ads', 'streaming', 'roku', 'hulu', 'youtube tv', 'peacock', 'paramount', 'pluto tv', 'samsung tv plus', 'ctv', 'ott', 'google style ads', 'text ads', 'display ads', 'streaming pack', 'flywheel streaming pack'],
   },
   {
+    id: 'top-speed-ads',
+    name: 'Top Speed Ads',
+    group: 'Marketing, Media & Ads',
+    location: 'topspeedserviceos.com/ad-studio',
+    url: '/ad-studio',
+    purpose: 'Top Speed Ads is the name of the in-house ads system (the Ad Studio console): Flywheel AI Advertising campaigns built, approved and served on Top Speed\'s own surfaces. It adds first-touch attribution (UTM + Google/Meta/Microsoft click IDs captured on landing pages and attached to bookings), raw serve/click counters on the banner feed (clicks counted through a server redirect), a Flywheel loop view (serves → clicks → attributed bookings, with honest placeholders for the stages that connect later), a "Draft with Speedy" AI copy drafter whose drafts always land in the owner approval queue, a creative picker over the house poster and scenario libraries, and an External platforms readiness board that mirrors the campaigns of record on Google Ads, Meta and Microsoft Ads with their missing steps — a read-only, dated mirror: budgets and launches happen inside each platform, and nothing in Top Speed Ads spends money.',
+    access: 'Staff build and submit; approvals are Master (owner) only; the external board is read-only',
+    actions: ['Build a campaign with house creative', 'Draft ad copy with Speedy (lands in the approval queue)', 'Read the attribution view', 'Read the Flywheel loop', 'Check external campaign readiness'],
+    related: ['ad-studio', 'streaming-ads', 'flywheel', 'advertiser-console'],
+    keywords: ['top speed ads', 'attribution', 'gclid', 'fbclid', 'msclkid', 'utm', 'click tracking', 'impressions', 'ctr', 'external platforms', 'readiness board', 'draft with speedy', 'creative picker', 'flywheel loop'],
+  },
+  {
     id: 'flywheel',
     name: 'Flywheel AI Advertising',
     group: 'Marketing, Media & Ads',

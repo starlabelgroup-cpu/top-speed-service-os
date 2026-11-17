@@ -10,7 +10,14 @@
    this script renders NOTHING — no house filler, no placeholder promo.
    The bar is in-flow (never an overlay), sits at the top of the page,
    and never covers booking forms or call/book actions. Dismissing
-   hides the current campaign for the rest of the session. */
+   hides the current campaign for the rest of the session.
+
+   Counting (Top Speed Ads, 2026-11-17): impressions are counted by
+   the server when the feed is served, and clicks go through the
+   feed's clickPath (counted server-side, then redirected to the
+   campaign's destination) — this script no longer pings counters,
+   so a serve or a click is never double-counted. The event ping
+   below remains only as the fallback for a feed with no clickPath. */
 (function () {
   if (window.__fwbLoaded) return;
   window.__fwbLoaded = true;
@@ -72,13 +79,18 @@
       '</button>' +
       '</div>';
     var cta = bar.querySelector('.fwb-cta');
-    if (cta) cta.addEventListener('click', function () { ping(ad.bannerId, 'click'); });
+    if (cta && ad.clickPath) {
+      cta.setAttribute('href', API + ad.clickPath);
+    } else if (cta) {
+      cta.addEventListener('click', function () { ping(ad.bannerId, 'click'); });
+    }
     bar.querySelector('.fwb-x').addEventListener('click', function () {
       try { sessionStorage.setItem('fwbDismissed', ad.id); } catch (e) { /* ignore */ }
       bar.remove();
     });
     if (document.body) document.body.insertBefore(bar, document.body.firstChild);
-    ping(ad.bannerId, 'impression');
+    // No impression ping: the server counted this serve when it
+    // answered the display feed (see the header note).
   }
 
   function load() {
