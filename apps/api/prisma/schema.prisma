@@ -1548,7 +1548,10 @@ model DepartmentReport {
 // external channel a Pepper Lists seller account has connected or
 // requested. SELL channels syndicate listings (Facebook Marketplace,
 // Google Shopping, eBay, Etsy, Walmart); POST channels publish posts
-// (TikTok, Facebook, YouTube, Instagram, X, LinkedIn). Phase 1 is the
+// (TikTok, Facebook, YouTube, Instagram, X, LinkedIn) and carry the
+// seller's search-directory presence (Google Business Profile, Bing
+// Places, and a general search-directories request — added
+// 2026-11-17 with the three-purpose consolidation). Phase 1 is the
 // registry + request workflow ONLY: a connect files a PENDING request
 // the office completes on the platform side, exactly like the
 // Advertiser Console's ChannelLink system. A row may read CONNECTED
@@ -1569,6 +1572,9 @@ enum SellerChannel {
   INSTAGRAM
   X
   LINKEDIN
+  GOOGLE_BUSINESS
+  BING_PLACES
+  SEARCH_DIRECTORIES
 }
 
 enum SellerChannelKind {

@@ -3,13 +3,13 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(183,227,60,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pepper Lists It — Sell it. Book it. One customer app. | Top Speed OS</title>
-<meta name="description" content="Pepper Lists It by Top Speed OS is the Top Speed customer app for Fort Lauderdale: snap a photo to sell — ackee, mangoes, trees, produce — and Pepper drafts and posts your Marketplace listing after your yes; or book appliance repair, track your tech, and review your service. One app, both ways.">
+<title>Pepper Lists It — Sell it. Post it. Book it. One customer app. | Top Speed OS</title>
+<meta name="description" content="Pepper Lists It by Top Speed OS is the Top Speed customer app for Fort Lauderdale: snap a photo to sell — ackee, mangoes, trees, produce — and Pepper drafts and posts your Marketplace listing after your yes; post to social media and search directories; or book appliance repair with Speedy AI, track your tech, and review your service. One app, three purposes.">
 <link rel="canonical" href="https://pepperlists.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Pepper Lists It">
-<meta property="og:title" content="Pepper Lists It — Sell it. Book it. One customer app.">
-<meta property="og:description" content="The Top Speed customer app: sell your products from a photo — Pepper drafts and posts your listing after you say yes — and book appliance repair with live tracking and reviews. A Top Speed OS product, Fort Lauderdale, FL.">
+<meta property="og:title" content="Pepper Lists It — Sell it. Post it. Book it. One customer app.">
+<meta property="og:description" content="The Top Speed customer app with three purposes: sell your products from a photo — Pepper drafts and posts your listing after you say yes — post to social media and search directories, and book appliance repair with live tracking and reviews. A Top Speed OS product, Fort Lauderdale, FL.">
 <meta property="og:url" content="https://pepperlists.com/">
 <meta property="og:image" content="https://topspeedserviceos.com/icon-512.png">
 <meta name="twitter:card" content="summary">
@@ -109,7 +109,7 @@ footer a{color:var(--lime)}
     <div class="plg-brandrow"><span class="brand"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></span></div>
     <span class="plg-badge">Top Speed OS · Consumer App</span>
     <h1 class="plg-h">Snap it. Pepper lists it — everywhere.</h1>
-    <p class="plg-sub">Pepper Lists is a Top Speed OS Consumer App. Sign in with your Top Speed account — or create one — to open the app and start listing. It is the same account you use across the whole Top Speed platform.</p>
+    <p class="plg-sub">Pepper Lists is a Top Speed OS Consumer App. Sign in with your Top Speed account — or create one — to open the app and start selling, posting and booking. It is the same account you use across the whole Top Speed platform.</p>
     <div class="plg-card">
       <div class="plg-tabs" role="tablist" aria-label="Sign in or create account">
         <button type="button" id="plTabIn" class="on" onclick="plMode('in')">Sign in</button>
@@ -148,10 +148,10 @@ footer a{color:var(--lime)}
 <div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
 <!-- WELCOME — shown once, right after a NEW account finishes signing
      up on this page (plRegister sets plJustRegistered; plEnterApp
-     reveals this panel). It points the new customer at the two
-     things Ramone named for sign-ups: connect accounts for selling
-     and posting (Channel Connections), and the Sell / Post entry
-     points. Returning sign-ins never see it. -->
+     reveals this panel). It points the new customer at the things
+     Ramone named for sign-ups: connect accounts for selling and
+     posting (Channel Connections), and the three purpose hubs —
+     Sell, Post and Book. Returning sign-ins never see it. -->
 <style>
 .plw-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 @media(max-width:560px){.plw-row .btn{flex:1 1 100%;text-align:center}}
@@ -159,24 +159,31 @@ footer a{color:var(--lime)}
 <section class="plb" id="plWelcome" style="display:none" aria-label="Welcome to Pepper Lists It">
   <div class="plb-card">
     <h2>Welcome to Pepper Lists It<span id="plWelcomeName"></span></h2>
-    <p class="plb-sub">Your account is ready — it is the same Top Speed account you can use across the whole platform. Two things most new sellers do first: connect the accounts you sell and post on, then list something or share a repair.</p>
+    <p class="plb-sub">Your account is ready — it is the same Top Speed account you can use across the whole platform. Pepper Lists has three purposes: <b style="color:var(--ink)">Sell</b> what you have, <b style="color:var(--ink)">Post</b> to social media and search directories, and <b style="color:var(--ink)">Book</b> appliance service with Speedy AI and Top Speed Service OS. Most people start by connecting the accounts they sell and post on.</p>
     <div class="plw-row">
       <button class="btn" type="button" onclick="plWelcomeGo('channels')">Connect your accounts</button>
       <button class="btn dark" type="button" onclick="plWelcomeGo('sell')">Start selling</button>
-      <button class="btn dark" type="button" onclick="plWelcomeGo('post')">Post a review</button>
+      <button class="btn dark" type="button" onclick="plWelcomeGo('post')">Start posting</button>
+      <button class="btn dark" type="button" onclick="plWelcomeGo('book')">Book a service</button>
       <button class="btn dark" type="button" onclick="plWelcomeHide()">Skip for now</button>
     </div>
     <p class="plb-note" style="margin-top:12px">Channel Connections lives right in this account, below — scroll down any time. Connections belong to your account, not to this browser: sign in anywhere and they are yours.</p>
   </div>
 </section>
-<!-- TWO CATEGORIES — Ramone's structure (2026-11-16): everything inside
-     Pepper Lists lives in one of two categories. SELL is for moving
-     products, as an individual (photo listing flow) or a business
-     (Advertise lane + Flywheel console). POST is for sharing a repair
-     experience — reviews, photos, videos, comments (Pepper Lists
-     Reviews). This hub only organizes and routes to the existing
-     lanes; it adds no new plumbing. Signed-in only, shown and hidden
-     with the Speedy Brain (plbEnter / plbHide). -->
+<!-- THREE PURPOSES — Ramone's structure (2026-11-17, superseding the
+     2026-11-16 two-category rule): everything inside Pepper Lists
+     lives in one of three purpose hubs. SELL is for moving products,
+     as an individual (photo listing flow) or a business (Advertise
+     lane + Flywheel console). POST is for putting your business out
+     there — social media + search directories through Channel
+     Connections, and the Reviews wall here at home. BOOK is booking
+     appliance services with Speedy AI and Top Speed Service OS —
+     the classic web form first, Speedy AI booking below it, the
+     summary-confirm gate before anything reaches the Service
+     Setters, plus Track My Tech and your bookings. This hub only
+     organizes and routes to the existing lanes; it adds no new
+     plumbing. Signed-in only, shown and hidden with the Speedy
+     Brain (plbEnter / plbHide). -->
 <style>
 .plc-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:20px}
 .plc-cat{background:var(--panel2);border:1.5px solid #2c4232;border-radius:16px;padding:22px;text-align:left;color:var(--ink);font:inherit;cursor:pointer;width:100%}
@@ -191,18 +198,19 @@ footer a{color:var(--lime)}
 .plc-block p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px}
 @media(max-width:560px){.plc-cat{padding:18px 15px}}
 </style>
-<section class="plb" id="plCats" style="display:none" aria-label="Pepper Lists categories">
+<section class="plb" id="plCats" style="display:none" aria-label="Pepper Lists purposes">
   <div class="plb-card">
-    <h2>Two ways to use <span style="color:var(--lime)">Pepper Lists</span></h2>
-    <p class="plb-sub">Everything in this app lives in one of two categories. <b style="color:var(--ink)">Sell</b> is for moving products — as an individual or as a business. <b style="color:var(--ink)">Post</b> is for sharing your repair experience — reviews, videos, photos and comments. Pick one to open its doors; Speedy Brain below stays ready for everything else.</p>
-    <div class="plc-cards" role="tablist" aria-label="Pepper Lists categories">
-      <button type="button" class="plc-cat" id="plCatBtn-sell" onclick="plCatShow('sell')"><span class="plc-kicker">Category 1</span><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>Pepper Lists Sell</h3><p>For individuals &amp; businesses. List what you sell from a photo — or advertise your business inside Pepper Lists.</p></button>
-      <button type="button" class="plc-cat" id="plCatBtn-post" onclick="plCatShow('post')"><span class="plc-kicker">Category 2</span><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg>Pepper Lists Post</h3><p>Reviews · videos · photos · comments. Post about your repair and talk with Speedy on your thread.</p></button>
+    <h2>Three purposes, <span style="color:var(--lime)">one Pepper Lists</span></h2>
+    <p class="plb-sub">Everything in this app serves one of three purposes. <b style="color:var(--ink)">Sell</b> moves what you have — as an individual or as a business. <b style="color:var(--ink)">Post</b> puts your business out there — social media, search directories, and reviews right here. <b style="color:var(--ink)">Book</b> gets your appliances serviced — with Speedy AI and Top Speed Service OS. Pick one to open its doors; Speedy Brain below stays ready for everything else.</p>
+    <div class="plc-cards" role="tablist" aria-label="Pepper Lists purposes">
+      <button type="button" class="plc-cat" id="plCatBtn-sell" onclick="plCatShow('sell')"><span class="plc-kicker">Purpose 1 · Sell</span><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg>Pepper Lists Sell</h3><p>For individuals &amp; businesses. List what you sell from a photo — or advertise your business inside Pepper Lists.</p></button>
+      <button type="button" class="plc-cat" id="plCatBtn-post" onclick="plCatShow('post')"><span class="plc-kicker">Purpose 2 · Post</span><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg>Pepper Lists Post</h3><p>Post to TikTok, Facebook, YouTube, Instagram, X, LinkedIn and search directories — and review your repair on the wall here.</p></button>
+      <button type="button" class="plc-cat" id="plCatBtn-book" onclick="plCatShow('book')"><span class="plc-kicker">Purpose 3 · Book</span><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/></svg>Pepper Lists Book</h3><p>Book appliance service with Speedy AI and Top Speed Service OS — the web form first, Speedy below it, then track your tech.</p></button>
     </div>
 
     <div class="plb-panel" id="plCatPanel-sell" style="display:none">
       <h3>Pepper Lists Sell</h3>
-      <p class="plb-note">Two doors, one category — pick the one that fits how you sell.</p>
+      <p class="plb-note">Two doors, one purpose — pick the one that fits how you sell.</p>
       <div class="plc-two">
         <div class="plc-block">
           <h4>Selling as an individual</h4>
@@ -289,11 +297,37 @@ footer a{color:var(--lime)}
 
     <div class="plb-panel" id="plCatPanel-post" style="display:none">
       <h3>Pepper Lists Post</h3>
-      <p class="plb-note">Had a repair done? Post a review of it — with photos or a video of the repair and the short post-service survey. A review tied to a finished job posts as a <b>Verified Repair</b> review. Speedy answers every review personally, you can comment back on your own thread, and published reviews appear on the public wall.</p>
+      <p class="plb-note">Two ways to be seen. <b style="color:var(--ink)">Out there:</b> connect your social accounts and your search-directory listings in Channel Connections — TikTok, Facebook, YouTube, Instagram, X, LinkedIn, your Google Business Profile, Bing Places and more directories — and your posts and listings have a path to all of them. <b style="color:var(--ink)">Right here:</b> post a review of your repair, with photos or a video and the short post-service survey — a review tied to a finished job posts as a <b>Verified Repair</b> review, Speedy answers every review personally, and published reviews appear on the public wall.</p>
       <a href="#reviews" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/post-reviews.webp" alt="Illustration: a happy customer giving a thumbs-up beside her repaired refrigerator while posting a review — Pepper Lists Post reviews, photos and comments" style="width:100%;height:auto;display:block;border-radius:14px" loading="lazy"></a>
       <div class="plb-btnrow">
         <button class="btn small" type="button" onclick="plCatGoReviews()">Write a review</button>
+        <button class="btn small dark" type="button" onclick="plrCamOpenModule()">Post a photo with your camera</button>
         <a class="btn small dark" href="#reviews">See the public wall</a>
+        <button class="btn small dark" type="button" onclick="var s=document.getElementById('plChannels'); if(s) s.scrollIntoView({behavior:'smooth',block:'start'});">Connect posting channels &amp; directories</button>
+      </div>
+    </div>
+
+    <div class="plb-panel" id="plCatPanel-book" style="display:none">
+      <h3>Pepper Lists Book</h3>
+      <p class="plb-note">Book appliance service with <b style="color:var(--ink)">Speedy AI</b> and <b style="color:var(--ink)">Top Speed Service OS</b>. The classic web form comes first — it is the primary way to book — and Speedy AI booking sits below it for the high-tech route: Speedy summarizes your details and you confirm before anything reaches the Service Setters office. Every booking runs on the Service OS, and Track My Tech follows your visit live.</p>
+      <div class="plc-two">
+        <div class="plc-block">
+          <h4>Book a service</h4>
+          <p>The booking form takes a couple of minutes. Prefer talking it through? Open Speedy, send a photo of the problem with Scan &amp; Send, or book right in Speedy chat — the summary-confirm gate applies either way.</p>
+          <div class="plb-btnrow">
+            <a class="btn small" href="https://topspeedserviceos.com/book">Book a repair — web form</a>
+            <button class="btn small dark" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Book with Speedy AI</button>
+            <button class="btn small dark" type="button" onclick="plbShow('scan')">Scan &amp; Send a photo</button>
+          </div>
+        </div>
+        <div class="plc-block">
+          <h4>Track &amp; my bookings</h4>
+          <p>Follow your technician live on the day with Track My Tech. Your bookings also live in the customer app — and the repairs you have finished are the ones you can review under Post.</p>
+          <div class="plb-btnrow">
+            <a class="btn small" href="https://topspeedserviceos.com/track">Track My Tech</a>
+            <a class="btn small dark" href="https://topspeedserviceos.com/app">My bookings — customer app</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -657,12 +691,14 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <section class="plb" id="plChannels" style="display:none" aria-label="Channel Connections">
   <div class="plb-card">
     <h2>Channel <span style="color:var(--lime)">Connections</span></h2>
-    <p class="plb-sub">Connect the places you sell and post. Send a request for a channel and the Top Speed team completes the link on that platform's side — <b style="color:var(--ink)">no password sharing, ever</b>. A channel shows <b style="color:var(--ink)">Pending</b> until the link is real, and <b style="color:var(--ink)">Connected</b> only when it truly is. Connections belong to your account, not to this browser — sign in anywhere and they are yours.</p>
+    <p class="plb-sub">Connect the places you sell and post — and the search directories where customers find your business. Send a request for a channel and the Top Speed team completes the link on that platform's side — <b style="color:var(--ink)">no password sharing, ever</b>. A channel shows <b style="color:var(--ink)">Pending</b> until the link is real, and <b style="color:var(--ink)">Connected</b> only when it truly is. Connections belong to your account, not to this browser — sign in anywhere and they are yours.</p>
     <p class="plb-msg" id="plchMsg" role="status"></p>
     <h3 class="plch-group">Sell on</h3>
     <div class="plch-grid" id="plchSell"><p class="plb-note" style="margin:0">Loading your channels…</p></div>
     <h3 class="plch-group">Post on</h3>
     <div class="plch-grid" id="plchPost"></div>
+    <h3 class="plch-group">Be found on — search directories</h3>
+    <div class="plch-grid" id="plchDirs"></div>
     <p class="plb-note" style="margin-top:16px">The switch on each channel is your grant for <b style="color:var(--ink)">Pepper — the Muse AI agent</b> behind Pepper Lists — to manage that channel for you. It is off unless you turn it on, you can revoke it any time, and every agent action on your channels is logged on your account.</p>
   </div>
 </section>
@@ -681,8 +717,8 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <div class="hero">
   <div class="herocard">
     <span class="plg-herobadge">Top Speed OS · Consumer App</span>
-    <h1>Sell it. Book it. One app does both.</h1>
-    <p>Pepper Lists It is the Top Speed customer app, and it works both ways. <b>Selling?</b> Snap a photo of anything you sell — Pepper's AI drafts the listing and posts it for you, nothing live without your yes. <b>Need a repair?</b> Book appliance service right here — send Speedy a photo of the problem, track your tech on the day, and review the job when it's done.</p>
+    <h1>Sell it. Post it. Book it. One app, three purposes.</h1>
+    <p>Pepper Lists It is the Top Speed customer app, built for three purposes. <b>Selling?</b> Snap a photo of anything you sell — Pepper's AI drafts the listing and posts it for you, nothing live without your yes. <b>Posting?</b> Connect your social accounts and your search-directory listings, and be found where customers look. <b>Need a repair?</b> Book appliance service right here — send Speedy a photo of the problem, track your tech on the day, and review the job when it's done.</p>
     <div class="cta">
       <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenSignup(event)">Create account</a>
       <a class="btn alt" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
@@ -708,8 +744,8 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 .plc-list li b{color:var(--ink)}
 </style>
 <section style="padding-top:6px" id="categories">
-  <h2>Two categories, <span class="lime">one app</span></h2>
-  <p class="sub">Inside, Pepper Lists is organized into two categories. <b style="color:var(--ink)">Sell</b> moves products — for individuals and businesses. <b style="color:var(--ink)">Post</b> shares repair experiences — reviews, videos, photos and comments.</p>
+  <h2>Three purposes, <span class="lime">one app</span></h2>
+  <p class="sub">Pepper Lists runs on three purposes. <b style="color:var(--ink)">Sell</b> moves products — for individuals and businesses. <b style="color:var(--ink)">Post</b> puts your business out there — social media, search directories, and reviews. <b style="color:var(--ink)">Book</b> brings Top Speed service to your door — booked with Speedy AI and the Service OS.</p>
   <div class="grid">
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
@@ -726,22 +762,35 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg></div>
       <h3>Pepper Lists Post</h3>
-      <p style="margin-bottom:12px">Reviews · videos · photos · comments</p>
+      <p style="margin-bottom:12px">Social media · search directories · reviews</p>
       <a href="#reviews" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/post-reviews.webp" alt="Illustration: a happy customer giving a thumbs-up beside her repaired refrigerator while posting a review — Pepper Lists Post reviews, photos and comments" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
       <ul class="plc-list">
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Post a review</b> of your completed repair — a Verified Repair review when it's tied to a finished job.</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Add photos or video</b> of the repair, plus the quick post-service survey.</li>
-        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Comment and get answers</b> — Speedy replies to every review, and published reviews land on the public wall.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Post everywhere:</b> connect TikTok, Facebook, YouTube, Instagram, X and LinkedIn in Channel Connections — one account, every feed.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Be found in search:</b> your own Google Business Profile, Bing Places and more search directories, connected the same tracked way.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Post a review</b> of your completed repair — photos or video, the quick survey, and Speedy answers every review on the public wall.</li>
       </ul>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Post a review</a>
+      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Start posting</a>
       <a class="btn small dark" href="#reviews" style="margin-left:8px">Read the wall</a>
+    </div>
+    <div class="card">
+      <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/></svg></div>
+      <h3>Pepper Lists Book</h3>
+      <p style="margin-bottom:12px">Speedy AI · Top Speed Service OS</p>
+      <a href="https://topspeedserviceos.com/book" style="display:block;margin-bottom:14px"><img src="/api/v1/app/pepper-lists-images/book.webp" alt="Illustration: a Top Speed technician with a wrench beside an open refrigerator, with a phone showing the live tracking map and a chat bubble — Pepper Lists Book appliance service" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
+      <ul class="plc-list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Book the classic way:</b> the web form comes first — a couple of minutes, no account gymnastics.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Or book with Speedy AI:</b> chat it through, review Speedy's summary, and confirm — nothing reaches the Service Setters before your yes.</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Track your tech</b> live on the day, and keep every booking in the customer app.</li>
+      </ul>
+      <a class="btn small" href="https://topspeedserviceos.com/book">Book a repair</a>
+      <a class="btn small dark" href="https://topspeedserviceos.com/track" style="margin-left:8px">Track my tech</a>
     </div>
   </div>
 </section>
 
 <section id="how">
   <h2>How it <span class="lime">works</span></h2>
-  <p class="sub">Two ways to use Pepper Lists — sell your products, or book a service. Either way you stay in control the whole way: Pepper prepares, you approve.</p>
+  <p class="sub">Three purposes, one habit: sell your products, post your business everywhere, or book a service. Every way, you stay in control the whole way: Pepper prepares, you approve.</p>
   <h3 style="font-size:21px;margin:26px 0 4px">Selling — four steps to a live listing</h3>
   <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/sell.webp" alt="Illustration: a Fort Lauderdale seller photographing a crate of ackee, mangoes and avocados with a potted mango tree, while a listing card appears on a phone" loading="lazy">
   <div class="grid4">
@@ -749,6 +798,12 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <div class="card"><div class="stepnum">2</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>AI drafts the listing</h3><p>Pepper recognizes the item and drafts the title, category, condition and description, with a confidence score. Regulars are matched to their usual prices automatically.</p></div>
     <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><polyline points="8.2,12.2 11,15 15.8,9.2"/></svg></div><h3>You review</h3><p>Check the draft, fix anything, set the price if it's something new. If a price is missing, Pepper asks — it never invents one.</p></div>
     <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 3 L10.5 13.5"/><path d="M21 3 L14 21 L10.5 13.5 L3 10 Z"/><circle cx="10.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Pepper posts it</h3><p>Only after you confirm in chat does Pepper post the listing through your connected account. You get the live link back.</p></div>
+  </div>
+  <h3 style="font-size:21px;margin:34px 0 4px">Posting — three steps to being found</h3>
+  <div class="grid4">
+    <div class="card"><div class="stepnum">1</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M9 6 L21 6"/><path d="M9 12 L21 12"/><path d="M9 18 L21 18"/><rect x="3.4" y="4.9" width="2.2" height="2.2" fill="currentColor" stroke="none"/><rect x="3.4" y="10.9" width="2.2" height="2.2" fill="currentColor" stroke="none"/><rect x="3.4" y="16.9" width="2.2" height="2.2" fill="currentColor" stroke="none"/></svg></div><h3>Connect your channels</h3><p>In your account, open Channel Connections: your social accounts — TikTok, Facebook, YouTube, Instagram, X, LinkedIn — and your search directories, each with its real first step shown before you send anything.</p></div>
+    <div class="card"><div class="stepnum">2</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.3 15.3 L20.5 20.5"/></svg></div><h3>Claim your listings</h3><p>Your Google Business Profile and Bing Places listings are yours — you claim them with Google and Microsoft, and the team completes the link on the platform side. Nothing is filed in your name without your say-so.</p></div>
+    <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 3 L10.5 13.5"/><path d="M21 3 L14 21 L10.5 13.5 L3 10 Z"/><circle cx="10.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Post once, be seen</h3><p>Your listings and posts have a path to every connected channel — and your reviews live on the Pepper Lists wall, answered personally by Speedy.</p></div>
   </div>
   <h3 style="font-size:21px;margin:34px 0 4px">Booking — four steps to a fixed appliance</h3>
   <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/book.webp" alt="Illustration: a Top Speed technician with a wrench beside an open refrigerator, with a phone showing the live tracking map and a chat bubble" loading="lazy">
@@ -796,7 +851,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     </div>
   </div>
   <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/sell.webp" alt="Illustration: a Fort Lauderdale seller photographing produce and a potted tree to list for sale — one listing, prepared once in Pepper Lists" loading="lazy">
-  <p class="sub" style="margin-bottom:16px">Also connecting from the same account page: <b style="color:var(--ink)">Google Shopping · eBay · Etsy · Walmart Marketplace · TikTok · YouTube · Instagram · X · LinkedIn</b> — each channel shows its real first step before you send anything (an eBay seller account, Walmart's own seller approval, your Merchant Center ID), so nothing is promised that isn't true.</p>
+  <p class="sub" style="margin-bottom:16px">Also connecting from the same account page: <b style="color:var(--ink)">Google Shopping · eBay · Etsy · Walmart Marketplace · TikTok · YouTube · Instagram · X · LinkedIn</b> — and your search-directory listings: <b style="color:var(--ink)">Google Business Profile · Bing Places · more search directories</b>. Each channel shows its real first step before you send anything (an eBay seller account, Walmart's own seller approval, your Merchant Center ID, Google's own listing verification), so nothing is promised that isn't true.</p>
   <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Channel Connections</a>
   <a class="btn dark" href="https://topspeedserviceos.com" onclick="return plOpenSignup(event)" style="margin-left:10px">Create account</a>
   <a class="btn dark" href="https://pepperlists.com/how-it-works" style="margin-left:10px">The full walkthrough</a>
@@ -841,7 +896,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <details><summary>Does Pepper post without asking me?</summary><p>No. Pepper drafts every listing and waits. A listing only goes live after you confirm it in chat — and posting runs through your own connected Facebook account, so it shows up in your Seller app like any listing you made yourself.</p></details>
   <details><summary>What if Pepper doesn't know the price?</summary><p>Then the listing is marked "Needs info" and Pepper asks you. Known regulars come back with their usual prices; anything new waits for your number. Pepper never invents a price.</p></details>
   <details><summary>Which platforms can I post to today?</summary><p>Facebook Marketplace is live. Instagram can be selected and queues until the owner's Instagram account is connected. TikTok, YouTube, eBay and OfferUp are coming soon — they're shown honestly as not live yet.</p></details>
-  <details><summary>Can I book appliance repair here too?</summary><p>Yes — that's the other half of Pepper Lists. It's the Top Speed customer app for both sides: sell your products, and book Top Speed appliance services. Book with the classic web form or with Speedy, track your technician live, keep your appliances in your Garage, and review your repair when it's done.</p></details>
+  <details><summary>Can I book appliance repair here too?</summary><p>Yes — Book is one of Pepper Lists' three purposes, alongside Sell and Post. Book Top Speed appliance services with the classic web form (it comes first) or with Speedy AI, track your technician live, keep your appliances in your Garage, and review your repair when it's done.</p></details>
   <details><summary>How do I advertise inside Pepper Lists?</summary><p>Sign in, open the Advertise lane, and send your ad. The Top Speed office reviews every ad before it runs — submitting is free, and nothing is charged or shown without office approval. Approved ads appear in the Customer Ads section here and can rotate in the Flywheel mini banner across Top Speed sites.</p></details>
   <details><summary>Who is Pepper?</summary><p>Pepper is the AI assistant behind Top Speed Appliance in Fort Lauderdale, Florida — the same Pepper who runs the Service OS, with Speedy AI as the brain. Talk to Speedy any time with the button on this page.</p></details>
 </section>
@@ -1099,7 +1154,7 @@ function plEnterApp(u){
 function plWelcomeHide(){ var w=document.getElementById('plWelcome'); if(w) w.style.display='none'; }
 function plWelcomeGo(dest){
   if(dest==='channels'){ var ch=document.getElementById('plChannels'); if(ch) ch.scrollIntoView({behavior:'smooth',block:'start'}); return; }
-  if(window.plCatShow) plCatShow(dest==='post'?'post':'sell');
+  if(window.plCatShow) plCatShow(dest==='post'?'post':(dest==='book'?'book':'sell'));
 }
 function plBoot(){
   if(!plTok()){ plPublic(); return; }
@@ -1187,9 +1242,9 @@ function plbShow(lane){
   var panel=plbEl('plbPanel-'+lane); if(panel) panel.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-/* ---------- Two categories hub (Sell / Post) ---------- */
+/* ---------- Three purposes hub (Sell / Post / Book) ---------- */
 function plCatShow(which){
-  ['sell','post'].forEach(function(k){
+  ['sell','post','book'].forEach(function(k){
     var p=plbEl('plCatPanel-'+k); if(p) p.style.display=(k===which)?'':'none';
     var b=plbEl('plCatBtn-'+k); if(b) b.className='plc-cat'+((k===which)?' on':'');
   });
@@ -1908,7 +1963,10 @@ function plAdsMine(){
    what the server says — Pending until the office completes a real
    link, Connected only when one truly exists. Facebook appears in
    both groups on purpose: one connection to your Facebook account
-   covers Marketplace selling AND Page/profile posting. */
+   covers Marketplace selling AND Page/profile posting. The search
+   directories (Google Business Profile, Bing Places, more
+   directories — added with the three-purpose consolidation) render
+   in their own "Be found on" group under Post. */
 function plchEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function plchMsg(text,isErr){ var m=document.getElementById('plchMsg'); if(!m) return; m.textContent=text||''; m.className='plb-msg'+(isErr?' err':''); }
 var PLCH_ICONS={
@@ -1921,7 +1979,10 @@ var PLCH_ICONS={
   YOUTUBE:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="3"/><path d="M10.2 9.6 L15.4 12.2 L10.2 14.9 Z" fill="currentColor" stroke="none"/></svg>',
   INSTAGRAM:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="4.4"/><circle cx="12" cy="12" r="3.9"/><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none"/></svg>',
   X:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M4.5 4.5 L19.5 19.5 M19.5 4.5 L4.5 19.5"/></svg>',
-  LINKEDIN:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="3"/><path d="M7.6 10.4v6.2M7.6 7.2v.2M11.4 16.6v-3.4c0-1.1.8-1.9 1.9-1.9s1.9.8 1.9 1.9v3.4"/></svg>'
+  LINKEDIN:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="3"/><path d="M7.6 10.4v6.2M7.6 7.2v.2M11.4 16.6v-3.4c0-1.1.8-1.9 1.9-1.9s1.9.8 1.9 1.9v3.4"/></svg>',
+  GOOGLE_BUSINESS:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.3 15.3 L20.5 20.5"/></svg>',
+  BING_PLACES:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.7" fill="currentColor" stroke="none"/></svg>',
+  SEARCH_DIRECTORIES:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4.5h11.5L20 8v11.5H5z"/><path d="M9 9h6.5M9 12.5h6.5M9 16h4"/></svg>'
 };
 var PLCH_PLACEHOLDERS={
   FACEBOOK:'The name on your Facebook account',
@@ -1933,7 +1994,10 @@ var PLCH_PLACEHOLDERS={
   YOUTUBE:'Your channel handle, like @YourChannel',
   INSTAGRAM:'Your Instagram @handle',
   X:'Your X @handle',
-  LINKEDIN:'Your profile or company page name'
+  LINKEDIN:'Your profile or company page name',
+  GOOGLE_BUSINESS:'Your business name, exactly as on Google',
+  BING_PLACES:'Your business name, exactly as on Bing Places',
+  SEARCH_DIRECTORIES:'Your business name'
 };
 var PLCH_STATUS={NOT_CONNECTED:['Not connected','none'],PENDING:['Pending','pend'],CONNECTED:['Connected','live'],ERROR:['Needs attention','pend'],REVOKED:['Disconnected','none']};
 function plchCard(ch){
@@ -1955,14 +2019,16 @@ function plchCard(ch){
   h+='</div>';
   return h;
 }
+var PLCH_DIRECTORIES={GOOGLE_BUSINESS:1,BING_PLACES:1,SEARCH_DIRECTORIES:1};
 function plchLoad(){
-  var sell=document.getElementById('plchSell'), post=document.getElementById('plchPost');
+  var sell=document.getElementById('plchSell'), post=document.getElementById('plchPost'), dirs=document.getElementById('plchDirs');
   if(!sell||!post) return;
   plApi('/pepper-lists/channels').then(function(j){
     var chans=(j.data&&j.data.channels)||[];
-    sell.innerHTML=''; post.innerHTML='';
+    sell.innerHTML=''; post.innerHTML=''; if(dirs) dirs.innerHTML='';
     chans.forEach(function(ch){
       if(ch.kind==='SELL') sell.innerHTML+=plchCard(ch);
+      else if(PLCH_DIRECTORIES[ch.key]){ if(dirs) dirs.innerHTML+=plchCard(ch); }
       else post.innerHTML+=plchCard(ch);
       if(ch.key==='FACEBOOK') post.innerHTML+=plchCard(ch); /* one Facebook connection covers Marketplace selling + posting */
     });

@@ -3,7 +3,11 @@
  *
  * Exercises Phase 1 of the Pepper Lists channel registry
  * (routes/pepperListsChannels.js) end to end over HTTP:
- *  - the 10-channel catalog with honest NOT_CONNECTED defaults;
+ *  - the 13-channel catalog with honest NOT_CONNECTED defaults
+ *    (the original 10 + the 3 search-directory channels added with
+ *    the 2026-11-17 three-purpose consolidation: GOOGLE_BUSINESS,
+ *    BING_PLACES, SEARCH_DIRECTORIES — all POST kind, same Phase 1
+ *    request model, seller-owned listings);
  *  - connect files a PENDING request (never CONNECTED — Phase 1 has
  *    no completed third-party flow, so nothing may invent one);
  *  - the Muse-agent access grant toggle;
@@ -152,7 +156,7 @@ async function main() {
   // ── Catalog defaults ──────────────────────────────────────────
   const before = await api('/pepper-lists/channels', { token: a });
   check('A channel list 200', before.status, 200);
-  check('catalog has 10 channels', before.json.data.channels.length, 10);
+  check('catalog has 13 channels (10 + 3 directories)', before.json.data.channels.length, 13);
   checkTrue('all start NOT_CONNECTED', before.json.data.channels.every((c) => c.connection.status === 'NOT_CONNECTED'));
   checkTrue('no grants by default', before.json.data.channels.every((c) => c.connection.agentAccessGranted === false));
   check('FACEBOOK kind is SELL', channelOf(before.json, 'FACEBOOK').kind, 'SELL');
@@ -213,6 +217,37 @@ async function main() {
   check('disconnect clears the agent grant too', discEbay.json.data.connection.agentAccessGranted, false);
   const auditFinal = await prisma.sellerChannelAudit.findMany({ where: { userId: IDS.sellerA } });
   check('audit: 2 DISCONNECTED rows', auditFinal.filter((x) => x.action === 'DISCONNECTED').length, 2);
+
+  // ── Search directories (three-purpose consolidation) ──────────
+  check('GOOGLE_BUSINESS kind is POST', channelOf(before.json, 'GOOGLE_BUSINESS').kind, 'POST');
+  check('BING_PLACES kind is POST', channelOf(before.json, 'BING_PLACES').kind, 'POST');
+  check('SEARCH_DIRECTORIES kind is POST', channelOf(before.json, 'SEARCH_DIRECTORIES').kind, 'POST');
+  checkTrue('GOOGLE_BUSINESS starts NOT_CONNECTED', channelOf(before.json, 'GOOGLE_BUSINESS').connection.status === 'NOT_CONNECTED');
+  checkTrue('GOOGLE_BUSINESS steps point at google.com/business', channelOf(before.json, 'GOOGLE_BUSINESS').nextSteps.includes('google.com/business'));
+  checkTrue('BING_PLACES steps point at bingplaces.com', channelOf(before.json, 'BING_PLACES').nextSteps.includes('bingplaces.com'));
+  checkTrue('SEARCH_DIRECTORIES steps promise nothing filed without say-so', channelOf(before.json, 'SEARCH_DIRECTORIES').nextSteps.includes('say-so'));
+
+  const gb = await api('/pepper-lists/channels/GOOGLE_BUSINESS/connect', { token: a, method: 'POST', body: { accountLabel: 'Jane\u2019s Bakery LLC' } });
+  check('A connect GOOGLE_BUSINESS 201', gb.status, 201);
+  check('GOOGLE_BUSINESS lands PENDING (not CONNECTED)', gb.json.data.connection.status, 'PENDING');
+  check('GOOGLE_BUSINESS label stored', gb.json.data.connection.externalAccountLabel, 'Jane\u2019s Bakery LLC');
+
+  const bDirs = await api('/pepper-lists/channels', { token: b });
+  checkTrue('B GOOGLE_BUSINESS still NOT_CONNECTED (isolation)', channelOf(bDirs.json, 'GOOGLE_BUSINESS').connection.status === 'NOT_CONNECTED');
+
+  const bpGrant = await api('/pepper-lists/channels/BING_PLACES/agent-access', { token: a, method: 'PATCH', body: { granted: true } });
+  check('A grant BING_PLACES agent access 200', bpGrant.status, 200);
+  check('BING_PLACES grant stored', bpGrant.json.data.connection.agentAccessGranted, true);
+
+  const gbDisc = await api('/pepper-lists/channels/GOOGLE_BUSINESS/disconnect', { token: a, method: 'POST', body: {} });
+  check('A disconnect GOOGLE_BUSINESS 200', gbDisc.status, 200);
+  check('GOOGLE_BUSINESS back to NOT_CONNECTED', gbDisc.json.data.connection.status, 'NOT_CONNECTED');
+  check('GOOGLE_BUSINESS label cleared', gbDisc.json.data.connection.externalAccountLabel, null);
+
+  const auditDirs = await prisma.sellerChannelAudit.findMany({ where: { userId: IDS.sellerA } });
+  check('audit: 4 CONNECT_REQUESTED after directory connect', auditDirs.filter((x) => x.action === 'CONNECT_REQUESTED').length, 4);
+  check('audit: 3 DISCONNECTED after directory disconnect', auditDirs.filter((x) => x.action === 'DISCONNECTED').length, 3);
+  check('audit: 3 AGENT_ACCESS_GRANTED after directory grant', auditDirs.filter((x) => x.action === 'AGENT_ACCESS_GRANTED').length, 3);
 
   // ── Oversight: staff only, no secret material ─────────────────
   const over = await api('/pepper-lists/channels/oversight', { token: staff });

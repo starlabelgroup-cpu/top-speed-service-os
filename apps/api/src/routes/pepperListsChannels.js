@@ -15,7 +15,10 @@ import { STAFF_ROLES } from '../config/security.js';
  *   SELL — Facebook Marketplace, Google Shopping, eBay, Etsy,
  *          Walmart Marketplace (listings syndicate out)
  *   POST — TikTok, Facebook, YouTube, Instagram, X, LinkedIn
- *          (posts publish out)
+ *          (posts publish out), plus the seller's search-directory
+ *          presence: Google Business Profile, Bing Places, and a
+ *          general search-directories request (added 2026-11-17
+ *          with the three-purpose consolidation — Sell / Post / Book)
  *
  * HONEST SCOPE — Phase 1 is the registry + request workflow ONLY:
  *  - There is NO user-facing third-party OAuth flow in this codebase
@@ -89,6 +92,21 @@ export const SELLER_CHANNELS = [
     key: 'LINKEDIN', label: 'LinkedIn', kind: 'POST',
     blurb: 'Post your business listings to LinkedIn — your profile or company page.',
     nextSteps: 'Company-page posting needs LinkedIn\u2019s own approval for our app. Send a request with your profile or page name and we complete the link when the channel opens.',
+  },
+  {
+    key: 'GOOGLE_BUSINESS', label: 'Google Business Profile', kind: 'POST',
+    blurb: 'Your own business listing on Google Search and Maps — the profile customers find when they search for you.',
+    nextSteps: 'The listing is yours: create or claim your free Google Business Profile at google.com/business and finish Google\u2019s own verification (Google decides how — often a video or a postcard). Send this request with your business name exactly as it appears on Google and our team completes the link on the platform side.',
+  },
+  {
+    key: 'BING_PLACES', label: 'Bing Places', kind: 'POST',
+    blurb: 'Your own business listing on Bing search and maps, through Microsoft\u2019s Bing Places for Business.',
+    nextSteps: 'The listing is yours: claim or create it free at bingplaces.com and finish Microsoft\u2019s verification (often a PIN mailed to the business address). Send this request with your business name exactly as it appears on Bing Places and our team completes the link on the platform side.',
+  },
+  {
+    key: 'SEARCH_DIRECTORIES', label: 'More search directories', kind: 'POST',
+    blurb: 'Beyond Google and Bing: your business can also appear in more search and local directories, like Yelp and Apple Maps.',
+    nextSteps: 'Every directory has its own claim and verification steps, and the listing is always yours. Send this request with your business name and our team confirms the directory list with you before anything is filed anywhere — nothing is submitted in your name without your say-so.',
   },
 ];
 const CHANNEL_KEYS = SELLER_CHANNELS.map((c) => c.key);
