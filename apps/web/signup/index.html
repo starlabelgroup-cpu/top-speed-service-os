@@ -134,7 +134,7 @@
         if(/exist|already|registered/i.test(m)) m='That email already has a Top Speed account — use Sign in below instead.';
         throw new Error(m);
       }
-      localStorage.setItem('tsos_token',x.j.token);
+      try{if(window.TSOSVault&&x.j.user&&x.j.token)window.TSOSVault.add(x.j.user,x.j.token);}catch(e){} localStorage.setItem('tsos_token',x.j.token);
       localStorage.setItem('tsos_account_type',type);
       location.href=DEST[type];
     })
@@ -144,5 +144,6 @@
 })();
 </script>
 <script src="/speedy-guide.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

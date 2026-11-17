@@ -223,10 +223,23 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
     ['Google','https://myaccount.google.com/','The Google account behind Gmail, Business Profile and sign-ins.']
   ];
   function linkCard(item, external){
-    return '<a class="link" href="'+esc(item[1])+'"'+(external?' target="_blank" rel="noopener"':'')+'><b>'+esc(item[0])+'</b><span>'+esc(item[2])+'</span><span class="opn"><i>'+(external?'OPEN \u2197':'OPEN')+'</i></span></a>';
+    var url=item[1];
+    /* External doors to platform hosts that can receive a session
+     * handoff ride the vault, so the holder lands already signed in;
+     * every other door (registrars, dashboards, hosts without a
+     * receiver yet) stays a plain link — the vault decides. */
+    if (external){ try { if (window.TSOSVault && window.TSOSVault.handoffUrl) url=window.TSOSVault.handoffUrl(url); } catch(e){} }
+    return '<a class="link" href="'+esc(url)+'"'+(external?' target="_blank" rel="noopener"':'')+'><b>'+esc(item[0])+'</b><span>'+esc(item[2])+'</span><span class="opn"><i>'+(external?'OPEN \u2197':'OPEN')+'</i></span></a>';
   }
-  document.getElementById('dirInternal').innerHTML=INTERNAL.map(function(i){ return linkCard(i,false); }).join('');
-  document.getElementById('dirExternal').innerHTML=EXTERNAL.map(function(i){ return linkCard(i,true); }).join('');
+  function renderDoors(){
+    document.getElementById('dirInternal').innerHTML=INTERNAL.map(function(i){ return linkCard(i,false); }).join('');
+    document.getElementById('dirExternal').innerHTML=EXTERNAL.map(function(i){ return linkCard(i,true); }).join('');
+  }
+  renderDoors();
+  /* The vault script is deferred, so it lands after this first paint;
+   * re-render once the document is parsed and its handoff wrapper is
+   * available, upgrading any receivable door in place. */
+  document.addEventListener('DOMContentLoaded', renderDoors);
 
   /* ---------------- Gates ---------------- */
   var gateEl=document.getElementById('gate');
@@ -492,5 +505,6 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
   boot();
 })();
 </script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

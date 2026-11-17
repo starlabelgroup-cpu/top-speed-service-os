@@ -155,7 +155,7 @@
           throw new Error(m);
         }
         try {
-          localStorage.setItem('tsos_token', x.j.token);
+          try{if(window.TSOSVault&&x.j.user&&x.j.token)window.TSOSVault.add(x.j.user,x.j.token);}catch(e){} localStorage.setItem('tsos_token', x.j.token);
           localStorage.setItem('tsos_account_type', selectedType());
         } catch (ignored) {}
         var phone2 = el('ofPhone2'); if (phone2) phone2.value = phone;

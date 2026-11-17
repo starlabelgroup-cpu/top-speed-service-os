@@ -226,6 +226,13 @@
         if (res.ok && res.j && res.j.token) {
           var onSession = s.onSession;
           close();
+          // Session Vault (2026-11-17): this is a FINAL token — the
+          // one choke point every Layer 2 completion on every surface
+          // passes through, so the account joins the vault here, once,
+          // before the surface stores its own copy of the token.
+          try {
+            if (window.TSOSVault && res.j.user && res.j.token) window.TSOSVault.add(res.j.user, res.j.token);
+          } catch (e) {}
           if (onSession) onSession(res.j);
           return;
         }

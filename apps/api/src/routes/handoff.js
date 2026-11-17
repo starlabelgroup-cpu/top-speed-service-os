@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { store } from '../data/store.js';
 import { authenticate } from '../middleware/auth.js';
 import { HANDOFF_AUDIENCES, consumeHandoff, createHandoff, findUserById, findUsersByEmailOrPhone } from '../services/handoff.js';
+import { createSessionHandoff, redeemSessionHandoff } from '../services/sessionHandoff.js';
 import { signAccessToken } from '../services/tokens.js';
 import { queueNotification } from '../services/notifications.js';
 
@@ -25,7 +26,14 @@ import { queueNotification } from '../services/notifications.js';
 const router = Router();
 
 const handoffSchema = z.object({
-  audience: z.enum(HANDOFF_AUDIENCES),
+  // Optional since 2026-11-17: an audience mints the original
+  // audience-bound token; NO audience mints a multi-account cross-host
+  // session code (services/sessionHandoff.js) for the same account.
+  audience: z.enum(HANDOFF_AUDIENCES).optional(),
+});
+
+const sessionRedeemSchema = z.object({
+  code: z.string().min(10).max(512),
 });
 
 const consumeSchema = z.object({
@@ -59,9 +67,27 @@ const AUDIENCE_URLS = {
 };
 
 router.post('/auth/handoff', authenticate, async (req, res) => {
-  const parsed = handoffSchema.safeParse(req.body);
+  const parsed = handoffSchema.safeParse(req.body ?? {});
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid handoff request', details: parsed.error.flatten() });
+  }
+  // Multi-account cross-host code (2026-11-17): with no audience, mint
+  // a 60-second one-time code the holder can redeem on another platform
+  // host for a session as this same account. `authenticate` has already
+  // refused any challenge token, so only a final, fully gated session
+  // can mint — a handoff can never become a gate bypass. The audience
+  // flow below is unchanged for its existing surfaces.
+  if (!parsed.data.audience) {
+    try {
+      const minted = await createSessionHandoff(req.user.id, { sv: req.user.sv === true });
+      return res.status(201).json({
+        code: minted.code,
+        expiresInSec: minted.expiresInSec,
+        expiresAt: minted.expiresAt,
+      });
+    } catch (error) {
+      return res.status(error.status || 500).json({ error: error.message || 'Handoff failed', ...(error.code ? { code: error.code } : {}) });
+    }
   }
   try {
     const handoff = await createHandoff(req.user.id, parsed.data.audience);
@@ -87,6 +113,58 @@ router.post('/auth/handoff/consume', async (req, res) => {
     return res.json({ user: publicUser(user), ...signAccessToken(user) });
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.message || 'Handoff failed', ...(error.code ? { code: error.code } : {}) });
+  }
+});
+
+// Multi-account cross-host redemption (2026-11-17). Every failure —
+// unknown, expired, already used, locked out, or an inactive account —
+// returns the SAME 401 so the endpoint never reveals which case a
+// guessed code hit. Repeated failures from one IP lock redemption for
+// 15 minutes, mirroring the Speedy Verify code-step pattern; the route
+// also sits behind the shared /api/v1/auth IP rate limiter. On success
+// the session is minted by the same helper sign-in uses, with the
+// Speedy Verify state the minting session carried.
+const SESSION_REDEEM_ERROR = 'That sign-in link is invalid or has expired.';
+const REDEEM_MAX_FAILURES = 5;
+const REDEEM_LOCK_MS = 15 * 60 * 1000;
+const redeemFailures = new Map(); // ip -> { count, lockedUntil }
+
+function redeemIsLocked(ip) {
+  const entry = redeemFailures.get(ip);
+  return Boolean(entry && entry.lockedUntil > Date.now());
+}
+
+function noteRedeemFailure(ip) {
+  const entry = redeemFailures.get(ip) || { count: 0, lockedUntil: 0 };
+  entry.count += 1;
+  if (entry.count >= REDEEM_MAX_FAILURES) {
+    entry.lockedUntil = Date.now() + REDEEM_LOCK_MS;
+    entry.count = 0;
+  }
+  redeemFailures.set(ip, entry);
+}
+
+router.post('/auth/handoff/redeem', async (req, res) => {
+  const ip = req.ip || 'unknown';
+  const deny = () => res.status(401).json({ error: SESSION_REDEEM_ERROR });
+  if (redeemIsLocked(ip)) return deny();
+  const parsed = sessionRedeemSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    noteRedeemFailure(ip);
+    return deny();
+  }
+  try {
+    const { userId, sv } = await redeemSessionHandoff(parsed.data.code);
+    const user = await findUserById(userId);
+    if (!user || user.active === false) {
+      noteRedeemFailure(ip);
+      return deny();
+    }
+    redeemFailures.delete(ip);
+    return res.json({ user: publicUser(user), ...signAccessToken(user, { speedyVerified: sv }) });
+  } catch (error) {
+    noteRedeemFailure(ip);
+    return deny();
   }
 });
 

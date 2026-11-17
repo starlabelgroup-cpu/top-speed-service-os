@@ -283,7 +283,7 @@ function loginGate(msg){
         if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(res.j)){ TSOSTempPassword.begin(res.j, '/oversight'); return; }
         if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ el('lgBtn').textContent = 'Sign in'; err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (!res.ok || !res.j || !res.j.token) throw new Error((res.j && res.j.error) || 'Sign-in failed.');
-        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();
       })
       .catch(function(e){ el('lgBtn').textContent = 'Sign in'; err.textContent = e.message || 'Sign-in failed.'; err.style.display = 'block'; });
@@ -625,5 +625,6 @@ function renderFeed(){
 }
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

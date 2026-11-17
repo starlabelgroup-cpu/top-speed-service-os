@@ -194,6 +194,7 @@ model User {
   channelLinks ChannelLink[]
 
   authHandoffs AuthHandoff[]
+  sessionHandoffs SessionHandoff[]
 
   emailVerificationTokens EmailVerificationToken[]
 
@@ -855,6 +856,32 @@ model AuthHandoff {
   tokenHash String    @unique
   userId    String    @db.Uuid
   audience  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Multi-account session handoffs (2026-11-17): a fully signed-in account
+// holder moving between platform HOSTS (topspeedserviceos.com ↔
+// appliance-connect.vercel.app ↔ the other platform domains) exchanges a
+// one-time code instead of signing in again on the far side. Codes are
+// random 32-byte secrets; only the SHA-256 hash is stored. They are
+// single-use and expire 60 seconds after issue. `sv` records whether the
+// minting session had passed Speedy Verify, so the session minted at
+// redemption carries identical claims (a verify-activated account's
+// /auth/me check requires sv: true). Distinct from AuthHandoff above,
+// which is audience-bound and backs the in-platform surface links and
+// the emailed claim link.
+model SessionHandoff {
+  id        String    @id @default(uuid()) @db.Uuid
+  codeHash  String    @unique
+  userId    String    @db.Uuid
+  sv        Boolean   @default(false)
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())

@@ -154,6 +154,10 @@ function authFetch(path, opts){
   return fetch(API + path, opts);
 }
 function isExternal(url){ return /^https?:\/\//i.test(url || ''); }
+/* Door links to other platform hosts ride the session vault's
+ * handoff when that host can receive one, so a signed-in holder lands
+ * already signed in; every other link stays exactly as it was. */
+function doorUrl(url){ try { if (window.TSOSVault && window.TSOSVault.handoffUrl) return window.TSOSVault.handoffUrl(url); } catch(e){} return url; }
 
 /* ── Sign-in gate (same pattern as the Academy) ─────────────── */
 function showGate(note){
@@ -175,7 +179,7 @@ function showGate(note){
         if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ err.textContent = 'Your account needs its Speedy Verify code step — complete sign-in on a console that shows the code step (Book OS), then return here.'; err.style.display = 'block'; return; }
         if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
-        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();
       })
       .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
@@ -202,7 +206,7 @@ function addBubble(who, text, mine, links){
   var html = '<span class="who">' + esc(who) + '</span>' + esc(text);
   if (links && links.length){
     html += '<span class="links">' + links.map(function(l){
-      return '<a href="' + esc(l.url) + '"' + (isExternal(l.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(l.name) + '</a>';
+      return '<a href="' + esc(doorUrl(l.url)) + '"' + (isExternal(l.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(l.name) + '</a>';
     }).join('') + '</span>';
   }
   div.innerHTML = html;
@@ -254,7 +258,7 @@ function areaCard(a){
     '<div class="loc">' + esc(a.location) + '</div>' +
     '<p>' + esc(a.purpose) + '</p>' + actions +
     '<div><span class="pill">' + esc(a.access) + '</span></div>' +
-    '<div class="openrow"><a class="btn sm" href="' + esc(a.url) + '"' + (isExternal(a.url) ? ' target="_blank" rel="noopener"' : '') + '>Open</a></div>' +
+    '<div class="openrow"><a class="btn sm" href="' + esc(doorUrl(a.url)) + '"' + (isExternal(a.url) ? ' target="_blank" rel="noopener"' : '') + '>Open</a></div>' +
     '</div>';
 }
 function renderDirectory(filter){
@@ -278,7 +282,7 @@ function renderHowtos(){
   zone.innerHTML = MAPDATA.howtos.map(function(h){
     var steps = h.steps.map(function(s){ return '<li>' + esc(s) + '</li>'; }).join('');
     var note = h.note ? '<div class="note">' + esc(h.note) + '</div>' : '';
-    var where = h.url ? '<div class="where"><a class="btn ghost sm" href="' + esc(h.url) + '"' + (isExternal(h.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(h.areaName || 'Console') + '</a></div>' : '';
+    var where = h.url ? '<div class="where"><a class="btn ghost sm" href="' + esc(doorUrl(h.url)) + '"' + (isExternal(h.url) ? ' target="_blank" rel="noopener"' : '') + '>Open: ' + esc(h.areaName || 'Console') + '</a></div>' : '';
     return '<details class="howto"><summary>' + esc(h.title) + '</summary><ol>' + steps + '</ol>' + note + where + '</details>';
   }).join('');
 }
@@ -342,5 +346,6 @@ document.getElementById('btnSignOut').addEventListener('click', function(){
 });
 boot();
 </script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

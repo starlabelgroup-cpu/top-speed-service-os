@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signing you in — Top Speed Service OS</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:#0C162B;color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:18px}
+  .card{background:#fff;color:#0C162B;border-radius:20px;max-width:430px;width:100%;padding:28px 24px;box-shadow:0 24px 60px rgba(0,0,0,.4);text-align:center}
+  .ic{width:52px;height:52px;border-radius:16px;background:#0C162B;color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+  .ic svg{width:28px;height:28px}
+  h1{font-size:20px;margin:0 0 8px}
+  p{font-size:14.5px;line-height:1.55;color:#43536B;margin:0 0 14px}
+  .btn{display:inline-block;background:#E94E5C;color:#fff;text-decoration:none;font-weight:800;border-radius:999px;padding:12px 22px;font-size:15px}
+  .spin{width:34px;height:34px;border-radius:50%;border:3.5px solid #D8E1EE;border-top-color:#E94E5C;margin:6px auto 14px;animation:sp 0.8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l7 2.6v5.2c0 4.6-3 8.4-7 10.2-4-1.8-7-5.6-7-10.2V5.6z"/><path d="M8.8 12l2.2 2.2 4.2-4.4"/></svg></div>
+    <h1 id="title">Signing you in…</h1>
+    <div class="spin" id="spin"></div>
+    <p id="msg">Carrying your sign-in across — one moment.</p>
+    <p id="fallback" style="display:none"><a class="btn" href="/app">Sign in with email &amp; password</a></p>
+  </div>
+
+<script src="/shared/session-vault.js"></script>
+<script>
+(function () {
+  var API = 'https://top-speed-service-os.vercel.app/api/v1';
+  var params = new URLSearchParams(location.search);
+  var code = params.get('hc') || '';
+  var to = params.get('to') || '/app';
+  // `to` must be a same-host relative path — never an absolute or
+  // protocol-relative URL (open-redirect guard).
+  if (to.charAt(0) !== '/' || to.charAt(1) === '/') to = '/app';
+
+  function fail(msg) {
+    document.getElementById('spin').style.display = 'none';
+    document.getElementById('title').textContent = 'That sign-in link did not work';
+    document.getElementById('msg').textContent = msg;
+    document.getElementById('fallback').style.display = 'block';
+  }
+
+  if (!code) {
+    fail('This link is missing its one-time code. Sign in with your email and password instead — your other accounts stay signed in.');
+    return;
+  }
+
+  fetch(API + '/auth/handoff/redeem', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: code })
+  }).then(function (r) {
+    return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+  }).then(function (res) {
+    if (!res.ok || !res.j || !res.j.token || !res.j.user) {
+      fail('The link was invalid, already used, or expired (links last 60 seconds). Sign in with your email and password instead — your other accounts stay signed in.');
+      return;
+    }
+    // The session enters the vault exactly like a fresh sign-in: this
+    // is a final token, issued for the same account that minted the
+    // code on the other host, after all of that account's gates.
+    if (window.TSOSVault) window.TSOSVault.add(res.j.user, res.j.token);
+    else { try { localStorage.setItem('tsos_token', res.j.token); } catch (e) {} }
+    location.replace(to);
+  }).catch(function () {
+    fail('We could not reach the sign-in service. Sign in with your email and password instead.');
+  });
+})();
+</script>
+</body>
+</html>

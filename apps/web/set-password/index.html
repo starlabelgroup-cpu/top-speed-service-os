@@ -158,7 +158,7 @@ input.fi:focus{outline:none;border-color:#ed6372}
       // read (same token — the apps each keep their own key), clear
       // the one-time change token, and land where the user started.
       try {
-        localStorage.setItem('tsos_token', res.j.token);
+        try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token);
         localStorage.setItem('tsos_cust_token', res.j.token);
         localStorage.setItem('tsos_tech_token', res.j.token);
         localStorage.setItem('tsos_crm_token', res.j.token);
@@ -174,5 +174,6 @@ input.fi:focus{outline:none;border-color:#ed6372}
 })();
 </script>
 <link rel="stylesheet" href="/fonts.css">
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

@@ -258,7 +258,7 @@
     .then(function(x){
       if(x.j&&x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){ TSOSLayer2.run(x.j,{api:API,onSession:function(s){ localStorage.setItem('tsos_token',s.token); enter(); },onCancel:function(){ el.textContent='Sign-in cancelled — the 2-step code is required to finish.'; el.style.display='block'; }}); return; }
       if(!x.ok||!x.j.token) throw new Error((x.j&&x.j.error)||'Sign-in failed');
-      localStorage.setItem('tsos_token',x.j.token); enter();
+      try{if(window.TSOSVault&&x.j.user&&x.j.token)window.TSOSVault.add(x.j.user,x.j.token);}catch(e){} localStorage.setItem('tsos_token',x.j.token); enter();
     })
     .catch(function(ex){ el.textContent=ex.message; el.style.display='block'; })
     .finally(function(){ btn.disabled=false; });
@@ -276,5 +276,6 @@
 })();
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

@@ -2444,7 +2444,7 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
   if(h){
     fetch(API+'/auth/handoff/consume',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:h,audience:'flagship'})})
     .then(function(r){ return r.json(); })
-    .then(function(j){ if(j&&j.token){ try{ localStorage.setItem('tsos_token',j.token); }catch(e){} } history.replaceState(null,'',location.pathname); })
+    .then(function(j){ if(j&&j.token){ try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} } history.replaceState(null,'',location.pathname); })
     .catch(function(){});
   }
   document.querySelectorAll('[data-handoff]').forEach(function(a){
@@ -2460,5 +2460,6 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
 })();
 </script>
 <script src="/speedy-guide.js" defer></script><script src="/flywheel-banner.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

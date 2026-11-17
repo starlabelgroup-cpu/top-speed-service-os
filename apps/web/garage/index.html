@@ -230,7 +230,7 @@ async function doLogin(email, password, errEl, btn) {
       return;
     }
     if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
-    localStorage.setItem('tsos_token', body.token);
+    try{if(window.TSOSVault&&body.user&&body.token)window.TSOSVault.add(body.user,body.token);}catch(e){} localStorage.setItem('tsos_token', body.token);
     await loadGarage();
   } catch (ex) { errEl.textContent = ex.message; errEl.style.display = 'block'; }
   finally { btn.disabled = false; }
@@ -255,7 +255,7 @@ $('registerForm').addEventListener('submit', async (e) => {
       if (fe) { if (fe.password) m = 'Password must be at least 10 characters.'; else { const k = Object.keys(fe)[0]; if (k && fe[k][0]) m = fe[k][0]; } }
       throw new Error(m);
     }
-    localStorage.setItem('tsos_token', body.token);
+    try{if(window.TSOSVault&&body.user&&body.token)window.TSOSVault.add(body.user,body.token);}catch(e){} localStorage.setItem('tsos_token', body.token);
     await loadGarage();
   } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
   finally { btn.disabled = false; }
@@ -276,5 +276,6 @@ if (token()) loadGarage().catch(() => { localStorage.removeItem('tsos_token'); }
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

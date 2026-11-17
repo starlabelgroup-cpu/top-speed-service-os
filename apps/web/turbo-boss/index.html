@@ -783,9 +783,9 @@ function loginGate(msg){
       if (res.j && res.j.code === 'SPEEDY_VERIFY_NO_CODE'){ err.textContent = res.j.error || 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.'; err.style.display = 'block'; return; }
       if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(res.j)){ TSOSTempPassword.begin(res.j, '/turbo-boss'); return; }
       if (res.j && res.j.verifyRequired && res.j.challenge){ verifyGate(); return; }
-      if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(j){ try { localStorage.setItem('tsos_token', j.token); } catch(e){} boot(); }, onCancel: function(){ loginGate(''); } }); return; }
+      if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(j){ try { try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token', j.token); } catch(e){} boot(); }, onCancel: function(){ loginGate(''); } }); return; }
       if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
-      try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();
     })
     .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
@@ -854,5 +854,6 @@ if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
 boot();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

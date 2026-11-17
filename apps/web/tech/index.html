@@ -1205,7 +1205,8 @@ function wsReport(id){
     '<h2>Parts orders</h2>'+((view.partsOrders&&view.partsOrders.length)?'<ul>'+view.partsOrders.map(function(o){ return '<li><strong>'+escT(o.reference)+'</strong> — '+escT(o.status.replace(/_/g,' '))+' · '+o.lines.map(function(l){ return escT(l.category)+' × '+l.qty; }).join(', ')+'</li>'; }).join('')+'</ul>':'<p>No parts orders on this job.</p>')+
     '<h2>Technician notes</h2><ul>'+noteRows+'</ul>'+
     '<h2>Job timeline</h2><ul>'+evRows+'</ul>'+
-    '<footer>Generated from the Top Speed Service OS job record on '+escT(new Date().toLocaleString('en-US'))+'. This is a service summary, not an invoice or a signed receipt.</footer></body></html>';
+    '<footer>Generated from the Top Speed Service OS job record on '+escT(new Date().toLocaleString('en-US'))+'. This is a service summary, not an invoice or a signed receipt.</footer><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+</body></html>';
   var blob=new Blob([html],{type:'text/html;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var link=document.createElement('a'); link.href=url; link.download=(b.referenceCode||'job')+'-service-report.html'; link.click();

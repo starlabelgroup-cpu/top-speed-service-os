@@ -277,7 +277,7 @@ function showGate(note){
       .then(function(res){
         if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
-        try { localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();
       })
       .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
@@ -602,5 +602,6 @@ document.getElementById('btnSignOut').addEventListener('click', function(){
 });
 boot();
 </script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

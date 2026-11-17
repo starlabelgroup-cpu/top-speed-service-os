@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Add an account — Top Speed Service OS</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:#0C162B;color:#fff;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:26px 16px 90px}
+  .wrap{max-width:440px;width:100%}
+  .card{background:#fff;color:#0C162B;border-radius:20px;padding:26px 24px;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+  .ic{width:48px;height:48px;border-radius:14px;background:#0C162B;color:#fff;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .ic svg{width:26px;height:26px}
+  h1{font-size:21px;margin:0 0 6px}
+  .sub{font-size:14px;line-height:1.55;color:#43536B;margin:0 0 16px}
+  label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
+  input{width:100%;border:1.5px solid #D8E1EE;border-radius:12px;padding:12px 13px;font:inherit;font-size:15px;color:#0C162B;background:#fff}
+  input:focus{outline:none;border-color:#0C162B}
+  .go{width:100%;margin-top:18px;background:#E94E5C;color:#fff;border:0;border-radius:999px;padding:13px 18px;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+  .go:disabled{opacity:.6;cursor:default}
+  .ghost{width:100%;margin-top:10px;background:none;color:#0C162B;border:1.5px solid #D8E1EE;border-radius:999px;padding:11px 18px;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+  .err{display:none;background:#FDECEA;border:1px solid #F3C1BC;color:#8F1D16;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.45;margin-top:14px}
+  .note{display:none;background:#EEF4FF;border:1px solid #C9D9F6;color:#22385C;border-radius:12px;padding:11px 13px;font-size:13.5px;line-height:1.5;margin-bottom:16px}
+  .accts{margin-top:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:16px 18px}
+  .accts h2{font-size:12px;letter-spacing:.05em;text-transform:uppercase;margin:0 0 10px;opacity:.85}
+  .acct{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.12)}
+  .acct:first-of-type{border-top:0}
+  .av{flex:0 0 32px;width:32px;height:32px;border-radius:50%;background:#E94E5C;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+  .who{min-width:0;flex:1}
+  .who b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .who span{display:block;font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sw{background:#fff;color:#0C162B;border:0;border-radius:999px;padding:7px 13px;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+  .on{font-size:12px;font-weight:800;color:#7BE3AE}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="10" cy="8" r="3.4"/><path d="M3.5 19c1.1-3 3.5-4.5 6.5-4.5 1.5 0 2.9.4 4 1.1"/><path d="M17.5 14.5v6M14.5 17.5h6"/></svg></div>
+    <h1>Add an account</h1>
+    <p class="sub">Sign in with another account and it is <b>added</b> to this browser — every account you have added stays signed in, and you can switch between them any time from the account chip. Each account keeps its own permissions; nothing is merged.</p>
+    <div class="note" data-vault-note></div>
+
+    <form id="loginForm" autocomplete="on">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <div class="err" id="loginErr"></div>
+      <button class="go" id="loginBtn" type="submit">Sign in &amp; add this account</button>
+    </form>
+
+    <form id="verifyForm" style="display:none">
+      <label for="svCode">Speedy Verify access code</label>
+      <input id="svCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code">
+      <div class="err" id="verifyErr"></div>
+      <button class="go" id="verifyBtn" type="submit">Verify &amp; add this account</button>
+      <button class="ghost" id="verifyCancel" type="button">Back</button>
+    </form>
+  </div>
+
+  <div class="accts" id="acctBox" style="display:none">
+    <h2>Already signed in here</h2>
+    <div id="acctList"></div>
+  </div>
+</div>
+
+<script>window.TSOS_LOGIN_SURFACE = true;</script>
+<script src="/shared/session-vault.js"></script>
+<script src="/layer2.js"></script>
+<script src="/temp-password.js"></script>
+<script src="/shared/account-switcher.js"></script>
+<script>
+(function () {
+  var API = 'https://top-speed-service-os.vercel.app/api/v1';
+  var params = new URLSearchParams(location.search);
+  var returnTo = params.get('return') || '/';
+  if (returnTo.charAt(0) !== '/' || returnTo.charAt(1) === '/') returnTo = '/';
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function post(path, body) {
+    return fetch(API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+    });
+  }
+  function showErr(id, msg) {
+    var e = document.getElementById(id);
+    e.textContent = msg;
+    e.style.display = 'block';
+  }
+
+  function renderAccounts() {
+    if (!window.TSOSVault) return;
+    var accounts = window.TSOSVault.list();
+    var box = document.getElementById('acctBox');
+    if (!accounts.length) { box.style.display = 'none'; return; }
+    box.style.display = 'block';
+    document.getElementById('acctList').innerHTML = accounts.map(function (a) {
+      var name = [a.user.firstName, a.user.lastName].filter(Boolean).join(' ') || a.user.email || 'Account';
+      return '<div class="acct"><span class="av">' + esc((name.charAt(0) || 'A').toUpperCase()) + '</span>' +
+        '<span class="who"><b>' + esc(name) + '</b><span>' + esc(a.user.email || '') + '</span></span>' +
+        (a.active ? '<span class="on">Active</span>' : '<button type="button" class="sw" data-switch="' + esc(a.user.id) + '">Switch</button>') +
+        '</div>';
+    }).join('');
+    var btns = document.querySelectorAll('[data-switch]');
+    for (var i = 0; i < btns.length; i += 1) {
+      btns[i].addEventListener('click', function (ev) {
+        window.TSOSVault.switchTo(ev.currentTarget.getAttribute('data-switch'));
+      });
+    }
+  }
+
+  function finish(user, token) {
+    // The one and only way a session is born here: a FINAL token from
+    // the sign-in pipeline, added to the vault alongside the accounts
+    // already signed in. The vault follows ?return= on this surface.
+    if (window.TSOSVault) window.TSOSVault.add(user, token);
+    else { try { localStorage.setItem('tsos_token', token); } catch (e) {} }
+    if (location.pathname !== returnTo) location.replace(returnTo);
+  }
+
+  // The shared pipeline tail: temp-password change state, Layer 2,
+  // or the final session — identical order to every other surface.
+  function handlePipeline(j, ok, errId) {
+    if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)) {
+      TSOSTempPassword.begin(j, returnTo);
+      return true;
+    }
+    if (j && j.layer2Required && j.challenge && window.TSOSLayer2) {
+      TSOSLayer2.run(j, {
+        api: API,
+        onSession: function (s) { finish(s.user, s.token); },
+        onCancel: function () { showErr(errId, 'Sign-in cancelled — the 2-step code is required to finish.'); }
+      });
+      return true;
+    }
+    if (ok && j && j.token && j.user) { finish(j.user, j.token); return true; }
+    return false;
+  }
+
+  var challenge = null;
+  document.getElementById('loginForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    post('/auth/login', {
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value
+    }).then(function (res) {
+      btn.disabled = false;
+      var j = res.j || {};
+      if (j.code === 'SPEEDY_VERIFY_NO_CODE') {
+        showErr('loginErr', j.error || 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.');
+        return;
+      }
+      if (handlePipeline(j, res.ok, 'loginErr')) return;
+      if (j.verifyRequired && j.challenge) {
+        challenge = j.challenge;
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('verifyForm').style.display = 'block';
+        document.getElementById('svCode').focus();
+        return;
+      }
+      showErr('loginErr', j.error || 'Sign-in failed — check your email and password.');
+    }).catch(function () {
+      btn.disabled = false;
+      showErr('loginErr', 'Sign-in failed — the sign-in service could not be reached.');
+    });
+  });
+
+  document.getElementById('verifyForm').addEventListener('submit', function (ev) {
+    ev.preventDefault();
+    var btn = document.getElementById('verifyBtn');
+    var code = document.getElementById('svCode').value.trim();
+    if (!code || !challenge) { showErr('verifyErr', 'Enter your access code.'); return; }
+    btn.disabled = true;
+    post('/speedy-verify/verify', { challenge: challenge, code: code }).then(function (res) {
+      btn.disabled = false;
+      var j = res.j || {};
+      if (handlePipeline(j, res.ok, 'verifyErr')) return;
+      showErr('verifyErr', j.error || 'That code did not work — check it and try again.');
+    }).catch(function () {
+      btn.disabled = false;
+      showErr('verifyErr', 'Verification failed — the sign-in service could not be reached.');
+    });
+  });
+
+  document.getElementById('verifyCancel').addEventListener('click', function () {
+    challenge = null;
+    document.getElementById('verifyForm').style.display = 'none';
+    document.getElementById('loginForm').style.display = 'block';
+  });
+
+  renderAccounts();
+})();
+</script>
+</body>
+</html>

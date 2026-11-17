@@ -224,7 +224,7 @@ $('loginForm').addEventListener('submit', async (e) => {
       });
     } else {
       if (!res.ok || !body.token) throw new Error(body.error || 'Sign-in failed');
-      localStorage.setItem('tsos_token', body.token);
+      try{if(window.TSOSVault&&body.user&&body.token)window.TSOSVault.add(body.user,body.token);}catch(e){} localStorage.setItem('tsos_token', body.token);
       enter();
     }
   } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
@@ -238,5 +238,6 @@ setInterval(() => { if (token() && !$('board').classList.contains('hidden')) loa
 if (token()) enter();
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>

@@ -24,6 +24,10 @@ export const store = {
   // Super Apps sign-in handoffs (skeleton-mode fallback; the database
   // mode uses the AuthHandoff table). Keyed by token SHA-256 hash.
   authHandoffs: new Map(),
+  // Multi-account cross-host session handoffs (skeleton-mode fallback;
+  // the database mode uses the SessionHandoff table). Keyed by code
+  // SHA-256 hash, same discipline as authHandoffs.
+  sessionHandoffs: new Map(),
   // Email verification tokens (skeleton-mode fallback; the database
   // mode uses the EmailVerificationToken table). Keyed by token
   // SHA-256 hash, same discipline as authHandoffs.

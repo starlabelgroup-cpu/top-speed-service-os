@@ -232,6 +232,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['layer 2', '2-step', 'two step', 'two-step sign-in', 'sign-in code', 'login code', 'email code', '6-digit code'],
   },
   {
+    id: 'multi-account-sessions',
+    name: 'Multi-Account Sessions & Handoffs',
+    group: 'Accounts & Access',
+    location: 'Every platform surface — the account switcher chip in the top bar; sign-in travel via /auth-handoff',
+    url: '/add-account',
+    purpose: 'Ramone\'s rule: an account holder can go anywhere in the platforms while staying signed in — to any account, and any number of accounts at the same time — with no security risks and no conflicts. Each browser keeps a session vault: one entry per signed-in account, entered only when a final sign-in token is issued (after the password plus every Speedy Verify and Layer 2 gate that account requires — never from a challenge token). The switcher in the top bar swaps the active account; signing out removes only that account and promotes the next. Doors to other platform hosts (Navigator directory, Work Time Access Directory) carry a one-time 60-second handoff code, so the holder lands on the far host already signed in as the same account — codes are hashed at rest, single-use, and every failed redemption looks identical. Switching never merges roles or data, and the Master account is never locked out.',
+    access: 'Every account holder; per-account gates unchanged',
+    actions: ['Switch the active account from the top-bar switcher', 'Add another account without signing the current one out (/add-account)', 'Sign out one account, or all accounts, from the switcher', 'Follow a door to another platform host and land already signed in'],
+    related: ['speedy-verify', 'layer2', 'work-time', 'navigator'],
+    keywords: ['multi-account', 'multiple accounts', 'account switcher', 'switch account', 'signed in everywhere', 'stay signed in', 'session vault', 'handoff', 'sign-in link', 'add account', 'two accounts'],
+  },
+  {
     id: 'navigator',
     name: 'System Navigator',
     group: 'Accounts & Access',
