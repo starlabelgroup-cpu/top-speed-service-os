@@ -5,6 +5,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import { persistAdCampaign } from '../db/adStudioRepo.js';
+import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS } from '../data/streamingPack.js';
 import { emitReport } from '../services/managementReports.js';
 import { persistBanner } from '../db/bannersRepo.js';
 
@@ -46,7 +47,15 @@ const ownerOnly = [
 
 const BUSINESS_LINES = ['TOP_SPEED', 'CLEANOUT_VENTS', 'COCOCANE', 'EXTERNAL'];
 const CAMPAIGN_STATUSES = ['DRAFT', 'PENDING_APPROVAL', 'ACTIVE', 'PAUSED', 'ENDED'];
-const PLACEMENTS = ['BANNER', 'NONE'];
+const PLACEMENTS = ['BANNER', 'NONE', 'STREAMING'];
+// Streaming Ads channel (2026-11-17): a STREAMING-placement campaign
+// carries Google-style creative for streaming TV providers. The
+// provider names are target labels only — no streaming provider ad
+// account is connected, nothing is bought or placed externally, and
+// streaming campaigns NEVER enter the /ad-studio/display banner feed
+// (that feed filters placement BANNER, unchanged). Same lifecycle as
+// every campaign: owner-only approval before anything is ACTIVE.
+const STREAMING_PROVIDER_IDS = STREAMING_PROVIDERS.map((p) => p.id);
 // Flywheel relatedness categories (2026-11-16): a campaign may declare
 // one; customer surfaces pass theirs to the display feed, which prefers
 // a category match and falls back to any ACTIVE campaign. No scoring —
@@ -187,6 +196,54 @@ function attributedCounts(sourceTag) {
   return { bookings, connections, total: bookings + connections };
 }
 
+// Streaming creative fields, shared by the staff create/patch
+// schemas (all optional + nullable: non-streaming campaigns leave
+// them empty). Google Ads limits are enforced here: headlines
+// 30 chars, descriptions and long headline 90 chars.
+const streamingFields = {
+  streamingFormat: z.enum(STREAMING_FORMATS).nullable().optional(),
+  streamingProviders: z.array(z.enum(STREAMING_PROVIDER_IDS)).max(STREAMING_PROVIDER_IDS.length).nullable().optional(),
+  headlines: z.array(z.string().trim().min(1).max(30)).max(15).nullable().optional(),
+  descriptions: z.array(z.string().trim().min(1).max(90)).max(4).nullable().optional(),
+  displayPath: z.string().trim().max(30).nullable().optional(),
+  longHeadline: z.string().trim().max(90).nullable().optional(),
+  displaySizes: z.array(z.enum(DISPLAY_SIZES)).max(DISPLAY_SIZES.length).nullable().optional(),
+};
+
+/**
+ * A STREAMING campaign is only well-formed with its Google-style
+ * creative attached: a format, at least one provider target, at
+ * least one headline and one description. Checked against the merged
+ * record on create and on patch. Returns an error string or null.
+ */
+function streamingError(record) {
+  if (record.placement !== 'STREAMING') return null;
+  if (!record.streamingFormat) return 'A streaming campaign needs a format (TEXT or DISPLAY)';
+  if (!Array.isArray(record.streamingProviders) || record.streamingProviders.length === 0) {
+    return 'A streaming campaign needs at least one streaming provider target';
+  }
+  if (!Array.isArray(record.headlines) || record.headlines.length === 0) {
+    return 'A streaming campaign needs at least one headline (30 characters max each)';
+  }
+  if (!Array.isArray(record.descriptions) || record.descriptions.length === 0) {
+    return 'A streaming campaign needs at least one description (90 characters max each)';
+  }
+  return null;
+}
+
+/** The streaming fields of a record, normalized for storage. */
+function streamingValues(source) {
+  return {
+    streamingFormat: source.streamingFormat || null,
+    streamingProviders: source.streamingProviders || [],
+    headlines: source.headlines || [],
+    descriptions: source.descriptions || [],
+    displayPath: source.displayPath || null,
+    longHeadline: source.longHeadline || null,
+    displaySizes: source.displaySizes || [],
+  };
+}
+
 function publicCampaign(record) {
   const creative = findCreative(record.creativeId);
   const banner = record.bannerId ? store.banners.find((b) => b.id === record.bannerId) : null;
@@ -208,6 +265,7 @@ function publicCampaign(record) {
     copy: record.copy || null,
     ctaText: record.ctaText || null,
     category: record.category || null,
+    ...streamingValues(record),
     bannerId: record.bannerId || null,
     banner: banner
       ? { id: banner.id, active: banner.active !== false, impressions: banner.impressions || 0, clicks: banner.clicks || 0 }
@@ -226,9 +284,11 @@ function publicCampaign(record) {
 router.get('/ad-studio/campaigns', ...staffOnly, (req, res) => {
   const status = String(req.query.status || '').trim().toUpperCase();
   const line = String(req.query.businessLine || '').trim().toUpperCase();
+  const placement = String(req.query.placement || '').trim().toUpperCase();
   let items = [...store.adCampaigns].sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
   if (status) items = items.filter((c) => c.status === status);
   if (line) items = items.filter((c) => c.businessLine === line);
+  if (placement) items = items.filter((c) => c.placement === placement);
   const byStatus = Object.fromEntries(CAMPAIGN_STATUSES.map((s) => [s, store.adCampaigns.filter((c) => c.status === s).length]));
   return res.json({
     data: items.map(publicCampaign),
@@ -267,6 +327,7 @@ const campaignCreateSchema = z.object({
   placement: z.enum(PLACEMENTS).optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
   ...advertiserFields,
+  ...streamingFields,
 });
 
 router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
@@ -275,6 +336,8 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
   if (parsed.data.creativeId && !findCreative(parsed.data.creativeId)) {
     return res.status(400).json({ error: 'creativeId does not match a Media OS content record' });
   }
+  const streamErr = streamingError({ placement: parsed.data.placement || 'NONE', ...streamingValues(parsed.data) });
+  if (streamErr) return res.status(400).json({ error: streamErr });
   const now = new Date().toISOString();
   const record = {
     id: createId(),
@@ -286,6 +349,7 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
     destinationUrl: parsed.data.destinationUrl,
     sourceTag: generateSourceTag(parsed.data.name),
     placement: parsed.data.placement || 'NONE',
+    ...streamingValues(parsed.data),
     bannerId: null,
     advertiserName: parsed.data.advertiserName || null,
     offering: parsed.data.offering || null,
@@ -327,6 +391,7 @@ const campaignPatchSchema = z.object({
   placement: z.enum(PLACEMENTS).optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
   ...advertiserFields,
+  ...streamingFields,
 });
 
 router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
@@ -346,6 +411,8 @@ router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
   if (parsed.data.creativeId && !findCreative(parsed.data.creativeId)) {
     return res.status(400).json({ error: 'creativeId does not match a Media OS content record' });
   }
+  const streamErr = streamingError({ ...record, ...parsed.data });
+  if (streamErr) return res.status(400).json({ error: streamErr });
   Object.assign(record, parsed.data, { updatedAt: new Date().toISOString() });
   await persistAdCampaign(record);
   return res.json({ data: publicCampaign(record) });
@@ -395,6 +462,119 @@ async function transition(req, res, target, { owner = false } = {}) {
 
 router.post('/ad-studio/campaigns/:id/submit', ...staffOnly, (req, res) => transition(req, res, 'PENDING_APPROVAL'));
 router.post('/ad-studio/campaigns/:id/approve', ...ownerOnly, (req, res) => transition(req, res, 'ACTIVE', { owner: true }));
+
+// ─── Flywheel Streaming Pack (owner-only loader, 2026-11-17) ────────
+
+/**
+ * The 10 Google-style streaming ads (src/data/streamingPack.js) load
+ * as house campaigns under the owner's account, in PENDING_APPROVAL,
+ * each under its fixed source tag — loading is idempotent by tag:
+ * ads already loaded (in ANY status) are skipped, never duplicated
+ * and never re-queued. The loader creates them directly in
+ * PENDING_APPROVAL, the state a staff submit would produce, and
+ * files the same management report a submit files — the owner's
+ * approval queue is where they land, and only the owner's approve
+ * action can make any of them ACTIVE. Loading is owner-only because
+ * the pack is the house's own creative program, and because nothing
+ * about it may bypass the approval queue.
+ */
+function packState() {
+  return STREAMING_PACK.map((ad) => {
+    const existing = store.adCampaigns.find((c) => c.sourceTag === ad.tag) || null;
+    return {
+      tag: ad.tag,
+      name: ad.name,
+      format: ad.format,
+      providers: ad.providers,
+      offering: ad.offering,
+      destinationUrl: ad.destinationUrl,
+      loaded: Boolean(existing),
+      campaignId: existing ? existing.id : null,
+      status: existing ? existing.status : null,
+    };
+  });
+}
+
+router.get('/ad-studio/streaming-pack', ...staffOnly, (req, res) => {
+  const ads = packState();
+  return res.json({
+    data: {
+      providers: STREAMING_PROVIDERS,
+      formats: STREAMING_FORMATS,
+      displaySizes: DISPLAY_SIZES,
+      total: ads.length,
+      loaded: ads.filter((a) => a.loaded).length,
+      ads,
+    },
+  });
+});
+
+router.post('/ad-studio/streaming-pack/load', ...ownerOnly, async (req, res) => {
+  const created = [];
+  const skipped = [];
+  for (const ad of STREAMING_PACK) {
+    if (store.adCampaigns.some((c) => c.sourceTag === ad.tag)) {
+      skipped.push(ad.tag);
+      continue;
+    }
+    const now = new Date().toISOString();
+    const record = {
+      id: createId(),
+      name: ad.name,
+      businessLine: 'TOP_SPEED',
+      objective: ad.objective,
+      status: 'PENDING_APPROVAL',
+      creativeId: null,
+      destinationUrl: ad.destinationUrl,
+      sourceTag: ad.tag,
+      placement: 'STREAMING',
+      streamingFormat: ad.format,
+      streamingProviders: [...ad.providers],
+      headlines: [...ad.headlines],
+      descriptions: [...ad.descriptions],
+      displayPath: ad.displayPath || null,
+      longHeadline: ad.longHeadline || null,
+      displaySizes: [...(ad.displaySizes || [])],
+      bannerId: null,
+      advertiserName: 'Top Speed Appliance',
+      offering: ad.offering,
+      // The single headline of a display ad doubles as its card
+      // headline; text ads preview from the headlines array itself.
+      headline: ad.format === 'DISPLAY' ? ad.headlines[0] || null : null,
+      copy: ad.descriptions[0] || null,
+      ctaText: ad.ctaText,
+      category: ad.category || null,
+      notes: 'Flywheel Streaming Pack — loaded for owner approval. Streaming provider placement is NOT connected: approving activates the campaign in Ad Studio only; placing it on the named providers needs their ad accounts and budget (separate activation).',
+      createdById: actorIdOf(req),
+      approvedById: null,
+      approvedAt: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    store.adCampaigns.push(record);
+    await persistAdCampaign(record);
+    appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+      source: 'ad-studio-streaming-pack',
+      actor: actorOf(req),
+      entityType: 'AD_CAMPAIGN',
+      entityId: record.id,
+      details: { sourceTag: record.sourceTag, placement: 'STREAMING', format: ad.format, ownerAction: false },
+    });
+    emitReport({
+      department: 'marketing',
+      type: 'AD_CAMPAIGN_SUBMITTED',
+      title: `Ad campaign submitted for approval — ${record.name}`,
+      detail: { campaignId: record.id, name: record.name, businessLine: record.businessLine, sourceTag: record.sourceTag, destinationUrl: record.destinationUrl, placement: 'STREAMING', format: ad.format, actor: actorOf(req) },
+      source: 'ad-studio-streaming-pack',
+      reference: record.sourceTag,
+      eventKey: `ad-campaign:${record.id}:PENDING_APPROVAL:${record.updatedAt}`,
+    });
+    created.push(publicCampaign(record));
+  }
+  return res.status(created.length ? 201 : 200).json({
+    data: { created: created.map((c) => c.sourceTag), skipped, campaigns: created, pack: packState() },
+  });
+});
 router.post('/ad-studio/campaigns/:id/resume', ...ownerOnly, (req, res) => transition(req, res, 'ACTIVE', { owner: true }));
 router.post('/ad-studio/campaigns/:id/pause', ...staffOnly, (req, res) => transition(req, res, 'PAUSED'));
 router.post('/ad-studio/campaigns/:id/end', ...staffOnly, (req, res) => transition(req, res, 'ENDED'));

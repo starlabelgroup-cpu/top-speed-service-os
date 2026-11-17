@@ -1427,6 +1427,16 @@ enum AdCampaignStatus {
 enum AdPlacement {
   BANNER
   NONE
+  // Streaming Ads channel (Flywheel AI Advertising, 2026-11-17):
+  // Google-style text/display creative aimed at streaming TV
+  // providers. STREAMING campaigns never enter the owned-surface
+  // banner feed — that feed stays BANNER-only.
+  STREAMING
+}
+
+enum AdStreamingFormat {
+  TEXT
+  DISPLAY
 }
 
 model AdCampaign {
@@ -1452,7 +1462,21 @@ model AdCampaign {
   copy           String?
   ctaText        String?
   category       String?
-  notes          String?
+  // Streaming Ads fields (2026-11-17, all nullable / empty for
+  // non-streaming campaigns): the Google-style creative a STREAMING
+  // campaign carries. streamingProviders are LABELS only (Roku,
+  // YouTube TV, Hulu, …) — no streaming provider ad account is
+  // connected to this system; placing ads there is a separate,
+  // later activation. headlines/descriptions follow Google Ads
+  // limits (30 / 90 chars), enforced in routes/adStudio.js.
+  streamingFormat    AdStreamingFormat?
+  streamingProviders String[]           @default([])
+  headlines          String[]           @default([])
+  descriptions       String[]           @default([])
+  displayPath        String?
+  longHeadline       String?
+  displaySizes       String[]           @default([])
+  notes              String?
   createdById    String?          @db.Uuid
   approvedById   String?          @db.Uuid
   approvedAt     DateTime?

@@ -93,6 +93,30 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .mut{color:var(--mut)}
 .small{font-size:12.5px}
+/* Streaming Ads — Google-style previews (2026-11-17). The mocks use
+   Google's own ad look (white card, blue headline, grey text) so the
+   owner reviews exactly what a viewer would see. */
+.gprev{background:#fff;color:#202124;border-radius:12px;padding:13px 15px;margin-top:9px;max-width:520px;font-family:Arial,Helvetica,sans-serif;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.gprev .gurl{font-size:12px;color:#202124;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.gprev .gad{font-size:10.5px;font-weight:700;color:#202124;border:1px solid #202124;border-radius:3px;padding:0 3px;line-height:1.5}
+.gprev .gdom{color:#4d5156}
+.gprev .ghead{font-size:19px;line-height:1.3;color:#1a0dab;margin-top:3px}
+.gprev .gdesc{font-size:13px;line-height:1.5;color:#4d5156;margin-top:2px}
+.gdisp{border:1px solid #dadce0;border-radius:10px;overflow:hidden;margin-top:9px;max-width:340px;background:#fff;color:#202124;font-family:Arial,Helvetica,sans-serif}
+.gdisp .gbar{display:flex;align-items:center;gap:8px;padding:8px 11px;border-bottom:1px solid #e8eaed}
+.gdisp .gdot{width:22px;height:22px;border-radius:50%;background:#0C162B;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+.gdisp .gbrand{font-size:12.5px;font-weight:700;line-height:1.2}
+.gdisp .gsub{font-size:11px;color:#80868b;line-height:1.2}
+.gdisp .gbody{padding:12px 13px 13px}
+.gdisp .gheadline{font-size:21px;font-weight:700;line-height:1.25}
+.gdisp .glong{font-size:14.5px;line-height:1.4;margin-top:5px}
+.gdisp .gtext{font-size:12.5px;color:#4d5156;line-height:1.5;margin-top:5px}
+.gdisp .gcta{display:inline-block;margin-top:11px;background:#1a73e8;color:#fff;font-size:13px;font-weight:600;border-radius:6px;padding:8px 16px}
+.gsizes{font-size:11px;color:var(--mut);margin-top:5px}
+.provchip{display:inline-flex;align-items:center;gap:5px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:12px}
+.cform .checks{display:flex;gap:7px;flex-wrap:wrap}
+.cform .checks label{display:inline-flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--txt);font-weight:500;margin:0;cursor:pointer}
+.cform .checks input{width:auto}
 </style>
 <link rel="stylesheet" href="/fonts.css">
 </head>
@@ -114,7 +138,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div class="hero">
     <div class="kicker">In-House Advertising — No Outside Spend</div>
     <h1>Ad <span>Studio</span></h1>
-    <p>Our own advertising system, on the same Service OS as booking and dispatch. Campaigns are built from the Media OS creative library, send traffic to our own landing pages, and run as placements on our own platform surfaces — the flagship footer banner rotation. Every lead and booking a campaign produces is counted by its source tag. Nothing goes live without the owner's approval.</p>
+    <p>Our own advertising system, on the same Service OS as booking and dispatch. Campaigns are built from the Media OS creative library, send traffic to our own landing pages, and run as placements on our own platform surfaces — the flagship footer banner rotation. The Streaming Ads channel adds Google-style text and display ads aimed at streaming TV providers, reviewed here as exact previews. Every lead and booking a campaign produces is counted by its source tag. Nothing goes live without the owner's approval.</p>
   </div>
 
   <div class="roles">
@@ -145,7 +169,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 
   <div id="staffZone" style="display:none">
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12.5l2.2 2.2L15.5 10"/><circle cx="12" cy="12" r="8.6"/><path d="M12 3.4v-1M12 21.6v-1M3.4 12h-1M21.6 12h-1" stroke="#E8322E"/></svg>Owner approval queue</h2>
-    <p class="sub">Campaigns waiting for the MASTER decision. Approving a campaign with a banner placement puts its creative into the flagship footer rotation immediately; approving a link-only campaign activates its tracked link.</p>
+    <p class="sub">Campaigns waiting for the MASTER decision. Approving a campaign with a banner placement puts its creative into the flagship footer rotation immediately; approving a link-only campaign activates its tracked link; approving a streaming campaign activates it in Ad Studio only — placing it on the streaming providers themselves needs their ad accounts and budget, a separate step.</p>
     <div class="console">
       <div class="rows" id="queueRows"><span class="mut small"><span class="spin"></span> Loading the queue…</span></div>
       <div class="msg" id="queueMsg"></div>
@@ -154,6 +178,16 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 9.5h18" stroke="#E8322E"/><circle cx="6.6" cy="7.2" r=".9" fill="currentColor" stroke="none"/></svg>Creative library</h2>
     <p class="sub">The Media OS library — the Flywheel ad set and everything else the platform holds. Creatives with a public image show it; the rest render as designed title cards, exactly as honest as the library itself. Pick one to build a campaign around it.</p>
     <div id="creativeGrid"><div class="empty"><span class="spin"></span> Loading the creative library…</div></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="13" rx="2.5"/><path d="M10 9.3l4.5 2.7L10 14.7z" fill="#E8322E" stroke="none"/></svg>Flywheel Streaming Pack</h2>
+    <p class="sub">Ten Google-style streaming ads by Flywheel AI Advertising — five text, five display — one per core theme, targeted at streaming TV providers (Roku, YouTube TV, Hulu, Peacock, Paramount+, Pluto TV, Samsung TV Plus). Loading the pack creates them as house campaigns in the owner approval queue above; nothing is activated by loading, and placing the ads on the providers themselves needs their ad accounts and budget — a separate activation, not part of this system.</p>
+    <div class="console">
+      <div class="small mut" id="packStatus">Loading pack status…</div>
+      <div class="rows" id="packRows" style="margin-top:6px"></div>
+      <div style="margin-top:12px;display:none" id="packLoadWrap"><button class="btn" type="button" id="packLoadBtn">Load Flywheel Streaming Pack</button>
+      <span class="small mut" style="margin-left:8px">Owner-only. Already-loaded ads are skipped — loading twice changes nothing.</span></div>
+      <div class="msg" id="packMsg"></div>
+    </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="#E8322E"/><rect x="3.5" y="3.5" width="17" height="17" rx="3"/></svg>Campaign builder</h2>
     <p class="sub">Build a draft. The destination list is the platform's real published landing pages, fetched live — plus the platform's own doors. The source tag is generated by the server from the campaign name, so two campaigns can never share one.</p>
@@ -168,7 +202,23 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
         <div><label>Placement</label><select id="bPlacement">
           <option value="BANNER">Banner — flagship footer rotation</option>
           <option value="NONE">Link only — tracked URL, no placement</option>
+          <option value="STREAMING">Streaming — Google-style ad for streaming TV providers</option>
         </select></div>
+        <div class="full" id="streamFields" style="display:none">
+          <div class="cform" style="margin-top:0">
+            <div><label>Streaming format</label><select id="bSFormat">
+              <option value="TEXT">Text — Google search-style ad</option>
+              <option value="DISPLAY">Display — Google display-style ad</option>
+            </select></div>
+            <div><label>Display URL path (text ads)</label><input id="bSDisplayPath" maxlength="30" placeholder="Refrigerator-Repair"></div>
+            <div class="full"><label>Streaming providers — targets</label><div class="checks" id="bSProviders"></div>
+              <div class="small mut" style="margin-top:4px">Targets are labels for the creative pack — no provider ad account is connected, and nothing is placed externally from here.</div></div>
+            <div class="full"><label>Headlines — one per line, 30 characters max each</label><textarea id="bSHeadlines" rows="3" maxlength="600" placeholder="Refrigerator Repair Near You"></textarea></div>
+            <div class="full"><label>Descriptions — one per line, 90 characters max each</label><textarea id="bSDescriptions" rows="2" maxlength="500" placeholder="Same-day service windows across the tri-county area."></textarea></div>
+            <div><label>Long headline (display ads, 90 max)</label><input id="bSLongHeadline" maxlength="90" placeholder="Same-day appliance repair windows"></div>
+            <div><label>Display sizes (display ads)</label><div class="checks" id="bSSizes"></div></div>
+          </div>
+        </div>
         <div class="full"><label>Objective — what this campaign is for</label><input id="bObjective" required maxlength="600" placeholder="Bookings for refrigerator repair from the published city pages"></div>
         <div><label>Creative (Media OS)</label><select id="bCreative"><option value="">— no creative —</option></select></div>
         <div><label>Destination — published landing page</label><select id="bDest"><option value="">Loading published pages…</option></select></div>
@@ -248,13 +298,38 @@ function actionButtons(c){
   if (c.status === 'ACTIVE' || c.status === 'PAUSED' || c.status === 'PENDING_APPROVAL') btns.push('<button class="btn ghost sm" type="button" data-act="end" data-id="' + esc(c.id) + '">End</button>');
   return btns.join('');
 }
+var PROVIDER_LABEL = { ROKU:'Roku', YOUTUBE_TV:'YouTube TV', HULU:'Hulu', PEACOCK:'Peacock', PARAMOUNT_PLUS:'Paramount+', PLUTO_TV:'Pluto TV', SAMSUNG_TV_PLUS:'Samsung TV Plus' };
+function providerLabels(list){
+  return (list || []).map(function(p){ return PROVIDER_LABEL[p] || p; }).join(', ');
+}
+/* Google-style previews: a search-ad mock for TEXT campaigns, a
+   display-ad mock for DISPLAY campaigns — what a viewer would see. */
+function streamingPreview(c){
+  if (c.placement !== 'STREAMING') return '';
+  var domain = 'topspeedserviceos.com';
+  if (c.streamingFormat === 'DISPLAY'){
+    var sizes = (c.displaySizes && c.displaySizes.length) ? '<div class="gsizes">Display sizes: ' + esc(c.displaySizes.join(' · ')) + '</div>' : '';
+    return '<div class="gdisp"><div class="gbar"><div class="gdot">TS</div><div><div class="gbrand">' + esc(c.advertiserName || 'Top Speed Appliance') + '</div><div class="gsub">' + esc(domain) + '</div></div><span class="gad" style="margin-left:auto;font-size:10.5px;font-weight:700;border:1px solid #5f6368;border-radius:3px;padding:0 3px;color:#5f6368">Ad</span></div>' +
+      '<div class="gbody"><div class="gheadline">' + esc((c.headlines && c.headlines[0]) || c.headline || c.name) + '</div>' +
+      (c.longHeadline ? '<div class="glong">' + esc(c.longHeadline) + '</div>' : '') +
+      '<div class="gtext">' + esc((c.descriptions || []).join(' ')) + '</div>' +
+      '<span class="gcta">' + esc(c.ctaText || 'Learn More') + '</span></div></div>' + sizes;
+  }
+  var path = c.displayPath ? '/' + c.displayPath : '';
+  return '<div class="gprev"><div class="gurl"><span class="gad">Ad</span><span>' + esc(domain) + '</span><span class="gdom">' + esc(path) + '</span></div>' +
+    '<div class="ghead">' + esc((c.headlines || []).join(' | ')) + '</div>' +
+    '<div class="gdesc">' + esc((c.descriptions || []).join(' ')) + '</div></div>';
+}
 function campaignMeta(c){
   var r = resultsById[c.id] || { bookings: 0, connections: 0, total: 0 };
+  var placementBit = c.placement === 'BANNER' ? ' · Placement: flagship footer banner'
+    : c.placement === 'STREAMING' ? ' · Placement: streaming (' + esc(c.streamingFormat || '') + ') · Providers: ' + esc(providerLabels(c.streamingProviders))
+    : ' · Placement: link only';
   var bits = '<div class="slug">' + esc(LINE_LABEL[c.businessLine] || c.businessLine) + ' · tag <span class="tag">' + esc(c.sourceTag) + '</span></div>' +
     '<div class="desc">' + esc(c.objective || '') + '</div>' +
     '<div class="desc">Destination: <a href="' + esc(c.trackedUrl) + '" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">' + esc(c.destinationUrl) + '</a>' +
     (c.creative ? ' · Creative: ' + esc(c.creative.title) : ' · No creative attached') +
-    (c.placement === 'BANNER' ? ' · Placement: flagship footer banner' : ' · Placement: link only') + '</div>' +
+    placementBit + '</div>' + streamingPreview(c) +
     '<div class="desc">Results so far: <b style="color:var(--txt)">' + (r.bookings || 0) + ' booking(s)</b> · <b style="color:var(--txt)">' + (r.connections || 0) + ' lead(s)</b> attributed' +
     (c.banner ? ' · Banner: ' + (c.banner.active ? 'rotating' : 'off') + ' · ' + (c.banner.impressions || 0) + ' impressions · ' + (c.banner.clicks || 0) + ' clicks' : '') +
     (c.approvedAt ? ' · Approved ' + esc(String(c.approvedAt).slice(0, 10)) : '') + '</div>';
@@ -373,6 +448,27 @@ document.getElementById('bName').addEventListener('input', function(){
   var v = slugify(this.value);
   document.getElementById('tagPreview').textContent = v ? 'adstudio-' + v : 'adstudio-…';
 });
+/* Streaming fields: provider + size pickers, shown only for the
+   STREAMING placement. */
+(function(){
+  var prov = document.getElementById('bSProviders');
+  prov.innerHTML = Object.keys(PROVIDER_LABEL).map(function(id){
+    return '<label><input type="checkbox" value="' + esc(id) + '"> ' + esc(PROVIDER_LABEL[id]) + '</label>';
+  }).join('');
+  var sizes = document.getElementById('bSSizes');
+  sizes.innerHTML = ['300x250','728x90','160x600','320x50','970x250','336x280'].map(function(s){
+    return '<label><input type="checkbox" value="' + esc(s) + '"> ' + esc(s) + '</label>';
+  }).join('');
+  var sel = document.getElementById('bPlacement');
+  function sync(){ document.getElementById('streamFields').style.display = sel.value === 'STREAMING' ? '' : 'none'; }
+  sel.addEventListener('change', sync); sync();
+})();
+function checkedValues(containerId){
+  return Array.prototype.slice.call(document.querySelectorAll('#' + containerId + ' input[type=checkbox]:checked')).map(function(i){ return i.value; });
+}
+function linesOf(id){
+  return document.getElementById(id).value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+}
 document.getElementById('buildForm').addEventListener('submit', function(ev){
   ev.preventDefault();
   var custom = document.getElementById('bDestCustom').value.trim();
@@ -385,6 +481,18 @@ document.getElementById('buildForm').addEventListener('submit', function(ev){
     placement: document.getElementById('bPlacement').value,
     notes: document.getElementById('bNotes').value.trim() || null
   };
+  if (body.placement === 'STREAMING'){
+    body.streamingFormat = document.getElementById('bSFormat').value;
+    body.streamingProviders = checkedValues('bSProviders');
+    body.headlines = linesOf('bSHeadlines');
+    body.descriptions = linesOf('bSDescriptions');
+    body.displayPath = document.getElementById('bSDisplayPath').value.trim() || null;
+    body.longHeadline = document.getElementById('bSLongHeadline').value.trim() || null;
+    body.displaySizes = checkedValues('bSSizes');
+    if (!body.streamingProviders.length){ setMsg('buildMsg', 'Pick at least one streaming provider target.', false); return; }
+    if (!body.headlines.length){ setMsg('buildMsg', 'Add at least one headline (one per line, 30 characters max).', false); return; }
+    if (!body.descriptions.length){ setMsg('buildMsg', 'Add at least one description (one per line, 90 characters max).', false); return; }
+  }
   if (!body.destinationUrl){ setMsg('buildMsg', 'Pick a destination page first.', false); return; }
   authFetch('/ad-studio/campaigns', { method: 'POST', body: JSON.stringify(body) })
     .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
@@ -392,10 +500,48 @@ document.getElementById('buildForm').addEventListener('submit', function(ev){
       if (!res.ok){ setMsg('buildMsg', (res.j && res.j.error) || 'Create failed.', false); return; }
       setMsg('buildMsg', 'Draft created — source tag: ' + res.j.data.sourceTag + '. Submit it for approval when it is ready.', true);
       ev.target.reset();
+      document.getElementById('bPlacement').dispatchEvent(new Event('change'));
       document.getElementById('tagPreview').textContent = 'adstudio-…';
       loadAll();
     })
     .catch(function(){ setMsg('buildMsg', 'Create failed — connection error.', false); });
+});
+
+/* ── Flywheel Streaming Pack ───────────────────────────── */
+function renderPack(pack){
+  var statusEl = document.getElementById('packStatus');
+  var rows = document.getElementById('packRows');
+  if (!pack){ statusEl.textContent = 'Pack status could not be loaded for this session.'; rows.innerHTML = ''; return; }
+  statusEl.textContent = pack.loaded + ' of ' + pack.total + ' streaming ads loaded. Loaded ads wait in the owner approval queue — loading never activates anything.';
+  rows.innerHTML = (pack.ads || []).map(function(a){
+    return '<div class="crow"><div class="meta"><b>' + esc(a.name) + '</b> ' +
+      (a.loaded ? statusPill(a.status) : '<span class="pill draft">Not loaded</span>') +
+      '<div class="slug">tag <span class="tag">' + esc(a.tag) + '</span></div>' +
+      '<div class="desc">' + esc(a.format) + ' · Providers: ' + esc(providerLabels(a.providers)) + ' · Destination: ' + esc(a.destinationUrl) + '</div></div></div>';
+  }).join('');
+  document.getElementById('packLoadWrap').style.display = isOwner ? '' : 'none';
+}
+function loadPack(){
+  authFetch('/ad-studio/streaming-pack').then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){ renderPack(j && j.data); })
+    .catch(function(){ renderPack(null); });
+}
+document.getElementById('packLoadBtn').addEventListener('click', function(){
+  var btn = this;
+  btn.disabled = true;
+  setMsg('packMsg', 'Loading the pack…', true);
+  authFetch('/ad-studio/streaming-pack/load', { method: 'POST', body: '{}' })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      btn.disabled = false;
+      if (!res.ok){ setMsg('packMsg', (res.j && res.j.error) || 'Loading the pack is owner-only.', false); return; }
+      var d = res.j.data || {};
+      var created = (d.created || []).length, skipped = (d.skipped || []).length;
+      setMsg('packMsg', created ? created + ' streaming ad(s) loaded into the owner approval queue' + (skipped ? ' · ' + skipped + ' already loaded and skipped' : '') + '.' : 'The whole pack was already loaded — nothing changed.', true);
+      if (d.pack) renderPack({ total: d.pack.length, loaded: d.pack.filter(function(a){ return a.loaded; }).length, ads: d.pack });
+      loadAll();
+    })
+    .catch(function(){ btn.disabled = false; setMsg('packMsg', 'Load failed — connection error.', false); });
 });
 
 /* ── Ask Pepper (Speedy chat, AD_STUDIO source) ────────── */
@@ -448,7 +594,7 @@ function showSignedOut(){
 function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
-  loadAll(); loadCreatives(); loadDestinations();
+  loadAll(); loadCreatives(); loadDestinations(); loadPack();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();
