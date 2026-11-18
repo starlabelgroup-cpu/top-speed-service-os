@@ -196,6 +196,8 @@ model User {
   sellerChannelConnections SellerChannelConnection[]
   sellerChannelAudits      SellerChannelAudit[]
 
+  adProviderAudits AdProviderAudit[]
+
   advertiserSubscription AdvertiserSubscription?
 
   authHandoffs AuthHandoff[]
@@ -1780,4 +1782,65 @@ model SellerChannelAudit {
 
   @@index([connectionId, createdAt])
   @@index([userId, createdAt])
+}
+
+// AdStream Providers (2026-11-18, Phase 1): the platform-level registry
+// of the external ad-serving providers Top Speed Ads can serve through
+// (Kevel, AdButler, Google Ad Manager, SpringServe by Magnite,
+// FreeWheel). Unlike the Pepper Lists seller channels, these connections
+// belong to the PLATFORM — one row per provider, managed from Ad Studio
+// by staff — because the providers serve Top Speed's own ad stack, not
+// individual advertiser accounts. Phase 1 is the registry + request
+// workflow ONLY, the same honesty model as SellerChannelConnection: a
+// connect files a PENDING request the office completes once the real
+// provider account exists; a row may read CONNECTED only after a real
+// completed connect flow (Phase 2, per provider), and Phase 1 stores NO
+// third-party credentials anywhere (meta carries only non-secret
+// request context). Every change lands in AdProviderAudit with the
+// acting staff member recorded.
+enum AdServingProvider {
+  KEVEL
+  ADBUTLER
+  GOOGLE_AD_MANAGER
+  SPRINGSERVE
+  FREEWHEEL
+}
+
+enum AdProviderConnectionStatus {
+  NOT_CONNECTED
+  PENDING
+  CONNECTED
+  ERROR
+  REVOKED
+}
+
+model AdProviderConnection {
+  id                   String                     @id @default(uuid()) @db.Uuid
+  provider             AdServingProvider          @unique
+  status               AdProviderConnectionStatus @default(NOT_CONNECTED)
+  externalAccountLabel String?
+  connectedAt          DateTime?
+  lastSyncAt           DateTime?
+  meta                 Json?
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+
+  audit AdProviderAudit[]
+
+  @@index([status])
+}
+
+model AdProviderAudit {
+  id           String   @id @default(uuid()) @db.Uuid
+  connectionId String   @db.Uuid
+  actorUserId  String?  @db.Uuid
+  action       String
+  detail       String?
+  createdAt    DateTime @default(now())
+
+  connection AdProviderConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  actor      User?                @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([connectionId, createdAt])
+  @@index([actorUserId, createdAt])
 }

@@ -206,3 +206,88 @@ export const EXTERNAL_ADS = [
     ],
   },
 ];
+
+// ── Ad-serving providers (AdStream layer) — added 2026-11-18 ─────
+// The five external ad-serving providers Ramone directed Ad Studio
+// to connect (from his provider research): Kevel, AdButler, Google
+// Ad Manager, SpringServe (Magnite) and FreeWheel. These are NOT
+// campaigns and carry no budgets — they are the serving layer Top
+// Speed Ads can plug into, tracked in Ad Studio → Ad serving
+// (routes/adProviders.js) with the same Phase 1 honesty model as the
+// Pepper Lists channel registry: a connection request is PENDING
+// until the provider account exists; nothing is CONNECTED and
+// nothing serves a live ad through a provider today. Statuses here
+// are as last verified on AD_SERVING_PROVIDERS_VERIFIED_ON; the
+// live request state lives in the AdProviderConnection registry.
+export const AD_SERVING_PROVIDERS_VERIFIED_ON = '2026-11-18';
+
+export const AD_SERVING_PROVIDERS_LABEL =
+  'Ad-serving providers (AdStream layer) — connection status as last verified 2026-11-18. None is connected: Ad Studio takes connection requests only, and no provider serves a live ad until its account exists and its key is added (Phase 2).';
+
+export const AD_SERVING_PROVIDER_ENTRIES = [
+  {
+    id: 'provider-kevel',
+    provider: 'KEVEL',
+    providerLabel: 'Kevel',
+    name: 'Kevel',
+    status: 'NOT CONNECTED',
+    note: 'API-first ad serving for building Flywheel\u2019s own advertising infrastructure — the candidate that keeps control of the advertiser and publisher interfaces.',
+    missingSteps: [
+      { label: 'Account: open a Kevel account (plan/trial through kevel.com) — the account belongs to the business', ownerOnly: true },
+      { label: 'Connection request: file it in Ad Studio \u2192 Ad serving so the office tracks it, with the account reference', ownerOnly: false },
+      { label: 'Phase 2 hookup: the Kevel API key + network ID get added once the account exists — no key exists to add today', ownerOnly: false },
+    ],
+  },
+  {
+    id: 'provider-adbutler',
+    provider: 'ADBUTLER',
+    providerLabel: 'AdButler',
+    name: 'AdButler',
+    status: 'NOT CONNECTED',
+    note: 'Multi-format ad serving (display, native, video) from one dashboard.',
+    missingSteps: [
+      { label: 'Account: start an AdButler account at adbutler.com', ownerOnly: true },
+      { label: 'Connection request: file it in Ad Studio \u2192 Ad serving so the office tracks it, with the account reference', ownerOnly: false },
+      { label: 'Phase 2 hookup: the AdButler API key gets added once the account exists — no key exists to add today', ownerOnly: false },
+    ],
+  },
+  {
+    id: 'provider-google-ad-manager',
+    provider: 'GOOGLE_AD_MANAGER',
+    providerLabel: 'Google Ad Manager',
+    name: 'Google Ad Manager',
+    status: 'NOT CONNECTED',
+    note: 'Publisher ad management for display and video, including basic video ad serving. Some advanced capabilities depend on account eligibility or product tier.',
+    missingSteps: [
+      { label: 'Account: a Google Ad Manager account must exist and be approved for the business (sign-up at admanager.google.com; approval is Google\u2019s call)', ownerOnly: true },
+      { label: 'Connection request: file it in Ad Studio \u2192 Ad serving with the network code once approved', ownerOnly: false },
+      { label: 'Phase 2 hookup: the network link completes once the approved account exists — nothing to link today', ownerOnly: false },
+    ],
+  },
+  {
+    id: 'provider-springserve',
+    provider: 'SPRINGSERVE',
+    providerLabel: 'SpringServe (Magnite)',
+    name: 'SpringServe (Magnite)',
+    status: 'NOT CONNECTED',
+    note: 'Video and CTV ad serving built for streaming monetization — SpringServe is Magnite\u2019s ad server.',
+    missingSteps: [
+      { label: 'Enterprise agreement: SpringServe has no self-serve signup — an agreement with Magnite comes first', ownerOnly: true },
+      { label: 'Connection request: file it in Ad Studio \u2192 Ad serving so the office tracks it once the agreement exists', ownerOnly: false },
+      { label: 'No self-serve key exists: serving starts only after the enterprise agreement and Magnite\u2019s own onboarding', ownerOnly: false },
+    ],
+  },
+  {
+    id: 'provider-freewheel',
+    provider: 'FREEWHEEL',
+    providerLabel: 'FreeWheel',
+    name: 'FreeWheel',
+    status: 'NOT CONNECTED',
+    note: 'Established video and CTV supply and ad management technology.',
+    missingSteps: [
+      { label: 'Enterprise agreement: FreeWheel is sales-led — an agreement with FreeWheel comes first', ownerOnly: true },
+      { label: 'Connection request: file it in Ad Studio \u2192 Ad serving so the office tracks it once the agreement exists', ownerOnly: false },
+      { label: 'No self-serve key exists: serving starts only after the enterprise agreement and FreeWheel\u2019s own onboarding', ownerOnly: false },
+    ],
+  },
+];

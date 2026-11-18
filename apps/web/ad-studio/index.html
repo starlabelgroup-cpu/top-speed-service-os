@@ -274,6 +274,17 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 
     </div>
 
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4L3.5 12 8 20M16 4l4.5 8L16 20" stroke="#E8322E"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/></svg>Ad serving — provider connections</h2>
+    <p class="sub">The AdStream layer: the external ad-serving providers Top Speed Ads can serve through, next to the in-house display feed that serves our own surfaces today. This is Phase 1 — a connection registry, not a serving switch: filing a request records the provider and its account reference so the office can complete the link once the real provider account exists. <b style="color:var(--txt)">No provider is connected and no provider serves a live ad until its account exists and its key is added (Phase 2).</b> Opening the accounts — and signing the SpringServe and FreeWheel enterprise agreements — is the owner's step alone; each card says exactly what its first step is.</p>
+    <div class="console">
+      <div id="provBody"><span class="mut small"><span class="spin"></span> Loading providers…</span></div>
+      <div class="msg" id="provMsg"></div>
+      <div class="small" style="font-weight:800;margin-top:18px">Our publisher inventory — served by Top Speed Ads in-house today</div>
+      <div class="rows" id="invRows" style="margin-top:4px"></div>
+      <div class="small" style="font-weight:800;margin-top:18px">Recent connection activity</div>
+      <div class="rows" id="provAuditRows" style="margin-top:4px"><span class="mut small">No connection activity yet.</span></div>
+    </div>
+
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10h18" stroke="#E8322E"/><path d="M7 15h4"/></svg>Advertiser plans</h2>
     <p class="sub">The Flywheel plan tiers advertisers subscribe to — Starter, Growth, Pro. Plans ship as structure: <b style="color:var(--txt)">a price exists only when the owner sets it here</b>, and setting one creates that plan's Stripe Product &amp; Price with exactly that amount. An unpriced plan shows "Pricing launching soon" in the Advertiser Console and cannot be checked out. Existing advertiser accounts are grandfathered on the baseline — plans only gate features above it. Price and structure changes are owner-only.</p>
     <div class="console">
@@ -779,12 +790,114 @@ function loadExternal(){
             : '<div class="desc">Nothing missing — ready for the owner\'s launch call inside the platform.</div>') +
           '</div></div>';
       });
+      if (d.providers && d.providers.length){
+        html += '<div class="small" style="font-weight:800;margin-top:18px">Ad-serving providers — AdStream layer</div>' +
+          '<div class="desc" style="margin-top:4px">' + esc(d.providersLabel || '') + '</div>';
+        d.providers.forEach(function(p){
+          html += '<div class="crow"><div class="meta"><b>' + esc(p.name) + '</b> <span class="pill">' + esc(p.status) + '</span>' +
+            '<div class="desc">' + esc(p.note) + '</div>' +
+            ((p.missingSteps && p.missingSteps.length)
+              ? '<div class="desc">Still missing before it can serve:</div>' + p.missingSteps.map(function(s){
+                  return '<div class="desc">— ' + esc(s.label) + (s.ownerOnly ? ' <span class="pill pending">Ramone-only</span>' : '') + '</div>';
+                }).join('')
+              : '') +
+            '</div></div>';
+        });
+      }
       body.innerHTML = html;
     })
     .catch(function(){ document.getElementById('extBody').innerHTML = '<span class="mut small">The external board could not be loaded — connection error.</span>'; });
 }
 
 
+
+/* ── AdStream providers (Ad serving connections, Phase 1) ── */
+var PROVIDER_ICON = {
+  KEVEL: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4L3.5 12 8 20M16 4l4.5 8L16 20" stroke="#E8322E"/></svg>',
+  ADBUTLER: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l9 5-9 5-9-5z"/><path d="M3.5 13.5l8.5 4.7 8.5-4.7" stroke="#E8322E"/></svg>',
+  GOOGLE_AD_MANAGER: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="13" rx="2.5"/><path d="M8 14.5v-3M12 14.5V8.8M16 14.5v-5" stroke="#E8322E"/><path d="M8.5 20.5h7"/></svg>',
+  SPRINGSERVE: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M10.2 8.8l5 3.2-5 3.2z" fill="#E8322E" stroke="none"/></svg>',
+  FREEWHEEL: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="2.6"/><path d="M12 3.4v6M12 14.6v6M3.4 12h6M14.6 12h6" stroke="#E8322E"/></svg>'
+};
+var PROVIDER_STATUS_LABEL = { NOT_CONNECTED: 'Not connected', PENDING: 'Request pending', CONNECTED: 'Connected', ERROR: 'Error', REVOKED: 'Revoked' };
+function providerPill(s){
+  var cls = s === 'CONNECTED' ? 'active' : s === 'PENDING' ? 'pending' : (s === 'ERROR' || s === 'REVOKED') ? 'ended' : 'draft';
+  return '<span class="pill ' + cls + '">' + esc(PROVIDER_STATUS_LABEL[s] || s) + '</span>';
+}
+var PROVIDER_ACTION_LABEL = { CONNECT_REQUESTED: 'Connection requested', DISCONNECTED: 'Disconnected', STATUS_CHANGED: 'Status changed' };
+function renderProviders(cat, oversight){
+  var body = document.getElementById('provBody');
+  var inv = document.getElementById('invRows');
+  if (!cat){
+    body.innerHTML = '<span class="mut small">The provider registry could not be loaded for this session.</span>';
+    inv.innerHTML = '';
+    return;
+  }
+  body.innerHTML = '<div class="grid">' + (cat.providers || []).map(function(p){
+    var c = p.connection || {};
+    var controls = '';
+    if (c.status === 'PENDING' || c.status === 'CONNECTED'){
+      controls = '<div class="desc" style="margin-top:2px"><b style="color:var(--txt)">Next steps:</b> ' + esc(p.nextSteps) + '</div>' +
+        '<div style="margin-top:6px"><button class="btn ghost sm" type="button" data-prov-act="disconnect" data-key="' + esc(p.key) + '">Disconnect</button></div>';
+    } else {
+      controls = '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">' +
+        '<input id="provInput-' + esc(p.key) + '" maxlength="120" placeholder="Account reference (name / ID, if you have one)" style="flex:1;min-width:170px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:7px 10px;font-size:12.5px;font-family:Inter">' +
+        '<button class="btn blue sm" type="button" data-prov-act="connect" data-key="' + esc(p.key) + '">Request connection</button></div>';
+    }
+    return '<div class="card">' +
+      '<h3>' + (PROVIDER_ICON[p.key] || '') + esc(p.label) + '</h3>' +
+      '<div>' + providerPill(c.status) + (c.externalAccountLabel ? ' <span class="pill">' + esc(c.externalAccountLabel) + '</span>' : '') + '</div>' +
+      '<p><b style="color:var(--txt)">Best for:</b> ' + esc(p.bestFor) + '</p>' +
+      '<p>' + esc(p.blurb) + '</p>' + controls +
+      '<p class="small mut" style="margin-top:auto">' + esc(p.phaseNote) + '</p></div>';
+  }).join('') + '</div>';
+  inv.innerHTML = (cat.inventory || []).map(function(s){
+    return '<div class="crow"><div class="meta"><b>' + esc(s.label) + '</b>' +
+      '<div class="desc"><a href="' + esc(s.url) + '" target="_blank" rel="noopener" style="color:var(--blue);font-weight:600">' + esc(s.url) + '</a> · ' + esc(s.note) + '</div></div>' +
+      '<div class="acts"><span class="pill active">In-house feed</span></div></div>';
+  }).join('');
+  var auditRows = document.getElementById('provAuditRows');
+  var audit = (oversight && oversight.audit) || [];
+  if (!audit.length){ auditRows.innerHTML = '<span class="mut small">No connection activity yet.</span>'; return; }
+  auditRows.innerHTML = audit.slice(0, 8).map(function(a){
+    var who = a.actor ? (a.actor.name || a.actor.email || 'staff') : 'staff';
+    return '<div class="crow"><div class="meta"><b>' + esc(a.provider || '') + '</b> — ' + esc(PROVIDER_ACTION_LABEL[a.action] || a.action) +
+      '<div class="desc">by ' + esc(who) + ' · ' + esc(String(a.createdAt || '').slice(0, 16).replace('T', ' ')) + (a.detail ? ' · ' + esc(a.detail) : '') + '</div></div></div>';
+  }).join('');
+}
+function loadProviders(){
+  Promise.all([
+    authFetch('/ad-studio/providers').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+    authFetch('/ad-studio/providers/oversight').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+  ]).then(function(res){
+    renderProviders(res[0] && res[0].data, res[1] && res[1].data);
+  });
+}
+function providerAction(act, key, btn){
+  btn.disabled = true;
+  var path = '/ad-studio/providers/' + encodeURIComponent(key) + '/' + act;
+  var payload = {};
+  if (act === 'connect'){
+    var input = document.getElementById('provInput-' + key);
+    var label = input ? input.value.trim() : '';
+    if (label) payload.accountLabel = label;
+  }
+  authFetch(path, { method: 'POST', body: JSON.stringify(payload) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      btn.disabled = false;
+      if (!res.ok){ setMsg('provMsg', (res.j && res.j.error) || 'That action is not available right now.', false); return; }
+      setMsg('provMsg', act === 'connect'
+        ? 'Connection request filed — it sits as PENDING until the provider account exists and the office completes the link. Nothing is serving yet.'
+        : 'Provider disconnected — the registry row is back to Not connected and the account reference was cleared.', true);
+      loadProviders();
+    })
+    .catch(function(){ btn.disabled = false; setMsg('provMsg', 'Action failed — connection error.', false); });
+}
+document.addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-prov-act]');
+  if (btn) providerAction(btn.getAttribute('data-prov-act'), btn.getAttribute('data-key'), btn);
+});
 
 /* ── Advertiser plans admin (Flywheel Advertiser Plans) ── */
 var PLAN_FEATURE_LABEL = { campaigns:'Campaigns', display:'Display placements', streaming:'Streaming Ads channel', aiDrafter:'AI copy drafter', attribution:'Attribution view', loopView:'Flywheel loop view', creativePicker:'Creative picker' };
@@ -945,7 +1058,7 @@ function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
   loadAll(); loadCreatives(); loadDestinations(); loadPack();
-  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal(); loadPlansAdmin();
+  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal(); loadProviders(); loadPlansAdmin();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();

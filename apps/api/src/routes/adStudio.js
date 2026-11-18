@@ -9,7 +9,10 @@ import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS }
 import { emitReport } from '../services/managementReports.js';
 import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
 import { speedyDraftAdCopy, speedyStatus } from '../services/speedy.js';
-import { EXTERNAL_ADS, EXTERNAL_ADS_BOARD_LABEL, EXTERNAL_ADS_VERIFIED_ON } from '../data/externalAds.js';
+import {
+  EXTERNAL_ADS, EXTERNAL_ADS_BOARD_LABEL, EXTERNAL_ADS_VERIFIED_ON,
+  AD_SERVING_PROVIDER_ENTRIES, AD_SERVING_PROVIDERS_LABEL, AD_SERVING_PROVIDERS_VERIFIED_ON,
+} from '../data/externalAds.js';
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
 import { requirePlanFeature } from '../services/adPlans.js';
 
@@ -427,6 +430,13 @@ router.get('/ad-studio/external-board', ...staffOnly, (req, res) => {
       label: EXTERNAL_ADS_BOARD_LABEL,
       counts: { total: EXTERNAL_ADS.length, byPlatform },
       campaigns: EXTERNAL_ADS,
+      // Ad-serving providers (AdStream layer, 2026-11-18): a separate
+      // section, NOT campaigns — no budgets, nothing serving. The
+      // dated mirror of the provider connection registry whose live
+      // request state sits behind /ad-studio/providers.
+      providersVerifiedOn: AD_SERVING_PROVIDERS_VERIFIED_ON,
+      providersLabel: AD_SERVING_PROVIDERS_LABEL,
+      providers: AD_SERVING_PROVIDER_ENTRIES,
     },
   });
 });
