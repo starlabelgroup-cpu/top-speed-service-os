@@ -368,6 +368,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['top speed ads', 'attribution', 'gclid', 'fbclid', 'msclkid', 'utm', 'click tracking', 'impressions', 'ctr', 'external platforms', 'readiness board', 'draft with speedy', 'creative picker', 'flywheel loop'],
   },
   {
+    id: 'insights',
+    name: 'Service OS Insights',
+    group: 'Marketing, Media & Ads',
+    location: 'topspeedserviceos.com/insights',
+    url: '/insights',
+    purpose: 'The web traffic & website activity manager: FIRST-PARTY lead and booking activity counted from the Service OS database itself (28 days by day, by source/medium/campaign, landing pages, surface tags, ad click IDs, and the lead → booking → completed funnel — records without captured attribution sit in an honest "(not captured)" bucket, never backfilled), PageSpeed Insights snapshots for the eight portfolio homepages (staff-triggered refresh; failures are stored as failures, never invented scores), the Google connections board (GA4, Search Console, Google Business Profile — real connection state only, no metrics until Google access is configured), and the property roster with each platform\'s measurement status from the 2026-11-17 audit.',
+    access: 'Staff (DISPATCHER, COMPANY_ADMIN, COMPANY_OWNER, PLATFORM_ADMIN) + MARKETING_MANAGER',
+    actions: ['Read lead & booking activity', 'Refresh PageSpeed snapshots', 'Check Google connection states and the connect steps', 'Read the property measurement roster'],
+    related: ['seo-dashboard', 'top-speed-ads', 'ad-studio', 'google-accounts'],
+    keywords: ['insights', 'web traffic', 'website activity', 'analytics', 'ga4', 'search console', 'google business profile', 'pagespeed', 'page speed', 'site speed', 'leads by source', 'attribution', 'funnel'],
+  },
+  {
     id: 'flywheel',
     name: 'Flywheel AI Advertising',
     group: 'Marketing, Media & Ads',

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service OS Insights — Web Traffic &amp; Website Activity | Top Speed</title>
+<meta name="description" content="Top Speed Service OS Insights: first-party lead and booking activity from the Service OS database, PageSpeed snapshots for every property, and the Google connections board. Real numbers only.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e8322e;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3;--amber:#9a6200}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#fff}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header img.flag{height:44px;width:auto;border-radius:4px}
+.brand{font-weight:900;font-size:22px;letter-spacing:.5px}
+.brand span{color:#ff3b42}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:10px 18px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:14.5px;font-family:inherit}
+.btn.blue{background:var(--blue)} .btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn[disabled]{opacity:.55;cursor:wait}
+main{max-width:1180px;margin:0 auto;padding:36px 24px 60px}
+h1{font-size:29px;color:var(--navy)}
+h2{font-size:21px;color:var(--navy);margin-bottom:10px}
+.sub{color:var(--muted);margin:8px 0 22px;line-height:1.55}
+.card{background:var(--light);border-radius:14px;padding:22px;margin-bottom:22px}
+.card.white{background:#fff;border:1px solid var(--line)}
+input,select,textarea{width:100%;padding:11px;border:1px solid #c9d8ec;border-radius:10px;font-size:15px;font-family:inherit;background:#fff}
+label{font-weight:700;color:var(--navy);font-size:13px;display:block;margin-bottom:6px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.tblwrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:430px}
+th{text-align:left;color:var(--navy);border-bottom:2px solid var(--line);padding:8px 7px;white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:8px 7px;vertical-align:top}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-weight:800;font-size:11px;border-radius:99px;padding:3px 9px;letter-spacing:.04em;white-space:nowrap}
+.pill.ok{background:#e2f3ea;color:var(--green)} .pill.wait{background:#fdf0d5;color:var(--amber)} .pill.off{background:#f6e3e3;color:#a12}
+.msg{font-weight:600;min-height:22px;margin-top:10px;white-space:pre-wrap}
+.msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:6px}
+.stat{background:var(--navy);color:#fff;border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:1.45rem;line-height:1.1}
+.stat span{color:#b9cdec;font-size:12.5px}
+ol.steps{margin:10px 0 4px 20px;line-height:1.65;color:var(--ink)}
+ol.steps li{margin-bottom:6px}
+.mono{font-family:'Space Mono',monospace;font-size:12.5px;word-break:break-all}
+.bar{height:10px;border-radius:5px;background:var(--blue);min-width:2px}
+.bar.lead{background:#7fb0ff}
+.funnel{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.fstage{background:var(--light);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.fstage b{display:block;font-size:1.35rem;color:var(--navy)}
+.fstage span{color:var(--muted);font-size:12.5px}
+footer{background:#04122e;color:#9db6d8;padding:32px 24px;text-align:center;font-size:14px}
+footer strong{color:#fff}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/layer2.js" defer></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/turbo-boss">Turbo Boss</a>
+    <a href="/oversight">Oversight</a>
+    <a href="/ad-studio">Ad Studio</a>
+    <a href="/marketing-os">Marketing OS</a>
+    <a href="/marketing-os/seo">SEO Dashboard</a>
+    <a href="#" id="insOut" style="display:none;" onclick="insSignOut(); return false;">Sign out</a>
+  <a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
+</header>
+
+<main>
+  <h1>Service OS Insights — Web Traffic &amp; Website Activity</h1>
+  <p class="sub">The activity manager for every Top Speed platform, app, website and landing page. The lead and booking numbers below are <strong>first-party</strong> — counted from the Service OS database itself, so they are real today. Google data (GA4, Search Console, Business Profile) appears only when its connection is actually in place; until then its card says so, plainly. Nothing on this page is estimated or modeled.</p>
+
+  <div class="card" id="insLogin">
+    <div class="row">
+      <div><label for="insEmail">Team email</label><input id="insEmail" type="email" placeholder="you@topspeedappliance.net"></div>
+      <div><label for="insPass">Password</label><input id="insPass" type="password" placeholder="••••••••"></div>
+    </div>
+    <div style="margin-top:14px;"><button class="btn blue" onclick="insSignIn()">Sign in to Insights</button></div>
+    <div class="msg" id="insLoginMsg"></div>
+  </div>
+
+  <div id="insApp" style="display:none;">
+
+    <div class="card white">
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-4M11 15.5V8M15.5 15.5v-6M20 15.5V5.5"/></svg> Lead &amp; booking activity — first-party</h2>
+      <p style="color:var(--muted);line-height:1.55;margin-bottom:14px;">Last 28 days (America/New_York), counted from this platform's own lead and booking records. <span id="insWindow"></span></p>
+      <div id="insOverview"><p style="color:var(--muted);">Loading activity…</p></div>
+    </div>
+
+    <div class="card white">
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.5 4.5 13.5H11L9.8 21.5 18.5 10H12z"/></svg> Site speed — PageSpeed Insights</h2>
+      <p style="color:var(--muted);line-height:1.55;margin-bottom:14px;">Latest stored snapshots from Google's PageSpeed Insights API (mobile, performance) for the portfolio homepages. A refresh fetches all eight live and stores every result — a site that cannot be reached is recorded as a failed fetch, never given an invented score.</p>
+      <div id="insSpeed"><p style="color:var(--muted);">Loading snapshots…</p></div>
+      <div style="margin-top:14px;"><button class="btn blue" id="insRefreshBtn" onclick="insRefresh()">Refresh all snapshots</button></div>
+      <div class="msg" id="insSpeedMsg"></div>
+    </div>
+
+    <div class="card white">
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 13.5a4.5 4.5 0 0 0 6.4 0l3-3a4.24 4.24 0 1 0-6-6l-1.5 1.5"/><path d="M13.5 10.5a4.5 4.5 0 0 0-6.4 0l-3 3a4.24 4.24 0 1 0 6 6l1.5-1.5"/></svg> Google connections</h2>
+      <p style="color:var(--muted);line-height:1.55;margin-bottom:14px;">Connection state only — this board never shows a Google metric until the connection behind it is real. Live Google numbers, once connected, render in <a href="/marketing-os/seo">Marketing OS → SEO</a>.</p>
+      <div id="insConns"><p style="color:var(--muted);">Checking connections…</p></div>
+    </div>
+
+    <div class="card white">
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg> Property roster — measurement status</h2>
+      <p style="color:var(--muted);line-height:1.55;margin-bottom:14px;">Every platform, app, website and landing-page group, with its measurement status as found in the Week 1 audit (2026-11-17). First-party tracking means the property's leads and bookings land in this same Service OS database and are counted above.</p>
+      <div class="tblwrap"><table>
+        <thead><tr><th>Property</th><th>GA4 (Google Analytics)</th><th>First-party OS tracking</th></tr></thead>
+        <tbody>
+          <tr><td><strong>topspeedserviceos.com</strong> — Flagship / Service OS</td><td>Present — G-30WFYN49DP, site-wide</td><td>Live — attribution on every intake</td></tr>
+          <tr><td><strong>topspeedappliance.net</strong> — Customer site + 131 landing pages' sibling pages</td><td>Present, but two IDs that are not the flagship's (G-2Q5L0NXDMV, G-SGXSB48MB8) — consolidation is the owner's call</td><td>Live</td></tr>
+          <tr><td><strong>topspeedapplianceservice.com</strong> — Provider network</td><td>Flagship tag served (audit sample)</td><td>Live — flagship-served</td></tr>
+          <tr><td><strong>appliancepro.net</strong> — Commercial portal</td><td>Not found in the audit — fix in progress</td><td>Leads land in the same OS database</td></tr>
+          <tr><td><strong>cleanoutvents.com</strong> — Cleanout Vents partner</td><td>None — no tag, robots file or sitemap in the audit — fix in progress</td><td>Partner bookings route into the OS</td></tr>
+          <tr><td><strong>pepperlists.com</strong> — Pepper Lists</td><td>Flagship tag served (audit sample)</td><td>Live — flagship-served</td></tr>
+          <tr><td><strong>appliancereferral.com</strong> — Refer &amp; Earn</td><td>Flagship tag served (audit sample)</td><td>Live — referrals tracked in the OS</td></tr>
+          <tr><td><strong>totalhomeappliancerepair.com</strong> — Total Home Appliance Repair</td><td>Unknown — the site is unreachable (hosting down, Cloudflare 522)</td><td>Its booking form posts to the OS — live once hosting is restored</td></tr>
+          <tr><td><strong>Appliance Connect</strong> — Customer portal + mobile app</td><td>Not audited</td><td>Bookings land in the same OS database</td></tr>
+          <tr><td><strong>131 Marketing OS landing pages</strong> — 65 cities × services/symptoms</td><td>Present — flagship tag</td><td>Live — attribution captured</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+  </div>
+</main>
+
+<footer><strong>Top Speed Appliance LLC</strong> · Service OS Insights · Internal — first-party figures come from the Service OS database; Google figures appear only through a real connection.</footer>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+function tok(){ try{ return localStorage.getItem('tsos_token')||localStorage.getItem('tsos_studio_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>\"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function num(n){ return n==null?'–':Number(n).toLocaleString('en-US'); }
+function mf(path, opts){
+  opts=opts||{};
+  return fetch(API+path,{method:opts.method||'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:opts.body?JSON.stringify(opts.body):undefined})
+    .then(function(r){ return r.text().then(function(t){
+      var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(!r.ok) throw new Error(j.error||('status '+r.status));
+      return j;
+    }); });
+}
+function insSignIn(){
+  var email=document.getElementById('insEmail').value.trim();
+  var pass=document.getElementById('insPass').value;
+  var msg=document.getElementById('insLoginMsg');
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token', s.token); }catch(e){} insShow(); },onCancel:function(){ msg.textContent=' Sign-in cancelled — the 2-step code is required to finish.'; msg.className='msg err'; }}); return; }
+      var t=j.token||(j.data&&j.data.token); if(!t) throw new Error('No token returned');
+      try{ localStorage.setItem('tsos_token', t); }catch(e){}
+      insShow();
+    })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
+}
+function insSignOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
+function insShow(){
+  document.getElementById('insLogin').style.display='none';
+  document.getElementById('insApp').style.display='';
+  document.getElementById('insOut').style.display='';
+  insLoadOverview(); insLoadSpeed(); insLoadConns();
+}
+function stat(label,value){ return '<div class="stat"><b>'+value+'</b><span>'+label+'</span></div>'; }
+function grpTable(rows){
+  if(!rows||!rows.length) return '<p style="color:var(--muted);">Nothing captured in this window yet.</p>';
+  return '<div class="tblwrap"><table><thead><tr><th>Value</th><th class="num">Leads</th><th class="num">Bookings</th></tr></thead><tbody>'
+    + rows.map(function(r){ return '<tr><td style="word-break:break-all;">'+esc(r.key)+'</td><td class="num">'+num(r.leads)+'</td><td class="num">'+num(r.bookings)+'</td></tr>'; }).join('')
+    + '</tbody></table></div>';
+}
+function insLoadOverview(){
+  var el=document.getElementById('insOverview');
+  mf('/insights/overview').then(function(j){
+    var d=j.data||{};
+    var w=d.window||{};
+    document.getElementById('insWindow').textContent=' Window: '+(w.from||'')+' → '+(w.to||'')+'. Database: '+(d.database==='connected'?'connected':'NOT CONNECTED (skeleton mode — counts are zero)')+'.';
+    var t=d.totals||{}, f=d.funnel||{}, cov=d.attributionCoverage||{}, ck=d.clickIds||{};
+    var html='<div class="stats">'
+      + stat('Leads (28 days)', num(t.leads))
+      + stat('Bookings (28 days)', num(t.bookings))
+      + stat('Completed jobs', num(t.completedJobs))
+      + stat('Bookings with UTM attribution', (cov.pct==null?'–':cov.pct+'%'))
+      + '</div>';
+    html+='<h3 style="color:var(--navy);margin:16px 0 8px;">Funnel — same 28 days</h3><div class="funnel">'
+      + '<div class="fstage"><b>'+num(f.leads)+'</b><span>Leads in (Connection intakes)</span></div>'
+      + '<div class="fstage"><b>'+num(f.bookings)+'</b><span>Bookings created'+(f.leadToBookingPct==null?'':' · '+f.leadToBookingPct+'% of the lead count')+'</span></div>'
+      + '<div class="fstage"><b>'+num(f.completedJobs)+'</b><span>Jobs completed'+(f.bookingToCompletedPct==null?'':' · '+f.bookingToCompletedPct+'% of bookings')+'</span></div>'
+      + '</div>';
+    var days=d.byDay||[];
+    var maxL=1, maxB=1;
+    days.forEach(function(r){ if(r.leads>maxL)maxL=r.leads; if(r.bookings>maxB)maxB=r.bookings; });
+    html+='<h3 style="color:var(--navy);margin:18px 0 8px;">By day</h3><div class="tblwrap"><table><thead><tr><th>Day</th><th style="min-width:170px;">Leads</th><th style="min-width:170px;">Bookings</th></tr></thead><tbody>'
+      + days.slice().reverse().map(function(r){
+          return '<tr><td style="white-space:nowrap;">'+esc(r.date)+'</td>'
+            + '<td><div style="display:flex;align-items:center;gap:8px;"><div class="bar lead" style="width:'+Math.round(r.leads/maxL*100)+'%"></div><span>'+num(r.leads)+'</span></div></td>'
+            + '<td><div style="display:flex;align-items:center;gap:8px;"><div class="bar" style="width:'+Math.round(r.bookings/maxB*100)+'%"></div><span>'+num(r.bookings)+'</span></div></td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+    html+='<div class="row" style="margin-top:18px;">'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">By source (UTM)</h3>'+grpTable(d.byUtmSource)+'</div>'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">By medium (UTM)</h3>'+grpTable(d.byUtmMedium)+'</div>'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">By campaign (UTM)</h3>'+grpTable(d.byCampaign)+'</div>'
+      + '</div>';
+    html+='<div class="row" style="margin-top:18px;">'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">Top landing pages</h3>'+grpTable(d.byLandingPage)+'</div>'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">By surface tag (via)</h3>'+grpTable(d.byViaTag)+'</div>'
+      + '<div><h3 style="color:var(--navy);margin-bottom:8px;">By intake source</h3>'+grpTable(d.byIntakeSource)+'</div>'
+      + '</div>';
+    html+='<h3 style="color:var(--navy);margin:18px 0 8px;">Ad click IDs on bookings</h3>'
+      + '<p style="line-height:1.6;">Google (gclid): <strong>'+num(ck.gclid)+'</strong> · Meta (fbclid): <strong>'+num(ck.fbclid)+'</strong> · Microsoft (msclkid): <strong>'+num(ck.msclkid)+'</strong> · Bookings carrying any click ID: <strong>'+num(ck.withAnyClickId)+'</strong> of '+num(ck.bookingsTotal)+'.</p>';
+    if(d.notes&&d.notes.length){
+      html+='<div style="margin-top:14px;">'+d.notes.map(function(n){ return '<p style="color:var(--muted);line-height:1.55;margin-bottom:6px;">'+esc(n)+'</p>'; }).join('')+'</div>';
+    }
+    el.innerHTML=html;
+  }).catch(function(e){
+    el.innerHTML='<p style="color:var(--red);font-weight:600;">'+esc(e.message)+'</p>';
+  });
+}
+function scorePill(s){
+  if(s==null) return '<span class="pill off">NO SCORE</span>';
+  var p=Math.round(s*100);
+  var cls=p>=90?'ok':(p>=50?'wait':'off');
+  return '<span class="pill '+cls+'">'+p+'</span>';
+}
+function fmtLcp(ms){ return ms==null?'–':(ms/1000).toFixed(2)+' s'; }
+function fmtCls(v){ return v==null?'–':Number(v).toFixed(3); }
+function fmtInp(ms){ return ms==null?'–':Math.round(ms)+' ms'; }
+function fmtWhen(iso){ if(!iso) return 'never'; try{ return new Date(iso).toLocaleString('en-US',{timeZone:'America/New_York'})+' ET'; }catch(e){ return iso; } }
+function insLoadSpeed(){
+  var el=document.getElementById('insSpeed');
+  mf('/insights/pagespeed').then(function(j){
+    var d=j.data||{};
+    var rows=(d.targets||[]).map(function(t){
+      var s=t.snapshot;
+      if(!s) return '<tr><td><strong>'+esc(t.label)+'</strong><br><span class="mono" style="color:var(--muted);">'+esc(t.url)+'</span></td><td colspan="4" style="color:var(--muted);">No snapshot yet — run a refresh.</td><td style="white-space:nowrap;">never</td></tr>';
+      if(s.status!=='OK') return '<tr><td><strong>'+esc(t.label)+'</strong><br><span class="mono" style="color:var(--muted);">'+esc(t.url)+'</span></td><td><span class="pill off">FETCH FAILED</span></td><td colspan="3" style="color:var(--red);">'+esc(s.error||'Fetch failed')+'</td><td style="white-space:nowrap;">'+fmtWhen(s.fetchedAt)+'</td></tr>';
+      return '<tr><td><strong>'+esc(t.label)+'</strong><br><span class="mono" style="color:var(--muted);">'+esc(t.url)+'</span></td><td>'+scorePill(s.score)+'</td><td class="num">'+fmtLcp(s.lcpMs)+'</td><td class="num">'+fmtCls(s.cls)+'</td><td class="num">'+fmtInp(s.inpMs)+'</td><td style="white-space:nowrap;">'+fmtWhen(s.fetchedAt)+'</td></tr>';
+    }).join('');
+    el.innerHTML='<div class="tblwrap"><table><thead><tr><th>Homepage</th><th>Score</th><th class="num">LCP</th><th class="num">CLS</th><th class="num">INP</th><th>Fetched</th></tr></thead><tbody>'+rows+'</tbody></table></div>'
+      + '<p style="color:var(--muted);margin-top:8px;font-size:13px;">INP is a field metric — lab reports do not always include it; a dash means the report carried none, not a zero. Scores are Google\'s mobile performance score (0–100).</p>';
+  }).catch(function(e){
+    el.innerHTML='<p style="color:var(--red);font-weight:600;">'+esc(e.message)+'</p>';
+  });
+}
+function insRefresh(){
+  var btn=document.getElementById('insRefreshBtn');
+  var msg=document.getElementById('insSpeedMsg');
+  btn.disabled=true; btn.textContent='Fetching all eight — this takes a moment…';
+  msg.textContent=''; msg.className='msg';
+  mf('/insights/pagespeed/refresh',{method:'POST'}).then(function(j){
+    var d=j.data||{};
+    msg.textContent=' Refresh done: '+num(d.succeeded)+' fetched, '+num(d.failed)+' failed (failures are stored honestly in the table).';
+    msg.className='msg ok';
+    insLoadSpeed();
+  }).catch(function(e){
+    msg.textContent=' '+e.message; msg.className='msg err';
+  }).then(function(){
+    btn.disabled=false; btn.textContent='Refresh all snapshots';
+  });
+}
+function insLoadConns(){
+  var el=document.getElementById('insConns');
+  mf('/insights/connections').then(function(j){
+    var d=j.data||{};
+    el.innerHTML=(d.connections||[]).map(function(c){
+      var connected=c.status==='connected';
+      var html='<div style="border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;">'
+        + '<p>'+(connected?'<span class="pill ok">CONNECTED</span>':'<span class="pill off">NOT CONNECTED</span>')+' <strong style="color:var(--navy);font-size:16px;">'+esc(c.label)+'</strong></p>'
+        + '<p style="color:var(--muted);margin-top:6px;line-height:1.55;">'+esc(c.detail||'')+'</p>'
+        + '<p style="margin-top:8px;line-height:1.6;"><strong>What it unlocks:</strong> '+esc(c.whatItUnlocks||'')+'</p>'
+        + '<p style="margin-top:8px;line-height:1.6;"><strong>'+(connected?'How it is connected:':'The connect step:')+'</strong> '+esc(c.connectStep||'')+'</p>';
+      if(!connected&&c.grantSteps&&c.grantSteps.length){
+        html+='<ol class="steps">'+c.grantSteps.map(function(s){ return '<li>'+esc(s)+'</li>'; }).join('')+'</ol>';
+      }
+      return html+'</div>';
+    }).join('')||'<p style="color:var(--muted);">No connections configured.</p>';
+  }).catch(function(e){
+    el.innerHTML='<p style="color:var(--red);font-weight:600;">'+esc(e.message)+'</p>';
+  });
+}
+if(tok()){ insShow(); }
+</script>
+</body>
+</html>

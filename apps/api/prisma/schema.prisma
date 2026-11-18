@@ -729,6 +729,26 @@ model Connection {
   createdAt   DateTime @default(now())
 }
 
+// Service OS Insights (2026-11-17): PageSpeed Insights snapshots for the
+// portfolio homepages, taken by the staff-triggered refresh on
+// /insights. One row per fetch attempt — failures are stored too
+// (status ERROR + the error text), so a site whose hosting is down
+// shows its failure honestly instead of a stale or invented score.
+model InsightsPageSpeedSnapshot {
+  id        String   @id @default(uuid()) @db.Uuid
+  url       String
+  strategy  String   @default("mobile")
+  status    String   @default("OK")
+  score     Float?
+  lcpMs     Float?
+  cls       Float?
+  inpMs     Float?
+  error     String?
+  fetchedAt DateTime @default(now())
+
+  @@index([url, fetchedAt])
+}
+
 model CustomerAppliance {
   id        String   @id @default(uuid()) @db.Uuid
   userId    String   @db.Uuid
