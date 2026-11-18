@@ -329,6 +329,7 @@ function loginGate(msg){
   '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
   '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
   '<div class="err" id="liErr"></div><button type="submit">Sign in to ApplianceMan</button></form>' +
+  '<p style="margin-top:12px"><a href="/reset-password">Forgot password?</a></p>' +
   (msg ? '<p style="margin-top:12px">' + esc(msg) + '</p>' : '') + '</div>');
   document.getElementById('loginForm').addEventListener('submit', function(ev){
     ev.preventDefault();

@@ -203,6 +203,8 @@ model User {
 
   emailVerificationTokens EmailVerificationToken[]
 
+  passwordResetTokens PasswordResetToken[]
+
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -935,6 +937,25 @@ model SessionHandoff {
 // secret, only its SHA-256 hash at rest, single-use, expiring (24h).
 // Verifying sets User.emailVerifiedAt; it never gates booking.
 model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Password reset (2026-11-18): the self-serve forgot-password flow.
+// Only the SHA-256 hash of the emailed token is ever stored (the same
+// discipline as EmailVerificationToken); the raw token travels only in
+// the reset link. Tokens live 30 minutes, are single-use, and issuing
+// a new one supersedes every still-unused token for the account.
+model PasswordResetToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
   userId    String    @db.Uuid

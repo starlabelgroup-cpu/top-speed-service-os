@@ -9,6 +9,11 @@ import { signAccessToken } from '../services/tokens.js';
 import { notifyAccountCreated } from '../services/notifications.js';
 import { OFFER_SIGNUP_TYPES, appPathForAudience, getOffer, OFFERS, publicOffer } from '../config/offers.js';
 import { consumeEmailVerification, emailVerificationState, issueEmailVerification } from '../services/emailVerification.js';
+import {
+  PASSWORD_RESET_GENERIC_MESSAGE,
+  consumePasswordReset,
+  requestPasswordReset,
+} from '../services/passwordReset.js';
 import { resolveArea } from '../config/serviceAreas.js';
 import { persistCustomer } from '../db/bookingsRepo.js';
 import { persistAppliance } from '../db/appliancesRepo.js';
@@ -773,6 +778,59 @@ router.post('/auth/email-verification/resend', authenticate, async (req, res, ne
     await issueEmailVerification(user, 'RESEND');
     return res.json({ ok: true, emailVerification: 'pending', note: 'A fresh verification link is on its way to your account email. It works once and expires in 24 hours.' });
   } catch (error) {
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Password reset (2026-11-18): the self-serve forgot-password flow.
+// The request endpoint is enumeration-safe by design — the response
+// is byte-identical whether the account exists, whether it does not,
+// and whether a rate limit quietly stopped the send (services/
+// passwordReset.js holds the token + rate-limit discipline; only the
+// token's SHA-256 hash is ever stored, and the raw token travels
+// only inside the emailed link). The exchange endpoint answers every
+// bad token — unknown, used, or expired — with the same generic 400,
+// and NEVER returns a session: after a reset the holder signs in
+// fresh through the normal pipeline.
+// ---------------------------------------------------------------------------
+const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().trim().min(10).max(200),
+  newPassword: z.string().min(10, 'Password must be at least 10 characters').max(200),
+});
+
+router.post('/auth/forgot-password', async (req, res, next) => {
+  try {
+    const parsed = forgotPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'A valid email address is required', details: parsed.error.flatten() });
+    }
+    await requestPasswordReset({ email: parsed.data.email, ip: req.ip, source: 'FORGOT_PASSWORD' });
+    return res.json({ ok: true, message: PASSWORD_RESET_GENERIC_MESSAGE });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/auth/reset-password', async (req, res, next) => {
+  try {
+    const parsed = resetPasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      const tokenBad = typeof req.body?.token !== 'string' || !req.body.token.trim();
+      return res.status(400).json(tokenBad
+        ? { error: 'This reset link is invalid or has expired', code: 'PASSWORD_RESET_INVALID' }
+        : { error: 'A new password of at least 10 characters is required', code: 'PASSWORD_TOO_SHORT' });
+    }
+    await consumePasswordReset(parsed.data.token, parsed.data.newPassword);
+    return res.json({ ok: true, message: 'Your password has been changed — sign in with your new password.' });
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+    }
     return next(error);
   }
 });

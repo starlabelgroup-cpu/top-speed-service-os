@@ -60,6 +60,7 @@ export const NOTIFICATION_TEMPLATES = {
   ACCOUNT_WELCOME: 'ACCOUNT_WELCOME',
   SIGNIN_LINK: 'SIGNIN_LINK',
   EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
+  PASSWORD_RESET: 'PASSWORD_RESET',
   PHOTO_DIAGNOSIS: 'PHOTO_DIAGNOSIS',
 };
 
@@ -120,6 +121,7 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   NOTIFICATION_TEMPLATES.SUBMISSION_CONFIRMATION,
   NOTIFICATION_TEMPLATES.ACCOUNT_WELCOME,
   NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION,
+  NOTIFICATION_TEMPLATES.PASSWORD_RESET,
   NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS,
   'SIGNIN_LINK', // composed in routes/handoff.js with a literal template name
 ]);
@@ -545,6 +547,44 @@ export function notifyEmailVerification(user, { tokenId, verifyUrl, expiresAt },
     entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
   } else {
     entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/**
+ * The password-reset message for a forgot-password request. The link
+ * carries the one-time token; the outbox entry is the record of the
+ * send and its payload is composed only from the account's own data.
+ * eventKey is unique per issuance (the token record id), so each
+ * request is its own entry. Copy never confirms anything beyond the
+ * request itself — the endpoint that queues this answers generically
+ * whether or not the account exists.
+ */
+export function notifyPasswordReset(user, { tokenId, resetUrl, expiresAt }, source = null) {
+  const entries = [];
+  if (!user?.email) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const payload = {
+    userId: user.id,
+    customerName: name,
+    resetUrl,
+    message:
+      `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+      `We received a request to reset the password for your Top Speed Appliance account. ` +
+      `Choose a new password here:\n\n` +
+      `${resetUrl}\n\n` +
+      `The link works once and expires in 30 minutes. If you did not request a password ` +
+      `reset, you can ignore this email — your password will not change.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Reset your Top Speed Appliance password',
+  };
+  const eventKey = `account:${user.id}:password-reset:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
   }
   return entries;
 }
