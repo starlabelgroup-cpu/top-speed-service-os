@@ -349,6 +349,33 @@ export function buildSitePack() {
       link: 'https://topspeedappliance.net',
     },
     {
+      id: 'site-brand-landing',
+      topic: 'topspeedappliancerepair.com — Top Speed Appliance Repair brand site',
+      keywords: ['topspeedappliancerepair.com', 'top speed appliance repair website', 'brand site', 'brand landing page'],
+      answer:
+        `topspeedappliancerepair.com is Top Speed's brand landing page for appliance repair in Broward County: the real booking form is right on the page, with a door to Speedy and the office line at ${PHONE}. ` +
+        `It runs on the same Service OS as everything else, so a booking made there is the same record you track in the app.`,
+      link: 'https://topspeedappliancerepair.com',
+    },
+    {
+      id: 'site-flagship-alias',
+      topic: 'topspeedrepairs.com — the flagship site at a second address',
+      keywords: ['topspeedrepairs.com', 'top speed repairs', 'top speed repairs website', 'flagship alias'],
+      answer:
+        `topspeedrepairs.com answers with the same flagship Top Speed website as topspeedserviceos.com: booking, Track My Tech, your account, and Speedy. ` +
+        `Whichever of the two addresses you use, it is one system and one record.`,
+      link: 'https://topspeedrepairs.com',
+    },
+    {
+      id: 'site-typo-redirect',
+      topic: 'topspeedreapair.com — a common misspelling that redirects',
+      keywords: ['topspeedreapair.com', 'top speed reapair', 'misspelled website', 'wrong spelling', 'typo in the web address'],
+      answer:
+        `If you typed topspeedreapair.com — "reapair" with two letters swapped — you are in the right place: that address redirects straight to topspeedrepairs.com, the flagship Top Speed site. ` +
+        `Nothing is lost: booking, tracking, your account, and Speedy are all there.`,
+      link: 'https://topspeedrepairs.com',
+    },
+    {
       id: 'site-network-join',
       topic: 'Join the provider network — topspeedapplianceservice.com',
       keywords: [

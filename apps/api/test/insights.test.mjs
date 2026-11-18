@@ -13,7 +13,7 @@
  *    not_connected states in an env with no Google credentials, the
  *    exact connect steps present, and NO metric fields anywhere;
  *  - PageSpeed: a LOCAL MOCK stands in for the Google API
- *    (PAGESPEED_API_BASE) — seven targets answer with a canned
+ *    (PAGESPEED_API_BASE) — nine targets answer with a canned
  *    Lighthouse payload, one (totalhomeappliancerepair.com) fails,
  *    and the refresh must store both outcomes honestly.
  *
@@ -310,17 +310,17 @@ async function main() {
   // ── PageSpeed: empty → refresh (mock) → stored readback ───────
   const before = await api('/insights/pagespeed', { token: owner });
   check('pagespeed owner allowed', before.status, 200);
-  check('pagespeed targets', before.json.data.targets.length, 8);
+  check('pagespeed targets', before.json.data.targets.length, 10);
   checkTrue('pagespeed all snapshots null before refresh', before.json.data.targets.every((t) => t.snapshot === null));
 
   const refresh = await api('/insights/pagespeed/refresh', { token: owner, method: 'POST', body: {} });
   check('pagespeed refresh owner allowed', refresh.status, 200);
-  check('pagespeed refresh succeeded', refresh.json.data.succeeded, 7);
+  check('pagespeed refresh succeeded', refresh.json.data.succeeded, 9);
   check('pagespeed refresh failed', refresh.json.data.failed, 1);
   const failedRow = refresh.json.data.results.find((r) => r.url.includes('totalhomeappliancerepair'));
   check('pagespeed failed row status', failedRow?.status, 'ERROR');
   checkTrue('pagespeed failed row carries the error', String(failedRow?.error || '').includes('mock pagespeed failure'));
-  check('pagespeed snapshots stored in DB', await prisma.insightsPageSpeedSnapshot.count(), 8);
+  check('pagespeed snapshots stored in DB', await prisma.insightsPageSpeedSnapshot.count(), 10);
 
   const after = await api('/insights/pagespeed', { token: owner });
   const flagship = after.json.data.targets.find((t) => t.url === 'https://topspeedserviceos.com/');

@@ -176,6 +176,8 @@ export const PAGESPEED_TARGETS = [
   { url: 'https://pepperlists.com/', label: 'pepperlists.com' },
   { url: 'https://appliancereferral.com/', label: 'appliancereferral.com' },
   { url: 'https://totalhomeappliancerepair.com/', label: 'totalhomeappliancerepair.com' },
+  { url: 'https://topspeedappliancerepair.com/', label: 'Top Speed Appliance Repair — brand landing' },
+  { url: 'https://topspeedrepairs.com/', label: 'Top Speed Repairs — flagship alias' },
 ];
 
 const pagespeedBase = () => process.env.PAGESPEED_API_BASE

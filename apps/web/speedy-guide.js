@@ -72,6 +72,7 @@
     { title: 'Platforms', items: [
       { label: 'Top Speed Service OS', href: 'https://topspeedserviceos.com/', keys: 'hub home main platform service os' },
       { label: 'Top Speed Appliance (.net)', href: 'https://topspeedappliance.net', keys: 'website flagship residential repair net' },
+      { label: 'Top Speed Appliance Repair — Brand Site', href: 'https://topspeedappliancerepair.com', keys: 'brand site appliance repair broward landing page repair' },
       { label: 'Provider Network — Join Us', href: 'https://topspeedapplianceservice.com', keys: 'join provider technician network work business' },
       { label: 'Appliance Connect Pro', href: 'https://www.applianceconnectpro.com', keys: 'homeowners property managers portal connect pro', handoff: 1 },
       { label: 'Appliance Pro — Commercial', href: 'https://www.appliancepro.net', keys: 'commercial business accounts facilities pro' },
