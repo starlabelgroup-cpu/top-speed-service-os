@@ -3,6 +3,7 @@ import { createId, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { hashPassword } from './passwords.js';
 import { notifyPasswordReset } from './notifications.js';
+import { drainEntries } from './senders.js';
 
 /**
  * Password reset (2026-11-18, Ramone's directive: the Master changes
@@ -135,6 +136,7 @@ export async function requestPasswordReset({ email, ip, source = null }) {
 
   const accounts = (await findAccountsByEmail(normalized)).filter((user) => user && user.active !== false);
   let emailsQueued = 0;
+  const resetEntries = [];
   for (const user of accounts) {
     if ((await recentIssuanceCount(user.id)) >= MAX_PER_ACCOUNT_PER_HOUR) continue;
     const token = randomBytes(32).toString('base64url');
@@ -170,6 +172,22 @@ export async function requestPasswordReset({ email, ip, source = null }) {
       source,
     );
     if (entries.length) emailsQueued += 1;
+    resetEntries.push(...entries);
+  }
+  // A reset link is worthless if the email never leaves. The outbox's
+  // opportunistic drain is fire-and-forget and can die with the HTTP
+  // response on serverless (it stranded this flow's first production
+  // emails as QUEUED on 2026-11-18), so deliver this batch NOW,
+  // awaited, inside the request lifecycle. drainEntries only attempts
+  // QUEUED entries — a settings-GATED entry stays gated — and the
+  // opportunistic pass that queueing also scheduled finds these
+  // entries already settled, so nothing sends twice. A drain failure
+  // is recorded on the entries themselves and logged here; it must
+  // never change the route's generic answer, so it is not thrown.
+  if (resetEntries.length) {
+    await drainEntries(resetEntries).catch((error) => {
+      console.error(JSON.stringify({ level: 'error', message: 'password reset drain failed', error: String(error?.message || error) }));
+    });
   }
   return { accountsMatched: accounts.length, emailsQueued };
 }

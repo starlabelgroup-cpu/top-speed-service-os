@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { persistNotification } from '../db/flywheelRepo.js';
@@ -157,6 +158,25 @@ const pendingDrain = new Set();
 let drainTimer = null;
 
 /**
+ * Hand a promise to the hosting platform so the function instance
+ * stays alive until it settles. On Vercel this is waitUntil: without
+ * it, the instance can freeze the moment the HTTP response returns
+ * and the unref'd drain timer below never fires — the 2026-11-18
+ * password-reset emails sat QUEUED forever for exactly this reason.
+ * Off Vercel (local dev, drills) there is no request context and
+ * waitUntil is a no-op; the call is wrapped regardless, because a
+ * keep-alive failure must never break queueing — the fire-and-forget
+ * timer remains the fallback delivery path.
+ */
+function keepAliveUntil(promise) {
+  try {
+    waitUntil(promise);
+  } catch {
+    /* no platform keep-alive available — the timer drain stands */
+  }
+}
+
+/**
  * Opportunistic delivery: entries queued by THIS process get one drain
  * attempt shortly after queueing, so alerts follow submissions without
  * waiting for a staff member to press "send". Only the new entries are
@@ -167,13 +187,20 @@ let drainTimer = null;
 function scheduleEntryDrain(entry) {
   pendingDrain.add(entry);
   if (drainTimer) return;
+  // The keeper settles only when this batch's drain has finished, so
+  // registering it now (synchronously, inside the request) covers the
+  // whole batching window plus delivery — the platform cannot freeze
+  // the instance out from under either.
+  let settleKeeper;
+  const keeper = new Promise((resolve) => { settleKeeper = resolve; });
+  keepAliveUntil(keeper);
   drainTimer = setTimeout(() => {
     drainTimer = null;
     const batch = [...pendingDrain];
     pendingDrain.clear();
     void drainEntries(batch).catch((error) => {
       console.error(JSON.stringify({ level: 'error', message: 'opportunistic drain failed', error: String(error?.message || error) }));
-    });
+    }).finally(() => settleKeeper());
   }, 1200);
   if (typeof drainTimer.unref === 'function') drainTimer.unref();
 }
