@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Top Speed Academy — Staff University | Top Speed Appliance</title>
-<meta name="description" content="Top Speed Academy: the staff university of the Top Speed Service OS — 38 training modules in 9 tracks, including the System Navigator course, with Speedy Class, the AI instructor built on Speedy.">
+<meta name="description" content="Top Speed Academy: the staff university of the Top Speed Service OS — 50 training modules in 10 tracks, including the System Navigator course and Ads &amp; Bookings Operations, with Speedy Class, the AI instructor built on Speedy.">
 <link rel="icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="/google-tag.js"></script>
@@ -112,7 +112,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
   <div class="hero">
     <div class="kicker">Top Speed University — Education OS</div>
     <h1>Top Speed <span>Academy</span></h1>
-    <p>The staff university of the Top Speed Service OS: 38 training modules in 9 tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers, plus the System Navigator course (modules 30–38) that teaches the whole platform map from the same system map the Navigator answers from. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works. Below it, the AI Specialists &amp; Strategists give every department — and every category inside it — its own coach for running that part of the ecosystem.</p>
+    <p>The staff university of the Top Speed Service OS: 50 training modules in 10 tracks — Foundation for every role, then a track for the owner, managers, technicians, Service Setters, dispatchers, ad specialists and everyone who talks to customers, plus the System Navigator course (modules 30–38) that teaches the whole platform map from the same system map the Navigator answers from, and Ads &amp; Bookings Operations (modules 39–50), the step-by-step course for running the ads system and processing bookings and requests. Speedy Class, the AI instructor, teaches from the same curriculum and can explain any module or answer questions about how the platform works. Below it, the AI Specialists &amp; Strategists give every department — and every category inside it — its own coach for running that part of the ecosystem.</p>
   </div>
 
   <img src="/api/v1/app/platform-images/academy-learning.webp" alt="Illustration: a young technician learning with a tablet beside an open refrigerator — Top Speed Academy" style="width:min(340px,100%);height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
@@ -192,7 +192,8 @@ var TRACKS = [
   { name: 'Dispatcher Track', sub: 'Dispatchers', lo: 20, hi: 22 },
   { name: 'Ad Specialist Track', sub: 'Ads & marketing', lo: 23, hi: 26 },
   { name: 'Customer-Facing', sub: 'Everyone who talks to customers', lo: 27, hi: 29 },
-  { name: 'System Navigator', sub: 'Know Your Platform — every role', lo: 30, hi: 38 }
+  { name: 'System Navigator', sub: 'Know Your Platform — every role', lo: 30, hi: 38 },
+  { name: 'Ads & Bookings Operations', sub: 'Run ads, process bookings & requests — operations roles', lo: 39, hi: 50 }
 ];
 var TITLES = {
   1: 'Welcome to Top Speed Service OS', 2: 'The Job Journey & Track My Tech', 3: 'Working With Speedy AI',
@@ -205,7 +206,11 @@ var TITLES = {
   27: 'The Four Front Doors, In Depth', 28: 'Offers & The Referral Program', 29: 'Pricing, Terms & The $99 Diagnostic',
   30: 'System Navigator — Where Things Live', 31: 'System Navigator — Bookings & Dispatch', 32: 'System Navigator — Accounts & Work Time Access',
   33: 'System Navigator — Payments', 34: 'System Navigator — Marketing OS & Ad Studio', 35: 'System Navigator — Email Manager',
-  36: 'System Navigator — Pepper Lists', 37: 'System Navigator — Parts', 38: 'System Navigator — Speedy & AI Tools'
+  36: 'System Navigator — Pepper Lists', 37: 'System Navigator — Parts', 38: 'System Navigator — Speedy & AI Tools',
+  39: 'Ads & Bookings — The Ads Landscape', 40: 'Ads & Bookings — Readiness Before Any Spend', 41: 'Ads & Bookings — Ad Studio Workflow',
+  42: 'Ads & Bookings — Writing Ads That Pass', 43: 'Ads & Bookings — Advertiser Plans & Billing', 44: 'Ads & Bookings — Measurement & Going Live',
+  45: 'Ads & Bookings — How a Booking Is Born', 46: 'Ads & Bookings — Working the Setter Queue', 47: 'Ads & Bookings — Exceptions, Priorities & Recovery',
+  48: 'Ads & Bookings — Assignment & Dispatch', 49: 'Ads & Bookings — The Tech Flow in Speedy Pro', 50: 'Ads & Bookings — Completion & Follow-Through'
 };
 var TEACHES = {
   1: 'The platform map: one backend, four front doors, how every job flows — plus the standing rules and numbers.',
@@ -245,7 +250,19 @@ var TEACHES = {
   35: 'The three managed mailboxes in Book OS, finding any customer thread, and how mail files itself onto the CRM record.',
   36: 'The two categories — Sell and Post — the Advertise lane, and moderating the Reviews wall from Book OS.',
   37: 'Ordering through Parts Supply OS and the Appliance Plus partner — and what "verified fitment" actually means.',
-  38: 'How Speedy answers customers, what fallback mode means, the engines on /explore, and the one owner step that turns live AI back on.'
+  38: 'How Speedy answers customers, what fallback mode means, the engines on /explore, and the one owner step that turns live AI back on.',
+  39: 'The two ads worlds — in-house Top Speed Ads and the external platforms — where each console lives, and how the house campaign works.',
+  40: 'The readiness board: every gate between today and real spend, what each gate means, and exactly who unblocks it.',
+  41: 'The approval queue, creating a campaign, banner vs streaming, and loading the Flywheel Streaming Pack.',
+  42: 'Draft with Speedy, the creative picker, character limits, and the copy law every ad obeys.',
+  43: 'The three plan tiers as structure, unset prices, grandfathered accounts, office grants, and billing as the advertiser lives it.',
+  44: 'First-touch attribution and click IDs, reading Insights honestly, the flywheel loop, and the per-platform steps to go live.',
+  45: 'Every intake that creates a booking — form first, Speedy behind its summary gate — and what the customer receives.',
+  46: 'Reading the setter queue, the 12 auto-match cities and AREA_REVIEW, setting appointments, and confirmations.',
+  47: 'P1–P4 tiers, the exception queue and its five thresholds, the recovery queues, and the capacity view.',
+  48: 'Ranked suggestions as advice only — humans assign, never auto-dispatch — and what the tech receives.',
+  49: 'Today list to completion: photos, structured diagnosis, estimate math, authorization, van stock, and the quality gate.',
+  50: 'Review request and referral on completion, payments and receipts, the Link Center, non-booking requests, and the daily rhythm.'
 };
 function moduleNum(rec){
   var m = /training-module-(\d+)-/.exec(rec.slug || '');

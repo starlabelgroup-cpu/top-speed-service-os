@@ -1,4 +1,5 @@
 import { buildNavigatorLessonRecords } from './systemMap.js';
+import { buildAdsBookingsLessonRecords } from './adsBookingsTraining.js';
 
 // Top Speed Media OS — Phase 1 seed content (2026-11-14).
 //
@@ -105,4 +106,9 @@ export const MEDIA_CONTENT_SEEDS = [
   // Navigator answers from — so the course and the live guide can
   // never drift apart. ARTICLE lessons, PUBLISHED from day one.
   ...buildNavigatorLessonRecords(),
+  // Ads & Bookings Operations track (modules 39–50, added 2026-11-18):
+  // the step-by-step operations course for the ads system and for
+  // processing bookings and requests, from data/adsBookingsTraining.js.
+  // ARTICLE lessons, PUBLISHED from day one, same create-only seeding.
+  ...buildAdsBookingsLessonRecords(),
 ];
