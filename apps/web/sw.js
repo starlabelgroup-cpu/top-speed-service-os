@@ -13,7 +13,7 @@
  * Bump CACHE_VERSION whenever the shell changes so old caches are purged
  * on activate.
  */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const SHELL_CACHE = `top-speed-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `top-speed-runtime-${CACHE_VERSION}`;
 

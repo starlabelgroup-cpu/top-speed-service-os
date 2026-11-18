@@ -144,23 +144,23 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     
     <!-- TECH SIGN-IN / LIVE MODE -->
     <div class="card" id="techAuth" style="margin:12px 12px 0">
-      <h3 style="font-size:14px;color:var(--navy)">Technician sign-in \u2014 live jobs</h3>
-      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch. Sign-in runs password first, then \u2014 only when the office has switched them on for your account \u2014 your Speedy Verify access code and a one-time code by email (Layer 2).</p>
+      <h3 style="font-size:14px;color:var(--navy)">Technician sign-in — live jobs</h3>
+      <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch. Sign-in runs password first, then — only when the office has switched them on for your account — your Speedy Verify access code and a one-time code by email (Layer 2).</p>
       <div id="techLogin">
         <input id="techEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <input id="techPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
-        <button class="btn go" type="button" onclick="techSignIn()" style="width:100%">Sign in to live jobs \u2192</button>
+        <button class="btn go" type="button" onclick="techSignIn()" style="width:100%">Sign in to live jobs →</button>
       </div>
       <div id="techVerify" style="display:none">
         <p class="note" style="margin:4px 0 10px">Password accepted. <b>Speedy Verify:</b> enter the 8-digit access code the office issued for your account.</p>
         <input id="techSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="Access code" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
-        <button class="btn go" type="button" onclick="techVerifySubmit()" style="width:100%">Verify &amp; sign in \u2192</button>
+        <button class="btn go" type="button" onclick="techVerifySubmit()" style="width:100%">Verify &amp; sign in →</button>
         <div class="btnrow" style="margin-top:8px"><button class="btn no" type="button" onclick="techVerifyCancel()">Back</button></div>
-        <p class="note" style="margin:8px 0 0">No code yet? Accounts wait for the office to issue their code \u2014 contact the office.</p>
+        <p class="note" style="margin:8px 0 0">No code yet? Accounts wait for the office to issue their code — contact the office.</p>
       </div>
       <div id="techBar" style="display:none">
         <p class="note" id="techWho" style="margin:0 0 8px;font-weight:700"></p>
-        <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">\u21bb Refresh</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
+        <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">↻ Refresh</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
       </div>
     </div>
     <!-- TODAY -->
@@ -1205,8 +1205,7 @@ function wsReport(id){
     '<h2>Parts orders</h2>'+((view.partsOrders&&view.partsOrders.length)?'<ul>'+view.partsOrders.map(function(o){ return '<li><strong>'+escT(o.reference)+'</strong> — '+escT(o.status.replace(/_/g,' '))+' · '+o.lines.map(function(l){ return escT(l.category)+' × '+l.qty; }).join(', ')+'</li>'; }).join('')+'</ul>':'<p>No parts orders on this job.</p>')+
     '<h2>Technician notes</h2><ul>'+noteRows+'</ul>'+
     '<h2>Job timeline</h2><ul>'+evRows+'</ul>'+
-    '<footer>Generated from the Top Speed Service OS job record on '+escT(new Date().toLocaleString('en-US'))+'. This is a service summary, not an invoice or a signed receipt.</footer><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
-</body></html>';
+    '<footer>Generated from the Top Speed Service OS job record on '+escT(new Date().toLocaleString('en-US'))+'. This is a service summary, not an invoice or a signed receipt.</footer><script src="/shared/session-vault.js" defer><\/script><script src="/shared/account-switcher.js" defer><\/script>\n</body></html>';
   var blob=new Blob([html],{type:'text/html;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var link=document.createElement('a'); link.href=url; link.download=(b.referenceCode||'job')+'-service-report.html'; link.click();
