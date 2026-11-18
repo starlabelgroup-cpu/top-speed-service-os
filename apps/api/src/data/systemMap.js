@@ -110,6 +110,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['email manager', 'inbox', 'email', 'mail', 'mailboxes', 'forwarded inbox', 'customer email', 'email thread', 'resend inbox'],
   },
   {
+    id: 'link-center',
+    name: 'Link Center — Send Links',
+    group: 'Bookings, Dispatch & Customers',
+    location: 'topspeedserviceos.com/link-center (door in the Book OS notifications strip)',
+    url: '/link-center',
+    purpose: 'Ramone\'s send-links system (2026-11-18): a staff member picks one of four customer links — booking (the web form, Link Center recorded as the source), payment (the real Stripe checkout for a booking\'s $99 diagnostic, found by its TS reference; never an invented URL), account (sign in / create account), review (the Pepper Lists reviews wall) — picks email or SMS, enters the recipient, and clicks Send. Sends ride the notification outbox, so every send shows its true state: SENT only when the provider accepted, FAILED with the provider error (SMS runs on the trial Twilio account until it is upgraded), GATED when a channel is unconfigured. The recent-sends log masks recipients.',
+    access: 'All staff',
+    actions: ['Send a booking, payment, account or review link by email or text', 'Enter a booking reference to mint/reuse its diagnostic payment link', 'Read the recent-sends log with true delivery states'],
+    related: ['book-os', 'email-manager', 'payments', 'review-moderation'],
+    keywords: ['link center', 'send links', 'send a link', 'text a link', 'email a link', 'payment link', 'booking link', 'review link', 'account link', 'sms link', 'send payment link'],
+  },
+  {
     id: 'dispatch-dashboard',
     name: 'Dispatch Dashboard',
     group: 'Bookings, Dispatch & Customers',

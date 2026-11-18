@@ -39,6 +39,7 @@ const SUBJECTS = {
   DISPATCH_MATCHED: 'We are assigning your Top Speed technician',
   DISPATCH_APPROVED: 'Your Top Speed technician is assigned',
   REVIEW_REQUEST: 'How did we do? Review your Top Speed service',
+  LINK_SEND: 'A link from Top Speed Appliance',
   REFERRAL_CODE: 'Your Top Speed Appliance referral code',
   REFERRAL_INVITE: 'You have been invited to Top Speed Appliance',
   REFERRAL_BOOKED: 'Your friend booked with your Top Speed referral code',
