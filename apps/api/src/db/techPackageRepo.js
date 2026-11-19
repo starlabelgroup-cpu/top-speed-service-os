@@ -128,6 +128,9 @@ export async function hydrateTechPackage() {
 
 export async function persistProperty(record) {
   if (!DATABASE_ENABLED) return;
+  // The Property table requires a customer; a record without one lives
+  // in the working set only — persistence degrades, never fails the op.
+  if (!record.customerId) return;
   const prisma = db();
   const data = {
     companyId: record.companyId,
@@ -201,6 +204,9 @@ export async function persistWarrantyClaim(record) {
 
 export async function persistInvoice(record) {
   if (!DATABASE_ENABLED) return;
+  // The Invoice table requires a customer (FK); a record without one
+  // lives in the working set only — persistence degrades, never fails.
+  if (!record.customerId) return;
   const prisma = db();
   const data = {
     companyId: record.companyId,
