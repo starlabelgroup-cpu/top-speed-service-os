@@ -974,6 +974,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
         <input id="hePhone" type="tel" placeholder="Mobile phone" style="border-radius:10px; border:1px solid rgba(255,255,255,.25); background:#0A265C; color:#fff; padding:11px; font:inherit;">
       </div>
       <textarea id="heMsg" rows="3" placeholder="Appliance, symptoms, error codes…" style="width:100%; margin-top:10px; border-radius:10px; border:1px solid rgba(255,255,255,.25); background:#0A265C; color:#fff; padding:11px; font:inherit;"></textarea>
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="heWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       <div id="heOut" style="font-size:14px; margin-top:8px;"></div>
       <button type="button" onclick="hubEmailSend(this)" style="margin-top:10px; background:#1280FF; color:#fff; border:none; border-radius:99px; padding:11px 22px; font:inherit; font-weight:800; cursor:pointer;">Send to the team</button>
     </div>
@@ -1727,6 +1729,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             <div><label class="flabel" for="pvName">Your / company name</label><input id="pvName" type="text" placeholder="Name"></div>
             <div><label class="flabel" for="pvPhone">Mobile phone</label><input id="pvPhone" type="tel" placeholder="(954) 555-0123"></div>
           </div>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="pvWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div style="margin-bottom:14px"><label class="flabel" for="pvTrade">Main trade</label>
             <select id="pvTrade"><option>Refrigeration</option><option>Laundry (washer/dryer)</option><option>Cooking (oven/range)</option><option>All appliances</option><option>Installation</option><option>Commercial</option></select></div>
           <p class="fine" id="pvError" style="color:var(--red);font-weight:600" role="alert"></p>
@@ -1868,6 +1872,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
   <div class="sp-body" id="spBody"></div>
   <form class="sp-input" id="spForm">
     <input id="spText" type="text" placeholder="Ask anything — or tell Speedy what's wrong…" autocomplete="off" aria-label="Message Speedy">
+    <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="spWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
     <button type="button" id="spPhoto" title="Send a photo — Speedy will take a first look" aria-label="Send a photo for diagnosis" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg></button><input type="file" id="spFile" accept="image/*" style="display:none"><button type="button" id="spMic" title="Speak instead of typing" aria-label="Speak to Speedy" style="background:#eef3fb;border:1.5px solid #dbe4f0;border-radius:12px;padding:0 13px;font-size:17px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg></button>
     <button type="submit">Send</button>
   </form>
@@ -2201,6 +2207,7 @@ function spBookIt(btn){
   var d=window._spBook; if(!d)return;
   btn.disabled=true; btn.textContent='Booking\u2026';
   var bp={customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,sessionId:spSessionId()};
+  bp.companyWebsite=document.getElementById('spWebsite').value;
   try{ if(window.TSOSAttribution) TSOSAttribution.attach(bp); }catch(e){}
   fetch(SP_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bp)})
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
@@ -2282,7 +2289,7 @@ document.getElementById('provForm').addEventListener('submit',function(e){
   err.textContent='';
   var c=document.getElementById('pvConfirm');
   c.innerHTML='Sending your application…'; c.classList.add('show');
-  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,type:'PROVIDER_APPLICATION',source:'flagship-home',message:'Main trade: '+document.getElementById('pvTrade').value})})
+  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,type:'PROVIDER_APPLICATION',source:'flagship-home',companyWebsite:document.getElementById('pvWebsite').value,message:'Main trade: '+document.getElementById('pvTrade').value})})
     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
     .then(function(x){
       if(x.s!==201&&x.s!==200){c.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Something went wrong sending that — call <a href="tel:+19549317997"><b>954-931-7997</b></a> and we will take your application by phone.';return;}
@@ -2318,7 +2325,7 @@ function hubEmailSend(btn){
   var out=document.getElementById('heOut');
   if(n.length<2||p.replace(/\D/g,'').length<7||m.length<5){ out.textContent='Add your name, a valid phone, and a short message.'; return; }
   btn.disabled=true; btn.textContent='Sending\u2026';
-  fetch(SP_API+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,type:'DIAGNOSTIC_EVIDENCE',source:'ask-speedy-hub',message:m})})
+  fetch(SP_API+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,phone:p,type:'DIAGNOSTIC_EVIDENCE',source:'ask-speedy-hub',companyWebsite:document.getElementById('heWebsite').value,message:m})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })
     .then(function(j){ out.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Sent \u2014 reference <b>'+j.data.reference+'</b>. The team replies by text or email.'; btn.style.display='none'; })
     .catch(function(e){ btn.disabled=false; btn.textContent='Send to the team'; out.textContent=''+e.message+'\u2014 or email service@topspeedappliance.net directly.'; });

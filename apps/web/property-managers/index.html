@@ -588,6 +588,8 @@
       <div class="form-card" style="max-width:760px;">
         <div class="frow">
           <div><label for="bk-name">Your name *</label><input id="bk-name" type="text" placeholder="Property manager name"></div>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="bk-website" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div><label for="bk-phone">Mobile phone *</label><input id="bk-phone" type="tel" placeholder="954-555-0100"></div>
         </div>
         <div class="frow">
@@ -801,7 +803,7 @@ function bkSend(){
   if(name.length<2||phone.replace(/\D/g,'').length<7||property.length<3){ msg.textContent='Add your name, a valid phone, and the property before sending.'; return; }
   if(!bkItems.length){ msg.textContent='Sort the requests with Speedy first.'; return; }
   var btn=document.getElementById('bkSendBtn'); btn.disabled=true; btn.textContent='Sending\u2026';
-  fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems})})
+  fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems,companyWebsite:document.getElementById('bk-website').value})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })
     .then(function(j){
       msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>Sent!</b> Batch reference <b>'+j.data.batchReference+'</b> — '+j.data.count+' work orders are with the Service Setters. Individual references: '+j.data.references.join(', ')+'.';

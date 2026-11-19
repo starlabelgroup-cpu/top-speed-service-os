@@ -720,6 +720,8 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
             <div style="background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:11px 13px; font-size:14.5px; max-width:92%;"><b style="color:var(--navy);">Speedy</b><br>Hi! I'm Speedy. What's going on with your appliance?</div>
           </div>
           <div id="aspCard"></div>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="aspWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <img src="/api/v1/app/scenario-images/speedy-diagnosis-result.webp" alt="Illustration: Speedy's diagnosis result on a phone — what is likely wrong, explained in plain words before the customer confirms anything" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
           <div class="asp-composer">
             <input id="aspInput" type="text" placeholder="Ask anything — or tell Speedy what's wrong…" aria-label="Message Speedy" autocomplete="off" onkeydown="if(event.key==='Enter'){aspSend();}">
@@ -1596,6 +1598,7 @@ function aspBook(){
       .then(function(j){ done(j.data.referenceCode); })
       .catch(function(e){ fail(e.message || 'Booking failed — try the form or call (954) 931-7997.'); });
   } else {
+    payload.companyWebsite=document.getElementById('aspWebsite').value;
     fetch(C_API + '/speedy/book', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
       .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error || 'Booking failed'); return j; }); })
       .then(function(j){ done(j.data.referenceCode); })

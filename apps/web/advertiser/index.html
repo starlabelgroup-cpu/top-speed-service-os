@@ -137,6 +137,8 @@ footer strong{color:#fff}
           <label>Email</label><input id="suEmail" type="email" autocomplete="email">
           <label>Phone (optional)</label><input id="suPhone" autocomplete="tel">
           <label>Password (10+ characters)</label><input id="suPass" type="password" autocomplete="new-password">
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="suWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div id="adLegal"></div>
           <div style="margin-top:16px"><button class="g-btn red" id="adBtn" onclick="advSignup()">Create my account</button></div>
         </div>
@@ -396,7 +398,7 @@ function advSignup(){ var role=document.getElementById('suRole').value;
   if(!acceptance) return msg('authMsg','Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
   var body={email:document.getElementById('suEmail').value.trim(),password:document.getElementById('suPass').value,
     firstName:document.getElementById('suFirst').value.trim(),lastName:document.getElementById('suLast').value.trim(),
-    phone:document.getElementById('suPhone').value.trim()||undefined,role:role,termsAcceptance:acceptance};
+    phone:document.getElementById('suPhone').value.trim()||undefined,role:role,termsAcceptance:acceptance,companyWebsite:document.getElementById('suWebsite').value};
   if(!body.email||!body.password||!body.firstName) return msg('authMsg','First name, email, and a 10+ character password are required.');
   if(body.password.length<10) return msg('authMsg','Password must be at least 10 characters.');
   api('/auth/register',{method:'POST',body:JSON.stringify(body)}).then(function(x){

@@ -490,6 +490,8 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
           </div>
           <div class="frow2">
             <label>Your name<input id="asName" required autocomplete="name" placeholder="Your full name"></label>
+            <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="asWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
             <label>Business name<input id="asBusiness" required autocomplete="organization" placeholder="Your business name"></label>
           </div>
           <div class="frow2">
@@ -588,7 +590,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
       'Estimated monthly budget: '+document.getElementById('asBudget').value,
       'Interest: '+(val('asInterest')||'—')
     ].join('\n');
-    var body={name:name, email:email, phone:phone, type:'ADVERTISER_CONTACT', source:'adstream-page', message:lines, via:'adstream'};
+    var body={name:name, email:email, phone:phone, type:'ADVERTISER_CONTACT', source:'adstream-page', companyWebsite:val('asWebsite'), message:lines, via:'adstream'};
     try{ if(window.TSOSAttribution) TSOSAttribution.attach(body); }catch(e){}
     submitBtn.disabled=true; submitBtn.textContent='Sending…';
     msg.className='feedback'; msg.textContent='';

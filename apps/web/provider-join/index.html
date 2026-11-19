@@ -156,6 +156,8 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
       <form id="applyForm" novalidate>
         <div class="frow">
           <div class="field"><label for="fName">Full name *</label><input id="fName" type="text" autocomplete="name" placeholder="Your name" required></div>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="fWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div class="field"><label for="fBiz">Business name</label><input id="fBiz" type="text" autocomplete="organization" placeholder="Your business LLC"></div>
         </div>
         <div class="frow">
@@ -232,6 +234,7 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
         'Cities served: '+(cities.length?cities.join(', '):'—'),
         'About: '+(document.getElementById('fAbout').value.trim()||'—')].join('\n') };
     if(email) payload.email=email;
+    payload.companyWebsite=document.getElementById('fWebsite').value;
     var btn=document.getElementById('applyBtn'); btn.disabled=true; btn.textContent='Sending…';
     fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
       .then(function(r){ return r.json().then(function(j){ return {s:r.status,j:j}; }); })

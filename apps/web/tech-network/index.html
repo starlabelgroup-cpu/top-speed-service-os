@@ -230,6 +230,8 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
       <div class="set-grid">
         <div><span class="tp-lab">Phone *</span><input class="tp-in" id="apPhone" placeholder="(954) 555-0123"></div>
         <div><span class="tp-lab">Email</span><input class="tp-in" id="apEmail" placeholder="you@business.com"></div>
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="apWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       </div>
       <span class="tp-lab">Cities you cover</span><input class="tp-in" id="apCities" placeholder="e.g. Fort Lauderdale, Plantation, Davie">
       <span class="tp-lab">Appliances you service</span><input class="tp-in" id="apAppliances" placeholder="e.g. Refrigerator, Washer, Dryer">
@@ -248,7 +250,7 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
       if(netApplyVal('apAppliances')) lines.push('Appliances serviced: '+netApplyVal('apAppliances'));
       lines.push('Applied from the Network Tech door (topspeedapplianceservice.com provider network).');
       if(msg){ msg.textContent='Sending your application…'; msg.style.color='#5A6E94'; }
-      fetch(T_API+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ name:name, phone:phone, email:netApplyVal('apEmail')||undefined, type:'PROVIDER_APPLICATION', source:'tech-network', message:lines.join('\n') })})
+      fetch(T_API+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ name:name, phone:phone, email:netApplyVal('apEmail')||undefined, type:'PROVIDER_APPLICATION', source:'tech-network', companyWebsite:netApplyVal('apWebsite')||undefined, message:lines.join('\n') })})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
         .then(function(res){
           if(!res.ok){ if(msg){ msg.textContent='Could not send it: '+((res.j&&res.j.error)||'please try again'); msg.style.color='#c2262e'; } return; }

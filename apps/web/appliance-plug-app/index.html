@@ -138,6 +138,8 @@
         <label class="apg-lab">Email<input id="pgUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <label class="apg-lab">Phone (optional)<input id="pgUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
         <label class="apg-lab">Password — 10+ characters<input id="pgUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="pgUpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
         <div id="pgLegal"></div>
         <p class="apg-msg" id="pgUpMsg" role="status"></p>
         <button class="btn btn-amber" type="button" style="margin-top:0" id="pgUpBtn" onclick="pgRegister()" disabled>Create account</button>
@@ -393,7 +395,8 @@ function pgRegister(){
     firstName:document.getElementById('pgUpFirst').value.trim()||undefined,
     lastName:document.getElementById('pgUpLast').value.trim()||undefined,
     phone:document.getElementById('pgUpPhone').value.trim()||undefined,
-    termsAcceptance:acceptance
+    termsAcceptance:acceptance,
+    companyWebsite:document.getElementById('pgUpWebsite').value
   };
   pgMsg('pgUpMsg','Creating your account…');
   pgApi('/auth/register',{method:'POST',body:JSON.stringify(body)})

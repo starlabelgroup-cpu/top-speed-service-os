@@ -154,6 +154,8 @@ footer strong{color:#fff} footer a{color:#cfe0f5}
       <form id="mosForm">
         <div class="row">
           <div><label for="mfName">Your name *</label><input id="mfName" required placeholder="Full name"></div>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="mfWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div><label for="mfPhone">Phone *</label><input id="mfPhone" required placeholder="(954) 555-0100"></div>
           <div><label for="mfEmail">Email</label><input id="mfEmail" type="email" placeholder="you@business.com"></div>
         </div>
@@ -217,7 +219,7 @@ document.getElementById('mosForm').addEventListener('submit',function(ev){
     'Goals: '+(document.getElementById('mfGoals').value||'—')].join('\n');
   var body={name:document.getElementById('mfName').value.trim(),
     phone:document.getElementById('mfPhone').value.trim(),
-    type:'MARKETING_AGENCY_INTAKE',source:'marketing-os-hub',message:lines};
+    type:'MARKETING_AGENCY_INTAKE',source:'marketing-os-hub',companyWebsite:document.getElementById('mfWebsite').value,message:lines};
   var email=document.getElementById('mfEmail').value.trim(); if(email) body.email=email;
   fetch(MOS_API+'/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })

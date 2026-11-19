@@ -134,6 +134,8 @@ footer a{color:var(--lime)}
         <label class="plg-lab">Email<input id="plUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <label class="plg-lab">Phone (optional)<input id="plUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
         <label class="plg-lab">Password — 10+ characters<input id="plUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="plUpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
         <div id="plLegal"></div>
         <p class="plg-msg" id="plUpMsg" role="status"></p>
         <button class="btn plg-full" type="button" id="plUpBtn" onclick="plRegister()" disabled>Create account</button>
@@ -1106,7 +1108,8 @@ function plRegister(){
     firstName:document.getElementById('plUpFirst').value.trim()||undefined,
     lastName:document.getElementById('plUpLast').value.trim()||undefined,
     phone:phone||undefined,
-    termsAcceptance:acceptance
+    termsAcceptance:acceptance,
+    companyWebsite:document.getElementById('plUpWebsite').value
   };
   plMsg('plUpMsg','Creating your account…');
   plApi('/auth/register',{method:'POST',body:JSON.stringify(body)})

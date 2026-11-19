@@ -226,6 +226,8 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
       <div class="result" id="bizResult" role="status"></div>
       <form id="bizForm" novalidate>
         <div class="field"><label for="bBiz">Business name *</label><input id="bBiz" type="text" autocomplete="organization" placeholder="Your business LLC" required></div>
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="bWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
         <div class="frow">
           <div class="field"><label for="bContact">Contact name *</label><input id="bContact" type="text" autocomplete="name" placeholder="Your name" required></div>
           <div class="field"><label for="bPhone">Phone *</label><input id="bPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0134" required></div>
@@ -298,7 +300,7 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
     if(phone.replace(/\D/g,'').length<10) return fail('Please add a valid phone number.');
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('Please add a valid email — the team replies by email.');
     if(cities.length<2) return fail('Please tell us which cities you serve.');
-    var payload={ name:contact, phone:phone, email:email, type:'BUSINESS_INQUIRY', source:'network-site-business-form',
+    var payload={ name:contact, phone:phone, email:email, type:'BUSINESS_INQUIRY', source:'network-site-business-form', companyWebsite:document.getElementById('bWebsite').value,
       message:['Business: '+biz,
         'Business type: '+document.getElementById('bType').value,
         'Cities served: '+cities,

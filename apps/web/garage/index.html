@@ -97,6 +97,8 @@
         <div><label for="rPhone">Phone</label><input id="rPhone" type="tel" placeholder="(954) 000-0000"></div>
       </div>
       <label for="rPass">Password (10+ characters)</label><input id="rPass" type="password" minlength="10" required>
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="rWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       <div id="grLegal"></div>
       <button class="btn btn-red" id="registerBtn" type="submit" style="width:100%;margin-top:16px">Create my account</button>
       <div class="err" id="registerErr"></div>
@@ -247,7 +249,7 @@ $('registerForm').addEventListener('submit', async (e) => {
   if (!acceptance) { err.textContent = 'Please review both legal documents, check both agreement boxes, and type your full name as your signature.'; err.style.display = 'block'; return; }
   btn.disabled = true;
   try {
-    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value, termsAcceptance: acceptance }) });
+    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value, termsAcceptance: acceptance, companyWebsite: $('rWebsite').value }) });
     const body = await res.json();
     if (!res.ok || !body.token) {
       let m = body.error || 'Registration failed';

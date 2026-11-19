@@ -94,6 +94,8 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
         <div><label for="rgPhone">Phone</label><input id="rgPhone" type="tel" placeholder="954-555-0100"></div>
       </div>
       <label for="rgEmail">Email</label><input id="rgEmail" type="email" autocomplete="email" placeholder="you@business.com">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="rgWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       <label for="rgPass">Create a password (10+ characters)</label><input id="rgPass" type="password" placeholder="••••••••••">
       <div id="apLegal"></div>
       <div style="margin-top:16px;"><button class="btn blue" id="rgBtn" onclick="doRegister()">Create account &amp; open the app</button></div>
@@ -158,6 +160,8 @@ input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);bor
       <p>List what needs attention — one line per unit or location. Speedy AI sorts it into separate work orders under one batch reference; a Service Setter confirms each by text.</p>
       <label for="bkProperty">Property / business location</label><input id="bkProperty" type="text" placeholder="e.g. Sunrise Suites — 4400 W Sunrise Blvd">
       <label for="bkPhone">Callback phone (if not on your account)</label><input id="bkPhone" type="tel" placeholder="954-555-0100">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="bkWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       <label for="bkText">What needs service?</label>
       <textarea id="bkText" rows="4" placeholder="Unit 204 fridge not cooling. Walk-in freezer icing up — urgent. Laundry room dryer 2 no heat."></textarea>
       <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
@@ -235,7 +239,7 @@ function doRegister(){
   if(document.getElementById('rgPass').value.length<10){ gateErr(new Error('Password must be at least 10 characters.')); return; }
   var acceptance=TSOSLegal.acceptance('ap');
   if(!acceptance){ gateErr(new Error('Please review both legal documents, check both agreement boxes, and type your full name as your signature.')); return; }
-  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined,termsAcceptance:acceptance};
+  var payload={email:document.getElementById('rgEmail').value.trim(),password:document.getElementById('rgPass').value,firstName:document.getElementById('rgName').value.trim()||undefined,phone:document.getElementById('rgPhone').value.trim()||undefined,termsAcceptance:acceptance,companyWebsite:document.getElementById('rgWebsite').value};
   api('/auth/register',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
@@ -291,7 +295,7 @@ function bulkSend(){
   var m=document.getElementById('bkMsg');
   var prop=document.getElementById('bkProperty').value.trim();
   if(!prop){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add the property / business location first.'; m.className='msg err'; return; }
-  var payload={manager:{name:(window.CUR&&(CUR.firstName||CUR.email))||'Account holder', phone:(window.CUR&&CUR.phone)||document.getElementById('bkPhone').value.trim(), company:window.BIZ||undefined}, property:prop, requests:bulkItems};
+  var payload={manager:{name:(window.CUR&&(CUR.firstName||CUR.email))||'Account holder', phone:(window.CUR&&CUR.phone)||document.getElementById('bkPhone').value.trim(), company:window.BIZ||undefined}, property:prop, requests:bulkItems, companyWebsite:document.getElementById('bkWebsite').value};
   if(!payload.manager.phone){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add a callback phone so the setters can confirm.'; m.className='msg err'; return; }
   api('/commercial/bulk-requests',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){ m.textContent='Sent \u2014 batch '+j.data.batchReference+'('+j.data.count+'requests). A Service Setter confirms every one by text.'; m.className='msg ok'; bulkItems=[]; bulkRender(); document.getElementById('bkText').value=''; if(window.loadActivity) loadActivity(); })
