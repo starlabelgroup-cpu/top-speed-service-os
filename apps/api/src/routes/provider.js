@@ -259,7 +259,7 @@ router.post('/provider/work-orders', ...providerOnly, async (req, res) => {
     assignProvider: assignSelf ? provider : null,
     assignmentStatus: 'ACCEPTED',
   });
-  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  if (!result.ok) return res.status(result.status).json({ error: result.error, ...(result.code ? { code: result.code } : {}) });
   return res.status(201).json({
     data: {
       booking: {

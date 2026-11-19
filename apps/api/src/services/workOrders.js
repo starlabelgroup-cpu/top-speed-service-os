@@ -131,14 +131,34 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
   const resolved = resolveCustomer(input, { actor, source });
   if (resolved.error) return { ok: false, status: 400, error: resolved.error };
   const { customer } = resolved;
-  if (resolved.created) await persistCustomer(customer);
 
   const segment = input.segment || 'RESIDENTIAL';
   const commercial = segment === 'COMMERCIAL';
   const hasAreaInput = Boolean(input.city || input.zip);
   const resolution = hasAreaInput ? resolveArea({ city: input.city, zip: input.zip }) : null;
   const city = resolution?.area || input.city || customer.city || null;
-  const zip = input.zip || customer.zip || null;
+  const serviceAddress = input.address || customer.address || null;
+  // ZIP resolution (2026-11-19 hygiene fix): the request body first,
+  // then the customer record, then the customer's existing Property
+  // record (the one at the service address when there is one).
+  // ServiceRequest.zip is a required column — when NO source yields a
+  // ZIP the create used to sail through and die as a 500 at
+  // persistence. Fail BEFORE anything is persisted with a clean 400
+  // the surfaces can show. Never invent a default ZIP.
+  let zip = input.zip || customer.zip || null;
+  if (!zip && Array.isArray(store.properties)) {
+    const owned = store.properties.filter((p) => p.customerId === customer.id && p.zip);
+    const atAddress = serviceAddress ? owned.find((p) => p.address === serviceAddress) : null;
+    zip = (atAddress || owned[0])?.zip || null;
+  }
+  if (!zip) {
+    // A just-created customer exists only in memory at this point
+    // (persistCustomer runs below) — drop it so a rejected create
+    // leaves no orphan record behind.
+    if (resolved.created) store.customers.delete(customer.id);
+    return { ok: false, status: 400, error: 'A ZIP code is required to create a work order', code: 'ZIP_REQUIRED' };
+  }
+  if (resolved.created) await persistCustomer(customer);
   const area = resolution ? resolution.area : null;
   const areaStatus = resolution ? resolution.areaStatus : 'AREA_REVIEW';
   const t = new Date().toISOString();
@@ -155,7 +175,7 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
     zip,
     area,
     areaStatus,
-    serviceAddress: input.address || customer.address || null,
+    serviceAddress,
     appliance: input.appliance,
     issue: input.issue,
     preferredWindow: input.preferredWindow || null,

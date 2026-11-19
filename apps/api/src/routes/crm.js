@@ -319,7 +319,7 @@ router.post('/crm/customers/:id/work-orders', ...staffOnly, async (req, res) => 
     via: 'crm',
     input: parsed.data,
   });
-  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  if (!result.ok) return res.status(result.status).json({ error: result.error, ...(result.code ? { code: result.code } : {}) });
   return res.status(201).json({
     data: {
       booking: {
