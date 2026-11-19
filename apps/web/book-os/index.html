@@ -292,6 +292,12 @@ body:not(.live) .gated{display:none!important}</style>
 <div id="inboxDetail" style="margin-top:12px"></div>
 </div></section>
 
+<!-- INTAKE RECORDS — every public form submission (staff only, live data; delete is owner-only) -->
+<section class="panel gated" id="intakePanel" style="margin-top:14px"><div class="ph"><div><h2>· Intake Records</h2><p>Every public form submission recorded by the Service OS — provider applications, commercial requests, advertiser contacts and leads from every surface — newest first. A customer lead here also created its booking on the Setter Queue; deleting a record removes both halves of that intake. <b>Delete is an owner action and cannot be undone.</b></p></div><span class="badge" id="intakeCount">STAFF</span></div>
+<div style="padding:14px 16px">
+<div id="intakeList"><p style="color:var(--mut);font-size:13.5px">Sign in above to see the intake records.</p></div>
+</div></section>
+
 <section class="panel reminders" gated"><div class="ph"><div><h2>4 · Reminders &amp; Automations</h2><p>Every job triggers the same text sequence — no customer left wondering.</p></div><span class="badge">AUTO-TEXTS</span></div>
 <div style="padding:14px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-customer-update.webp" alt="Illustration: a Service Setter sending a customer a live update about their appointment" style="width:min(340px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div class="remgrid" id="rems"></div></section>
@@ -534,7 +540,7 @@ function renderScorecard(d){
     tile('Setter queue waiting', d.dispatch.queueWaiting)+
     tile('Providers active', d.network.providersActive)+
     tile('Cities covered', d.network.citiesCovered)+
-    tile('Intake records', d.intake.connectionsTotal+' <span style="font-size:12px;font-weight:600">'+breakdown(d.intake.byType)+'</span>')+
+    '<div onclick="intakeShow()" title="Open the intake records list" style="background:var(--chip);border-radius:10px;padding:10px 12px;cursor:pointer"><small style="display:block;color:var(--mut);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.04em">Intake records</small><b style="font-size:19px">'+d.intake.connectionsTotal+' <span style="font-size:12px;font-weight:600">'+breakdown(d.intake.byType)+'</span></b><small style="display:block;color:var(--blue);font-weight:700;font-size:11px;margin-top:2px">VIEW RECORDS \u2192</small></div>'+
     tile('Customers', d.customers.total)+
     tile('Accounts', d.customers.accounts==null?'\u2014':d.customers.accounts)+
     tile('Referrals issued / redeemed', d.flywheel.referralsIssued+' / '+d.flywheel.referralsRedeemed)+
@@ -546,6 +552,7 @@ function loadLive(){
   if(!LIVE) return;
   if(window.plrLoadReviews) plrLoadReviews();
   if(window.inboxLoad) inboxLoad();
+  if(window.intakeLoad) intakeLoad();
   apiFetch('/bookos/scorecard').then(function(j){ renderScorecard(j.data); }).catch(function(e){ toast('Scorecard error: '+e.message); });
   Promise.all([apiFetch('/bookos/setter-queue'+sbpQuery()),apiFetch('/bookos/dispatch-board'+sbpQuery())])
     .then(function(res){
@@ -675,6 +682,52 @@ function liveRemove(i){
   rmArm[q.referenceCode]=false;
   apiFetch('/admin/bookings/delete',{method:'POST',body:JSON.stringify({reference:q.referenceCode})})
     .then(function(x){ toast('Deleted '+q.referenceCode+' \u2014 '+(x.remainingBookings!=null?x.remainingBookings:'')+' booking(s) remain'); loadLive(); })
+    .catch(function(e){ toast('Delete failed: '+e.message+' (owner sign-in required)'); });
+}
+/* ============ INTAKE RECORDS (connections) — list + owner delete ============
+   The list reads GET /connections — the same records the Launch
+   Scorecard counts as intake. Delete mirrors the Setter Queue Remove
+   above exactly: two-tap arm, then POST /admin/connections/delete with
+   the page session token (via apiFetch). The endpoint is owner-only
+   and unified — it also removes the record's lead-linked booking
+   half — and the Remove button itself only renders for owner
+   sessions (COMPANY_OWNER / PLATFORM_ADMIN, the endpoint's roles). */
+var intakeRecords=[], intakeArm={};
+function intakeIsOwner(){ var r=(staffUser&&staffUser.roles)||[]; return r.indexOf('COMPANY_OWNER')>-1||r.indexOf('PLATFORM_ADMIN')>-1; }
+var INTAKE_TYPE_LABELS={PROVIDER_APPLICATION:'Provider application',COMMERCIAL_WORK_ORDER:'Commercial work order',COMMERCIAL_REQUEST:'Commercial request',ADVERTISER_CONTACT:'Advertiser contact',BUSINESS_INQUIRY:'Business inquiry',SERVICE_REQUEST:'Service request',SERVICE:'Service request',MARKETING_AGENCY_INTAKE:'Marketing agency intake',DIAGNOSTIC_EVIDENCE:'Diagnostic evidence',NETWORK_BUSINESS:'Network business',PEPPER_LISTS_SELL:'Pepper Lists sale',CONTACT:'Contact',LEAD:'Lead'};
+function intakeTypeLabel(t){ if(!t) return 'Intake'; if(INTAKE_TYPE_LABELS[t]) return INTAKE_TYPE_LABELS[t]; var s=String(t).replace(/_/g,' ').toLowerCase(); return s.charAt(0).toUpperCase()+s.slice(1); }
+function intakeShow(){ var p=document.getElementById('intakePanel'); if(p) p.scrollIntoView({behavior:'smooth',block:'start'}); intakeLoad(); }
+function intakeLoad(){
+  if(!LIVE) return;
+  apiFetch('/connections').then(function(j){ renderIntake(j.data||[]); }).catch(function(e){ var el=document.getElementById('intakeList'); if(el) el.innerHTML='<div class="empty">Could not load intake records ('+escH(e.message)+').</div>'; });
+}
+function renderIntake(items){
+  intakeRecords=items;
+  var cnt=document.getElementById('intakeCount'); if(cnt) cnt.textContent=items.length+(items.length===1?' RECORD':' RECORDS');
+  var el=document.getElementById('intakeList'); if(!el) return;
+  if(!items.length){ el.innerHTML='<div class="empty">No intake records \u2014 every public form submission across the Top Speed surfaces will appear here.</div>'; return; }
+  var owner=intakeIsOwner();
+  el.innerHTML=items.map(function(c,i){
+    var contact=[c.phone?escH(c.phone):'',c.email?escH(c.email):''].filter(Boolean).join(' \u00b7 ');
+    var when=''; try{ when=new Date(c.createdAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ when=''; }
+    var msg=c.message?('<p style="margin:4px 0 0;color:var(--mut);font-size:12.8px;line-height:1.45">'+escH(String(c.message).slice(0,180))+(String(c.message).length>180?'\u2026':'')+'</p>'):'';
+    var actions=owner?('<div class="actions" style="margin-top:8px"><button class="btn ghost" id="irm-'+i+'" onclick="intakeRemove('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> Remove</button></div>'):'';
+    return '<article class="dcard" style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline"><b style="font-size:14px">'+escH(c.name||'No name given')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(c.reference||'')+'</span></b><span style="color:var(--mut);font-size:12px">'+escH(when)+'</span></div><p style="margin:4px 0 0;font-size:12.8px;line-height:1.45"><span class="tag src">'+escH(intakeTypeLabel(c.type))+'</span>'+(contact?' '+contact:'')+(c.source?' &nbsp;\u2022&nbsp; via '+escH(c.source):'')+'</p>'+msg+actions+'</article>';
+  }).join('');
+}
+function intakeRemove(i){
+  var c=intakeRecords[i]; if(!c||!c.reference) return;
+  var b=document.getElementById('irm-'+i);
+  if(!intakeArm[c.reference]){
+    intakeArm[c.reference]=true;
+    if(b){ b.textContent='Tap again to DELETE '+c.reference; b.style.background='#E8322E'; b.style.color='#fff'; }
+    toast('This permanently deletes '+(c.name||'this intake record')+' '+c.reference+' (owner action). Tap again within 20s to delete.');
+    setTimeout(function(){ intakeArm[c.reference]=false; if(LIVE) loadLive(); },20000);
+    return;
+  }
+  intakeArm[c.reference]=false;
+  apiFetch('/admin/connections/delete',{method:'POST',body:JSON.stringify({reference:c.reference})})
+    .then(function(x){ toast('Deleted '+c.reference+' \u2014 '+(x.remainingConnections!=null?x.remainingConnections:'')+' intake record(s) remain'); loadLive(); })
     .catch(function(e){ toast('Delete failed: '+e.message+' (owner sign-in required)'); });
 }
 function livePayLink(i){
