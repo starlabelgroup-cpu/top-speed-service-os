@@ -27,6 +27,7 @@
     '/turbo-boss': { label: 'MANAGER ONLY', roles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/navigator': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/pepper': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/interconnect': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/crm': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/book-os': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/applianceman': { label: 'MANAGER ONLY', roles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },

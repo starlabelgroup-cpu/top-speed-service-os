@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { store } from '../data/store.js';
+import { appendEvent, store } from '../data/store.js';
 import {
   addReviewMedia,
   countReviewMedia,
@@ -353,6 +353,22 @@ router.post('/pepper-lists/reviews', authenticate, async (req, res) => {
   // the office instead of failing the customer's post.
   const { firstName, serviceLabel, city } = reviewContext(created);
   const final = await respondToReview(created, { firstName, serviceLabel, city });
+  // Platform Interconnect (2026-11-19): review events join the
+  // cross-platform feed at the create success point — rating and
+  // publication state only, never the review text or the reviewer.
+  appendEvent('REVIEW_SUBMITTED', {
+    source: 'pepper-lists',
+    actor: 'customer',
+    entityType: 'REVIEW',
+    entityId: created.id,
+    referenceCode: booking?.referenceCode || null,
+    details: {
+      rating: created.rating ?? null,
+      verifiedRepair,
+      status: final?.status || created.status || 'PENDING',
+      withBooking: Boolean(data.bookingId),
+    },
+  });
   return res.status(201).json({ data: await serializeReview(final, { audience: 'owner' }) });
 });
 

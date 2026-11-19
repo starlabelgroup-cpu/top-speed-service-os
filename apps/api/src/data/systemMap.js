@@ -321,6 +321,20 @@ export const SYSTEM_MAP_AREAS = [
     related: ['navigator', 'applianceman', 'oversight'],
     keywords: ['pepper', 'systems manager', 'system operations manager', 'pepper console', 'duty post', 'systems board', 'pepper reports', 'needs ramone', 'standing orders'],
   },
+  {
+    id: 'platform-interconnect',
+    name: 'Platform Interconnect',
+    group: 'Command & Consoles',
+    location: 'topspeedserviceos.com/interconnect',
+    url: '/interconnect',
+    purpose: 'The wiring map of the whole ecosystem on the one Service OS backend: every platform and surface with its real connection state — signed-in travel (which hosts run a live /auth-handoff/ receiver, and when that was last verified by an actual fetch), how each surface reaches the one API (same deployment, direct CORS, same-origin proxy, or none), the shared services it uses (Speedy, attribution, payments, the notification outbox), and its most recent event from the durable cross-platform event feed. States are verified facts, never decorations.',
+    access: 'All staff',
+    accessLabel: 'STAFF ONLY',
+    accessRoles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'],
+    actions: ['Check which platforms a signed-in holder can travel between', 'See how every surface reaches the one backend', 'Read the latest real activity per surface from the event feed', 'Spot the surfaces still missing a receiver'],
+    related: ['navigator', 'pepper-console'],
+    keywords: ['interconnect', 'platform interconnect', 'wiring', 'handoff', 'receivers', 'event feed', 'cross-platform', 'surfaces', 'connections'],
+  },
 
   /* --------------------------------- Money --------------------------------- */
   {

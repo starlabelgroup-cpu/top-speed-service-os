@@ -1,4 +1,5 @@
 import { randomBytes, randomUUID } from 'node:crypto';
+import { persistPlatformEvent } from '../db/platformEventsRepo.js';
 
 export const PLATFORM_COMPANY_ID = '10000000-0000-4000-8000-000000000001';
 
@@ -291,6 +292,14 @@ export function createWorkOrderCode() {
  * Append to the platform-wide operational event feed. Every intake and
  * every booking lifecycle change lands here so all surfaces share one
  * timeline (GET /api/v1/platform/events).
+ *
+ * Platform Interconnect (2026-11-19): the same event is also written
+ * through to the durable PlatformEvent table (db/platformEventsRepo)
+ * at this — the feed's single write point — so the timeline survives
+ * serverless instance turnover. Callers keep calling appendEvent
+ * exactly as before, at the same success points; there is one write
+ * per event, never two. The persist is fire-and-forget: it cannot
+ * fail or slow the flow that produced the event.
  */
 export function appendEvent(type, { source = null, actor = null, entityType = null, entityId = null, referenceCode = null, details = {} } = {}) {
   const event = {
@@ -305,5 +314,6 @@ export function appendEvent(type, { source = null, actor = null, entityType = nu
     details,
   };
   store.events.push(event);
+  persistPlatformEvent(event);
   return event;
 }

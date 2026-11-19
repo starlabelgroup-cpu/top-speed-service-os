@@ -1971,3 +1971,32 @@ model WarrantyClaim {
   @@index([serviceRequestId])
   @@index([warrantyId])
 }
+// Platform Interconnect (2026-11-19): the DURABLE cross-platform event
+// feed. appendEvent() in data/store.js has always collected the
+// platform's operational events (bookings, completions, referrals,
+// reviews, advertiser and provider job events) into an in-memory list —
+// on serverless that list dies with the instance, so the "one timeline
+// for every surface" was never actually durable. This table is the
+// write-through record of the same feed: one row per appendEvent call,
+// written at the flow's existing success point, read by staff through
+// GET /platform/events and the Platform Interconnect console.
+// No relations on purpose: entityId/referenceCode are plain reference
+// strings (the feed spans every entity kind), and details is a small
+// operational summary — never customer PII beyond what staff consoles
+// already show staff (the repo scrubs contact-shaped keys and caps
+// the payload size before a row is written).
+model PlatformEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  type          String
+  source        String?
+  actor         String?
+  entityType    String?
+  entityId      String?
+  referenceCode String?
+  details       Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([source, createdAt])
+}

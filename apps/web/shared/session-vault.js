@@ -74,11 +74,16 @@
     'appliancepro.app'
   ];
 
-  // Hosts whose /auth-handoff/ receiver is actually deployed (the
-  // flagship deployment and Appliance Connect). handoffUrl() only
-  // wraps links to these; the remaining allowlisted hosts join as
-  // their own sites ship a receiver, so a door never routes a
-  // signed-in holder to a page that does not exist yet.
+  // Hosts whose /auth-handoff/ receiver is actually deployed.
+  // handoffUrl() only wraps links to these; the remaining
+  // allowlisted hosts join as their own sites ship a receiver, so a
+  // door never routes a signed-in holder to a page that does not
+  // exist yet. Platform Interconnect (2026-11-19): appliancepro.net
+  // and cleanoutvents.com receivers shipped and verified live;
+  // topspeedappliance.net's receiver shipped to its orbit-haven
+  // branch and joins this list when the owner promotes it to
+  // production (the standing .net rule) — until then .net doors
+  // stay plain links, exactly like every not-yet-ready host.
   var RECEIVER_READY_HOSTS = [
     'topspeedserviceos.com',
     'top-speed-service-os.vercel.app',
@@ -86,7 +91,11 @@
     'applianceconnectpro.com',
     'www.applianceconnectpro.com',
     'pepperlists.com',
-    'www.pepperlists.com'
+    'www.pepperlists.com',
+    'appliancepro.net',
+    'www.appliancepro.net',
+    'cleanoutvents.com',
+    'www.cleanoutvents.com'
   ];
 
   /* ---------------- storage primitives (pre-hook originals) -------- */

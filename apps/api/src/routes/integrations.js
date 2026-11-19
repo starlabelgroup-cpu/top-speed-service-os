@@ -5,6 +5,8 @@ import { INTAKE_SOURCES, PLATFORM_CONSTANTS, SURFACES } from '../config/platform
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
+import { DATABASE_ENABLED } from '../db/client.js';
+import { platformEventsRepo } from '../db/platformEventsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { notifyBookingConfirmation, notifyNewBooking, notifySubmission } from '../services/notifications.js';
 import { drainOutbox, providersStatus } from '../services/senders.js';
@@ -349,16 +351,35 @@ router.get('/platform/surfaces', authenticate, requireCompany, (req, res) => {
   });
 });
 
-/** The single operational timeline connecting all surfaces. */
+/**
+ * The single operational timeline connecting all surfaces.
+ *
+ * Platform Interconnect (2026-11-19): in database mode the feed is
+ * read from the durable PlatformEvent table (the write-through record
+ * of this same feed — db/platformEventsRepo), so the timeline spans
+ * deploys and instance turnover instead of dying with the process.
+ * Skeleton mode keeps the in-memory list. Filters: ?source=, ?type=,
+ * ?limit= (default 200, max 500). Newest first either way.
+ */
 router.get(
   '/platform/events',
   authenticate,
   requireCompany,
   requireRole(...STAFF_ROLES),
-  (req, res) => {
-    const events = [...store.events].reverse();
-    const filtered = req.query.source ? events.filter((event) => event.source === req.query.source) : events;
-    return res.json({ data: filtered });
+  async (req, res) => {
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 200, 1), 500);
+    if (DATABASE_ENABLED) {
+      const events = await platformEventsRepo.listRecent({
+        limit,
+        type: req.query.type ? String(req.query.type) : null,
+        source: req.query.source ? String(req.query.source) : null,
+      });
+      return res.json({ data: events });
+    }
+    let events = [...store.events].reverse();
+    if (req.query.source) events = events.filter((event) => event.source === req.query.source);
+    if (req.query.type) events = events.filter((event) => event.type === req.query.type);
+    return res.json({ data: events.slice(0, limit) });
   },
 );
 

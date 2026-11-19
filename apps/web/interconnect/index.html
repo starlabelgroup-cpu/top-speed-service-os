@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Platform Interconnect | Top Speed Service OS</title>
+<meta name="description" content="The wiring map of the Top Speed ecosystem: every platform's signed-in travel state, API path, shared services, and latest real activity from the cross-platform event feed. Staff only.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:14px 2px 4px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Rajdhani";font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:760px;line-height:1.6}
+h2.sec{font-family:"Rajdhani";font-size:20px;margin:28px 0 6px;display:flex;align-items:center;gap:9px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:800px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Rajdhani";font-size:16px;line-height:1.3;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.card .kind{color:var(--mut);font-size:13px;line-height:1.55}
+.card .rows{display:flex;flex-direction:column;gap:5px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.5;border-top:1px solid rgba(28,44,82,.6);padding-top:5px}
+.kv:first-child{border-top:0;padding-top:0}
+.kv .k{color:var(--mut)}
+.kv .v{font-weight:600;text-align:right;word-break:break-word}
+.note{color:var(--mut);font-size:12.5px;line-height:1.55}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase}
+.pill.ok{color:#8FE3AE;border-color:rgba(34,197,94,.5)}
+.pill.warn{color:#F5D67A;border-color:rgba(234,179,8,.5)}
+.pill.bad{color:#F08A88;border-color:rgba(232,50,46,.55)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.chip{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut);background:var(--panel2)}
+.chip.on{color:#8FE3AE;border-color:rgba(34,197,94,.5)}
+.card .openrow{margin-top:auto;padding-top:6px}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:14px}
+.btn{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter;display:inline-block}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.gate{max-width:460px;margin:26px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px}
+.gate h2{font-family:"Rajdhani";font-size:19px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.6}
+.gate label{display:block;font-size:11px;font-weight:700;color:var(--mut);letter-spacing:.05em;margin:14px 0 5px;text-transform:uppercase}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+.gate .btn{width:100%;margin-top:16px;padding:11px}
+.gerr{display:none;color:#F08A88;font-size:13px;margin-top:10px;line-height:1.5}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.evt{border-top:1px solid var(--line);padding:10px 2px;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.evt:first-of-type{border-top:0}
+.evt .etype{font-weight:700;font-size:13.5px}
+.evt .emeta{color:var(--mut);font-size:12.5px}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Workstation — Staff Only</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+19549317997">Call 954-931-7997</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Top Speed Service OS — Workstation</div>
+    <h1>Platform <span>Interconnect</span></h1>
+    <p>Every platform in the ecosystem runs on <strong style="color:var(--txt)">one Service OS backend</strong> — one database, one sign-in, one event feed. This board is the wiring map: which surfaces a signed-in holder can travel between, how each surface reaches the backend, which shared services it uses, and the latest real activity the feed recorded for it. Every state below was verified against the real surface — a state that could not be verified says so.</p>
+  </div>
+
+  <div id="gateZone"></div>
+
+  <div id="staffZone" style="display:none">
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M7 11l10-4M7 13l10 4" stroke="#E8322E"/></svg>The wiring board</h2>
+    <p class="sub" id="boardSummary"><span class="spin"></span> Reading the interconnect registry…</p>
+    <div class="grid" id="boardZone"></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="#E8322E"/></svg>Latest platform events</h2>
+    <p class="sub">The durable cross-platform feed — bookings, completions, referrals, reviews, advertiser and provider job events from every surface, newest first. The feed is written once per event at the flow's own success point.</p>
+    <div class="console" id="feedZone"><p class="small mut"><span class="spin"></span> Loading the feed…</p></div>
+
+    <div style="margin-top:18px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
+  </div>
+</main>
+
+<footer>
+  <a href="/navigator">System Navigator</a><a href="/pepper">Pepper — Systems Manager</a><a href="/applianceman">ApplianceMan</a><a href="/insights">Insights</a><a href="/notifications">Notifications</a><a href="/">Platform Home</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Platform Interconnect — the wiring of the house · Staff only</div>
+</footer>
+
+<script src="/layer2.js" defer></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts).then(function(r){
+    if (r.status === 401){ try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){} }
+    return r;
+  });
+}
+function when(ts){
+  if (!ts) return '';
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? '' : d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+}
+
+/* ── Sign-in gate (same pattern as the Pepper console) ──────── */
+function showGate(note){
+  document.getElementById('staffZone').style.display = 'none';
+  var zone = document.getElementById('gateZone');
+  zone.innerHTML = '<div class="gate"><h2>Staff sign-in</h2>' +
+    '<p>The Interconnect board is for Top Speed staff. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
+    (note ? ' ' + esc(note) : '') + '</p>' +
+    '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
+    '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">Sign in to the Interconnect board</button><div class="gerr" id="liErr"></div></form></div>';
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr');
+    err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
+        if (res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ err.textContent = 'Your account needs its Speedy Verify code step — complete sign-in on a console that shows the code step (Book OS), then return here.'; err.style.display = 'block'; return; }
+        if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+/* ── Wiring board ───────────────────────────────────────────── */
+function kv(k, v){ return '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>'; }
+var IDENTITY_PILL = { live: 'ok', 'pending-promotion': 'warn', 'not-built': 'bad', 'not-applicable': '' };
+var SERVICE_LABELS = { speedy: 'Speedy', attribution: 'Attribution', payments: 'Payments', outbox: 'Outbox' };
+function renderBoard(d){
+  var feed = d.feed || {};
+  var summary = document.getElementById('boardSummary');
+  if (feed.available === false){
+    summary.textContent = 'The wiring facts below were verified on ' + (d.verifiedOn || '2026-11-19') + '. The event feed could not be read on this load, so per-surface activity is marked unavailable rather than guessed.';
+  } else {
+    summary.textContent = 'Wiring states verified ' + (d.verifiedOn || '2026-11-19') + ' · the durable feed holds ' + (feed.totalEvents != null ? feed.totalEvents : '—') + ' events (' + (feed.last24h != null ? feed.last24h : '—') + ' in the last 24 hours) · read ' + when(d.generatedAt) + '.';
+  }
+  var z = document.getElementById('boardZone');
+  z.innerHTML = (d.surfaces || []).map(function(s){
+    var idn = s.identity || {};
+    var chips = Object.keys(SERVICE_LABELS).map(function(key){
+      return '<span class="chip' + (s.services && s.services[key] ? ' on' : '') + '">' + SERVICE_LABELS[key] + (s.services && s.services[key] ? '' : ' —') + '</span>';
+    }).join('');
+    var lastRow;
+    if (!s.eventsAvailable) lastRow = kv('Last event', 'Feed unavailable on this load');
+    else if (!s.eventSources || !s.eventSources.length) lastRow = kv('Last event', 'Lands under the shared intake tags');
+    else if (s.lastEvent) lastRow = kv('Last event', s.lastEvent.type + ' · ' + when(s.lastEvent.at));
+    else lastRow = kv('Last event', 'No events recorded yet');
+    return '<div class="card"><h3>' + esc(s.name) + ' <span class="pill ' + (IDENTITY_PILL[idn.state] || '') + '">' + esc(idn.label || idn.state || '') + '</span></h3>' +
+      '<div class="kind">' + esc(s.kind || '') + '</div>' +
+      '<div class="rows">' +
+      kv('Hosts', (s.hosts || []).join(', ') || '—') +
+      kv('Signed-in travel', idn.label || '—') +
+      (idn.receiverPath ? kv('Receiver', idn.receiverPath) : '') +
+      kv('API path', (s.api && s.api.label) || '—') +
+      lastRow +
+      '</div>' +
+      (idn.note ? '<div class="note">' + esc(idn.note) + '</div>' : '') +
+      (s.api && s.api.note ? '<div class="note">' + esc(s.api.note) + '</div>' : '') +
+      '<div class="chips">' + chips + '</div>' +
+      (s.home ? '<div class="openrow"><a class="btn ghost sm" href="' + esc(s.home) + '" target="_blank" rel="noopener">Open surface</a></div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+/* ── Latest events strip ────────────────────────────────────── */
+function renderFeed(rows){
+  var z = document.getElementById('feedZone');
+  if (!rows || !rows.length){
+    z.innerHTML = '<div class="empty" style="margin-top:0">No events in the feed yet — the first booking, completion, referral, review or job event on any surface lands here.</div>';
+    return;
+  }
+  z.innerHTML = rows.map(function(e){
+    return '<div class="evt"><span class="etype">' + esc(e.type) + '</span>' +
+      '<span class="emeta">' + esc(e.source || '—') + (e.referenceCode ? ' · ' + esc(e.referenceCode) : '') + ' · ' + esc(when(e.at)) + '</span></div>';
+  }).join('');
+}
+function loadFeed(){
+  return authFetch('/platform/events?limit=15')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status !== 200 || !res.j || !Array.isArray(res.j.data)) throw new Error('bad');
+      renderFeed(res.j.data);
+    })
+    .catch(function(){ document.getElementById('feedZone').innerHTML = '<div class="empty" style="margin-top:0">The event feed could not be loaded — refresh to try again.</div>'; });
+}
+
+/* ── Boot ───────────────────────────────────────────────────── */
+function boot(){
+  if (!tok()){ showGate(''); return; }
+  authFetch('/interconnect/registry')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status === 403){ if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('That account is not a staff account, so this board stays closed for it.'); } return; }
+      if (res.status !== 200 || !res.j || !res.j.data){ showGate('The Interconnect board could not be reached — sign in again.'); return; }
+      document.getElementById('gateZone').innerHTML = '';
+      document.getElementById('staffZone').style.display = 'block';
+      renderBoard(res.j.data);
+      loadFeed();
+    })
+    .catch(function(){ showGate('The Interconnect board could not be reached — sign in again.'); });
+}
+
+document.getElementById('btnSignOut').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
+<script src="/shared/pepper-chat.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>
