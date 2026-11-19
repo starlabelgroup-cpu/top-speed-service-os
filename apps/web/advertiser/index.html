@@ -108,7 +108,7 @@ footer strong{color:#fff}
 <body>
 <header class="site-hd">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
-  <nav><a href="/ads">Ads HQ</a><a href="/flywheel">Flywheel</a><a href="/advertise">Advertise</a><a class="tse-call" href="tel:+19549317997"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
+  <nav><a href="/ads">Ads HQ</a><a href="/flywheel">Flywheel</a><a href="/advertise">Advertise</a><a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
 </header>
 
 <div class="g">
@@ -345,7 +345,7 @@ footer strong{color:#fff}
 
 <footer>
   <strong>Top Speed Appliance LLC</strong> — The Faster, The Better.<br>
-  Advertiser Console · topspeedserviceos.com/advertiser · Business line 954-931-7997
+  Advertiser Console · topspeedserviceos.com/advertiser · Business line 844-460-7038
 </footer>
 
 <script>
@@ -614,7 +614,7 @@ function renderPlans(){
     lines.push('<p class="g-sub"><b style="color:#202124">'+esc(planName)+'</b> '+planStatusChip(a)+(a.effectiveStatus==='OFFICE_GRANTED'?' <span class="g-sub">— no payment on file; the office granted this plan.</span>':'')+'</p>');
     if(a.currentPeriodEnd) lines.push('<p class="g-sub" style="margin-top:6px">'+(a.cancelAtPeriodEnd?'Ends':'Renews')+' '+fmtDate(a.currentPeriodEnd)+(a.cancelAtPeriodEnd?' — cancellation is scheduled; the plan stays live until then.':'')+'</p>');
     if(a.pendingPlanKey){ var pp=myPlans.filter(function(x){return x.key===a.pendingPlanKey;})[0]; lines.push('<p class="g-sub" style="margin-top:6px">Scheduled change: moves to <b>'+esc(pp?pp.name:a.pendingPlanKey)+'</b> at the end of the current period.</p>'); }
-    if(a.effectiveStatus==='GRACE') lines.push('<p class="g-sub" style="margin-top:6px"><b>Payment past due.</b> Your plan keeps running during the grace window — please update your payment method with Stripe or contact the office at 954-931-7997.</p>');
+    if(a.effectiveStatus==='GRACE') lines.push('<p class="g-sub" style="margin-top:6px"><b>Payment past due.</b> Your plan keeps running during the grace window — please update your payment method with Stripe or contact the office at 844-460-7038.</p>');
     if(a.effectiveStatus==='SUSPENDED') lines.push('<p class="g-sub" style="margin-top:6px"><b>Plan suspended.</b> Your campaigns are read-only until the plan is reactivated.</p>');
   } else {
     lines.push('<p class="g-sub"><b style="color:#202124">No plan yet</b> '+planStatusChip(a)+'</p>');
@@ -689,7 +689,7 @@ function advCopy(){ var svc=document.getElementById('cpService').value.split(' /
   var H=['Top Speed Appliance Repair',svc+' Repair in '+city,'Same-Day '+svc+' Repair','Local '+svc+' Experts','Book Online in 60 Seconds','$99 Diagnostic — Credited','Appliance Repair Near You','The Faster, The Better'];
   if(ang==='trust') H=['90-Day Warranty on Repairs','Licensed Local Technicians','Flat Quote Before We Start','$99 Diagnostic — Credited','Top Speed Appliance Repair',svc+' Repair in '+city,'Book Online in 60 Seconds','Trusted by Broward Neighbors'];
   if(ang==='tech') H=['Show Us Live On Video','AI Photo Diagnosis — Free','Track Your Tech Live','$99 Diagnostic — Credited','Top Speed Appliance Repair',svc+' Repair in '+city,'Book Online in 60 Seconds','The Faster, The Better'];
-  var D=['Top Speed fixes '+svc.toLowerCase()+'s across '+city+'. $99 diagnostic collected at booking and credited toward your repair. Book online or call 954-931-7997.',
+  var D=['Top Speed fixes '+svc.toLowerCase()+'s across '+city+'. $99 diagnostic collected at booking and credited toward your repair. Book online or call 844-460-7038.',
     'Flat quote after diagnosis, before any work. Parts and labor carry a 90-day warranty. Five arrival windows daily — book in 60 seconds.',
     'Send a photo, get a preliminary diagnosis, watch your tech arrive live. Serving '+city+' and 64 more cities across Broward, Palm Beach & Miami-Dade. The Faster, The Better.'];
   var hr=H.map(function(h){ var f=fit(h,30); return '<div class="copyrow"><span>'+f+'</span><span class="count">'+f.length+'/30</span></div>'; }).join('');

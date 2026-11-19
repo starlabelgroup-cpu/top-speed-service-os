@@ -92,7 +92,7 @@ export const REACH_LINKS = {
   speedy: 'https://topspeedserviceos.com/speedy',
   track: 'https://topspeedserviceos.com/track',
   refer: 'https://topspeedserviceos.com/refer',
-  call: 'tel:+19549317997',
+  call: 'tel:+18444607038',
 };
 
 export const CUSTOMER_REACH_FOOTER =
@@ -277,7 +277,7 @@ function customerChannels(booking) {
 /* ------------------------------------------------------------------ */
 
 export const STAFF_ALERT_EMAIL = 'service@topspeedappliance.net';
-export const STAFF_ALERT_PHONE = PLATFORM_CONSTANTS.phone; // 954-931-7997, the business line
+export const STAFF_ALERT_PHONE = '+19549317997'; // the owner's cell — pinned on purpose: staff alerts must keep landing on the owner's own phone even though the public platform number (PLATFORM_CONSTANTS.phone) is now the toll-free line, which forwards to this same cell
 
 /**
  * Alert the business about a submission. Respects the staff toggles:

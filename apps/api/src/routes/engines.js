@@ -51,8 +51,8 @@ import { allKnowledgeEntries, matchSafetyEntry } from '../knowledge/index.js';
 
 const SITE = 'https://topspeedserviceos.com';
 const NET = 'https://www.topspeedappliance.net';
-const PHONE_DISPLAY = PLATFORM_CONSTANTS.phoneDisplay; // (954) 931-7997
-const PHONE_PLAIN = PLATFORM_CONSTANTS.phone; // 954-931-7997
+const PHONE_DISPLAY = PLATFORM_CONSTANTS.phoneDisplay; // (844) 460-7038
+const PHONE_PLAIN = PLATFORM_CONSTANTS.phone; // 844-460-7038
 const COMPARE_CHECKED_DATE = '2026-11-16';
 
 const router = Router();

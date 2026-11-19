@@ -2377,7 +2377,7 @@ router.get('/provider/company', ...providerBoard, (req, res) => {
         {
           name: 'Cleanout Vents',
           role: 'Registered vendor partner — dryer vent cleaning',
-          phoneDisplay: '(954) 931-7997',
+          phoneDisplay: '(844) 460-7038',
           note: 'Route vent work to Cleanout Vents. Never quote a vent price — none exists on Top Speed surfaces.',
         },
         {

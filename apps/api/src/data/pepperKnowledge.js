@@ -47,7 +47,7 @@ export const PEPPER_STAFF_PACK = [
     topic: 'Cleanout Vents — partner routing, never a vent price',
     keywords: ['cleanout vents', 'dryer vent', 'vent cleaning', 'vent price', 'lint', 'dryer airflow'],
     answer:
-      'Cleanout Vents is a registered vendor partner in the Top Speed network for dryer-vent work. Route dryer-vent questions to Cleanout Vents at 954-931-7997. There is NO vent price on Top Speed surfaces — never quote one — and vent cleaning is never offered as a bookable Top Speed appliance service.',
+      'Cleanout Vents is a registered vendor partner in the Top Speed network for dryer-vent work. Route dryer-vent questions to Cleanout Vents at 844-460-7038. There is NO vent price on Top Speed surfaces — never quote one — and vent cleaning is never offered as a bookable Top Speed appliance service.',
   },
   {
     topic: 'Referral program terms',

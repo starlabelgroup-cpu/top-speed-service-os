@@ -614,7 +614,7 @@ function loadAll(){
     var ints = '';
     ints += intCard('Speedy AI (OpenAI)', 'g', 'LIVE', 'Bookings, diagnosis and knowledge on every page, under your human-approval rules.');
     ints += intCard('Email — Resend', 'g', 'LIVE', 'Verified sending domain; booking, invoice and alert emails flow through the outbox.');
-    ints += intCard('SMS &amp; Voice — Twilio', 'g', 'UPGRADED', 'Account upgraded out of trial and funded. Voice forwarding to 954-931-7997 is built; SMS sends from +1 (844) 460-7038.');
+    ints += intCard('SMS &amp; Voice — Twilio', 'g', 'UPGRADED', 'Account upgraded out of trial and funded. Voice forwarding to 844-460-7038 is built; SMS sends from +1 (844) 460-7038.');
     ints += intCard('Card payments — Stripe', pay.configured ? 'g' : 'y', pay.configured ? 'LIVE' : 'NOT CONNECTED', pay.configured ? 'In-platform card payments are on.' : 'Checkout code is live but dark — paste the live Stripe keys in Vercel to turn payments on.');
     ints += intCard('QuickBooks', fin.status === 'synced' || fin.lastSyncAt ? 'g' : 'y', fin.lastSyncAt ? 'SYNCED' : 'NOT SYNCED', 'Finance layer is built into Book OS, Local, Marketing and Media. First sync needs your industry pick + an owner sign-in moment.');
     ints += intCard('Google sign-in', g.configured ? 'g' : 'y', g.configured ? 'LIVE' : 'ALMOST', g.configured ? 'Customers can sign in with Google.' : 'Built and waiting on one paste: the client secret in Vercel.');

@@ -181,7 +181,7 @@ export function formatKnowledgeForPrompt(matches, maxChars = 1800) {
 /* ------------------------- always-answer fallback ------------------------ */
 
 const NEXT_STEP =
-  '\n\nIf you\'d like to move forward: I can book the $99 diagnostic visit (credited in full toward your repair) — just tell me your city and ZIP — or you can reach the team at (954) 931-7997, Monday–Friday, 8 AM–7 PM.';
+  '\n\nIf you\'d like to move forward: I can book the $99 diagnostic visit (credited in full toward your repair) — just tell me your city and ZIP — or you can reach the team at (844) 460-7038, Monday–Friday, 8 AM–7 PM.';
 
 const GREETING_PATTERN = /^\s*(hi|hello|hey|good (morning|afternoon|evening)|yo|hiya)\b[^.!?]*[.!?]?\s*$/i;
 const THANKS_PATTERN = /\b(thank(s| you)|thanks|thx|appreciate it)\b/i;
@@ -208,7 +208,7 @@ export function composeFallbackAnswer(message) {
       kind: 'smalltalk',
       entryId: null,
       reply:
-        'You\'re welcome. If anything else comes up — a question, a photo of a problem, or booking a visit — I\'m right here. The team is also at (954) 931-7997, Monday–Friday, 8 AM–7 PM.',
+        'You\'re welcome. If anything else comes up — a question, a photo of a problem, or booking a visit — I\'m right here. The team is also at (844) 460-7038, Monday–Friday, 8 AM–7 PM.',
     };
   }
 
@@ -242,6 +242,6 @@ export function composeFallbackAnswer(message) {
   }
   reply +=
     'For a confirmed answer about your appliance, the $99 diagnostic visit (credited in full toward the repair) puts a technician on it — I can book it if you tell me your city and ZIP, or you can send a photo of the problem for a preliminary read. ' +
-    'The team can also confirm details directly at (954) 931-7997, Monday–Friday, 8 AM–7 PM.';
+    'The team can also confirm details directly at (844) 460-7038, Monday–Friday, 8 AM–7 PM.';
   return { kind: 'general', entryId: top?.entry.id || null, reply };
 }

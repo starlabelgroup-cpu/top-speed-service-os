@@ -188,7 +188,7 @@ router.post('/speedy/diagnose', optionalAuthenticate, async (req, res) => {
       data: { ...result, sessionId: session?.id || normalizeChatSessionId(parsed.data.sessionId) || undefined },
     });
   } catch (error) {
-    return res.status(502).json({ error: 'Speedy could not read that photo — try again, or call (954) 931-7997', detail: String(error?.message || error) });
+    return res.status(502).json({ error: 'Speedy could not read that photo — try again, or call (844) 460-7038', detail: String(error?.message || error) });
   }
 });
 
@@ -213,7 +213,7 @@ router.post('/speedy/extract-booking', async (req, res) => {
     const data = await speedyExtractBooking(parsed.data.text);
     return res.json({ data });
   } catch (error) {
-    return res.status(502).json({ error: 'Speedy could not read that yet — keep chatting, or call (954) 931-7997', detail: String(error?.message || error) });
+    return res.status(502).json({ error: 'Speedy could not read that yet — keep chatting, or call (844) 460-7038', detail: String(error?.message || error) });
   }
 });
 

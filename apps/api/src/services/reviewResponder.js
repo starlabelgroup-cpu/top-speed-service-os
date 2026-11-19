@@ -30,7 +30,7 @@ import { speedyChat, speedyStatus } from './speedy.js';
  * fails (the review simply waits, reply-less, for the office).
  */
 
-const PHONE = PLATFORM_CONSTANTS.phoneDisplay; // (954) 931-7997
+const PHONE = PLATFORM_CONSTANTS.phoneDisplay; // (844) 460-7038
 
 export const REVIEW_FLAG_KEYWORDS = [
   'refund', 'money back', 'damage', 'damaged', 'broken again',

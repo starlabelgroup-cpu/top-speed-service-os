@@ -239,7 +239,7 @@ THE FIVE INTAKES:
 1. THE WEB FORM. /book, the homepage booking section, the /app Book tab, and every wired landing page (topspeedappliancerepair.com, totalhomeappliance.com and the rest) run the same form into the same queue. The form asks for name, phone, city, ZIP, appliance, issue and preferred window — and captures the visitor's attribution (Module 44) on the way in.
 2. SPEEDY CHAT. A customer chatting with Speedy can book from the chat — but Speedy must first SUMMARIZE everything it collected and show the customer a summary card. Nothing goes to the Service Setters office until the customer confirms the summary with a tap. No confirmation, no booking. In fallback mode (the AI provider is down) no summary card can appear and no chat booking can be sent at all — the customer is pointed to the form and the phone instead.
 3. PEPPER LISTS — BOOK. Inside Pepper Lists, the Book purpose leads with the same web form, then Speedy booking, then Scan & Send. Same queue on the other side.
-4. THE PHONE. A customer calls 954-931-7997 and the setter creates the booking in Book OS from the call. The booking is the same record either way.
+4. THE PHONE. A customer calls 844-460-7038 and the setter creates the booking in Book OS from the call. The booking is the same record either way.
 5. COMMERCIAL AND PM DOORS. Businesses and property managers come through Appliance Pro and Appliance Connect Pro with business accounts; their work orders land in the same setter world with their own references (Module 50 covers the request types that are NOT bookings).
 
 WHAT THE CUSTOMER RECEIVES:

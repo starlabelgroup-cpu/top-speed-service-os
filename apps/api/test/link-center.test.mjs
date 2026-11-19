@@ -256,7 +256,7 @@ async function run() {
   const cap1 = emailCaptures.find((c) => Array.isArray(c.to) && c.to.includes(RECIPIENT) && String(c.text || '').includes('src=linkcenter'));
   check('Resend stub received the booking email', Boolean(cap1), true);
   checkIncludes('booking email greets by first name', cap1?.text || '', 'Hi Maria,');
-  checkIncludes('booking email carries the business phone', cap1?.text || '', '(954) 931-7997');
+  checkIncludes('booking email carries the business phone', cap1?.text || '', '(844) 460-7038');
 
   // --- EMAIL sends: ACCOUNT + REVIEW ----------------------------------
   const sendAcct = await api('/link-center/send', { token: staff, method: 'POST', body: { linkType: 'ACCOUNT', channel: 'EMAIL', email: RECIPIENT } });

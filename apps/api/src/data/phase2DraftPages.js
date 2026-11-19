@@ -32,12 +32,12 @@
 
 export const PHASE2_SITE_BASE = 'https://topspeedappliance.net';
 
-const PHONE = '954-931-7997';
+const PHONE = '844-460-7038';
 
 // Booking-links CTA body for the 2026-11-13 tri-county problem pages:
 // every page carries the Speedy Booking and Speedy AI links, per the
 // owner's "booking links on all pages" directive.
-const SPEEDY_CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 954-931-7997.';
+const SPEEDY_CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 844-460-7038.';
 
 function ctaBlock(heading, body) {
   return { type: 'cta', heading, body, phone: PHONE };
@@ -216,7 +216,7 @@ function citySections(city) {
         city.faqLocal,
         {
           q: 'How do I book?',
-          a: 'Book online, call 954-931-7997, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
+          a: 'Book online, call 844-460-7038, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
         },
         trackingFaq(),
       ],
@@ -256,7 +256,7 @@ function commercialSections() {
       items: [
         {
           q: 'How does my business open an account?',
-          a: 'Submit a commercial account request (you will get an APC- reference) or call 954-931-7997. We confirm your facilities, equipment list, and agreement tier before the first work order.',
+          a: 'Submit a commercial account request (you will get an APC- reference) or call 844-460-7038. We confirm your facilities, equipment list, and agreement tier before the first work order.',
         },
         {
           q: 'What kinds of businesses do you cover?',
@@ -861,7 +861,7 @@ function symptomSections(page) {
       page.faq,
       {
         q: 'How do I book?',
-        a: 'Book online in about a minute, call 954-931-7997, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
+        a: 'Book online in about a minute, call 844-460-7038, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
       },
       trackingFaq(),
     ],

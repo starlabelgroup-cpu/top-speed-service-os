@@ -84,7 +84,7 @@ var CAT_SERVICES = [
  {kind:'comins', name:'Commercial Trash & Beverage Equipment Installation', slug:'commercial-trash-and-beverage-equipment-installation', parent:'commercial-appliance-installation'}
 ];
 
-var CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 954-931-7997.';
+var CTA_BODY = 'Book online with Speedy Booking at topspeedserviceos.com/book — or chat with Speedy AI anytime at topspeedserviceos.com/speedy for questions, photo diagnosis and service requests. Prefer to talk? Call 844-460-7038.';
 var CORE_SERVICES = [
  {name:'Refrigerator', slug:'refrigerator-repair'},
  {name:'Washer', slug:'washer-repair'},
@@ -98,10 +98,10 @@ var CORE_SERVICES = [
 function rewriteCta(sections, heading){
   var found = false;
   var out = (sections||[]).map(function(b){
-    if(b.type==='cta'){ found = true; return {type:'cta', heading:heading, body:CTA_BODY, phone:'954-931-7997'}; }
+    if(b.type==='cta'){ found = true; return {type:'cta', heading:heading, body:CTA_BODY, phone:'844-460-7038'}; }
     return b;
   });
-  if(!found) out.push({type:'cta', heading:heading, body:CTA_BODY, phone:'954-931-7997'});
+  if(!found) out.push({type:'cta', heading:heading, body:CTA_BODY, phone:'844-460-7038'});
   return out;
 }
 var SYMPTOM_NAMES = {'not-cooling':'Not Cooling','not-draining':'Not Draining','not-heating':'Not Heating','leaking':'Leaking','error-codes':'Error Codes','unusual-noises':'Unusual Noises','no-ice':'No Ice'};

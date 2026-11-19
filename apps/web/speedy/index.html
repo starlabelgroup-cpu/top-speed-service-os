@@ -77,7 +77,7 @@ h1{font-family:"Archivo";font-size:clamp(28px,5vw,40px);margin:6px 0 8px;color:v
     <nav>
       <a href="/book">Book</a>
       <a href="/track">Track My Tech</a>
-      <a href="tel:+19549317997">954-931-7997</a>
+      <a href="tel:+18444607038">844-460-7038</a>
     </nav>
   </div>
 </header>
@@ -109,7 +109,7 @@ h1{font-family:"Archivo";font-size:clamp(28px,5vw,40px);margin:6px 0 8px;color:v
     </form>
   </div>
 
-  <p class="fine">Speedy books real jobs into Book OS. It never invents prices or certifies a repair is safe — a technician diagnoses on site. Prefer the classic route? Use <a href="/book">Smart Booking</a> or call <a href="tel:+19549317997"><b>954-931-7997</b></a>.</p>
+  <p class="fine">Speedy books real jobs into Book OS. It never invents prices or certifies a repair is safe — a technician diagnoses on site. Prefer the classic route? Use <a href="/book">Smart Booking</a> or call <a href="tel:+18444607038"><b>844-460-7038</b></a>.</p>
 
   <div class="doors">
     <a class="door" href="/connect-pro-app"><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Appliance Connect Pro</b><span>Homeowners &amp; property managers — your app: registry, history, Speedy booking, bulk requests.</span><em>Customer / PM login →</em></a>
@@ -185,7 +185,7 @@ function askSpeedy(text){
       spMaybeBook();
     })
     .catch(function(){
-      typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 \u2014 or try me again in a moment.';
+      typing.textContent='Speedy hit a connection snag just now. For the fastest help, call dispatch at 844-460-7038 \u2014 or try me again in a moment.';
     });
 }
 function quickAsk(t){ if(!spOpen)toggleSpeedy(); askSpeedy(t); }
@@ -236,7 +236,7 @@ function spBookIt(btn){
     })
     .catch(function(e){
       btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Looks right \u2014 send it';
-      addMsg('That booking did not go through ('+e.message+'). You can use the Smart Booking form on this page, or call 954-931-7997.',false);
+      addMsg('That booking did not go through ('+e.message+'). You can use the Smart Booking form on this page, or call 844-460-7038.',false);
     });
 }
 function spEsc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
@@ -349,7 +349,7 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
  fetch(SP_API+'/speedy/send-receipt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reference:ref,phone:d.phone,channel:channel})})
  .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Could not send'); return j; });})
  .then(function(j){ addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> '+String((j.data&&j.data.message)||'Done.').replace(/</g,'&lt;'),false,true); })
- .catch(function(e){ addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: '+String(e.message).replace(/</g,'&lt;')+'. Call 954-931-7997 and we will send it by phone.',false,true); });
+ .catch(function(e){ addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: '+String(e.message).replace(/</g,'&lt;')+'. Call 844-460-7038 and we will send it by phone.',false,true); });
 }
 (function(){ var B=document.getElementById('spPhoto'), F=document.getElementById('spFile'); if(!B||!F) return;
  B.addEventListener('click',function(){ F.click(); });
@@ -362,7 +362,7 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
    fetch(SP_API+'/speedy/diagnose',{method:'POST',headers:spHeaders(),body:JSON.stringify({imageDataUrl:cv.toDataURL('image/jpeg',0.82),note:'Photo sent by a customer in the Speedy chat',sessionId:spSessionId(),source:'speedy-page'})})
    .then(function(r2){return r2.json().then(function(j){ if(!r2.ok) throw new Error(j.error||'Diagnosis failed'); return j; });})
    .then(function(j){ var rep=(j.data&&(j.data.reply||j.data.summary||j.data.text))||''; addMsg(rep?('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy\u2019s first look: '+spFmt(rep)+' A technician confirms the diagnosis on site \u2014 Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'):'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> I received your photo but could not read it clearly \u2014 a technician will review it in person. Want me to book the $99 diagnostic visit?',false,true); })
-   .catch(function(){ addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 954-931-7997.',false,true); });
+   .catch(function(){ addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now \u2014 book the visit and the technician will diagnose on site, or call 844-460-7038.',false,true); });
   }; img.src=ev.target.result; }; r.readAsDataURL(f);
  });
 })();

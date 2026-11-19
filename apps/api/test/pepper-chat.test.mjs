@@ -297,7 +297,7 @@ async function main() {
   checkTrue('unit: status detector catches a status question', messageAsksStatus('What is the system status?'));
   check('unit: status detector ignores a console question', messageAsksStatus('Where is the CRM?'), false);
   const kb = searchPepperKnowledge('dryer vent cleaning price', 4);
-  checkTrue('unit: vent question matches the Cleanout Vents rule', kb.length > 0 && kb[0].entry.answer.includes('954-931-7997'));
+  checkTrue('unit: vent question matches the Cleanout Vents rule', kb.length > 0 && kb[0].entry.answer.includes('844-460-7038'));
 
   const webRoot = fileURLToPath(new URL('../../web/', import.meta.url));
   const widget = readFileSync(`${webRoot}shared/pepper-chat.js`, 'utf8');

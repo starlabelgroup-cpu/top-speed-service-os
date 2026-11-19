@@ -154,7 +154,7 @@ const SAFETY_ENTRIES = [
     keywords: ['smell gas', 'gas smell', 'gas leak', 'smells like gas', 'rotten egg smell', 'carbon monoxide', 'co alarm', 'co detector'],
     safety: true,
     answer:
-      `Stop — this is a safety situation, not a repair question. If you smell gas: do not touch electrical switches or appliances, leave the home now, and from outside call 911 or your gas utility. Do not try to find or fix the leak yourself, and do not re-enter until the utility or fire department says it is safe. The same goes for a carbon monoxide alarm: get everyone out and call 911. Once everyone is safe, call Top Speed at (954) 931-7997 — a human professional on our team takes it from there.`,
+      `Stop — this is a safety situation, not a repair question. If you smell gas: do not touch electrical switches or appliances, leave the home now, and from outside call 911 or your gas utility. Do not try to find or fix the leak yourself, and do not re-enter until the utility or fire department says it is safe. The same goes for a carbon monoxide alarm: get everyone out and call 911. Once everyone is safe, call Top Speed at (844) 460-7038 — a human professional on our team takes it from there.`,
   },
   {
     id: 'ind-safety-electrical',
@@ -162,7 +162,7 @@ const SAFETY_ENTRIES = [
     keywords: ['burning smell', 'sparking', 'arcing', 'smell burning', 'electrical smell', 'shock', 'smoke', 'scorch', 'melted plug'],
     safety: true,
     answer:
-      `Stop using the appliance right now. A burning smell, sparking, arcing, scorch marks, or any electric shock means the appliance comes out of service immediately: switch it off, and unplug it or switch off its breaker only if you can do that without touching anything damaged or wet. Do not open the appliance up and do not keep testing it. If there is smoke or flame, leave and call 911. Once you are safe, call Top Speed at (954) 931-7997 — this needs a human professional, and our team will take it from here.`,
+      `Stop using the appliance right now. A burning smell, sparking, arcing, scorch marks, or any electric shock means the appliance comes out of service immediately: switch it off, and unplug it or switch off its breaker only if you can do that without touching anything damaged or wet. Do not open the appliance up and do not keep testing it. If there is smoke or flame, leave and call 911. Once you are safe, call Top Speed at (844) 460-7038 — this needs a human professional, and our team will take it from here.`,
   },
   {
     id: 'ind-safety-water',
@@ -170,7 +170,7 @@ const SAFETY_ENTRIES = [
     keywords: ['flooding', 'flood', 'water pouring', 'water everywhere', 'burst hose', 'leak near electrical', 'water gushing', 'standing water'],
     safety: true,
     answer:
-      `Treat active flooding as a safety situation first: water and electricity together are dangerous. If it is safe to do without standing in the water, turn off the water supply to the appliance and switch off its breaker; otherwise keep clear and call for help. Do not run the appliance, and do not touch plugs or switches with wet hands. Once the water is stopped and everyone is safe, call Top Speed at (954) 931-7997 and a human on our team will take it from there.`,
+      `Treat active flooding as a safety situation first: water and electricity together are dangerous. If it is safe to do without standing in the water, turn off the water supply to the appliance and switch off its breaker; otherwise keep clear and call for help. Do not run the appliance, and do not touch plugs or switches with wet hands. Once the water is stopped and everyone is safe, call Top Speed at (844) 460-7038 and a human on our team will take it from there.`,
   },
   {
     id: 'ind-safety-refrigerant',
@@ -178,7 +178,7 @@ const SAFETY_ENTRIES = [
     keywords: ['refrigerant', 'refrigerant leak', 'freon', 'chemical smell from fridge', 'hissing fridge', 'coolant leak'],
     safety: true,
     answer:
-      `Refrigerant work is licensed, human-professional work — full stop. If you suspect a refrigerant leak (a chemical smell, hissing, or oil around refrigerator lines), ventilate the room, do not try to open, recharge, or seal anything yourself, and keep the appliance off if it is behaving strangely. Call Top Speed at (954) 931-7997: a qualified technician handles sealed-system work in person, and no AI guidance substitutes for that.`,
+      `Refrigerant work is licensed, human-professional work — full stop. If you suspect a refrigerant leak (a chemical smell, hissing, or oil around refrigerator lines), ventilate the room, do not try to open, recharge, or seal anything yourself, and keep the appliance off if it is behaving strangely. Call Top Speed at (844) 460-7038: a qualified technician handles sealed-system work in person, and no AI guidance substitutes for that.`,
   },
 ];
 

@@ -22,7 +22,7 @@ export function intakeRateLimit(family) {
     if (verdict.allowed) return next();
     res.set('Retry-After', String(verdict.retryAfterSeconds));
     return res.status(429).json({
-      error: 'Too many requests from this connection — please wait a little while and try again, or call us at 954-931-7997.',
+      error: 'Too many requests from this connection — please wait a little while and try again, or call us at 844-460-7038.',
       code: 'RATE_LIMITED',
     });
   };

@@ -35,7 +35,7 @@
     });
   }
 
-  var CALL = { label: 'Call 954-931-7997', href: 'tel:+19549317997' };
+  var CALL = { label: 'Call 844-460-7038', href: 'tel:+18444607038' };
 
   /* ---- Main routes: the highway. Book + Call are ALWAYS here. ---- */
   var MAIN_ROUTES = [
@@ -98,7 +98,7 @@
       { label: 'Offers & Rewards', href: 'https://topspeedserviceos.com/offers-rewards', keys: 'offers discounts programs rewards deals' },
       { label: 'Explore — Price Preview', href: 'https://topspeedserviceos.com/explore', keys: 'explore search compare estimate preview recommendations' },
       { label: 'Memberships & Plans', href: 'https://topspeedserviceos.com/memberships', keys: 'memberships maintenance plans priority' },
-      { label: 'Call 954-931-7997', href: 'tel:+19549317997', keys: 'call phone contact team' }
+      { label: 'Call 844-460-7038', href: 'tel:+18444607038', keys: 'call phone contact team' }
     ]}
   ];
 

@@ -315,7 +315,7 @@
       card.querySelector('[data-r="email"]').addEventListener('click', function () { sendReceipt('email'); });
       card.querySelector('[data-r="sms"]').addEventListener('click', function () { sendReceipt('sms'); });
     }).catch(function (e) {
-      addMsg('That booking did not go through (' + esc(e.message) + '). You can use the booking form on this site, or call 954-931-7997.', false);
+      addMsg('That booking did not go through (' + esc(e.message) + '). You can use the booking form on this site, or call 844-460-7038.', false);
     });
   }
 
@@ -324,7 +324,7 @@
     post('/speedy/send-receipt', { reference: bookedRef, phone: bookedPhone, channel: channel }).then(function (j) {
       addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> ' + esc((j.data && j.data.message) || 'Done.'), false);
     }).catch(function (e) {
-      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: ' + esc(e.message) + '. Call 954-931-7997 and we will send it by phone.', false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg> That did not go through: ' + esc(e.message) + '. Call 844-460-7038 and we will send it by phone.', false);
     });
   }
 
@@ -347,7 +347,7 @@
     }).catch(function () {
       t.remove();
       typing = false;
-      addMsg('Speedy hit a connection snag just now. For the fastest help, call dispatch at 954-931-7997 — or try me again in a moment.', false);
+      addMsg('Speedy hit a connection snag just now. For the fastest help, call dispatch at 844-460-7038 — or try me again in a moment.', false);
     });
   }
 
@@ -375,7 +375,7 @@
             ? '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy\'s first look: ' + fmtBot(rep) + ' A technician confirms the diagnosis on site — Speedy never certifies a repair is safe. Want me to book the $99 diagnostic visit?'
             : '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> I received your photo but could not read it clearly — a technician will review it in person. Want me to book the $99 diagnostic visit?', false);
         }).catch(function () {
-          addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now — book the visit and the technician will diagnose on site, or call 954-931-7997.', false);
+          addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Speedy could not read that photo just now — book the visit and the technician will diagnose on site, or call 844-460-7038.', false);
         });
       };
       img.src = ev.target.result;

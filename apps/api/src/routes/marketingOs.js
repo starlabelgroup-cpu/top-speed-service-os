@@ -184,7 +184,7 @@ function defaultSections(type, { city, brand, service }) {
   const faq = [
     {
       q: 'How do I book?',
-      a: 'Book online in about a minute, call 954-931-7997, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
+      a: 'Book online in about a minute, call 844-460-7038, or ask Speedy AI. A Service Setter confirms every appointment by phone.',
     },
     {
       q: 'Can I track my technician?',
@@ -202,7 +202,7 @@ function defaultSections(type, { city, brand, service }) {
     type: 'cta',
     heading: 'Book your repair',
     body: `Top Speed Appliance serves ${where} and all twelve Broward service cities.`,
-    phone: '954-931-7997',
+    phone: '844-460-7038',
   });
   return blocks;
 }
@@ -294,7 +294,7 @@ router.get('/marketing-os/publish-feed', (req, res) => {
     business: {
       name: 'Top Speed Appliance Network',
       legalName: 'Top Speed Appliance LLC',
-      phone: '954-931-7997',
+      phone: '844-460-7038',
       email: 'service@topspeedappliance.net',
       address: '6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073',
       hours: 'Mon-Fri 8am-7pm',

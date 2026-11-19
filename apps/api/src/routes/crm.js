@@ -414,7 +414,7 @@ router.post('/crm/customers/:id/speedy-draft', ...staffOnly, (req, res) => {
       if (!booking?.appointment || booking.appointment.status !== 'SET') {
         return res.status(422).json({ error: 'No set appointment to confirm for this customer yet — set the appointment in Service Book Pro first, then draft the confirmation.' });
       }
-      draft = `Hi ${firstName}, this is Top Speed Appliance confirming your ${booking.appliance} appointment on ${booking.appointment.date}, ${booking.appointment.windowLabel || booking.appointment.window}. Your reference is ${booking.referenceCode}. Reply here or call (954) 931-7997 if anything changes.`;
+      draft = `Hi ${firstName}, this is Top Speed Appliance confirming your ${booking.appliance} appointment on ${booking.appointment.date}, ${booking.appointment.windowLabel || booking.appointment.window}. Your reference is ${booking.referenceCode}. Reply here or call (844) 460-7038 if anything changes.`;
       break;
     }
     case 'review_request': {
@@ -429,7 +429,7 @@ router.post('/crm/customers/:id/speedy-draft', ...staffOnly, (req, res) => {
       break;
     }
     default: {
-      draft = `Hi ${firstName}, this is Top Speed Appliance following up${booking ? ` on your ${booking.appliance} request (${booking.referenceCode})` : ''}. A Service Setter can help you from here — reply to this message or call (954) 931-7997.`;
+      draft = `Hi ${firstName}, this is Top Speed Appliance following up${booking ? ` on your ${booking.appliance} request (${booking.referenceCode})` : ''}. A Service Setter can help you from here — reply to this message or call (844) 460-7038.`;
     }
   }
   appendEvent('SPEEDY_DRAFT_CREATED', {

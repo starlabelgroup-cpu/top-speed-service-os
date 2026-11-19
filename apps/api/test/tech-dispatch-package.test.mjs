@@ -334,7 +334,7 @@ async function main() {
   const suppliers = await api('/provider/suppliers', { token: tech });
   checkTrue('partner supplier listed', (suppliers.json.data.suppliers || []).some((s) => s.name === 'Appliance Plus Parts Supply'));
   const company = await api('/provider/company', { token: tech });
-  check('company phone display', company.json.data.business.phoneDisplay, '(954) 931-7997');
+  check('company phone display', company.json.data.business.phoneDisplay, '(844) 460-7038');
   check('company repair labor rule', company.json.data.pricing.repairLaborFlat, 210);
   const knowledge = await api('/provider/knowledge?q=refrigerator', { token: tech });
   checkTrue('knowledge returns real entries', (knowledge.json.data.results || []).length > 0);

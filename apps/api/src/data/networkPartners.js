@@ -16,7 +16,7 @@
  * the network as a vendor partner on 2026-11-14.
  *   Services: Dryer Vent Cleaning · Full Vent Line Cleanout ·
  *             Lint & Airflow Inspection
- *   Phone: 954-931-7997 · Hours: Mon–Fri 8am–7pm
+ *   Phone: 844-460-7038 · Hours: Mon–Fri 8am–7pm
  *   Address: 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073
  *   Coverage: Broward County (rides the Service Setters dispatch)
  *   Facebook: https://www.facebook.com/profile.php?id=61596212109545
