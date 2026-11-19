@@ -79,6 +79,51 @@ function twilioConfig() {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Twilio account state (trial vs upgraded) — read from Twilio itself,
+// never assumed. Credential PRESENCE cannot say whether the account is
+// a trial (the state lives on Twilio's side and changed on 2026-11-18
+// when the owner upgraded), so the account record is probed directly:
+// GET /2010-04-01/Accounts/{sid}.json reports type "Trial" or "Full".
+// The result is cached for five minutes so console health checks do
+// not hammer the provider. Any failure — network, auth, unexpected
+// payload — yields null (UNKNOWN): callers must word their copy for
+// all three states and never guess. Tests reset the cache between
+// stub phases via resetTwilioTrialCache().
+// ---------------------------------------------------------------------------
+const TWILIO_ACCOUNT_CACHE_MS = 5 * 60 * 1000;
+let twilioTrialCache = { trial: null, probedAt: 0 };
+
+export async function twilioTrialState({ force = false } = {}) {
+  const config = twilioConfig();
+  if (!config.configured) return null;
+  const now = Date.now();
+  if (!force && twilioTrialCache.probedAt && now - twilioTrialCache.probedAt < TWILIO_ACCOUNT_CACHE_MS) {
+    return twilioTrialCache.trial;
+  }
+  let trial = null;
+  try {
+    const response = await fetch(`${config.base}/2010-04-01/Accounts/${config.sid}.json`, {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${config.sid}:${config.token}`).toString('base64')}`,
+      },
+    });
+    if (response.ok) {
+      const body = await response.json().catch(() => ({}));
+      if (body?.type === 'Trial') trial = true;
+      else if (body?.type === 'Full') trial = false;
+    }
+  } catch {
+    // Provider unreachable from here — the state stays unknown.
+  }
+  twilioTrialCache = { trial, probedAt: now };
+  return trial;
+}
+
+export function resetTwilioTrialCache() {
+  twilioTrialCache = { trial: null, probedAt: 0 };
+}
+
 function sendgridConfig() {
   const apiKey = process.env['SENDGRID' + '_API_KEY'];
   return {
@@ -361,11 +406,12 @@ export async function drainEntries(entries) {
  * `fromVerifiedDomain` flags whether sends originate from the
  * SPF/DKIM-verified updates subdomain (the .net domain failed
  * verification, so a From on it means Resend will reject the send).
- * The SMS trial flag reflects the known account state: Ramone's
- * Twilio account is a trial (sends only reach verified numbers) until
- * he upgrades it — presence of credentials does not change that.
+ * The SMS trial flag is NOT derivable from configuration — callers
+ * pass the live probe result (twilioTrialState()): true = Twilio
+ * reports a trial account, false = Twilio reports a full account,
+ * null = not probed / unknown. Nothing here hardcodes the state.
  */
-export function channelHealth() {
+export function channelHealth({ smsTrial = null } = {}) {
   const email = resendConfig();
   const sms = twilioConfig();
   const eChain = emailChain();
@@ -383,7 +429,7 @@ export function channelHealth() {
       provider: 'twilio',
       configured: sChain.some((provider) => provider.configured),
       from: sms.from || null,
-      trial: true,
+      trial: smsTrial,
       chain: chainView(sChain),
     },
   };

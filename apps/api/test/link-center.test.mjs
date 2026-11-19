@@ -5,9 +5,14 @@
  *
  * Everything is local: the API boots against DATABASE_URL (a fresh
  * drill Postgres), and Resend / Twilio / Stripe are stubbed on a
- * localhost HTTP server via the providers' *_API_BASE hooks — the
- * Twilio stub answers with the trial-account error (21608), so the
- * SMS send must land in an honest FAILED state, never SENT.
+ * localhost HTTP server via the providers' *_API_BASE hooks. Phase 1
+ * runs the Twilio stub as a TRIAL account (the account probe reports
+ * "Trial" and message sends answer with the trial error 21608), so
+ * the SMS send must land in an honest FAILED state, never SENT.
+ * Phase 2 restarts the API against the stub flipped to a FULL
+ * (upgraded) account — the state Ramone's account entered on
+ * 2026-11-18 — and the same SMS send must land SENT, with the
+ * options endpoint reporting trial=false from Twilio's own record.
  *
  * Checks: endpoint auth (anon 401 / customer 403 / staff 200),
  * catalog correctness (URLs match the real surfaces), EMAIL sends
@@ -54,6 +59,9 @@ let failures = 0;
 const emailCaptures = [];
 let stripeSessions = 0;
 let twilioAttempts = 0;
+// The Twilio stub's account type: 'Trial' for phase 1, flipped to
+// 'Full' for the upgraded phase 2 (the API probes it live).
+let stubAccountType = 'Trial';
 
 function check(label, actual, expected) {
   const ok = actual === expected;
@@ -97,10 +105,20 @@ function startStub() {
         res.end(JSON.stringify({ id: 'resend-linkdrill' }));
         return;
       }
+      if (req.method === 'GET' && req.url.includes('/2010-04-01/Accounts/')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ sid: 'ACdrilltrial', type: stubAccountType, status: 'active' }));
+        return;
+      }
       if (req.method === 'POST' && req.url.includes('/Messages.json')) {
         twilioAttempts += 1;
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ code: 21608, message: "The 'To' number is not a verified number for this trial account." }));
+        if (stubAccountType === 'Trial') {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ code: 21608, message: "The 'To' number is not a verified number for this trial account." }));
+          return;
+        }
+        res.writeHead(201, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ sid: 'SMlinkdrillupgraded', status: 'queued' }));
         return;
       }
       if (req.method === 'POST' && req.url === '/v1/checkout/sessions') {
@@ -307,6 +325,30 @@ async function run() {
   // Outbox persistence: the sends are real NotificationOutbox rows.
   const outboxCount = await prisma.notificationOutbox.count({ where: { eventType: 'LINK_CENTER' } });
   check('outbox persisted the link sends', outboxCount >= 6, true);
+
+  // --- Phase 2: UPGRADED Twilio account --------------------------------
+  // The owner upgraded Twilio on 2026-11-18. Restart the API against
+  // the stub flipped to a Full account (fresh process = fresh probe
+  // cache): the options endpoint must now report trial=false from
+  // Twilio's own record, and the same SMS send must land SENT.
+  await stopServer();
+  stubAccountType = 'Full';
+  await bootServer();
+  const staff2 = await login(EMAILS.staff);
+  const options2 = await api('/link-center/options', { token: staff2 });
+  check('upgraded options: status', options2.status, 200);
+  check('upgraded options: SMS trial=false (Twilio reports Full)', options2.json?.data?.channels?.SMS?.trial, false);
+  const sendSms2 = await api('/link-center/send', {
+    token: staff2, method: 'POST',
+    body: { linkType: 'BOOKING', channel: 'SMS', recipientName: 'Maria Lopez', phone: '(954) 555-0123' },
+  });
+  check('upgraded sms BOOKING send: status', sendSms2.status, 201);
+  check('upgraded sms BOOKING send: delivery state is SENT', sendSms2.json?.data?.status, 'SENT');
+  check('upgraded sms BOOKING send: provider', sendSms2.json?.data?.provider, 'twilio');
+  check('twilio stub attempted both sends', twilioAttempts, 2);
+  const log2 = await api('/link-center/log', { token: staff2 });
+  const smsSentRow = (log2.json?.data || []).find((r) => r.channel === 'SMS' && r.status === 'SENT');
+  check('upgraded log carries the SENT sms row', Boolean(smsSentRow), true);
 }
 
 try {

@@ -4,7 +4,7 @@ import { store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notifications.js';
-import { channelHealth, drainEntries } from '../services/senders.js';
+import { channelHealth, drainEntries, twilioTrialState } from '../services/senders.js';
 import { LINK_CATALOG, LINK_TYPES, composeLinkMessage, resolveLinkUrl } from '../services/linkCenter.js';
 
 /**
@@ -16,21 +16,23 @@ import { LINK_CATALOG, LINK_TYPES, composeLinkMessage, resolveLinkUrl } from '..
  * or bulk path. Sends queue through the notification outbox and this
  * route awaits one delivery attempt, so the response carries the
  * entry's TRUE state: SENT only when the provider accepted, FAILED
- * with the provider's error (e.g. Twilio trial), GATED when the
+ * with the provider's error (e.g. a Twilio rejection), GATED when the
  * channel is not configured. Nothing pretends to send.
  */
 const router = Router();
 
 const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 
-router.get('/link-center/options', ...staffOnly, (req, res) => {
-  const health = channelHealth();
+router.get('/link-center/options', ...staffOnly, async (req, res) => {
+  const health = channelHealth({ smsTrial: await twilioTrialState() });
   return res.json({
     data: {
       links: LINK_CATALOG,
       channels: {
         EMAIL: { configured: health.email.configured, provider: health.email.provider },
-        SMS: { configured: health.sms.configured, provider: health.sms.provider, trial: Boolean(health.sms.trial) },
+        // trial is Twilio's own report (true/false), or null when the
+        // account type could not be confirmed — never a hardcoded guess.
+        SMS: { configured: health.sms.configured, provider: health.sms.provider, trial: health.sms.trial },
       },
     },
   });

@@ -9,7 +9,7 @@ import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { attachReferralToBooking } from '../services/referrals.js';
-import { channelConfigured } from '../services/senders.js';
+import { channelConfigured, twilioTrialState } from '../services/senders.js';
 import { optionalAuthenticate } from '../middleware/auth.js';
 import {
   captureBookingConversion,
@@ -386,9 +386,10 @@ router.post('/speedy/book', async (req, res) => {
 /* ------------- Booking receipt / details by message (Phase D+) -------------
  * Verified exactly like public tracking: reference + the phone on the
  * booking. Email is real today (Resend via the outbox). SMS queues
- * through Twilio, but the account is a limited trial — the response
- * NEVER claims a text was sent; it says queued + not-guaranteed, or
- * plainly unavailable when Twilio is not configured.
+ * through Twilio — the response NEVER claims a text was delivered; it
+ * says queued, adds a not-guaranteed caveat only while Twilio itself
+ * reports the account as a trial, or plainly unavailable when Twilio
+ * is not configured.
  */
 const receiptSchema = z.object({
   reference: z.string().trim().min(4).max(24),
@@ -425,12 +426,15 @@ router.post('/speedy/send-receipt', async (req, res) => {
     });
   }
   const entry = notifyBookingReceipt(booking, 'sms', 'speedy-receipt');
+  const trial = await twilioTrialState();
   return res.status(202).json({
     data: {
       queued: Boolean(entry),
       channel: 'sms',
       status: 'queued',
-      message: 'Your text is queued \u2014 texting is still in limited trial mode, so delivery isn\'t guaranteed yet. If it doesn\'t arrive shortly, email always works.',
+      message: trial === true
+        ? 'Your text is queued \u2014 texting is still in limited trial mode, so delivery isn\'t guaranteed yet. If it doesn\'t arrive shortly, email always works.'
+        : 'Your text is queued \u2014 it should arrive within a few minutes. If it doesn\'t, email always works.',
     },
   });
 });

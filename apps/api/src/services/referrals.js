@@ -191,8 +191,8 @@ async function createJourneyRecord({ referral, refereeName = null, refereePhone 
 /**
  * A referrer invites a friend by phone and/or email. The friend gets a
  * REFERRAL_INVITE through the unified outbox for each channel provided
- * (email via Resend; SMS queues honestly and gates on the Twilio trial
- * in the sender drain — delivery is never faked here).
+ * (email via Resend; SMS via Twilio through the same sender drain —
+ * delivery is never faked here).
  */
 export async function createInvite({ code, friendName, phone = null, email = null, source = null }) {
   const referral = resolveCode(code);

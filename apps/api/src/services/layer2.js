@@ -4,7 +4,7 @@ import { DATABASE_ENABLED, db } from '../db/client.js';
 import { hashPassword, verifyPassword } from './passwords.js';
 import { isMasterAccount } from './speedyVerify.js';
 import { queueNotification } from './notifications.js';
-import { channelConfigured, drainEntries, normalizePhone } from './senders.js';
+import { channelConfigured, drainEntries, normalizePhone, twilioTrialState } from './senders.js';
 
 /**
  * Layer 2 — 2-step sign-in (2026-11-16, Ramone's directive: "add
@@ -50,9 +50,10 @@ import { channelConfigured, drainEntries, normalizePhone } from './senders.js';
  * back truthfully: if the provider is unconfigured or errors, the
  * API says the channel is unavailable and the UI offers the other
  * channel. A code is only recorded as sent when the provider
- * accepted it — nothing ever fakes a successful send. (Production
- * Twilio is a trial account: SMS can honestly fail there until it
- * is upgraded; email always remains available, so nobody locks out.)
+ * accepted it — nothing ever fakes a successful send. (If an SMS
+ * send ever fails — provider down, number unreachable — the failure
+ * is reported truthfully and email remains available, so nobody
+ * locks out.)
  */
 export const LAYER2 = {
   codeDigits: 6,
@@ -410,10 +411,16 @@ export async function sendLayer2Code(challengeToken, rawChannel) {
       { channels: availableChannels(user), channel });
   }
   if (entry.status !== 'SENT') {
+    // The trial-plan caveat is used only while Twilio itself reports
+    // the account as a trial; on the upgraded account a failure is a
+    // plain failure, worded as one.
+    const smsTrial = channel === 'SMS' ? await twilioTrialState() : null;
     fail(502, 'LAYER2_SEND_FAILED',
       channel === 'EMAIL'
         ? "We couldn't send the email code just now — try again, or use the text code instead."
-        : "We couldn't send the text code just now — text delivery can be limited on our current messaging plan. Use the email code instead.",
+        : smsTrial === true
+          ? "We couldn't send the text code just now — text delivery can be limited on our current messaging plan. Use the email code instead."
+          : "We couldn't send the text code just now — try again, or use the email code instead.",
       { channels: availableChannels(user), channel });
   }
 

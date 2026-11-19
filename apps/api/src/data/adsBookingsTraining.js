@@ -74,7 +74,7 @@ THE GATES, ONE BY ONE:
 - META LEAD ADS TERMS (owner-only). Before Lead Ads can run for the Top Speed repair Page, the owner must accept Meta's Lead Ads terms in Meta. Until then that format is blocked.
 - TIKTOK ACCOUNT (owner-only). There is no TikTok Ads account. Creating one is a business signup (ads.tiktok.com, as Top Speed Appliance LLC) that only the owner does.
 - ADVERTISER PLAN PRICES (owner-only). The advertiser plans exist as structure, but their prices are UNSET. Until the owner sets a price in Ad Studio, an advertiser cannot check out — the system refuses with "pricing not set". Never quote a plan price that is not set. Module 43 teaches plans in full.
-- TWILIO UPGRADE (owner-only). Text messaging runs on a trial Twilio account, so platform SMS honestly fails today — Layer 2 sign-in codes and Link Center texts included. Email carries those flows meanwhile. The owner upgrades Twilio by adding a payment method; the moment he does, SMS starts working with no rebuild.
+- TWILIO (resolved — the owner upgraded the account on 2026-11-18). Text messaging runs on the upgraded Twilio account, so platform SMS sends for real — Layer 2 sign-in codes and Link Center texts included. A send counts as SENT only when Twilio accepts it; a failure lands FAILED with Twilio's reason, so never promise a text arrived until the log says SENT. One watch-out: US toll-free numbers need their Twilio messaging verification approved — if texts ever stop landing, that verification is the first thing the office checks.
 - META PIXEL (staff can prepare, owner approves install). No Meta pixel is installed, so Meta campaigns run on the Traffic objective until the pixel exists and is approved.
 
 WHAT YOU SHOULD SAY, AND NEVER SAY:
@@ -412,7 +412,7 @@ THE LINK CENTER — SEND THE LINK YOURSELF:
 Open the Link Center (topspeedserviceos.com/link-center; there is also a door in Book OS). Staff pick a link, a channel, and a recipient, and press send — sends happen only on that human click.
 1. Choose the link type: PAYMENT, BOOKING, ACCOUNT or REVIEW.
 2. PAYMENT needs the booking reference: the system sends that booking's real Stripe checkout for the $99 diagnostic — reusing the open checkout if one exists. Unknown reference, already paid, or Stripe unconfigured: it stops and tells you instead of sending a bad link.
-3. Choose EMAIL or SMS and enter the recipient. Email delivers today. SMS is attempted and lands FAILED with Twilio's reason until the owner upgrades the Twilio account — the console shows a warning banner saying exactly that. Send the email; do not promise the text arrived.
+3. Choose EMAIL or SMS and enter the recipient. Both deliver today — SMS runs on the upgraded Twilio account (the trial warning banner is gone). A send counts only when the log says SENT; if a text ever lands FAILED, the log carries Twilio's reason — say so plainly and offer the email instead.
 4. Every send lands in the send log with its true state and the recipient masked. SENT means the provider accepted it — nothing else earns that word.
 
 REQUESTS THAT ARE NOT BOOKINGS:

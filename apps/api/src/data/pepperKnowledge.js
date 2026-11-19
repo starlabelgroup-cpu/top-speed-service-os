@@ -83,7 +83,7 @@ export const PEPPER_STAFF_PACK = [
     topic: 'Layer 2 — the 6-digit sign-in code',
     keywords: ['layer 2', 'two step', '2-step', 'six digit code', 'email code', 'sign-in code', 'second step'],
     answer:
-      'Layer 2 is the per-sign-in second step: after the password (and Speedy Verify where required), the system emails a 6-digit code (via Resend) that completes the sign-in. New accounts have Layer 2 on from day one; older accounts were grandfathered unless enrolled. SMS delivery honestly falls back to email until the Twilio account is upgraded. The Master is exempt by construction (Rule Zero).',
+      'Layer 2 is the per-sign-in second step: after the password (and Speedy Verify where required), the system sends a 6-digit code — by email (via Resend) or by text (via Twilio) — that completes the sign-in. New accounts have Layer 2 on from day one; older accounts were grandfathered unless enrolled. Ramone upgraded the Twilio account on 2026-11-18, so text codes send for real; if a text send ever fails, the failure is reported honestly and the email code is offered instead — a send is never faked. The Master is exempt by construction (Rule Zero).',
   },
   {
     topic: 'Sign-in trouble — first checks',

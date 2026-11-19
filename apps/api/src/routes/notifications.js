@@ -8,7 +8,7 @@ import {
   NOTIFICATION_SETTING_KEYS,
 } from '../services/notifications.js';
 import { persistNotificationSetting } from '../db/notificationsRepo.js';
-import { channelHealth } from '../services/senders.js';
+import { channelHealth, twilioTrialState } from '../services/senders.js';
 
 /**
  * Notifications console API — the staff view of the unified email/SMS
@@ -89,8 +89,8 @@ router.get('/notifications/summary', ...staffOnly, (req, res) => {
   });
 });
 
-router.get('/notifications/health', ...staffOnly, (req, res) => {
-  const health = channelHealth();
+router.get('/notifications/health', ...staffOnly, async (req, res) => {
+  const health = channelHealth({ smsTrial: await twilioTrialState() });
   // Fallback sentence per channel, from the live provider chain: a
   // configured fallback delivers when the primary hard-fails; an
   // unconfigured one is stated plainly so nobody assumes it exists.
@@ -115,7 +115,11 @@ router.get('/notifications/health', ...staffOnly, (req, res) => {
       sms: {
         ...health.sms,
         note: (health.sms.configured
-          ? 'Credentials are present, but the Twilio account is on a TRIAL plan: texts only reach verified recipient numbers, and the account balance must be positive. Trial/failed sends are recorded as FAILED with the provider error — never as sent. Full SMS goes live when the account is upgraded.'
+          ? (health.sms.trial === true
+            ? 'Credentials are present, but Twilio reports this account as a TRIAL: texts only reach verified recipient numbers, and the account balance must be positive. Trial/failed sends are recorded as FAILED with the provider error — never as sent. Full SMS goes live when the account is upgraded.'
+            : health.sms.trial === false
+              ? 'Twilio reports this account as a FULL (upgraded) account: texts can send to any valid number. Sends are recorded SENT only when Twilio accepts them; failures are recorded FAILED with the provider error — never as sent. (US toll-free numbers also need their Twilio messaging verification approved for reliable delivery.)'
+              : 'Credentials are present; Twilio could not confirm the account type just now, so no trial state is claimed. Sends are recorded SENT only when Twilio accepts them; failures are recorded FAILED with the provider error — never as sent.')
           : 'Twilio credentials are not set in the API environment — SMS entries gate as TWILIO_NOT_CONFIGURED.')
           + chainNote(health.sms.chain, 'vonage', 'VONAGE_API_KEY + VONAGE_API_SECRET'),
       },

@@ -860,7 +860,7 @@ export function notifyReferralIssued(booking, referral, source = null) {
 /* journey's reward snapshot / an issued credit's amount). The $25 in  */
 /* the invite is the PUBLISHED new-customer welcome offer, not the     */
 /* referrer reward. SMS entries queue through the same outbox as       */
-/* everything else — on the Twilio trial they gate honestly in the     */
+/* everything else — a provider rejection fails them honestly in the */
 /* sender drain; nothing here claims a text was delivered.             */
 /* ------------------------------------------------------------------ */
 
