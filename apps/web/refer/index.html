@@ -238,7 +238,7 @@ form.invite input:focus{outline:2px solid #1280FF;border-color:#1280FF}
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(x){
         if(!x.ok) throw new Error((x.j&&(x.j.error||x.j.message))||'The invite did not go through.');
-        showMsg('ok','Invite queued for '+friend+'. Queued means we have it in line — it isn\'t sent the same second, and text invites can be delayed while our texting is in trial. For the fastest route, also send your friend your referral link directly from Appliance Connect.');
+        showMsg('ok','Invite queued for '+friend+'. Queued means we have it in line — it isn\'t sent the same second, and a text invite can take a little while to land. For the fastest route, also send your friend your referral link directly from Appliance Connect.');
         $('inviteForm').reset();
         var keep=storedCode(); if(keep) $('invCode').value=keep;
       })
