@@ -3,290 +3,449 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Service OS Web Portal — Top Speed Appliance</title>
-<link rel="icon" href="data:,">
-<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Service OS Portal — Sign In &amp; Create Account | Top Speed Appliance</title>
+<link rel="canonical" href="https://topspeedserviceos.com/portal">
+<meta name="description" content="The Top Speed Service OS Portal: sign in or create your account. One account routes you to your door — customers to the Customer App, technicians to the Tech App, staff to the Workstation Navigator, advertisers to the Advertiser Console.">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#0A265C">
+<meta name="theme-color" content="#0C162B">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebPage","name":"Service OS Portal","url":"https://topspeedserviceos.com/portal","description":"Sign in and account creation for the Top Speed Service OS: one account for the Customer App, Tech App, commercial accounts, referrals and booking.","isPartOf":{"@type":"WebSite","name":"Top Speed Service OS","url":"https://topspeedserviceos.com/"},"provider":{"@type":"Organization","name":"Top Speed Appliance LLC","url":"https://topspeedserviceos.com/"}}
+</script>
 <style>
-:root{--navy:#0A265C;--navy2:#04122e;--red:#E8112D;--ink:#12233d;--soft:#5b6b82;--line:#dbe4f0;--bg:#f4f7fc}
+:root{
+  --navy:#0C162B; --navy-2:#081020; --navy-3:#14263F;
+  --red:#E94E5C; --red-dark:#D63A47;
+  --blue:#2E7CF6;
+  --bg:#EEF2F8; --surface:#FFFFFF; --surface-2:#E8EEF6;
+  --ink:#101E33; --muted:#4E6076; --line:#D5DFEC;
+  --good:#0E7A4A; --good-bg:#E2F3EA;
+  --err:#8F1D1A; --err-bg:#FDECEC; --err-line:#F5C2C0;
+  --shadow:0 10px 30px rgba(12,22,43,.12);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#050B16; --surface:#0C1B31; --surface-2:#12263F; --ink:#EDF3FF; --muted:#A7BAD4; --line:#243A5C;
+    --good:#5BD598; --good-bg:#0F2E22;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--ink)}
-header{background:var(--navy2);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px}
-header img{height:38px;border-radius:6px}
-header .brand{font-weight:800;letter-spacing:.02em}
-header .brand span{color:#ff5b6a}
-header nav{margin-left:auto;display:flex;gap:18px;font-size:14px}
-header nav a{color:#cfe0f7;text-decoration:none}
-header nav a:hover{color:#fff}
-.hero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;padding:52px 24px 44px;text-align:center}
-.hero h1{font-size:38px;letter-spacing:-.01em}
-.hero p{color:#c3d5f2;max-width:640px;margin:12px auto 0;line-height:1.6}
-.chip{display:inline-block;background:#ffb020;color:#231a00;font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;letter-spacing:.06em;margin-bottom:14px}
-.wrap{max-width:1100px;margin:0 auto;padding:28px 20px 60px}
-h2.sec{font-size:20px;color:var(--navy);margin:26px 0 6px}
-p.sub{color:var(--soft);font-size:14px;margin-bottom:16px}
-.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}
-.kpi .n{font-size:26px;font-weight:800;color:var(--navy)}
-.kpi .l{font-size:12px;color:var(--soft);margin-top:3px}
-.panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:12px}
-.bars{display:flex;align-items:flex-end;gap:10px;height:110px}
-.bars div{flex:1;background:var(--navy);border-radius:6px 6px 0 0;position:relative;min-height:8%}
-.bars span{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-size:11px;color:var(--soft)}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;text-decoration:none;color:var(--ink);display:block;transition:.15s}
-.card:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(4,18,46,.10);border-color:#b9cbe8}
-.card .ic{font-size:26px}
-.card h3{font-size:16px;color:var(--navy);margin:8px 0 6px}
-.card p{font-size:13px;color:var(--soft);line-height:1.55}
-.card .go{margin-top:12px;font-size:13px;font-weight:800;color:var(--red)}
-.new{background:var(--red);color:#fff;font-size:9px;font-weight:800;border-radius:999px;padding:2px 7px;vertical-align:middle;margin-left:6px;letter-spacing:.05em}
-.demo{font-size:10px;color:var(--soft);text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-footer{background:var(--navy2);color:#9db6d8;padding:34px 24px;text-align:center;font-size:13px;line-height:1.8}
-footer a{color:#cfe0f7;text-decoration:none}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body,Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif);color:var(--ink);background:var(--bg);line-height:1.55;overflow-x:hidden}
+a{color:var(--blue)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap}
+.topbar nav{margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.topbar nav a{color:#CFE0F5;font-size:14.5px;text-decoration:none;font-weight:600}
+.topbar nav a:hover{color:#fff}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(155deg,var(--navy-3) 0%,var(--navy) 55%,var(--navy-2) 100%);color:#fff;padding:46px 0 40px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:340px;height:340px;border:44px solid rgba(94,160,255,.13);border-radius:50%;pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.26);color:#CFE4FF;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+.hero h1{font-size:clamp(2.1rem,5vw,3.4rem);line-height:1.03;margin:14px 0 10px;letter-spacing:.01em}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p.lede{max-width:640px;color:#D7E4F7;font-size:1.05rem;margin:0}
+.hero .trust{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:18px;color:#BFD3F2;font-size:.92rem;font-weight:600}
+.hero .trust span::before{content:"✓";color:var(--red);font-weight:900;margin-right:6px}
+
+/* ---------- AUTH CARD ---------- */
+section{padding:44px 0 6px}
+.authwrap{max-width:560px;margin:0 auto}
+.authcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+.authcard h2{font-size:1.45rem;text-transform:uppercase;line-height:1.1;margin:0 0 6px}
+.authcard .sub{color:var(--muted);font-size:.97rem;margin:0 0 16px}
+.acct-tabs{display:flex;background:var(--surface-2);border-radius:99px;padding:4px;margin-bottom:18px}
+.acct-tabs button{flex:1;border:none;background:transparent;font:inherit;font-weight:700;font-size:14.5px;padding:10px;border-radius:99px;cursor:pointer;color:var(--muted)}
+.acct-tabs button.on{background:var(--navy);color:#fff}
+label{display:block;font-size:.88rem;font-weight:700;margin-bottom:12px}
+label input,label select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;margin-top:5px;font:inherit;font-size:.97rem;background:var(--surface);color:var(--ink)}
+label input:focus,label select:focus{outline:2px solid var(--blue);outline-offset:1px}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.frow2{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;text-decoration:none;font-weight:700;border-radius:10px;padding:13px 20px;font-size:1rem;border:2px solid transparent;cursor:pointer;font-family:inherit}
+.btn-red{background:var(--red);color:#fff;width:100%}.btn-red:hover{background:var(--red-dark)}
+.btn-red:disabled{opacity:.55;cursor:default}
+.btn-navy{background:var(--navy);color:#fff;width:100%}
+.btn-outline{background:transparent;color:var(--ink);border-color:var(--line)}.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.accttypes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px}
+@media(max-width:560px){.accttypes{grid-template-columns:1fr}}
+.accttypes button{padding:11px 8px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-weight:700;font-size:.93rem;cursor:pointer;font-family:inherit}
+.accttypes button.selected{border-color:var(--red);color:var(--ink);background:rgba(233,78,92,.07)}
+.fieldlabel{font-size:.88rem;font-weight:700;margin-bottom:6px}
+.feedback{font-weight:700;margin-top:12px;min-height:1.2em}
+.feedback.ok{color:var(--good)}
+.feedback.err{color:var(--red-dark)}
+.acct-err{display:none;background:var(--err-bg);border:1px solid var(--err-line);color:var(--err);border-radius:12px;padding:11px 13px;font-size:13.5px;margin-top:14px;line-height:1.5}
+.acct-note{font-size:.9rem;color:var(--muted);margin-top:14px;line-height:1.55}
+.team-note{border:1px solid var(--line);background:var(--surface-2);border-radius:12px;padding:12px 14px;font-size:.92rem;line-height:1.55;margin-top:16px;color:var(--ink)}
+.verify-row{display:none;border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:16px;background:var(--surface-2)}
+.verify-row .code-input{letter-spacing:6px;text-align:center;font-size:20px;font-weight:700}
+.signedwho{font-size:1.05rem;margin:0 0 14px;line-height:1.55}
+.email-notice{display:none;background:#FFF8E1;border:1px solid #F3D27A;color:#5C4A12;border-radius:12px;padding:12px 14px;font-size:.94rem;line-height:1.55;margin-bottom:16px}
+.signout{margin-top:12px;width:100%;background:none;border:none;color:var(--red-dark);font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:6px}
+
+/* ---------- DOORS ---------- */
+.kicker{display:inline-block;font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.center{text-align:center}
+.center .sub2{margin-left:auto;margin-right:auto}
+h2.sec{font-size:clamp(1.7rem,3.6vw,2.3rem);line-height:1.05;margin:0 0 10px;text-transform:uppercase}
+h2.sec em{font-style:normal;color:var(--red)}
+.sub2{color:var(--muted);max-width:760px;margin:0 0 26px;font-size:1.0rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:960px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.grid3{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 4px 16px rgba(12,22,43,.06);display:flex;flex-direction:column;text-decoration:none;color:var(--ink)}
+.card:hover{border-color:var(--blue)}
+.card h3{font-size:1.25rem;text-transform:uppercase;margin:0 0 6px;line-height:1.1}
+.card p{color:var(--muted);margin:0 0 12px;font-size:.95rem}
+.card .go{margin-top:auto;font-weight:800;color:var(--red-dark);font-size:.95rem}
+.ficon{width:46px;height:46px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--blue);margin-bottom:12px}
+.ficon svg{width:25px;height:25px}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:60px;background:var(--navy-2);color:#B9CDEA;padding:30px 0}
+.frow{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;font-size:.92rem}
+footer nav{display:flex;gap:16px;flex-wrap:wrap}
+footer nav a{color:#CFE0F5;text-decoration:none;font-weight:600}
+footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;letter-spacing:.04em}
 </style>
-<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.btn):not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
-<header>
+<div class="topbar">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
-  <nav><a href="/">Customer Site</a><a href="/service/">Provider Site</a><a href="tel:+19549317997">954-931-7997</a></nav>
-</header>
-<div class="hero">
-  <div><span class="chip" id="portalChip">WEB PORTAL</span></div>
-  <h1>Every side of the operation. One portal.</h1>
-  <p>Dispatch, management, the provider network, commercial accounts, property managers and the growth flywheel — the whole Top Speed Service OS, organized by the job you came to do.</p>
+  <nav><a href="/">Platform Home</a><a href="/book">Book a Repair</a><a href="/app">Customer App</a><a href="/tech">Tech App</a><a href="tel:+19549317997">954-931-7997</a></nav>
 </div>
-<div class="wrap">
-  <h2 class="sec" id="management">Management snapshot</h2>
-  <p class="sub">The owner's view across the whole platform. <span class="demo" id="kpiNote">Staff sign in on the Book OS page (same browser) and this snapshot shows live numbers.</span></p>
-  <div class="kpis">
-    <div class="kpi"><div class="n" id="k1">—</div><div class="l" id="l1">Jobs booked today</div></div>
-    <div class="kpi"><div class="n" id="k2">—</div><div class="l" id="l2">Completed today</div></div>
-    <div class="kpi"><div class="n" id="k3">—</div><div class="l" id="l3">Techs on the road</div></div>
-    <div class="kpi"><div class="n" id="k4">—</div><div class="l" id="l4">Average rating</div></div>
-    <div class="kpi"><div class="n" id="k5">—</div><div class="l" id="l5">Referral bookings</div></div>
-    <div class="kpi"><div class="n" id="k6">—</div><div class="l" id="l6">Commercial accounts</div></div>
-  </div>
-  <div class="panel" id="winPanel"><h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today's appointments by window</h3><div class="bars"><div style="height:55%"><span>8–10 AM</span></div><div style="height:85%"><span>10–12 PM</span></div><div style="height:65%"><span>12–2 PM</span></div><div style="height:95%"><span>2–4 PM</span></div><div style="height:45%"><span>4–6 PM</span></div></div><div style="height:22px"></div></div>
 
-  <h2 class="sec" id="team">Team accounts</h2>
-  <p class="sub">Owner only — staff and provider accounts are created here, never by self-registration. <span class="demo" id="teamNote">Sign in with the owner account (on the Book OS page, same browser) and this panel opens.</span></p>
-  <div class="panel" id="teamPanel" style="display:none;">
-    <div id="teamList" style="margin-bottom:18px;"></div>
-    <h3 style="font-size:15px;color:var(--navy);margin-bottom:10px;">Add a team account</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;">
-      <label>First name<input id="tFirst" type="text" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
-      <label>Last name<input id="tLast" type="text" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
-      <label>Email<input id="tEmail" type="email" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
-      <label>Mobile phone<input id="tPhone" type="tel" autocomplete="off" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
-      <label>Role
-        <select id="tRole" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-          <option value="DISPATCHER">Service Setter / Dispatcher</option>
-          <option value="COMPANY_ADMIN">Company Admin</option>
-          <option value="PROVIDER_TECH">Provider Technician (Tech App)</option>
-          <option value="PROVIDER_OWNER">Provider Owner (Tech App)</option>
-          <option value="ADVERTISER">Advertiser (Console)</option>
-          <option value="MARKETING_MANAGER">Marketing Manager (Console)</option>
-          <option value="DEVELOPER">Developer (Console)</option>
-        </select></label>
-      <label id="tCompanyRow" style="display:none;">Provider company
-        <select id="tCompany" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></select></label>
-      <label>Temporary password<input id="tPass" type="text" autocomplete="off" placeholder="10+ characters" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"></label>
+<main>
+<!-- ============ HERO ============ -->
+<section class="hero" style="padding-top:46px">
+  <div class="wrap">
+    <span class="eyebrow"><span class="dot"></span> Top Speed Service OS · Portal</span>
+    <h1>One sign-in.<br>Every <em>door.</em></h1>
+    <p class="lede">This is the front door of the Top Speed Service OS. Sign in once and the portal routes you to the surface built for your account — customers to the Customer App, technicians to the Tech App, staff to the Workstation, advertisers to their console. New here? Create your customer, business, or property-manager account below.</p>
+    <div class="trust"><span>Speedy Verify access-code step for covered accounts</span><span>2-step sign-in on new accounts</span><span>One account across the whole ecosystem</span></div>
+  </div>
+</section>
+
+<!-- ============ SIGN IN / SIGN UP (form first) ============ -->
+<section id="account">
+  <div class="wrap">
+    <div class="authwrap">
+
+      <!-- Already signed in -->
+      <div class="authcard" id="signedPanel" style="display:none">
+        <h2>Welcome back</h2>
+        <p class="signedwho" id="signedWho"></p>
+        <div class="email-notice" id="emailNotice">
+          <b>Verify your email.</b> We sent a verification link to your inbox — your account works fully, but booking confirmations and receipts go to your email, so please click that link to verify it. You can also resend it from inside your app.
+        </div>
+        <button class="btn btn-navy" id="continueBtn" type="button">Continue to your home</button>
+        <button class="signout" id="signOutBtn" type="button">Sign out</button>
+      </div>
+
+      <!-- Forms -->
+      <div class="authcard" id="formsPanel">
+        <h2>Your Top Speed account</h2>
+        <p class="sub">One account for everything — the portal, the customer app, and the mobile app. Sign in, or create your account once and sign in everywhere.</p>
+        <div data-vault-note style="display:none;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.5;margin-bottom:12px"></div>
+        <div class="acct-tabs" role="tablist" aria-label="Sign in or create account">
+          <button type="button" id="tabIn" class="on">Sign in</button>
+          <button type="button" id="tabUp">Create account</button>
+        </div>
+
+        <form id="inForm">
+          <label for="siEmail">Email<input id="siEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <label for="siPw">Password<input id="siPw" type="password" autocomplete="current-password" placeholder="Your password"></label>
+          <button class="btn btn-red" id="siBtn" type="submit">Sign in</button>
+          <div class="verify-row" id="svRow">
+            <p style="font-size:.95rem;line-height:1.55;margin:0 0 10px"><b>Speedy Verify.</b> Your account is protected by an access code issued by the Owner. Enter your 8-digit code to finish signing in.</p>
+            <label for="svCode">Access code<input class="code-input" id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000"></label>
+            <button class="btn btn-navy" id="svBtn" type="button">Verify code &amp; sign in</button>
+          </div>
+        </form>
+        <p class="acct-note" style="margin-top:8px"><a href="/reset-password" style="color:var(--blue);font-weight:700">Forgot password?</a></p>
+
+        <form id="upForm" style="display:none">
+          <div class="frow2">
+            <label for="suFirst">First name<input id="suFirst" type="text" autocomplete="given-name" placeholder="First name"></label>
+            <label for="suLast">Last name<input id="suLast" type="text" autocomplete="family-name" placeholder="Last name"></label>
+          </div>
+          <label for="suEmail">Email<input id="suEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <label for="suPhone">Mobile phone<input id="suPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000"></label>
+          <label for="suPw">Password<input id="suPw" type="password" autocomplete="new-password" placeholder="At least 10 characters"></label>
+          <p class="fieldlabel" id="acctTypeLabel">Account type</p>
+          <div class="accttypes" role="group" aria-labelledby="acctTypeLabel">
+            <button type="button" data-acct="homeowner" class="selected">Homeowner</button>
+            <button type="button" data-acct="business">Business</button>
+            <button type="button" data-acct="pm">Property Manager</button>
+          </div>
+          <div id="laLegal"></div>
+          <button class="btn btn-red" id="laUpBtn" type="submit">Create my account</button>
+          <p class="team-note">Team accounts (staff, managers, technicians/providers) are never self-registered — they are issued personally by the Owner through Work Time Access.</p>
+        </form>
+
+        <div class="acct-err" id="poErr"></div>
+        <p class="feedback" id="poMsg" role="status"></p>
+        <p class="acct-note">Your account unlocks real booking, live tech tracking, your appliance garage, and your referral code — on the web and in the app. Business and property-manager accounts are declared here and complete a Speedy Verify activation with the office before their first sign-in.</p>
+      </div>
+
     </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center;">
-      <button id="tGen" style="padding:10px 16px;border:1px solid #D8E1EE;border-radius:10px;background:#fff;cursor:pointer;font-weight:600;">Generate password</button>
-      <button id="tCreate" style="padding:10px 20px;border:0;border-radius:10px;background:#1473ff;color:#fff;cursor:pointer;font-weight:700;">Create account</button>
-      <span id="tMsg" style="font-weight:600;"></span>
+  </div>
+</section>
+
+<!-- ============ ECOSYSTEM DOORS ============ -->
+<section id="doors">
+  <div class="wrap">
+    <div class="center"><span class="kicker">The Ecosystem</span>
+      <h2 class="sec">Every door, <em>one system.</em></h2>
+      <p class="sub2">The Service OS is one shared backend behind every surface: bookings, dispatch, tracking, payments, referrals and advertising all read the same live system. Pick a door — your account above already works there.</p>
     </div>
-    <p style="font-size:13px;color:var(--muted);margin-top:12px;">Give the person their email + temporary password yourself (text or in person — never in a group chat). They sign in at Book OS (setters/dispatch) or the Tech App (providers) and can change the password from their account. One person, one account; when someone leaves, tell Pepper Agent to deactivate it.</p>
+    <div class="grid3">
+      <a class="card" href="/app">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.8 18.4h2.4" stroke="#E94E5C"/></svg></div>
+        <h3>Customer App</h3>
+        <p>Book in minutes, follow your tech live, keep every appliance and job in your garage, and hold your referral code — installs from the browser, no app store needed.</p>
+        <span class="go">Open the Customer App</span>
+      </a>
+      <a class="card" href="/tech">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="10.5" rx="2"/><path d="M9 9V6.8A2.3 2.3 0 0 1 11.3 4.5h1.4A2.3 2.3 0 0 1 15 6.8V9M3 13.5h18" stroke="#E94E5C"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg></div>
+        <h3>Tech App</h3>
+        <p>For network technicians and providers: today's route, job offers, job detail with live status updates to the customer, and your week at a glance. Team accounts are issued by the Owner — see the note on the sign-up form.</p>
+        <span class="go">Open the Tech App</span>
+      </a>
+      <a class="card" href="https://www.appliancepro.net">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E94E5C"/><path d="M10.4 20.5v-3h3.2v3"/></svg></div>
+        <h3>Commercial — Appliance Pro</h3>
+        <p>Appliance Pro is the commercial door: restaurants, hotels, laundromats and facilities on service agreements, with an equipment registry and one monthly invoice per account. Commercial access requires a business sign-in.</p>
+        <span class="go">Open Appliance Pro</span>
+      </a>
+      <a class="card" href="/refer">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12.2l3.4-4A2 2 0 0 1 8.6 7.7l3 1 4.6-2.2a2 2 0 0 1 2.6.7L21 10.5a2 2 0 0 1-.4 2.4l-6.3 6a2.3 2.3 0 0 1-3.2 0l-1.5-1.5"/><path d="M9.6 15.8l1.7 1.7a1.6 1.6 0 0 0 2.3 0M11.8 13.6l1.5 1.5a1.6 1.6 0 0 0 2.3 0" stroke="#E94E5C"/></svg></div>
+        <h3>Refer &amp; Earn</h3>
+        <p>Share your referral code with friends and neighbours. When a referred friend's job is completed, you earn service credit under the Refer &amp; Earn program terms.</p>
+        <span class="go">Open Refer &amp; Earn</span>
+      </a>
+      <a class="card" href="/book">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E94E5C"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg></div>
+        <h3>Book a Repair</h3>
+        <p>The classic booking form — the primary way to book. Tell us the appliance and the problem, pick a window, and the Service Setters office confirms your appointment.</p>
+        <span class="go">Book a repair</span>
+      </a>
+      <a class="card" href="/navigator">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="12.5" rx="2"/><path d="M12 16.5v3.4M8 21h8" stroke="#E94E5C"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg></div>
+        <h3>Workstation — Team Consoles</h3>
+        <p>For Top Speed staff: the Navigator maps every team console — dispatch, management, marketing and the Pepper Systems Manager post. Staff sign-in required; team accounts are issued by the Owner.</p>
+        <span class="go">Open the Workstation</span>
+      </a>
+    </div>
   </div>
+</section>
+</main>
 
-  
-  <h2 class="sec" id="chanlinks">Advertiser channel links</h2>
-  <p class="sub">Staff — connection requests from the Advertiser Console land here. Complete the manager/partner link on the ad platform, then mark it connected so the advertiser sees it live in their console. <span class="demo" id="clNote">Sign in with a staff account (Book OS, same browser) and this panel opens.</span></p>
-  <div class="panel" id="clPanel" style="display:none;">
-    <div id="clList"></div>
-    <span id="clMsg" style="font-weight:600;"></span>
-  </div>
-
-  <h2 class="sec">Run the operation</h2>
-  <p class="sub">Pick your desk — each console is a working part of the Service OS.</p>
-  <div class="grid">
-    <a class="card" href="/book-os"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15v-2.4A8 8 0 0 1 20 12.6V15"/><rect x="3.2" y="13.6" width="4.4" height="6.6" rx="2"/><rect x="16.4" y="13.6" width="4.4" height="6.6" rx="2"/><path d="M19.6 20.2a3.4 3.4 0 0 1-3.4 2.3h-2.7" stroke="#E8322E"/></svg></div><h3>Dispatch — Service Setters Book OS</h3><p>The setter queue with its call guide, today's appointments across all five windows, and the hybrid dispatch board: New → Matched → Approve & Dispatch → En Route → Complete.</p><div class="go">Open dispatch →</div></a>
-    <a class="card" href="/track-console"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg></div><h3>Track My Tech Console<span class="new">NEW</span></h3><p>The staff back door for tracking: every active job's live stage, technician and ETA on one board. Assign technicians, advance stages, and send the customer a tracking update. Owners, managers, setters and dispatchers — staff sign-in required.</p><div class="go">Open tracking console →</div></a>
-    <a class="card" href="/pro-booking"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg></div><h3>Speedy Pro Booking — Top Speed CRM<span class="new">NEW</span></h3><p>The call-booking form for the team: five steps while the customer is on the phone. Creates the customer in the CRM and drops the job straight into the Service Setters dispatch queue, with the confirmation sent automatically.</p><div class="go">Open pro booking →</div></a>
-    <a class="card" href="/notifications"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 16v-5.2a6 6 0 0 1 12 0V16l1.2 2.8H4.8z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/><path d="M12 3.4a2 2 0 0 1 2 2" opacity=".7"/></svg></div><h3>Notifications — Email &amp; SMS Alerts<span class="new">NEW</span></h3><p>One system for every alert on the network and platform: any submission — booking, form, video request, bulk property request, new account — triggers a customer confirmation and an instant staff alert by email and text. Every message shows its true delivery state: sent, queued, failed, or gated with the reason. Channel health and the alert toggles live here too. Staff sign-in required.</p><div class="go">Open notifications console →</div></a>
-    <a class="card" href="/service/"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg></div><h3>Provider Network</h3><p>The provider front door: 60-second job requests with photo upload and AI triage, the live dispatch board view, and the provider application for the Top Speed Appliance Network.</p><div class="go">Open provider site →</div></a>
-    <a class="card" href="/commercial"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg></div><h3>Commercial Accounts</h3><p>Appliance Pro Commercial Accounts: restaurants, hotels, laundromats and facilities on service agreements, with an equipment registry and one monthly invoice per account.</p><div class="go">Open commercial →</div></a>
-    <a class="card" href="/property-managers"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg></div><h3>Property Managers</h3><p>Portfolio view for managers: units, open work orders, and tenant-ready booking across every property — running on the same Service OS queue as residential.</p><div class="go">Open property managers →</div></a>
-    <a class="card" href="/network"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12.2l3.4-4A2 2 0 0 1 8.6 7.7l3 1 4.6-2.2a2 2 0 0 1 2.6.7L21 10.5a2 2 0 0 1-.4 2.4l-6.3 6a2.3 2.3 0 0 1-3.2 0l-1.5-1.5"/><path d="M9.6 15.8l1.7 1.7a1.6 1.6 0 0 0 2.3 0M11.8 13.6l1.5 1.5a1.6 1.6 0 0 0 2.3 0" stroke="#E8322E"/></svg></div><h3>Join the Network</h3><p>For independent providers and appliance businesses: how the network works, what membership includes, and the application to start receiving matched jobs.</p><div class="go">See the network →</div></a>
-    <a class="card" href="/advertiser"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M7 9.5v5M12 8v8M17 10v3"/><circle cx="7" cy="12" r="1.7" stroke="#E8322E"/><circle cx="12" cy="14.5" r="1.7" stroke="#E8322E"/><circle cx="17" cy="10.8" r="1.7" stroke="#E8322E"/></svg></div><h3>Advertiser Console<span class="new">NEW</span></h3><p>For advertisers, marketing managers, and developers: connect Google Ads, Meta, TikTok and more, plan campaigns, build copy, and run the optimization scorecard. Marketing professionals self-register; channel links are approved by staff below.</p><div class="go">Open advertiser console →</div></a>
-    <a class="card" href="/media"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3.4 6L4.6 3h16l-.8 3zM7.2 3.4L9 5.8M12.4 3.4l1.8 2.4M17.6 3.4l1.8 2.4" stroke="#E8322E"/><path d="M10 10.8l5 3-5 3z"/></svg></div><h3>Top Speed Media OS</h3><p>The media network — Videos, Social, Publishing, Live and News divisions, coordinated by Speedy AI. One publishing queue, owned audience, Top Speed 360.</p><span class="tag" style="background:#F1E9FB;color:#5B3FA8">Media Network · NEW</span></a>
-<a class="card" href="/flywheel"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4a1.6 1.6 0 0 0 1.6 1.6H8L18.5 20V4.5L8 9H5.6A1.6 1.6 0 0 0 4 10.6z"/><path d="M8 15.6V20a1.8 1.8 0 0 0 3.6 0v-3.4M18.5 8.5a4 4 0 0 1 0 7" stroke="#E8322E"/></svg></div><h3>Flywheel Advertising</h3><p>The growth engine: Attract → Book → Serve → Review → Refer → Reinvest. Channel status, the ad-asset library, and the compounding simulator fed by real platform activity.</p><div class="go">Open flywheel →</div></a>
-    <a class="card" href="/local"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg></div><h3>Top Speed Local OS<span class="new">NEW</span></h3><p>The local presence operating system: listings core with honest verification status, the reviews engine, and the interactive service directory — 9 services across all 12 Broward cities.</p><div class="go">Open Local OS →</div></a>
-    <a class="card" href="/ads"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><circle cx="12" cy="12" r="4.8" stroke="#E8322E"/><circle cx="12" cy="12" r="1.3" fill="#E8322E" stroke="none"/></svg></div><h3>Top Speed Ads<span class="new">NEW</span></h3><p>Flywheel AI Advertising HQ: the call-first doctrine, the channel stack with honest status, campaign architecture 1–5, and the “GET TOP SPEED.” creative system.</p><div class="go">Open Top Speed Ads →</div></a>
-    <a class="card" href="/marketing-os"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.8c2.8 2.2 4.2 5.6 4.2 9.4l-4.2 4.2-4.2-4.2c0-3.8 1.4-7.2 4.2-9.4z"/><circle cx="12" cy="9" r="1.9" stroke="#E8322E"/><path d="M7.8 13.4L5 18l3-.8M16.2 13.4L19 18l-3-.8M10.6 18.6c.4 1 .9 1.9 1.4 2.6.5-.7 1-1.6 1.4-2.6" stroke="#E8322E"/></svg></div><h3>Top Speed Marketing OS<span class="new">NEW</span></h3><p>The agency: a digital marketing operation for local service businesses, managed by Pepper on the Service OS. City, brand and service landing pages are built in the Page Studio — draft, review, publish, with a version on every save and publishing locked to service-covered cities.</p><div class="go">Open Marketing OS →</div></a>
-  </div>
-
-  <h2 class="sec">The apps</h2>
-  <p class="sub">Mobile experiences for the two people who matter most — the customer and the tech.</p>
-  <div class="grid">
-    <a class="card" href="/app"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/></svg></div><h3>Customer App — Appliance Pro</h3><p>Book in minutes, follow your tech live, keep every appliance and job in your garage, and grab your referral code. Installs from the browser — no app store needed.</p><div class="go">Open customer app →</div></a>
-    <a class="card" href="/tech"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="10.5" rx="2"/><path d="M9 9V6.8A2.3 2.3 0 0 1 11.3 4.5h1.4A2.3 2.3 0 0 1 15 6.8V9M3 13.5h18" stroke="#E8322E"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg></div><h3>Tech App<span class="new">NEW</span></h3><p>Today's route, job offers to accept in one tap, job detail with live status updates to the customer, and your week at a glance — built for the network's technicians.</p><div class="go">Open tech app →</div></a>
-    <a class="card" href="/download"><div class="ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v13M6.5 11.5L12 17l5.5-5.5"/><path d="M4.5 20.5h15" stroke="#E8322E"/></svg></div><h3>Get the Apps</h3><p>Install pages with QR codes and per-device steps for iPhone, Android, and desktop — with campaign tracking for the flywheel.</p><div class="go">Open download page →</div></a>
-  </div>
-</div>
 <footer>
-  <strong style="color:#fff">Top Speed Appliance LLC</strong> · Top Speed Service OS<br>
-  <a href="/book-os">Dispatch</a> · <a href="/commercial">Commercial</a> · <a href="/property-managers">Property Managers</a> · <a href="/network">Network</a> · <a href="/flywheel">Flywheel</a> · <a href="/app">Customer App</a> · <a href="/tech">Tech App</a><br>
-  The Faster, The Better. · 954-931-7997
+  <div class="wrap">
+    <div class="frow">
+      <span class="brandline"><svg width="20" height="20" viewBox="0 0 24 24" fill="#E94E5C" aria-hidden="true"><path d="M12 2.5l2 6.6 6.6 2-6.6 2-2 6.6-2-6.6-6.6-2 6.6-2z"/></svg> TOP SPEED SERVICE OS · PORTAL</span>
+      <span>© Top Speed Appliance LLC — “The Faster, The Better.”</span>
+      <nav>
+        <a href="/">Platform home</a>
+        <a href="/app">Customer App</a>
+        <a href="/tech">Tech App</a>
+        <a href="/book">Book a Repair</a>
+        <a href="tel:+19549317997">954-931-7997</a>
+      </nav>
+    </div>
+  </div>
 </footer>
 
 <script>
-/* Management snapshot — live when a staff token exists in this browser
-   (set by the Book OS sign-in). Signed out, the preview numbers stay and
-   are labelled as preview. */
 (function(){
   var API='https://top-speed-service-os.vercel.app/api/v1';
-  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
-  if(!tok) return;
-  function get(path){ return fetch(API+path,{headers:{'Authorization':'Bearer '+tok}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
-  Promise.all([get('/flywheel/metrics'),get('/bookos/setter-queue'),get('/bookos/dispatch-board'),get('/commercial/accounts')])
-    .then(function(res){
-      var m=res[0].data, q=res[1].data, b=res[2].data, accts=res[3].data||[];
-      function set(id,v){ document.getElementById(id).textContent=v; }
-      set('k1', m.book.totalBookings); set('l1','Total bookings \u2014 LIVE');
-      set('k2', m.serve.completed); set('l2','Jobs completed \u2014 LIVE');
-      set('k3', q.count); set('l3','In Setter Queue \u2014 LIVE');
-      set('k4', (b.counts||{})['MATCH_PENDING_APPROVAL']||0); set('l4','Awaiting approval \u2014 LIVE');
-      set('k5', (m.attract.bySource||{})['REFERRAL']||0); set('l5','Referral bookings \u2014 LIVE');
-      set('k6', accts.length); set('l6','Commercial accounts \u2014 LIVE');
-      document.getElementById('portalChip').textContent='WEB PORTAL \u00b7 LIVE';
-      document.getElementById('kpiNote').textContent='Live \u2014 connected to the Service OS backend just now.';
-      /* Real window bars: appointments set for the board's date, by window */
-      var byWin={}; var groups=b.groups||{};
-      Object.keys(groups).forEach(function(st){ (groups[st]||[]).forEach(function(it){
-        if(it.appointment&&it.appointment.status==='SET'){ var w=it.appointment.windowLabel||'Window'; byWin[w]=(byWin[w]||0)+1; } }); });
-      var order=['8\u201310 AM','10 AM\u201312 PM','12\u20132 PM','2\u20134 PM','4\u20136 PM'];
-      var max=0; order.forEach(function(w){ max=Math.max(max,byWin[w]||0); });
-      var panel=document.getElementById('winPanel');
-      if(panel){
-        if(!max){ panel.innerHTML='<h3 style="font-size:13px;color:var(--navy);margin-bottom:6px">Today\u2019s appointments by window \u2014 LIVE</h3><p style="font-size:13px;color:var(--soft);margin:0">No appointments set for today yet. Confirmed appointments from Book OS will chart here.</p>'; }
-        else{
-          panel.innerHTML='<h3 style="font-size:13px;color:var(--navy);margin-bottom:10px">Today\u2019s appointments by window \u2014 LIVE</h3><div class="bars">'+order.map(function(w){ var c=byWin[w]||0; return '<div style="height:'+Math.max(8,Math.round(c/max*100))+'%"><span>'+w+' \u00b7 '+c+'</span></div>'; }).join('')+'</div><div style="height:22px"></div>';
-        }
-      }
-    })
-    .catch(function(){ var n=document.getElementById('kpiNote'); if(n) n.textContent='Live numbers paused \u2014 your staff sign-in has expired; sign in again on the Book OS page.'; });
-})();
-</script>
-
-
-<script>
-/* Team accounts — owner/admin only. The API enforces it (account list and
-   role grants require PLATFORM_ADMIN / COMPANY_OWNER); this panel just
-   stays hidden for anyone else. */
-(function(){
-  var API='https://top-speed-service-os.vercel.app/api/v1';
-  var PLATFORM='10000000-0000-4000-8000-000000000001';
-  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
-  if(!tok) return;
+  if(window.TSOSLegal) TSOSLegal.mountSigning('laLegal','la',{buttonId:'laUpBtn'});
+  function $(i){ return document.getElementById(i); }
   function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function get(path){ return fetch(API+path,{headers:{'Authorization':'Bearer '+tok}}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); }); }
-  var companies=[];
-  function companyName(id){ if(id===PLATFORM) return 'Top Speed (platform)'; for(var i=0;i<companies.length;i++){ if(companies[i].companyId===id) return companies[i].businessName; } return 'Company '+String(id||'').slice(0,8)+'\u2026'; }
-  function loadTeam(){
-    get('/auth/users').then(function(j){
-      var users=j.data||[];
-      document.getElementById('teamList').innerHTML='<h3 style="font-size:15px;color:var(--navy);margin-bottom:10px;">Your team \u00b7 '+users.length+' accounts</h3>'+
-        users.map(function(u){ return '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;border:1px solid #D8E1EE;border-radius:10px;padding:10px 14px;margin-bottom:8px;"><span><b>'+esc(((u.firstName||'')+' '+(u.lastName||'')).trim()||u.email)+'</b> \u00b7 '+esc(u.email)+(u.phone?' \u00b7 '+esc(u.phone):'')+'</span><span style="color:var(--muted);">'+esc((u.roles||[]).join(', '))+' \u00b7 '+esc(companyName(u.companyId))+(u.active?'':' \u00b7 INACTIVE')+'</span></div>'; }).join('');
+  function tok(){ try{ return (window.TSOSVault&&TSOSVault.token())||localStorage.getItem('tsos_token')||localStorage.getItem('tsos_cust_token')||''; }catch(e){ return ''; } }
+  function fail(m){ var e=$('poErr'); e.textContent=m; e.style.display='block'; var msg=$('poMsg'); msg.textContent=''; msg.className='feedback'; }
+  function note(m,ok){ var msg=$('poMsg'); msg.textContent=m; msg.className='feedback '+(ok?'ok':'err'); $('poErr').style.display='none'; }
+  function tab(up){
+    $('tabIn').className=up?'':'on'; $('tabUp').className=up?'on':'';
+    $('inForm').style.display=up?'none':''; $('upForm').style.display=up?'':'none';
+    $('poErr').style.display='none';
+  }
+  $('tabIn').addEventListener('click',function(){ tab(false); });
+  $('tabUp').addEventListener('click',function(){ tab(true); });
+
+  /* Account type selector (sign-up): homeowner / business / pm */
+  var acctType='homeowner';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-acct]'),function(b){
+    b.addEventListener('click',function(){
+      acctType=b.getAttribute('data-acct');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-acct]'),function(x){ x.className=x===b?'selected':''; });
+    });
+  });
+
+  /* Route by role — the portal's one routing table. */
+  function routeFor(user){
+    var roles=(user&&user.roles)||[];
+    var staff=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN','MARKETING_MANAGER'];
+    for(var i=0;i<staff.length;i++) if(roles.indexOf(staff[i])>=0) return '/navigator';
+    var prov=['PROVIDER_TECH','PROVIDER_OWNER','TECHNICIAN'];
+    for(var j=0;j<prov.length;j++) if(roles.indexOf(prov[j])>=0) return '/tech';
+    if(roles.indexOf('ADVERTISER')>=0) return '/advertiser';
+    return '/app';
+  }
+  function storeSession(j){ try{ if(window.TSOSVault&&j.user&&j.token) TSOSVault.add(j.user,j.token); }catch(e){} try{ localStorage.setItem('tsos_token',j.token); }catch(e){} }
+  function save(j){ storeSession(j); location.assign(routeFor(j.user)); }
+
+  /* post(): pass the pipeline states through untouched (Layer 2
+     challenge, forced temp-password change, Speedy Verify challenge,
+     and the register pending-activation state); anything else without
+     a session token is an error carrying the API's details. */
+  function post(path,body){
+    return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){
+      if(j&&j.layer2Required&&j.challenge) return j;
+      if(j&&j.mustChangePassword&&j.changeToken) return j;
+      if(j&&j.verifyRequired&&j.challenge) return j;
+      if(j&&j.speedyVerify) return j;
+      if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; e.code=j.code; e.status=r.status; throw e; }
+      return j;
+    }); });
+  }
+
+  /* The sign-in pipeline, shared by the password step and the Speedy
+     Verify code step (mirrors Book OS): temp-password change state,
+     then the Speedy Verify code step, then Layer 2, then the session. */
+  var svChallenge=null;
+  function handlePipeline(j){
+    if(window.TSOSTempPassword&&TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/portal'); return; }
+    if(j&&j.verifyRequired&&j.challenge){
+      svChallenge=j.challenge;
+      $('svRow').style.display='block';
+      note('Speedy Verify — enter your access code to finish signing in.');
+      var ci=$('svCode'); if(ci) ci.focus();
+      return;
+    }
+    if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){
+      TSOSLayer2.run(j,{api:API,onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }});
+      return;
+    }
+    save(j);
+  }
+
+  $('inForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var em=$('siEmail').value.trim(), pw=$('siPw').value;
+    if(!em||!pw) return fail('Enter your email and password.');
+    var b=$('siBtn'); b.disabled=true; b.textContent='Signing in…';
+    post('/auth/login',{email:em,password:pw}).then(handlePipeline)
+      .catch(function(x){ fail('Sign-in failed: '+x.message); })
+      .finally(function(){ b.disabled=false; b.textContent='Sign in'; });
+  });
+
+  $('svBtn').addEventListener('click',function(){
+    var code=$('svCode').value.replace(/[\s-]/g,'');
+    if(!svChallenge) return fail('Sign in with your password first, then enter your access code.');
+    if(!code) return fail('Enter your access code.');
+    var b=$('svBtn'); b.disabled=true; b.textContent='Verifying…';
+    post('/speedy-verify/verify',{challenge:svChallenge,code:code}).then(function(j){
+      svChallenge=null; $('svRow').style.display='none';
+      handlePipeline(j);
+    }).catch(function(x){ fail('Speedy Verify: '+x.message); })
+      .finally(function(){ b.disabled=false; b.textContent='Verify code & sign in'; });
+  });
+
+  /* After account creation: hold the session, show the signed-in panel
+     with the verify-your-email notice, and let Continue route by role. */
+  var pendingUser=null;
+  function saveWithNotice(j){
+    storeSession(j);
+    pendingUser=j.user;
+    showSignedIn(j.user,{justRegistered:true});
+  }
+  function handleRegisterResult(j){
+    if(j&&j.speedyVerify){
+      /* Business / property-manager accounts: created, but Speedy
+         Verify activation comes first — the office issues the access
+         code before the first sign-in. No session exists yet. */
+      tab(false);
+      note('Account created — check your inbox to verify your email. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',true);
+      return;
+    }
+    if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){
+      TSOSLayer2.run(j,{api:API,onSession:saveWithNotice,onCancel:function(){ fail('Account created — sign in and complete the 2-step code to finish.'); }});
+      return;
+    }
+    saveWithNotice(j);
+  }
+
+  $('upForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var first=$('suFirst').value.trim(), last=$('suLast').value.trim(), em=$('suEmail').value.trim(), ph=$('suPhone').value.trim(), pw=$('suPw').value;
+    if(first.length<1) return fail('Please add your first name.');
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return fail('Please add a valid email address.');
+    if(ph.replace(/\D/g,'').length<7) return fail('Please add your mobile number.');
+    if(pw.length<10) return fail('Password needs at least 10 characters.');
+    var acceptance=window.TSOSLegal?TSOSLegal.acceptance('la'):null;
+    if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
+    var body={email:em,password:pw,firstName:first,phone:ph,role:'CUSTOMER',termsAcceptance:acceptance,accountType:acctType};
+    if(last) body.lastName=last;
+    var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
+    post('/auth/register',body).then(handleRegisterResult).catch(function(x){
+      var m=x.message;
+      if(x.code==='TERMS_ACCEPTANCE_REQUIRED'||x.status===422) m='Please review both legal documents, check both agreement boxes, and type your full name as your signature.';
+      else if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.password) m='Password must be at least 10 characters.';
+      else if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.accountType) m='Please choose an account type: Homeowner, Business, or Property Manager.';
+      else if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
+      fail(m);
+    }).finally(function(){ b.disabled=false; b.textContent='Create my account'; });
+  });
+
+  /* Already signed in: replace the forms with the signed-in panel.
+     If the account's terms are incomplete we still route onward —
+     the destination surface enforces its own terms gate. */
+  function showSignedIn(user,opts){
+    opts=opts||{};
+    var nm=((user.firstName||'')+' '+(user.lastName||'')).trim()||user.email;
+    $('signedWho').innerHTML='Signed in as <b>'+esc(nm)+'</b> ('+esc(user.email||'')+')';
+    $('emailNotice').style.display=(opts.justRegistered||user.emailVerified===false)?'block':'none';
+    $('formsPanel').style.display='none';
+    $('signedPanel').style.display='';
+    pendingUser=user;
+  }
+  $('continueBtn').addEventListener('click',function(){ if(pendingUser) location.assign(routeFor(pendingUser)); });
+  $('signOutBtn').addEventListener('click',function(){
+    try{ localStorage.removeItem('tsos_cust_token'); localStorage.removeItem('tsos_token'); }catch(e){}
+    location.reload();
+  });
+  if(tok()){
+    fetch(API+'/auth/me',{headers:{Authorization:'Bearer '+tok()}}).then(function(r){ return r.json(); }).then(function(j){
+      if(!j.user) return;
+      showSignedIn(j.user,{});
     }).catch(function(){});
   }
-  get('/auth/me').then(function(j){
-    var roles=(j.user&&j.user.roles)||[];
-    if(!(roles.indexOf('COMPANY_OWNER')>=0||roles.indexOf('PLATFORM_ADMIN')>=0)) return;
-    document.getElementById('teamPanel').style.display='';
-    document.getElementById('teamNote').textContent='You are signed in as the owner \u2014 create accounts and see the whole team below.';
-    get('/provider/companies').then(function(cj){
-      companies=cj.data||[];
-      var sel=document.getElementById('tCompany');
-      sel.innerHTML=companies.map(function(c){ return '<option value="'+c.companyId+'">'+esc(c.businessName)+'</option>'; }).join('');
-      loadTeam();
-    }).catch(function(){ loadTeam(); });
-    var roleSel=document.getElementById('tRole');
-    function syncCompany(){ var prov=['PROVIDER_TECH','PROVIDER_OWNER'].indexOf(roleSel.value)>=0; document.getElementById('tCompanyRow').style.display=prov?'':'none'; }
-    roleSel.addEventListener('change', syncCompany); syncCompany();
-    document.getElementById('tGen').addEventListener('click', function(){
-      var chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#', pw='';
-      for(var i=0;i<14;i++) pw+=chars[Math.floor(Math.random()*chars.length)];
-      document.getElementById('tPass').value=pw;
-      document.getElementById('tMsg').textContent='Temporary password generated \u2014 it is in the field, ready to create.';
-      document.getElementById('tMsg').style.color='var(--muted)';
-    });
-    document.getElementById('tCreate').addEventListener('click', function(){
-      var msg=document.getElementById('tMsg');
-      var body={ email:document.getElementById('tEmail').value.trim(), password:document.getElementById('tPass').value,
-        firstName:document.getElementById('tFirst').value.trim()||undefined, lastName:document.getElementById('tLast').value.trim()||undefined,
-        phone:document.getElementById('tPhone').value.trim()||undefined, role:roleSel.value };
-      if(['PROVIDER_TECH','PROVIDER_OWNER'].indexOf(roleSel.value)>=0){ body.companyId=document.getElementById('tCompany').value; }
-      if(!/.+@.+\..+/.test(body.email)){ msg.textContent='Add a valid email.'; msg.style.color='#e01a22'; return; }
-      if(!body.password||body.password.length<10){ msg.textContent='Temporary password needs 10+ characters \u2014 tap Generate.'; msg.style.color='#e01a22'; return; }
-      msg.textContent='Creating\u2026'; msg.style.color='var(--muted)';
-      fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify(body)})
-        .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); })
-        .then(function(j){
-          msg.textContent='Account created for '+j.user.email+' ('+(j.user.roles||[]).join(', ')+'). Give them the temporary password you set \u2014 they sign in and change it.';
-          msg.style.color='#0f7a3d';
-          loadTeam();
-        })
-        .catch(function(e){ msg.textContent='Could not create: '+e.message; msg.style.color='#e01a22'; });
-    });
-  }).catch(function(){});
+
+  /* Google sign-in return: surface a gate error, or pick up a Layer 2
+     challenge left in the URL (same pattern as the Customer App). */
+  document.addEventListener('DOMContentLoaded',function(){
+    if(!window.TSOSLayer2) return;
+    var em=TSOSLayer2.popAuthError();
+    if(em) fail(em);
+    TSOSLayer2.bootFromUrl({api:API,onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }});
+  });
 })();
 </script>
-
-<script src="/install.js"></script>
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js',{scope:'/'}).catch(()=>{})}</script>
-
-<script>
-(function(){
-  var API='https://top-speed-service-os.vercel.app/api/v1';
-  var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
-  if(!tok) return;
-  function h(){ return {'Content-Type':'application/json','Authorization':'Bearer '+tok}; }
-  function load(){
-    fetch(API+'/marketing/channel-links',{headers:h()}).then(function(r){ return r.json().then(function(j){ return {s:r.status,j:j}; }); }).then(function(x){
-      if(x.s!==200) return;
-      document.getElementById('clPanel').style.display='block';
-      document.getElementById('clNote').textContent='';
-      var links=(x.j.data&&x.j.data.links)||[];
-      if(!links.length){ document.getElementById('clList').innerHTML='<p style="color:var(--muted);font-size:14px;">No channel connection requests yet.</p>'; return; }
-      var CH={GOOGLE_ADS:'Google Ads',META:'Meta',LOCAL_SERVICES:'Local Services',TIKTOK:'TikTok',YOUTUBE:'YouTube',NEXTDOOR:'Nextdoor'};
-      document.getElementById('clList').innerHTML=links.map(function(l){
-        var u=l.user?((l.user.name||l.user.email||'')+' · '+(l.user.email||'')):'';
-        var st=l.status==='CONNECTED'?'<span style="color:#0f7a3d;font-weight:800;">CONNECTED</span>':(l.status==='REJECTED'?'<span style="color:#8a6100;font-weight:800;">REJECTED</span>':'<span style="color:#8a6100;font-weight:800;">PENDING LINK</span>');
-        var btns=l.status!=='CONNECTED'?'<button data-cl="'+l.id+'" data-st="CONNECTED" style="padding:6px 12px;border:0;border-radius:8px;background:#1473ff;color:#fff;cursor:pointer;font-weight:700;">Mark connected</button> <button data-cl="'+l.id+'" data-st="REJECTED" style="padding:6px 12px;border:1px solid #D8E1EE;border-radius:8px;background:#fff;cursor:pointer;">Reject</button>':'';
-        return '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;border-bottom:1px dashed #D8E1EE;padding:10px 0;flex-wrap:wrap;"><div><b>'+(CH[l.channel]||l.channel)+'</b> — '+l.accountRef+'<br><span style="font-size:13px;color:var(--muted);">'+u+'</span></div><div style="display:flex;gap:8px;align-items:center;">'+st+' '+btns+'</div></div>';
-      }).join('');
-      Array.prototype.forEach.call(document.querySelectorAll('[data-cl]'),function(b){
-        b.addEventListener('click',function(){
-          fetch(API+'/marketing/channel-links/'+b.getAttribute('data-cl'),{method:'PATCH',headers:h(),body:JSON.stringify({status:b.getAttribute('data-st')})}).then(function(r){
-            document.getElementById('clMsg').textContent=r.ok?'Updated.':'Update failed ('+r.status+').'; load();
-          });
-        });
-      });
-    }).catch(function(){});
-  }
-  load();
-})();
-</script>
-
-<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
-<style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/speedy-widget.js" defer></script>
+<script src="/layer2.js" defer></script>
+<script src="/temp-password.js" defer></script>
+<script src="/email-verify-notice.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 </body>
 </html>
