@@ -1,5 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
-import { createId, store } from '../data/store.js';
+import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { hashPassword, verifyPassword } from './passwords.js';
@@ -16,8 +16,16 @@ import { consumeEmailVerification, issueEmailVerification } from './emailVerific
  * Phase 1 covers STAFF accounts (STAFF_ROLES) and BUSINESS accounts
  * (signupAudience commercial / property-manager). Flywheel advertiser
  * accounts (ADVERTISER role) are business accounts and are covered the
- * same way (2026-11-16). Customers and providers are designed
- * (ACCESS-CODE-SYSTEM.md) but their sign-in is unchanged.
+ * same way (2026-11-16). Customers are unchanged.
+ *
+ * Phase 3 (2026-11-19, Ramone's order — "Switch on phase 3 now"):
+ * PROVIDER / TECHNICIAN accounts are covered too. A flagged tech's
+ * sign-in now stops at the same code step — at the Company Tech door
+ * (/tech), the Network Tech door (/tech-network), and /portal —
+ * until the Master issues their code; the session that follows
+ * carries sv:true exactly like a staff session. Nothing else about
+ * the gate changed: per-account activation, Master exemption, the
+ * 5-wrong-codes → 15-minute lock, and Layer 2 after the code step.
  *
  * Activation is PER ACCOUNT via User.verifyRequired (default false):
  * every account that existed at launch is grandfathered. Issuing an
@@ -43,20 +51,21 @@ export const SPEEDY_VERIFY = {
 
 export const BUSINESS_AUDIENCES = ['commercial', 'property-manager'];
 
-// Contractor accounts (providers / technicians). Their sign-in is NOT
-// gated in Phase 1 — but when the Master creates one (e.g. from the
-// Turbo Boss Accounts panel) it still starts flagged UNVERIFIED and is
-// listed in his panel, so its code can be issued ahead of Phase 3,
-// when the gate starts applying to provider sign-in too.
+// Contractor accounts (providers / technicians). They start flagged
+// UNVERIFIED when created (e.g. from the Turbo Boss Accounts panel)
+// and are listed in the Master's panel. Since Phase 3 (2026-11-19)
+// their sign-in is gated exactly like staff/business sign-in — see
+// isSpeedyVerifyCovered below.
 export const PROVIDER_ACCOUNT_ROLES = [ROLES.PROVIDER_OWNER, ROLES.PROVIDER_TECH, ROLES.TECHNICIAN];
 
 /**
  * Does a freshly created account start UNVERIFIED (verifyRequired on,
- * waiting for the Master's code)? Covered accounts always do.
- * Contractor accounts do when an administrator created them (the
- * Turbo Boss / console creation path — accounts created outside the
- * public sign-up flow follow the same activation model). The Master
- * tier never does.
+ * waiting for the Master's code)? Covered accounts always do —
+ * staff, business, advertiser, and (Phase 3) provider/tech accounts.
+ * Provider roles are never self-serve (POST /auth/register refuses
+ * them for non-administrators), so every provider account that exists
+ * came through an office path and starts flagged. The Master tier
+ * never does.
  */
 export function registrationStartsUnverified(draft, adminCreated) {
   if (isMasterAccount(draft)) return false;
@@ -65,10 +74,10 @@ export function registrationStartsUnverified(draft, adminCreated) {
   const roles = Array.isArray(draft.roles) ? draft.roles : [];
   // Flywheel AI Advertising (2026-11-17): an office-issued Flywheel
   // Marketing Manager is a workforce account, so it starts unverified
-  // like the admin-created contractor accounts beside it. Self-serve
-  // marketing signups (adminCreated false) never reach this branch —
-  // the agency-client door keeps its existing posture.
-  return roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role) || role === ROLES.MARKETING_MANAGER);
+  // like the covered accounts beside it. Self-serve marketing
+  // signups (adminCreated false) never reach this branch — the
+  // agency-client door keeps its existing posture.
+  return roles.some((role) => role === ROLES.MARKETING_MANAGER);
 }
 
 export function isMasterAccount(user) {
@@ -83,6 +92,15 @@ export function isSpeedyVerifyCovered(user) {
   // accounts — a business's ADVERTISER account starts unverified and
   // waits for the Master's code exactly like a commercial / PM account.
   if (roles.includes(ROLES.ADVERTISER)) return true;
+  // Phase 3 (2026-11-19, Ramone's order): provider / technician
+  // accounts are covered — a flagged tech's sign-in stops at the code
+  // step at both tech doors and at /portal, exactly like staff and
+  // business accounts. Safe to cover outright (unlike
+  // MARKETING_MANAGER below): provider roles are never self-serve —
+  // PUBLIC_SELF_SERVE_ROLES excludes them and POST /auth/register
+  // refuses them for anyone but an administrator — so coverage here
+  // cannot flip a public sign-up door.
+  if (roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role))) return true;
   // Flywheel AI Advertising (2026-11-17): MARKETING_MANAGER is
   // deliberately NOT added here — coverage would also flip self-serve
   // marketing signups to starts-unverified (the covered branch of
@@ -209,11 +227,10 @@ export function verifyStateView(user, record) {
     lastUsedAt: record ? iso(record.lastUsedAt) : null,
     lockedUntil: record ? iso(record.lockedUntil) : null,
     // True when the code step is enforced at this account's sign-in
-    // today (Phase 1: staff + business). Contractor accounts can be
-    // flagged required + listed before their enforcement phase.
+    // today (staff + business since Phase 1; provider/tech accounts
+    // since Phase 3, 2026-11-19).
     enforced: verifyGateApplies(user),
-    // Flagged as needing a code and none issued yet — includes
-    // contractor accounts awaiting a Phase 3 code.
+    // Flagged as needing a code and none issued yet.
     awaitingCode: user.verifyRequired === true && !hasActiveCode && !isMasterAccount(user),
     // The Master's approval queue: sign-in is blocked until he acts.
     pendingApproval: verifyGateApplies(user) && !hasActiveCode,
@@ -427,9 +444,30 @@ export async function setRequirement(targetUserId, required) {
 }
 
 /**
- * Every account the panel tracks: covered accounts, the Master (marked
- * exempt), and any account flagged verifyRequired — which is how
- * admin-created contractor accounts surface here before Phase 3.
+ * Which tech system a provider account belongs to, for the panel's
+ * labels: COMPANY = Top Speed's own crew (the companyCrew provider),
+ * NETWORK = an independent Service Network business. Mirrors the
+ * derivation in routes/provider.js (myProvider): a provider-role
+ * account's own company provider decides; platform-tenant tech
+ * accounts belong to the crew. Non-provider accounts get null.
+ */
+function techSystemForUser(user) {
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  if (isMasterAccount(user)) return null;
+  if (!roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role))) return null;
+  const own = store.providers.find((provider) => provider.companyId === user.companyId) || null;
+  if (own) return own.companyCrew ? 'COMPANY' : 'NETWORK';
+  if (user.companyId === PLATFORM_COMPANY_ID) {
+    const crew = store.providers.find((provider) => provider.companyCrew) || null;
+    return crew ? 'COMPANY' : null;
+  }
+  return null;
+}
+
+/**
+ * Every account the panel tracks: covered accounts (staff, business,
+ * advertiser, and — Phase 3 — provider/tech), the Master (marked
+ * exempt), and any account flagged verifyRequired.
  */
 export async function listVerifyAccounts() {
   const users = await usersRepo.listAll();
@@ -448,6 +486,10 @@ export async function listVerifyAccounts() {
         lastName: user.lastName ?? null,
         roles: user.roles,
         signupAudience: user.signupAudience ?? null,
+        // Two tech systems (Phase 3): which door a tech account
+        // belongs to, so the Master's queue labels it COMPANY /
+        // NETWORK alongside the other roles.
+        system: techSystemForUser(user),
         active: user.active,
         createdAt: iso(user.createdAt),
       },

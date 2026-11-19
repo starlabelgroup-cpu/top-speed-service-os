@@ -12,12 +12,12 @@
  *
  * Drills: classification at /provider/me for both sides + oversight;
  * cross-side job visibility (network cannot see company jobs and
- * vice versa); the Speedy Verify posture on both systems (accounts
- * start flagged verifyRequired, appear in the Master's panel as
- * awaiting a code, and the Master can issue a code — the login-time
- * code gate itself covers staff/business roles in Phase 1 and is
- * Phase 3 for provider roles per the standing rollout, so flagged
- * tech accounts sign in today); Layer 2 completion on both systems;
+ * vice versa); the Speedy Verify gate on both systems (Phase 3,
+ * 2026-11-19: accounts start flagged verifyRequired, appear in the
+ * Master's panel as awaiting a code with their COMPANY/NETWORK
+ * system label; sign-in is denied with no code issued, and with a
+ * live code it stops at the code step — only the exchange issues a
+ * session, carrying sv:true); Layer 2 completion on both systems;
  * forgot/reset → new password works, old password dies, on both
  * systems; the apply-to-join intake lands a real
  * PROVIDER_APPLICATION connection.
@@ -333,12 +333,13 @@ async function main() {
     [...(ownerOv.json.data.accepted || []), ...(ownerOv.json.data.offers || [])].some((a) => a.bookingId === IDS.bkCrew)
     && [...(ownerOv.json.data.accepted || []), ...(ownerOv.json.data.offers || [])].some((a) => a.bookingId === IDS.bkNet));
 
-  // ---------- Speedy Verify posture on both systems ----------
-  // Phase 1 rules (standing): tech/provider accounts start FLAGGED
-  // verifyRequired, wait in the Master's panel, and the Master issues
-  // their codes; the login-time code gate enforces for staff/business
-  // roles now and for provider roles in Phase 3. Layer 2 (next
-  // section) is the login-enforced second step for techs today.
+  // ---------- Speedy Verify gate on both systems (Phase 3) ----------
+  // Phase 3 (2026-11-19, Ramone's order): the login-time code gate
+  // covers provider/tech roles. Tech accounts start FLAGGED
+  // verifyRequired and wait in the Master's panel; with no code
+  // issued, sign-in is DENIED; with a live code, sign-in stops at the
+  // code step and only the exchange (challenge + the Master's code)
+  // issues a session — carrying sv:true like a staff session.
   const panel1 = await api('/speedy-verify/accounts', { token: owner });
   const rowOf = (rows, id) => (rows || []).find((r) => r.user.id === id);
   checkTrue('company flagged account waits in the Master panel with a live code',
@@ -347,6 +348,16 @@ async function main() {
     rowOf(panel1.json.data, IDS.netVerify)?.verify?.hasActiveCode === true);
   checkTrue('unissued company account shows as awaiting a code',
     rowOf(panel1.json.data, IDS.crewNoCode)?.verify?.awaitingCode === true);
+  checkTrue('unissued company account is pending approval (sign-in blocked)',
+    rowOf(panel1.json.data, IDS.crewNoCode)?.verify?.pendingApproval === true);
+  checkTrue('panel labels the company tech system COMPANY',
+    rowOf(panel1.json.data, IDS.crewVerify)?.user?.system === 'COMPANY');
+  checkTrue('panel labels the network tech system NETWORK',
+    rowOf(panel1.json.data, IDS.netVerify)?.user?.system === 'NETWORK');
+  const denied = await loginRaw(EMAILS.crewNoCode);
+  check('flagged tech with NO code: sign-in denied', denied.status, 403);
+  check('flagged tech with NO code: denial code', denied.json.code, 'SPEEDY_VERIFY_NO_CODE');
+  checkTrue('flagged tech with NO code: no session token', !denied.json.token);
   const issued = await api('/speedy-verify/issue', { token: owner, method: 'POST', body: { userId: IDS.crewNoCode } });
   check('Master issues a code for the waiting company tech', issued.status, 200);
   checkTrue('issued code is 8 digits (shown once)',
@@ -354,12 +365,29 @@ async function main() {
   const panel2 = await api('/speedy-verify/accounts', { token: owner });
   checkTrue('after issue, the account holds an active code',
     rowOf(panel2.json.data, IDS.crewNoCode)?.verify?.hasActiveCode === true);
-  const cvToken = await login(EMAILS.crewVerify);
+
+  // The gated sign-ins exchange their challenges — restart first so
+  // the shared auth rate bucket is fresh for the exchanges.
+  await restartServer();
+  async function gatedLogin(email, code, label) {
+    const step = await loginRaw(email);
+    check(`${label}: login stops at the Speedy Verify code step`, step.json.code, 'SPEEDY_VERIFY_REQUIRED');
+    checkTrue(`${label}: code step carries a challenge and no session`, Boolean(step.json.challenge) && !step.json.token);
+    const done = await api('/speedy-verify/verify', { method: 'POST', body: { challenge: step.json.challenge, code } });
+    check(`${label}: code exchange issues the session`, done.status, 200);
+    const payload = JSON.parse(Buffer.from(done.json.token.split('.')[1], 'base64url').toString('utf8'));
+    check(`${label}: session carries sv:true`, payload.sv, true);
+    return done.json.token;
+  }
+  const cvToken = await gatedLogin(EMAILS.crewVerify, VERIFY_CODE, 'company flagged');
   const cvMe = await api('/provider/me', { token: cvToken });
-  check('company flagged account signs in (Phase 1 posture) on COMPANY', cvMe.json.data.system, 'COMPANY');
-  const nvToken = await login(EMAILS.netVerify);
+  check('company flagged account lands on COMPANY after the code step', cvMe.json.data.system, 'COMPANY');
+  const nvToken = await gatedLogin(EMAILS.netVerify, VERIFY_CODE, 'network flagged');
   const nvMe = await api('/provider/me', { token: nvToken });
-  check('network flagged account signs in (Phase 1 posture) on NETWORK', nvMe.json.data.system, 'NETWORK');
+  check('network flagged account lands on NETWORK after the code step', nvMe.json.data.system, 'NETWORK');
+  const ncToken = await gatedLogin(EMAILS.crewNoCode, String(issued.json.code || '').replace(/[\s-]/g, ''), 'company newly-issued');
+  const ncMe = await api('/provider/me', { token: ncToken });
+  check('newly-issued company tech lands on COMPANY after the code step', ncMe.json.data.system, 'COMPANY');
 
   // ---------- Layer 2 on both systems ----------
   await restartServer();

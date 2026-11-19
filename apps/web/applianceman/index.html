@@ -489,7 +489,7 @@ function svKind(u){
   if (roles.indexOf('COMPANY_ADMIN') !== -1 || roles.indexOf('PLATFORM_ADMIN') !== -1) return 'Manager';
   if (u.signupAudience === 'commercial') return 'Business account';
   if (u.signupAudience === 'property-manager') return 'Property manager';
-  if (roles.some(function(r){ return ['PROVIDER_OWNER','PROVIDER_TECH','TECHNICIAN'].indexOf(r) !== -1; })) return 'Contractor — code enforcement arrives in Phase 3';
+  if (roles.some(function(r){ return ['PROVIDER_OWNER','PROVIDER_TECH','TECHNICIAN'].indexOf(r) !== -1; })) return 'Contractor — ' + (u.system === 'COMPANY' ? 'Company Tech' : u.system === 'NETWORK' ? 'Service Network Tech' : 'Tech App');
   return roles.join(', ') || 'Account';
 }
 function svStatus(v){
@@ -517,7 +517,7 @@ function loadVerifyPanel(){
     var html = waiting.length
       ? '<p style="margin:0 0 6px"><b>Approval queue — ' + waiting.length + ' account' + (waiting.length === 1 ? '' : 's') + ' waiting.</b> Issue a code to approve an account.</p>'
       : '<p style="margin:0 0 6px"><b>Approval queue is clear</b> — no account is waiting for a code.</p>';
-    if (!rows.length) html += '<p class="small mut">No staff or business accounts yet.</p>';
+    if (!rows.length) html += '<p class="small mut">No staff, business or tech accounts yet.</p>';
     rows.forEach(function(r){
       var u = r.user, v = r.verify;
       html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)"><div><b>' + esc(u.email) + '</b> <span class="mut small">' + esc(svKind(u)) + (u.active ? '' : ' · inactive') + '</span><br><span class="small">' + esc(svStatus(v)) + '</span></div><div style="white-space:nowrap">';

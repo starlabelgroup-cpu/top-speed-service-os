@@ -372,14 +372,15 @@ router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
       updatedAt: new Date().toISOString(),
     };
 
-    // Speedy Verify (Phase 1, 2026-11-16): NEW staff accounts (created by
-    // an administrator — including from the Turbo Boss Accounts panel)
-    // and NEW business / property-manager accounts (offer sign-ups)
-    // start UNVERIFIED — verifyRequired on, no code — so they wait in
-    // the Master's approval queue and cannot sign in until he issues
-    // their access code. Admin-created contractor (provider) accounts
-    // start flagged the same way and surface in the panel, but their
-    // sign-in stays ungated until Phase 3. The Master tier is exempt;
+    // Speedy Verify (Phase 1, 2026-11-16; Phase 3, 2026-11-19): NEW
+    // staff accounts (created by an administrator — including from
+    // the Turbo Boss Accounts panel), NEW business / property-manager
+    // accounts (offer sign-ups), and NEW provider / technician
+    // accounts start UNVERIFIED — verifyRequired on, no code — so
+    // they wait in the Master's approval queue and cannot sign in
+    // until he issues their access code. (Phase 3 switched the
+    // login-time gate on for provider roles; before it, flagged tech
+    // accounts were listed but ungated.) The Master tier is exempt;
     // self-registered customer accounts are untouched.
     draft.verifyRequired = registrationStartsUnverified(draft, adminCreated);
 
@@ -581,7 +582,8 @@ router.post('/auth/login', async (req, res, next) => {
       return res.status(403).json({ error: 'This account is inactive' });
     }
 
-    // Speedy Verify (Phase 1): an activated staff/business account must
+    // Speedy Verify: an activated covered account (staff/business
+    // since Phase 1; provider/tech since Phase 3, 2026-11-19) must
     // pass the Master's access-code step before a session is issued.
     // No live code → denied here; live code → a 10-minute challenge the
     // client exchanges at POST /speedy-verify/verify. Every other
