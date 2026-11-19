@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { addBookingEvent, appendEvent, createId, store } from '../data/store.js';
-import { persistAssignment, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
+import { addBookingEvent, appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
+import { persistAssignment, persistBooking, persistCustomer, persistProvider } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
@@ -16,6 +16,23 @@ import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
 import { speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import {
+  authorizeEstimateForJob,
+  authorizeSchema,
+  estimateDecisionSchema,
+  estimateSchema,
+  generateInvoiceForJob,
+  invoiceMoney,
+  latestEstimate,
+  authorizationLog,
+  estimateDecision,
+  receiptSchema,
+  recordEstimateDecisionForJob,
+  recordReceiptForJob,
+  saveEstimateForJob,
+} from '../services/jobMoney.js';
+import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '../services/workOrders.js';
+import { db, DATABASE_ENABLED } from '../db/client.js';
 import { catalogEntry, LINK_TYPES } from '../services/linkCenter.js';
 
 /**
@@ -68,7 +85,36 @@ const providerBoard = [
 ];
 
 function myProvider(req) {
-  return store.providers.find((provider) => provider.companyId === req.user.companyId) || null;
+  const own = store.providers.find((provider) => provider.companyId === req.user.companyId) || null;
+  if (own) return own;
+  // Two tech systems (2026-11-19): Top Speed's own technicians hold
+  // accounts in the PLATFORM company (created in Work Time Access),
+  // not in the Field Team's provider company — their crew record is
+  // the company-crew provider. Oversight viewers are excluded: the
+  // owner also sits in the platform company and must stay oversight,
+  // never silently become the crew.
+  if (
+    req.user?.companyId === PLATFORM_COMPANY_ID &&
+    !isOversightViewer(req) &&
+    (req.user?.roles || []).some((role) => [ROLES.PROVIDER_OWNER, ROLES.PROVIDER_TECH, ROLES.TECHNICIAN].includes(role))
+  ) {
+    return store.providers.find((provider) => provider.companyCrew) || null;
+  }
+  return null;
+}
+
+/**
+ * Which of the two tech systems this sign-in belongs to (2026-11-19):
+ * COMPANY = Top Speed's own crew (the companyCrew provider), NETWORK =
+ * an independent Service Network business, OVERSIGHT = owner/manager
+ * viewing the whole board. The doors (/tech = Company Tech,
+ * /tech-network = Network Tech) read this and land each account in
+ * its own system, with a clear wrong-door message otherwise.
+ */
+function techSystemFor(req, provider) {
+  if (isOversightViewer(req) && (!provider || provider.companyId !== req.user?.companyId)) return 'OVERSIGHT';
+  if (!provider) return null;
+  return provider.companyCrew ? 'COMPANY' : 'NETWORK';
 }
 
 function isOversightViewer(req) {
@@ -78,6 +124,12 @@ function isOversightViewer(req) {
 function providerNameById(providerId) {
   const provider = store.providers.find((p) => p.id === providerId);
   return provider ? provider.businessName : null;
+}
+
+function providerSystemById(providerId) {
+  const provider = store.providers.find((p) => p.id === providerId);
+  if (!provider) return null;
+  return provider.companyCrew ? 'COMPANY' : 'NETWORK';
 }
 
 /**
@@ -168,14 +220,230 @@ function publicAssignment(assignment) {
 
 router.get('/provider/me', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
-  if (provider) return res.json({ data: { provider } });
+  if (provider) {
+    const system = techSystemFor(req, provider);
+    return res.json({ data: { provider, system, oversight: system === 'OVERSIGHT' } });
+  }
   // No provider record of their own: an oversight viewer (owner /
   // company admin) still gets a 200 with an explicit oversight marker
   // so the Tech App lands them on the jobs board instead of an error.
   if (isOversightViewer(req)) {
-    return res.json({ data: { provider: null, oversight: true } });
+    return res.json({ data: { provider: null, system: 'OVERSIGHT', oversight: true } });
   }
   return noProvider(res);
+});
+
+/* ================= Create flows + tech profile (2026-11-19) =================
+ * Origination inside the Tech App (Directives 3 + 5 + 6): a tech
+ * creates a work order (assigned to themselves, or released into the
+ * Service Setters queue), looks customers up before creating so
+ * repeat customers never duplicate, and maintains their own settings
+ * — the same user/provider records the office sees in Work Time
+ * Access. Money origination rides the job workspace endpoints above
+ * (estimate / decision / invoice / receipts, services/jobMoney.js).
+ */
+
+router.post('/provider/work-orders', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = workOrderCreateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid work order', details: parsed.error.flatten() });
+  }
+  const assignSelf = parsed.data.assign !== 'QUEUE';
+  const result = await createWorkOrder({
+    actor: req.user.email,
+    source: 'TECH_APP',
+    via: 'tech-app',
+    input: parsed.data,
+    assignProvider: assignSelf ? provider : null,
+    assignmentStatus: 'ACCEPTED',
+  });
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({
+    data: {
+      booking: {
+        id: result.booking.id,
+        referenceCode: result.booking.referenceCode,
+        status: result.booking.status,
+        appliance: result.booking.appliance,
+        issue: result.booking.issue,
+        city: result.booking.city,
+        areaStatus: result.booking.areaStatus,
+        customer: { name: result.booking.customer.name, phone: result.booking.customer.phone },
+      },
+      assignment: result.assignment ? publicAssignment(result.assignment) : null,
+      customerCreated: result.customerCreated,
+    },
+  });
+});
+
+router.get('/provider/customers', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  const oversight = isOversightViewer(req);
+  if (!provider && !oversight) return noProvider(res);
+  // A provider looks up only customers their own business has worked
+  // (their assignments' bookings). Oversight searches the whole book.
+  let visible = null;
+  if (provider && !oversight) {
+    visible = new Set();
+    for (const assignment of store.dispatchAssignments.values()) {
+      if (assignment.providerId !== provider.id) continue;
+      const booking = store.bookings.get(assignment.bookingId);
+      if (booking?.customerId) visible.add(booking.customerId);
+    }
+  }
+  return res.json({ data: findCustomersForCreate(req.query.q, visible) });
+});
+
+/* ---------------- Tech settings (Directive 6) ----------------
+ * Profile details live on the account's User record; a network
+ * provider's business name / service areas / appliances live on their
+ * Provider record (the office sees and the matcher uses the same
+ * fields). Vehicle + notification preferences + a company tech's
+ * personal areas/appliances live in User.techSettings — per-account,
+ * because the company crew SHARES one provider record. Documents are
+ * not modeled as uploads anywhere in the platform, so Settings links
+ * them to the Provider portal instead of faking a save.
+ */
+const techProfileSchema = z.object({
+  firstName: z.string().trim().max(80).optional(),
+  lastName: z.string().trim().max(80).optional(),
+  phone: z.string().trim().max(30).optional(),
+  businessName: z.string().trim().min(2).max(160).optional(),
+  vehicle: z.object({
+    year: z.string().trim().max(8).nullable().optional(),
+    make: z.string().trim().max(40).nullable().optional(),
+    model: z.string().trim().max(40).nullable().optional(),
+    color: z.string().trim().max(30).nullable().optional(),
+    plate: z.string().trim().max(16).nullable().optional(),
+  }).nullable().optional(),
+  notifications: z.object({
+    jobOffers: z.boolean().optional(),
+    scheduleChanges: z.boolean().optional(),
+    payments: z.boolean().optional(),
+    messages: z.boolean().optional(),
+  }).optional(),
+  myAreas: z.array(z.string().trim().min(1).max(80)).max(60).optional(),
+  myAppliances: z.array(z.string().trim().min(1).max(80)).max(60).optional(),
+});
+
+// Dev-only fallback when no database is configured (production and
+// the drills always run on Postgres): settings persist for the
+// process lifetime keyed by account id.
+const memoryTechSettings = new Map();
+
+async function loadTechAccount(userId) {
+  if (DATABASE_ENABLED) {
+    const user = await db().user.findUnique({ where: { id: userId } });
+    return user;
+  }
+  return null;
+}
+
+function techProfileView(req, provider, user) {
+  const settings = (user?.techSettings && typeof user.techSettings === 'object' ? user.techSettings : null)
+    || memoryTechSettings.get(req.user.id)
+    || {};
+  const system = techSystemFor(req, provider);
+  return {
+    system,
+    account: {
+      email: req.user.email,
+      firstName: user?.firstName ?? null,
+      lastName: user?.lastName ?? null,
+      phone: user?.phone ?? null,
+      roles: req.user.roles || [],
+    },
+    provider: provider
+      ? {
+          id: provider.id,
+          businessName: provider.businessName,
+          companyCrew: Boolean(provider.companyCrew),
+          serviceCities: provider.serviceCities || [],
+          specialties: provider.specialties || [],
+        }
+      : null,
+    vehicle: settings.vehicle || null,
+    notifications: {
+      jobOffers: settings.notifications?.jobOffers !== false,
+      scheduleChanges: settings.notifications?.scheduleChanges !== false,
+      payments: settings.notifications?.payments !== false,
+      messages: settings.notifications?.messages !== false,
+    },
+    // Company crew: personal working lists (the shared crew record's
+    // areas/appliances are set by the office). Network: the provider
+    // record itself is the list of record.
+    myAreas: system === 'NETWORK' ? provider?.serviceCities || [] : settings.myAreas || [],
+    myAppliances: system === 'NETWORK' ? provider?.specialties || [] : settings.myAppliances || [],
+    areasManagedByOffice: system === 'COMPANY',
+  };
+}
+
+router.get('/provider/profile', ...providerBoard, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const user = await loadTechAccount(req.user.id).catch(() => null);
+  return res.json({ data: techProfileView(req, provider, user) });
+});
+
+router.patch('/provider/profile', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = techProfileSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid profile update', details: parsed.error.flatten() });
+  }
+  const data = parsed.data;
+  const system = techSystemFor(req, provider);
+  const changed = [];
+  const user = await loadTechAccount(req.user.id).catch(() => null);
+  const settings = {
+    ...((user?.techSettings && typeof user.techSettings === 'object' ? user.techSettings : null) || memoryTechSettings.get(req.user.id) || {}),
+  };
+  if (data.vehicle !== undefined) { settings.vehicle = data.vehicle; changed.push('vehicle'); }
+  if (data.notifications !== undefined) {
+    settings.notifications = { ...(settings.notifications || {}), ...data.notifications };
+    changed.push('notifications');
+  }
+  if (system === 'COMPANY') {
+    if (data.myAreas !== undefined) { settings.myAreas = data.myAreas; changed.push('myAreas'); }
+    if (data.myAppliances !== undefined) { settings.myAppliances = data.myAppliances; changed.push('myAppliances'); }
+  }
+  const userFields = {};
+  if (data.firstName !== undefined) { userFields.firstName = data.firstName || null; changed.push('firstName'); }
+  if (data.lastName !== undefined) { userFields.lastName = data.lastName || null; changed.push('lastName'); }
+  if (data.phone !== undefined) { userFields.phone = data.phone || null; changed.push('phone'); }
+  if (Object.keys(userFields).length || changed.length) {
+    if (DATABASE_ENABLED) {
+      await db().user.update({
+        where: { id: req.user.id },
+        data: { ...userFields, techSettings: settings },
+      });
+    } else {
+      memoryTechSettings.set(req.user.id, settings);
+    }
+  }
+  if (system === 'NETWORK') {
+    let providerChanged = false;
+    if (data.businessName !== undefined && data.businessName !== provider.businessName) {
+      provider.businessName = data.businessName;
+      providerChanged = true;
+      changed.push('businessName');
+    }
+    if (data.myAreas !== undefined) { provider.serviceCities = data.myAreas; providerChanged = true; changed.push('serviceCities'); }
+    if (data.myAppliances !== undefined) { provider.specialties = data.myAppliances; providerChanged = true; changed.push('specialties'); }
+    if (providerChanged) await persistProvider(provider);
+  }
+  appendEvent('TECH_PROFILE_UPDATED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'USER',
+    entityId: req.user.id,
+    details: { system, fields: changed },
+  });
+  const fresh = await loadTechAccount(req.user.id).catch(() => null);
+  return res.json({ data: techProfileView(req, provider, fresh) });
 });
 
 router.get('/provider/assignments', ...providerBoard, (req, res) => {
@@ -589,27 +857,7 @@ function diagnosisComplete(booking) {
   return Boolean(d && d.confirmedFault && d.recommendedRepair);
 }
 
-function latestEstimate(booking) {
-  let found = null;
-  for (const event of booking.history || []) {
-    if (event.type === 'ESTIMATE_SAVED' && event.estimate) found = event.estimate;
-  }
-  return found;
-}
 
-function authorizationLog(booking) {
-  return (booking.history || [])
-    .filter((event) => event.type === 'ESTIMATE_APPROVED')
-    .map((event) => ({
-      at: event.at || null,
-      actor: event.actor || null,
-      method: event.method || 'RECORDED_IN_APP',
-      authorizedByName: event.authorizedByName || null,
-      estimateId: event.estimateId || null,
-      note: event.note || null,
-    }))
-    .reverse();
-}
 
 /* ------------- Tech dispatch package read models (2026-11-19) -------------
  * Ramone's full-package rebuild, shaped by the enterprise blueprint's
@@ -622,34 +870,6 @@ function authorizationLog(booking) {
  * missing record reads back as an explicit empty state, never a
  * fabricated one.
  */
-function estimateDecision(booking) {
-  let found = null;
-  for (const event of booking.history || []) {
-    if (event.type === 'ESTIMATE_APPROVED') {
-      found = {
-        decision: 'APPROVED',
-        estimateId: event.estimateId || null,
-        at: event.at || null,
-        actor: event.actor || null,
-        method: event.method || 'RECORDED_IN_APP',
-        authorizedByName: event.authorizedByName || null,
-        note: event.note || null,
-      };
-    }
-    if (event.type === 'ESTIMATE_DECLINED') {
-      found = {
-        decision: 'DECLINED',
-        estimateId: event.estimateId || null,
-        at: event.at || null,
-        actor: event.actor || null,
-        method: null,
-        authorizedByName: null,
-        note: event.note || null,
-      };
-    }
-  }
-  return found;
-}
 
 function jobWarranties(booking) {
   // Blueprint rule: warranties are looked up BY APPLIANCE. A job's
@@ -674,10 +894,6 @@ function jobWarrantyClaims(booking) {
     .reverse();
 }
 
-function jobInvoice(booking) {
-  const list = (store.invoices || []).filter((inv) => inv.serviceRequestId === booking.id && inv.status !== 'VOID');
-  return list.length ? list[list.length - 1] : null;
-}
 
 function jobStripePayments(booking) {
   return [...(store.payments?.values() || [])]
@@ -694,24 +910,6 @@ function jobStripePayments(booking) {
     .reverse();
 }
 
-function invoiceMoney(booking) {
-  // The invoice is the balance of record once one exists (blueprint:
-  // payments are recorded against the invoice, never past its total).
-  // Before that, the estimate total is the reference, as before.
-  const invoice = jobInvoice(booking);
-  const receipts = jobReceipts(booking);
-  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
-  const estimate = latestEstimate(booking);
-  const invoiceTotalCents = invoice ? Math.round(Number(invoice.total || 0) * 100) : null;
-  const referenceTotalCents = invoiceTotalCents != null ? invoiceTotalCents : estimate ? estimate.totalCents : null;
-  return {
-    invoice,
-    receipts,
-    receiptsTotalCents,
-    invoiceTotalCents,
-    balanceDueCents: referenceTotalCents == null ? null : Math.max(0, referenceTotalCents - receiptsTotalCents),
-  };
-}
 
 function jobPhotos(booking) {
   const byId = new Map();
@@ -723,12 +921,6 @@ function jobPhotos(booking) {
   return [...byId.values()].filter((photo) => !removed.has(photo.id)).slice(-60);
 }
 
-function jobReceipts(booking) {
-  return (booking.history || [])
-    .filter((event) => event.type === 'RECEIPT_RECORDED' && event.receipt)
-    .map((event) => event.receipt)
-    .reverse();
-}
 
 function jobPartsUsed(booking) {
   return (booking.history || [])
@@ -1243,62 +1435,7 @@ router.post('/provider/assignments/:id/diagnosis', ...providerOnly, async (req, 
  * tech-entered rate applied to parts. The server computes the total;
  * the client can preview but never set it.
  */
-const ESTIMATE_LABOR_CENTS = { REPAIR: 21000, INSTALLATION: 15000 };
-
-const estimateSchema = z.object({
-  kind: z.enum(['REPAIR', 'INSTALLATION']),
-  laborCents: z.number().int().min(0).max(100000000).optional(),
-  parts: z.array(z.object({
-    description: z.string().trim().min(2).max(160),
-    qty: z.number().int().min(1).max(999),
-    unitPriceCents: z.number().int().min(0).max(100000000),
-  })).max(30).optional(),
-  discountCents: z.number().int().min(0).max(100000000).optional(),
-  taxRatePercent: z.number().min(0).max(30).optional(),
-  notes: z.string().trim().max(500).nullable().optional(),
-});
-
-function computeEstimate(booking, input) {
-  const segment = booking.segment || 'RESIDENTIAL';
-  const commercial = segment === 'COMMERCIAL';
-  const diagnosticFeeCents = commercial ? 0 : Math.round(Number(booking.diagnosticFee ?? 99) * 100);
-  const laborCents = commercial ? (input.laborCents ?? null) : ESTIMATE_LABOR_CENTS[input.kind];
-  const parts = (input.parts || []).map((line) => ({
-    description: line.description,
-    qty: line.qty,
-    unitPriceCents: line.unitPriceCents,
-    lineTotalCents: line.qty * line.unitPriceCents,
-  }));
-  const partsSubtotalCents = parts.reduce((sum, line) => sum + line.lineTotalCents, 0);
-  const taxRatePercent = input.taxRatePercent || 0;
-  const taxCents = Math.round((partsSubtotalCents * taxRatePercent) / 100);
-  const discountCents = input.discountCents || 0;
-  // The $99 diagnostic is credited toward an approved REPAIR (Launch
-  // Pack terms). It is not credited on a standalone installation, and
-  // it never exists on a commercial job.
-  const diagnosticCreditCents =
-    !commercial && input.kind === 'REPAIR' && booking.diagnosticFeeCreditedTowardRepair !== false
-      ? diagnosticFeeCents
-      : 0;
-  const totalCents = Math.max(
-    0,
-    (laborCents || 0) + partsSubtotalCents + taxCents - discountCents - diagnosticCreditCents,
-  );
-  return {
-    segment,
-    kind: input.kind,
-    diagnosticFeeCents,
-    diagnosticCreditCents,
-    laborCents,
-    parts,
-    partsSubtotalCents,
-    taxRatePercent,
-    taxCents,
-    discountCents,
-    totalCents,
-    notes: input.notes || null,
-  };
-}
+/* Pricing + estimate math live in services/jobMoney.js (shared with Book OS). */
 
 router.post('/provider/assignments/:id/estimate', ...providerOnly, async (req, res) => {
   const loaded = loadMyAssignment(req, res);
@@ -1309,41 +1446,14 @@ router.post('/provider/assignments/:id/estimate', ...providerOnly, async (req, r
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid estimate', details: parsed.error.flatten() });
   }
-  const computed = computeEstimate(booking, parsed.data);
-  if (computed.segment === 'COMMERCIAL' && computed.laborCents == null) {
-    return res.status(400).json({ error: 'Commercial jobs are priced by custom quote — enter the quoted labor amount' });
-  }
-  const t = new Date().toISOString();
-  const prior = (booking.history || []).filter((e) => e.type === 'ESTIMATE_SAVED').length;
-  const estimate = {
-    id: createId(),
-    version: prior + 1,
-    ...computed,
-    createdBy: req.user.email,
-    createdAt: t,
-  };
-  addBookingEvent(booking, 'ESTIMATE_SAVED', req.user.email, {
+  const result = await saveEstimateForJob(booking, parsed.data, {
+    actor: req.user.email,
+    source: 'TECH_APP',
     assignmentId: assignment.id,
-    estimate,
     confirmedBy: 'TECHNICIAN',
   });
-  booking.updatedAt = t;
-  await persistBooking(booking);
-  appendEvent('ESTIMATE_SAVED', {
-    source: 'TECH_APP',
-    actor: req.user.email,
-    entityType: 'BOOKING',
-    entityId: booking.id,
-    referenceCode: booking.referenceCode,
-    details: { estimateId: estimate.id, version: estimate.version, totalCents: estimate.totalCents },
-  });
-  return res.status(201).json({ data: { estimate } });
-});
-
-const authorizeSchema = z.object({
-  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER']),
-  authorizedByName: z.string().trim().max(120).nullable().optional(),
-  note: z.string().trim().max(300).nullable().optional(),
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({ data: { estimate: result.estimate } });
 });
 
 router.post('/provider/assignments/:id/estimate/authorize', ...providerOnly, async (req, res) => {
@@ -1355,34 +1465,14 @@ router.post('/provider/assignments/:id/estimate/authorize', ...providerOnly, asy
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid authorization record', details: parsed.error.flatten() });
   }
-  const estimate = latestEstimate(booking);
-  if (!estimate) {
-    return res.status(409).json({ error: 'Save the estimate first — an authorization must attach to a written quote' });
-  }
-  const t = new Date().toISOString();
-  // Same ESTIMATE_APPROVED event the tracking timeline and the Quote
-  // tab already read — now carrying the authorization log details
-  // (method, who authorized, when) the guide requires.
-  addBookingEvent(booking, 'ESTIMATE_APPROVED', req.user.email, {
+  const result = await authorizeEstimateForJob(booking, parsed.data, {
+    actor: req.user.email,
+    source: 'TECH_APP',
     assignmentId: assignment.id,
-    estimateId: estimate.id,
-    method: parsed.data.method,
-    authorizedByName: parsed.data.authorizedByName || null,
-    note: parsed.data.note || null,
     confirmedBy: 'TECHNICIAN',
   });
-  booking.updatedAt = t;
-  await persistBooking(booking);
-  appendEvent('ESTIMATE_APPROVED', {
-    source: 'TECH_APP',
-    actor: req.user.email,
-    entityType: 'BOOKING',
-    entityId: booking.id,
-    referenceCode: booking.referenceCode,
-    details: { estimateId: estimate.id, method: parsed.data.method },
-  });
-  notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:ESTIMATE_APPROVED:${t}`);
-  return res.status(201).json({ data: { authorizationLog: authorizationLog(booking) } });
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({ data: { authorizationLog: result.authorizationLog } });
 });
 
 /* ---------------- Repair photos (before / during / after) ---------------- */
@@ -1595,12 +1685,6 @@ router.post('/provider/assignments/:id/parts-used', ...providerOnly, async (req,
  * records THAT it was received, by whom, and how — it never collects
  * or stores card numbers (the guide's data-safety rule).
  */
-const receiptSchema = z.object({
-  method: z.enum(['CASH', 'CHECK', 'CARD_EXTERNAL', 'ZELLE', 'VENMO', 'OTHER']),
-  amountCents: z.number().int().min(1).max(100000000),
-  note: z.string().trim().max(300).nullable().optional(),
-});
-
 router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, res) => {
   const loaded = loadMyAssignment(req, res);
   if (!loaded) return;
@@ -1610,69 +1694,20 @@ router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, r
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid receipt', details: parsed.error.flatten() });
   }
-  // Overpayment prevention (blueprint rule, 2026-11-19): once an
-  // invoice exists for this job, recorded payments may never exceed
-  // its total — a receipt past the balance due is refused, not
-  // clamped, so the record always says what a human actually took.
-  const moneyBefore = invoiceMoney(booking);
-  if (moneyBefore.invoice && moneyBefore.balanceDueCents != null) {
-    if (parsed.data.amountCents > moneyBefore.balanceDueCents) {
-      return res.status(409).json({
-        error: `That receipt would overpay the invoice — the balance due is $${(moneyBefore.balanceDueCents / 100).toFixed(2)}`,
-        balanceDueCents: moneyBefore.balanceDueCents,
-      });
-    }
-  }
-  const t = new Date().toISOString();
-  const receipt = {
-    id: createId(),
-    method: parsed.data.method,
-    amountCents: parsed.data.amountCents,
-    note: parsed.data.note || null,
-    at: t,
-    recordedBy: req.user.email,
-  };
-  addBookingEvent(booking, 'RECEIPT_RECORDED', req.user.email, {
+  const result = await recordReceiptForJob(booking, parsed.data, {
+    actor: req.user.email,
+    source: 'TECH_APP',
     assignmentId: assignment.id,
-    receipt,
     confirmedBy: 'TECHNICIAN',
   });
-  booking.updatedAt = t;
-  await persistBooking(booking);
-  appendEvent('RECEIPT_RECORDED', {
-    source: 'TECH_APP',
-    actor: req.user.email,
-    entityType: 'BOOKING',
-    entityId: booking.id,
-    referenceCode: booking.referenceCode,
-    details: { receiptId: receipt.id, method: receipt.method, amountCents: receipt.amountCents },
-  });
-  // Keep the invoice's status honest against what has actually been
-  // recorded: fully covered → PAID, partly → PARTIALLY_PAID.
-  const moneyAfter = invoiceMoney(booking);
-  if (moneyAfter.invoice) {
-    const nextStatus = moneyAfter.balanceDueCents === 0 ? 'PAID' : moneyAfter.receiptsTotalCents > 0 ? 'PARTIALLY_PAID' : moneyAfter.invoice.status;
-    if (nextStatus !== moneyAfter.invoice.status) {
-      moneyAfter.invoice.status = nextStatus;
-      moneyAfter.invoice.updatedAt = t;
-      await persistInvoice(moneyAfter.invoice);
-    }
+  if (!result.ok) {
+    return res.status(result.status).json({
+      error: result.error,
+      ...(result.balanceDueCents != null ? { balanceDueCents: result.balanceDueCents } : {}),
+    });
   }
-  const receipts = jobReceipts(booking);
-  const estimate = latestEstimate(booking);
-  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
   return res.status(201).json({
-    data: {
-      receipt,
-      receipts,
-      payments: {
-        estimateTotalCents: estimate ? estimate.totalCents : null,
-        receiptsTotalCents,
-        invoiceTotalCents: moneyAfter.invoiceTotalCents,
-        balanceDueCents: moneyAfter.balanceDueCents,
-        invoice: moneyAfter.invoice,
-      },
-    },
+    data: { receipt: result.receipt, receipts: result.receipts, payments: result.payments },
   });
 });
 
@@ -1831,11 +1866,17 @@ router.get('/provider/overview', ...providerBoard, (req, res) => {
     if (flags.awaitingParts) groups.awaitingParts.push(assignment);
     if (flags.awaitingDiagnosis) groups.awaitingDiagnosis.push(assignment);
   }
+  // Bucket pages (2026-11-19, Directive 7) list EVERY job in the
+  // bucket, so the board accepts a limit (default 50 as before, the
+  // bucket views ask for more) and tags each row with its tech system
+  // so the oversight pages can filter company vs network.
+  const limit = Math.min(500, Math.max(1, Number.parseInt(req.query.limit, 10) || 50));
   const view = (list) =>
-    list.slice(0, 50).map((assignment) => ({
+    list.slice(0, limit).map((assignment) => ({
       ...publicAssignment(assignment),
       providerId: assignment.providerId,
       providerBusinessName: providerNameById(assignment.providerId),
+      providerSystem: providerSystemById(assignment.providerId),
     }));
   const lowStock = store.parts.filter((part) => part.active !== false && (part.stockOnHand || 0) <= (part.reorderPoint || 0));
   const data = {
@@ -1865,6 +1906,7 @@ router.get('/provider/overview', ...providerBoard, (req, res) => {
       return {
         providerId: p.id,
         businessName: p.businessName,
+        system: p.companyCrew ? 'COMPANY' : 'NETWORK',
         offers: own.filter((a) => a.status === 'APPROVED').length,
         accepted: own.filter((a) => a.status === 'ACCEPTED').length,
         completedToday: own.filter((a) => {
@@ -1977,13 +2019,6 @@ router.get('/provider/assignments/:id/full', ...providerBoard, (req, res) => {
  * timeline and the completion gate already read; DECLINED is its own
  * audited event so a refused quote is on the record, not lost.
  */
-const estimateDecisionSchema = z.object({
-  decision: z.enum(['APPROVED', 'DECLINED']),
-  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER']).optional(),
-  authorizedByName: z.string().trim().max(120).nullable().optional(),
-  note: z.string().trim().max(300).nullable().optional(),
-});
-
 router.post('/provider/assignments/:id/estimate/decision', ...providerOnly, async (req, res) => {
   const loaded = loadMyAssignment(req, res);
   if (!loaded) return;
@@ -1993,43 +2028,15 @@ router.post('/provider/assignments/:id/estimate/decision', ...providerOnly, asyn
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid estimate decision', details: parsed.error.flatten() });
   }
-  const estimate = latestEstimate(booking);
-  if (!estimate) {
-    return res.status(409).json({ error: 'Save the estimate first — a decision must attach to a written quote' });
-  }
-  const t = new Date().toISOString();
-  if (parsed.data.decision === 'APPROVED') {
-    addBookingEvent(booking, 'ESTIMATE_APPROVED', req.user.email, {
-      assignmentId: assignment.id,
-      estimateId: estimate.id,
-      method: parsed.data.method || 'RECORDED_IN_APP',
-      authorizedByName: parsed.data.authorizedByName || null,
-      note: parsed.data.note || null,
-      confirmedBy: 'TECHNICIAN',
-    });
-  } else {
-    addBookingEvent(booking, 'ESTIMATE_DECLINED', req.user.email, {
-      assignmentId: assignment.id,
-      estimateId: estimate.id,
-      note: parsed.data.note || null,
-      confirmedBy: 'TECHNICIAN',
-    });
-  }
-  booking.updatedAt = t;
-  await persistBooking(booking);
-  appendEvent(parsed.data.decision === 'APPROVED' ? 'ESTIMATE_APPROVED' : 'ESTIMATE_DECLINED', {
-    source: 'TECH_APP',
+  const result = await recordEstimateDecisionForJob(booking, parsed.data, {
     actor: req.user.email,
-    entityType: 'BOOKING',
-    entityId: booking.id,
-    referenceCode: booking.referenceCode,
-    details: { estimateId: estimate.id, decision: parsed.data.decision },
+    source: 'TECH_APP',
+    assignmentId: assignment.id,
+    confirmedBy: 'TECHNICIAN',
   });
-  if (parsed.data.decision === 'APPROVED') {
-    notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:ESTIMATE_APPROVED:${t}`);
-  }
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
   return res.status(201).json({
-    data: { estimateDecision: estimateDecision(booking), authorizationLog: authorizationLog(booking) },
+    data: { estimateDecision: result.estimateDecision, authorizationLog: result.authorizationLog },
   });
 });
 
@@ -2039,57 +2046,15 @@ router.post('/provider/assignments/:id/invoice', ...providerOnly, async (req, re
   if (!loaded) return;
   const { assignment, booking } = loaded;
   if (!requireAccepted(res, assignment)) return;
-  const estimate = latestEstimate(booking);
-  if (!estimate) {
-    return res.status(409).json({ error: 'Save the estimate first — an invoice is generated from the approved estimate' });
-  }
-  const approved = (booking.history || []).some(
-    (event) => event.type === 'ESTIMATE_APPROVED' && event.estimateId === estimate.id,
-  );
-  if (!approved) {
-    return res.status(409).json({ error: 'The customer has not approved this estimate yet — record the decision before invoicing' });
-  }
-  const existing = (store.invoices || []).find(
-    (inv) => inv.serviceRequestId === booking.id && inv.status !== 'VOID' && inv.estimateId === estimate.id,
-  );
-  if (existing) return res.json({ data: { invoice: existing, created: false } });
-  const t = new Date().toISOString();
-  const invoice = {
-    id: createId(),
-    companyId: booking.companyId,
-    serviceRequestId: booking.id,
-    customerId: booking.customerId || null,
-    status: 'SENT',
-    subtotal: ((estimate.laborCents || 0) + estimate.partsSubtotalCents + estimate.taxCents - estimate.discountCents) / 100,
-    diagnosticFee: estimate.diagnosticFeeCents / 100,
-    diagnosticCredit: estimate.diagnosticCreditCents / 100,
-    total: estimate.totalCents / 100,
-    currency: 'USD',
-    estimateId: estimate.id,
-    createdBy: req.user.email,
-    createdAt: t,
-    updatedAt: t,
-  };
-  store.invoices.push(invoice);
-  await persistInvoice(invoice);
-  addBookingEvent(booking, 'INVOICE_GENERATED', req.user.email, {
+  const result = await generateInvoiceForJob(booking, {
+    actor: req.user.email,
+    source: 'TECH_APP',
     assignmentId: assignment.id,
-    invoiceId: invoice.id,
-    estimateId: estimate.id,
-    totalCents: estimate.totalCents,
     confirmedBy: 'TECHNICIAN',
   });
-  booking.updatedAt = t;
-  await persistBooking(booking);
-  appendEvent('INVOICE_GENERATED', {
-    source: 'TECH_APP',
-    actor: req.user.email,
-    entityType: 'BOOKING',
-    entityId: booking.id,
-    referenceCode: booking.referenceCode,
-    details: { invoiceId: invoice.id, estimateId: estimate.id, totalCents: estimate.totalCents },
-  });
-  return res.status(201).json({ data: { invoice, created: true } });
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  if (!result.created) return res.json({ data: { invoice: result.invoice, created: false } });
+  return res.status(201).json({ data: { invoice: result.invoice, created: true } });
 });
 
 /* ---------------- Warranty coverage + claims ----------------

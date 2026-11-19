@@ -218,6 +218,38 @@ async function ensureNetworkPartners(prisma) {
   }
 }
 
+/**
+ * Persist a provider record's mutable profile fields (2026-11-19,
+ * tech settings): business name, specialties, service cities, active
+ * flag and the company-crew classification. Degrades like every other
+ * persist here — a database hiccup never fails the request.
+ */
+export async function persistProvider(provider) {
+  if (!DATABASE_ENABLED) return;
+  try {
+    const prisma = db();
+    const data = {
+      businessName: provider.businessName,
+      specialties: provider.specialties || [],
+      serviceCities: provider.serviceCities || [],
+      active: provider.active !== false,
+      companyCrew: provider.companyCrew === true,
+    };
+    await prisma.provider.upsert({
+      where: { id: provider.id },
+      update: data,
+      create: {
+        id: provider.id,
+        companyId: provider.companyId,
+        type: provider.type || 'INDEPENDENT_PROVIDER',
+        ...data,
+      },
+    });
+  } catch (error) {
+    console.error('persistProvider failed (provider update degraded)', error?.message || error);
+  }
+}
+
 export async function hydrateStore() {
   if (!DATABASE_ENABLED) return { skipped: true };
   const prisma = db();
@@ -240,6 +272,10 @@ export async function hydrateStore() {
       serviceCities: row.serviceCities,
       rating: num(row.rating),
       active: row.active,
+      // Two tech systems (2026-11-19): the company-crew flag, with the
+      // canonical Field Team id as the fallback so the classification
+      // holds even before the migration's data fix lands.
+      companyCrew: row.companyCrew === true || row.id === '30000000-0000-4000-8000-000000000003',
     });
   }
 

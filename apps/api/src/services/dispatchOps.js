@@ -547,6 +547,10 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         providerId: provider.id,
         providerCompanyId: provider.companyId,
         businessName: provider.businessName,
+        // Two tech systems (2026-11-19): which side of the one
+        // dispatch pipeline this target belongs to — setters see the
+        // side on every assignment target.
+        system: provider.companyCrew ? 'COMPANY' : 'NETWORK',
         type: provider.type,
         rating,
         specialties: provider.specialties || [],

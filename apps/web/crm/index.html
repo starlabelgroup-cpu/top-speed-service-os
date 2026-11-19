@@ -299,6 +299,17 @@ function crmDetail(id){
         (d.account?'<p class="mut">Account: <b>'+(d.account.emailVerified?'email verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>':'email not verified yet')+'</b>'+(d.account.signupOfferSlug?' · signed up via offer <b>'+crmEsc(d.account.signupOfferSlug)+'</b>':'')+(d.account.signupAudience?' · '+crmEsc(d.account.signupAudience):'')+(d.account.serviceArea?' · profile area '+crmEsc(d.account.serviceArea)+(d.account.serviceAreaStatus?' ('+crmEsc(d.account.serviceAreaStatus)+')':''):'')+'</p>':'') +
         '<div class="section"><h3>Properties / service addresses</h3>'+props+'</div>' +
         '<div class="section"><h3>Appliances &amp; equipment on file</h3>'+apps+'</div>' +
+        '<div class="section"><h3>New work order</h3>' +
+        '<p class="mut" style="margin:0 0 10px;">Starts a job for <b>'+crmEsc(c.name)+'</b> on the same Service OS intake every surface uses (source OFFICE, via CRM) — it lands in the Service Setters queue and on the dispatch board. Customer details are prefilled from this record.</p>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">' +
+        '<label style="font-size:12.5px;font-weight:700">Appliance<br><select id="crmWoAppliance" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select></label>' +
+        '<label style="font-size:12.5px;font-weight:700">Job type<br><select id="crmWoSegment" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"><option value="RESIDENTIAL">Residential</option><option value="COMMERCIAL">Commercial — custom quote</option></select></label>' +
+        '<label style="font-size:12.5px;font-weight:700">City<br><input id="crmWoCity" value="'+crmEsc(c.city||'')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>' +
+        '<label style="font-size:12.5px;font-weight:700">ZIP<br><input id="crmWoZip" value="'+crmEsc(c.zip||'')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>' +
+        '<label style="font-size:12.5px;font-weight:700">Preferred window<br><select id="crmWoWindow" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"><option value="">No preference</option><option>Morning (8am–12pm)</option><option>Midday (12pm–3pm)</option><option>Afternoon (3pm–7pm)</option></select></label></div>' +
+        '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Service address<br><input id="crmWoAddress" value="'+crmEsc(c.address||'')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>' +
+        '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Issue<br><textarea id="crmWoIssue" rows="2" placeholder="What is the appliance doing (or not doing)?" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></textarea></label>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn blue" onclick="crmCreateWo(\''+c.id+'\')">Create work order</button></div><div class="msg" id="crmWoMsg"></div></div>' +
         '<div class="section"><h3>Job history</h3>'+bk+'</div>' +
         '<div class="section"><h3>Referrals</h3>'+refHtml+'</div>' +
         '<div class="section"><h3>Communications log — true outbox statuses</h3>'+comms+'</div>' +
@@ -315,6 +326,16 @@ function crmDetail(id){
       window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
     })
     .catch(function(e){ document.getElementById('crmMsg').textContent=' '+e.message; });
+}
+function crmWoVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function crmCreateWo(id){
+  var msg=document.getElementById('crmWoMsg');
+  var issue=crmWoVal('crmWoIssue');
+  if(issue.length<3){ msg.textContent=' Describe the issue first — a few words.'; msg.className='msg err'; return; }
+  var body={ appliance:crmWoVal('crmWoAppliance'), segment:crmWoVal('crmWoSegment')||'RESIDENTIAL', issue:issue, city:crmWoVal('crmWoCity')||undefined, zip:crmWoVal('crmWoZip')||undefined, address:crmWoVal('crmWoAddress')||undefined, preferredWindow:crmWoVal('crmWoWindow')||null };
+  crmFetch('/crm/customers/'+id+'/work-orders',{method:'POST',body:body})
+    .then(function(j){ var bk=(j.data||{}).booking||{}; msg.innerHTML=' Work order <b>'+crmEsc(bk.referenceCode||'')+'</b> created — it is in the Service Setters queue now.'; msg.className='msg ok'; setTimeout(function(){ crmDetail(id); }, 900); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function crmAddNote(id){
   var body=document.getElementById('crmNoteBody').value.trim();

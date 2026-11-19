@@ -8,6 +8,7 @@ import { slotForArea, todayDateString, APPOINTMENT_WINDOWS, CREWS_PER_AREA_WINDO
 import { suggestProviders } from '../services/dispatch.js';
 import { persistCrmNote } from '../db/crmRepo.js';
 import { findUserById } from '../services/handoff.js';
+import { createWorkOrder, workOrderCreateSchema } from '../services/workOrders.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -294,6 +295,47 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
 });
 
 const noteSchema = z.object({ body: z.string().trim().min(1).max(2000) });
+
+/* New work order from the customer record (2026-11-19 create flows):
+ * the customer is the record in the path — prefilled by definition —
+ * and the job enters the same intake as every other surface
+ * (source OFFICE, via crm) through services/workOrders.js. */
+router.post('/crm/customers/:id/work-orders', ...staffOnly, async (req, res) => {
+  const customer = store.customers.get(req.params.id);
+  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  const parsed = workOrderCreateSchema.safeParse({
+    ...(req.body || {}),
+    customerId: customer.id,
+    city: (req.body || {}).city || customer.city || undefined,
+    zip: (req.body || {}).zip || customer.zip || undefined,
+    address: (req.body || {}).address || customer.address || undefined,
+  });
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid work order', details: parsed.error.flatten() });
+  }
+  const result = await createWorkOrder({
+    actor: req.user.email,
+    source: 'OFFICE',
+    via: 'crm',
+    input: parsed.data,
+  });
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({
+    data: {
+      booking: {
+        id: result.booking.id,
+        referenceCode: result.booking.referenceCode,
+        status: result.booking.status,
+        source: result.booking.source,
+        appliance: result.booking.appliance,
+        issue: result.booking.issue,
+        city: result.booking.city,
+        areaStatus: result.booking.areaStatus,
+        customer: { name: result.booking.customer.name, phone: result.booking.customer.phone },
+      },
+    },
+  });
+});
 
 router.post('/crm/customers/:id/notes', ...staffOnly, async (req, res) => {
   const customer = store.customers.get(req.params.id);

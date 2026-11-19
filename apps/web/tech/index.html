@@ -121,7 +121,39 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}
 .board-sec{margin-bottom:14px}
 .board-sec h3{font-size:13px;color:var(--navy);margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em}
 .draft-fill{background:#fff7e0!important;border-color:#ffb020!important}
-select.tp-in{appearance:auto}</style>
+select.tp-in{appearance:auto}
+/* More pop-up sheet (2026-11-19): the More menu opens IN PLACE as a
+   bottom sheet — z-index 9990 stays below the Ask Pepper launcher
+   (9995) and its panel (9996), which stay reachable at all times. */
+.sheet-back{position:fixed;inset:0;background:rgba(10,18,32,.45);z-index:9989;display:none}
+.sheet-back.on{display:block}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:9990;background:var(--card,#fff);border-radius:18px 18px 0 0;max-height:82vh;overflow-y:auto;padding:10px 14px calc(18px + env(safe-area-inset-bottom));transform:translateY(105%);transition:transform .22s ease;box-shadow:0 -8px 30px rgba(10,18,32,.25)}
+.sheet.on{transform:translateY(0)}
+@media(min-width:760px){.sheet{left:50%;right:auto;width:520px;margin-left:-260px;border-radius:18px;bottom:18px}}
+.sheet-grab{width:44px;height:5px;border-radius:3px;background:var(--line,#d7dee9);margin:2px auto 8px}
+.sheet-sec{font-size:11px;font-weight:800;letter-spacing:.08em;color:var(--soft,#5A6E94);margin:14px 2px 6px;text-transform:uppercase}
+.sheet-item{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line,#e3e9f2);padding:11px 2px;font:inherit;cursor:pointer;color:var(--ink,#12233f)}
+.sheet-item:last-child{border-bottom:0}
+.sheet-item .grow{flex:1}
+.sheet-item small{display:block;color:var(--soft,#5A6E94);font-size:12px;margin-top:1px}
+.sheet-item .chev{color:var(--soft,#5A6E94);font-weight:700}
+.tile.tap{cursor:pointer;text-align:left;font:inherit;width:100%}
+button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)}
+.kv.tap{cursor:pointer;width:100%;background:none;border:0;border-bottom:1px solid var(--line,#e3e9f2);font:inherit;text-align:left}
+/* Work-order create modal — same layer discipline as the sheet. */
+.wo-back{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9991;display:none;overflow-y:auto}
+.wo-back.on{display:block}
+.wo-panel{background:var(--card,#fff);max-width:560px;margin:18px auto;border-radius:16px;padding:16px;box-shadow:0 12px 40px rgba(10,18,32,.3)}
+@media(max-width:600px){.wo-panel{margin:0;border-radius:0;min-height:100%}}
+.wo-cust{display:block;width:100%;text-align:left;background:#f2f6fc;border:1px solid var(--line,#e3e9f2);border-radius:10px;padding:9px 11px;margin:6px 0;font:inherit;cursor:pointer}
+.chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.chipbtn{border:1.5px solid var(--line,#d7dee9);background:#fff;border-radius:999px;padding:6px 13px;font:inherit;font-size:13px;cursor:pointer}
+.chipbtn.on{background:var(--navy,#12233f);color:#fff;border-color:var(--navy,#12233f)}
+.set-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.set-grid{grid-template-columns:1fr}}
+.set-check{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--line,#e3e9f2);font-size:14px}
+.set-check input{width:18px;height:18px}
+</style>
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body class="signedout">
@@ -129,7 +161,7 @@ select.tp-in{appearance:auto}</style>
   <header>
     <div class="hrow">
       <div class="avatar">TS</div>
-      <div><h1>Tech App</h1><p>Sign in to load your provider profile</p></div>
+      <div><h1 id="techDoorTitle">Tech App</h1><p id="techDoorSub">Sign in to load your provider profile</p></div>
       <span class="chip" id="techChip">SIGN IN</span>
       <button class="tch-btn" type="button" onclick="tchToggle(true)" aria-label="Open menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>Menu</button>
     </div>
@@ -161,13 +193,14 @@ select.tp-in{appearance:auto}</style>
     
     <!-- TECH SIGN-IN / LIVE MODE -->
     <div class="card" id="techAuth" style="margin:12px 12px 0">
-      <h3 style="font-size:14px;color:var(--navy)">Technician sign-in — live jobs</h3>
+      <h3 style="font-size:14px;color:var(--navy)" id="techAuthTitle">Technician sign-in — live jobs</h3>
       <p class="note" style="margin:4px 0 10px">Sign in with your provider account to see your real job offers from Service Setters dispatch. Sign-in runs password first, then — only when the office has switched them on for your account — your Speedy Verify access code and a one-time code by email (Layer 2).</p>
       <div id="techLogin">
         <input id="techEmail" type="email" autocomplete="username" placeholder="Email" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <input id="techPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">
         <button class="btn go" type="button" onclick="techSignIn()" style="width:100%">Sign in to live jobs →</button>
         <p class="note" style="margin:8px 0 0"><a href="/reset-password">Forgot password?</a></p>
+        <p class="note" id="techDoorNote" style="margin:6px 0 0"></p>
       </div>
       <div id="techVerify" style="display:none">
         <p class="note" style="margin:4px 0 10px">Password accepted. <b>Speedy Verify:</b> enter the 8-digit access code the office issued for your account.</p>
@@ -176,6 +209,7 @@ select.tp-in{appearance:auto}</style>
         <div class="btnrow" style="margin-top:8px"><button class="btn no" type="button" onclick="techVerifyCancel()">Back</button></div>
         <p class="note" style="margin:8px 0 0">No code yet? Accounts wait for the office to issue their code — contact the office.</p>
       </div>
+      <div id="techWrongDoor" style="display:none"></div>
       <div id="techBar" style="display:none">
         <p class="note" id="techWho" style="margin:0 0 8px;font-weight:700"></p>
         <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">↻ Refresh</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
@@ -228,59 +262,75 @@ select.tp-in{appearance:auto}</style>
     </section>
     <!-- EARNINGS -->
     <section class="screen" id="s-earn"><h2 class="sec">My week</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n">—</div><div class="l">Jobs this week</div></div></div><div class="card" style="margin-top:12px"><p class="note" style="margin:0">Payout amounts follow your provider agreement. Your live statement appears here when you are signed in with your provider account.</p></div></section>
-    <!-- SETTINGS -->
+    <!-- SETTINGS (2026-11-19, Directive 6): a real editor over the
+         account's own records — profile on the User record, a network
+         provider's areas/appliances/business name on their Provider
+         record, vehicle + notification preferences + a company tech's
+         personal lists in User.techSettings. Documents are NOT
+         uploads in this platform: they live in the Provider portal,
+         and this screen says so instead of faking a save. -->
     <section class="screen" id="s-settings">
       <h2 class="sec">Settings</h2>
-      <div class="card">
-        <h3 style="font-size:14px;color:var(--navy)">Provider profile</h3>
-        <div id="setProf"><p class="note" style="margin:4px 0 0">Sign in to load your provider profile.</p></div>
-      </div>
-      <div class="card">
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2" stroke="#E8322E"/></svg> Availability <span class="r"><button class="btn no" type="button" onclick="document.getElementById('availBtn').click()">Use header switch</button></span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6.5 3.5H14L19 8.5V20l-1.5 1.5h-11L5 20V5z"/><path d="M13.5 3.5v5.5H19M8.5 13h7M8.5 16.4h7" stroke="#E8322E"/></svg> Credentials &amp; documents <a href="/service/">Provider portal</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 3h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/></svg> Account &amp; notifications <a href="/service/">Provider portal</a></div>
-        <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 4L3 6v14l5.5-2 6.5 2 5.5-2V4L15 6 8.5 4zm0 0v14M15 6v14" stroke="#E8322E"/></svg> Service areas &amp; appliances <span class="r"><button class="btn no" type="button" onclick="go('more')">Open in More</button></span></div>
-      </div>
+      <div id="setRoot"><div class="card"><p class="note" style="margin:0">Sign in to load your settings.</p></div></div>
       <div class="card">
         <h3 style="font-size:14px;color:var(--navy)">Support &amp; session</h3>
         <p class="note" style="margin:4px 0 10px">Dispatch answers Mon–Fri 8am–7pm.</p>
         <div class="btnrow"><a class="btn navy" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="tel:+19549317997">Call dispatch — 954-931-7997</a><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
       </div>
     </section>
-    <!-- MORE -->
-    <section class="screen" id="s-more">
-      <h2 class="sec">More</h2>
-      <div class="card" id="techSpeedyCard">
-        <h3 style="font-size:14px;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Ask Pepper — your operations assistant</h3>
-        <p class="note" style="margin:4px 0 10px">Pepper is the staff assistant on every workstation — platform questions, work rules, and problem reports (Pepper files them for Ramone). Board questions answer right here from your live assignments; job-update drafts live in each job’s workspace, where <b>you</b> review and tap “Save to job” — nothing submits itself.</p>
-        <textarea id="techSpeedyQ" rows="2" placeholder="e.g. What jobs do I have today? or: draft an update — replaced the drain pump, tested fine" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:14px;"></textarea>
-        <div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="techSpeedyAsk()">Ask</button></div>
-        <div class="btnrow" style="margin-top:7px;"><button class="btn no" type="button" onclick="techSpeedyQuick('today')">Today’s jobs</button><button class="btn no" type="button" onclick="techSpeedyQuick('offers')">Open offers</button><button class="btn no" type="button" onclick="techSpeedyQuick('draft')">Draft an update</button></div>
-        <div id="techSpeedyA" style="margin-top:9px;font-size:13.5px;line-height:1.5;"></div>
-      </div>
+    <!-- WARRANTY CLAIMS (own screen — every menu option lands on its
+         own view, Directive 4) -->
+    <section class="screen" id="s-claims">
+      <h2 class="sec">Warranty claims</h2>
       <div class="card" id="claimsCard">
-        <h3 style="font-size:14px;color:var(--navy)">Warranty claims</h3>
         <p class="note" style="margin:4px 0 8px">Claims on your jobs — search by claim number, warranty provider, booking reference, customer or phone. File new claims inside a job's Warranty tab.</p>
         <div class="tp-row"><input class="tp-in" id="claimsQ" placeholder="Search claims…" onkeydown="if(event.key==='Enter')claimsLoad()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="claimsLoad()">Search</button></div>
         <div id="claimsList" style="margin-top:8px"><p class="note" style="margin:0">Sign in to load warranty claims.</p></div>
       </div>
+    </section>
+    <!-- DISPATCH BUCKET PAGE (Directive 7): every board counter opens
+         its own page listing ALL jobs in that bucket; each row opens
+         the job workspace. Oversight gets the company/network filter. -->
+    <section class="screen" id="s-bucket">
+      <div class="btnrow" style="margin-bottom:8px"><button class="btn no" type="button" onclick="go('today')">← Dispatch board</button></div>
+      <h2 class="sec" id="bucketTitle">Bucket</h2>
+      <div id="bucketFilter"></div>
+      <div id="bucketList"><p class="note">Loading…</p></div>
+    </section>
+    <!-- INFORMATION — repair knowledge (Directive 6) -->
+    <section class="screen" id="s-info">
+      <h2 class="sec">Repair knowledge</h2>
       <div class="card">
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 4L3 6v14l5.5-2 6.5 2 5.5-2V4L15 6 8.5 4zm0 0v14M15 6v14" stroke="#E8322E"/><circle cx="11.8" cy="10" r="1.2" fill="#E8322E" stroke="none"/></svg> My service areas <span class="r">12 Broward areas</span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 9h14l2 2v6.5l-2 2H5L3 19.5V11z"/><path d="M9 9V7l1.2-2.3h3.6L15 7v2M3 13.5h18" stroke="#E8322E"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg> My appliances <span class="r">All 9 services</span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3 16.5V8.8A1.8 1.8 0 0 1 4.8 7h9.4a3 3 0 0 1 2.4 1.2L20 12.4a2 2 0 0 1 .6 1.4v2.7"/><path d="M3 16.5h18"/><path d="M8.96 18.73L7.93 19.76L6.47 19.76L5.44 18.73L5.44 17.27L6.47 16.24L7.93 16.24L8.96 17.27z"/><path d="M18.56 18.73L17.53 19.76L16.07 19.76L15.04 18.73L15.04 17.27L16.07 16.24L17.53 16.24L18.56 17.27z"/><path d="M14.5 7.2v5h5.4" stroke="#E8322E"/></svg> Vehicle <span class="r">Van 2 · stocked</span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6.5 3.5H14L19 8.5V20l-1.5 1.5h-11L5 20V5z" transform="translate(.5 0)"/><path d="M13.5 3.5v5.5H19M8.5 13h7M8.5 16.4h7" stroke="#E8322E"/></svg> Documents <span class="r">License & insurance on file</span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E8322E"/></svg> Call dispatch <a href="tel:+19549317997">954-931-7997</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M20.04 15.33L15.33 20.04L8.67 20.04L3.96 15.33L3.96 8.67L8.67 3.96L15.33 3.96L20.04 8.67z"/><path d="M3.3 12h17.4M12 3.3l2.8 3.4L15.9 12l-1.1 5.3L12 20.7l-2.8-3.4L8.1 12l1.1-5.3z" stroke="#E8322E"/></svg> Provider portal <a href="/service/">Open</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E8322E"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Service OS web portal <a href="/portal">Open</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Appliance Plug — camera &amp; parts <span class="r"><button class="btn no" type="button" onclick="go('plug')">Open camera tool</button></span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5" stroke="#E8322E"/></svg> Parts &amp; suppliers <span class="r"><button class="btn no" type="button" onclick="go('parts')">Open</button></span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9.5 21v-6h5v6M4 21h16" stroke="#E8322E"/></svg> Company &amp; policies <span class="r"><button class="btn no" type="button" onclick="go('company')">Open</button></span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4v16.5h16.5"/><path d="M8.5 16.5v-5M12.5 16.5V8M16.5 16.5v-8.5" stroke="#E8322E"/></svg> My week <span class="r"><button class="btn no" type="button" onclick="go('earn')">Open</button></span></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8" stroke="#E8322E"/><circle cx="12" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg> Parts Supply OS <a href="/parts">Open</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4.5h13.5L20 6v13.5H5z"/><path d="M8.5 9h8M8.5 12.5h8M8.5 16h5" stroke="#E8322E"/></svg> Training Academy <a href="/academy">Open</a></div>
-        <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Customer app <a href="/app">Appliance Connect</a></div>
+        <h3 style="font-size:14px;color:var(--navy)">Platform knowledge base</h3>
+        <p class="note" style="margin:4px 0 8px">Real platform knowledge only — the same Speedy knowledge base the office uses. Search a symptom, appliance or repair.</p>
+        <div class="tp-row"><input class="tp-in" id="infoQ" placeholder="e.g. refrigerator not cooling" onkeydown="if(event.key==='Enter')infoSearch()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="infoSearch()">Search</button></div>
+        <div id="infoResults" style="margin-top:8px"><p class="note" style="margin:0">Search results appear here.</p></div>
       </div>
-      <p class="note">Top Speed Tech App — part of the Top Speed Service OS. Live jobs flow when your provider account is signed in.</p>
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--navy)">Pricing rules — every quote follows these</h3>
+        <div class="kv"><span>Residential diagnostic</span><b>$99 — credited toward an approved repair</b></div>
+        <div class="kv"><span>Repair labor</span><b>$210 flat</b></div>
+        <div class="kv"><span>Installation labor</span><b>$150 flat</b></div>
+        <div class="kv"><span>Parts</span><b>At the written quote — no work without approval</b></div>
+        <div class="kv" style="border-bottom:0"><span>Commercial</span><b>Custom quote — no $99 diagnostic</b></div>
+        <p class="note" style="margin:8px 0 0">The server computes every total from these rules — the app never sets a price by hand. Full company card: More → Company info &amp; pricing.</p>
+      </div>
+    </section>
+    <!-- INFORMATION — job & customer lookup (scoped by the API) -->
+    <section class="screen" id="s-lookup">
+      <h2 class="sec">Job &amp; customer lookup</h2>
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--navy)">Find a customer</h3>
+        <p class="note" style="margin:4px 0 8px">By name or phone. You see customers your business has worked; oversight sees the whole book.</p>
+        <div class="tp-row"><input class="tp-in" id="lkCustQ" placeholder="Name or phone…" onkeydown="if(event.key==='Enter')lookupCustomers()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="lookupCustomers()">Search</button></div>
+        <div id="lkCustResults" style="margin-top:8px"></div>
+      </div>
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--navy)">Find a job</h3>
+        <p class="note" style="margin:4px 0 8px">Across your board — reference, appliance, city or customer. Tap a job to open its workspace.</p>
+        <div class="tp-row"><input class="tp-in" id="lkJobQ" placeholder="e.g. TS-XXXXXX, refrigerator, Sunrise…" onkeydown="if(event.key==='Enter')lookupJobs()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="lookupJobs()">Search</button></div>
+        <div id="lkJobResults" style="margin-top:8px"></div>
+      </div>
     </section>
   </main>
   <nav class="tabs">
@@ -292,38 +342,130 @@ select.tp-in{appearance:auto}</style>
     <button data-tab="more" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><path d="M18.2 5.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/><path d="M5.8 16.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/></svg> More</button>
   </nav>
 </div>
+<div class="sheet-back" id="moreBack" onclick="moreSheetClose()"></div>
+<div class="sheet" id="moreSheet" role="dialog" aria-label="Tech App menu"></div>
+<div class="wo-back" id="woModal">
+  <div class="wo-panel">
+    <div style="display:flex;align-items:center;gap:10px"><h3 style="font-size:16px;color:var(--navy);flex:1;margin:0">New work order</h3><button class="tch-x" type="button" onclick="woClose()" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p class="note" style="margin:6px 0 10px">One system: this job lands on the same Service OS records as a web booking — the setter queue, the dispatch board and the CRM all see it. The $99 residential diagnostic is due at the visit and credited toward an approved repair; commercial jobs are custom-quoted.</p>
+    <span class="tp-lab">Find the customer first (name or phone)</span>
+    <div class="tp-row"><input class="tp-in" id="woCustQ" placeholder="Search existing customers…" oninput="woCustSearch()"><button class="btn no" type="button" style="flex:0 1 92px" onclick="woCustClear()">New</button></div>
+    <div id="woCustResults"></div>
+    <div id="woCustPicked"></div>
+    <div class="set-grid">
+      <div><span class="tp-lab">Customer name *</span><input class="tp-in" id="woName" placeholder="Full name" autocomplete="name"></div>
+      <div><span class="tp-lab">Phone *</span><input class="tp-in" id="woPhone" placeholder="(954) 555-0123" autocomplete="tel"></div>
+    </div>
+    <span class="tp-lab">Email</span><input class="tp-in" id="woEmail" placeholder="Optional" autocomplete="email">
+    <span class="tp-lab">Service address</span><input class="tp-in" id="woAddress" placeholder="Street address">
+    <div class="set-grid">
+      <div><span class="tp-lab">City</span><input class="tp-in" id="woCity" placeholder="e.g. Fort Lauderdale"></div>
+      <div><span class="tp-lab">ZIP</span><input class="tp-in" id="woZip" placeholder="33311"></div>
+    </div>
+    <div class="set-grid">
+      <div><span class="tp-lab">Job type</span><select class="tp-in" id="woSegment"><option value="RESIDENTIAL">Residential</option><option value="COMMERCIAL">Commercial — custom quote</option></select></div>
+      <div><span class="tp-lab">Appliance *</span><select class="tp-in" id="woAppliance"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select></div>
+    </div>
+    <span class="tp-lab">Issue *</span><textarea class="tp-in" id="woIssue" rows="3" placeholder="What is the appliance doing (or not doing)?"></textarea>
+    <span class="tp-lab">Preferred window</span><select class="tp-in" id="woWindow"><option value="">No preference</option><option>Morning (8am–12pm)</option><option>Midday (12pm–3pm)</option><option>Afternoon (3pm–7pm)</option></select>
+    <span class="tp-lab">Assignment</span>
+    <div class="chiprow" id="woAssignRow">
+      <button class="chipbtn on" type="button" data-woassign="SELF" onclick="woAssignPick('SELF',this)">Assign to me</button>
+      <button class="chipbtn" type="button" data-woassign="QUEUE" onclick="woAssignPick('QUEUE',this)">Send to Service Setters</button>
+    </div>
+    <div id="woMsg" style="font-size:13.5px;margin:6px 0"></div>
+    <div class="btnrow"><button class="btn no" type="button" onclick="woClose()">Cancel</button><button class="btn go" type="button" onclick="woSubmit()">Create work order</button></div>
+  </div>
+</div>
 <div id="toast" role="status"></div>
 <script>
+window.TECH_DOOR = window.TECH_DOOR || 'COMPANY';
 function tchToggle(open){
   var d=document.getElementById('tchDrawer'), b=document.getElementById('tchBack');
   if(d) d.classList.toggle('on', !!open);
   if(b) b.classList.toggle('on', !!open);
 }
 function tchGo(tab){ tchToggle(false); go(tab); }
-function tchMyJobs(){ tchToggle(false); go('today'); setTimeout(function(){ var el=document.getElementById('todayList'); if(el) el.scrollIntoView({block:'start'}); }, 60); }
+function tchMyJobs(){ tchToggle(false); go('today'); }
 function tchParts(){ tchToggle(false); go('parts'); }
 function tchFieldPro(){ tchToggle(false); go('job'); if(!window._wsId && window.wsJobPicker) wsJobPicker(); }
-function tchClaims(){ tchToggle(false); go('more'); setTimeout(function(){ var el=document.getElementById('claimsCard'); if(el) el.scrollIntoView({block:'start'}); if(window.claimsLoad) claimsLoad(); }, 60); }
+function tchClaims(){ tchToggle(false); go('claims'); }
 function tchAvail(){ tchToggle(false); var b=document.getElementById('availBtn'); if(b) b.click(); }
 function tchSettings(){ tchToggle(false); go('settings'); tchLoadSettings(); }
+var _setProfile=null;
+function setSplitList(v){ return String(v||'').split(/[\n,]+/).map(function(x){ return x.trim(); }).filter(Boolean); }
 function tchLoadSettings(){
-  var el=document.getElementById('setProf'); if(!el) return;
-  if(!tTok()){ el.innerHTML='<p class="note" style="margin:4px 0 0">Sign in above to load your provider profile.</p>'; return; }
-  el.innerHTML='<p class="note" style="margin:4px 0 0">Loading your profile…</p>';
-  tFetch('/provider/me').then(function(j){
-    if(j&&j.data&&j.data.oversight){ el.innerHTML='<p class="note" style="margin:4px 0 0">Oversight view \u2014 you are signed in as staff, seeing every provider\u2019s board. Provider profiles belong to each provider\u2019s own account.</p>'; return; }
-    var pv=(j&&j.data&&j.data.provider)||null;
-    if(!pv){ el.innerHTML='<p class="note" style="margin:4px 0 0">No provider record is linked to this account yet — call dispatch and they will link it.</p>'; return; }
-    var rows='';
-    function addRow(k,v){ if(v) rows+='<div class="row"><b>'+escT(k)+'</b><span class="r">'+escT(v)+'</span></div>'; }
-    addRow('Business', pv.businessName);
-    addRow('Type', pv.type);
-    if(pv.serviceCities&&pv.serviceCities.length) addRow('Service areas', pv.serviceCities.join(', '));
-    if(pv.specialties&&pv.specialties.length) addRow('Specialties', pv.specialties.join(', '));
-    addRow('Email', pv.email);
-    addRow('Phone', pv.phone);
-    el.innerHTML=rows||'<p class="note" style="margin:4px 0 0">Provider profile loaded.</p>';
-  }).catch(function(e){ el.innerHTML='<p class="note" style="margin:4px 0 0">Could not load your profile ('+escT(e.message)+').</p>'; });
+  var root=document.getElementById('setRoot'); if(!root) return;
+  if(!tTok()){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Sign in above to load your settings.</p></div>'; return; }
+  root.innerHTML='<div class="card"><p class="note" style="margin:0">Loading your settings…</p></div>';
+  tFetch('/provider/profile').then(function(j){
+    var d=(j&&j.data)||{}; _setProfile=d;
+    if(!d.provider || d.system==='OVERSIGHT'){
+      root.innerHTML='<div class="card"><p class="note" style="margin:0">Oversight view — you are signed in as staff, seeing every provider\u2019s board. Settings belong to each tech\u2019s own account and open when they sign in.</p></div>';
+      return;
+    }
+    root.innerHTML=setFormHtml(d);
+  }).catch(function(e){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Could not load your settings ('+escT(e.message)+').</p></div>'; });
+}
+function setFormHtml(d){
+  var a=d.account||{}, pv=d.provider||{}, v=d.vehicle||{}, n=d.notifications||{};
+  var network=d.system==='NETWORK';
+  var h='';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Profile</h3>'+
+    '<div class="kv"><span>Account</span><b>'+escT(a.email||'')+'</b></div>'+
+    '<div class="kv"><span>System</span><b>'+(network?'Network Tech — Service Network':'Company Tech — Top Speed crew')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Business</span><b>'+escT(pv.businessName||'')+'</b></div>'+
+    '<div class="set-grid"><div><span class="tp-lab">First name</span><input class="tp-in" id="set-fn" value="'+escT(a.firstName||'')+'"></div>'+
+    '<div><span class="tp-lab">Last name</span><input class="tp-in" id="set-ln" value="'+escT(a.lastName||'')+'"></div></div>'+
+    '<span class="tp-lab">Phone</span><input class="tp-in" id="set-ph" value="'+escT(a.phone||'')+'" autocomplete="tel">'+
+    (network
+      ? '<span class="tp-lab">Business name (your customers see this)</span><input class="tp-in" id="set-biz" value="'+escT(pv.businessName||'')+'">'
+      : '<p class="note" style="margin:8px 0 0">The crew\u2019s business name and official service areas are set by the office — your personal details below are yours.</p>')+
+    '</div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Vehicle</h3>'+
+    '<div class="set-grid"><div><span class="tp-lab">Year</span><input class="tp-in" id="set-v-year" value="'+escT(v.year||'')+'" placeholder="2022"></div>'+
+    '<div><span class="tp-lab">Make</span><input class="tp-in" id="set-v-make" value="'+escT(v.make||'')+'" placeholder="Ford"></div>'+
+    '<div><span class="tp-lab">Model</span><input class="tp-in" id="set-v-model" value="'+escT(v.model||'')+'" placeholder="Transit"></div>'+
+    '<div><span class="tp-lab">Color</span><input class="tp-in" id="set-v-color" value="'+escT(v.color||'')+'" placeholder="White"></div></div>'+
+    '<span class="tp-lab">Plate</span><input class="tp-in" id="set-v-plate" value="'+escT(v.plate||'')+'" placeholder="Plate number">'+
+    '<p class="note" style="margin:8px 0 0">Saved on your account — dispatch sees the vehicle you run jobs in.</p></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">My service areas &amp; appliances</h3>'+
+    '<span class="tp-lab">Service areas (comma separated)</span><textarea class="tp-in" id="set-areas" rows="2">'+escT((d.myAreas||[]).join(', '))+'</textarea>'+
+    '<span class="tp-lab">Appliances I service (comma separated)</span><textarea class="tp-in" id="set-apps" rows="2">'+escT((d.myAppliances||[]).join(', '))+'</textarea>'+
+    '<p class="note" style="margin:8px 0 0">'+(network
+      ? 'These are your provider record — the same lists dispatch matches on and the office sees.'
+      : 'Your personal working lists, saved on your account. The crew\u2019s official areas and services are set by the office on the shared crew record.')+'</p></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Notifications</h3>'+
+    '<label class="set-check"><input type="checkbox" id="set-n-offers" '+(n.jobOffers?'checked':'')+'> New job offers</label>'+
+    '<label class="set-check"><input type="checkbox" id="set-n-sched" '+(n.scheduleChanges?'checked':'')+'> Schedule changes</label>'+
+    '<label class="set-check"><input type="checkbox" id="set-n-pay" '+(n.payments?'checked':'')+'> Payment updates</label>'+
+    '<label class="set-check" style="border-bottom:0"><input type="checkbox" id="set-n-msg" '+(n.messages?'checked':'')+'> Messages from dispatch</label>'+
+    '<p class="note" style="margin:8px 0 0">Preferences save on your account. Delivery still runs through the platform\u2019s email and text channels.</p></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Credentials &amp; documents</h3>'+
+    '<p class="note" style="margin:4px 0 8px">Licenses, insurance and credentials are held on your provider record in the Provider portal — that is where the office reviews them.</p>'+
+    '<div class="row"><span>Availability</span><span class="r"><button class="btn no" type="button" onclick="document.getElementById(\'availBtn\').click()">Use header switch</button></span></div>'+
+    '<div class="row" style="border-bottom:0"><span>Documents &amp; account</span><a href="/service/">Provider portal</a></div></div>';
+  h+='<div class="btnrow" style="margin:0 2px 14px"><button class="btn go" type="button" onclick="setSave()">Save settings</button></div><div id="set-msg" style="font-size:13.5px;margin:0 2px 12px"></div>';
+  return h;
+}
+function setVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function setSave(){
+  var d=_setProfile||{}; var network=d.system==='NETWORK';
+  var vehicle={ year:setVal('set-v-year')||null, make:setVal('set-v-make')||null, model:setVal('set-v-model')||null, color:setVal('set-v-color')||null, plate:setVal('set-v-plate')||null };
+  var hasVehicle=Object.keys(vehicle).some(function(k){ return vehicle[k]; });
+  var body={
+    firstName:setVal('set-fn'), lastName:setVal('set-ln'), phone:setVal('set-ph'),
+    vehicle: hasVehicle?vehicle:null,
+    notifications:{ jobOffers:!!document.getElementById('set-n-offers').checked, scheduleChanges:!!document.getElementById('set-n-sched').checked, payments:!!document.getElementById('set-n-pay').checked, messages:!!document.getElementById('set-n-msg').checked },
+    myAreas:setSplitList(setVal('set-areas')), myAppliances:setSplitList(setVal('set-apps'))
+  };
+  if(network) body.businessName=setVal('set-biz');
+  var m=document.getElementById('set-msg');
+  tFetch('/provider/profile',{method:'PATCH',body:JSON.stringify(body)}).then(function(j){
+    _setProfile=j.data||_setProfile;
+    if(m){ m.innerHTML=''; var ic=document.createElement('span'); ic.innerHTML=ICO_CHECK; m.appendChild(ic); m.appendChild(document.createTextNode(' Settings saved — the office sees the same record.')); m.style.color='#0f7a3d'; }
+    toast('Settings saved', ICO_CHECK);
+  }).catch(function(e){ if(m){ m.textContent='Could not save: '+(e.message||'error'); m.style.color='#c2262e'; } });
 }
 </script>
 <script>
@@ -334,6 +476,7 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
 const ICO_ACCEPT='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg>';
 function toast(m,icon){const t=$('#toast');t.innerHTML='';if(icon){const ic=document.createElement('span');ic.innerHTML=icon;t.appendChild(ic);t.appendChild(document.createTextNode(' '))}t.appendChild(document.createTextNode(m));t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
 function go(tab){
+  if(tab==='more'){ moreSheetOpen(); return; }
   $$('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+tab));
   $$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   window.scrollTo(0,0);
@@ -342,7 +485,8 @@ function go(tab){
   if(tab==='plug'&&window.plugAutoCam) plugAutoCam();
   if(tab==='parts'&&window.partsScreenLoad) partsScreenLoad();
   if(tab==='company'&&window.companyLoad) companyLoad();
-  if(tab==='more'&&window.claimsLoad&&tTok()) claimsLoad();
+  if(tab==='claims'&&window.claimsLoad&&tTok()) claimsLoad();
+  if(tab==='settings'&&window.tchLoadSettings) tchLoadSettings();
   if(tab==='job'&&!window._wsId&&window.wsJobPicker) wsJobPicker();
 }
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
@@ -452,6 +596,14 @@ function loadTech(){
         TSOSLegal.showTermsGate({api:T_API,token:tTok(),onSignOut:techSignOut,onAccepted:function(){ loadTech(); }});
         return;
       }
+      // Two tech systems (2026-11-19): each account belongs to ONE
+      // door — Company Tech (Top Speed's own crew) or Network Tech
+      // (Service Network providers). A sign-in at the wrong door gets
+      // a clear pointer to its own door, never the other side's board.
+      // Oversight (owner / manager) proceeds at either door.
+      var sys=((res[0]||{}).data||{}).system||null;
+      window._techSystem=sys;
+      if(sys && sys!=='OVERSIGHT' && window.TECH_DOOR && sys!==window.TECH_DOOR){ techWrongDoor(sys); return; }
       var board=(res[1]&&res[1].data)||{};
       // Oversight (Rule Zero, 2026-11-18): an owner / company-admin
       // session has no provider record of its own \u2014 the API answers
@@ -530,7 +682,7 @@ function renderTech(provider,assignments,user){
   document.getElementById('techChip').textContent='\u25cf LIVE';
   document.getElementById('techLogin').style.display='none';
   document.getElementById('techBar').style.display='';
-  document.getElementById('techWho').textContent=(user?((user.firstName||'')+' '+(user.lastName||'')):'')+' \u00b7 '+provider.businessName;
+  document.getElementById('techWho').textContent=(user?((user.firstName||'')+' '+(user.lastName||'')):'')+' \u00b7 '+provider.businessName+(window._techSystem==='COMPANY'?' \u00b7 Company Tech':window._techSystem==='NETWORK'?' \u00b7 Service Network':'');
   var h1=document.querySelector('header h1'); if(h1&&user) h1.textContent=((user.firstName||'')+' '+(user.lastName||'')).trim()+' \u2014 Technician';
   var sub=document.querySelector('header .hrow p'); if(sub) sub.textContent=provider.businessName+' \u00b7 \u2605 '+(provider.rating||'\u2014')+' \u00b7 Broward County';
   var offersDemo=document.querySelector('#s-offers .demo'); if(offersDemo) offersDemo.textContent='\u00b7 LIVE';
@@ -721,7 +873,7 @@ function openWorkspace(id){
   if(!a){ root.innerHTML='<div class="card"><p class="note" style="margin:0">That job is no longer on your list — tap Refresh in the sign-in card above.</p></div>'; return; }
   root.innerHTML='<div class="card"><p class="note" style="margin:0">Loading the field workspace…</p></div>';
   tFetch('/provider/assignments/'+id+'/full')
-    .then(function(j){ _wsView=j.data; wsRender(); })
+    .then(function(j){ _wsView=j.data; wsRender(); if(window._createTab){ var ct=window._createTab; window._createTab=null; wsTabShow(ct); toast(ct==='pay'?'Pay & close is open — record the receipt there':'Estimate tools are open — build the written quote, then invoice from the approved estimate'); } })
     .catch(function(e){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Workspace unavailable: '+escT(e.message)+'</p></div>'; });
 }
 function wsStageDone(view){
@@ -1546,20 +1698,20 @@ function boardSection(title, list){
 function loadDispatchBoard(){
   var host=document.getElementById('dispatchBoard');
   if(!host||!tTok()) return;
-  tFetch('/provider/overview').then(function(j){
+  tFetch('/provider/overview?limit=200').then(function(j){
     var d=j.data||{};
     window._fpOverview=d;
     var c=d.counts||{};
     var html='<div class="ovw">'+
-      '<div class="tile"><div class="n">'+(c.offers||0)+'</div><div class="l">Offers waiting</div></div>'+
-      '<div class="tile"><div class="n">'+(c.accepted||0)+'</div><div class="l">Accepted — active</div></div>'+
-      '<div class="tile"><div class="n">'+(c.inProgress||0)+'</div><div class="l">In progress</div></div>'+
-      '<div class="tile"><div class="n">'+(c.awaitingParts||0)+'</div><div class="l">Awaiting parts</div></div>'+
-      '<div class="tile"><div class="n">'+(c.awaitingDiagnosis||0)+'</div><div class="l">Awaiting diagnosis</div></div>'+
-      '<div class="tile"><div class="n">'+(c.completedToday||0)+'</div><div class="l">Completed today</div></div></div>';
+      '<button class="tile tap" type="button" onclick="openBucket(\'offers\')"><div class="n">'+(c.offers||0)+'</div><div class="l">Offers waiting — view all →</div></button>'+
+      '<button class="tile tap" type="button" onclick="openBucket(\'accepted\')"><div class="n">'+(c.accepted||0)+'</div><div class="l">Accepted — active — view all →</div></button>'+
+      '<button class="tile tap" type="button" onclick="openBucket(\'inProgress\')"><div class="n">'+(c.inProgress||0)+'</div><div class="l">In progress — view all →</div></button>'+
+      '<button class="tile tap" type="button" onclick="openBucket(\'awaitingParts\')"><div class="n">'+(c.awaitingParts||0)+'</div><div class="l">Awaiting parts — view all →</div></button>'+
+      '<button class="tile tap" type="button" onclick="openBucket(\'awaitingDiagnosis\')"><div class="n">'+(c.awaitingDiagnosis||0)+'</div><div class="l">Awaiting diagnosis — view all →</div></button>'+
+      '<button class="tile tap" type="button" onclick="openBucket(\'completedToday\')"><div class="n">'+(c.completedToday||0)+'</div><div class="l">Completed today — view all →</div></button></div>';
     if(d.oversight&&d.perProvider&&d.perProvider.length){
       html+='<div class="card"><span class="tp-lab" style="margin-top:0">Team — all providers</span>'+
-        d.perProvider.map(function(p){ return '<div class="kv"><span>'+escT(p.businessName)+'</span><b>'+p.offers+' offers · '+p.accepted+' accepted · '+p.completedToday+' done today</b></div>'; }).join('')+
+        d.perProvider.map(function(p){ return '<button class="kv tap" type="button" onclick="openTeamPage(\''+p.providerId+'\')"><span>'+escT(p.businessName)+(p.system==='COMPANY'?' · Company crew':' · Network')+'</span><b>'+p.offers+' offers · '+p.accepted+' accepted · '+p.completedToday+' done today →</b></button>'; }).join('')+
         '<span class="tp-lab">Filter board by provider</span><select class="tp-in" id="boardProvFilter" onchange="boardFilter(this.value)"><option value="">All providers</option>'+
         d.perProvider.map(function(p){ return '<option value="'+p.providerId+'">'+escT(p.businessName)+'</option>'; }).join('')+'</select></div>';
     }
@@ -1569,7 +1721,7 @@ function loadDispatchBoard(){
       '</div></div>';
     if(!(c.offers||c.accepted||c.completedToday)) html+='<div class="card"><p class="note" style="margin:0">The board is clear — no offers waiting, no active jobs, nothing completed yet today. New dispatch from Service Setters lands here live.</p></div>';
     if(c.lowStock) html+='<div class="card" style="border-left:4px solid #ffb020"><p class="note" style="margin:0"><b>'+c.lowStock+' catalog part'+(c.lowStock===1?' is':'s are')+' at or below reorder point.</b> See Parts for van stock and suppliers.</p></div>';
-    if(c.openWarrantyClaims) html+='<div class="card" style="border-left:4px solid var(--navy)"><p class="note" style="margin:0"><b>'+c.openWarrantyClaims+' open warranty claim'+(c.openWarrantyClaims===1?'':'s')+'.</b> Look them up under More → Warranty claims.</p></div>';
+    if(c.openWarrantyClaims) html+='<div class="card" style="border-left:4px solid var(--navy)"><p class="note" style="margin:0"><b>'+c.openWarrantyClaims+' open warranty claim'+(c.openWarrantyClaims===1?'':'s')+'.</b> Open Warranty claims from the menu to look them up.</p></div>';
     host.innerHTML=html;
   }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Dispatch board unavailable: '+escT(e.message)+'</p></div>'; });
 }
@@ -2124,6 +2276,291 @@ function claimAdvance(claimId){
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
+<script>
+/* ================= DOOR BRANDING (2026-11-19, Directive 5) ================= */
+(function(){
+  var network=(window.TECH_DOOR==='NETWORK');
+  var t=document.getElementById('techDoorTitle'); if(t) t.textContent=network?'Network Tech':'Company Tech';
+  var sub=document.getElementById('techDoorSub'); if(sub) sub.textContent=network?'Service Network — independent providers':'Top Speed Appliance — company technicians';
+  var at=document.getElementById('techAuthTitle'); if(at) at.textContent=network?'Network Tech sign-in — Service Network jobs':'Company Tech sign-in — Top Speed jobs';
+  var note=document.getElementById('techDoorNote');
+  if(note) note.textContent=network
+    ? 'Independent providers sign in here. New to the Service Network? Apply to join below — the office reviews every application before an account is issued.'
+    : 'Company accounts are issued by the office only (Work Time Access) — there is no self sign-up for Top Speed technicians. If you need an account, contact the office.';
+})();
+function techWrongDoor(system){
+  var rightName=system==='NETWORK'?'Network Tech':'Company Tech';
+  var rightUrl=system==='NETWORK'?'/tech-network':'/tech';
+  var login=document.getElementById('techLogin'); if(login) login.style.display='none';
+  var v=document.getElementById('techVerify'); if(v) v.style.display='none';
+  var bar=document.getElementById('techBar'); if(bar) bar.style.display='none';
+  var w=document.getElementById('techWrongDoor'); if(!w) return;
+  w.style.display='';
+  w.innerHTML='<p class="note" style="margin:4px 0 10px"><b>Wrong door.</b> This account belongs to <b>'+rightName+'</b>, so this door cannot open it. Your offers, jobs and settings live behind your own door — both doors run on the same Service OS dispatch from Service Setters.</p><div class="btnrow"><a class="btn go" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="'+rightUrl+'">Go to '+rightName+' →</a><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>';
+}
+
+/* ================= MORE POP-UP SHEET (Directives 2 + 6) =================
+   The complete field-technician feature index, grouped. Every item is
+   one tap straight to its screen (Directive 4). CREATE is hidden for
+   oversight (view-only) — money originates on the tech's own account. */
+var SHEET_IC={
+  cal:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3.5 5h17v15.5h-17z"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/></svg>',
+  clip:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 5h12v16H6z"/><path d="M9.5 5V3h5v2"/><path d="M9 10.5h6M9 14h6"/></svg>',
+  inbox:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4.5h16V15l-2.6 4.5H6.6L4 15z"/><path d="M12 7v6.4M9 10.6l3 3 3-3"/></svg>',
+  plus:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="4" y="4" width="16" height="16"/><path d="M12 8v8M8 12h8" stroke="#E8322E"/></svg>',
+  doc:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6.5 3.5H14L19 8.5V20l-1.5 1.5h-11L5 20V5z"/><path d="M13.5 3.5v5.5H19M8.5 13h7M8.5 16.4h7"/></svg>',
+  money:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="18" height="12"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5h.01M17.5 14.5h.01" stroke-width="2.4"/></svg>',
+  plug:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M9 2.8v5M15 2.8v5"/><path d="M6.5 7.8h11V13a5.5 5.5 0 0 1-11 0z"/><path d="M12 18.5V21"/></svg>',
+  box:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/></svg>',
+  shield:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>',
+  book:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.5h13.5L20 5v15.5H5z"/><path d="M8.5 8.5h8M8.5 12h8M8.5 15.5h5"/></svg>',
+  search:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21" stroke="#E8322E"/></svg>',
+  bldg:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 21V8l8-5 8 5v13"/><path d="M9.5 21v-6h5v6M4 21h16"/></svg>',
+  chart:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4v16.5h16.5"/><path d="M8.5 16.5v-5M12.5 16.5V8M16.5 16.5v-8.5"/></svg>',
+  clock:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>',
+  gear:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg>',
+  cap:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8"/></svg>',
+  phone:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/></svg>',
+  chat:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6"/></svg>',
+  out:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14 4h5.5v16H14M10.5 8L5 12l5.5 4M5 12h11"/></svg>'
+};
+var _sheetActions=[];
+function sheetGroups(){
+  var groups=[
+    {label:'WORK', items:[
+      {t:'Today', s:'Your dispatch board for the day', ic:'cal', fn:function(){ go('today'); }},
+      {t:'Work orders', s:'Pick a job — opens its full workspace', ic:'clip', fn:function(){ go('job'); }},
+      {t:'Job offers', s:'Offers waiting for your answer', ic:'inbox', fn:function(){ go('offers'); }},
+      {t:'Dispatch board', s:'Offers, active jobs, waiting states, completions', ic:'chart', fn:function(){ go('today'); }}
+    ]},
+    {label:'CREATE', create:true, items:[
+      {t:'New work order', s:'Start a job — yours, or into the Service Setters queue', ic:'plus', fn:function(){ woOpen(); }},
+      {t:'New estimate', s:'The written quote on a job — totals computed by the server', ic:'doc', fn:function(){ createGo('estimate'); }},
+      {t:'New invoice', s:'Generated from the approved estimate on a job', ic:'doc', fn:function(){ createGo('estimate'); }},
+      {t:'Record receipt', s:'Cash, check or external payment — never card numbers', ic:'money', fn:function(){ createGo('pay'); }}
+    ]},
+    {label:'TOOLS', items:[
+      {t:'Appliance Plug — camera', s:'Opens straight into the camera — plate reads', ic:'plug', fn:function(){ go('plug'); }},
+      {t:'Parts finder', s:'Van stock, part categories, suppliers', ic:'box', fn:function(){ go('parts'); }},
+      {t:'Parts & suppliers', s:'The Parts Supply OS directory', ic:'box', fn:function(){ go('parts'); }},
+      {t:'Parts orders', s:'Your order queue across jobs', ic:'box', fn:function(){ go('parts'); }},
+      {t:'Warranty claims', s:'Look up and advance claims on your jobs', ic:'shield', fn:function(){ go('claims'); }}
+    ]},
+    {label:'INFORMATION', items:[
+      {t:'Repair knowledge', s:'Search the platform knowledge base', ic:'book', fn:function(){ go('info'); }},
+      {t:'Job & customer lookup', s:'Find a job or a customer you have worked', ic:'search', fn:function(){ go('lookup'); }},
+      {t:'Company info & pricing', s:'Business card, pricing structure, warranty terms', ic:'bldg', fn:function(){ go('company'); }}
+    ]},
+    {label:'MY WEEK', items:[
+      {t:'My week', s:'Jobs done today and this week', ic:'chart', fn:function(){ go('earn'); }},
+      {t:'Availability', s:'Available / offline for offers', ic:'clock', fn:function(){ tchAvail(); }},
+      {t:'My jobs', s:'Your confirmed jobs', ic:'clip', fn:function(){ go('today'); }}
+    ]},
+    {label:'SETTINGS & MORE', items:[
+      {t:'Settings', s:'Profile, vehicle, areas, appliances, notifications', ic:'gear', fn:function(){ go('settings'); }},
+      {t:'Provider portal', s:'Credentials, documents, account', ic:'doc', href:'/service/'},
+      {t:'Parts Supply OS', s:'The full parts platform', ic:'box', href:'/parts'},
+      {t:'Training Academy', s:'Your courses — you enter as a trainee', ic:'cap', href:'/academy'},
+      {t:'Call dispatch', s:'954-931-7997 · Mon–Fri 8am–7pm', ic:'phone', href:'tel:+19549317997'},
+      {t:'Ask Pepper', s:'Your operations assistant', ic:'chat', fn:function(){ if(window.askPepper) askPepper(); }},
+      {t:'Sign out', ic:'out', fn:function(){ techSignOut(); }}
+    ]}
+  ];
+  if(window._techOversight) groups=groups.filter(function(g){ return !g.create; });
+  return groups;
+}
+function moreSheetOpen(){
+  var sheet=document.getElementById('moreSheet'), back=document.getElementById('moreBack');
+  if(!sheet) return;
+  _sheetActions=[];
+  var html='<div class="sheet-grab"></div><div style="display:flex;align-items:center"><b style="font-size:16px;color:var(--navy);flex:1">'+(window.TECH_DOOR==='NETWORK'?'Network Tech':'Company Tech')+' — menu</b><button class="tch-x" type="button" onclick="moreSheetClose()" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
+  if(!tTok()) html+='<p class="note" style="margin:6px 0 0">You are signed out — sign in at the top of Today to load your live board. Every option below still opens its screen.</p>';
+  if(window._techOversight) html+='<p class="note" style="margin:6px 0 0">Oversight view — create actions live on each tech\u2019s own account, so the CREATE group is hidden here.</p>';
+  sheetGroups().forEach(function(g){
+    html+='<div class="sheet-sec">'+g.label+'</div>';
+    g.items.forEach(function(it){
+      var icon=SHEET_IC[it.ic]||'';
+      if(it.href){ html+='<a class="sheet-item" style="text-decoration:none" href="'+it.href+'">'+icon+'<span class="grow">'+escT(it.t)+(it.s?'<small>'+escT(it.s)+'</small>':'')+'</span><span class="chev">→</span></a>'; }
+      else { var idx=_sheetActions.length; _sheetActions.push(it.fn); html+='<button class="sheet-item" type="button" onclick="sheetTap('+idx+')">'+icon+'<span class="grow">'+escT(it.t)+(it.s?'<small>'+escT(it.s)+'</small>':'')+'</span><span class="chev">→</span></button>'; }
+    });
+  });
+  sheet.innerHTML=html;
+  sheet.classList.add('on'); if(back) back.classList.add('on');
+}
+function moreSheetClose(){
+  var sheet=document.getElementById('moreSheet'), back=document.getElementById('moreBack');
+  if(sheet) sheet.classList.remove('on');
+  if(back) back.classList.remove('on');
+}
+function sheetTap(idx){ moreSheetClose(); var fn=_sheetActions[idx]; if(fn) fn(); }
+function createGo(tab){
+  if(window._techOversight){ toast('Oversight is view-only — estimates, invoices and receipts are created on the assigned tech\u2019s own account'); return; }
+  if(!tTok()){ toast('Sign in first — the create tools open on a job'); go('today'); return; }
+  if(window._wsId){ wsReload(window._wsId, tab); go('job'); return; }
+  window._createTab=tab;
+  toast('Pick the job — its create tools open right on it');
+  go('job');
+}
+
+/* ================= BUCKET PAGES (Directive 7) ================= */
+var BUCKET_TITLES={offers:'Offers waiting',accepted:'Accepted — active jobs',inProgress:'In progress',awaitingParts:'Awaiting parts',awaitingDiagnosis:'Awaiting diagnosis',completedToday:'Completed today'};
+function openBucket(key){ window._bucket={kind:'bucket',key:key,filter:'ALL',providerId:''}; go('bucket'); renderBucket(); }
+function openTeamPage(providerId){ window._bucket={kind:'team',providerId:providerId,filter:'ALL'}; go('bucket'); renderBucket(); }
+function bucketSetFilter(f){ if(window._bucket){ window._bucket.filter=f; renderBucket(); } }
+function bucketSetProvider(pid){ if(window._bucket){ window._bucket.providerId=pid; renderBucket(); } }
+function renderBucket(){
+  var st=window._bucket||{kind:'bucket',key:'offers',filter:'ALL',providerId:''};
+  var titleEl=document.getElementById('bucketTitle'), listEl=document.getElementById('bucketList'), filterEl=document.getElementById('bucketFilter');
+  if(!titleEl||!listEl) return;
+  var d=window._fpOverview;
+  if(!d){
+    listEl.innerHTML='<p class="note">Loading the board…</p>';
+    tFetch('/provider/overview?limit=200').then(function(j){ window._fpOverview=j.data||{}; renderBucket(); })
+      .catch(function(e){ listEl.innerHTML='<p class="note">Board unavailable: '+escT(e.message)+'</p>'; });
+    return;
+  }
+  var rows=[];
+  if(st.kind==='team'){
+    var seen={};
+    ['offers','accepted','inProgress','awaitingParts','awaitingDiagnosis','completedToday'].forEach(function(k){
+      (d[k]||[]).forEach(function(a){ if(a.providerId===st.providerId && !seen[a.id]){ seen[a.id]=1; rows.push(a); } });
+    });
+    var pp=(d.perProvider||[]).filter(function(p){ return p.providerId===st.providerId; })[0];
+    titleEl.textContent=(pp?pp.businessName:'Provider')+' — jobs ('+rows.length+')';
+    filterEl.innerHTML='';
+  } else {
+    rows=(d[st.key]||[]).slice();
+    if(d.oversight){
+      if(st.filter&&st.filter!=='ALL') rows=rows.filter(function(a){ return a.providerSystem===st.filter; });
+      if(st.providerId) rows=rows.filter(function(a){ return a.providerId===st.providerId; });
+      var chips=['ALL','COMPANY','NETWORK'].map(function(f){ return '<button class="chipbtn'+(st.filter===f?' on':'')+'" type="button" onclick="bucketSetFilter(\''+f+'\')">'+(f==='ALL'?'All':f==='COMPANY'?'Company crew':'Service Network')+'</button>'; }).join('');
+      var provOpts='<option value="">All providers</option>'+(d.perProvider||[]).map(function(p){ return '<option value="'+p.providerId+'"'+(st.providerId===p.providerId?' selected':'')+'>'+escT(p.businessName)+'</option>'; }).join('');
+      filterEl.innerHTML='<div class="chiprow">'+chips+'</div><select class="tp-in" style="margin-bottom:10px" onchange="bucketSetProvider(this.value)">'+provOpts+'</select>';
+    } else { filterEl.innerHTML=''; }
+    titleEl.textContent=(BUCKET_TITLES[st.key]||'Jobs')+' ('+rows.length+')';
+  }
+  listEl.innerHTML=rows.length?rows.map(boardRow).join(''):'<div class="card"><p class="note" style="margin:0">Nothing in this bucket right now — the list is live from Service Setters dispatch, and new work lands here the moment it is assigned.</p></div>';
+}
+
+/* ================= NEW WORK ORDER (Directive 3) ================= */
+var _woTimer=null;
+function woOpen(){
+  if(window._techOversight){ toast('Oversight is view-only — work orders are created on a tech or setter account'); return; }
+  if(!tTok()){ toast('Sign in first — then create the work order'); go('today'); return; }
+  woCustClear();
+  var m=document.getElementById('woModal'); if(m) m.classList.add('on');
+}
+function woClose(){ var m=document.getElementById('woModal'); if(m) m.classList.remove('on'); }
+function woAssignPick(which, btn){
+  window._woAssign=which;
+  $$('#woAssignRow .chipbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-woassign')===which); });
+}
+function woCustSearch(){
+  clearTimeout(_woTimer);
+  _woTimer=setTimeout(function(){
+    var q=document.getElementById('woCustQ').value.trim();
+    var box=document.getElementById('woCustResults'); if(!box) return;
+    if(q.length<2){ box.innerHTML=''; return; }
+    tFetch('/provider/customers?q='+encodeURIComponent(q)).then(function(j){
+      var rows=j.data||[];
+      box.innerHTML=rows.length?rows.map(function(c){ return '<button class="wo-cust" type="button" onclick="woCustPick(\''+c.id+'\')"><b>'+escT(c.name||'')+'</b> · '+escT(c.phone||'')+(c.city?' · '+escT(c.city):'')+'</button>'; }).join(''):'<p class="note" style="margin:4px 0">No match — enter the customer fresh below; they are saved to the CRM book when the job is created.</p>';
+      window._woCustRows=rows;
+    }).catch(function(){ box.innerHTML=''; });
+  }, 260);
+}
+function woCustPick(id){
+  var c=(window._woCustRows||[]).filter(function(x){ return x.id===id; })[0]; if(!c) return;
+  window._woCustomerId=id;
+  document.getElementById('woName').value=c.name||'';
+  document.getElementById('woPhone').value=c.phone||'';
+  document.getElementById('woEmail').value=c.email||'';
+  document.getElementById('woAddress').value=c.address||'';
+  document.getElementById('woCity').value=c.city||'';
+  document.getElementById('woZip').value=c.zip||'';
+  document.getElementById('woCustResults').innerHTML='';
+  document.getElementById('woCustPicked').innerHTML='<p class="note" style="margin:6px 0;color:#0f7a3d"><b>Existing customer:</b> '+escT(c.name||'')+' — the job attaches to their CRM record, no duplicate is created.</p>';
+}
+function woCustClear(){
+  window._woCustomerId=null; window._woAssign='SELF';
+  ['woCustQ','woName','woPhone','woEmail','woAddress','woCity','woZip','woIssue'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  var seg=document.getElementById('woSegment'); if(seg) seg.value='RESIDENTIAL';
+  var win=document.getElementById('woWindow'); if(win) win.value='';
+  var res=document.getElementById('woCustResults'); if(res) res.innerHTML='';
+  var pk=document.getElementById('woCustPicked'); if(pk) pk.innerHTML='';
+  var msg=document.getElementById('woMsg'); if(msg) msg.textContent='';
+  $$('#woAssignRow .chipbtn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-woassign')==='SELF'); });
+}
+function woVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function woSubmit(){
+  var msg=document.getElementById('woMsg');
+  var body={ assign:window._woAssign||'SELF', segment:woVal('woSegment')||'RESIDENTIAL', appliance:woVal('woAppliance'), issue:woVal('woIssue'), preferredWindow:woVal('woWindow')||null, city:woVal('woCity')||undefined, zip:woVal('woZip')||undefined, address:woVal('woAddress')||undefined };
+  if(window._woCustomerId){ body.customerId=window._woCustomerId; }
+  else {
+    var name=woVal('woName'), phone=woVal('woPhone');
+    if(name.length<2||phone.length<7){ if(msg){ msg.textContent='Enter the customer\u2019s name and phone — or pick an existing customer from the search above.'; msg.style.color='#c2262e'; } return; }
+    body.customer={ name:name, phone:phone, email:woVal('woEmail')||undefined };
+  }
+  if(body.issue.length<3){ if(msg){ msg.textContent='Describe the issue — a few words the next tech (or the customer) would recognize.'; msg.style.color='#c2262e'; } return; }
+  if(msg){ msg.textContent='Creating the work order…'; msg.style.color='#5A6E94'; }
+  tFetch('/provider/work-orders',{method:'POST',body:JSON.stringify(body)}).then(function(j){
+    var d=j.data||{}; var bk=d.booking||{};
+    woClose();
+    if(d.assignment && d.assignment.id){
+      toast('Work order '+(bk.referenceCode||'')+' created — assigned to you', ICO_CHECK);
+      tFetch('/provider/assignments').then(function(r){ window._techAssignments=(r.data&&r.data.assignments)||[]; openWorkspace(d.assignment.id); });
+      loadDispatchBoard();
+    } else {
+      toast('Work order '+(bk.referenceCode||'')+' created — Service Setters have it in their queue', ICO_CHECK);
+      loadTech(); loadDispatchBoard(); go('today');
+    }
+  }).catch(function(e){ if(msg){ msg.textContent='Could not create it: '+(e.message||'error'); msg.style.color='#c2262e'; } });
+}
+
+/* ================= INFORMATION SCREENS (Directive 6) ================= */
+function infoSearch(){
+  var q=document.getElementById('infoQ').value.trim();
+  var box=document.getElementById('infoResults'); if(!box) return;
+  if(q.length<2){ box.innerHTML='<p class="note" style="margin:0">Type at least two characters.</p>'; return; }
+  box.innerHTML='<p class="note" style="margin:0">Searching the knowledge base…</p>';
+  tFetch('/provider/knowledge?q='+encodeURIComponent(q)).then(function(j){
+    var rows=((j.data||{}).results||[]).map(tpKbRow).join('');
+    box.innerHTML=rows||'<p class="note" style="margin:0">No knowledge entry matches that yet — the base grows from real platform content only.</p>';
+  }).catch(function(e){ box.innerHTML='<p class="note" style="margin:0">Knowledge search unavailable: '+escT(e.message)+'</p>'; });
+}
+function lookupCustomers(){
+  var q=document.getElementById('lkCustQ').value.trim();
+  var box=document.getElementById('lkCustResults'); if(!box) return;
+  if(q.length<2){ box.innerHTML='<p class="note" style="margin:4px 0">Type at least two characters.</p>'; return; }
+  box.innerHTML='<p class="note" style="margin:4px 0">Searching…</p>';
+  tFetch('/provider/customers?q='+encodeURIComponent(q)).then(function(j){
+    var rows=j.data||[];
+    window._lkCustRows=rows;
+    box.innerHTML=rows.length?rows.map(function(c){ return '<button class="wo-cust" type="button" onclick="lookupCustomerJobs(\''+c.id+'\')"><b>'+escT(c.name||'')+'</b> · '+escT(c.phone||'')+(c.city?' · '+escT(c.city):'')+'<br><small style="color:var(--soft)">Tap to see their jobs on your board</small></button>'; }).join(''):'<p class="note" style="margin:4px 0">No customer matches — providers see customers their business has worked; new customers arrive with their first job.</p>';
+  }).catch(function(e){ box.innerHTML='<p class="note" style="margin:4px 0">Lookup unavailable: '+escT(e.message)+'</p>'; });
+}
+function lookupCustomerJobs(id){
+  var c=(window._lkCustRows||[]).filter(function(x){ return x.id===id; })[0];
+  var box=document.getElementById('lkCustResults'); if(!box||!c) return;
+  var digits=function(ph){ return String(ph||'').replace(/\D/g,'').slice(-10); };
+  var mine=(window._techAssignments||[]).filter(function(a){
+    var cust=(a.booking||{}).customer||{};
+    return cust.phone && digits(cust.phone)===digits(c.phone);
+  });
+  box.innerHTML='<p class="note" style="margin:4px 0"><b>'+escT(c.name||'')+'</b> · '+escT(c.phone||'')+(c.city?' · '+escT(c.city):'')+'</p>'+
+    (mine.length?mine.map(boardRow).join(''):'<p class="note" style="margin:4px 0">No jobs with this customer on your board right now.</p>');
+}
+function lookupJobs(){
+  var q=document.getElementById('lkJobQ').value.trim().toLowerCase();
+  var box=document.getElementById('lkJobResults'); if(!box) return;
+  if(q.length<2){ box.innerHTML='<p class="note" style="margin:4px 0">Type at least two characters.</p>'; return; }
+  var mine=(window._techAssignments||[]).filter(function(a){
+    if(a.status!=='APPROVED'&&a.status!=='ACCEPTED') return false;
+    var b=a.booking||{}; var cust=b.customer||{};
+    return [b.referenceCode,b.appliance,b.issue,b.city,b.zip,cust.name].join(' ').toLowerCase().indexOf(q)>=0;
+  });
+  box.innerHTML=mine.length?mine.map(boardRow).join(''):'<p class="note" style="margin:4px 0">No job on your board matches that.</p>';
+}
+</script>
 <script src="/shared/pepper-chat.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 <script src="/shared/session-vault.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>

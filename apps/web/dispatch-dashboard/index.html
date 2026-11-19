@@ -228,6 +228,7 @@
       <div class="dd-head">
         <h1>Dispatch Dashboard</h1>
         <p>The Service Setters' working board — live Service OS data from every door. Setters assign every job; nothing is auto-dispatched.</p>
+        <div style="margin-top:12px"><button class="iconbtn" id="ddNewWoBtn" type="button" style="display:none;background:var(--red,#E8322E);color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer" onclick="ddWoOpen()">+ New work order</button></div>
         <img src="/api/v1/app/scenario-images/dispatch-team-huddle.webp" alt="Illustration: the Service Setters team huddling at the start of the shift to plan the day's dispatch" style="width:min(420px,100%);height:auto;border-radius:14px;display:block;margin-top:14px" loading="lazy">
       </div>
 
@@ -1034,5 +1035,101 @@ boot();
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+
+<!-- CREATE FLOWS (2026-11-19): New work order — the dispatch board's
+     entry point into the same /bookos create contract. -->
+<div id="ddWoBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9990;overflow-y:auto">
+  <div style="background:#fff;max-width:580px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3);color:#12233f">
+    <div style="display:flex;align-items:center;gap:10px"><h3 style="font-size:16px;flex:1;margin:0">New work order — phone / walk-in</h3><button type="button" onclick="ddWoClose()" style="background:#eef2f8;border:1px solid #d8e2f2;border-radius:10px;padding:8px 12px;cursor:pointer">Close</button></div>
+    <p style="font-size:13px;color:#5A6E94;margin:6px 0 10px">Source OFFICE, via Book OS — the same intake as every surface. Company crew and Service Network providers are both dispatch targets on this one pipeline; the side rides on the assignment.</p>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Find the customer first (name or phone)<br><input id="ddWoCustQ" placeholder="Search existing customers…" oninput="ddWoCustSearch()" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+    <div id="ddWoCustResults"></div>
+    <div id="ddWoCustPicked"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Customer name *<br><input id="ddWoName" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+      <label style="font-size:13px;font-weight:700">Phone *<br><input id="ddWoPhone" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+    </div>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Service address<br><input id="ddWoAddress" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">City<br><input id="ddWoCity" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+      <label style="font-size:13px;font-weight:700">ZIP<br><input id="ddWoZip" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></label>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Job type<br><select id="ddWoSegment" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"><option value="RESIDENTIAL">Residential</option><option value="COMMERCIAL">Commercial — custom quote</option></select></label>
+      <label style="font-size:13px;font-weight:700">Appliance *<br><select id="ddWoAppliance" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select></label>
+    </div>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Issue *<br><textarea id="ddWoIssue" rows="3" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"></textarea></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Preferred window<br><select id="ddWoWindow" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"><option value="">No preference</option><option>Morning (8am–12pm)</option><option>Midday (12pm–3pm)</option><option>Afternoon (3pm–7pm)</option></select></label>
+      <label style="font-size:13px;font-weight:700">Assign now (optional)<br><select id="ddWoProvider" style="width:100%;padding:10px;margin-top:4px;border:1px solid #d8e2f2;border-radius:10px;font-size:15px"><option value="">Leave in the setter queue</option></select></label>
+    </div>
+    <div id="ddWoMsg" style="font-size:13.5px;margin:10px 0"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" onclick="ddWoClose()" style="background:#eef2f8;border:1px solid #d8e2f2;border-radius:10px;padding:10px 16px;cursor:pointer">Cancel</button><button type="button" onclick="ddWoSubmit()" style="background:#E8322E;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer">Create work order</button></div>
+  </div>
+</div>
+<script>
+var ddWoCustomerId=null, ddWoTimer=null, ddWoCustRows=[];
+(function(){ var b=document.getElementById('ddNewWoBtn'); if(b && token()) b.style.display=''; })();
+function ddWoOpen(){
+  if(!token()){ alert('Sign in as staff first — then create the work order'); return; }
+  ddWoCustomerId=null; ddWoCustRows=[];
+  ['ddWoCustQ','ddWoName','ddWoPhone','ddWoAddress','ddWoCity','ddWoZip','ddWoIssue'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('ddWoCustResults').innerHTML='';
+  document.getElementById('ddWoCustPicked').innerHTML='';
+  document.getElementById('ddWoMsg').textContent='';
+  var sel=document.getElementById('ddWoProvider');
+  get('/bookos/providers', true).then(function(r){
+    var rows=(r.j&&r.j.data)||[];
+    sel.innerHTML='<option value="">Leave in the setter queue</option>'+rows.map(function(p){ return '<option value="'+p.id+'">'+esc(p.businessName)+' — '+(p.system==='COMPANY'?'Company crew':'Service Network')+'</option>'; }).join('');
+  });
+  document.getElementById('ddWoBack').style.display='block';
+}
+function ddWoClose(){ document.getElementById('ddWoBack').style.display='none'; }
+function ddWoCustSearch(){
+  clearTimeout(ddWoTimer);
+  ddWoTimer=setTimeout(function(){
+    var q=document.getElementById('ddWoCustQ').value.trim();
+    var box=document.getElementById('ddWoCustResults');
+    if(q.length<2){ box.innerHTML=''; return; }
+    get('/bookos/customers?q='+encodeURIComponent(q), true).then(function(r){
+      ddWoCustRows=(r.j&&r.j.data)||[];
+      box.innerHTML=ddWoCustRows.length?ddWoCustRows.map(function(c){ return '<button type="button" onclick="ddWoCustPick(\''+c.id+'\')" style="display:block;width:100%;text-align:left;background:#f2f6fc;border:1px solid #d8e2f2;border-radius:10px;padding:9px 11px;margin:6px 0;font:inherit;cursor:pointer"><b>'+esc(c.name||'')+'</b> · '+esc(c.phone||'')+(c.city?' · '+esc(c.city):'')+'</button>'; }).join(''):'<p style="font-size:13px;color:#5A6E94;margin:4px 0">No match — enter the customer fresh below.</p>';
+    });
+  },260);
+}
+function ddWoCustPick(id){
+  var c=ddWoCustRows.filter(function(x){ return x.id===id; })[0]; if(!c) return;
+  ddWoCustomerId=id;
+  document.getElementById('ddWoName').value=c.name||'';
+  document.getElementById('ddWoPhone').value=c.phone||'';
+  document.getElementById('ddWoAddress').value=c.address||'';
+  document.getElementById('ddWoCity').value=c.city||'';
+  document.getElementById('ddWoZip').value=c.zip||'';
+  document.getElementById('ddWoCustResults').innerHTML='';
+  document.getElementById('ddWoCustPicked').innerHTML='<p style="font-size:13px;color:#0f7a3d;margin:6px 0"><b>Existing customer:</b> '+esc(c.name||'')+' — no duplicate CRM record is created.</p>';
+}
+function ddWoVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function ddWoSubmit(){
+  var msg=document.getElementById('ddWoMsg');
+  var body={ segment:ddWoVal('ddWoSegment')||'RESIDENTIAL', appliance:ddWoVal('ddWoAppliance'), issue:ddWoVal('ddWoIssue'), preferredWindow:ddWoVal('ddWoWindow')||null, city:ddWoVal('ddWoCity')||undefined, zip:ddWoVal('ddWoZip')||undefined, address:ddWoVal('ddWoAddress')||undefined };
+  var prov=ddWoVal('ddWoProvider'); if(prov) body.providerId=prov;
+  if(ddWoCustomerId){ body.customerId=ddWoCustomerId; }
+  else {
+    var name=ddWoVal('ddWoName'), phone=ddWoVal('ddWoPhone');
+    if(name.length<2||phone.length<7){ msg.textContent='Enter the customer\u2019s name and phone — or pick an existing customer from the search.'; msg.style.color='#c2262e'; return; }
+    body.customer={ name:name, phone:phone };
+  }
+  if(body.issue.length<3){ msg.textContent='Describe the issue in a few words.'; msg.style.color='#c2262e'; return; }
+  msg.textContent='Creating the work order…'; msg.style.color='#5A6E94';
+  post('/bookos/work-orders', body).then(function(r){
+    if(!r.ok){ msg.textContent='Could not create it: '+(((r.j||{}).error)||('status '+r.status)); msg.style.color='#c2262e'; return; }
+    var bk=((r.j||{}).data||{}).booking||{};
+    ddWoClose();
+    alert('Work order '+(bk.referenceCode||'')+' created — source OFFICE. It is in the setter queue / dispatch flow now.');
+    if(window.loadAll) loadAll();
+  });
+}
+</script>
+
 </body>
 </html>

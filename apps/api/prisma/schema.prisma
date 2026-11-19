@@ -153,6 +153,16 @@ model User {
   layer2Required Boolean @default(false)
   layer2Phone    String?
   layer2Channel  String?
+  // Tech settings (2026-11-19, Directive 6): per-account field-tech
+  // settings that have no shared record to live on — vehicle,
+  // notification preferences, and a company tech's personal service
+  // areas / appliances (the company crew shares ONE provider record,
+  // which the office manages). Network providers keep their areas /
+  // appliances on their own Provider record instead. Shape:
+  // { vehicle: {year, make, model, color, plate} | null,
+  //   notifications: {jobOffers, scheduleChanges, payments, messages},
+  //   myAreas: string[], myAppliances: string[] }
+  techSettings   Json?
   // Employee number (Work Time Account Access, 2026-11-17): permanent,
   // unique, never reused — 'TS-' + sequential number starting at
   // TS-1001, assigned server-side at creation to EMPLOYEE accounts
@@ -390,6 +400,10 @@ model Provider {
   serviceCities String[]
   rating        Decimal?     @db.Decimal(3, 2)
   active        Boolean      @default(true)
+  // Two tech systems (2026-11-19): true only for Top Speed's own field
+  // team — its accounts sign in at the Company Tech door; every other
+  // provider belongs to the Service Network door.
+  companyCrew   Boolean      @default(false)
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 

@@ -216,6 +216,7 @@ const EXPECTED_TABLE = {
   '/marketing-os/studio': { label: 'STAFF ONLY', roles: MKTG },
   '/marketing-os/seo': { label: 'STAFF ONLY', roles: MKTG },
   '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: MKTG },
+  '/interconnect': { label: 'STAFF ONLY', roles: STAFF },
 };
 // Pages whose 403 path is NOT showRestricted, by design (see header):
 // - service-setters-dispatch: public marketing illustration, no data

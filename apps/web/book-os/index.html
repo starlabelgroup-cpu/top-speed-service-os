@@ -178,6 +178,7 @@ body:not(.live) .gated{display:none!important}</style>
 </div>
 <div id="staffBar" style="padding:0 16px 16px;display:none;gap:10px;flex-wrap:wrap;align-items:center">
 <span id="staffWho" style="font-weight:700"></span>
+<button class="btn primary" onclick="boWoOpen()">+ New work order</button>
 <button class="btn navy" onclick="loadLive()">↻ Refresh live data</button>
 <button class="btn ghost" id="cleanupBtn" onclick="cleanupTestData()"> <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data</button>
 <button class="btn ghost" onclick="staffSignOut()">Sign out</button>
@@ -191,7 +192,7 @@ body:not(.live) .gated{display:none!important}</style>
 
 <!-- QUEUE + SCRIPT -->
 <div class="grid2">
-<section class="panel" gated"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span class="badge" id="qCount">5 waiting</span></div><div style="padding:14px 16px 0"><img src="/api/v1/app/platform-images/dispatch-setters.webp" alt="Illustration: a Service Setter coordinating dispatch at a desk with a city map of route pins behind her" style="width:min(320px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
+<section class="panel" gated"><div class="ph"><div><h2>1 · Setter Queue</h2><p>New requests needing a confirmation call — oldest first. $99 diagnostic is collected at booking &amp; credited toward repair.</p></div><span style="display:flex;gap:8px;align-items:center"><button class="btn primary" onclick="boWoOpen()">+ New work order</button><span class="badge" id="qCount">5 waiting</span></span></div><div style="padding:14px 16px 0"><img src="/api/v1/app/platform-images/dispatch-setters.webp" alt="Illustration: a Service Setter coordinating dispatch at a desk with a city map of route pins behind her" style="width:min(320px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div style="padding:10px 16px 0"><img src="/api/v1/app/scenario-images/dispatch-emergency-triage.webp" alt="Illustration: a Service Setter triaging an urgent emergency request at the front of the queue" style="width:min(320px,100%);height:auto;border-radius:14px;display:block" loading="lazy"></div>
 <div id="queue"></div></section>
 
@@ -560,8 +561,10 @@ function renderLiveQueue(items){
     var hasMedia=!!(q.lead&&(q.lead.connectionId||q.lead.connectionReference)&&q.mediaCount>0);
     if(hasMedia){ actions+='<button class="btn ghost" id="qmb-'+i+'" aria-expanded="false" onclick="toggleQMedia('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6.5" width="18" height="13" rx="2.5"/><circle cx="12" cy="13" r="3.4" stroke="#E8322E"/><path d="M8.5 6.5l1.6-2.7h3.8l1.6 2.7"/></svg> Customer media ('+q.mediaCount+')</button>'; }
     var mediaSec=hasMedia?'<div class="qmedia" id="qm-'+i+'" hidden><div class="qm-load">Customer media loads here when opened \u2014 photos and videos are not downloaded for the whole queue.</div></div>':'';
+    actions+='<button class="btn ghost" id="qmnyb-'+i+'" aria-expanded="false" onclick="toggleMoney('+i+')">Estimate · Invoice · Receipt</button>';
+    var moneySec='<div class="qmedia" id="qmoney-'+i+'" hidden><div class="qm-load">Money loads here when opened.</div></div>';
     actions+='<button class="btn ghost" id="rm-'+i+'" onclick="liveRemove('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> Remove</button>';
-    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div>'+mediaSec+'</article>';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div>'+mediaSec+moneySec+'</article>';
   }).join('');
 }
 /* ============ CUSTOMER MEDIA VIEWER (Pepper Lists submissions) ============
@@ -1209,5 +1212,184 @@ function inboxComposeSend(){
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+
+<!-- CREATE FLOWS (2026-11-19): New work order modal + per-booking money panel.
+     Everything writes the SAME Service OS records via /bookos/* — the
+     office side of the one create contract the Tech App also uses. -->
+<div id="boWoBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9990;overflow-y:auto">
+  <div style="background:#fff;max-width:580px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)">
+    <div style="display:flex;align-items:center;gap:10px"><h3 style="font-size:16px;flex:1;margin:0">New work order — phone / walk-in</h3><button class="btn ghost" type="button" onclick="boWoClose()">Close</button></div>
+    <p style="font-size:13px;color:var(--mut);margin:6px 0 10px">Source is recorded as OFFICE (via Book OS). The job enters the same intake as a web booking — setter queue, dispatch board, CRM. The $99 residential diagnostic is due at the visit and credited toward an approved repair; commercial is custom-quoted.</p>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Find the customer first (name or phone)<br><input id="boWoCustQ" placeholder="Search existing customers…" oninput="boWoCustSearch()" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+    <div id="boWoCustResults"></div>
+    <div id="boWoCustPicked"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Customer name *<br><input id="boWoName" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+      <label style="font-size:13px;font-weight:700">Phone *<br><input id="boWoPhone" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+    </div>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Service address<br><input id="boWoAddress" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">City<br><input id="boWoCity" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+      <label style="font-size:13px;font-weight:700">ZIP<br><input id="boWoZip" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Job type<br><select id="boWoSegment" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"><option value="RESIDENTIAL">Residential</option><option value="COMMERCIAL">Commercial — custom quote</option></select></label>
+      <label style="font-size:13px;font-weight:700">Appliance *<br><select id="boWoAppliance" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Installation</option></select></label>
+    </div>
+    <label style="display:block;font-size:13px;font-weight:700;margin-top:8px">Issue *<br><textarea id="boWoIssue" rows="3" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></textarea></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label style="font-size:13px;font-weight:700">Preferred window<br><select id="boWoWindow" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"><option value="">No preference</option><option>Morning (8am–12pm)</option><option>Midday (12pm–3pm)</option><option>Afternoon (3pm–7pm)</option></select></label>
+      <label style="font-size:13px;font-weight:700">Assign now (optional)<br><select id="boWoProvider" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"><option value="">Leave in the setter queue</option></select></label>
+    </div>
+    <div id="boWoMsg" style="font-size:13.5px;margin:10px 0"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" type="button" onclick="boWoClose()">Cancel</button><button class="btn primary" type="button" onclick="boWoSubmit()">Create work order</button></div>
+  </div>
+</div>
+<script>
+var boWoCustomerId=null, boWoTimer=null, boWoCustRows=[];
+function boWoOpen(){
+  if(!tsosToken()){ toast('Sign in as staff first — then create the work order'); return; }
+  boWoCustomerId=null; boWoCustRows=[];
+  ['boWoCustQ','boWoName','boWoPhone','boWoAddress','boWoCity','boWoZip','boWoIssue'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('boWoCustResults').innerHTML='';
+  document.getElementById('boWoCustPicked').innerHTML='';
+  document.getElementById('boWoMsg').textContent='';
+  var sel=document.getElementById('boWoProvider');
+  apiFetch('/bookos/providers').then(function(j){
+    var rows=j.data||[];
+    sel.innerHTML='<option value="">Leave in the setter queue</option>'+rows.map(function(p){ return '<option value="'+p.id+'">'+escH(p.businessName)+' — '+(p.system==='COMPANY'?'Company crew':'Service Network')+'</option>'; }).join('');
+  }).catch(function(){ sel.innerHTML='<option value="">Leave in the setter queue</option>'; });
+  document.getElementById('boWoBack').style.display='block';
+}
+function boWoClose(){ document.getElementById('boWoBack').style.display='none'; }
+function boWoCustSearch(){
+  clearTimeout(boWoTimer);
+  boWoTimer=setTimeout(function(){
+    var q=document.getElementById('boWoCustQ').value.trim();
+    var box=document.getElementById('boWoCustResults');
+    if(q.length<2){ box.innerHTML=''; return; }
+    apiFetch('/bookos/customers?q='+encodeURIComponent(q)).then(function(j){
+      boWoCustRows=j.data||[];
+      box.innerHTML=boWoCustRows.length?boWoCustRows.map(function(c){ return '<button type="button" onclick="boWoCustPick(\''+c.id+'\')" style="display:block;width:100%;text-align:left;background:#f2f6fc;border:1px solid var(--line);border-radius:10px;padding:9px 11px;margin:6px 0;font:inherit;cursor:pointer"><b>'+escH(c.name||'')+'</b> · '+escH(c.phone||'')+(c.city?' · '+escH(c.city):'')+'</button>'; }).join(''):'<p style="font-size:13px;color:var(--mut);margin:4px 0">No match — enter the customer fresh; they are saved to the CRM book when the job is created.</p>';
+    }).catch(function(){ box.innerHTML=''; });
+  },260);
+}
+function boWoCustPick(id){
+  var c=boWoCustRows.filter(function(x){ return x.id===id; })[0]; if(!c) return;
+  boWoCustomerId=id;
+  document.getElementById('boWoName').value=c.name||'';
+  document.getElementById('boWoPhone').value=c.phone||'';
+  document.getElementById('boWoAddress').value=c.address||'';
+  document.getElementById('boWoCity').value=c.city||'';
+  document.getElementById('boWoZip').value=c.zip||'';
+  document.getElementById('boWoCustResults').innerHTML='';
+  document.getElementById('boWoCustPicked').innerHTML='<p style="font-size:13px;color:#0f7a3d;margin:6px 0"><b>Existing customer:</b> '+escH(c.name||'')+' — no duplicate CRM record is created.</p>';
+}
+function boWoVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function boWoSubmit(){
+  var msg=document.getElementById('boWoMsg');
+  var body={ segment:boWoVal('boWoSegment')||'RESIDENTIAL', appliance:boWoVal('boWoAppliance'), issue:boWoVal('boWoIssue'), preferredWindow:boWoVal('boWoWindow')||null, city:boWoVal('boWoCity')||undefined, zip:boWoVal('boWoZip')||undefined, address:boWoVal('boWoAddress')||undefined };
+  var prov=boWoVal('boWoProvider'); if(prov) body.providerId=prov;
+  if(boWoCustomerId){ body.customerId=boWoCustomerId; }
+  else {
+    var name=boWoVal('boWoName'), phone=boWoVal('boWoPhone');
+    if(name.length<2||phone.length<7){ msg.textContent='Enter the customer\u2019s name and phone — or pick an existing customer from the search.'; msg.style.color='#c2262e'; return; }
+    body.customer={ name:name, phone:phone };
+  }
+  if(body.issue.length<3){ msg.textContent='Describe the issue in a few words.'; msg.style.color='#c2262e'; return; }
+  msg.textContent='Creating the work order…'; msg.style.color='var(--mut)';
+  apiFetch('/bookos/work-orders',{method:'POST',body:JSON.stringify(body)}).then(function(j){
+    var d=j.data||{}; var bk=d.booking||{};
+    boWoClose();
+    toast('Work order '+(bk.referenceCode||'')+' created — source OFFICE'+(d.assignment?' · offered to the provider now':''), ICO_CHECK);
+    loadLive();
+  }).catch(function(e){ msg.textContent='Could not create it: '+(e.message||'error'); msg.style.color='#c2262e'; });
+}
+/* ---- Per-booking money panel (estimate / decision / invoice / receipt) ---- */
+function moneyFmt(cents){ if(cents==null) return '—'; return '$'+(Math.round(cents)/100).toFixed(2); }
+function toggleMoney(i){
+  var sec=document.getElementById('qmoney-'+i); if(!sec) return;
+  var btn=document.getElementById('qmnyb-'+i);
+  if(!sec.hidden){ sec.hidden=true; if(btn) btn.setAttribute('aria-expanded','false'); return; }
+  sec.hidden=false; if(btn) btn.setAttribute('aria-expanded','true');
+  loadMoney(i);
+}
+function loadMoney(i){
+  var q=liveQueue[i]; var sec=document.getElementById('qmoney-'+i); if(!q||!sec) return;
+  sec.innerHTML='<div class="qm-load">Loading the money record…</div>';
+  apiFetch('/bookos/bookings/'+encodeURIComponent(q.bookingId)+'/money').then(function(j){ renderMoney(i, j.data||{}); })
+    .catch(function(e){ sec.innerHTML='<div class="qm-err">Could not load the money record ('+escH(e.message)+').</div>'; });
+}
+function renderMoney(i, d){
+  var sec=document.getElementById('qmoney-'+i); if(!sec) return;
+  var q=liveQueue[i]; var est=d.estimate, dec=d.estimateDecision, inv=d.invoice, pay=d.payments||{};
+  var commercial=q&&q.segment==='COMMERCIAL';
+  var h='<div style="padding:12px 14px">';
+  h+='<div style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)">Money — one record, shared with the Tech App</div>';
+  if(est){
+    h+='<div style="margin-top:8px;font-size:14px"><b>Estimate v'+escH(est.version||'')+'</b> · '+escH(est.kind||'')+' · Total <b>'+moneyFmt(est.totalCents)+'</b> <span style="color:var(--mut)">(labor '+moneyFmt(est.laborCents)+' · parts '+moneyFmt(est.partsSubtotalCents)+' · tax '+moneyFmt(est.taxCents)+' · discount −'+moneyFmt(est.discountCents)+' · diagnostic credit −'+moneyFmt(est.diagnosticCreditCents)+')</span></div>';
+  } else { h+='<div style="margin-top:8px;font-size:14px;color:var(--mut)">No estimate on this job yet — create one below or in the tech\u2019s workspace.</div>'; }
+  if(dec){ h+='<div style="font-size:14px;margin-top:4px">Decision: <b>'+escH(dec.decision||'')+'</b>'+(dec.authorizedByName?' by '+escH(dec.authorizedByName):'')+(dec.method?' · '+escH(dec.method):'')+'</div>'; }
+  if(inv){ h+='<div style="font-size:14px;margin-top:4px">Invoice: <b>'+moneyFmt(Math.round(Number(inv.total||0)*100))+'</b> · '+escH(inv.status||'')+' · Balance due <b>'+moneyFmt(pay.balanceDueCents)+'</b> · Received '+moneyFmt(pay.receiptsTotalCents)+'</div>'; }
+  else if(est){ h+='<div style="font-size:14px;margin-top:4px;color:var(--mut)">No invoice yet — generate it once the estimate is approved. Balance reference: '+moneyFmt(pay.balanceDueCents)+'</div>'; }
+  if((d.receipts||[]).length){ h+='<div style="font-size:13px;color:var(--mut);margin-top:4px">'+d.receipts.map(function(r){ return escH(r.method||'')+' '+moneyFmt(r.amountCents); }).join(' · ')+'</div>'; }
+  /* Estimate form */
+  h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:12px">'+
+    '<label style="font-size:12.5px;font-weight:700">Kind<br><select id="mny-kind-'+i+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"><option>REPAIR</option><option>INSTALLATION</option></select></label>'+
+    '<label style="font-size:12.5px;font-weight:700">'+(commercial?'Quoted labor $ *':'Labor $ (flat rate applies)')+'<br><input id="mny-labor-'+i+'" type="number" min="0" step="0.01" placeholder="'+(commercial?'required':'210 / 150 auto')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>'+
+    '<label style="font-size:12.5px;font-weight:700">Part description<br><input id="mny-pdesc-'+i+'" placeholder="Optional" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>'+
+    '<label style="font-size:12.5px;font-weight:700">Part price $<br><input id="mny-pprice-'+i+'" type="number" min="0" step="0.01" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>'+
+    '<label style="font-size:12.5px;font-weight:700">Tax on parts %<br><input id="mny-tax-'+i+'" type="number" min="0" max="30" step="0.1" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>'+
+    '<label style="font-size:12.5px;font-weight:700">Discount $<br><input id="mny-disc-'+i+'" type="number" min="0" step="0.01" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label></div>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn navy" onclick="moneySaveEstimate('+i+')">Save estimate</button>'+
+    (est?'<button class="btn primary" onclick="moneyDecision('+i+',\'APPROVED\')">Record customer approval</button><button class="btn ghost" onclick="moneyDecision('+i+',\'DECLINED\')">Record decline</button>':'')+
+    (est&&dec&&dec.decision==='APPROVED'&&!inv?'<button class="btn primary" onclick="moneyInvoice('+i+')">Generate invoice</button>':'')+
+    '</div>';
+  /* Receipt form */
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:12px">'+
+    '<label style="font-size:12.5px;font-weight:700">Receipt method<br><select id="mny-rmethod-'+i+'" style="padding:9px;border:1px solid var(--line);border-radius:10px"><option>CASH</option><option>CHECK</option><option>CARD_EXTERNAL</option><option>ZELLE</option><option>VENMO</option><option>OTHER</option></select></label>'+
+    '<label style="font-size:12.5px;font-weight:700">Amount $<br><input id="mny-ramt-'+i+'" type="number" min="0.01" step="0.01" style="padding:9px;border:1px solid var(--line);border-radius:10px"></label>'+
+    '<button class="btn navy" onclick="moneyReceipt('+i+')">Record receipt</button></div>'+
+    '<p style="font-size:12.5px;color:var(--mut);margin:8px 0 0">External payments only — card numbers are never entered. A receipt past the balance due is refused. The server computes every total ($99 diagnostic credited on residential repairs, $210 / $150 flat labor, commercial custom-quoted).</p>';
+  h+='<div id="mny-msg-'+i+'" style="font-size:13.5px;margin-top:8px"></div></div>';
+  sec.innerHTML=h;
+}
+function mnyVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function mnyMsg(i, text, ok){ var m=document.getElementById('mny-msg-'+i); if(m){ m.textContent=text; m.style.color=ok?'#0f7a3d':'#c2262e'; } }
+function dollarsToCents(v){ var n=parseFloat(v); return isNaN(n)?null:Math.round(n*100); }
+function moneySaveEstimate(i){
+  var q=liveQueue[i]; if(!q) return;
+  var body={ kind:mnyVal('mny-kind-'+i) };
+  var labor=dollarsToCents(mnyVal('mny-labor-'+i)); if(labor!=null) body.laborCents=labor;
+  var pdesc=mnyVal('mny-pdesc-'+i), pprice=dollarsToCents(mnyVal('mny-pprice-'+i));
+  if(pdesc&&pprice!=null) body.parts=[{description:pdesc, qty:1, unitPriceCents:pprice}];
+  var tax=parseFloat(mnyVal('mny-tax-'+i)); if(!isNaN(tax)) body.taxRatePercent=tax;
+  var disc=dollarsToCents(mnyVal('mny-disc-'+i)); if(disc!=null) body.discountCents=disc;
+  apiFetch('/bookos/bookings/'+encodeURIComponent(q.bookingId)+'/estimate',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Estimate saved on '+q.referenceCode, ICO_CHECK); loadMoney(i); })
+    .catch(function(e){ mnyMsg(i, 'Could not save: '+(e.message||'error')); });
+}
+function moneyDecision(i, decision){
+  var q=liveQueue[i]; if(!q) return;
+  apiFetch('/bookos/bookings/'+encodeURIComponent(q.bookingId)+'/estimate/decision',{method:'POST',body:JSON.stringify({decision:decision, method:'PHONE'})})
+    .then(function(){ toast('Decision recorded on '+q.referenceCode, ICO_CHECK); loadMoney(i); })
+    .catch(function(e){ mnyMsg(i, 'Could not record: '+(e.message||'error')); });
+}
+function moneyInvoice(i){
+  var q=liveQueue[i]; if(!q) return;
+  apiFetch('/bookos/bookings/'+encodeURIComponent(q.bookingId)+'/invoice',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){ toast('Invoice '+(j.data&&j.data.created?'generated':'already on file')+' for '+q.referenceCode, ICO_CHECK); loadMoney(i); })
+    .catch(function(e){ mnyMsg(i, 'Could not generate: '+(e.message||'error')); });
+}
+function moneyReceipt(i){
+  var q=liveQueue[i]; if(!q) return;
+  var amt=dollarsToCents(mnyVal('mny-ramt-'+i));
+  if(amt==null||amt<1){ mnyMsg(i, 'Enter the amount received.'); return; }
+  apiFetch('/bookos/bookings/'+encodeURIComponent(q.bookingId)+'/receipts',{method:'POST',body:JSON.stringify({method:mnyVal('mny-rmethod-'+i), amountCents:amt})})
+    .then(function(){ toast('Receipt recorded on '+q.referenceCode, ICO_CHECK); loadMoney(i); })
+    .catch(function(e){ mnyMsg(i, 'Refused: '+(e.message||'error')); });
+}
+</script>
+
 </body>
 </html>

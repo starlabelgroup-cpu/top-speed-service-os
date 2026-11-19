@@ -66,6 +66,7 @@ const providers = [
     id: '30000000-0000-4000-8000-000000000003',
     companyId: providerCompanies.gamma,
     businessName: 'Top Speed Field Team',
+    companyCrew: true,
     type: 'INDEPENDENT_PROVIDER',
     specialties: ['Refrigerator', 'Washer', 'Dryer', 'Oven / Range', 'Dishwasher', 'Freezer / Ice Maker', 'Microwave', 'Garbage Disposal', 'Installation'],
     serviceCities: ['Lauderhill', 'Plantation', 'Sunrise', 'Tamarac', 'Fort Lauderdale', 'Lauderdale Lakes', 'North Lauderdale', 'Davie', 'Coral Springs', 'Pompano Beach', 'Oakland Park', 'Margate'],

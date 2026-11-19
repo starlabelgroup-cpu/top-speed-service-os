@@ -29,6 +29,17 @@ import {
 import { notifyAppointmentReminder, notifyBookingConfirmation } from '../services/notifications.js';
 import { countSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { emitReport } from '../services/managementReports.js';
+import {
+  estimateDecisionSchema,
+  estimateSchema,
+  generateInvoiceForJob,
+  jobMoneyView,
+  recordEstimateDecisionForJob,
+  recordReceiptForJob,
+  receiptSchema,
+  saveEstimateForJob,
+} from '../services/jobMoney.js';
+import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '../services/workOrders.js';
 
 const router = Router();
 
@@ -69,6 +80,158 @@ function visibleBookings(req) {
     (booking) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || booking.companyId === req.companyId,
   );
 }
+
+/* ================= Create flows (2026-11-19) =================
+ * Origination inside Book OS: Service Setters create phone / walk-in
+ * work orders into the SAME intake the web form feeds (source OFFICE,
+ * via book-os), and run the money chain from the booking — estimate,
+ * decision, invoice, receipt — through services/jobMoney.js, the one
+ * implementation the Tech App also uses. A setter confirming an
+ * estimate or recording a receipt is recorded as SERVICE_SETTERS,
+ * never as the technician.
+ */
+
+function loadVisibleBooking(req, res) {
+  const booking = store.bookings.get(req.params.id);
+  const visible = booking
+    && (req.user.roles.includes(ROLES.PLATFORM_ADMIN) || booking.companyId === req.companyId);
+  if (!visible) {
+    res.status(404).json({ error: 'Booking not found' });
+    return null;
+  }
+  return booking;
+}
+
+const moneyCtx = (req) => ({
+  actor: req.user.email,
+  source: 'BOOK_OS',
+  confirmedBy: 'SERVICE_SETTERS',
+});
+
+router.post('/bookos/work-orders', ...staffOnly, async (req, res) => {
+  const parsed = workOrderCreateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid work order', details: parsed.error.flatten() });
+  }
+  let assignProvider = null;
+  if (parsed.data.providerId) {
+    assignProvider = store.providers.find((provider) => provider.id === parsed.data.providerId) || null;
+    if (!assignProvider) {
+      return res.status(400).json({ error: 'That provider is not on the network roster — leave the job unassigned or pick another provider' });
+    }
+  }
+  const result = await createWorkOrder({
+    actor: req.user.email,
+    source: 'OFFICE',
+    via: 'book-os',
+    input: parsed.data,
+    assignProvider,
+    assignmentStatus: 'APPROVED',
+  });
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({
+    data: {
+      booking: {
+        id: result.booking.id,
+        referenceCode: result.booking.referenceCode,
+        status: result.booking.status,
+        source: result.booking.source,
+        appliance: result.booking.appliance,
+        issue: result.booking.issue,
+        city: result.booking.city,
+        areaStatus: result.booking.areaStatus,
+        customer: { name: result.booking.customer.name, phone: result.booking.customer.phone },
+      },
+      assignment: result.assignment
+        ? { id: result.assignment.id, providerId: result.assignment.providerId, status: result.assignment.status }
+        : null,
+      customerCreated: result.customerCreated,
+    },
+  });
+});
+
+/* The dispatch roster (2026-11-19, Directive 8): every active
+ * provider on the ONE pipeline, tagged with its tech system —
+ * setters dispatch to company techs and network providers from the
+ * same board, and the side is attributed on every target. */
+router.get('/bookos/providers', ...staffOnly, (req, res) => {
+  const data = (store.providers || [])
+    .filter((provider) => provider.active !== false)
+    .map((provider) => ({
+      id: provider.id,
+      businessName: provider.businessName,
+      type: provider.type,
+      system: provider.companyCrew ? 'COMPANY' : 'NETWORK',
+      serviceCities: provider.serviceCities || [],
+      specialties: provider.specialties || [],
+    }))
+    .sort((a, b) => String(a.businessName).localeCompare(String(b.businessName)));
+  return res.json({ data });
+});
+
+router.get('/bookos/customers', ...staffOnly, (req, res) => {
+  return res.json({ data: findCustomersForCreate(req.query.q, null) });
+});
+
+router.get('/bookos/bookings/:id/money', ...staffOnly, (req, res) => {
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  return res.json({ data: jobMoneyView(booking) });
+});
+
+router.post('/bookos/bookings/:id/estimate', ...staffOnly, async (req, res) => {
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  const parsed = estimateSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid estimate', details: parsed.error.flatten() });
+  }
+  const result = await saveEstimateForJob(booking, parsed.data, moneyCtx(req));
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({ data: { estimate: result.estimate } });
+});
+
+router.post('/bookos/bookings/:id/estimate/decision', ...staffOnly, async (req, res) => {
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  const parsed = estimateDecisionSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid estimate decision', details: parsed.error.flatten() });
+  }
+  const result = await recordEstimateDecisionForJob(booking, parsed.data, moneyCtx(req));
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  return res.status(201).json({
+    data: { estimateDecision: result.estimateDecision, authorizationLog: result.authorizationLog },
+  });
+});
+
+router.post('/bookos/bookings/:id/invoice', ...staffOnly, async (req, res) => {
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  const result = await generateInvoiceForJob(booking, moneyCtx(req));
+  if (!result.ok) return res.status(result.status).json({ error: result.error });
+  if (!result.created) return res.json({ data: { invoice: result.invoice, created: false } });
+  return res.status(201).json({ data: { invoice: result.invoice, created: true } });
+});
+
+router.post('/bookos/bookings/:id/receipts', ...staffOnly, async (req, res) => {
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  const parsed = receiptSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid receipt', details: parsed.error.flatten() });
+  }
+  const result = await recordReceiptForJob(booking, parsed.data, moneyCtx(req));
+  if (!result.ok) {
+    return res.status(result.status).json({
+      error: result.error,
+      ...(result.balanceDueCents != null ? { balanceDueCents: result.balanceDueCents } : {}),
+    });
+  }
+  return res.status(201).json({
+    data: { receipt: result.receipt, receipts: result.receipts, payments: result.payments },
+  });
+});
 
 function appointmentSummary(booking) {
   if (!booking.appointment) return null;
