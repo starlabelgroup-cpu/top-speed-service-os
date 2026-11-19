@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flywheel AI AdStream 2.0 — Continuous Ads | Top Speed Ads</title>
+<link rel="canonical" href="https://topspeedserviceos.com/adstream">
+<meta name="description" content="Flywheel AI AdStream is the advertising arm of the Top Speed Ad Studio OS: plan, launch and measure campaigns across Top Speed's own network and connected channels — with real plans, real rates and bookings attributed to the ad.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0C162B">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Service","name":"Flywheel AI AdStream","serviceType":"Advertising platform","url":"https://topspeedserviceos.com/adstream","description":"Advertising platform inside the Top Speed Ad Studio OS: advertiser subscriptions, prepaid media packages, pay-as-you-go CPM rates, managed services and publisher revenue share.","provider":{"@type":"Organization","name":"Top Speed Appliance LLC","url":"https://topspeedserviceos.com/"},"areaServed":"South Florida"}
+</script>
+<style>
+:root{
+  --navy:#0C162B; --navy-2:#081020; --navy-3:#14263F;
+  --red:#E94E5C; --red-dark:#D63A47;
+  --blue:#2E7CF6; --blue-bright:#5EA0FF;
+  --bg:#EEF2F8; --surface:#FFFFFF; --surface-2:#E8EEF6;
+  --ink:#101E33; --muted:#4E6076; --line:#D5DFEC;
+  --good:#0E7A4A; --good-bg:#E2F3EA;
+  --shadow:0 10px 30px rgba(12,22,43,.12);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#050B16; --surface:#0C1B31; --surface-2:#12263F; --ink:#EDF3FF; --muted:#A7BAD4; --line:#243A5C;
+    --good:#5BD598; --good-bg:#0F2E22;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+    color-scheme:dark;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body,Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif);color:var(--ink);background:var(--bg);line-height:1.55;overflow-x:hidden}
+a{color:var(--blue)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.topbar{background:var(--navy);color:#fff;display:flex;align-items:center;gap:14px;padding:12px 22px;flex-wrap:wrap}
+.topbar nav{margin-left:auto;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.topbar nav a{color:#CFE0F5;font-size:14.5px;text-decoration:none;font-weight:600}
+.topbar nav a:hover{color:#fff}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(155deg,var(--navy-3) 0%,var(--navy) 55%,var(--navy-2) 100%);color:#fff;padding:52px 0 46px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-80px;top:-80px;width:360px;height:360px;border:46px solid rgba(94,160,255,.13);border-radius:50%;pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center;position:relative;z-index:1}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.26);color:#CFE4FF;font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:999px}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block}
+.hero h1{font-size:clamp(2.4rem,5.6vw,4rem);line-height:1.02;margin:16px 0 12px;letter-spacing:.01em}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p.lede{max-width:600px;color:#D7E4F7;font-size:1.07rem;margin:0 0 24px}
+.hero-cta{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;border-radius:10px;padding:13px 20px;font-size:1rem;border:2px solid transparent;cursor:pointer;font-family:inherit}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark)}
+.btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}.btn-ghost:hover{border-color:#fff}
+.btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#1F66D6}
+.btn-outline{background:transparent;color:var(--ink);border-color:var(--line)}.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.trust{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:22px;color:#BFD3F2;font-size:.92rem;font-weight:600}
+.trust span::before{content:"✓";color:var(--red);font-weight:900;margin-right:6px}
+
+/* ---------- LOOP PANEL ---------- */
+.loop{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:18px;padding:22px;backdrop-filter:blur(2px)}
+.loop-head{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.16);padding-bottom:12px;margin-bottom:14px}
+.loop-head b{font-family:var(--font-head,Rajdhani,sans-serif);letter-spacing:.12em;font-size:.86rem;text-transform:uppercase}
+.loop-head span{font-size:.72rem;font-weight:800;letter-spacing:.08em;color:#0C162B;background:#7EE2A8;border-radius:999px;padding:4px 10px;text-transform:uppercase}
+.loop-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+@media(max-width:520px){.loop-steps{grid-template-columns:1fr 1fr}}
+.lstep{background:rgba(12,22,43,.45);border:1px solid rgba(255,255,255,.13);border-radius:12px;padding:12px 13px}
+.lstep .n{font-family:var(--font-mono,"Space Mono",monospace);font-size:.72rem;color:var(--blue-bright);font-weight:700;letter-spacing:.1em}
+.lstep h3{font-size:1.02rem;margin:3px 0 2px;color:#fff}
+.lstep p{font-size:.82rem;color:#B9CDEA;margin:0;line-height:1.4}
+.loop-net{margin-top:14px;font-size:.86rem;color:#BFD3F2}
+.loop-net b{color:#fff}
+.loop-net span{display:inline-block;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:999px;padding:3px 10px;margin:4px 4px 0 0;font-size:.8rem}
+
+/* ---------- SECTIONS ---------- */
+section{padding:52px 0 6px}
+.kicker{display:inline-block;font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.center{text-align:center}
+.center .sub{margin-left:auto;margin-right:auto}
+h2{font-size:clamp(1.8rem,3.8vw,2.5rem);line-height:1.05;margin:0 0 10px;text-transform:uppercase}
+h2 em{font-style:normal;color:var(--red)}
+.sub{color:var(--muted);max-width:760px;margin:0 0 26px;font-size:1.02rem}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:1020px){.grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:960px){.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.grid3,.grid4{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 4px 16px rgba(12,22,43,.06);display:flex;flex-direction:column}
+.card h3{font-size:1.32rem;text-transform:uppercase;margin:0 0 6px;line-height:1.1}
+.card p{color:var(--muted);margin:0 0 12px;font-size:.96rem}
+.ficon{width:46px;height:46px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--blue);margin-bottom:12px}
+.ficon svg{width:25px;height:25px}
+
+/* ---------- HOW (dark band) ---------- */
+.darkband{background:linear-gradient(160deg,var(--navy-3),var(--navy) 70%);color:#fff;border-radius:22px;padding:36px 30px;margin-top:14px}
+.darkband h2{color:#fff}
+.darkband .sub{color:#B9CDEA}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:960px){.steps{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.steps{grid-template-columns:1fr}}
+.step b{font-family:var(--font-mono,"Space Mono",monospace);font-size:1.5rem;color:var(--red);display:block;margin-bottom:6px}
+.step h3{font-size:1.15rem;margin:0 0 4px;text-transform:uppercase}
+.step p{color:#B9CDEA;font-size:.92rem;margin:0}
+
+/* ---------- PRICING ---------- */
+.plan{position:relative}
+.plan.featured{border:2px solid var(--red);box-shadow:var(--shadow)}
+.popular{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;font-size:.7rem;font-weight:800;letter-spacing:.12em;padding:5px 12px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+.price{font-family:var(--font-head,Rajdhani,sans-serif);font-size:2.6rem;font-weight:700;line-height:1;margin:6px 0 12px;color:var(--ink)}
+.price small{font-size:1rem;color:var(--muted);font-weight:600}
+.plan ul,.pkg ul{list-style:none;margin:0 0 18px;padding:0}
+.plan ul li,.pkg ul li{padding:5px 0 5px 24px;position:relative;color:var(--muted);font-size:.95rem}
+.plan ul li::before,.pkg ul li::before{content:"✓";position:absolute;left:0;color:var(--good);font-weight:900}
+.plan .btn,.pkg .btn{margin-top:auto;justify-content:center}
+.note{color:var(--muted);font-size:.9rem;margin-top:14px}
+.split{font-weight:700;color:var(--ink);font-size:1.02rem;margin:0 0 10px}
+.split span{color:var(--red)}
+
+/* ---------- CPM TABLE ---------- */
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 16px rgba(12,22,43,.06)}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);font-size:.96rem}
+th{font-family:var(--font-head,Rajdhani,sans-serif);text-transform:uppercase;letter-spacing:.06em;font-size:.85rem;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+td.rate{font-family:var(--font-mono,"Space Mono",monospace);font-weight:700;white-space:nowrap}
+.pill{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.pill.live{background:var(--good-bg);color:var(--good)}
+.pill.soon{background:var(--surface-2);color:var(--muted)}
+
+/* ---------- MANAGED STRIP ---------- */
+.managed{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:1020px){.managed{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.managed{grid-template-columns:1fr}}
+.mitem{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.mitem b{display:block;font-family:var(--font-head,Rajdhani,sans-serif);font-size:1.35rem;line-height:1.1}
+.mitem span{color:var(--muted);font-size:.88rem}
+
+/* ---------- PUBLISHERS ---------- */
+.pub{display:grid;grid-template-columns:1.05fr .95fr;gap:26px;align-items:start}
+@media(max-width:900px){.pub{grid-template-columns:1fr}}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+@media(max-width:620px){.tiers{grid-template-columns:1fr}}
+.tier{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.tier b{font-family:var(--font-head,Rajdhani,sans-serif);font-size:1.9rem;display:block;line-height:1}
+.tier span{color:var(--muted);font-size:.86rem}
+.pubbox{background:linear-gradient(160deg,var(--navy-3),var(--navy));color:#fff;border-radius:18px;padding:26px}
+.pubbox h3{font-size:1.4rem;text-transform:uppercase;margin:0 0 6px}
+.pubbox p{color:#B9CDEA;font-size:.95rem;margin:0 0 12px}
+.pubbox ul{list-style:none;margin:0;padding:0}
+.pubbox li{padding:7px 0;border-bottom:1px solid rgba(255,255,255,.14);font-size:.95rem}
+.pubbox li:last-child{border-bottom:none}
+.pubbox li b{color:#fff}
+
+/* ---------- FORM ---------- */
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+@media(max-width:900px){.contact{grid-template-columns:1fr}}
+.benefit{display:flex;gap:10px;align-items:flex-start;margin-top:14px;color:var(--muted);font-size:.97rem}
+.benefit svg{color:var(--good);flex:none;margin-top:2px}
+.benefit b{color:var(--ink)}
+.formcard{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:26px;box-shadow:var(--shadow)}
+.formcard h3{font-size:1.35rem;text-transform:uppercase;margin:0 0 14px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.roles button{padding:11px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--muted);font-weight:700;font-size:.98rem;cursor:pointer;font-family:inherit}
+.roles button.selected{border-color:var(--red);color:var(--ink);background:rgba(233,78,92,.07)}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.frow2{grid-template-columns:1fr}}
+label{display:block;font-size:.86rem;font-weight:700;margin-bottom:12px}
+label input,label select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;margin-top:5px;font:inherit;font-size:.97rem;background:var(--surface);color:var(--ink)}
+label input:focus,label select:focus{outline:2px solid var(--blue);outline-offset:1px}
+.feedback{font-weight:700;margin-top:12px;min-height:1.2em}
+.feedback.ok{color:var(--good)}
+.feedback.err{color:var(--red-dark)}
+
+/* ---------- FOOTER ---------- */
+footer{margin-top:60px;background:var(--navy-2);color:#B9CDEA;padding:30px 0}
+.frow{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;font-size:.92rem}
+footer nav{display:flex;gap:16px;flex-wrap:wrap}
+footer nav a{color:#CFE0F5;text-decoration:none;font-weight:600}
+footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;letter-spacing:.04em}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.btn):not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div class="topbar">
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav><a href="#solutions">Solutions</a><a href="#how">How It Works</a><a href="#pricing">Pricing</a><a href="#publishers">Publishers</a><a href="/advertiser">Advertiser Console</a><a href="tel:+19549317997">954-931-7997</a></nav>
+</div>
+
+<main>
+<!-- ============ HERO ============ -->
+<section class="hero" id="home" style="padding-top:52px">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow"><span class="dot"></span> Flywheel AI AdStream 2.0 · Top Speed Ad Studio OS</span>
+      <h1>Every channel.<br>One powerful <em>AI.</em></h1>
+      <p class="lede">AdStream is the advertising arm of the Top Speed Ad Studio OS. Plan, launch, manage and measure campaigns from a single connected command center — across Top Speed's own network and your external channels — and count every click all the way to a booked job.</p>
+      <div class="hero-cta">
+        <a class="btn btn-red" href="#request">Start Advertising <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12h15M14 5.5l6.5 6.5-6.5 6.5"/></svg></a>
+        <a class="btn btn-ghost" href="/advertiser">Open the Advertiser Console</a>
+      </div>
+      <div class="trust"><span>AI drafts, humans approve</span><span>Counted impressions &amp; clicks</span><span>Bookings attributed to the ad</span></div>
+    </div>
+    <div class="loop" aria-label="The AdStream broadcast loop">
+      <div class="loop-head"><b>The Broadcast Loop</b><span>Live system</span></div>
+      <div class="loop-steps">
+        <div class="lstep"><span class="n">01</span><h3>Create</h3><p>Build the campaign in Ad Studio — goal, audience, creative, budget.</p></div>
+        <div class="lstep"><span class="n">02</span><h3>Approve</h3><p>Nothing publishes without a human approval in the queue.</p></div>
+        <div class="lstep"><span class="n">03</span><h3>Broadcast</h3><p>The hub streams your ads to every connected surface.</p></div>
+        <div class="lstep"><span class="n">04</span><h3>Click</h3><p>Every serve and every click is counted per creative.</p></div>
+        <div class="lstep"><span class="n">05</span><h3>Book</h3><p>Clicks land on real booking forms inside the Service OS.</p></div>
+        <div class="lstep"><span class="n">06</span><h3>Results return</h3><p>Bookings flow back, attributed to the ad that produced them.</p></div>
+      </div>
+      <p class="loop-net"><b>Broadcasting today on Top Speed's own network:</b><br><span>topspeedserviceos.com</span><span>topspeedappliance.net</span><span>appliancepro.net</span><span>pepperlists.com</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SOLUTIONS / FEATURES ============ -->
+<section id="solutions">
+  <div class="wrap">
+    <div class="center"><span class="kicker">The Platform</span>
+      <h2>Everything you need to <em>grow.</em></h2>
+      <p class="sub">One advertising ecosystem for businesses, agencies and publishers — built into the same Service OS that takes the bookings.</p>
+    </div>
+    <div class="grid3">
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M10 2.8v3M14 2.8v3M10 18.2v3M14 18.2v3M2.8 10h3M2.8 14h3M18.2 10h3M18.2 14h3"/><circle cx="12" cy="12" r="1.4" fill="#E94E5C" stroke="none"/></svg></div>
+        <h3>AI Campaign Studio</h3>
+        <p>Speedy, the platform's AI assistant, drafts headlines, copy and campaign concepts in seconds. Nothing goes live on its own — every draft waits in an approval queue for a human yes.</p>
+      </article>
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2M12 3.4c2.4 2.4 3.6 5.3 3.6 8.6s-1.2 6.2-3.6 8.6c-2.4-2.4-3.6-5.3-3.6-8.6S9.6 5.8 12 3.4z"/><circle cx="12" cy="12" r="1.3" fill="#E94E5C" stroke="none"/></svg></div>
+        <h3>In-House Display Network</h3>
+        <p>Your campaigns broadcast from the Ad Studio hub across Top Speed's own websites and apps — one setup, every surface, served and rotated by the Service OS itself.</p>
+      </article>
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5V20"/><path d="M13 13.2l2.2 2.2 3.4-3.9" stroke="#E94E5C"/></svg></div>
+        <h3>Every Channel, One Board</h3>
+        <p>Google, Meta, Microsoft and your other external campaigns are tracked on a single readiness board inside Ad Studio — what is live, what is paused, and exactly what each one still needs.</p>
+      </article>
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.5-6.1"/><path d="M20.8 3.6v4.4h-4.4" stroke="#E94E5C"/><circle cx="12" cy="12" r="1.5" fill="#E94E5C" stroke="none"/></svg></div>
+        <h3>Attribution &amp; the Loop View</h3>
+        <p>Every serve and every click is counted, and first-touch attribution follows the customer to the booking form. The Loop view shows the whole path: serves → clicks → bookings.</p>
+      </article>
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="13" rx="2.5"/><path d="M10 9.2l4.5 2.3L10 13.8z" fill="#E94E5C" stroke="#E94E5C"/><path d="M9 21h6"/></svg></div>
+        <h3>Streaming &amp; Video Placements</h3>
+        <p>Streaming-format ads are built into the studio today. Online video, connected TV and audio placements expand through our provider partners — Kevel, Google Ad Manager, SpringServe and FreeWheel — as each one comes online.</p>
+      </article>
+      <article class="card">
+        <div class="ficon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 7.5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 10h17" stroke="#E94E5C"/><path d="M7 15h4"/></svg></div>
+        <h3>Plans &amp; Billing by Stripe</h3>
+        <p>Subscriptions, invoices and plan changes run through Stripe in the Advertiser Console. Media spend is always separate, itemized, and capped by the budget you set.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section id="how">
+  <div class="wrap">
+    <div class="darkband">
+      <div class="center"><span class="kicker">Simple Workflow</span>
+        <h2>From idea to <em>impact.</em></h2>
+        <p class="sub">Four steps between you and a campaign that reports back in bookings, not just clicks.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><b>01</b><h3>Create your account</h3><p>Register in the Advertiser Console. New advertiser accounts are verified by our office before the first sign-in — the same activation every business account on the platform gets.</p></div>
+        <div class="step"><b>02</b><h3>Build your campaign</h3><p>Choose a goal, audience, creative and budget. Speedy can draft the copy, and the creative library is stocked with platform artwork.</p></div>
+        <div class="step"><b>03</b><h3>Approve &amp; broadcast</h3><p>Campaigns publish when approved, then broadcast across the in-house network and your connected channels.</p></div>
+        <div class="step"><b>04</b><h3>Measure the loop</h3><p>Watch serves, clicks and attributed bookings in the Loop view, and tune budgets against real numbers — not promises.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRICING — SUBSCRIPTIONS ============ -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="center"><span class="kicker">Flexible Options</span>
+      <h2>Plans for every <em>ambition.</em></h2>
+      <p class="sub">Software subscription pricing from the Flywheel AI AdStream rate card. Advertising media spend is always separate.</p>
+    </div>
+    <div class="grid4">
+      <article class="card plan">
+        <h3>Starter</h3>
+        <p>For local businesses testing new campaigns.</p>
+        <div class="price">$29<small>/month</small></div>
+        <ul>
+          <li>1 business account</li>
+          <li>3 active campaigns</li>
+          <li>Display &amp; local ads</li>
+          <li>Basic reporting</li>
+          <li>AI copy assistance</li>
+        </ul>
+        <a class="btn btn-outline" href="/advertiser">Choose Starter</a>
+      </article>
+      <article class="card plan featured">
+        <div class="popular">Popular</div>
+        <h3>Growth</h3>
+        <p>For growing businesses and agencies.</p>
+        <div class="price">$99<small>/month</small></div>
+        <ul>
+          <li>Multi-channel ads</li>
+          <li>AI campaign builder</li>
+          <li>Conversion tracking</li>
+          <li>Budget recommendations</li>
+        </ul>
+        <a class="btn btn-red" href="/advertiser">Choose Growth</a>
+      </article>
+      <article class="card plan">
+        <h3>Business Pro</h3>
+        <p>For multichannel advertising teams.</p>
+        <div class="price">$299<small>/month</small></div>
+        <ul>
+          <li>Multiple locations</li>
+          <li>Advanced analytics</li>
+          <li>Team accounts</li>
+          <li>Automated optimization</li>
+        </ul>
+        <a class="btn btn-outline" href="/advertiser">Choose Business Pro</a>
+      </article>
+      <article class="card plan">
+        <h3>Enterprise</h3>
+        <p>For networks and high-volume publishers.</p>
+        <div class="price">Custom</div>
+        <ul>
+          <li>Custom limits</li>
+          <li>API integrations</li>
+          <li>White-label options</li>
+          <li>Dedicated support</li>
+          <li>Custom billing</li>
+        </ul>
+        <a class="btn btn-outline" href="#request">Contact Sales</a>
+      </article>
+    </div>
+    <p class="note">Plans are chosen inside the Advertiser Console: create your account, then pick your plan under Plans &amp; Billing — checkout runs through Stripe. Nothing is charged from this page.</p>
+  </div>
+</section>
+
+<!-- ============ PREPAID PACKAGES ============ -->
+<section id="packages">
+  <div class="wrap">
+    <div class="center"><span class="kicker">Prepaid Packages</span>
+      <h2>Prefer it <em>fixed?</em></h2>
+      <p class="sub">One payment, a defined media budget, and a disclosed service fee — set up by the ads team, confirmed in writing before anything is charged.</p>
+    </div>
+    <div class="grid4">
+      <article class="card pkg">
+        <h3>Local Boost</h3>
+        <div class="price">$199</div>
+        <p class="split">$150 media <span>+ $49 service fee</span></p>
+        <ul>
+          <li>Display &amp; local directory</li>
+          <li>Basic reporting</li>
+        </ul>
+        <button class="btn btn-outline" type="button" data-interest="Prepaid package: Local Boost ($199)">Request this package</button>
+      </article>
+      <article class="card pkg">
+        <h3>Business Reach</h3>
+        <div class="price">$499</div>
+        <p class="split">$400 media <span>+ $99 service fee</span></p>
+        <ul>
+          <li>Display &amp; native</li>
+          <li>AI-assisted setup</li>
+        </ul>
+        <button class="btn btn-outline" type="button" data-interest="Prepaid package: Business Reach ($499)">Request this package</button>
+      </article>
+      <article class="card pkg">
+        <h3>Market Dominator</h3>
+        <div class="price">$999</div>
+        <p class="split">$800 media <span>+ $199 service fee</span></p>
+        <ul>
+          <li>Display, native &amp; eligible video</li>
+          <li>Conversion tracking</li>
+        </ul>
+        <button class="btn btn-outline" type="button" data-interest="Prepaid package: Market Dominator ($999)">Request this package</button>
+      </article>
+      <article class="card pkg">
+        <h3>Enterprise Reach</h3>
+        <div class="price">$2,499</div>
+        <p class="split">$2,000 media <span>+ $499 service fee</span></p>
+        <ul>
+          <li>Multi-channel</li>
+          <li>Advanced reporting &amp; support</li>
+        </ul>
+        <button class="btn btn-outline" type="button" data-interest="Prepaid package: Enterprise Reach ($2,499)">Request this package</button>
+      </article>
+    </div>
+    <p class="note">Fees are never duplicated without clear disclosure. Packages are not self-checkout: request one below and the ads team confirms the media/fee split with you first.</p>
+  </div>
+</section>
+
+<!-- ============ CPM RATES ============ -->
+<section id="rates">
+  <div class="wrap">
+    <div class="center"><span class="kicker">Pay As You Go</span>
+      <h2>CPM starting <em>rates.</em></h2>
+      <p class="sub">The cost per 1,000 impressions. Impressions = (budget ÷ CPM) × 1,000. Delivered volume depends on budget and available inventory — no impression count is guaranteed.</p>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Channel</th><th>Starting CPM</th><th>Availability</th></tr></thead>
+        <tbody>
+          <tr><td>Website display</td><td class="rate">$5</td><td><span class="pill live">Live now</span> In-house network</td></tr>
+          <tr><td>Local directory</td><td class="rate">$6</td><td><span class="pill live">Live now</span> In-house network</td></tr>
+          <tr><td>Native</td><td class="rate">$8</td><td><span class="pill live">Live now</span> In-house network</td></tr>
+          <tr><td>Mobile app</td><td class="rate">$7</td><td><span class="pill soon">Rolling out</span> Top Speed apps</td></tr>
+          <tr><td>Online video</td><td class="rate">$15</td><td><span class="pill soon">Provider partners</span> As they come online</td></tr>
+          <tr><td>Connected TV</td><td class="rate">$25</td><td><span class="pill soon">Provider partners</span> As they come online</td></tr>
+          <tr><td>Streaming audio</td><td class="rate">$12</td><td><span class="pill soon">Provider partners</span> As they come online</td></tr>
+          <tr><td>Digital signage</td><td class="rate">$10</td><td><span class="pill soon">Provider partners</span> As they come online</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MANAGED SERVICES ============ -->
+<section id="managed">
+  <div class="wrap">
+    <div class="center"><span class="kicker">Managed Services</span>
+      <h2>Want it <em>handled?</em></h2>
+      <p class="sub">The ads team runs your campaigns end to end. Media spend is additional on every managed tier.</p>
+    </div>
+    <div class="managed">
+      <div class="mitem"><b>From $149/mo</b><span>Basic campaign management</span></div>
+      <div class="mitem"><b>$299/mo</b><span>Local business advertising</span></div>
+      <div class="mitem"><b>$599/mo</b><span>Multi-channel management</span></div>
+      <div class="mitem"><b>$1,500+/mo</b><span>Agency &amp; enterprise</span></div>
+      <div class="mitem"><b>By quote</b><span>Creative production</span></div>
+    </div>
+    <p class="note" style="text-align:center"><a href="#request">Request managed services</a> and the ads team will scope it with you.</p>
+  </div>
+</section>
+
+<!-- ============ PUBLISHERS ============ -->
+<section id="publishers">
+  <div class="wrap">
+    <div class="pub">
+      <div>
+        <span class="kicker">For Publishers</span>
+        <h2>Turn your audience into <em>opportunity.</em></h2>
+        <p class="sub" style="margin-bottom:0">Publisher properties plug into the same AdStream hub. Approved placements serve through the in-house display feed, and revenue share is paid on the Flywheel split — defined in your publisher agreement and reconciled against counted impressions.</p>
+        <div class="tiers">
+          <div class="tier"><b>70 / 30</b><span>Standard — publisher / Flywheel</span></div>
+          <div class="tier"><b>80 / 20</b><span>Professional — publisher / Flywheel</span></div>
+          <div class="tier"><b>Custom</b><span>Enterprise — negotiated</span></div>
+        </div>
+        <button class="btn btn-red" type="button" data-role-link="publisher">Apply as a Publisher <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12h15M14 5.5l6.5 6.5-6.5 6.5"/></svg></button>
+      </div>
+      <div class="pubbox">
+        <h3>Flywheel Publisher Hub</h3>
+        <p>Inventory · Placements · Reporting · Payouts</p>
+        <ul>
+          <li><b>Publishing with us today:</b></li>
+          <li>topspeedserviceos.com</li>
+          <li>topspeedappliance.net</li>
+          <li>appliancepro.net</li>
+          <li>pepperlists.com</li>
+        </ul>
+        <p style="margin-top:14px">Publisher onboarding runs through the request form while the publisher program opens up — bring your property, and the team sets up your placements and share tier.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ REQUEST FORM ============ -->
+<section id="request">
+  <div class="wrap">
+    <div class="contact">
+      <div>
+        <span class="kicker">Let's Get Started</span>
+        <h2>Put your next campaign in <em>motion.</em></h2>
+        <p class="sub">Tell us what you want to accomplish and connect your business to the Flywheel advertising workflow. Every request lands inside the Top Speed Service OS, and a Service Setter on the ads team follows up.</p>
+        <div class="benefit"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 8.1-7 10-4-1.9-7-5.4-7-10V6z"/><path d="M8.8 12.2l2.2 2.2 4.2-4.6" stroke="#E94E5C"/></svg><span><b>Advertiser and publisher accounts welcome</b> — one form covers subscriptions, packages, managed services and publisher onboarding.</span></div>
+        <div class="benefit"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M8.2 12.4l2.6 2.6 5-5.6" stroke="#E94E5C"/></svg><span><b>Prefer to talk?</b> Call the business line at <a href="tel:+19549317997">954-931-7997</a> and ask for the ads team.</span></div>
+      </div>
+      <div class="formcard">
+        <h3>Request Advertising Access</h3>
+        <form id="adstreamForm" novalidate>
+          <div class="roles" role="group" aria-label="I am a">
+            <button type="button" id="roleAdvertiser" class="selected">Advertiser</button>
+            <button type="button" id="rolePublisher">Publisher</button>
+          </div>
+          <div class="frow2">
+            <label>Your name<input id="asName" required autocomplete="name" placeholder="Your full name"></label>
+            <label>Business name<input id="asBusiness" required autocomplete="organization" placeholder="Your business name"></label>
+          </div>
+          <div class="frow2">
+            <label>Work email<input id="asEmail" type="email" required autocomplete="email" placeholder="you@company.com"></label>
+            <label>Phone<input id="asPhone" type="tel" required autocomplete="tel" placeholder="(954) 555-0123"></label>
+          </div>
+          <label>Primary goal
+            <select id="asGoal">
+              <option>Get more leads</option>
+              <option>Increase website traffic</option>
+              <option>Grow brand awareness</option>
+              <option>Promote local services</option>
+              <option>Monetize publisher inventory</option>
+            </select>
+          </label>
+          <label>Estimated monthly ad budget
+            <select id="asBudget">
+              <option>Under $500</option>
+              <option selected>$500 – $1,000</option>
+              <option>$1,000 – $3,000</option>
+              <option>$3,000 – $10,000</option>
+              <option>$10,000+</option>
+              <option>Not sure yet</option>
+            </select>
+          </label>
+          <label>Anything specific? (plan, package, or channel)<input id="asInterest" placeholder="Optional"></label>
+          <button class="btn btn-red" type="submit" id="asSubmit" style="width:100%;justify-content:center">Request Access</button>
+          <p class="feedback" id="asMsg" role="status"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="frow">
+      <span class="brandline"><svg width="20" height="20" viewBox="0 0 24 24" fill="#E94E5C" aria-hidden="true"><path d="M12 2.5l2 6.6 6.6 2-6.6 2-2 6.6-2-6.6-6.6-2 6.6-2z"/></svg> FLYWHEEL AI · ADSTREAM</span>
+      <span>© Top Speed Appliance LLC — Flywheel AI AdStream, part of Top Speed Ads on the Top Speed Service OS. “The Faster, The Better.”</span>
+      <nav>
+        <a href="/">Platform home</a>
+        <a href="/ads">Top Speed Ads</a>
+        <a href="/advertise">Advertise</a>
+        <a href="/advertiser">Advertiser Console</a>
+        <a href="tel:+19549317997">954-931-7997</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script src="/shared/attribution-capture.js" defer></script>
+<script src="/speedy-widget.js" defer></script>
+<script src="/speedy-guide.js" defer></script>
+<script>
+(function(){
+  var role='Advertiser';
+  var btnA=document.getElementById('roleAdvertiser'), btnP=document.getElementById('rolePublisher');
+  function setRole(r){
+    role=r;
+    btnA.className = r==='Advertiser' ? 'selected' : '';
+    btnP.className = r==='Publisher' ? 'selected' : '';
+  }
+  btnA.addEventListener('click',function(){ setRole('Advertiser'); });
+  btnP.addEventListener('click',function(){ setRole('Publisher'); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-interest]'),function(b){
+    b.addEventListener('click',function(){
+      document.getElementById('asInterest').value=b.getAttribute('data-interest');
+      setRole('Advertiser');
+      document.getElementById('request').scrollIntoView({behavior:'smooth'});
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-role-link]'),function(b){
+    b.addEventListener('click',function(){
+      setRole('Publisher');
+      document.getElementById('asGoal').value='Monetize publisher inventory';
+      document.getElementById('request').scrollIntoView({behavior:'smooth'});
+    });
+  });
+  var form=document.getElementById('adstreamForm');
+  var msg=document.getElementById('asMsg');
+  var submitBtn=document.getElementById('asSubmit');
+  function val(id){ return document.getElementById(id).value.trim(); }
+  function fail(text){ msg.className='feedback err'; msg.textContent=text; }
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    var name=val('asName'), business=val('asBusiness'), email=val('asEmail'), phone=val('asPhone');
+    if(name.length<2){ fail('Please add your name so the ads team knows who to ask for.'); return; }
+    if(!business){ fail('Please add your business name.'); return; }
+    if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ fail('Please add a valid work email.'); return; }
+    if(phone.replace(/\D/g,'').length<7){ fail('Please add a phone number the ads team can reach.'); return; }
+    var lines=[
+      'Role: '+role,
+      'Business: '+business,
+      'Primary goal: '+document.getElementById('asGoal').value,
+      'Estimated monthly budget: '+document.getElementById('asBudget').value,
+      'Interest: '+(val('asInterest')||'—')
+    ].join('\n');
+    var body={name:name, email:email, phone:phone, type:'ADVERTISER_CONTACT', source:'adstream-page', message:lines, via:'adstream'};
+    try{ if(window.TSOSAttribution) TSOSAttribution.attach(body); }catch(e){}
+    submitBtn.disabled=true; submitBtn.textContent='Sending…';
+    msg.className='feedback'; msg.textContent='';
+    fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, j:j}; }); })
+      .then(function(x){
+        submitBtn.disabled=false; submitBtn.textContent='Request Access';
+        if(x.ok && x.j && x.j.data && x.j.data.reference){
+          msg.className='feedback ok';
+          msg.textContent='Request received — your reference is '+x.j.data.reference+'. The ads team will follow up.';
+          form.reset(); setRole('Advertiser');
+        } else {
+          fail('Something went wrong sending your request — please call 954-931-7997.');
+        }
+      })
+      .catch(function(){
+        submitBtn.disabled=false; submitBtn.textContent='Request Access';
+        fail('Something went wrong sending your request — please call 954-931-7997.');
+      });
+  });
+})();
+</script>
+</body>
+</html>
