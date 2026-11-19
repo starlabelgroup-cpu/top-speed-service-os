@@ -8,8 +8,10 @@ import { notifyStaffAlert } from '../services/notifications.js';
  *
  * A call to +1 (844) 460-7038 hits POST /api/v1/twilio/voice/incoming and
  * Twilio executes the TwiML it returns: dial the owner's phone
- * (VOICE_FORWARD_TO, default 954-931-7997) showing the toll-free number
- * as caller ID; if nobody answers, the same document continues to a
+ * (VOICE_FORWARD_TO, default 954-931-7997) showing the CALLER's own
+ * number as caller ID (the toll-free number only when Twilio sends no
+ * From, so the owner always sees who is actually calling); if nobody
+ * answers, the same document continues to a
  * voicemail prompt + <Record>. When a recording completes, Twilio calls
  * POST /api/v1/twilio/voice/recording and the business gets a staff alert
  * through the notification outbox (services/notifications.js).
@@ -73,9 +75,16 @@ function rejectBadSignature(res) {
 function handleIncoming(req, res) {
   if (!signatureOk(req)) return rejectBadSignature(res);
   const { tollFreeNumber, forwardTo, dialTimeoutSeconds } = voiceConfig();
+  // Present the inbound caller's own number to the owner's phone so he
+  // sees who is calling (and can call back from his call log). Twilio
+  // permits the original caller's number as the <Dial> callerId on a
+  // forwarded inbound call. Fall back to the toll-free number only
+  // when the webhook carries no From (console setup tests).
+  const inboundFrom = String((req.body || {}).From || '').trim();
+  const callerId = inboundFrom || tollFreeNumber;
   const recordingCallback = `${publicBase(req)}/api/v1/twilio/voice/recording`;
   const body =
-    `<Dial callerId="${xmlEscape(tollFreeNumber)}" timeout="${dialTimeoutSeconds}">` +
+    `<Dial callerId="${xmlEscape(callerId)}" timeout="${dialTimeoutSeconds}">` +
     `<Number>${xmlEscape(forwardTo)}</Number></Dial>` +
     `<Say voice="Polly.Joanna">Thanks for calling Top Speed Appliance. ` +
     `We&apos;re with another customer right now — please leave your name, number, ` +

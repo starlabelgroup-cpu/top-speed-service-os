@@ -1,0 +1,121 @@
+import { Router } from 'express';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+import { voiceConfig } from '../config/platform.js';
+import { queueNotification, NOTIFICATION_TEMPLATES } from '../services/notifications.js';
+import { drainEntries, normalizePhone } from '../services/senders.js';
+
+/**
+ * Twilio SMS — inbound text forwarder for the toll-free business line.
+ *
+ * Since the public platform number became the Twilio number
+ * (+1 (844) 460-7038), customers text THAT number, not the owner's
+ * cell. A text to it hits POST /api/v1/twilio/sms/incoming and:
+ *   (a) the message is forwarded to the owner's phone
+ *       (VOICE_FORWARD_TO, default 954-931-7997) through the normal
+ *       notification outbox + Twilio sender, worded with the sender's
+ *       number so the owner can text or call them back; and
+ *   (b) the sender gets an immediate TwiML <Message> reply thanking
+ *       them and pointing at online booking.
+ *
+ * Loop guards: a text FROM the owner's own number (he texted the
+ * business line himself, or a forwarded copy bouncing back) and a
+ * text from the toll-free number itself are dropped silently — no
+ * forward, no auto-reply. A missing From or an empty Body is a safe
+ * no-op. The webhook NEVER errors back to Twilio: if the forward
+ * send fails, the outbox entry records FAILED honestly and the
+ * sender still gets the thank-you reply.
+ *
+ * Signature validation mirrors routes/twilioVoice.js exactly
+ * (validate-when-configured): when TWILIO_AUTH_TOKEN is set AND the
+ * request carries an X-Twilio-Signature header, the signature must
+ * verify or the request is rejected; unsigned setup tests still
+ * receive TwiML. Twilio posts form-urlencoded; server.js registers
+ * a urlencoded parser for the /api/v1/twilio path.
+ */
+const router = Router();
+
+function xmlEscape(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
+function twiml(inner) {
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<Response>${inner}</Response>`;
+}
+
+function emptyTwiml(res) {
+  return res.type('text/xml').send(twiml(''));
+}
+
+/** The public base URL Twilio reached us at (behind Vercel's proxy). */
+function publicBase(req) {
+  const proto = req.get('x-forwarded-proto') || req.protocol || 'https';
+  const host = req.get('x-forwarded-host') || req.get('host') || '';
+  return `${proto}://${host}`;
+}
+
+function signatureOk(req) {
+  const token = process.env.TWILIO_AUTH_TOKEN;
+  const signature = req.get('x-twilio-signature');
+  if (!token || !signature) return true; // tolerant: nothing to verify, or an unsigned setup test
+  const url = `${publicBase(req)}${req.originalUrl}`;
+  const params = req.body && typeof req.body === 'object' ? req.body : {};
+  const data = Object.keys(params)
+    .sort()
+    .reduce((acc, key) => acc + key + params[key], url);
+  const expected = createHmac('sha1', token).update(data, 'utf-8').digest('base64');
+  const a = Buffer.from(expected);
+  const b = Buffer.from(String(signature));
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+const REPLY_TEXT =
+  'Thanks for texting Top Speed Appliance — we got your message and the team will respond shortly. ' +
+  'Need service fast? Book anytime at topspeedserviceos.com/book';
+
+async function handleIncomingSms(req, res) {
+  if (!signatureOk(req)) {
+    return res.status(403).type('text/plain').send('Invalid Twilio signature');
+  }
+  const body = req.body || {};
+  const from = body.From ? normalizePhone(body.From) : '';
+  const text = String(body.Body || '').trim();
+  // Safe no-ops: nothing to forward, or nothing to say back.
+  if (!from || !text) return emptyTwiml(res);
+
+  const { tollFreeNumber, forwardTo } = voiceConfig();
+  // Loop guards: never forward the owner's own texts back to him, and
+  // never react to a message from the business number itself.
+  if (from === forwardTo || from === tollFreeNumber) return emptyTwiml(res);
+
+  const forwardText =
+    `New text to Top Speed (${tollFreeNumber}) from ${from}:\n${text}`;
+  try {
+    const entry = queueNotification({
+      channel: 'sms',
+      template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT,
+      to: forwardTo,
+      payload: { kind: 'INBOUND_SMS', message: forwardText },
+      source: 'TWILIO_SMS',
+      // Twilio retries webhooks; the MessageSid keeps one text from
+      // ever forwarding twice.
+      eventKey: body.MessageSid ? `sms-inbound:${body.MessageSid}` : null,
+      eventType: 'SUBMISSION',
+    });
+    // Attempt the forward now; the outcome (SENT/FAILED) is recorded
+    // on the outbox entry either way — never thrown at the webhook.
+    await drainEntries([entry]);
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'inbound SMS forward failed', error: String(error?.message || error) }));
+  }
+  return res.type('text/xml').send(twiml(`<Message>${xmlEscape(REPLY_TEXT)}</Message>`));
+}
+
+router.post('/twilio/sms/incoming', handleIncomingSms);
+router.get('/twilio/sms/incoming', handleIncomingSms);
+
+export default router;
