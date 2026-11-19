@@ -45,6 +45,13 @@ import {
   tempCredentialState,
 } from '../services/tempPasswords.js';
 import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
+import { intakeRateLimit } from '../middleware/intakeShield.js';
+import {
+  INVALID_PHONE_MESSAGE,
+  consumeIntakeAttempt,
+  honeypotTripped,
+  validateNanpPhone,
+} from '../services/intakeShield.js';
 
 /**
  * The Service OS login system.
@@ -260,11 +267,55 @@ function canGrantStaffRoles(req) {
   return req.authMode === 'jwt' && (roles.includes(ROLES.PLATFORM_ADMIN) || roles.includes(ROLES.COMPANY_OWNER));
 }
 
-router.post('/auth/register', optionalAuthenticate, async (req, res, next) => {
+router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'), async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid registration', details: parsed.error.flatten() });
+    }
+    // Intake shield (2026-11-19): honeypot — a filled hidden field is
+    // an automated form-filler. Answer with the same success shape a
+    // real pending-activation signup gets (201, user envelope, no
+    // token), but persist NOTHING and queue NO notification.
+    if (honeypotTripped(req.body)) {
+      const ghost = {
+        id: createId(),
+        companyId: PLATFORM_COMPANY_ID,
+        email: parsed.data.email,
+        firstName: parsed.data.firstName ?? null,
+        lastName: parsed.data.lastName ?? null,
+        phone: parsed.data.phone ?? null,
+        roles: [parsed.data.role ?? ROLES.CUSTOMER],
+        active: true,
+        emailVerifiedAt: null,
+        signupSource: 'ACCOUNT_SIGNUP',
+        signupOfferSlug: null,
+        signupAudience: null,
+        verifyRequired: false,
+        layer2Required: false,
+        mustChangePassword: false,
+        createdAt: new Date().toISOString(),
+      };
+      const terms = await termsStatusForUser(ghost.id);
+      return res.status(201).json({
+        user: publicUser(ghost),
+        emailVerification: emailVerificationState(ghost),
+        terms,
+        termsStatus: terms,
+        speedyVerify: {
+          status: 'PENDING',
+          message: 'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',
+        },
+      });
+    }
+    // Intake shield: a supplied phone must be a plausible NANP number
+    // (kills the unassigned-area-code fakes — 355, 691 — at the door).
+    // Registration without a phone stays exactly as before.
+    if (parsed.data.phone) {
+      const phoneCheck = validateNanpPhone(parsed.data.phone);
+      if (!phoneCheck.ok) {
+        return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+      }
     }
     const { email, password, firstName, lastName, phone } = parsed.data;
     const requestedRole = parsed.data.role ?? ROLES.CUSTOMER;
@@ -811,7 +862,15 @@ router.post('/auth/forgot-password', async (req, res, next) => {
     if (!parsed.success) {
       return res.status(400).json({ error: 'A valid email address is required', details: parsed.error.flatten() });
     }
-    await requestPasswordReset({ email: parsed.data.email, ip: req.ip, source: 'FORGOT_PASSWORD' });
+    // Intake shield (2026-11-19): durable per-IP throttle, tighter
+    // than the other intake families. The generic 200 is returned
+    // either way — when the limit is hit the send is quietly skipped,
+    // exactly like the reset service's own internal limits, so the
+    // response never reveals whether anything was sent.
+    const shield = await consumeIntakeAttempt('forgotPassword', req.ip);
+    if (shield.allowed) {
+      await requestPasswordReset({ email: parsed.data.email, ip: req.ip, source: 'FORGOT_PASSWORD' });
+    }
     return res.json({ ok: true, message: PASSWORD_RESET_GENERIC_MESSAGE });
   } catch (error) {
     return next(error);

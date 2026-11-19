@@ -63,6 +63,8 @@
     <input type="tel" id="fPhone" autocomplete="tel" placeholder="(954) 000-0000">
     <label class="fldLabel" for="fPass">Password (10+ characters)</label>
     <input type="password" id="fPass" autocomplete="new-password" placeholder="Create a secure password">
+    <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="fWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
     <p class="hint">At least 10 characters. This one account signs you in everywhere — booking, tracking, your garage, and the apps.</p>
 
     <div id="suLegal"></div>
@@ -109,7 +111,7 @@
     var acceptance=TSOSLegal.acceptance('su');
     if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
     var parts=name.split(/\s+/);
-    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',accountType:type,termsAcceptance:acceptance};
+    var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',accountType:type,termsAcceptance:acceptance,companyWebsite:$('fWebsite').value};
     if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
     var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
     fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})

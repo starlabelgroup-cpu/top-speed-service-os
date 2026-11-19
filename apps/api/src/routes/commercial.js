@@ -23,6 +23,12 @@ import {
   workOrderEffectiveStatus,
 } from '../services/commercial.js';
 import { notifyCommercialWorkOrderReceived, notifySubmission } from '../services/notifications.js';
+import { intakeRateLimit } from '../middleware/intakeShield.js';
+import {
+  INVALID_PHONE_MESSAGE,
+  honeypotTripped,
+  validateNanpPhone,
+} from '../services/intakeShield.js';
 
 const router = Router();
 
@@ -517,10 +523,28 @@ const bulkSchema = z.object({
   })).min(1).max(25),
 });
 
-router.post('/commercial/bulk-requests', async (req, res) => {
+router.post('/commercial/bulk-requests', intakeRateLimit('connections'), async (req, res) => {
   const parsed = bulkSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid bulk request', details: parsed.error.flatten() });
+  }
+  // Intake shield (2026-11-19): this public intake writes the same
+  // connection records and fires the same owner notifications as
+  // /connections, so it carries the same shield — honeypot discard
+  // (same 201 shape, nothing persisted, nothing notified) and the
+  // NANP phone gate on the manager's number.
+  if (honeypotTripped(req.body)) {
+    return res.status(201).json({
+      data: {
+        batchReference: createReferenceCode(),
+        count: parsed.data.requests.length,
+        references: parsed.data.requests.map(() => createReferenceCode()),
+      },
+    });
+  }
+  const phoneCheck = validateNanpPhone(parsed.data.manager.phone);
+  if (!phoneCheck.ok) {
+    return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
   }
   const { manager, property, requests } = parsed.data;
   const batchReference = createReferenceCode();

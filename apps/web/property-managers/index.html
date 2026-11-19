@@ -626,6 +626,8 @@
               <label for="f-company">Company <span class="req" aria-hidden="true">*</span></label>
               <input id="f-company" name="company" type="text" autocomplete="organization" required placeholder="e.g. Sunrise Property Group" />
             </div>
+            <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="f-website" type="text" name="companyWebsite" tabindex="-1" autocomplete="off" /></label></div>
             <div>
               <label for="f-name">Contact name <span class="req" aria-hidden="true">*</span></label>
               <input id="f-name" name="contact" type="text" autocomplete="name" required placeholder="Your full name" />
@@ -731,7 +733,7 @@
     document.getElementById("okText").textContent = "Sending\u2026";
     ok.style.display = "block";
     fetch("https://top-speed-service-os.vercel.app/api/v1/connections", { method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ type:"PM_WALKTHROUGH_REQUEST", name: name, email: email, phone: phone, source:"flagship-pm",
+      body: JSON.stringify({ type:"PM_WALKTHROUGH_REQUEST", name: name, email: email, phone: phone, source:"flagship-pm", companyWebsite: document.getElementById("f-website").value,
         message: "Portal walkthrough request \u2014 " + company + " (" + units + " units)" })
     }).then(function(r){ return r.json().then(function(j){ return { s:r.status, j:j }; }); })
     .then(function(x){

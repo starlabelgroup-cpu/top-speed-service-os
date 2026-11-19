@@ -1212,6 +1212,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
             <label for="wPhone">Mobile phone</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000 — we confirm by text">
             <label for="wEmail">Email (for your confirmation)</label><input id="wEmail" type="email" autocomplete="email" placeholder="you@example.com">
+            <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="wWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           </div>
           <div class="wizPane" data-pane="2" hidden>
             <h4>Service Location <small>2 of 5</small></h4>
@@ -1461,7 +1463,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             var win=document.querySelector('input[name="wwin"]:checked').value;
             var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
             if(wizDiag) issue+='\n[Speedy photo diagnosis: '+wizDiag+']';
-            var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
+            var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM',companyWebsite:val('wWebsite')};
             var em=val('wEmail'); if(em) payload.customer.email=em;
             try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
             busy=true; var btn=$('wizNextBtn'); btn.disabled=true; btn.textContent='Booking…';

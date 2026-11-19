@@ -987,6 +987,28 @@ model PasswordResetToken {
   @@index([expiresAt])
 }
 
+// Intake shield (2026-11-19): durable per-IP rate-limit windows for
+// the public intake endpoints (register, connections + PM bulk,
+// guest booking, forgot-password). One row per (family, ip, fixed
+// hourly window); the count is incremented atomically per attempt
+// and windows older than the previous one are swept opportunistically
+// by services/intakeShield.js. This table is the reason the limits
+// hold across serverless instances — the older middleware buckets
+// are per-process memory and reset on every cold start. It stores no
+// submission content, only the caller's IP and a counter.
+model IntakeRateWindow {
+  id          String   @id @default(uuid()) @db.Uuid
+  family      String
+  ip          String
+  windowStart DateTime
+  count       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([family, ip, windowStart])
+  @@index([windowStart])
+}
+
 // Speedy Verify (2026-11-16, Phase 1): the Master's access-code system.
 // One record per account: the code itself is stored ONLY as a scrypt hash
 // (the same format as User.passwordHash) — the plain 8-digit code exists

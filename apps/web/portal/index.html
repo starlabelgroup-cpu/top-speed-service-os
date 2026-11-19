@@ -180,6 +180,8 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
           <label for="suEmail">Email<input id="suEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
           <label for="suPhone">Mobile phone<input id="suPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000"></label>
           <label for="suPw">Password<input id="suPw" type="password" autocomplete="new-password" placeholder="At least 10 characters"></label>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="suWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <p class="fieldlabel" id="acctTypeLabel">Account type</p>
           <div class="accttypes" role="group" aria-labelledby="acctTypeLabel">
             <button type="button" data-acct="homeowner" class="selected">Homeowner</button>
@@ -395,7 +397,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     if(pw.length<10) return fail('Password needs at least 10 characters.');
     var acceptance=window.TSOSLegal?TSOSLegal.acceptance('la'):null;
     if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
-    var body={email:em,password:pw,firstName:first,phone:ph,role:'CUSTOMER',termsAcceptance:acceptance,accountType:acctType};
+    var body={email:em,password:pw,firstName:first,phone:ph,role:'CUSTOMER',termsAcceptance:acceptance,accountType:acctType,companyWebsite:$('suWebsite').value};
     if(last) body.lastName=last;
     var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
     post('/auth/register',body).then(handleRegisterResult).catch(function(x){

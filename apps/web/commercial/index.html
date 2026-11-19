@@ -486,6 +486,8 @@
               <input id="fCompany" name="company" type="text" autocomplete="organization" placeholder="e.g. Harbor Bites LLC" />
               <span class="err">Please enter the business name.</span>
             </div>
+            <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+            <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="fWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off" /></label></div>
             <div class="field">
               <label for="fType">Business type *</label>
               <select id="fType" name="type">
@@ -678,7 +680,7 @@
         var okBox = document.getElementById("formOk");
         okBox.classList.add("show");
         fetch("https://top-speed-service-os.vercel.app/api/v1/connections", { method:"POST", headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ type:"COMMERCIAL_ACCOUNT_REQUEST", name: contact, email: email, phone: phone, source:"flagship-commercial",
+          body: JSON.stringify({ type:"COMMERCIAL_ACCOUNT_REQUEST", name: contact, email: email, phone: phone, source:"flagship-commercial", companyWebsite: document.getElementById("fWebsite").value,
             message: "Commercial account request \u2014 " + company + " (" + type + ", " + locs + (locs === "1" ? " location" : " locations") + "). Equipment notes: " + (document.getElementById("fNotes").value.trim() || "none given") })
         }).then(function(r){ return r.json().then(function(j){ return { s:r.status, j:j }; }); })
         .then(function(x){

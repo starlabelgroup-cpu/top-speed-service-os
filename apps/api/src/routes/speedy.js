@@ -11,6 +11,8 @@ import { attributionFields, normalizeAttribution } from '../services/attribution
 import { attachReferralToBooking } from '../services/referrals.js';
 import { channelConfigured, twilioTrialState } from '../services/senders.js';
 import { optionalAuthenticate } from '../middleware/auth.js';
+import { intakeRateLimit } from '../middleware/intakeShield.js';
+import { honeypotTripped } from '../services/intakeShield.js';
 import {
   captureBookingConversion,
   captureChatDiagnosis,
@@ -257,13 +259,38 @@ const guestBookingSchema = z.object({
   ...attributionFields,
 });
 
-router.post('/speedy/book', async (req, res) => {
+router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
   const parsed = guestBookingSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
   }
   const { customer, city, zip, appliance, issue, preferredWindow, source } = parsed.data;
   const attribution = normalizeAttribution(parsed.data);
+  // The success body, shared by the real booking at the bottom of
+  // this handler and the intake shield's honeypot discard below —
+  // the discard must be indistinguishable from a real success.
+  const bookingResponseData = (b) => ({
+    referenceCode: b.referenceCode,
+    status: b.status,
+    city: b.city,
+    area: b.area,
+    areaStatus: b.areaStatus,
+    appliance: b.appliance,
+    preferredWindow: b.preferredWindow,
+    diagnosticFee: 99,
+    ...(b.areaStatus === 'OUT_OF_AREA'
+      ? {
+          areaMessage:
+            'That address is outside our current service area, so we have not booked a visit. We saved your request on our expansion list and will reach out if we start serving your area — no charge and no appointment has been made.',
+        }
+      : {}),
+    ...(b.areaStatus === 'AREA_REVIEW'
+      ? {
+          areaMessage:
+            'We have your request. A Service Setter will confirm the exact service area for your address when they call to set your appointment.',
+        }
+      : {}),
+  });
   // Service Book book-by-area: resolve the address into the area model
   // instead of rejecting at the border. Out-of-area requests are
   // recorded on the expansion waitlist — flagged, honestly messaged,
@@ -271,6 +298,24 @@ router.post('/speedy/book', async (req, res) => {
   // service terms.
   const resolution = resolveArea({ city, zip });
   const canonicalCity = normalizeCityName(city) || resolution.area || city.trim();
+
+  // Intake shield (2026-11-19): honeypot — a filled hidden field is
+  // an automated form-filler. Answer with the same 201 shape a real
+  // booking gets, but create NO customer, NO booking, and queue NO
+  // notification.
+  if (honeypotTripped(req.body)) {
+    return res.status(201).json({
+      data: bookingResponseData({
+        referenceCode: createReferenceCode(),
+        status: 'PENDING_DISPATCH',
+        city: canonicalCity,
+        area: resolution.area,
+        areaStatus: resolution.areaStatus,
+        appliance,
+        preferredWindow: preferredWindow || null,
+      }),
+    });
+  }
 
   const customerRecord = {
     id: createId(),
@@ -357,30 +402,7 @@ router.post('/speedy/book', async (req, res) => {
     );
   }
 
-  return res.status(201).json({
-    data: {
-      referenceCode: booking.referenceCode,
-      status: booking.status,
-      city: booking.city,
-      area: booking.area,
-      areaStatus: booking.areaStatus,
-      appliance: booking.appliance,
-      preferredWindow: booking.preferredWindow,
-      diagnosticFee: 99,
-      ...(booking.areaStatus === 'OUT_OF_AREA'
-        ? {
-            areaMessage:
-              'That address is outside our current service area, so we have not booked a visit. We saved your request on our expansion list and will reach out if we start serving your area — no charge and no appointment has been made.',
-          }
-        : {}),
-      ...(booking.areaStatus === 'AREA_REVIEW'
-        ? {
-            areaMessage:
-              'We have your request. A Service Setter will confirm the exact service area for your address when they call to set your appointment.',
-          }
-        : {}),
-    },
-  });
+  return res.status(201).json({ data: bookingResponseData(booking) });
 });
 
 /* ------------- Booking receipt / details by message (Phase D+) -------------

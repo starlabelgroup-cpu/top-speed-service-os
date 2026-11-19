@@ -111,6 +111,8 @@
       <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
       <label for="wPhone">Mobile phone</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
       <label for="wEmail">Email (for your confirmation)</label><input id="wEmail" type="email" autocomplete="email" placeholder="you@example.com">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="wWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
     </div>
     <div class="pane" data-pane="2" hidden>
       <h2>Service Location <small>2 of 5</small></h2>
@@ -304,7 +306,7 @@
   function submit(){
     var win=document.querySelector('input[name="wwin"]:checked').value;
     var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
-    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM'};
+    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM',companyWebsite:val('wWebsite')};
     try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
     try{
       var q=new URLSearchParams(location.search);

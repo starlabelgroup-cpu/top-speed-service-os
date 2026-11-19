@@ -1,12 +1,18 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { store } from '../data/store.js';
+import { createReferenceCode, store } from '../data/store.js';
 import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { notifySubmission } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { recordReferralLead } from '../services/referrals.js';
+import { intakeRateLimit } from '../middleware/intakeShield.js';
+import {
+  INVALID_PHONE_MESSAGE,
+  honeypotTripped,
+  validateNanpPhone,
+} from '../services/intakeShield.js';
 
 /**
  * Public web intake — every surface's form posts here (flagship,
@@ -35,10 +41,22 @@ const connectionSchema = z.object({
   referralCode: z.string().trim().max(32).transform((value) => value.toUpperCase()).optional(),
 });
 
-router.post('/connections', async (req, res) => {
+router.post('/connections', intakeRateLimit('connections'), async (req, res) => {
   const parsed = connectionSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid connection request', details: parsed.error.flatten() });
+  }
+  // Intake shield (2026-11-19): honeypot — a filled hidden field is
+  // an automated form-filler. Answer with the same 201 shape a real
+  // submission gets, but persist NOTHING and queue NO notification.
+  if (honeypotTripped(req.body)) {
+    return res.status(201).json({ data: { reference: createReferenceCode(), type: parsed.data.type } });
+  }
+  // Intake shield: the phone must be a plausible NANP number (kills
+  // the unassigned-area-code fakes — 355, 691 — at the door).
+  const phoneCheck = validateNanpPhone(parsed.data.phone);
+  if (!phoneCheck.ok) {
+    return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
   }
   const record = await createConnectionRecord({ ...parsed.data, attribution: normalizeAttribution(parsed.data) });
   // Unified notifications: the submitter gets a confirmation and the
