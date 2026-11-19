@@ -84,6 +84,8 @@ h2.sec{font-family:"Rajdhani";font-size:20px;margin:28px 0 6px;display:flex;alig
 .orders{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
 .orders ul{margin:8px 0 0 18px;font-size:13.5px;line-height:1.7;color:var(--txt)}
 .orders .rulezero{margin-top:14px;border-left:3px solid var(--red);padding-left:12px;font-size:13.5px;line-height:1.65}
+.orders .directive{margin-top:14px;border-left:3px solid var(--blue);padding-left:12px;font-size:13.5px;line-height:1.65}
+.orders .directive .src{color:var(--mut);font-size:12.5px;margin-top:6px}
 footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
 footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 </style>
@@ -295,8 +297,24 @@ function renderNeeds(s){
 function renderOrders(identity){
   var z = document.getElementById('ordersZone');
   var limits = (identity.authorityLimits || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('');
-  z.innerHTML = '<h3 style="font-family:Rajdhani;font-size:16px">Authority limits — Ramone, 2026-11-10</h3><ul>' + limits + '</ul>' +
+  var duties = (identity.standingDuties || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('');
+  var html = '';
+  if (duties) html += '<h3 style="font-family:Rajdhani;font-size:16px">Standing duties</h3><ul>' + duties + '</ul>';
+  html += '<h3 style="font-family:Rajdhani;font-size:16px' + (duties ? ';margin-top:18px' : '') + '">Authority limits — Ramone, 2026-11-10</h3><ul>' + limits + '</ul>' +
     '<div class="rulezero"><strong>Rule Zero.</strong> ' + esc(String(identity.ruleZero || '').replace(/^Rule Zero — Owner Authority: /, '')) + '</div>';
+  var d = identity.ownerDirective;
+  if (d && (d.scope || d.staffRule || d.escalation)){
+    html += '<h3 style="font-family:Rajdhani;font-size:16px;margin-top:18px">Owner\'s directive — ' + esc(d.issuedOn || '2026-11-18') + '</h3>' +
+      '<div class="directive">' +
+      (d.scope ? '<div><strong>Responsibility:</strong> Pepper is responsible for ' + esc(String(d.scope).charAt(0).toLowerCase() + String(d.scope).slice(1)) + '.</div>' : '') +
+      (d.staffRule ? '<div style="margin-top:6px">' + esc(d.staffRule) + '</div>' : '') +
+      (d.escalation ? '<div style="margin-top:6px"><strong>Escalation:</strong> ' + esc(d.escalation) + '</div>' : '') +
+      '<div class="src">' + esc(d.source || 'Owner directive') + (d.issuedBy ? ' · Issued by ' + esc(d.issuedBy) : '') + ' · This directive sits under Rule Zero and the 2026-11-10 authority limits.</div>' +
+      '</div>';
+  } else {
+    html += '<div class="directive">The owner\'s directive of 2026-11-18 is posted here when the system provides it.</div>';
+  }
+  z.innerHTML = html;
 }
 
 /* ── Pepper reports ─────────────────────────────────────────── */

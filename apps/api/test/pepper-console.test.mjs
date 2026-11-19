@@ -9,7 +9,9 @@
  *    customers 403, staff 200;
  *  - the status aggregate's shape and honesty: the identity block
  *    (Pepper, the Systems Manager title, reports to Ramone
- *    Williams, the 2026-11-10 authority limits, Rule Zero), and
+ *    Williams, the 2026-11-10 authority limits, Rule Zero, and the
+ *    owner's 2026-11-18 staff-authority directive with its exact
+ *    escalation wording), and
  *    every section read from the real systems — payments config,
  *    Speedy status + knowledge counts, the notification outbox
  *    counts, Insights connection states, Ad Studio pending
@@ -195,6 +197,21 @@ async function main() {
   checkTrue('limits name compliance gate', d.identity.authorityLimits.some((x) => x.includes('compliance')));
   checkTrue('ruleZero names Ramone', d.identity.ruleZero.includes('Ramone Williams'));
   checkTrue('ruleZero names owner supremacy', d.identity.ruleZero.includes('supreme authority'));
+  const od = d.identity.ownerDirective || {};
+  checkTrue('ownerDirective present', Boolean(d.identity.ownerDirective));
+  check('ownerDirective issuedBy', od.issuedBy, 'Ramone Williams');
+  check('ownerDirective issuedOn', od.issuedOn, '2026-11-18');
+  check('ownerDirective scope', od.scope, 'All systems, platforms, apps, websites and landing pages');
+  check('ownerDirective staffRule', od.staffRule, "All employees follow Pepper's orders and recommendations in the ordinary course of work.");
+  check('ownerDirective escalation wording', od.escalation, 'If a problem or issue arises, it is forwarded to Ramone Williams.');
+  check('ownerDirective source', od.source, 'Owner directive, 2026-11-18');
+  const duties = d.identity.standingDuties || [];
+  check('standingDuties count', duties.length, 5);
+  checkTrue('duty: monitor all systems', duties.includes('Monitor all systems, platforms, apps, websites and landing pages'));
+  checkTrue('duty: monitor work activities', duties.includes('Monitor work activities across Top Speed Service OS and the other platforms'));
+  checkTrue('duty: monitor web traffic', duties.includes('Monitor web traffic and website activity'));
+  checkTrue('duty: monitor email activity', duties.includes('Monitor email activity'));
+  checkTrue('duty: monitor phone voice and SMS', duties.includes('Monitor business phone voice and SMS activity'));
 
   const s = d.sections;
   checkTrue('payments section present', s.payments.available === true);
@@ -309,6 +326,8 @@ async function main() {
   checkTrue('unit: insights still available', injected.sections.insights.available === true);
   checkTrue('unit: adStudio still available', injected.sections.adStudio.available === true);
   checkTrue('unit: pepperLists still available', injected.sections.pepperLists.available === true);
+  check('unit: ownerDirective rides the identity block', injected.identity.ownerDirective.escalation, 'If a problem or issue arises, it is forwarded to Ramone Williams.');
+  check('unit: standingDuties rides the identity block', injected.identity.standingDuties.length, 5);
 
   await cleanupDb();
   await prisma.$disconnect();
