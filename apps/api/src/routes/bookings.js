@@ -184,9 +184,20 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
 });
 
 router.get('/bookings', authenticate, requireCompany, (req, res) => {
-  const bookings = [...store.bookings.values()].filter(
-    (booking) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || booking.companyId === req.companyId,
-  );
+  // Customer-lockout audit (2026-11-18): this list used to return the
+  // full company booking list — contact details included — to ANY
+  // signed-in account in the platform company, so a CUSTOMER token
+  // could enumerate every customer's bookings. The single-booking read
+  // was scoped on 2026-11-16 (canReadBooking); the list now follows the
+  // same rule: staff see the company list, everyone else sees only
+  // bookings that belong to them (the customer app's "my booking" read
+  // keeps working — it now actually receives only its own).
+  const isStaff = (req.user.roles || []).some((role) => STAFF_ROLES.includes(role));
+  const bookings = [...store.bookings.values()].filter((booking) => {
+    if (req.user.roles.includes(ROLES.PLATFORM_ADMIN)) return true;
+    if (booking.companyId !== req.companyId) return false;
+    return isStaff || bookingBelongsToUser(booking, req.user);
+  });
   return res.json({ data: bookings.map(publicBooking) });
 });
 
