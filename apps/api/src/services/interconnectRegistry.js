@@ -76,10 +76,10 @@ export const INTERCONNECT_SURFACES = [
     home: 'https://topspeedappliance.net',
     kind: 'Customer website and landing pages (React app, orbit-haven branch).',
     identity: {
-      state: 'pending-promotion',
+      state: 'live',
       receiverPath: '/auth-handoff/',
       verifiedOn: INTERCONNECT_VERIFIED_ON,
-      note: 'Receiver + session vault shipped to the orbit-haven branch (blob-verified in the repo and present in the site build output); production serves them after the owner\u2019s Promote step (the standing .net rule).',
+      note: 'Receiver + session vault promoted to production by the owner on 2026-11-19 (orbit-haven d000d45); the receiver serves on the production host (fetched 200 with the redeem contract present) and the flagship session vault routes signed-in holders to it.',
     },
     api: { mode: 'direct-cors', verifiedOn: INTERCONNECT_VERIFIED_ON, note: 'Bookings post straight to the API (origin allowlisted — incomplete-body probe answered 400 with the allow-origin header). Bookings carry source FLAGSHIP_NET and the [via: \u2026] tag.' },
     eventSources: ['FLAGSHIP_NET'],

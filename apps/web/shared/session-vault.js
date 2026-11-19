@@ -81,9 +81,9 @@
   // exist yet. Platform Interconnect (2026-11-19): appliancepro.net
   // and cleanoutvents.com receivers shipped and verified live;
   // topspeedappliance.net's receiver shipped to its orbit-haven
-  // branch and joins this list when the owner promotes it to
-  // production (the standing .net rule) — until then .net doors
-  // stay plain links, exactly like every not-yet-ready host.
+  // branch and joined this list on 2026-11-19 when the owner
+  // promoted it to production (the standing .net rule) — every
+  // host here has a receiver serving in production.
   var RECEIVER_READY_HOSTS = [
     'topspeedserviceos.com',
     'top-speed-service-os.vercel.app',
@@ -95,7 +95,9 @@
     'appliancepro.net',
     'www.appliancepro.net',
     'cleanoutvents.com',
-    'www.cleanoutvents.com'
+    'www.cleanoutvents.com',
+    'topspeedappliance.net',
+    'www.topspeedappliance.net'
   ];
 
   /* ---------------- storage primitives (pre-hook originals) -------- */
