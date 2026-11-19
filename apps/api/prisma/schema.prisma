@@ -198,6 +198,8 @@ model User {
 
   adProviderAudits AdProviderAudit[]
 
+  pepperReports PepperReport[]
+
   advertiserSubscription AdvertiserSubscription?
 
   authHandoffs AuthHandoff[]
@@ -1843,4 +1845,32 @@ model AdProviderAudit {
 
   @@index([connectionId, createdAt])
   @@index([actorUserId, createdAt])
+}
+
+// Pepper — Systems Manager console (2026-11-18): the report log of
+// Pepper's duty post inside the Workstation. Staff file reports here
+// (status updates, actions taken, items that need the owner, incidents)
+// and the console at /pepper renders them newest first for Ramone.
+// Reports are statements by the staff member who filed them — the
+// createdBy link is SetNull so a report outlives the account that
+// filed it, exactly like AdProviderAudit's actor.
+enum PepperReportCategory {
+  STATUS
+  ACTION_TAKEN
+  NEEDS_OWNER
+  INCIDENT
+}
+
+model PepperReport {
+  id              String               @id @default(uuid()) @db.Uuid
+  title           String
+  body            String
+  category        PepperReportCategory
+  createdByUserId String?              @db.Uuid
+  createdAt       DateTime             @default(now())
+
+  createdBy User? @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([createdByUserId, createdAt])
 }

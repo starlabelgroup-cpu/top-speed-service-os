@@ -264,8 +264,20 @@ export const SYSTEM_MAP_AREAS = [
     purpose: 'This guide: the staff-only AI navigator and directory for the whole platform. Ask where anything lives or how anything is done; it answers from the system map and deep-links you there. It explains and links — it never performs actions.',
     access: 'All staff',
     actions: ['Ask "where is …?" and get the exact console plus a link', 'Ask "how do I …?" and get the live steps', 'Browse the full system directory'],
-    related: ['academy', 'applianceman'],
+    related: ['academy', 'applianceman', 'pepper-console'],
     keywords: ['navigator', 'system navigator', 'guide', 'help', 'where is everything', 'system map', 'directory'],
+  },
+  {
+    id: 'pepper-console',
+    name: 'Pepper — Systems Manager',
+    group: 'Command & Consoles',
+    location: 'topspeedserviceos.com/pepper',
+    url: '/pepper',
+    purpose: 'Pepper\u2019s duty post inside the Workstation: the live systems board (payments, Speedy, the notification outbox, Insights connections, Ad Studio and Pepper Lists channel states, read from the real systems), the list of what needs Ramone, the Pepper report log staff file into, and Pepper\u2019s standing orders — the authority limits and Rule Zero. Pepper reports to Ramone Williams.',
+    access: 'All staff',
+    actions: ['Read the systems board', 'Check what needs the owner', 'File and read Pepper reports', 'Review the standing orders (authority limits + Rule Zero)'],
+    related: ['navigator', 'applianceman', 'oversight'],
+    keywords: ['pepper', 'systems manager', 'system operations manager', 'pepper console', 'duty post', 'systems board', 'pepper reports', 'needs ramone', 'standing orders'],
   },
 
   /* --------------------------------- Money --------------------------------- */

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pepper — Systems Manager | Top Speed Service OS</title>
+<meta name="description" content="Pepper's duty post inside the Workstation: the live systems board, what needs Ramone, the Pepper report log, and the standing orders. Staff only.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.hero{padding:14px 2px 4px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Rajdhani";font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:720px;line-height:1.6}
+.duty{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:var(--panel);border-radius:var(--rad);padding:14px 16px;margin-top:16px;font-size:14px;line-height:1.6}
+.duty .dot{width:9px;height:9px;border-radius:50%;background:var(--grn);flex:none;margin-top:7px}
+.duty strong{color:var(--txt)}
+h2.sec{font-family:"Rajdhani";font-size:20px;margin:28px 0 6px;display:flex;align-items:center;gap:9px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:780px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Rajdhani";font-size:16px;line-height:1.3;display:flex;align-items:center;gap:8px}
+.card .rows{display:flex;flex-direction:column;gap:5px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:13px;line-height:1.5;border-top:1px solid rgba(28,44,82,.6);padding-top:5px}
+.kv:first-child{border-top:0;padding-top:0}
+.kv .k{color:var(--mut)}
+.kv .v{font-weight:600;text-align:right;word-break:break-word}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase}
+.pill.ok{color:#8FE3AE;border-color:rgba(34,197,94,.5)}
+.pill.warn{color:#F5D67A;border-color:rgba(234,179,8,.5)}
+.pill.bad{color:#F08A88;border-color:rgba(232,50,46,.55)}
+.card .openrow{margin-top:auto;padding-top:6px}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:14px}
+.empty.good{border-color:rgba(34,197,94,.45);color:#B9E8CC}
+.needlist{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.need{background:var(--panel);border:1px solid rgba(234,179,8,.45);border-radius:var(--rad);padding:13px 15px;font-size:14px;line-height:1.6;display:flex;gap:10px;align-items:flex-start}
+.need .fxi{width:19px;height:19px;margin-top:1px;color:var(--yel)}
+.need a{color:#B9CFF2;font-weight:700;text-decoration:underline}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+.console h3{font-family:"Rajdhani";font-size:16px;margin-bottom:4px}
+.btn{background:linear-gradient(135deg,var(--red2),var(--red));color:#fff;border:0;border-radius:10px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;font-family:Inter;display:inline-block}
+.btn.ghost{background:var(--panel2);border:1px solid var(--line);color:var(--txt)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.gate{max-width:460px;margin:26px auto 0;background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px}
+.gate h2{font-family:"Rajdhani";font-size:19px;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:13.5px;line-height:1.6}
+.gate label{display:block;font-size:11px;font-weight:700;color:var(--mut);letter-spacing:.05em;margin:14px 0 5px;text-transform:uppercase}
+.gate input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+.gate .btn{width:100%;margin-top:16px;padding:11px}
+.gerr{display:none;color:#F08A88;font-size:13px;margin-top:10px;line-height:1.5}
+.msg{font-size:13px;margin-top:10px;line-height:1.5}
+.msg.err{color:#F08A88}
+.mut{color:var(--mut)}
+.small{font-size:12.5px}
+.spin{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;display:inline-block;animation:sp 1s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.report{border-top:1px solid var(--line);padding:13px 2px}
+.report:first-of-type{border-top:0}
+.report .rhead{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.report h4{font-family:"Rajdhani";font-size:15.5px;line-height:1.35}
+.report .rmeta{color:var(--mut);font-size:12px;margin-top:3px}
+.report .rbody{font-size:13.5px;line-height:1.65;margin-top:7px;white-space:pre-wrap;word-break:break-word}
+.rform{display:grid;grid-template-columns:1fr 200px;gap:10px;margin-top:12px}
+.rform input,.rform select,.rform textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 12px;font-size:14px;font-family:Inter}
+.rform textarea{grid-column:1/-1;min-height:96px;resize:vertical}
+.rform .btn{justify-self:start}
+@media (max-width:560px){.rform{grid-template-columns:1fr}}
+.orders{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:14px}
+.orders ul{margin:8px 0 0 18px;font-size:13.5px;line-height:1.7;color:var(--txt)}
+.orders .rulezero{margin-top:14px;border-left:3px solid var(--red);padding-left:12px;font-size:13.5px;line-height:1.65}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Workstation — Staff Only</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+19549317997">Call 954-931-7997</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Top Speed Service OS — Workstation</div>
+    <h1>Pepper — <span>Systems Manager</span></h1>
+    <p><strong style="color:var(--txt)">Pepper Agent — System Operations Manager.</strong> Reports to <strong style="color:var(--txt)">Ramone Williams</strong>, Owner — Master of Whole Systems. This is Pepper's duty post inside the Workstation: the systems board below is read live from the real systems, the needs list is derived from those same states, and the report log is where staff file what the owner needs to know.</p>
+    <div class="duty"><span class="dot"></span><div><strong>On duty.</strong> <span class="mut" id="dutyLine">Watching the systems board, keeping the report log, and surfacing anything that needs the owner.</span></div></div>
+  </div>
+
+  <div id="gateZone"></div>
+
+  <div id="staffZone" style="display:none">
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 15c3-2 5 2 8 0s5 2 8 0V5c-3 2-5-2-8 0S7 7 4 5" stroke="#E8322E"/></svg>Systems board</h2>
+    <p class="sub" id="boardSummary"><span class="spin"></span> Reading the systems…</p>
+    <div class="grid" id="boardZone"></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M12 8v4" stroke="#E8322E"/><circle cx="12" cy="15.4" r=".4" fill="#E8322E"/></svg>Needs Ramone</h2>
+    <p class="sub">Derived only from the live states on the board above — nothing here is guessed.</p>
+    <div id="needsZone"></div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6" stroke="#E8322E"/></svg>Pepper reports</h2>
+    <p class="sub">The report log for the owner: status updates, actions taken, items that need Ramone, and incidents — filed by staff, newest first.</p>
+    <div class="console">
+      <h3>File a report</h3>
+      <form class="rform" id="reportForm">
+        <input id="repTitle" type="text" maxlength="160" placeholder="Title — what happened, in one line" required>
+        <select id="repCategory" required>
+          <option value="STATUS">Status</option>
+          <option value="ACTION_TAKEN">Action taken</option>
+          <option value="NEEDS_OWNER">Needs owner</option>
+          <option value="INCIDENT">Incident</option>
+        </select>
+        <textarea id="repBody" maxlength="4000" placeholder="The details, plainly: what, when, and what happens next." required></textarea>
+        <button class="btn" type="submit" id="repSubmit">File report</button>
+      </form>
+      <div class="msg" id="repMsg"></div>
+      <div id="reportFeed" style="margin-top:10px"><p class="small mut"><span class="spin"></span> Loading the report log…</p></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4H20v13.5H6.7A2.7 2.7 0 0 0 4 20.2z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20" stroke="#E8322E"/></svg>Standing orders</h2>
+    <p class="sub">The authority limits and the rule above all of them — set by Ramone, carried on this post at all times.</p>
+    <div class="orders" id="ordersZone"><p class="small mut"><span class="spin"></span> Loading the standing orders…</p></div>
+
+    <div style="margin-top:18px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
+  </div>
+</main>
+
+<footer>
+  <a href="/navigator">System Navigator</a><a href="/applianceman">ApplianceMan</a><a href="/oversight">Oversight</a><a href="/ad-studio">Ad Studio</a><a href="/insights">Insights</a><a href="/notifications">Notifications</a><a href="/">Platform Home</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Pepper — Systems Manager, reporting to Ramone Williams · Staff only</div>
+</footer>
+
+<script src="/layer2.js" defer></script>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+function money(cents){ return '$' + (Number(cents || 0) / 100).toFixed(2); }
+function when(ts){
+  if (!ts) return '';
+  var d = new Date(ts);
+  return isNaN(d.getTime()) ? '' : d.toLocaleString('en-US', { timeZone: 'America/New_York', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
+}
+
+/* ── Sign-in gate (same pattern as the Navigator) ───────────── */
+function showGate(note){
+  document.getElementById('staffZone').style.display = 'none';
+  var zone = document.getElementById('gateZone');
+  zone.innerHTML = '<div class="gate"><h2>Staff sign-in</h2>' +
+    '<p>Pepper\u2019s duty post is for Top Speed staff. Sign in with your Service OS account — the same login as Book OS and the CRM.' +
+    (note ? ' ' + esc(note) : '') + '</p>' +
+    '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
+    '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">Sign in to the Pepper console</button><div class="gerr" id="liErr"></div></form></div>';
+  document.getElementById('loginForm').addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var err = document.getElementById('liErr');
+    err.style.display = 'none';
+    fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
+        if (res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ err.textContent = 'Your account needs its Speedy Verify code step — complete sign-in on a console that shows the code step (Book OS), then return here.'; err.style.display = 'block'; return; }
+        if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+}
+
+/* ── Systems board ──────────────────────────────────────────── */
+var ICONS = {
+  payments: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18" stroke="#E8322E"/></svg>',
+  speedy: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4.5 13.5H11L9.5 22 19 10h-6.5z" stroke="#E8322E"/></svg>',
+  bell: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2.2 2.2 0 0 0 4 0" stroke="#E8322E"/></svg>',
+  chart: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V4"/><path d="M4 20h16" stroke="#E8322E"/><path d="M8 16v-5M12 16V8M16 16v-3"/></svg>',
+  megaphone: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4l3 .5V9.5z"/><path d="M7 9.5L20 4v16l-13-5.5" stroke="#E8322E"/><path d="M7 14.5V18a2 2 0 0 0 4 0v-2.6"/></svg>',
+  list: '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 6H20M8.5 12H20M8.5 18H20"/><circle cx="4.5" cy="6" r="1" fill="#E8322E"/><circle cx="4.5" cy="12" r="1" fill="#E8322E"/><circle cx="4.5" cy="18" r="1" fill="#E8322E"/></svg>'
+};
+function kv(k, v){ return '<div class="kv"><span class="k">' + esc(k) + '</span><span class="v">' + esc(v) + '</span></div>'; }
+function tile(icon, title, pillCls, pillText, rowsHtml, linkHref, linkText){
+  return '<div class="card"><h3>' + icon + esc(title) + ' <span class="pill ' + pillCls + '">' + esc(pillText) + '</span></h3>' +
+    '<div class="rows">' + rowsHtml + '</div>' +
+    (linkHref ? '<div class="openrow"><a class="btn ghost sm" href="' + linkHref + '">Open: ' + esc(linkText) + '</a></div>' : '') + '</div>';
+}
+function unavailableTile(icon, title, reason){
+  return '<div class="card"><h3>' + icon + esc(title) + ' <span class="pill bad">Not available</span></h3>' +
+    '<div class="rows"><div class="kv"><span class="k">' + esc(reason || 'This system could not be read right now.') + '</span></div></div></div>';
+}
+function renderBoard(s){
+  var z = document.getElementById('boardZone');
+  var html = '';
+  var p = s.payments || {};
+  if (!p.available) html += unavailableTile(ICONS.payments, 'Payments — Stripe', p.reason);
+  else html += tile(ICONS.payments, 'Payments — Stripe', p.configured ? 'ok' : 'warn', p.configured ? 'Live' : 'Not configured',
+    kv('Card payments', p.configured ? 'Configured' : 'Not configured') + kv('Webhook', p.webhookConfigured ? 'Configured' : 'Not configured') + kv('Diagnostic', money(p.diagnosticAmountCents)), '/finance', 'Finance OS');
+  var sp = s.speedy || {};
+  if (!sp.available) html += unavailableTile(ICONS.speedy, 'Speedy AI', sp.reason);
+  else {
+    var k = sp.knowledge || {};
+    var packs = k.packs || {};
+    html += tile(ICONS.speedy, 'Speedy AI', sp.configured ? 'ok' : 'warn', sp.configured ? 'Live AI' : 'Knowledge fallback',
+      kv('Provider', sp.provider || '—') + kv('Model', sp.configured ? (sp.model || '—') : 'Fallback answers') +
+      kv('Knowledge entries', String(k.total != null ? k.total : '—')) +
+      kv('Site / glossary / industry', (packs.site != null ? packs.site : '—') + ' / ' + (packs.glossary != null ? packs.glossary : '—') + ' / ' + (packs.industry != null ? packs.industry : '—')), null, null);
+  }
+  var n = s.notifications || {};
+  if (!n.available) html += unavailableTile(ICONS.bell, 'Notifications outbox', n.reason);
+  else html += tile(ICONS.bell, 'Notifications outbox', (n.failed + n.gated) > 0 ? 'warn' : 'ok', (n.failed + n.gated) > 0 ? 'Needs a look' : 'Flowing',
+    kv('Total entries', String(n.total)) + kv('Sent', String(n.sent)) + kv('Queued', String(n.queued)) + kv('Failed', String(n.failed)) + kv('Gated', String(n.gated)), '/notifications', 'Notifications');
+  var ins = s.insights || {};
+  if (!ins.available) html += unavailableTile(ICONS.chart, 'Insights connections', ins.reason);
+  else {
+    var allConn = (ins.connections || []).every(function(c){ return c.status === 'connected'; });
+    html += tile(ICONS.chart, 'Insights connections', allConn ? 'ok' : 'warn', allConn ? 'Connected' : 'Not fully connected',
+      (ins.connections || []).map(function(c){ return kv(c.label, c.status === 'connected' ? 'Connected' : 'Not connected'); }).join(''), '/insights', 'Insights');
+  }
+  var ad = s.adStudio || {};
+  if (!ad.available) html += unavailableTile(ICONS.megaphone, 'Ad Studio', ad.reason);
+  else {
+    var prov = ad.providers || {};
+    var provRows = prov.available
+      ? (prov.connections.length ? prov.connections.map(function(c){ return kv(c.provider, c.status); }).join('') : kv('Provider connections', 'None filed yet'))
+      : kv('Provider connections', 'Could not be read');
+    html += tile(ICONS.megaphone, 'Ad Studio', ad.pendingApproval > 0 ? 'warn' : 'ok', ad.pendingApproval > 0 ? 'Approvals waiting' : 'Clear',
+      kv('Campaigns', String(ad.totalCampaigns)) + kv('Pending approval', String(ad.pendingApproval)) + provRows, '/ad-studio', 'Ad Studio');
+  }
+  var pl = s.pepperLists || {};
+  if (!pl.available) html += unavailableTile(ICONS.list, 'Pepper Lists channels', pl.reason);
+  else html += tile(ICONS.list, 'Pepper Lists channels', pl.pending > 0 ? 'warn' : 'ok', pl.pending > 0 ? 'Requests pending' : 'Clear',
+    kv('Connections on file', String(pl.total)) + kv('Pending', String(pl.pending)) + kv('Connected', String((pl.byStatus || {}).CONNECTED || 0)), null, null);
+  z.innerHTML = html;
+}
+
+/* ── Needs Ramone — derived ONLY from the returned states ───── */
+function renderNeeds(s){
+  var items = [];
+  var ad = s.adStudio || {};
+  if (ad.available && ad.pendingApproval > 0) items.push({ text: ad.pendingApproval + ' ad campaign' + (ad.pendingApproval === 1 ? '' : 's') + ' waiting for approval in Ad Studio.', href: '/ad-studio', link: 'Open Ad Studio' });
+  var pl = s.pepperLists || {};
+  if (pl.available && pl.pending > 0) items.push({ text: pl.pending + ' Pepper Lists channel connection request' + (pl.pending === 1 ? '' : 's') + ' pending — the office completes the link once the channel account exists.', href: null });
+  var n = s.notifications || {};
+  if (n.available && (n.failed + n.gated) > 0) items.push({ text: (n.failed + n.gated) + ' notification' + ((n.failed + n.gated) === 1 ? '' : 's') + ' in the outbox failed or gated (' + n.failed + ' failed, ' + n.gated + ' gated).', href: '/notifications', link: 'Open Notifications' });
+  var ins = s.insights || {};
+  if (ins.available) (ins.connections || []).forEach(function(c){ if (c.status !== 'connected') items.push({ text: 'Insights: ' + c.label + ' is not connected yet.', href: '/insights', link: 'Open Insights' }); });
+  var sp = s.speedy || {};
+  if (sp.available && !sp.configured) items.push({ text: 'Speedy AI is not configured on the API — Speedy is answering from the knowledge fallback.', href: null });
+  var p = s.payments || {};
+  if (p.available && !p.configured) items.push({ text: 'Card payments are not configured on the API.', href: '/finance', link: 'Open Finance OS' });
+  ['payments','speedy','notifications','insights','adStudio','pepperLists'].forEach(function(key){
+    var sec = s[key] || {};
+    if (sec.available === false) items.push({ text: 'One part of the board could not be read (' + key + ') — check that system in its own console.', href: null });
+  });
+  var z = document.getElementById('needsZone');
+  if (!items.length){
+    z.innerHTML = '<div class="empty good">Nothing waiting on you right now — every system on the board is in a clear state.</div>';
+    return;
+  }
+  z.innerHTML = '<div class="needlist">' + items.map(function(it){
+    return '<div class="need"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M12 8v4" stroke="#E8322E"/><circle cx="12" cy="15.4" r=".4" fill="#E8322E"/></svg><div>' + esc(it.text) + (it.href ? ' <a href="' + it.href + '">' + esc(it.link) + '</a>' : '') + '</div></div>';
+  }).join('') + '</div>';
+}
+
+/* ── Standing orders ────────────────────────────────────────── */
+function renderOrders(identity){
+  var z = document.getElementById('ordersZone');
+  var limits = (identity.authorityLimits || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('');
+  z.innerHTML = '<h3 style="font-family:Rajdhani;font-size:16px">Authority limits — Ramone, 2026-11-10</h3><ul>' + limits + '</ul>' +
+    '<div class="rulezero"><strong>Rule Zero.</strong> ' + esc(String(identity.ruleZero || '').replace(/^Rule Zero — Owner Authority: /, '')) + '</div>';
+}
+
+/* ── Pepper reports ─────────────────────────────────────────── */
+var CAT_LABEL = { STATUS: 'Status', ACTION_TAKEN: 'Action taken', NEEDS_OWNER: 'Needs owner', INCIDENT: 'Incident' };
+var CAT_PILL = { STATUS: '', ACTION_TAKEN: 'ok', NEEDS_OWNER: 'warn', INCIDENT: 'bad' };
+function renderReports(rows){
+  var z = document.getElementById('reportFeed');
+  if (!rows || !rows.length){
+    z.innerHTML = '<div class="empty">No reports filed yet — the log opens with the first report above.</div>';
+    return;
+  }
+  z.innerHTML = rows.map(function(r){
+    var who = r.createdBy ? (r.createdBy.name || r.createdBy.email || 'Staff') : 'Staff';
+    return '<div class="report"><div class="rhead"><h4>' + esc(r.title) + '</h4><span class="pill ' + (CAT_PILL[r.category] || '') + '">' + esc(CAT_LABEL[r.category] || r.category) + '</span></div>' +
+      '<div class="rmeta">Filed by ' + esc(who) + (r.createdAt ? ' · ' + esc(when(r.createdAt)) : '') + '</div>' +
+      '<div class="rbody">' + esc(r.body) + '</div></div>';
+  }).join('');
+}
+function loadReports(){
+  return authFetch('/pepper-console/reports')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status === 403){ showGate('That account is not a staff account, so this console stays closed for it.'); return; }
+      if (res.status !== 200 || !res.j || !Array.isArray(res.j.data)) throw new Error('bad');
+      renderReports(res.j.data);
+    })
+    .catch(function(){ document.getElementById('reportFeed').innerHTML = '<div class="empty">The report log could not be loaded — refresh to try again.</div>'; });
+}
+
+/* ── Boot ───────────────────────────────────────────────────── */
+function boot(){
+  if (!tok()){ showGate(''); return; }
+  authFetch('/pepper-console/status')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status === 403){ showGate('That account is not a staff account, so this console stays closed for it.'); return; }
+      if (res.status !== 200 || !res.j || !res.j.data){ showGate('The Pepper console could not be reached — sign in again.'); return; }
+      document.getElementById('gateZone').innerHTML = '';
+      document.getElementById('staffZone').style.display = 'block';
+      var d = res.j.data;
+      if (d.identity && d.identity.onDuty) document.getElementById('dutyLine').textContent = d.identity.onDuty;
+      document.getElementById('boardSummary').textContent = 'Read live from the systems themselves' + (d.generatedAt ? ' · ' + when(d.generatedAt) : '') + '. A tile that cannot be read says so — no number on this board is guessed.';
+      renderBoard(d.sections || {});
+      renderNeeds(d.sections || {});
+      renderOrders(d.identity || {});
+      loadReports();
+    })
+    .catch(function(){ showGate('The Pepper console could not be reached — sign in again.'); });
+}
+
+document.getElementById('reportForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var msg = document.getElementById('repMsg');
+  var btn = document.getElementById('repSubmit');
+  msg.textContent = '';
+  msg.className = 'msg';
+  btn.disabled = true;
+  authFetch('/pepper-console/reports', { method: 'POST', body: JSON.stringify({ title: document.getElementById('repTitle').value.trim(), category: document.getElementById('repCategory').value, body: document.getElementById('repBody').value.trim() }) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status !== 201){ msg.textContent = 'The report was not filed — check the title and details and try again.'; msg.className = 'msg err'; return; }
+      document.getElementById('repTitle').value = '';
+      document.getElementById('repBody').value = '';
+      msg.textContent = 'Report filed — it is in the log below for Ramone.';
+      loadReports();
+    })
+    .catch(function(){ msg.textContent = 'The report could not be sent — check your connection and try again.'; msg.className = 'msg err'; })
+    .finally(function(){ btn.disabled = false; });
+});
+document.getElementById('btnSignOut').addEventListener('click', function(){
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  location.reload();
+});
+boot();
+</script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+</body>
+</html>
