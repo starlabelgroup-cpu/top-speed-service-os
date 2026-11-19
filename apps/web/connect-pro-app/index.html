@@ -668,15 +668,32 @@ function swLoadRecs(){
   var B=document.getElementById('swMic'), I=document.getElementById('swText');
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.style.display='none'; return; }
+  var VOICE_BLOCKED='The microphone is blocked for this site. Tap the lock icon in the address bar, set Microphone to Allow for this site, then tap the mic again \u2014 or just type, that always works.';
+  function say(m){ swAdd(m,false); }
+  function voiceError(e){
+    var err=(e&&e.error)||'';
+    if(err==='aborted') return;
+    if(err==='not-allowed'||err==='service-not-allowed') say(VOICE_BLOCKED);
+    else if(err==='audio-capture') say('I couldn\u2019t reach a microphone on this device. Check that one is connected and not being used by another app \u2014 or type instead, that always works.');
+    else if(err==='network') say('Voice needs a connection to the speech service. Check your signal and try again \u2014 or type instead, that always works.');
+    else if(err==='no-speech') say('I didn\u2019t hear anything that time. Tap the mic and try again \u2014 typing always works too.');
+    else say('Voice hit a snag just now. You can type instead \u2014 that always works.');
+  }
+  if(!SR){ B.addEventListener('click',function(){ say('Voice isn\u2019t available on this browser \u2014 you can type instead. If this page is open inside another app, opening it in Chrome makes voice work.'); }); return; }
   var rec=null, listening=false;
-  B.addEventListener('click',function(){
-    if(listening){ try{rec.stop();}catch(e){} return; }
+  function startRec(){
     rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
     rec.onresult=function(e){ var t=e.results[0][0].transcript; I.value=(I.value?I.value.replace(/\s+$/,'')+' ':'')+t; I.focus(); };
     rec.onend=function(){ listening=false; B.classList.remove('rec'); };
-    rec.onerror=rec.onend;
+    rec.onerror=function(e){ rec.onend(); voiceError(e); };
     try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
+  }
+  B.addEventListener('click',function(){
+    if(listening){ try{rec.stop();}catch(e){} return; }
+    var pq=null;
+    try{ pq=(navigator.permissions&&navigator.permissions.query)?navigator.permissions.query({name:'microphone'}):null; }catch(e){ pq=null; }
+    if(pq&&typeof pq.then==='function'){ pq.then(function(st){ if(st&&st.state==='denied'){ say(VOICE_BLOCKED); } else { startRec(); } },function(){ startRec(); }); }
+    else startRec();
   });
 })();
 </script>

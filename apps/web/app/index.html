@@ -1681,14 +1681,24 @@ function garageAddAppliance(){
 .asp-composer .btn{width:auto;flex:none;display:flex;align-items:center;justify-content:center;padding:10px 13px;border-radius:11px}
 </style>
 <script>
-function wireVoice(btnId, inputId){
+function wireVoice(btnId, inputId, sayFn){
   var B=document.getElementById(btnId), I=document.getElementById(inputId);
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!B||!I) return;
-  if(!SR){ B.title='Voice isn\u2019t available on this browser \u2014 you can type instead'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t available on this browser \u2014 you can type instead'; I.focus(); setTimeout(function(){ I.placeholder=old; },3200); }); return; }
+  if(!SR){ B.title='Voice isn\u2019t available on this browser \u2014 you can type instead. If this page is open inside another app, opening it in Chrome makes voice work.'; B.style.opacity='.55'; B.addEventListener('click',function(){ var old=I.placeholder; I.placeholder='Voice isn\u2019t available on this browser \u2014 you can type instead. If this page is open inside another app, opening it in Chrome makes voice work.'; I.focus(); setTimeout(function(){ I.placeholder=old; },3200); }); return; }
+  var VOICE_BLOCKED='The microphone is blocked for this site. Tap the lock icon in the address bar, set Microphone to Allow for this site, then tap the mic again \u2014 or just type, that always works.';
+  function say(m){ if(sayFn){ sayFn(m); } else { aspBubble('speedy',m); } }
+  function voiceError(e){
+    var err=(e&&e.error)||'';
+    if(err==='aborted') return;
+    if(err==='not-allowed'||err==='service-not-allowed') say(VOICE_BLOCKED);
+    else if(err==='audio-capture') say('I couldn\u2019t reach a microphone on this device. Check that one is connected and not being used by another app \u2014 or type instead, that always works.');
+    else if(err==='network') say('Voice needs a connection to the speech service. Check your signal and try again \u2014 or type instead, that always works.');
+    else if(err==='no-speech') say('I didn\u2019t hear anything that time. Tap the mic and try again \u2014 typing always works too.');
+    else say('Voice hit a snag just now. You can type instead \u2014 that always works.');
+  }
   var rec=null, listening=false, base='';
-  B.addEventListener('click',function(){
-    if(listening){ try{rec.stop();}catch(e){} return; }
+  function startRec(){
     rec=new SR(); rec.lang='en-US'; rec.interimResults=true; rec.maxAlternatives=1;
     base=I.value.replace(/\s+$/,'');
     rec.onresult=function(e){
@@ -1700,11 +1710,18 @@ function wireVoice(btnId, inputId){
       I.focus();
     };
     rec.onend=function(){ listening=false; B.classList.remove('rec'); };
-    rec.onerror=rec.onend;
+    rec.onerror=function(e){ rec.onend(); voiceError(e); };
     try{ rec.start(); listening=true; B.classList.add('rec'); }catch(e){}
+  }
+  B.addEventListener('click',function(){
+    if(listening){ try{rec.stop();}catch(e){} return; }
+    var pq=null;
+    try{ pq=(navigator.permissions&&navigator.permissions.query)?navigator.permissions.query({name:'microphone'}):null; }catch(e){ pq=null; }
+    if(pq&&typeof pq.then==='function'){ pq.then(function(st){ if(st&&st.state==='denied'){ say(VOICE_BLOCKED); } else { startRec(); } },function(){ startRec(); }); }
+    else startRec();
   });
 }
-wireVoice('aspMic','aspInput');
+wireVoice('aspMic','aspInput',function(m){ aspBubble('speedy',m); });
 </script>
 <script>
 function aspReceiptBtns(){ return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="btn" style="background:#0C162B;color:#fff" onclick="aspReceipt(\'email\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E94E5C"/></svg> Email me my receipt</button><button type="button" class="btn" style="background:#0C162B;color:#fff" onclick="aspReceipt(\'sms\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E94E5C"/></svg> Text me my tracking link</button></div>'; }

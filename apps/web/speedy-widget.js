@@ -386,16 +386,30 @@
   // Voice — same pattern as the flagship booking suite (wireVoice):
   // the live transcript lands in the composer so the customer can read
   // and edit it, then tap Send — voice never sends on its own.
+  // Every recognition error speaks: a blocked mic, no mic, a speech-service
+  // snag or plain silence each get one calm message instead of a dead mic.
   var mic = panel.querySelector('#tswMic');
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var VOICE_BLOCKED = 'The microphone is blocked for this site. Tap the lock icon in the address bar, set Microphone to Allow for this site, then tap the mic again — or just type, that always works.';
+  function sayVoice(m) {
+    addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> ' + m, false);
+  }
+  function voiceError(e) {
+    var err = (e && e.error) || '';
+    if (err === 'aborted') return;
+    if (err === 'not-allowed' || err === 'service-not-allowed') sayVoice(VOICE_BLOCKED);
+    else if (err === 'audio-capture') sayVoice('I couldn\'t reach a microphone on this device. Check that one is connected and not being used by another app — or type instead, that always works.');
+    else if (err === 'network') sayVoice('Voice needs a connection to the speech service. Check your signal and try again — or type instead, that always works.');
+    else if (err === 'no-speech') sayVoice('I didn\'t hear anything that time. Tap the mic and try again — typing always works too.');
+    else sayVoice('Voice hit a snag just now. You can type instead — that always works.');
+  }
   if (!SR) {
     mic.addEventListener('click', function () {
-      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> Voice isn\'t available on this browser — you can type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.)', false);
+      addMsg('<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.2v3.6M8.3 7.4v9.2M15.7 7.4v9.2M19.5 10.2v3.6"/><path d="M12 4.8v14.4" stroke="#E8322E"/></svg> Voice isn\'t available on this browser — you can type instead, and I\'ll book you the same way. (Voice works in Chrome on desktop and Android.) If this page is open inside another app, opening it in Chrome makes voice work.', false);
     });
   } else {
     var rec = null, listening = false, voiceBase = '';
-    mic.addEventListener('click', function () {
-      if (listening) { try { rec.stop(); } catch (e) {} return; }
+    function startVoice() {
       rec = new SR();
       rec.lang = 'en-US';
       rec.interimResults = true;
@@ -410,8 +424,16 @@
         input.focus();
       };
       rec.onend = function () { listening = false; mic.classList.remove('rec'); };
-      rec.onerror = rec.onend;
+      rec.onerror = function (e) { rec.onend(); voiceError(e); };
       try { rec.start(); listening = true; mic.classList.add('rec'); } catch (e) {}
+    }
+    mic.addEventListener('click', function () {
+      if (listening) { try { rec.stop(); } catch (e) {} return; }
+      var pq = null;
+      try { pq = (navigator.permissions && navigator.permissions.query) ? navigator.permissions.query({ name: 'microphone' }) : null; } catch (e) { pq = null; }
+      if (pq && typeof pq.then === 'function') {
+        pq.then(function (st) { if (st && st.state === 'denied') { sayVoice(VOICE_BLOCKED); } else { startVoice(); } }, function () { startVoice(); });
+      } else { startVoice(); }
     });
   }
 
