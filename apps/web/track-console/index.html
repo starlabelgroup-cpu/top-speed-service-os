@@ -90,6 +90,7 @@
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span id="who" style="font-weight:700;color:var(--navy)"></span>
       <span style="flex:1"></span>
+      <button class="btn btn-ghost" id="tcWsOptBtn" type="button">Options</button>
       <button class="btn btn-ghost" id="refreshBtn">↻ Refresh board</button>
       <button class="btn btn-ghost" id="signOutBtn">Sign out</button>
     </div>
@@ -237,6 +238,120 @@ $('signOutBtn').addEventListener('click', () => { localStorage.removeItem('tsos_
 setInterval(() => { if (token() && !$('board').classList.contains('hidden')) loadBoard().catch(() => {}); }, 30000);
 
 if (token()) enter();
+</script>
+<style id="tcWsStyle">
+.tcws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.tcws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.tcws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.tcws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.tcws-row{margin-bottom:14px}
+.tcws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.tcws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.tcws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.tcws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.tcws-note{font-size:12.5px;color:#65758e;margin-top:8px}
+</style>
+<div class="tcws-back" id="tcWsOptBack" role="dialog" aria-modal="true" aria-label="Track Console options">
+  <div class="tcws-panel">
+    <h3>Board options</h3>
+    <p class="tcws-sub">Saved on this device only. Every job card already shows the full job and all of its actions — these options only change how the board is arranged. The board already refreshes itself every 30 seconds, so there is no auto-refresh setting here.</p>
+    <div class="tcws-row"><span class="lb">Order</span>
+      <div class="tcws-seg" id="tcWsSortSeg">
+        <button type="button" data-sort="board">Board order</button>
+        <button type="button" data-sort="newest">Newest first</button>
+        <button type="button" data-sort="stage">By stage</button>
+      </div>
+    </div>
+    <div class="tcws-row"><span class="lb">Completed jobs</span>
+      <div class="tcws-seg" id="tcWsDoneSeg">
+        <button type="button" data-done="show">Shown</button>
+        <button type="button" data-done="hide">Hidden</button>
+      </div>
+    </div>
+    <div class="tcws-row"><span class="lb">Technician</span>
+      <div class="tcws-seg" id="tcWsProvSeg"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn btn-navy" type="button" id="tcWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Track Console) ═══
+   Additive only: an Options panel that arranges the board's own
+   job cards (order, hide completed, technician filter) on this
+   device. Cards render complete with every action already, and
+   the board self-refreshes every 30 seconds — so there is no
+   detail view, CTA bar or auto-refresh toggle to add. Defaults
+   reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_trackconsole_prefs';
+  var prefs={sort:'board',hideDone:false,provider:''};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(['board','newest','stage'].indexOf(p.sort)>-1) prefs.sort=p.sort; if(typeof p.hideDone==='boolean') prefs.hideDone=p.hideDone; if(typeof p.provider==='string') prefs.provider=p.provider; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  var jobsByRef={};
+  var origJobHTML=jobHTML;
+  jobHTML=function(j){ if(j&&j.reference) jobsByRef[j.reference]=j; return origJobHTML(j); };
+  function applyView(){
+    var box=document.getElementById('jobs'); if(!box) return;
+    var cards=Array.prototype.slice.call(box.querySelectorAll('.job'));
+    if(!cards.length) return;
+    if(prefs.sort!=='board'){
+      var sorted=cards.slice().sort(function(a,b){
+        var ja=jobsByRef[a.getAttribute('data-ref')]||{}, jb=jobsByRef[b.getAttribute('data-ref')]||{};
+        if(prefs.sort==='newest') return String(jb.createdAt||'').localeCompare(String(ja.createdAt||''));
+        var d=(ja.stageIndex||0)-(jb.stageIndex||0);
+        return d!==0?d:String(jb.createdAt||'').localeCompare(String(ja.createdAt||''));
+      });
+      var sameOrder=sorted.length===cards.length&&sorted.every(function(c,i){ return c===cards[i]; });
+      if(!sameOrder) sorted.forEach(function(c){ box.appendChild(c); });
+      cards=sorted;
+    }
+    var visible=0;
+    cards.forEach(function(c){
+      var j=jobsByRef[c.getAttribute('data-ref')]||{};
+      var show=true;
+      if(prefs.hideDone&&(j.stageIndex||0)>=7) show=false;
+      if(prefs.provider==='__none'&&j.providerId) show=false;
+      if(prefs.provider&&prefs.provider!=='__none'&&j.providerId!==prefs.provider) show=false;
+      c.style.display=show?'':'none';
+      if(show) visible++;
+    });
+    var note=document.getElementById('tcWsNote');
+    if(!note){ note=document.createElement('p'); note.id='tcWsNote'; note.className='tcws-note'; box.parentNode.insertBefore(note,box.nextSibling); }
+    if(prefs.sort!=='board'||prefs.hideDone||prefs.provider){
+      note.style.display='';
+      note.textContent='Showing '+visible+' of '+cards.length+' jobs on the board — the board counts above stay complete.';
+    } else { note.style.display='none'; }
+  }
+  var origLoadBoard=loadBoard;
+  loadBoard=function(){ var r=origLoadBoard(); if(r&&typeof r.then==='function'){ return r.then(function(v){ applyView(); return v; }); } applyView(); return r; };
+  /* The first render can land before this block runs (enter() fires in
+     the page's own script) — observe #jobs and apply the view to every
+     fresh render, with a re-entrancy guard so our own reorder/hide
+     mutations do not loop. */
+  var tcApplying=false;
+  var tcOrigApply=applyView;
+  applyView=function(){ if(tcApplying) return; tcApplying=true; try{ tcOrigApply(); } finally{ tcApplying=false; } };
+  var tcJobsBox=document.getElementById('jobs');
+  if(tcJobsBox&&window.MutationObserver){ new MutationObserver(function(){ applyView(); }).observe(tcJobsBox,{childList:true}); }
+  function segMark(segId,attr,val){ var seg=document.getElementById(segId); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute(attr)===val); }); }
+  function buildProvSeg(){
+    var seg=document.getElementById('tcWsProvSeg');
+    var html='<button type="button" data-prov="">All technicians</button><button type="button" data-prov="__none">Unassigned</button>';
+    (typeof PROVIDERS!=='undefined'?PROVIDERS:[]).forEach(function(p){ html+='<button type="button" data-prov="'+String(p.id)+'">'+String(p.businessName||'Provider').replace(/</g,'&lt;')+'</button>'; });
+    seg.innerHTML=html;
+    segMark('tcWsProvSeg','data-prov',prefs.provider);
+  }
+  function syncSegs(){ segMark('tcWsSortSeg','data-sort',prefs.sort); segMark('tcWsDoneSeg','data-done',prefs.hideDone?'hide':'show'); buildProvSeg(); }
+  function openBack(){ document.getElementById('tcWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('tcWsOptBack').style.display='none'; }
+  document.getElementById('tcWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('tcWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('tcWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('tcWsSortSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.sort=b.getAttribute('data-sort'); savePrefs(); syncSegs(); applyView(); });
+  document.getElementById('tcWsDoneSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.hideDone=b.getAttribute('data-done')==='hide'; savePrefs(); syncSegs(); applyView(); });
+  document.getElementById('tcWsProvSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.provider=b.getAttribute('data-prov'); savePrefs(); syncSegs(); applyView(); });
+})();
 </script>
 <script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>

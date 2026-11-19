@@ -256,7 +256,7 @@
       <section class="tb-section" id="sec-decisions">
         <div class="tb-sec-head">
           <div><h2>Needs a Decision</h2><p>Everything waiting on a human, oldest first — unassigned jobs, area reviews, referral rewards, campaign approvals, department reports, new commercial requests and (for the President) Speedy Verify access codes. Act here, or open the owning console.</p></div>
-          <span class="tb-updated" id="decUpdated"></span>
+          <span style="display:inline-flex;gap:8px;align-items:center;"><button class="btn2 ghost" id="tbWsOptBtn" type="button">Options</button><span class="tb-updated" id="decUpdated"></span></span>
         </div>
         <div class="tb-card"><div id="decList"><p class="empty">Loading the decision queue…</p></div><div id="decMsg"></div></div>
       </section>
@@ -853,6 +853,221 @@ var ccMb = document.getElementById('ccMenuBtn'); if (ccMb) ccMb.addEventListener
 var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListener('click', function(){ ccToggleSidebar(false); });
 if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
 boot();
+</script>
+<style id="tbWsStyle">
+.tbws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.tbws-panel{background:#fff;border-radius:14px;max-width:560px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.tbws-panel h3{margin:0 0 4px;font-family:'Rajdhani',sans-serif;font-size:19px;color:#182742}
+.tbws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.tbws-row{margin-bottom:14px}
+.tbws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.tbws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.tbws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.tbws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.tbws-kv{display:grid;grid-template-columns:130px 1fr;gap:6px 12px;font-size:13.5px;margin:12px 0}
+.tbws-kv .k{color:#97a3b4;font-weight:700}
+.tbws-cta{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;border-top:1px solid #eef1f6;padding-top:14px;align-items:center}
+.tbws-cta select{border:1px solid #dfe7f0;border-radius:8px;padding:9px 10px;font-size:13px;font-family:inherit;max-width:230px}
+.tbws-msg{font-size:13px;margin-top:10px;min-height:16px}
+.tbws-note{font-size:12.5px;color:#65758e;padding:10px 4px 2px}
+#decList .qrow{cursor:pointer}
+</style>
+<div class="tbws-back" id="tbWsOptBack" role="dialog" aria-modal="true" aria-label="Decision queue options">
+  <div class="tbws-panel">
+    <h3>Decision queue options</h3>
+    <p class="tbws-sub">Saved on this device only. The queue counts above always stay complete — sorting and filtering here only change how the list below is shown. This board already refreshes itself every 60 seconds.</p>
+    <div class="tbws-row"><span class="lb">Order</span>
+      <div class="tbws-seg" id="tbWsSortSeg">
+        <button type="button" data-sort="oldest">Oldest first</button>
+        <button type="button" data-sort="newest">Newest first</button>
+      </div>
+    </div>
+    <div class="tbws-row"><span class="lb">Show</span>
+      <div class="tbws-seg" id="tbWsKindSeg">
+        <button type="button" data-kind="ALL">Everything</button>
+        <button type="button" data-kind="QUEUE">Setter queue</button>
+        <button type="button" data-kind="AREA">Area review</button>
+        <button type="button" data-kind="UNASSIGNED">Unassigned</button>
+        <button type="button" data-kind="REFERRAL">Referrals</button>
+        <button type="button" data-kind="CAMPAIGN">Campaigns</button>
+        <button type="button" data-kind="REPORT">Reports</button>
+        <button type="button" data-kind="COMMREQ">Commercial</button>
+        <button type="button" data-kind="VERIFY">Speedy Verify</button>
+      </div>
+    </div>
+    <div class="tbws-cta"><button class="btn2" type="button" id="tbWsOptClose">Done</button></div>
+  </div>
+</div>
+<div class="tbws-back" id="tbWsBack" role="dialog" aria-modal="true" aria-label="Decision detail">
+  <div class="tbws-panel">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <h3 id="tbWsTitle">Decision</h3>
+      <button class="btn2 ghost" type="button" id="tbWsClose">Close</button>
+    </div>
+    <div id="tbWsBody"></div>
+    <div class="tbws-msg" id="tbWsMsg"></div>
+    <div class="tbws-cta" id="tbWsCta"></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Turbo Boss) ═══
+   Additive only: an Options panel for the decision queue (order +
+   kind filter, this device only), and click-to-open decision detail
+   whose actions are the queue's OWN actions on the same endpoints.
+   Default prefs reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_turboboss_prefs';
+  var prefs={sort:'oldest',kind:'ALL'};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(p.sort==='newest'||p.sort==='oldest') prefs.sort=p.sort; if(typeof p.kind==='string'&&p.kind) prefs.kind=p.kind; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function segMark(segId,attr,val){ var seg=document.getElementById(segId); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute(attr)===val); }); }
+  function syncSegs(){ segMark('tbWsSortSeg','data-sort',prefs.sort); segMark('tbWsKindSeg','data-kind',prefs.kind); }
+
+  /* Order: buildItems sorts oldest-first; newest = reverse the built list.
+     Length never changes, so every count on the page stays truthful. */
+  var origBuildItems=buildItems;
+  buildItems=function(){ origBuildItems(); if(prefs.sort==='newest'&&TB.items&&TB.items.length>1){ TB.items.reverse(); } };
+
+  /* Filter: hide rendered rows only — TB.items is never filtered, so the
+     row handlers (tbAssign(i) etc., which index TB.items) stay correct. */
+  var origRenderDecisions=renderDecisions;
+  renderDecisions=function(){
+    origRenderDecisions();
+    var rows=document.querySelectorAll('#decList .qrow');
+    var visible=0;
+    Array.prototype.forEach.call(rows,function(row,i){
+      row.setAttribute('data-tbws-i',String(i));
+      var it=TB.items[i];
+      var show=!(prefs.kind!=='ALL'&&it&&it.kind!==prefs.kind);
+      row.style.display=show?'':'none';
+      if(show) visible++;
+    });
+    var card=document.getElementById('decList');
+    var note=document.getElementById('tbWsNote');
+    if(!note&&card&&card.parentNode){ note=document.createElement('p'); note.id='tbWsNote'; note.className='tbws-note'; card.parentNode.appendChild(note); }
+    if(note){
+      if(prefs.kind!=='ALL'||prefs.sort==='newest'){
+        note.style.display='';
+        note.textContent='View: '+(prefs.sort==='newest'?'newest first':'oldest first')+(prefs.kind!=='ALL'?(' · showing '+visible+' of '+rows.length+' listed decisions ('+(KIND_LABEL[prefs.kind]||prefs.kind)+')'):'')+' — the queue counts stay complete.';
+      } else { note.style.display='none'; }
+    }
+  };
+
+  /* ── Decision detail ── */
+  var cur=null;
+  function openBack(id){ var b=document.getElementById(id); if(b){ b.style.display='flex'; } }
+  function closeBack(id){ var b=document.getElementById(id); if(b){ b.style.display='none'; } }
+  function kv(k,v){ return v?('<div class="k">'+esc(k)+'</div><div>'+v+'</div>'):''; }
+  function openDetail(it){
+    cur=it;
+    document.getElementById('tbWsTitle').textContent=(KIND_LABEL[it.kind]||'Decision')+(it.ref?(' · '+it.ref):'');
+    var h='<div class="tbws-kv">';
+    h+=kv('Item','<b>'+esc(it.title||'')+'</b>');
+    h+=kv('Detail',it.sub?esc(it.sub):'');
+    h+=kv('Waiting since',it.createdAt?esc(fmtET(it.createdAt))+' ('+esc(fmtAge(it.createdAt,it.ageMinutes))+')':'');
+    h+=kv('Segment',it.segment?esc(it.segment):'');
+    h+=kv('Source',it.source?esc(it.source):'');
+    h+='</div><div id="tbWsEnrich"></div>';
+    document.getElementById('tbWsBody').innerHTML=h;
+    document.getElementById('tbWsMsg').textContent='';
+    renderCta(it);
+    openBack('tbWsBack');
+    var enr=document.getElementById('tbWsEnrich');
+    if((it.kind==='QUEUE'||it.kind==='AREA'||it.kind==='UNASSIGNED')&&it.bookingId){
+      get('/bookings/'+encodeURIComponent(it.bookingId)).then(function(res){
+        if(!res.ok||cur!==it) return;
+        var b=data(res.j)||{};
+        var c=b.customer||{};
+        var rows='';
+        rows+=kv('Customer',c.name?esc(c.name):'');
+        rows+=kv('Phone',c.phone?('<a href="tel:+1'+esc(String(c.phone).replace(/\D/g,''))+'">'+esc(c.phone)+'</a>'):'');
+        rows+=kv('Appliance',b.appliance?esc(b.appliance):'');
+        rows+=kv('Issue',b.issue?esc(b.issue):'');
+        rows+=kv('Address',b.serviceAddress?esc(b.serviceAddress):'');
+        rows+=kv('Status',b.status?esc(b.status):'');
+        if(rows) enr.innerHTML='<div class="tbws-kv" style="border-top:1px solid #eef1f6;padding-top:10px">'+rows+'</div>';
+      });
+    } else if(it.kind==='CAMPAIGN'&&it.id){
+      get('/ad-studio/campaigns/'+encodeURIComponent(it.id)).then(function(res){
+        if(!res.ok||cur!==it) return;
+        var c=data(res.j)||{};
+        var rows='';
+        rows+=kv('Campaign status',c.status?esc(c.status):'');
+        rows+=kv('Destination',c.destinationUrl?esc(c.destinationUrl):'');
+        rows+=kv('Source tag',c.sourceTag?esc(c.sourceTag):'');
+        rows+=kv('Notes',c.notes?esc(c.notes):'');
+        if(rows) enr.innerHTML='<div class="tbws-kv" style="border-top:1px solid #eef1f6;padding-top:10px">'+rows+'</div>';
+      });
+    }
+  }
+  function detailMsg(ok,text){ var m=document.getElementById('tbWsMsg'); if(m){ m.textContent=text; m.style.color=ok?'#14532d':'#9e3e4b'; } }
+  function actDone(ok,text){ decNote(ok,text); if(ok){ closeBack('tbWsBack'); loadAll(); } else { detailMsg(false,text); } }
+  function renderCta(it){
+    var cta=document.getElementById('tbWsCta');
+    var h='';
+    if(it.kind==='QUEUE'||it.kind==='AREA'||it.kind==='UNASSIGNED'){
+      h='<select id="tbWsPsel" aria-label="Provider">'+providerOptions()+'</select>'
+        +'<button class="btn2 red" type="button" id="tbWsAssign">Assign</button>'
+        +(it.kind==='AREA'?'<a class="btn2 ghost" href="/book-os">Resolve area in Book OS</a>':'<a class="btn2 ghost" href="/dispatch-dashboard">Dispatch</a>');
+    } else if(it.kind==='REFERRAL'){
+      h='<button class="btn2 red" type="button" id="tbWsRefOk">Approve credit</button><button class="btn2 ghost" type="button" id="tbWsRefNo">Reject</button><a class="btn2 ghost" href="/book-os">Book OS</a>';
+    } else if(it.kind==='CAMPAIGN'){
+      if(TB.roles.indexOf('COMPANY_OWNER')!==-1||TB.roles.indexOf('PLATFORM_ADMIN')!==-1){ h='<button class="btn2 red" type="button" id="tbWsCampOk">Approve campaign</button>'; }
+      else { h='<span class="pill">Owner approval</span>'; }
+      h+='<a class="btn2 ghost" href="/ad-studio">Ad Studio</a>';
+    } else if(it.kind==='REPORT'){
+      h='<button class="btn2" type="button" id="tbWsAck">Acknowledge</button><a class="btn2 ghost" href="/manager">Reports</a>';
+    } else if(it.kind==='COMMREQ'){
+      h='<a class="btn2" href="/crm">Work it in the CRM</a>';
+    } else if(it.kind==='VERIFY'){
+      h='<a class="btn2 red" href="/applianceman#sec-verify">Issue code in ApplianceMan</a>';
+    }
+    cta.innerHTML=h;
+    var as=document.getElementById('tbWsAssign');
+    if(as) as.addEventListener('click',function(){
+      var sel=document.getElementById('tbWsPsel'); var pid=sel?sel.value:'';
+      if(!pid){ detailMsg(false,'Pick a provider first — '+it.ref+' has not been assigned.'); return; }
+      post('/tracking/console/'+encodeURIComponent(it.ref)+'/assign',{providerId:pid}).then(function(res){
+        if(!res.ok){ actDone(false,'Assignment failed for '+it.ref+': '+errText(res,'the Service OS did not accept it.')); return; }
+        actDone(true,'Assigned — '+it.ref+' is confirmed with the provider. The board has been refreshed.');
+      });
+    });
+    var ro=document.getElementById('tbWsRefOk');
+    if(ro) ro.addEventListener('click',function(){ post('/referrals/admin/journeys/'+encodeURIComponent(it.id)+'/approve',{}).then(function(res){ if(!res.ok){ actDone(false,'Approval failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Referral credit approved and issued. The queue has been refreshed.'); }); });
+    var rn=document.getElementById('tbWsRefNo');
+    if(rn) rn.addEventListener('click',function(){ post('/referrals/admin/journeys/'+encodeURIComponent(it.id)+'/reject',{}).then(function(res){ if(!res.ok){ actDone(false,'Rejection failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Referral reward rejected. The queue has been refreshed.'); }); });
+    var co=document.getElementById('tbWsCampOk');
+    if(co) co.addEventListener('click',function(){ post('/ad-studio/campaigns/'+encodeURIComponent(it.id)+'/approve',{}).then(function(res){ if(!res.ok){ actDone(false,'Campaign approval failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Campaign approved — it is now ACTIVE in Ad Studio. The queue has been refreshed.'); }); });
+    var ak=document.getElementById('tbWsAck');
+    if(ak) ak.addEventListener('click',function(){ post('/management/reports/'+encodeURIComponent(it.id)+'/ack',{}).then(function(res){ if(!res.ok){ actDone(false,'Acknowledge failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Report acknowledged. The queue has been refreshed.'); }); });
+  }
+  var decList=document.getElementById('decList');
+  if(decList) decList.addEventListener('click',function(ev){
+    if(ev.target.closest('button,select,a,input,textarea')) return;
+    var row=ev.target.closest('.qrow'); if(!row) return;
+    var i=Number(row.getAttribute('data-tbws-i'));
+    var it=TB.items[i]; if(!it) return;
+    openDetail(it);
+  });
+
+  /* ── Options panel wiring ── */
+  var optBtn=document.getElementById('tbWsOptBtn');
+  if(optBtn) optBtn.addEventListener('click',function(){ syncSegs(); openBack('tbWsOptBack'); });
+  document.getElementById('tbWsOptClose').addEventListener('click',function(){ closeBack('tbWsOptBack'); });
+  document.getElementById('tbWsClose').addEventListener('click',function(){ closeBack('tbWsBack'); });
+  document.getElementById('tbWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack('tbWsOptBack'); });
+  document.getElementById('tbWsBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack('tbWsBack'); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ closeBack('tbWsOptBack'); closeBack('tbWsBack'); } });
+  document.getElementById('tbWsSortSeg').addEventListener('click',function(ev){
+    var b=ev.target.closest('button'); if(!b) return;
+    prefs.sort=b.getAttribute('data-sort'); savePrefs(); syncSegs(); buildItems(); renderDecisions();
+  });
+  document.getElementById('tbWsKindSeg').addEventListener('click',function(ev){
+    var b=ev.target.closest('button'); if(!b) return;
+    prefs.kind=b.getAttribute('data-kind'); savePrefs(); syncSegs(); renderDecisions();
+  });
+  syncSegs();
+})();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>

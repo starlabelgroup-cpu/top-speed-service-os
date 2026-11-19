@@ -103,6 +103,7 @@ footer strong{color:#fff}
   <div id="console" style="display:none;">
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;">
       <button class="btn blue small" id="drainBtn">Send queued now</button>
+      <button class="btn ghost small" id="ntWsOptBtn" type="button">Options</button>
       <button class="btn ghost small" id="refreshBtn">Refresh</button>
       <button class="btn ghost small" id="signOutBtn">Sign out</button>
     </div>
@@ -293,6 +294,88 @@ function loadAll(){
 if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
 }
+</script>
+<style id="ntWsStyle">
+.ntws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.ntws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.ntws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.ntws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.ntws-row{margin-bottom:14px}
+.ntws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.ntws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.ntws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.ntws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.ntws-panel select{border:1px solid #dfe7f0;border-radius:8px;padding:9px 10px;font-size:13.5px;font-family:inherit;width:100%}
+</style>
+<div class="ntws-back" id="ntWsOptBack" role="dialog" aria-modal="true" aria-label="Notifications options">
+  <div class="ntws-panel">
+    <h3>Notifications options</h3>
+    <p class="ntws-sub">Saved on this device only. The status and channel choices drive the Outbox filter below and are remembered for next time. Rows already expand to the full message on click, and the console's own actions (Send queued now, the alert settings) stay where they are.</p>
+    <div class="ntws-row"><span class="lb">Status</span>
+      <select id="ntWsStatus"><option value="">All statuses</option><option>QUEUED</option><option>QUEUED_SIMULATED</option><option>SENT</option><option>FAILED</option><option>GATED</option></select>
+    </div>
+    <div class="ntws-row"><span class="lb">Channel</span>
+      <select id="ntWsChannel"><option value="">All channels</option><option value="email">Email</option><option value="sms">SMS</option><option value="internal">Internal</option></select>
+    </div>
+    <div class="ntws-row"><span class="lb">Auto-refresh</span>
+      <div class="ntws-seg" id="ntWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="ntws-sub" style="margin:8px 0 0">Pauses while a message is expanded, while this panel is open, or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" type="button" id="ntWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Notifications) ═══
+   Additive only: an Options panel that persists the Outbox's own
+   status/channel filters on this device and adds an opt-in
+   60-second auto-refresh. Rows already expand to full detail and
+   the send/settings actions already live on this surface, so
+   there is no detail view or CTA bar to add. Defaults reproduce
+   the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_notifications_prefs';
+  var prefs={status:'',channel:'',autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(typeof p.status==='string') prefs.status=p.status; if(typeof p.channel==='string') prefs.channel=p.channel; if(typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function setSel(id,val){ var el=document.getElementById(id); if(!el) return; var has=Array.prototype.some.call(el.options,function(o){ return o.value===val; }); if(has) el.value=val; }
+  function applyToControls(){ setSel('fStatus',prefs.status); setSel('fChannel',prefs.channel); setSel('ntWsStatus',prefs.status); setSel('ntWsChannel',prefs.channel); }
+  function segMark(){ var seg=document.getElementById('ntWsAutoSeg'); Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute('data-auto')===(prefs.autoRefresh?'on':'off')); }); }
+  /* Apply the persisted filters ONCE, now — this script runs during
+     parsing, before the page's first load (boot sits behind the
+     /auth/me read), so the Outbox's own Filter button and Refresh
+     read the restored values naturally. */
+  applyToControls();
+  document.getElementById('filterForm').addEventListener('submit',function(){
+    prefs.status=document.getElementById('fStatus').value;
+    prefs.channel=document.getElementById('fChannel').value;
+    savePrefs(); applyToControls();
+  });
+  function openBack(){ document.getElementById('ntWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('ntWsOptBack').style.display='none'; }
+  document.getElementById('ntWsOptBtn').addEventListener('click',function(){ applyToControls(); segMark(); openBack(); });
+  document.getElementById('ntWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('ntWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('ntWsStatus').addEventListener('change',function(){ prefs.status=this.value; savePrefs(); applyToControls(); loadOutbox().catch(function(){}); });
+  document.getElementById('ntWsChannel').addEventListener('change',function(){ prefs.channel=this.value; savePrefs(); applyToControls(); loadOutbox().catch(function(){}); });
+  document.getElementById('ntWsAutoSeg').addEventListener('click',function(ev){
+    var b=ev.target.closest('button'); if(!b) return;
+    prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); segMark();
+  });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('ntWsOptBack').style.display==='flex') return;
+    var con=document.getElementById('console'); if(!con||con.style.display==='none') return;
+    var openDetail=document.querySelector('#outboxTable tr.detail[style*="table-row"]');
+    if(openDetail) return;
+    loadAll();
+  },60000);
+  segMark();
+})();
 </script>
 <script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>

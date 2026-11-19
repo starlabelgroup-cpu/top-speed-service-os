@@ -201,6 +201,7 @@ section.page.on{display:block}
       <div class="cc-topbar-right">
         <span class="cc-live-badge" id="liveBadge" style="display:none"><span></span>LIVE SIGNALS</span>
         <span class="badge master" id="roleBadge" style="display:none">MASTER</span>
+        <button class="iconbtn" id="mgWsOptBtn" type="button">Options</button>
         <button class="iconbtn" id="refreshBtn" style="display:none" type="button">Refresh</button>
         <button class="iconbtn" id="logoutBtn" style="display:none" type="button">Sign out</button>
         <span class="cc-header-divider"></span>
@@ -661,6 +662,110 @@ document.getElementById('logoutBtn').addEventListener('click', function(){
   location.reload();
 });
 boot();
+</script>
+<style id="mgWsStyle">
+.mgws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.mgws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.mgws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.mgws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.mgws-row{margin-bottom:14px}
+.mgws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.mgws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.mgws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.mgws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+</style>
+<div class="mgws-back" id="mgWsOptBack" role="dialog" aria-modal="true" aria-label="Manager options">
+  <div class="mgws-panel">
+    <h3>Manager options</h3>
+    <p class="mgws-sub">Saved on this device only. Department reports already render in full — detail and the Acknowledge action included — so these options only remember how you left this console: the tab you were on, the reports department filter, the feed order, and an opt-in refresh.</p>
+    <div class="mgws-row"><span class="lb">Reports feed order</span>
+      <div class="mgws-seg" id="mgWsSortSeg">
+        <button type="button" data-sort="newest">Newest first</button>
+        <button type="button" data-sort="oldest">Oldest first</button>
+      </div>
+    </div>
+    <div class="mgws-row"><span class="lb">Auto-refresh</span>
+      <div class="mgws-seg" id="mgWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="mgws-sub" style="margin:8px 0 0">Pauses while this panel is open or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn2" type="button" id="mgWsOptClose" style="border:1px solid #dfe7f0;background:#182742;color:#fff;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Manager) ═══
+   Additive only: an Options panel that remembers, on this
+   device, the open tab and the reports department filter (both
+   are the page's own state), adds a feed order for the reports
+   list, and an opt-in 60-second refresh. Defaults reproduce the
+   page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_manager_prefs';
+  var prefs={tab:'overview',dept:'',sort:'newest',autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(typeof p.tab==='string'&&p.tab) prefs.tab=p.tab; if(typeof p.dept==='string') prefs.dept=p.dept; if(p.sort==='oldest'||p.sort==='newest') prefs.sort=p.sort; if(typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function segMark(segId,attr,val){ var seg=document.getElementById(segId); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute(attr)===val); }); }
+  function syncSegs(){ segMark('mgWsSortSeg','data-sort',prefs.sort); segMark('mgWsAutoSeg','data-auto',prefs.autoRefresh?'on':'off'); }
+
+  /* Department filter: the page's own repDept state. Apply the
+     saved value on the first load only; after that, capture the
+     manager's own chip choices as they happen. */
+  var mgApplied=false;
+  var origLoadReports=loadReports;
+  loadReports=function(){
+    if(!mgApplied){ mgApplied=true; if(prefs.dept) repDept=prefs.dept; }
+    else { prefs.dept=repDept||''; savePrefs(); }
+    return origLoadReports();
+  };
+  /* Feed order: reverse the rendered .rep cards (their Acknowledge
+     buttons carry their own handlers and move with the nodes). */
+  var mgReversedFirst=null;
+  function applySort(){
+    if(prefs.sort!=='oldest') return;
+    var feed=document.getElementById('repFeed'); if(!feed) return;
+    var reps=feed.querySelectorAll('.rep'); if(reps.length<2) return;
+    if(feed.firstElementChild===mgReversedFirst) return;
+    var arr=Array.prototype.slice.call(reps);
+    arr.reverse().forEach(function(el){ feed.appendChild(el); });
+    mgReversedFirst=feed.firstElementChild;
+  }
+  var mgFeed=document.getElementById('repFeed');
+  if(mgFeed&&window.MutationObserver){ new MutationObserver(function(){ applySort(); }).observe(mgFeed,{childList:true}); }
+  /* Remember the open tab; restore it once at startup. */
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click',function(){ prefs.tab=btn.getAttribute('data-tab')||'overview'; savePrefs(); });
+  });
+  if(prefs.tab&&prefs.tab!=='overview'){
+    var saved=document.querySelector('.tab[data-tab="'+prefs.tab+'"]');
+    if(saved&&!saved.classList.contains('on')){ saved.click(); }
+  }
+  function openBack(){ document.getElementById('mgWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('mgWsOptBack').style.display='none'; }
+  document.getElementById('mgWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('mgWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('mgWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('mgWsSortSeg').addEventListener('click',function(ev){
+    var b=ev.target.closest('button'); if(!b) return;
+    prefs.sort=b.getAttribute('data-sort'); savePrefs(); syncSegs();
+    mgReversedFirst=null;
+    if(prefs.sort==='oldest'){ applySort(); } else { loadReports(); }
+  });
+  document.getElementById('mgWsAutoSeg').addEventListener('click',function(ev){
+    var b=ev.target.closest('button'); if(!b) return;
+    prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs();
+  });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('mgWsOptBack').style.display==='flex') return;
+    if(!token()) return;
+    loadAll();
+  },60000);
+  syncSegs();
+})();
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>

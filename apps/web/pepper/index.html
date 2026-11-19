@@ -128,6 +128,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <p class="sub">The report log for the owner: status updates, actions taken, items that need Ramone, and incidents — filed by staff, newest first.</p>
     <div class="console">
       <h3>File a report</h3>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn ghost sm" id="ppWsOptBtn" type="button">Options</button></div>
       <form class="rform" id="reportForm">
         <input id="repTitle" type="text" maxlength="160" placeholder="Title — what happened, in one line" required>
         <select id="repCategory" required>
@@ -398,6 +399,95 @@ document.getElementById('btnSignOut').addEventListener('click', function(){
   location.reload();
 });
 boot();
+</script>
+<style id="ppWsStyle">
+.ppws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.ppws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.ppws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.ppws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.ppws-row{margin-bottom:14px}
+.ppws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.ppws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.ppws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.ppws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.ppws-note{font-size:12.5px;color:#65758e;margin-bottom:10px}
+</style>
+<div class="ppws-back" id="ppWsOptBack" role="dialog" aria-modal="true" aria-label="Pepper console options">
+  <div class="ppws-panel">
+    <h3>Report log options</h3>
+    <p class="ppws-sub">Saved on this device only. Reports render in full in the log — there is no hidden detail to open, and filing a report above is the console's action — so these options only shape how the log is shown.</p>
+    <div class="ppws-row"><span class="lb">Show category</span>
+      <div class="ppws-seg" id="ppWsCatSeg">
+        <button type="button" data-cat="ALL">All reports</button>
+        <button type="button" data-cat="STATUS">Status</button>
+        <button type="button" data-cat="ACTION_TAKEN">Action taken</button>
+        <button type="button" data-cat="NEEDS_OWNER">Needs owner</button>
+        <button type="button" data-cat="INCIDENT">Incident</button>
+      </div>
+    </div>
+    <div class="ppws-row"><span class="lb">Order</span>
+      <div class="ppws-seg" id="ppWsSortSeg">
+        <button type="button" data-sort="newest">Newest first</button>
+        <button type="button" data-sort="oldest">Oldest first</button>
+      </div>
+    </div>
+    <div class="ppws-row"><span class="lb">Auto-refresh the report log</span>
+      <div class="ppws-seg" id="ppWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="ppws-sub" style="margin:8px 0 0">Pauses while the report form has anything typed in it, while this panel is open, or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" type="button" id="ppWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Pepper console) ═══
+   Additive only: an Options panel for the report log (category
+   filter + order, this device only) and an opt-in auto-refresh.
+   Filtering/sorting act on a copy inside the render — the filed
+   reports themselves are never touched. Defaults reproduce the
+   page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_pepper_prefs';
+  var prefs={category:'ALL',sort:'newest',autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(['ALL','STATUS','ACTION_TAKEN','NEEDS_OWNER','INCIDENT'].indexOf(p.category)>-1) prefs.category=p.category; if(p.sort==='oldest'||p.sort==='newest') prefs.sort=p.sort; if(typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function segMark(segId,attr,val){ var seg=document.getElementById(segId); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute(attr)===val); }); }
+  function syncSegs(){ segMark('ppWsCatSeg','data-cat',prefs.category); segMark('ppWsSortSeg','data-sort',prefs.sort); segMark('ppWsAutoSeg','data-auto',prefs.autoRefresh?'on':'off'); }
+  var origRenderReports=renderReports;
+  renderReports=function(rows){
+    var total=Array.isArray(rows)?rows.length:0;
+    var view=Array.isArray(rows)?rows.slice():rows;
+    if(Array.isArray(view)&&prefs.category!=='ALL'){ view=view.filter(function(r){ return r&&r.category===prefs.category; }); }
+    if(Array.isArray(view)&&prefs.sort==='oldest'){ view.reverse(); }
+    origRenderReports(view);
+    if(Array.isArray(rows)&&(prefs.category!=='ALL'||prefs.sort==='oldest')){
+      var z=document.getElementById('reportFeed');
+      if(z){ var note=document.createElement('div'); note.className='ppws-note'; note.id='ppWsNote'; note.textContent='Showing '+view.length+' of '+total+' reports'+(prefs.category!=='ALL'?(' · '+(CAT_LABEL[prefs.category]||prefs.category)):'')+(prefs.sort==='oldest'?' · oldest first':'')+' — the full log is unchanged.'; z.insertBefore(note,z.firstChild); }
+    }
+  };
+  function openBack(){ document.getElementById('ppWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('ppWsOptBack').style.display='none'; }
+  document.getElementById('ppWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('ppWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('ppWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('ppWsCatSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.category=b.getAttribute('data-cat'); savePrefs(); syncSegs(); loadReports(); });
+  document.getElementById('ppWsSortSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.sort=b.getAttribute('data-sort'); savePrefs(); syncSegs(); loadReports(); });
+  document.getElementById('ppWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('ppWsOptBack').style.display==='flex') return;
+    var sz=document.getElementById('staffZone'); if(!sz||sz.style.display==='none') return;
+    var t=document.getElementById('repTitle'), b=document.getElementById('repBody');
+    if((t&&t.value.trim())||(b&&b.value.trim())) return;
+    if(document.activeElement&&(document.activeElement.id==='repTitle'||document.activeElement.id==='repBody'||document.activeElement.id==='repCategory')) return;
+    loadReports();
+  },60000);
+  syncSegs();
+})();
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>

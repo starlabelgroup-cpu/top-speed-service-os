@@ -115,6 +115,7 @@ footer strong{color:#fff}
 
     <div class="card">
       <h2>Pages</h2>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn ghost small" id="stWsOptBtn" type="button">Options</button></div>
       <div class="row" style="margin-bottom:12px;">
         <div style="grid-column:span 2;"><input id="pgQ" type="text" placeholder="Search title, slug or URL…" onkeydown="if(event.key==='Enter'){pgLoad();}"></div>
         <div><select id="pgStatus" onchange="pgLoad()"><option value="">Any status</option><option>DRAFT</option><option>IN_REVIEW</option><option>PUBLISHED</option><option>UNPUBLISHED</option></select></div>
@@ -436,6 +437,70 @@ if(tok()){ mf('GET','/marketing-os/admin/taxonomy').then(function(){ mosShow(); 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/layer2.js" defer></script>
+<style id="stWsStyle">
+.stws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.stws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.stws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.stws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.stws-row{margin-bottom:14px}
+.stws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.stws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.stws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.stws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+</style>
+<div class="stws-back" id="stWsOptBack" role="dialog" aria-modal="true" aria-label="Page Studio options">
+  <div class="stws-panel">
+    <h3>Page Studio options</h3>
+    <p class="stws-sub">Saved on this device only. A page's record already opens in full through its Edit and Versions actions, so these options only remember the Pages list filters and add an opt-in refresh of the list.</p>
+    <div class="stws-row"><span class="lb">Auto-refresh the Pages list</span>
+      <div class="stws-seg" id="stWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="stws-sub" style="margin:8px 0 0">Pauses while the page editor or the versions card is open, while this panel is open, or while the tab is hidden. The status and type filters above are remembered automatically.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" type="button" id="stWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Page Studio) ═══
+   Additive only: the Pages list's own status/type filters are
+   remembered on this device, plus an opt-in 60-second refresh
+   of the list. Page records already open in full via Edit and
+   Versions, so there is no detail view or CTA bar to add.
+   Defaults reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_studio_prefs';
+  var prefs={status:'',type:'',autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(typeof p.status==='string') prefs.status=p.status; if(typeof p.type==='string') prefs.type=p.type; if(typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function segMark(){ var seg=document.getElementById('stWsAutoSeg'); Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute('data-auto')===(prefs.autoRefresh?'on':'off')); }); }
+  function setSel(id,val){ var el=document.getElementById(id); if(!el) return; var has=Array.prototype.some.call(el.options,function(o){ return o.value===val; }); if(has) el.value=val; }
+  /* Apply once, now — the first pgLoad happens after sign-in, well
+     after this script runs, so the restored filters are read
+     naturally by the page's own handlers. */
+  setSel('pgStatus',prefs.status); setSel('pgType',prefs.type);
+  document.getElementById('pgStatus').addEventListener('change',function(){ prefs.status=this.value; savePrefs(); });
+  document.getElementById('pgType').addEventListener('change',function(){ prefs.type=this.value; savePrefs(); });
+  function openBack(){ document.getElementById('stWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('stWsOptBack').style.display='none'; }
+  document.getElementById('stWsOptBtn').addEventListener('click',function(){ segMark(); openBack(); });
+  document.getElementById('stWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('stWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('stWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); segMark(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('stWsOptBack').style.display==='flex') return;
+    var ed=document.getElementById('edCard'); if(ed&&ed.style.display!=='none') return;
+    var ver=document.getElementById('verCard'); if(ver&&ver.style.display!=='none') return;
+    if(!tok()) return;
+    pgLoad();
+  },60000);
+  segMark();
+})();
+</script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>

@@ -95,6 +95,7 @@ footer strong{color:#fff}
   <!-- Console -->
   <div id="console" style="display:none;">
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;">
+      <button class="btn ghost small" id="lcWsOptBtn" type="button">Options</button>
       <button class="btn ghost small" id="refreshBtn">Refresh</button>
       <button class="btn ghost small" id="signOutBtn">Sign out</button>
     </div>
@@ -299,6 +300,154 @@ function loadLog(){
 if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
 }
+</script>
+<style id="lcWsStyle">
+.lcws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.lcws-panel{background:#fff;border-radius:14px;max-width:540px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.lcws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.lcws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.lcws-row{margin-bottom:14px}
+.lcws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.lcws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.lcws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.lcws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.lcws-kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:13.5px;margin:12px 0;word-break:break-word}
+.lcws-kv .k{color:#97a3b4;font-weight:700}
+.lcws-note{font-size:12.5px;color:#65758e;margin-top:8px}
+#logTable tbody tr{cursor:pointer}
+</style>
+<div class="lcws-back" id="lcWsOptBack" role="dialog" aria-modal="true" aria-label="Link Center options">
+  <div class="lcws-panel">
+    <h3>Link Center options</h3>
+    <p class="lcws-sub">Saved on this device only. Sending links is this console's whole job and stays exactly as it is — these options only shape the Recent sends log below: filter it by status, re-read it automatically, and click any send to see the exact link that went out.</p>
+    <div class="lcws-row"><span class="lb">Log status</span>
+      <div class="lcws-seg" id="lcWsStatusSeg">
+        <button type="button" data-status="ALL">All sends</button>
+        <button type="button" data-status="SENT">Sent</button>
+        <button type="button" data-status="QUEUED">Queued</button>
+        <button type="button" data-status="FAILED">Failed</button>
+        <button type="button" data-status="GATED">Gated</button>
+      </div>
+    </div>
+    <div class="lcws-row"><span class="lb">Auto-refresh the log</span>
+      <div class="lcws-seg" id="lcWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="lcws-sub" style="margin:8px 0 0">Pauses while a send detail or this panel is open, or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="btn" type="button" id="lcWsOptClose">Done</button></div>
+  </div>
+</div>
+<div class="lcws-back" id="lcWsBack" role="dialog" aria-modal="true" aria-label="Send detail">
+  <div class="lcws-panel">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+      <h3 id="lcWsTitle">Send detail</h3>
+      <button class="btn ghost small" type="button" id="lcWsClose">Close</button>
+    </div>
+    <div id="lcWsBody"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;border-top:1px solid #eef1f6;padding-top:14px">
+      <button class="btn blue" type="button" id="lcWsAgain">Compose another like this</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Link Center) ═══
+   Additive only: an Options panel for the Recent sends log
+   (status filter + opt-in auto-refresh, this device only) and
+   click-to-open send detail showing the exact URL, provider and
+   timestamps the log payload already carries. The detail's one
+   action prefills the console's OWN send form — it never sends.
+   Defaults reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_linkcenter_prefs';
+  var prefs={status:'ALL',autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'){ if(['ALL','SENT','QUEUED','FAILED','GATED'].indexOf(p.status)>-1) prefs.status=p.status; if(typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function segMark(segId,attr,val){ var seg=document.getElementById(segId); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute(attr)===val); }); }
+  function syncSegs(){ segMark('lcWsStatusSeg','data-status',prefs.status); segMark('lcWsAutoSeg','data-auto',prefs.autoRefresh?'on':'off'); }
+  function statusMatches(e){
+    if(prefs.status==='ALL') return true;
+    if(prefs.status==='QUEUED') return e.status==='QUEUED'||e.status==='QUEUED_SIMULATED';
+    return e.status===prefs.status;
+  }
+  var lcRows=[];
+  var origLoadLog=loadLog;
+  loadLog=function(){
+    return apiFetch('/link-center/log?limit=50').then(function(j){ lcRows=j.data||[]; }).catch(function(){ lcRows=[]; })
+      .then(function(){ return origLoadLog(); })
+      .then(function(){
+        var rows=document.querySelectorAll('#logTable tbody tr');
+        var visible=0;
+        Array.prototype.forEach.call(rows,function(tr,i){
+          tr.setAttribute('data-lcws-i',String(i));
+          var e=lcRows[i];
+          var show=!e||statusMatches(e);
+          tr.style.display=show?'':'none';
+          if(show) visible++;
+        });
+        var box=document.getElementById('logTable');
+        var note=document.getElementById('lcWsNote');
+        if(prefs.status!=='ALL'&&rows.length){
+          if(!note){ note=document.createElement('p'); note.id='lcWsNote'; note.className='lcws-note'; box.appendChild(note); }
+          note.style.display='';
+          note.textContent='Showing '+visible+' of '+rows.length+' sends ('+prefs.status+') — the full log is unchanged.';
+        } else if(note){ note.style.display='none'; }
+      });
+  };
+  function kv(k,v){ return v?('<div class="k">'+esc(k)+'</div><div>'+v+'</div>'):''; }
+  var cur=null;
+  function openDetail(e){
+    cur=e;
+    document.getElementById('lcWsTitle').textContent=(e.linkType||'Link')+' · '+(e.channel||'');
+    var h='<div class="lcws-kv">';
+    h+=kv('Status',esc(e.status||'—')+(e.reason?' — '+esc(e.reason):''));
+    h+=kv('Error',e.error?esc(e.error):'');
+    h+=kv('Recipient',(e.to?esc(e.to):'')+(e.recipientName?' ('+esc(e.recipientName)+')':''));
+    h+=kv('Booking',e.bookingRef?esc(e.bookingRef):'');
+    h+=kv('Link sent',e.url?('<a href="'+esc(e.url)+'" target="_blank" rel="noopener">'+esc(e.url)+'</a>'):'');
+    h+=kv('Provider',e.provider?esc(e.provider):'');
+    h+=kv('Sent by',e.sentBy?esc(e.sentBy):'');
+    h+=kv('Logged',e.createdAt?esc(when(e.createdAt)):'');
+    h+=kv('Sent at',e.sentAt?esc(when(e.sentAt)):'');
+    h+='</div>';
+    document.getElementById('lcWsBody').innerHTML=h;
+    document.getElementById('lcWsBack').style.display='flex';
+  }
+  document.getElementById('logTable').addEventListener('click',function(ev){
+    var tr=ev.target.closest('tr[data-lcws-i]'); if(!tr) return;
+    var e=lcRows[Number(tr.getAttribute('data-lcws-i'))]; if(!e) return;
+    openDetail(e);
+  });
+  document.getElementById('lcWsAgain').addEventListener('click',function(){
+    if(!cur) return;
+    if(cur.linkType){ selType=cur.linkType; }
+    if(cur.channel){ selChannel=cur.channel; }
+    renderCards(); syncForm();
+    if(cur.bookingRef){ var r=document.getElementById('rRef'); if(r) r.value=cur.bookingRef; }
+    document.getElementById('lcWsBack').style.display='none';
+    var f=document.getElementById('sendForm'); if(f&&f.scrollIntoView) f.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  function openBack(){ document.getElementById('lcWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('lcWsOptBack').style.display='none'; }
+  document.getElementById('lcWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('lcWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('lcWsClose').addEventListener('click',function(){ document.getElementById('lcWsBack').style.display='none'; });
+  document.getElementById('lcWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.getElementById('lcWsBack').addEventListener('click',function(ev){ if(ev.target===this) this.style.display='none'; });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ closeBack(); document.getElementById('lcWsBack').style.display='none'; } });
+  document.getElementById('lcWsStatusSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.status=b.getAttribute('data-status'); savePrefs(); syncSegs(); loadLog(); });
+  document.getElementById('lcWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('lcWsOptBack').style.display==='flex') return;
+    if(document.getElementById('lcWsBack').style.display==='flex') return;
+    var con=document.getElementById('console'); if(!con||con.style.display==='none') return;
+    loadLog();
+  },60000);
+  syncSegs();
+})();
 </script>
 <script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
