@@ -79,6 +79,13 @@ const corsOrigin = (process.env.CORS_ORIGIN || 'http://localhost:5173')
 for (const nativeOrigin of ['capacitor://localhost', 'https://localhost']) {
   if (!corsOrigin.includes(nativeOrigin)) corsOrigin.push(nativeOrigin);
 }
+// The Top Speed Field Pro mobile tech app (Expo) serves its web build
+// from this origin; its sign-in and job calls are browser requests, so
+// the origin is always allowed alongside the configured list. (The
+// native iOS/Android builds are not browser-CORS-bound.)
+for (const appOrigin of ['https://top-speed-field-pro.vercel.app']) {
+  if (!corsOrigin.includes(appOrigin)) corsOrigin.push(appOrigin);
+}
 
 app.disable('x-powered-by');
 app.use(helmet());
