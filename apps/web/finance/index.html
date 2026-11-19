@@ -116,14 +116,21 @@ footer strong{color:#fff}
 
 <script>
 var API='https://top-speed-service-os.vercel.app/api/v1';
-var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var MANAGERS=['COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function when(iso){ if(!iso) return 'never'; try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+/* Expired-session recovery: drop the dead session from the vault and
+   reload into the sign-in gate — never park on a raw auth error. */
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); }catch(e){}
+  location.reload();
+}
 function apiFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
-  return fetch(API+path,opts).then(function(r){ if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+  return fetch(API+path,opts).then(function(r){ if(r.status===401){ sessionExpired(); throw new Error('session expired'); } if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('MANAGER ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
 }
 
 fetch(API+'/finance/status').then(function(r){ return r.json(); }).then(function(j){
@@ -151,9 +158,10 @@ document.getElementById('signOutBtn').addEventListener('click',function(){ try{ 
 
 function boot(user){
   var roles=(user&&user.roles)||[];
-  if(!roles.some(function(r){ return STAFF.indexOf(r)>-1; })){
+  if(!roles.some(function(r){ return MANAGERS.indexOf(r)>-1; })){
+    if(window.TSOSAccess){ window.TSOSAccess.showRestricted('MANAGER ONLY'); return; }
     document.getElementById('gatePanel').style.display='block';
-    var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='That account is not a staff account — finance figures are staff-only.';
+    var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='That account is not a manager account — finance figures are managers-only.';
     try{ localStorage.removeItem('tsos_token'); }catch(e){}
     return;
   }
@@ -198,7 +206,7 @@ function loadOverview(){
 }
 
 if(tok()){
-  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} document.getElementById('gatePanel').style.display='block'; });
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(e){ if(e && e.message==='session expired') return; try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(err){} try{ localStorage.removeItem('tsos_token'); }catch(err){} document.getElementById('gatePanel').style.display='block'; });
 }else{
   document.getElementById('gatePanel').style.display='block';
 }

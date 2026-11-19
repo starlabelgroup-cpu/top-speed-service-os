@@ -1,14 +1,21 @@
 import { Router } from 'express';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { STAFF_ROLES } from '../config/security.js';
+import { MANAGER_ROLES } from '../config/security.js';
 import { ackReport, listReports, reportSummary } from '../services/managementReports.js';
 
 /**
  * Management department reports (2026-11-14) — the read + acknowledge
  * side of services/managementReports.js. Every feature request on every
  * platform lands in this feed, routed to its head department, with the
- * exact request detail. Staff read it in the Remote Manager (/manager →
- * Reports tab); acknowledging stamps who saw it and when.
+ * exact request detail. Managers read it in the Remote Manager
+ * (/manager → Reports tab) and ApplianceMan; acknowledging stamps who
+ * saw it and when.
+ *
+ * MANAGER ONLY since 2026-11-18 (Ramone's order): these reports are
+ * the primary data of the Manager and ApplianceMan consoles, both
+ * restricted to the manager tier (MANAGER_ROLES — the same set the
+ * Turbo Boss gate uses). Service Setters get 403 here now, matching
+ * the consoles' badges.
  *
  * Acknowledge is idempotent BY DESIGN (documented choice): POSTing ack
  * for an already-ACKED report returns 200 with `alreadyAcked: true`
@@ -16,7 +23,7 @@ import { ackReport, listReports, reportSummary } from '../services/managementRep
  */
 const router = Router();
 
-const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
+const managerOnly = [authenticate, requireCompany, requireRole(...MANAGER_ROLES)];
 
 function publicReport(report) {
   return {
@@ -34,11 +41,11 @@ function publicReport(report) {
   };
 }
 
-router.get('/management/reports/summary', ...staffOnly, (req, res) => {
+router.get('/management/reports/summary', ...managerOnly, (req, res) => {
   return res.json({ data: reportSummary() });
 });
 
-router.get('/management/reports', ...staffOnly, (req, res) => {
+router.get('/management/reports', ...managerOnly, (req, res) => {
   const department = String(req.query.department || '').trim() || null;
   const status = String(req.query.status || '').trim().toUpperCase() || null;
   if (status && !['NEW', 'ACKED'].includes(status)) {
@@ -53,7 +60,7 @@ router.get('/management/reports', ...staffOnly, (req, res) => {
   return res.json({ data: { reports: reports.map(publicReport), total, limit, offset } });
 });
 
-router.post('/management/reports/:id/ack', ...staffOnly, async (req, res) => {
+router.post('/management/reports/:id/ack', ...managerOnly, async (req, res) => {
   const result = await ackReport(req.params.id, req.user?.id || null);
   if (!result) return res.status(404).json({ error: 'Report not found' });
   return res.json({ data: { report: publicReport(result.report), alreadyAcked: result.alreadyAcked } });

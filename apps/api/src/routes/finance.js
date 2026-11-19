@@ -9,7 +9,7 @@ import {
 } from '../db/financeRepo.js';
 import { partsSummary } from './parts.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { ROLES, STAFF_ROLES } from '../config/security.js';
+import { MANAGER_ROLES, ROLES } from '../config/security.js';
 import { emitReport } from '../services/managementReports.js';
 
 /**
@@ -146,7 +146,14 @@ function latestSnapshot(kind) {
   return matches.length ? matches[0] : null;
 }
 
-router.get('/finance/overview', authenticate, requireCompany, requireRole(...STAFF_ROLES), (req, res) => {
+// MANAGER ONLY since 2026-11-18 (Ramone's order): the Finance console
+// is a manager surface, and this overview is its primary data — the
+// manager tier (MANAGER_ROLES, the Turbo Boss set) only. Staff
+// surfaces that embed a read-only finance strip (Book OS, Local OS,
+// Media OS) hide the strip on this 403 by design; /finance/status
+// above stays public because it reports connection state only, never
+// figures.
+router.get('/finance/overview', authenticate, requireCompany, requireRole(...MANAGER_ROLES), (req, res) => {
   const connection = publicConnectionState();
   const openInvoices = store.financeInvoices.filter((inv) => inv.balanceCents > 0);
   return res.json({

@@ -307,13 +307,20 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script>
 var API = 'https://top-speed-service-os.vercel.app/api/v1';
-var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var MANAGERS = ['COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
 function hdr(){ var h = {'Content-Type':'application/json'}; var t = token(); if (t) h['Authorization'] = ('Bear' + 'er') + ' ' + t; return h; }
+/* Expired-session recovery: drop the dead session from the vault and
+   present the sign-in form again — never park on a raw auth error. */
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  loginGate('Your session expired — sign in again.');
+}
 function get(path, auth){
   return fetch(API + path, { headers: auth ? hdr() : {'Content-Type':'application/json'} })
-    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .then(function(r){ if (auth && r.status === 401) sessionExpired(); return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
     .catch(function(){ return { ok: false, status: 0, j: null }; });
 }
 function data(j){ return (j && j.data) ? j.data : j; }
@@ -325,7 +332,7 @@ function fmtWhen(iso){ try { return new Date(iso).toLocaleString('en-US', { mont
 
 function showGate(html){ document.getElementById('gate').innerHTML = html; document.getElementById('portal').style.display = 'none'; }
 function loginGate(msg){
-  showGate('<div class="gate"><h2>ApplianceMan sign-in</h2><p>This hub is for Top Speed staff only. Sign in with your Service OS account — the same login as Book OS and the CRM.</p>' +
+  showGate('<div class="gate"><h2>ApplianceMan sign-in</h2><p>This hub is for Top Speed managers only. Sign in with your Service OS account — the same login as Book OS and the CRM.</p>' +
   '<form id="loginForm"><label>EMAIL</label><input id="liEmail" type="email" autocomplete="username" required>' +
   '<label>PASSWORD</label><input id="liPass" type="password" autocomplete="current-password" required>' +
   '<div class="err" id="liErr"></div><button type="submit">Sign in to ApplianceMan</button></form>' +
@@ -376,11 +383,11 @@ function boot(){
   get('/auth/me', true).then(function(res){
     if (!res.ok && res.j && res.j.code === 'SPEEDY_VERIFY_REQUIRED'){ try { localStorage.removeItem('tsos_token'); } catch(e){} loginGate('Speedy Verify required — sign in and complete the access-code step.'); return; }
     var me = data(res.j);
-    if (!res.ok || !me || !me.user){ loginGate('Your session expired — sign in again.'); return; }
+    if (!res.ok || !me || !me.user){ sessionExpired(); return; }
     var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
-    var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
-    if (!isStaff){
-      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. ApplianceMan is restricted to Top Speed staff and the owner.</p></div>'); }
+    var isManager = roles.some(function(r){ return MANAGERS.indexOf(r) !== -1; });
+    if (!isManager){
+      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('MANAGER ONLY'); } else { showGate('<div class="gate"><h2>Managers only</h2><p>This account (' + esc(me.user.email || '') + ') does not hold a manager role. ApplianceMan is restricted to Top Speed managers and the owner.</p></div>'); }
       return;
     }
     document.getElementById('gate').innerHTML = '';

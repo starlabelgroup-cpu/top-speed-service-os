@@ -47,3 +47,14 @@ export const PUBLIC_SELF_SERVE_ROLES = [ROLES.CUSTOMER, ...MARKETING_ROLES];
  * the owner got "Insufficient role" from his own Book OS.)
  */
 export const STAFF_ROLES = [ROLES.DISPATCHER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN];
+
+/**
+ * Manager tier (2026-11-18, Ramone's order): ApplianceMan, Finance,
+ * Oversight and the Remote Manager are MANAGER ONLY — Service Setters
+ * (DISPATCHER) no longer enter them. This set mirrors the Turbo Boss
+ * page gate exactly (MANAGERS in apps/web/turbo-boss/index.html:
+ * COMPANY_ADMIN, COMPANY_OWNER, PLATFORM_ADMIN) so every manager
+ * console enforces one identical gate. Rule Zero holds: the owner is
+ * in the set, so the Master is never locked out.
+ */
+export const MANAGER_ROLES = [ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN];

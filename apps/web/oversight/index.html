@@ -238,14 +238,22 @@
 </div>
 <script>
 var API = 'https://top-speed-service-os.vercel.app/api/v1';
-var STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var MANAGERS = ['COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 var OV = { user:null, cycle:0, fast:{}, slow:{}, ferr:{}, serr:{}, adCounts:null };
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function token(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
 function hdr(auth){ var h = { 'Content-Type':'application/json' }; if (auth !== false && token()) h.Authorization = ('Bear' + 'er') + ' ' + token(); return h; }
+/* Expired-session recovery: drop the dead session from the vault and
+   present the sign-in form again — never park on a raw auth error. */
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); } catch(e){}
+  loginGate('Your session expired — sign in again.');
+}
 function get(path, auth){
   return fetch(API + path, { headers: hdr(auth) }).then(function(r){
+    if (auth !== false && r.status === 401) sessionExpired();
     return r.json().catch(function(){ return null; }).then(function(j){ return { ok: r.ok, status: r.status, j: j }; });
   }).catch(function(){ return { ok:false, status:0, j:null }; });
 }
@@ -257,7 +265,7 @@ function fmtDay(iso){ var d = new Date(iso); if (isNaN(d)) return ''; return d.t
 function ago(iso){ var d = new Date(iso); if (isNaN(d)) return ''; var s = Math.max(0, (Date.now() - d.getTime())/1000); if (s < 60) return 'just now'; var m = Math.floor(s/60); if (m < 60) return m + 'm ago'; var h = Math.floor(m/60); if (h < 24) return h + 'h ago'; var dd = Math.floor(h/24); return dd + 'd ago'; }
 function initials(name){ return String(name || '?').trim().split(/\s+/).slice(0,2).map(function(w){ return w[0]; }).join('').toUpperCase(); }
 function rolesOf(u){ return Array.isArray(u && u.roles) ? u.roles : (u && u.role ? [u.role] : []); }
-function isStaff(u){ return rolesOf(u).some(function(r){ return STAFF.indexOf(r) >= 0; }); }
+function isManager(u){ return rolesOf(u).some(function(r){ return MANAGERS.indexOf(r) >= 0; }); }
 function tierLabel(u){ var r = rolesOf(u); if (r.indexOf('COMPANY_OWNER') >= 0) return 'OWNER'; if (r.indexOf('COMPANY_ADMIN') >= 0 || r.indexOf('PLATFORM_ADMIN') >= 0) return 'MANAGER'; return 'SERVICE SETTER'; }
 function gateMsg(html){
   el('portal').style.display = 'none';
@@ -267,7 +275,7 @@ function loginGate(msg){
   el('portal').style.display = 'none';
   el('gate').innerHTML =
     '<div class="gate"><h2>Management Oversight</h2>' +
-    '<p>Staff sign-in. Every department on one screen — live from the Service OS.</p>' +
+    '<p>Manager sign-in. Every department on one screen — live from the Service OS.</p>' +
     (msg ? '<div class="err" style="display:block">' + esc(msg) + '</div>' : '') +
     '<label for="lgEmail">EMAIL</label><input id="lgEmail" type="email" autocomplete="username" placeholder="you@topspeedappliance.net">' +
     '<label for="lgPass">PASSWORD</label><input id="lgPass" type="password" autocomplete="current-password" placeholder="Your password">' +
@@ -300,9 +308,9 @@ function boot(){
   if (!token()) { loginGate(); return; }
   get('/auth/me').then(function(res){
     var me = data(res.j);
-    if (!res.ok || !me) { try { localStorage.removeItem('tsos_token'); } catch(e){} loginGate('Your session expired — sign in again.'); return; }
-    if (!isStaff(me)) {
-      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); return; } gateMsg('This console is staff only. You are signed in as <b>' + esc(me.email || 'this account') + '</b>, which does not have a staff role. <a href="/app" style="color:#e94e5c;font-weight:700">Open the customer app</a> or <a href="#" id="gOut" style="color:#e94e5c;font-weight:700">sign out</a> and use a staff account.');
+    if (!res.ok || !me) { sessionExpired(); return; }
+    if (!isManager(me)) {
+      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('MANAGER ONLY'); return; } gateMsg('This console is managers only. You are signed in as <b>' + esc(me.email || 'this account') + '</b>, which does not have a manager role. <a href="/app" style="color:#e94e5c;font-weight:700">Open the customer app</a> or <a href="#" id="gOut" style="color:#e94e5c;font-weight:700">sign out</a> and use a manager account.');
       var g = el('gOut'); if (g) g.addEventListener('click', function(e){ e.preventDefault(); signOut(); });
       return;
     }
@@ -325,7 +333,7 @@ function boot(){
     el('acctPanel').innerHTML =
       '<span class="k">SIGNED IN AS</span><span class="acct-v" style="font-weight:700">' + esc(me.name || me.email || 'Staff') + '</span>' +
       '<span class="k">ACCOUNT</span><span class="acct-v">' + esc(me.email || '') + '</span>' +
-      '<span class="k">ACCESS</span><span class="acct-v">' + esc(tier.charAt(0) + tier.slice(1).toLowerCase()) + ' — staff oversight, read-only</span>';
+      '<span class="k">ACCESS</span><span class="acct-v">' + esc(tier.charAt(0) + tier.slice(1).toLowerCase()) + ' — manager oversight, read-only</span>';
     refresh(true);
     setInterval(function(){ OV.cycle += 1; refresh(false); }, 60000);
   });

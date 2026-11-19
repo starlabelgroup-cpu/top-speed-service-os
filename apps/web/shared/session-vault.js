@@ -249,6 +249,37 @@
     MIRROR_KEYS.forEach(function (k) { safeRemove(k); });
   }
 
+  /* Expired-session recovery (2026-11-18, Ramone: "I should be able to
+   * log in anywhere anytime"): when an API call answers 401, the token
+   * that was mirrored is dead. Drop the account that owns that token
+   * from the vault (the next account, if any, is promoted and
+   * mirrored — the same semantics as a sign-out) so no page keeps
+   * re-sending a dead token or parks on an "Expired JWT" error: the
+   * page falls back to its normal sign-in form and the holder signs
+   * straight back in from wherever they are. Returns true when a
+   * vault account was dropped. */
+  function expireActive() {
+    var legacy = safeGet(TOKEN_KEY);
+    var v = read();
+    var dropped = false;
+    Object.keys(v.accounts).forEach(function (id) {
+      if (id === v.active || (legacy && v.accounts[id].token === legacy)) {
+        delete v.accounts[id];
+        dropped = true;
+      }
+    });
+    if (dropped) {
+      if (v.active && !v.accounts[v.active]) v.active = null;
+      write(v);
+    } else if (legacy) {
+      // The mirrored token is not a vault account (pre-vault legacy
+      // session): clear the mirrors directly so it cannot be retried.
+      MIRROR_KEYS.forEach(function (k) { safeRemove(k); });
+      dropped = true;
+    }
+    return dropped;
+  }
+
   /* ---------------- ?return= after sign-in -------------------------- */
   function isRelativePath(p) {
     return typeof p === 'string' && p.charAt(0) === '/' && p.charAt(1) !== '/';
@@ -384,6 +415,7 @@
     switchTo: switchTo,
     remove: remove,
     clearAll: clearAll,
+    expireActive: expireActive,
     token: token,
     handoffUrl: handoffUrl,
     HANDOFF_HOSTS: HANDOFF_HOSTS,

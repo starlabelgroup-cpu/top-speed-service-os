@@ -12,11 +12,14 @@
  * Audited gates (routes/*.js, 2026-11-18):
  *  - STAFF_ROLES gate (DISPATCHER, COMPANY_ADMIN, COMPANY_OWNER,
  *    PLATFORM_ADMIN): navigator, pepperConsole, crm, bookos, chats,
- *    tracking/console, notifications, linkCenter, finance/overview,
- *    management/reports (the primary data of Navigator, Pepper, CRM,
- *    Book OS, ApplianceMan, Oversight, Manager, Dispatch Dashboard,
- *    Service Setters, Notifications, Link Center, Chats, Track
- *    Console and Finance).
+ *    tracking/console, notifications, linkCenter (the primary data
+ *    of Navigator, Pepper, CRM, Book OS, Dispatch Dashboard,
+ *    Service Setters, Notifications, Link Center, Chats and Track
+ *    Console).
+ *  - MANAGER_ROLES gate (COMPANY_ADMIN, COMPANY_OWNER, PLATFORM_ADMIN
+ *    — the Turbo Boss page gate; 2026-11-18, Ramone's order):
+ *    finance/overview + management/reports (the primary data of
+ *    ApplianceMan, Finance, Oversight and Manager). Dispatchers 403.
  *  - Marketing gate (MARKETING_MANAGER, COMPANY_ADMIN, COMPANY_OWNER,
  *    PLATFORM_ADMIN — no DISPATCHER): adStudio, mediaOs admin,
  *    marketingOs admin, marketingSeo, marketingGoogleAccounts (Ad
@@ -26,9 +29,10 @@
  *  - Master gate (COMPANY_OWNER only): accessControl (scoped
  *    router.use('/access-control', ...)) + speedyVerify accounts —
  *    Work Time Access.
- *  - Turbo Boss: its APIs are staff-gated, but the PAGE gate is
- *    managers only (MANAGERS = COMPANY_ADMIN, COMPANY_OWNER,
- *    PLATFORM_ADMIN in apps/web/turbo-boss/index.html) — MANAGER ONLY.
+ *  - Turbo Boss: PAGE gate managers only (MANAGERS = COMPANY_ADMIN,
+ *    COMPANY_OWNER, PLATFORM_ADMIN in apps/web/turbo-boss/index.html)
+ *    — MANAGER ONLY; its management-reports feed joined the same
+ *    manager gate on 2026-11-18.
  *  - Academy: TRAINEE gate (STAFF_ROLES + PROVIDER_TECH +
  *    PROVIDER_OWNER + TECHNICIAN + MARKETING_MANAGER) fits none of
  *    the three labels, so the Academy carries NO badge and keeps its
@@ -187,6 +191,7 @@ async function cleanupDb() {
 
 /* ── The audited badge table (mirrors the route gates above) ────── */
 const STAFF = ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
+const MANAGERS = ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
 const MKTG = ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
 const EXPECTED_TABLE = {
   '/work-time-access': { label: 'OWNER ONLY', roles: ['COMPANY_OWNER'] },
@@ -195,16 +200,16 @@ const EXPECTED_TABLE = {
   '/pepper': { label: 'STAFF ONLY', roles: STAFF },
   '/crm': { label: 'STAFF ONLY', roles: STAFF },
   '/book-os': { label: 'STAFF ONLY', roles: STAFF },
-  '/applianceman': { label: 'STAFF ONLY', roles: STAFF },
-  '/oversight': { label: 'STAFF ONLY', roles: STAFF },
+  '/applianceman': { label: 'MANAGER ONLY', roles: MANAGERS },
+  '/oversight': { label: 'MANAGER ONLY', roles: MANAGERS },
   '/dispatch-dashboard': { label: 'STAFF ONLY', roles: STAFF },
   '/service-setters-dispatch': { label: 'STAFF ONLY', roles: STAFF },
   '/notifications': { label: 'STAFF ONLY', roles: STAFF },
   '/link-center': { label: 'STAFF ONLY', roles: STAFF },
   '/insights': { label: 'STAFF ONLY', roles: [...STAFF, 'MARKETING_MANAGER'] },
   '/ad-studio': { label: 'STAFF ONLY', roles: MKTG },
-  '/manager': { label: 'STAFF ONLY', roles: STAFF },
-  '/finance': { label: 'STAFF ONLY', roles: STAFF },
+  '/manager': { label: 'MANAGER ONLY', roles: MANAGERS },
+  '/finance': { label: 'MANAGER ONLY', roles: MANAGERS },
   '/media': { label: 'STAFF ONLY', roles: MKTG },
   '/chats': { label: 'STAFF ONLY', roles: STAFF },
   '/track-console': { label: 'STAFF ONLY', roles: STAFF },
@@ -287,6 +292,15 @@ function staticChecks() {
   checkTrue('insights gate is staff + MARKETING_MANAGER, scoped', src('routes/insights.js').includes("router.use('/insights', ...insightsStaff)") && src('routes/insights.js').includes('ROLES.MARKETING_MANAGER'));
   checkTrue('academy trainee gate includes providers', src('routes/academy.js').includes('ACADEMY_TRAINEE_ROLES') && src('routes/academy.js').includes('ROLES.PROVIDER_TECH'));
   checkTrue('bookings list scoped by ownership for non-staff', src('routes/bookings.js').includes('isStaff || bookingBelongsToUser(booking, req.user)'));
+  checkTrue('management reports gate is MANAGER_ROLES', src('routes/management.js').includes('requireRole(...MANAGER_ROLES)'));
+  checkTrue('finance overview gate is MANAGER_ROLES', src('routes/finance.js').includes("'/finance/overview', authenticate, requireCompany, requireRole(...MANAGER_ROLES)"));
+  checkTrue('provider reads carry the oversight board gate', src('routes/provider.js').includes('providerBoard') && src('routes/provider.js').includes('OVERSIGHT_ROLES'));
+  checkTrue('MANAGER_ROLES mirrors the Turbo Boss page gate', src('config/security.js').includes('MANAGER_ROLES = [ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN]'));
+  checkTrue('session vault supports expireActive', read('apps/web/shared/session-vault.js').includes('expireActive'));
+  for (const page of ['insights', 'crm', 'book-os', 'navigator', 'pepper', 'tech']) {
+    checkTrue(`${page} page wires expired-session recovery`, read(`apps/web/${page}/index.html`).includes('expireActive'));
+  }
+  checkTrue('tech page carries the oversight board renderer', read('apps/web/tech/index.html').includes('renderTechOversight'));
   checkTrue('turbo-boss page gate is managers only', read('apps/web/turbo-boss/index.html').includes("MANAGERS = ['COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN']") || read('apps/web/turbo-boss/index.html').includes('MANAGERS = ["COMPANY_ADMIN"'));
 }
 
@@ -311,12 +325,25 @@ async function main() {
     '/navigator/status', '/pepper-console/status', '/crm/home',
     '/bookos/setter-queue', '/bookos/dispatch-board',
     '/notifications/summary', '/link-center/options', '/chats/insights',
-    '/tracking/console', '/finance/overview', '/management/reports/summary',
+    '/tracking/console',
   ];
   for (const path of staffEndpoints) {
     check(`staff gate anon 401: ${path}`, (await api(baseA, path)).status, 401);
     check(`staff gate customer 403: ${path}`, (await api(baseA, path, { token: tok.customer })).status, 403);
     check(`staff gate dispatcher 200: ${path}`, (await api(baseA, path, { token: tok.staff })).status, 200);
+  }
+
+  // Manager-gated endpoints (2026-11-18): anon 401, customer 403,
+  // dispatcher 403, COMPANY_ADMIN 200, COMPANY_OWNER 200.
+  const managerEndpoints = [
+    '/finance/overview', '/management/reports/summary', '/management/reports',
+  ];
+  for (const path of managerEndpoints) {
+    check(`manager gate anon 401: ${path}`, (await api(baseA, path)).status, 401);
+    check(`manager gate customer 403: ${path}`, (await api(baseA, path, { token: tok.customer })).status, 403);
+    check(`manager gate dispatcher 403: ${path}`, (await api(baseA, path, { token: tok.staff })).status, 403);
+    check(`manager gate admin 200: ${path}`, (await api(baseA, path, { token: tok.admin })).status, 200);
+    check(`manager gate owner 200: ${path}`, (await api(baseA, path, { token: tok.owner })).status, 200);
   }
 
   // Marketing-gated consoles: dispatcher is NOT in the gate.

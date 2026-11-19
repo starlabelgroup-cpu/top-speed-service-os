@@ -151,7 +151,13 @@ function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e
 function authFetch(path, opts){
   opts = opts || {};
   opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
-  return fetch(API + path, opts);
+  return fetch(API + path, opts).then(function(r){
+    // Expired-session recovery (2026-11-18): drop the dead session
+    // from the vault — the callers' 401 branches present the sign-in
+    // form, and no page keeps re-sending a dead token.
+    if (r.status === 401){ try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){} }
+    return r;
+  });
 }
 function isExternal(url){ return /^https?:\/\//i.test(url || ''); }
 /* Door links to other platform hosts ride the session vault's

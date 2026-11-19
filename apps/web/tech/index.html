@@ -273,6 +273,7 @@ function tchLoadSettings(){
   if(!tTok()){ el.innerHTML='<p class="note" style="margin:4px 0 0">Sign in above to load your provider profile.</p>'; return; }
   el.innerHTML='<p class="note" style="margin:4px 0 0">Loading your profile…</p>';
   tFetch('/provider/me').then(function(j){
+    if(j&&j.data&&j.data.oversight){ el.innerHTML='<p class="note" style="margin:4px 0 0">Oversight view \u2014 you are signed in as staff, seeing every provider\u2019s board. Provider profiles belong to each provider\u2019s own account.</p>'; return; }
     var pv=(j&&j.data&&j.data.provider)||null;
     if(!pv){ el.innerHTML='<p class="note" style="margin:4px 0 0">No provider record is linked to this account yet — call dispatch and they will link it.</p>'; return; }
     var rows='';
@@ -312,6 +313,7 @@ let avail=true;
 $('#availBtn').addEventListener('click',()=>{avail=!avail;$('#availDot').style.background=avail?'#37d67a':'#e8112d';$('#availTxt').textContent=avail?'Available for offers':'Offline — offers paused';$('#availBtn').textContent=avail?'Go offline':'Go available';toast(avail?'You are available for offers':'You are offline')});
 </script>
 
+<style>body.oversight #availBtn{display:none}body.oversight #wsRoot .chk input{pointer-events:none}</style>
 <script>
 /* ================= TECH APP — LIVE MODE =================
    Signed out: demo schedule + demo offers (labelled).
@@ -323,7 +325,14 @@ function tTok(){ try{ return localStorage.getItem('tsos_tech_token')||''; }catch
 function escT(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function tFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tTok()},opts.headers||{});
-  return fetch(T_API+path,opts).then(function(r){ if(!r.ok){ return r.json().catch(function(){return {};}).then(function(j){ throw new Error(j.error||('status '+r.status)); }); } return r.json(); });
+  return fetch(T_API+path,opts).then(function(r){ if(!r.ok){ return r.json().catch(function(){return {};}).then(function(j){ var err=new Error(j.error||('status '+r.status)); err.status=r.status; throw err; }); } return r.json(); });
+}
+/* Expired-session recovery: drop the dead session from the vault and
+   reload into the sign-in card — never park on a raw auth error. */
+function techSessionExpired(){
+  try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(e){}
+  try{ localStorage.removeItem('tsos_tech_token'); }catch(e){}
+  location.reload();
 }
 function tDateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
 function techSession(token){ try{ localStorage.setItem('tsos_tech_token',token); }catch(e){} toast('Signed in — loading your live jobs'); loadTech(); }
@@ -394,6 +403,18 @@ function loadTech(){
         TSOSLegal.showTermsGate({api:T_API,token:tTok(),onSignOut:techSignOut,onAccepted:function(){ loadTech(); }});
         return;
       }
+      var board=(res[1]&&res[1].data)||{};
+      // Oversight (Rule Zero, 2026-11-18): an owner / company-admin
+      // session has no provider record of its own \u2014 the API answers
+      // with the whole live board and an oversight marker. Land them
+      // on that board, never on a role error.
+      if(board.oversight){ renderTechOversight(board.assignments||[],me.user||{}); return; }
+      if(!board.provider && !(((res[0]||{}).data||{}).provider)){
+        // Signed in, but neither a provider account nor staff
+        // oversight: a customer account. Refuse clearly.
+        toast('This app is for technicians and staff \u2014 customer accounts use the customer app.');
+        return;
+      }
       renderTech(res[0].data.provider,res[1].data.assignments||[],me.user);
     })
     .catch(function(e){
@@ -401,8 +422,57 @@ function loadTech(){
       // /auth/me refuses the old session \u2014 clear it and send the tech back
       // to sign-in, where the access-code step now runs.
       if(/Speedy Verify required/.test(e.message||'')){ toast('Speedy Verify is now required on your account \u2014 sign in again to enter your access code'); techSignOut(); return; }
+      // Expired session: clear it and return to the sign-in card.
+      if(e.status===401 || /Expired JWT|Invalid JWT|signature/i.test(e.message||'')){ techSessionExpired(); return; }
+      // A role this board does not serve (e.g. a customer account):
+      // say so plainly instead of a raw API error.
+      if(e.status===403){ toast('This app is for technicians and staff \u2014 your account does not have access to the live jobs board.'); return; }
       toast('Live jobs unavailable: '+e.message);
     });
+}
+/* Oversight board (owner / company admin): every provider's live
+   jobs on one screen, view-only \u2014 accept/decline and every job action
+   stay with the assigned technician's own account. */
+function renderTechOversight(assignments,user){
+  window._techAssignments=assignments||[]; window._techProvider=null; window._techOversight=true;
+  document.body.classList.remove('signedout');
+  document.body.classList.add('oversight');
+  document.getElementById('techChip').textContent='\u25cf LIVE';
+  document.getElementById('techLogin').style.display='none';
+  document.getElementById('techBar').style.display='';
+  var who=(((user&&user.firstName)||'')+' '+((user&&user.lastName)||'')).trim()||(user&&user.email)||'Staff';
+  document.getElementById('techWho').textContent=who+' \u00b7 Oversight \u2014 all providers';
+  var h1=document.querySelector('header h1'); if(h1) h1.textContent='Live jobs board \u2014 Oversight';
+  var sub=document.querySelector('header .hrow p'); if(sub) sub.textContent='Every provider \u00b7 view only \u2014 job actions stay with the assigned technician';
+  var offersDemo=document.querySelector('#s-offers .demo'); if(offersDemo) offersDemo.textContent='\u00b7 LIVE';
+  var todayDemo=document.querySelector('#s-today .demo'); if(todayDemo) todayDemo.textContent='\u00b7 LIVE';
+  var offerList=assignments.filter(function(a){ return a.status==='APPROVED'; });
+  var accepted=assignments.filter(function(a){ return a.status==='ACCEPTED'; });
+  document.getElementById('offerBdg').style.display=offerList.length?'':'none';
+  document.getElementById('offerBdg').textContent=offerList.length;
+  document.getElementById('offerEmpty').style.display=offerList.length?'none':'';
+  document.getElementById('offerList').innerHTML=offerList.map(function(a){
+    var b=a.booking||{};
+    var when=b.appointment?(ICO_CLOCK+' '+tDateLabel(b.appointment.date)+' \u00b7 '+escT(b.appointment.windowLabel||'')):ICO_CLOCK+' Window to be set by dispatch';
+    return '<div class="card offer"><h3 style="font-size:15px">'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><div class="meta"><span>'+ICO_NAV+' '+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+'</span><span>'+when+'</span></div><p style="font-size:12px;color:var(--soft)">Offered to <b>'+escT(a.providerBusinessName||'provider')+'</b> \u00b7 Match score '+a.matchScore+'% \u00b7 Ref '+escT(b.referenceCode||'')+'. Oversight view \u2014 the assigned technician accepts or declines from their own account.</p></div>';
+  }).join('');
+  var doneCount=accepted.filter(function(a){ return a.booking&&a.booking.status==='COMPLETED'; }).length;
+  var jtEl=document.getElementById('jobsToday'); if(jtEl) jtEl.textContent=doneCount;
+  document.getElementById('ovwStrip').innerHTML=
+    '<div class="ovw"><div class="tile"><div class="n">'+accepted.length+'</div><div class="l">Jobs accepted (all providers)</div></div>'+
+    '<div class="tile"><div class="n">'+offerList.length+'</div><div class="l">Offers waiting</div></div>'+
+    '<div class="tile"><div class="n">'+doneCount+'</div><div class="l">Completed</div></div></div>'+
+    '<div class="card" style="border-left:4px solid var(--red)"><p class="note" style="margin:0"><b>Oversight view.</b> You are seeing every provider\u2019s live board. Opening a job shows its full record; the work actions (accept, arrive, diagnose, complete) stay with the assigned technician\u2019s account.</p></div>';
+  document.getElementById('todayList').innerHTML=accepted.length?accepted.map(function(a){
+    var b=a.booking||{};
+    var when=b.appointment?(escT(b.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(b.appointment.date)):'Window TBD';
+    var cust=b.customer?(' \u00b7 '+escT(b.customer.name||'')):'';
+    var done=b.status==='COMPLETED';
+    return '<div class="card job" onclick="openWorkspace(\''+a.id+'\')"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' \u2014 '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' \u00b7 '+escT(b.zip||'')+cust+'</p><p style="color:var(--soft);font-size:12px">'+escT(a.providerBusinessName||'')+'</p><p style="color:var(--navy);font-weight:700;margin-top:4px">Open workspace \u2192</p></div><span class="st '+(done?'done':'next')+'">'+(done?'DONE':'ACCEPTED')+'</span></div>';
+  }).join(''):'<p class="note">No accepted jobs on the board right now.</p>';
+  var tfEl=document.getElementById('todayFilter'); if(tfEl) tfEl.style.display=accepted.length?'':'none';
+  var tsEl=document.getElementById('todaySearch'); if(tsEl) tsEl.style.display=accepted.length?'':'none';
+  if(window.tchFilterApply) tchFilterApply();
 }
 function renderTech(provider,assignments,user){
   window._techAssignments=assignments||[]; window._techProvider=provider||null;
@@ -1030,6 +1100,16 @@ function tchFilterApply(){
   });
 }
 
+function wsLockActions(){
+  if(!window._techOversight) return;
+  var root=document.getElementById('wsRoot'); if(!root) return;
+  root.querySelectorAll('button').forEach(function(b){ if(!b.closest('.ws-tabs')){ b.disabled=true; b.style.opacity='.45'; } });
+  root.querySelectorAll('input,textarea,select').forEach(function(i){ i.disabled=true; });
+  var note=document.createElement('div');
+  note.className='card';
+  note.innerHTML='<p class="note" style="margin:0"><b>Oversight view \u2014 read only.</b> Job actions stay with the assigned technician\u2019s account.</p>';
+  root.insertBefore(note, root.firstChild);
+}
 function wsRender(){
   var view=_wsView; if(!view) return;
   var a=view.assignment, b=a.booking||{}, c=b.customer||{}, id=a.id;
@@ -1149,6 +1229,7 @@ function wsRender(){
     var bx=document.getElementById('ainote-'+id);
     if(bx){ bx.value=dt.text; bx.scrollIntoView({behavior:'smooth',block:'center'}); aiNotePreview(id); }
   }
+  wsLockActions();
 }
 function wsToggleCheck(id){
   var ids=[];
@@ -1387,6 +1468,7 @@ function loadPlugOrders(){
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
+<script src="/shared/session-vault.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

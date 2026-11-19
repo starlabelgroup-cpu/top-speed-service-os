@@ -35,8 +35,44 @@ const providerOnly = [
   ),
 ];
 
+/**
+ * Oversight viewers (Rule Zero fix, 2026-11-18): the owner hit "Live
+ * jobs unavailable: Insufficient role" in the Tech App because the
+ * jobs board required a provider role and COMPANY_OWNER was not in
+ * the set. The Master can never be locked out of a surface, and the
+ * standing access rules give staff every platform access point — so
+ * the READ side of the jobs board (me, assignments list, workspace
+ * view, parts orders, van stock) also admits COMPANY_OWNER and
+ * COMPANY_ADMIN as OVERSIGHT viewers: they load and view the whole
+ * live board across providers. Job WORKFLOW actions (accept, decline,
+ * job-status, diagnosis, estimates, photos, completion — every POST /
+ * PUT below) stay on providerOnly and stay bound to the assigned
+ * provider account: oversight is a viewing right, not a way to work
+ * another provider's job.
+ */
+const OVERSIGHT_ROLES = [ROLES.COMPANY_OWNER, ROLES.COMPANY_ADMIN, ROLES.PLATFORM_ADMIN];
+const providerBoard = [
+  authenticate,
+  requireCompany,
+  requireRole(
+    ROLES.PROVIDER_OWNER,
+    ROLES.PROVIDER_TECH,
+    ROLES.TECHNICIAN,
+    ...OVERSIGHT_ROLES,
+  ),
+];
+
 function myProvider(req) {
   return store.providers.find((provider) => provider.companyId === req.user.companyId) || null;
+}
+
+function isOversightViewer(req) {
+  return (req.user?.roles || []).some((role) => OVERSIGHT_ROLES.includes(role));
+}
+
+function providerNameById(providerId) {
+  const provider = store.providers.find((p) => p.id === providerId);
+  return provider ? provider.businessName : null;
 }
 
 /**
@@ -125,25 +161,47 @@ function publicAssignment(assignment) {
   };
 }
 
-router.get('/provider/me', ...providerOnly, (req, res) => {
+router.get('/provider/me', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
-  if (!provider) return noProvider(res);
-  return res.json({ data: { provider } });
+  if (provider) return res.json({ data: { provider } });
+  // No provider record of their own: an oversight viewer (owner /
+  // company admin) still gets a 200 with an explicit oversight marker
+  // so the Tech App lands them on the jobs board instead of an error.
+  if (isOversightViewer(req)) {
+    return res.json({ data: { provider: null, oversight: true } });
+  }
+  return noProvider(res);
 });
 
-router.get('/provider/assignments', ...providerOnly, (req, res) => {
+router.get('/provider/assignments', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
-  if (!provider) return noProvider(res);
-  const mine = [...store.dispatchAssignments.values()]
-    .filter((assignment) => assignment.providerId === provider.id)
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .map(publicAssignment);
-  return res.json({
-    data: {
-      provider: { id: provider.id, businessName: provider.businessName },
-      assignments: mine,
-    },
-  });
+  if (provider) {
+    const mine = [...store.dispatchAssignments.values()]
+      .filter((assignment) => assignment.providerId === provider.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map(publicAssignment);
+    return res.json({
+      data: {
+        provider: { id: provider.id, businessName: provider.businessName },
+        assignments: mine,
+      },
+    });
+  }
+  if (isOversightViewer(req)) {
+    // The whole live board: every provider's assignments, each one
+    // annotated with the provider it belongs to.
+    const all = [...store.dispatchAssignments.values()]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((assignment) => ({
+        ...publicAssignment(assignment),
+        providerId: assignment.providerId,
+        providerBusinessName: providerNameById(assignment.providerId),
+      }));
+    return res.json({
+      data: { provider: null, oversight: true, assignments: all },
+    });
+  }
+  return noProvider(res);
 });
 
 const respondSchema = z.object({
@@ -630,8 +688,38 @@ function workspaceView(assignment, booking) {
   };
 }
 
-router.get('/provider/assignments/:id/workspace', ...providerOnly, (req, res) => {
-  const loaded = loadMyAssignment(req, res);
+// Read-side loader for the workspace VIEW: the assigned provider
+// loads their own job (same binding as loadMyAssignment); an
+// oversight viewer (owner / company admin) may VIEW any job's
+// workspace. Every write path keeps using loadMyAssignment, so the
+// workflow binding is unchanged.
+function loadAssignmentForView(req, res) {
+  const provider = myProvider(req);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (provider) {
+    if (!assignment || assignment.providerId !== provider.id) {
+      res.status(404).json({ error: 'Assignment not found' });
+      return null;
+    }
+  } else if (isOversightViewer(req)) {
+    if (!assignment) {
+      res.status(404).json({ error: 'Assignment not found' });
+      return null;
+    }
+  } else {
+    noProvider(res);
+    return null;
+  }
+  const booking = store.bookings.get(assignment.bookingId);
+  if (!booking) {
+    res.status(404).json({ error: 'Booking not found' });
+    return null;
+  }
+  return { provider, assignment, booking };
+}
+
+router.get('/provider/assignments/:id/workspace', ...providerBoard, (req, res) => {
+  const loaded = loadAssignmentForView(req, res);
   if (!loaded) return;
   if (!['APPROVED', 'ACCEPTED'].includes(loaded.assignment.status)) {
     return res.status(409).json({ error: 'Assignment is not active' });
@@ -933,20 +1021,27 @@ router.post('/provider/assignments/:id/parts-orders/:orderId/status', ...provide
   return res.json({ data: { order: plugOrders(booking).find((o) => o.id === order.id) } });
 });
 
-router.get('/provider/parts-orders', ...providerOnly, (req, res) => {
+router.get('/provider/parts-orders', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
-  if (!provider) return noProvider(res);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  // Oversight viewers (no provider record of their own) see every
+  // provider's orders, annotated with the owning provider's name.
   const mine = [];
   for (const assignment of store.dispatchAssignments.values()) {
-    if (assignment.providerId !== provider.id) continue;
+    if (provider && assignment.providerId !== provider.id) continue;
     const booking = store.bookings.get(assignment.bookingId);
     if (!booking) continue;
     for (const order of plugOrders(booking)) {
-      mine.push({ ...order, assignmentId: assignment.id, bookingReference: booking.referenceCode || null });
+      mine.push({
+        ...order,
+        assignmentId: assignment.id,
+        bookingReference: booking.referenceCode || null,
+        ...(provider ? {} : { providerId: assignment.providerId, providerBusinessName: providerNameById(assignment.providerId) }),
+      });
     }
   }
   mine.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
-  return res.json({ data: { orders: mine } });
+  return res.json({ data: { orders: mine, ...(provider ? {} : { oversight: true }) } });
 });
 
 /* ================= Tech Pro field workflow (2026-11-17) =================
@@ -1256,9 +1351,9 @@ function vanStockView(providerId) {
     .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
 }
 
-router.get('/provider/van-stock', ...providerOnly, (req, res) => {
+router.get('/provider/van-stock', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
-  if (!provider) return noProvider(res);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
   const catalog = store.parts
     .filter((part) => part.active !== false)
     .map((part) => ({
@@ -1271,7 +1366,17 @@ router.get('/provider/van-stock', ...providerOnly, (req, res) => {
       stockOnHand: part.stockOnHand || 0,
     }))
     .sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  return res.json({ data: { items: vanStockView(provider.id), catalog } });
+  if (provider) {
+    return res.json({ data: { items: vanStockView(provider.id), catalog } });
+  }
+  // Oversight: every provider's van stock, annotated per provider.
+  const items = [];
+  for (const p of store.providers) {
+    for (const item of vanStockView(p.id)) {
+      items.push({ ...item, providerId: p.id, providerBusinessName: p.businessName });
+    }
+  }
+  return res.json({ data: { items, catalog, oversight: true } });
 });
 
 const vanStockSetSchema = z.object({

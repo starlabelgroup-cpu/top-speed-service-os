@@ -136,11 +136,21 @@ var API='https://top-speed-service-os.vercel.app/api/v1';
 function tok(){ try{ return localStorage.getItem('tsos_token')||localStorage.getItem('tsos_studio_token')||''; }catch(e){ return ''; } }
 function esc(t){ return String(t==null?'':t).replace(/[&<>\"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function num(n){ return n==null?'–':Number(n).toLocaleString('en-US'); }
+/* Expired-session recovery (2026-11-18): a 401 means the stored
+   session is dead — drop it from the vault and reload into the
+   sign-in form. This page once rendered the raw "Expired JWT" API
+   error as its final state; that can never happen again. */
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_studio_token'); } catch(e){}
+  location.reload();
+}
 function mf(path, opts){
   opts=opts||{};
   return fetch(API+path,{method:opts.method||'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:opts.body?JSON.stringify(opts.body):undefined})
     .then(function(r){ return r.text().then(function(t){
       var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(r.status===401){ sessionExpired(); throw new Error('session expired'); }
       if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); }
       if(!r.ok) throw new Error(j.error||('status '+r.status));
       return j;
@@ -286,6 +296,7 @@ function insLoadConns(){
 }
 if(tok()){ insShow(); }
 </script>
+<script src="/shared/session-vault.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
