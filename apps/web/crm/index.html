@@ -171,6 +171,35 @@ footer strong{color:#fff}
 
 <footer><strong>Top Speed Appliance LLC</strong> · Top Speed CRM · Internal — customer data stays in the platform.</footer>
 
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (CRM station, 2026-11-19):
+     every control here changes real behavior (customer list sort,
+     live search, auto-refresh). Preferences save on this device
+     only. Backdrop pattern follows the Book OS workstation modals;
+     z-index 9992 sits below the Ask Pepper launcher (9995). -->
+<div id="crmWsOptBack" style="display:none;position:fixed;inset:0;background:rgba(7,25,55,.55);z-index:9992;overflow-y:auto" onclick="crmWsOptBackdrop(event)">
+  <div style="background:#fff;color:var(--ink);max-width:520px;margin:18px auto;border-radius:14px;padding:20px;box-shadow:0 12px 40px rgba(7,25,55,.35)" role="dialog" aria-modal="true" aria-label="CRM options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="color:var(--navy);font-size:17px">Options</h3><div style="font-size:12.5px;color:var(--muted);margin-top:2px">Top Speed CRM workstation preferences — saved on this device only.</div></div><button class="btn ghost small" type="button" onclick="crmWsOptClose()">Close</button></div>
+    <div style="font-weight:800;color:var(--navy);font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Customer list</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Sort the customer list:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn small ghost" id="crmWsSortDefault" type="button" onclick="crmWsSetListSort('default')">Newest customers first</button>
+      <button class="btn small ghost" id="crmWsSortName" type="button" onclick="crmWsSetListSort('name')">Name A–Z</button>
+      <button class="btn small ghost" id="crmWsSortActivity" type="button" onclick="crmWsSetListSort('activity')">Most recent booking</button>
+    </div>
+    <div style="font-weight:800;color:var(--navy);font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Search</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Search as you type<br><span style="color:var(--muted);font-size:12.5px">Runs the customer search while you type, instead of waiting for Enter or the Search button.</span></div>
+      <button class="btn small ghost" id="crmWsLiveBtn" type="button" onclick="crmWsToggleLive()">○ OFF</button>
+    </div>
+    <div style="font-weight:800;color:var(--navy);font-size:13px;text-transform:uppercase;letter-spacing:.04em;margin:16px 0 8px">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:var(--muted);font-size:12.5px">Re-runs the customer list (or Home) load on its own. Pauses while this panel is open or the tab is hidden.</span></div>
+      <button class="btn small ghost" id="crmWsAutoBtn" type="button" onclick="crmWsToggleAuto()">○ OFF</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn blue" type="button" onclick="crmWsOptClose()">Done</button></div>
+  </div>
+</div>
+
 <script>
 var CRM_API='https://top-speed-service-os.vercel.app/api/v1';
 var AREAS=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
@@ -401,6 +430,404 @@ function crmResolveArea(bookingId){
     .catch(function(e){ document.getElementById('wlMsg').textContent=' '+e.message; document.getElementById('wlMsg').className='msg err'; });
 }
 if(crmTok()){ crmFetch('/crm/home').then(function(){ crmShow(); }).catch(function(){}); }
+</script>
+<script>
+/* ================= WORKSTATION STANDARD — CRM STATION (2026-11-19) =================
+   Station 2 of the platform-wide workstation standard (Book OS,
+   commit 1f4e5f1, set the pattern). Ramone's standing rule for the
+   rollout: "Don't change — just integrate." Everything in this
+   section is ADDITIVE: no existing CRM function, flow, layout or
+   API contract is modified. The section only (a) wraps three page
+   functions (crmFetch / crmShow / crmDetail) without altering
+   their behavior, (b) injects one Options button into the header
+   and one action section into the customer record the page already
+   renders, and (c) drives the SAME endpoints the platform already
+   exposes. Out of the box (default preferences) the console behaves
+   exactly as before.
+   (1) PREFERENCES — a this-device store (localStorage,
+       tsos_crm_prefs) behind the Options panel: customer list
+       sort, search-as-you-type, and an auto-refresh cycle that
+       pauses while the panel is open or the tab is hidden.
+       No decorative toggles.
+   (2) CTA ACTION BAR — inside the customer record (#crmWsBar):
+       the record's next real step first (set the appointment on
+       the first open booking that needs one), then Call customer,
+       New work order (scrolls to the record's existing form —
+       the form itself is untouched), Send links (real Link Center
+       sends against a chosen booking; REVIEW only offered when
+       that booking is COMPLETED, PAYMENT disabled once the $99
+       diagnostic shows paid), and per-booking appointment +
+       money blocks: the real appointment setter (chosen date +
+       the five real windows, on POST /bookos/appointments and
+       its reschedule sibling — the same contract Book OS uses)
+       and a read-only money summary from
+       GET /bookos/bookings/:id/money (editing stays in Service
+       Book Pro; the summary says so). After a mutation the
+       record is re-fetched and re-rendered through the console's
+       own crmDetail + crmLoad cycle.
+   Later stations (Dispatch console, Tech App) copy this shape:
+   prefs store -> Options panel -> CTA bar inside the record view,
+   every control wired to endpoints that already exist. */
+var CRM_WS_PREFS_KEY='tsos_crm_prefs';
+var crmWsPrefs={listSort:'default',liveSearch:false,autoRefresh:false};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(CRM_WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.listSort==='name'||p.listSort==='activity') crmWsPrefs.listSort=p.listSort; crmWsPrefs.liveSearch=!!p.liveSearch; crmWsPrefs.autoRefresh=!!p.autoRefresh; } }catch(e){} })();
+function crmWsSavePrefs(){ try{ localStorage.setItem(CRM_WS_PREFS_KEY,JSON.stringify(crmWsPrefs)); }catch(e){} }
+function crmWsById(id){ return document.getElementById(id); }
+var CRM_WS_WIN_IDS=['08-10','10-12','12-14','14-16','16-18'];
+var CRM_WS_WIN_LABEL={'08-10':'8\u201310 AM','10-12':'10 AM\u201312 PM','12-14':'12\u20132 PM','14-16':'2\u20134 PM','16-18':'4\u20136 PM'};
+var CRM_WS_PHONE_SVG='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg>';
+var CRM_WS_CAL_SVG='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.8V12l3 2" stroke="#E8322E"/></svg>';
+var CRM_WS_SLIDERS_SVG='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg>';
+function crmWsToday(){ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+function crmWsPlusDays(ds,n){ var d=new Date(ds+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function crmWsDateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+function crmWsWindowFromText(t){ if(!t) return '10-12'; t=(''+t).toLowerCase();
+  if(t.indexOf('morning')>-1||t.indexOf('8')===0) return '08-10';
+  if(t.indexOf('10')===0) return '10-12';
+  if(t.indexOf('12')===0||t.indexOf('noon')>-1||t.indexOf('midday')>-1) return '12-14';
+  if(t.indexOf('2')===0||t.indexOf('afternoon')>-1) return '14-16';
+  if(t.indexOf('4')===0||t.indexOf('evening')>-1) return '16-18';
+  return '10-12'; }
+
+/* ---- (1a) Customer list sort: the API returns newest customers
+   first. The sort is applied to a copy of the list response inside
+   the fetch wrapper, before crmLoad renders it, so the existing
+   renderer and its row handlers are untouched. 'default' passes
+   the response through unchanged. ---- */
+function crmWsSortCustomers(rows){
+  var out=rows.slice();
+  if(crmWsPrefs.listSort==='name'){
+    out.sort(function(a,b){ return String(a.name||'').localeCompare(String(b.name||'')); });
+  } else if(crmWsPrefs.listSort==='activity'){
+    out.sort(function(a,b){
+      var la=(a.lastBooking&&a.lastBooking.createdAt)?String(a.lastBooking.createdAt):'';
+      var lb=(b.lastBooking&&b.lastBooking.createdAt)?String(b.lastBooking.createdAt):'';
+      if(la!==lb) return la<lb?1:-1;
+      return String(b.createdAt||'').localeCompare(String(a.createdAt||''));
+    });
+  }
+  return out;
+}
+var crmWsOrigFetch=crmFetch;
+crmFetch=function(path,opts){
+  var p=crmWsOrigFetch(path,opts);
+  var isList=(path==='/crm/customers'||path.indexOf('/crm/customers?')===0)&&(!opts||!opts.method||opts.method==='GET');
+  if(!isList||crmWsPrefs.listSort==='default') return p;
+  return p.then(function(j){ if(j&&j.data&&Array.isArray(j.data.customers)){ j.data.customers=crmWsSortCustomers(j.data.customers); } return j; });
+};
+
+/* ---- Wrappers that only observe: crmShow reveals the Options
+   button once the app is on screen; crmDetail records which
+   record is open so the action bar can attach to it. ---- */
+var crmWsOrigShow=crmShow;
+crmShow=function(){ crmWsOrigShow(); var b=crmWsById('crmWsOptBtn'); if(b) b.style.display=''; };
+var crmWsOrigDetail=crmDetail;
+crmDetail=function(id){
+  crmWs.customerId=id; crmWs.data=null; crmWs.pay={}; crmWs.form={}; crmWs.linkBookingId=null;
+  crmWsOrigDetail(id);
+};
+
+/* ---- (1b) Search as you type (off by default): the listener is
+   always attached but only acts while the preference is on. ---- */
+var crmWsSearchTimer=null;
+function crmWsInitSearch(){
+  var q=crmWsById('crmQ'); if(!q) return;
+  q.addEventListener('input',function(){
+    if(!crmWsPrefs.liveSearch) return;
+    clearTimeout(crmWsSearchTimer);
+    crmWsSearchTimer=setTimeout(function(){ crmLoad(); },260);
+  });
+}
+
+/* ---- (1c) Auto-refresh: OFF by default. When ON it re-runs the
+   visible pane's own load (customer list or Home) every minute,
+   and never while the Options panel is open or the tab is hidden.
+   It never touches the open record, so a form being filled in the
+   record is never disturbed. ---- */
+var crmWsRefreshTimer=null;
+function crmWsApplyAutoRefresh(){
+  if(crmWsRefreshTimer){ clearInterval(crmWsRefreshTimer); crmWsRefreshTimer=null; }
+  if(!crmWsPrefs.autoRefresh) return;
+  crmWsRefreshTimer=setInterval(function(){
+    if(document.hidden) return;
+    var ob=crmWsById('crmWsOptBack'); if(ob&&ob.style.display==='block') return;
+    var app=crmWsById('crmApp'); if(!app||app.style.display==='none') return;
+    var cust=crmWsById('pane-customers'), home=crmWsById('pane-home');
+    if(cust&&cust.style.display!=='none') crmLoad();
+    else if(home&&home.style.display!=='none') crmHome();
+  },60000);
+}
+
+/* ---- (1d) Options panel ---- */
+function crmWsOptOpen(){ crmWsSyncOptionsUi(); crmWsById('crmWsOptBack').style.display='block'; }
+function crmWsOptClose(){ var b=crmWsById('crmWsOptBack'); if(b) b.style.display='none'; }
+function crmWsOptBackdrop(ev){ if(ev&&ev.target===crmWsById('crmWsOptBack')) crmWsOptClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') crmWsOptClose(); });
+function crmWsSyncOptionsUi(){
+  var map={default:'crmWsSortDefault',name:'crmWsSortName',activity:'crmWsSortActivity'};
+  Object.keys(map).forEach(function(k){ var el=crmWsById(map[k]); if(el) el.className='btn small '+(crmWsPrefs.listSort===k?'blue':'ghost'); });
+  var a=crmWsById('crmWsAutoBtn'); if(a){ a.className='btn small '+(crmWsPrefs.autoRefresh?'blue':'ghost'); a.textContent=crmWsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF'; }
+  var l=crmWsById('crmWsLiveBtn'); if(l){ l.className='btn small '+(crmWsPrefs.liveSearch?'blue':'ghost'); l.textContent=crmWsPrefs.liveSearch?'\u25cf ON':'\u25cb OFF'; }
+}
+function crmWsSetListSort(v){
+  crmWsPrefs.listSort=(v==='name'||v==='activity')?v:'default';
+  crmWsSavePrefs(); crmWsSyncOptionsUi();
+  var app=crmWsById('crmApp'); if(app&&app.style.display!=='none') crmLoad();
+}
+function crmWsToggleAuto(){ crmWsPrefs.autoRefresh=!crmWsPrefs.autoRefresh; crmWsSavePrefs(); crmWsApplyAutoRefresh(); crmWsSyncOptionsUi(); }
+function crmWsToggleLive(){ crmWsPrefs.liveSearch=!crmWsPrefs.liveSearch; crmWsSavePrefs(); crmWsSyncOptionsUi(); }
+
+/* ================= (2) CTA ACTION BAR ================= */
+var crmWs={customerId:null,data:null,linkChannel:'SMS',linkBookingId:null,pay:{},form:{},moneyOpen:{},money:{}};
+function crmWsBookingById(id){ var bks=(crmWs.data&&crmWs.data.bookings)||[]; for(var i=0;i<bks.length;i++){ if(bks[i].id===id) return bks[i]; } return null; }
+
+/* The record view is rendered by the existing crmDetail; when its
+   card lands in #crmDetail, attach the action section as the
+   card's first section and fill it from the same record endpoint. */
+function crmWsMaybeInject(){
+  var host=crmWsById('crmDetail'); if(!host) return;
+  if(crmWsById('crmWsBar')) return;
+  var card=host.querySelector('.card'); if(!card||!crmWs.customerId) return;
+  var sec=document.createElement('div');
+  sec.className='section'; sec.id='crmWsBar';
+  sec.innerHTML='<h3>Actions \u2014 workstation standard</h3><p class="mut">Loading the action bar\u2026</p>';
+  var first=card.querySelector('.section');
+  if(first) card.insertBefore(sec,first); else card.appendChild(sec);
+  crmFetch('/crm/customers/'+encodeURIComponent(crmWs.customerId)).then(function(j){
+    if(!crmWsById('crmWsBar')) return;
+    crmWs.data=j.data||null;
+    var bks=(crmWs.data&&crmWs.data.bookings)||[];
+    if(!crmWs.linkBookingId&&bks.length) crmWs.linkBookingId=bks[0].id;
+    crmWsRender();
+    crmWsEnrichLink();
+  }).catch(function(e){ var el=crmWsById('crmWsBar'); if(el) el.innerHTML='<h3>Actions \u2014 workstation standard</h3><p class="mut">Could not load the action bar ('+crmEsc(e.message)+'). The record above is unaffected.</p>'; });
+}
+var crmWsObserver=null;
+if(window.MutationObserver){ crmWsObserver=new MutationObserver(function(){ crmWsMaybeInject(); }); }
+
+/* Enrichment for the Send-links block: the booking's own record
+   carries the diagnostic payment state (the CRM record payload
+   does not), read from the same GET /bookings/:id Book OS uses. */
+function crmWsEnrichLink(){
+  var id=crmWs.linkBookingId; if(!id) return;
+  if(crmWs.pay[id]!==undefined){ crmWsRender(); return; }
+  crmFetch('/bookings/'+encodeURIComponent(id)).then(function(j){
+    var bk=j.data||{};
+    crmWs.pay[id]=!!(bk.payment&&bk.payment.diagnosticPaid);
+    if(crmWs.linkBookingId===id) crmWsRender();
+  }).catch(function(){ crmWs.pay[id]=null; });
+}
+
+function crmWsCaptureForm(){
+  var bks=(crmWs.data&&crmWs.data.bookings)||[];
+  bks.forEach(function(b,i){
+    var d=crmWsById('crmWsApptDate-'+i), w=crmWsById('crmWsApptWin-'+i);
+    if(d&&w) crmWs.form[b.id]={date:d.value,win:w.value};
+  });
+}
+
+function crmWsRender(){
+  var host=crmWsById('crmWsBar'); if(!host||!crmWs.data) return;
+  crmWsCaptureForm();
+  var c=crmWs.data.customer||{};
+  var bks=crmWs.data.bookings||[];
+  if(!crmWsBookingById(crmWs.linkBookingId)&&bks.length) crmWs.linkBookingId=bks[0].id;
+  var digits=(''+(c.phone||'')).replace(/\D/g,'');
+  var h='<h3>Actions \u2014 workstation standard</h3>';
+  /* Primary first: the record's next real step. */
+  var nextIdx=-1;
+  for(var i=0;i<bks.length;i++){ var b0=bks[i]; if(b0.status!=='COMPLETED'&&b0.status!=='CANCELLED'&&b0.areaStatus==='IN_AREA'&&!(b0.appointment&&b0.appointment.status==='SET')){ nextIdx=i; break; } }
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  if(nextIdx>-1){ h+='<button class="btn blue" type="button" onclick="crmWsFocusAppt('+nextIdx+')">'+CRM_WS_CAL_SVG+' Set appointment \u2014 '+crmEsc(bks[nextIdx].referenceCode)+'</button>'; }
+  if(digits){ h+='<a class="btn" href="tel:+1'+digits+'" style="text-decoration:none">'+CRM_WS_PHONE_SVG+' Call customer</a>'; }
+  else { h+='<button class="btn" type="button" onclick="crmWsBarMsg(\'No phone number on this customer record.\')">'+CRM_WS_PHONE_SVG+' Call customer</button>'; }
+  h+='<button class="btn ghost" type="button" onclick="crmWsFocusWo()">New work order</button>';
+  h+='</div><div class="msg" id="crmWsBarMsg"></div>';
+  /* Send links — real Link Center sends against a chosen booking. */
+  h+='<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><div style="font-weight:800;color:var(--navy);font-size:14.5px;margin-bottom:8px">Send links</div>';
+  if(!bks.length){
+    h+='<p class="mut">No bookings on this record yet \u2014 links send against a booking.</p>';
+  } else {
+    var sel=crmWsBookingById(crmWs.linkBookingId)||bks[0];
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:8px">'
+      +'<label style="flex:1;min-width:200px;margin:0">Booking<br><select id="crmWsLinkBooking" onchange="crmWsLinkPick()">'
+      +bks.map(function(b){ return '<option value="'+b.id+'"'+(b.id===sel.id?' selected':'')+'>'+crmEsc(b.referenceCode)+' \u00b7 '+crmEsc(b.appliance)+' \u00b7 '+crmEsc(b.status)+'</option>'; }).join('')
+      +'</select></label>'
+      +'<span style="font-size:13px;font-weight:700;color:var(--navy)">Send by:</span>'
+      +'<button class="btn small '+(crmWs.linkChannel==='SMS'?'blue':'ghost')+'" type="button" onclick="crmWsSetLinkChannel(\'SMS\')">Text</button>'
+      +'<button class="btn small '+(crmWs.linkChannel==='EMAIL'?'blue':'ghost')+'" type="button" onclick="crmWsSetLinkChannel(\'EMAIL\')">Email</button>'
+      +(crmWs.linkChannel==='EMAIL'&&!c.email?'<span style="font-size:12.5px;color:var(--red)">No email on this record \u2014 text it instead.</span>':'')
+      +'</div>';
+    var paid=crmWs.pay[sel.id]===true;
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'BOOKING\')">Booking link</button>'
+      +(paid?'<button class="btn ghost small" type="button" disabled>Payment link \u2014 $99 paid</button>':'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'PAYMENT\')">Payment link ($99)</button>')
+      +(sel.status==='COMPLETED'?'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'REVIEW\')">Review link</button>':'<button class="btn ghost small" type="button" disabled>Review link \u2014 after completion</button>')
+      +'</div><div class="msg" id="crmWsLinkMsg"></div>';
+  }
+  h+='</div>';
+  /* Per-booking appointments + money. */
+  if(bks.length){
+    h+='<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:10px"><div style="font-weight:800;color:var(--navy);font-size:14.5px;margin-bottom:4px">Bookings \u2014 appointments &amp; money</div>';
+    bks.forEach(function(b,i){ h+=crmWsBookingHtml(b,i); });
+    h+='</div>';
+  }
+  host.innerHTML=h;
+}
+
+function crmWsBookingHtml(b,i){
+  var h='<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> \u00b7 '+crmEsc(b.appliance)+' '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)
+    +'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' \u00b7 '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' \u00b7 '+crmEsc(b.source)+' \u00b7 '+crmEsc(String(b.createdAt).slice(0,10))+'</span>';
+  var appt=b.appointment, isSet=!!(appt&&appt.status==='SET');
+  if(isSet) h+='<br><span class="mut">'+CRM_WS_CAL_SVG+' '+crmEsc(crmWsDateLabel(appt.date)+' \u00b7 '+(appt.windowLabel||CRM_WS_WIN_LABEL[appt.window]||appt.window||''))+'</span>';
+  if(b.status==='COMPLETED'){
+    h+='<div class="mut" style="margin-top:6px">This job is complete \u2014 its appointment is final.</div>';
+  } else if(b.status==='CANCELLED'){
+    h+='<div class="mut" style="margin-top:6px">This booking is cancelled.</div>';
+  } else if(b.areaStatus==='OUT_OF_AREA'){
+    h+='<div class="mut" style="margin-top:6px">Outside the service area \u2014 on the expansion waitlist, so no appointment can be set.</div>';
+  } else if(b.areaStatus==='AREA_REVIEW'){
+    h+='<div class="mut" style="margin-top:6px">The service area needs a setter decision first \u2014 resolve it in the Expansion Waitlist tab, then set the appointment here.</div>';
+  } else {
+    var f=crmWs.form[b.id]||{};
+    var defDate=f.date||(isSet?appt.date:crmWsToday());
+    var defWin=f.win||(isSet?(appt.window||'10-12'):crmWsWindowFromText(b.preferredWindow));
+    h+='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px">'
+      +'<label style="margin:0">Date<br><input id="crmWsApptDate-'+i+'" type="date" min="'+crmWsToday()+'" value="'+crmEsc(defDate)+'"></label>'
+      +'<label style="margin:0">Window<br><select id="crmWsApptWin-'+i+'">'+CRM_WS_WIN_IDS.map(function(w){ return '<option value="'+w+'"'+(w===defWin?' selected':'')+'>'+CRM_WS_WIN_LABEL[w]+'</option>'; }).join('')+'</select></label></div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn blue small" type="button" onclick="crmWsApptSave('+i+')">'+(isSet?'Reschedule appointment':'Set appointment')+'</button>'
+      +(isSet?'<button class="btn ghost small" type="button" onclick="crmWsApptTomorrow('+i+')">\u21bb Move to Tomorrow</button>':'')
+      +'</div><div class="msg" id="crmWsApptMsg-'+i+'"></div>';
+  }
+  h+='<div style="margin-top:6px"><button class="btn ghost small" type="button" onclick="crmWsMoneyToggle('+i+')">Money summary</button></div>'
+    +'<div id="crmWsMoney-'+i+'">'+(crmWs.moneyOpen[b.id]?(crmWs.money[b.id]||'<p class="mut">Loading\u2026</p>'):'')+'</div>';
+  return h+'</div>';
+}
+
+function crmWsBarMsg(text){ var m=crmWsById('crmWsBarMsg'); if(m){ m.textContent=text; m.className='msg err'; } }
+function crmWsFocusAppt(i){
+  var el=crmWsById('crmWsApptDate-'+i);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); try{ el.focus({preventScroll:true}); }catch(e){ el.focus(); } }
+}
+function crmWsFocusWo(){
+  var heads=document.querySelectorAll('#crmDetail .section h3'), sec=null;
+  for(var i=0;i<heads.length;i++){ if(heads[i].textContent.indexOf('New work order')===0){ sec=heads[i].parentNode; break; } }
+  if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'});
+  var ta=crmWsById('crmWoIssue');
+  if(ta){ setTimeout(function(){ try{ ta.focus({preventScroll:true}); }catch(e){ ta.focus(); } },350); }
+}
+
+/* ---- Send links ---- */
+function crmWsLinkPick(){ var sel=crmWsById('crmWsLinkBooking'); if(sel){ crmWs.linkBookingId=sel.value; crmWsRender(); crmWsEnrichLink(); } }
+function crmWsSetLinkChannel(ch){ crmWs.linkChannel=(ch==='EMAIL')?'EMAIL':'SMS'; crmWsRender(); }
+function crmWsSendLink(linkType){
+  var c=(crmWs.data&&crmWs.data.customer)||{};
+  var sel=crmWsBookingById(crmWs.linkBookingId); if(!sel) return;
+  var msg=crmWsById('crmWsLinkMsg');
+  var body={linkType:linkType,channel:crmWs.linkChannel,recipientName:c.name||null,bookingRef:sel.referenceCode||null};
+  if(crmWs.linkChannel==='EMAIL'){
+    if(!c.email){ if(msg){ msg.textContent='No email address on this record \u2014 text the link instead.'; msg.className='msg err'; } return; }
+    body.email=c.email;
+  } else {
+    var digits=(''+(c.phone||'')).replace(/\D/g,'');
+    if(digits.length<10){ if(msg){ msg.textContent='No valid phone number on this record.'; msg.className='msg err'; } return; }
+    body.phone=c.phone;
+  }
+  if(msg){ msg.textContent='Sending\u2026'; msg.className='msg'; }
+  crmFetch('/link-center/send',{method:'POST',body:body})
+    .then(function(j){
+      var d=j.data||{}, m2=crmWsById('crmWsLinkMsg'); if(!m2) return;
+      if(d.status==='SENT'){ m2.textContent='\u2713 Sent by '+(crmWs.linkChannel==='EMAIL'?'email':'text')+' to '+(d.to||'')+' \u2014 the customer has the link.'; m2.className='msg ok'; }
+      else { m2.textContent='Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')); m2.className='msg err'; }
+    })
+    .catch(function(e){ var m3=crmWsById('crmWsLinkMsg'); if(m3){ m3.textContent='Send failed: '+e.message; m3.className='msg err'; } });
+}
+
+/* ---- Appointment setter: the existing endpoints, the same
+   contract Book OS drives. The actor fields are left to the
+   endpoints' own defaults ('Service Setters'). After a save the
+   record re-renders through the console's crmDetail cycle and
+   the customer list refreshes through crmLoad. ---- */
+function crmWsApptMsg(i,text,ok){ var m=crmWsById('crmWsApptMsg-'+i); if(m){ m.textContent=text; m.className='msg '+(ok?'ok':'err'); } }
+function crmWsAfterApptChange(){ crmLoad(); var id=crmWs.customerId; setTimeout(function(){ if(id) crmDetail(id); },600); }
+function crmWsApptSave(i){
+  var b=(crmWs.data&&crmWs.data.bookings||[])[i]; if(!b) return;
+  var dEl=crmWsById('crmWsApptDate-'+i), wEl=crmWsById('crmWsApptWin-'+i);
+  var date=dEl?dEl.value:'', win=wEl?wEl.value:'';
+  if(!date){ crmWsApptMsg(i,'Pick a date first.',false); return; }
+  if(date<crmWsToday()){ crmWsApptMsg(i,'That date is in the past \u2014 pick today or later.',false); return; }
+  if(!win){ crmWsApptMsg(i,'Pick a window.',false); return; }
+  var isSet=!!(b.appointment&&b.appointment.status==='SET');
+  crmWsApptMsg(i,isSet?'Rescheduling\u2026':'Setting the appointment\u2026',true);
+  var req=isSet
+    ? crmFetch('/bookos/appointments/'+encodeURIComponent(b.id)+'/reschedule',{method:'POST',body:{date:date,window:win}})
+    : crmFetch('/bookos/appointments',{method:'POST',body:{bookingId:b.id,date:date,window:win}});
+  req.then(function(j){
+    var a=(j.data||{}).appointment||{};
+    crmWsApptMsg(i,'Appointment '+(isSet?'moved':'set')+' \u2014 '+crmWsDateLabel(a.date||date)+' \u00b7 '+(a.windowLabel||CRM_WS_WIN_LABEL[win]||win)+' \u00b7 confirmation queued',true);
+    crmWsAfterApptChange();
+  }).catch(function(e){ crmWsApptMsg(i,'Could not '+(isSet?'reschedule':'set')+' it: '+e.message,false); });
+}
+function crmWsApptTomorrow(i){
+  var b=(crmWs.data&&crmWs.data.bookings||[])[i]; if(!b||!b.appointment) return;
+  crmFetch('/bookos/appointments/'+encodeURIComponent(b.id)+'/reschedule',{method:'POST',body:{date:crmWsPlusDays(crmWsToday(),1),window:b.appointment.window}})
+    .then(function(j){
+      var a=(j.data||{}).appointment||{};
+      crmWsApptMsg(i,'Moved \u2014 '+crmWsDateLabel(a.date||'')+' \u00b7 '+(a.windowLabel||''),true);
+      crmWsAfterApptChange();
+    })
+    .catch(function(e){ crmWsApptMsg(i,'Move failed: '+e.message,false); });
+}
+
+/* ---- Money summary: read-only, from the existing endpoint.
+   Estimates, invoices and receipts are edited in Service Book
+   Pro — the summary says so instead of duplicating that panel. ---- */
+function crmWsMoneyFmt(cents){ if(cents==null) return '\u2014'; return '$'+(Math.round(cents)/100).toFixed(2); }
+function crmWsMoneyHtml(d){
+  var est=d.estimate, dec=d.estimateDecision, inv=d.invoice, pay=d.payments||{};
+  var h='<div style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:6px">';
+  h+='<div style="font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)">Money \u2014 read-only summary</div>';
+  if(est){ h+='<div style="font-size:13.5px;margin-top:6px"><b>Estimate v'+crmEsc(est.version||'')+'</b> \u00b7 '+crmEsc(est.kind||'')+' \u00b7 Total <b>'+crmWsMoneyFmt(est.totalCents)+'</b></div>'; }
+  else { h+='<div style="font-size:13.5px;margin-top:6px;color:var(--muted)">No estimate on this job yet.</div>'; }
+  if(dec){ h+='<div style="font-size:13.5px;margin-top:4px">Decision: <b>'+crmEsc(dec.decision||'')+'</b>'+(dec.authorizedByName?' by '+crmEsc(dec.authorizedByName):'')+'</div>'; }
+  if(inv){ h+='<div style="font-size:13.5px;margin-top:4px">Invoice: <b>'+crmWsMoneyFmt(Math.round(Number(inv.total||0)*100))+'</b> \u00b7 '+crmEsc(inv.status||'')+' \u00b7 Balance due <b>'+crmWsMoneyFmt(pay.balanceDueCents)+'</b> \u00b7 Received '+crmWsMoneyFmt(pay.receiptsTotalCents)+'</div>'; }
+  else if(est){ h+='<div style="font-size:13.5px;margin-top:4px;color:var(--muted)">No invoice yet. Balance reference: '+crmWsMoneyFmt(pay.balanceDueCents)+'</div>'; }
+  if((d.receipts||[]).length){ h+='<div style="font-size:13px;color:var(--muted);margin-top:4px">'+d.receipts.map(function(r){ return crmEsc(r.method||'')+' '+crmWsMoneyFmt(r.amountCents); }).join(' \u00b7 ')+'</div>'; }
+  h+='<div style="font-size:13px;margin-top:8px">Estimates, invoices and receipts are edited in <a href="/book-os" style="color:var(--blue);font-weight:700">Service Book Pro \u2192</a> \u2014 one money record, shared with the Tech App.</div>';
+  return h+'</div>';
+}
+function crmWsMoneyToggle(i){
+  var b=(crmWs.data&&crmWs.data.bookings||[])[i]; if(!b) return;
+  var box=crmWsById('crmWsMoney-'+i); if(!box) return;
+  if(crmWs.moneyOpen[b.id]){ crmWs.moneyOpen[b.id]=false; box.innerHTML=''; return; }
+  crmWs.moneyOpen[b.id]=true;
+  box.innerHTML='<p class="mut">Loading the money record\u2026</p>';
+  crmFetch('/bookos/bookings/'+encodeURIComponent(b.id)+'/money').then(function(j){
+    var html=crmWsMoneyHtml(j.data||{});
+    crmWs.money[b.id]=html;
+    var el=crmWsById('crmWsMoney-'+i); if(el&&crmWs.moneyOpen[b.id]) el.innerHTML=html;
+  }).catch(function(e){ var el2=crmWsById('crmWsMoney-'+i); if(el2) el2.innerHTML='<p class="mut">Could not load the money record ('+crmEsc(e.message)+').</p>'; });
+}
+
+/* ---- Init: header Options button (revealed by the crmShow
+   wrapper once signed in), live-search listener, record-view
+   observer, auto-refresh if the preference is on. ---- */
+function crmWsInitHeader(){
+  var nav=document.querySelector('header nav'); if(!nav||crmWsById('crmWsOptBtn')) return;
+  var btn=document.createElement('button');
+  btn.id='crmWsOptBtn'; btn.type='button';
+  btn.setAttribute('style','display:none;background:none;border:none;color:#cfe0f5;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;padding:0');
+  btn.innerHTML=CRM_WS_SLIDERS_SVG+' Options';
+  btn.onclick=function(){ crmWsOptOpen(); };
+  nav.appendChild(btn);
+}
+(function crmWsInit(){
+  crmWsInitHeader();
+  crmWsInitSearch();
+  var d=crmWsById('crmDetail');
+  if(d&&crmWsObserver) crmWsObserver.observe(d,{childList:true});
+  crmWsApplyAutoRefresh();
+})();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
