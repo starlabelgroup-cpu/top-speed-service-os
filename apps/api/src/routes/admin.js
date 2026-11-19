@@ -283,4 +283,45 @@ router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
   }
 });
 
+
+/**
+ * Owner-only: permanently delete ONE connection record by reference (a
+ * bogus or mis-entered public intake — a commercial request, provider
+ * application, PM walkthrough — or one the owner says is not real),
+ * with its queued notifications. One record per call, exact reference
+ * only; there is deliberately no bulk or pattern delete here.
+ * POST /admin/connections/delete { reference }
+ */
+router.post('/admin/connections/delete', ...ownerOnly, async (req, res) => {
+  if (!DATABASE_ENABLED) return res.status(503).json({ error: 'Database is not connected.' });
+  const reference = String(req.body?.reference || '').trim();
+  if (!reference) return res.status(400).json({ error: 'A connection reference is required' });
+  const prisma = db();
+  try {
+    const connection = await prisma.connection.findUnique({ where: { reference } });
+    if (!connection) return res.status(404).json({ error: 'No connection found with that reference' });
+    const outboxIds = new Set();
+    for (const entry of store.notificationOutbox) {
+      const blob = JSON.stringify(entry || {});
+      if (blob.includes(reference) || entry?.payload?.reference === reference) outboxIds.add(entry.id);
+    }
+    await prisma.$transaction([
+      prisma.notificationOutbox.deleteMany({ where: { id: { in: [...outboxIds] } } }),
+      prisma.connection.delete({ where: { id: connection.id } }),
+    ]);
+
+    store.connections = store.connections.filter((c) => c.id !== connection.id && c.reference !== reference);
+    store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
+
+    const remaining = await prisma.connection.count();
+    return res.json({
+      ok: true,
+      deleted: { reference, connections: 1, outbox: outboxIds.size },
+      remainingConnections: remaining,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Delete failed' });
+  }
+});
+
 export default router;
