@@ -192,6 +192,7 @@ function mf(method,path,body){
   return fetch(API+path,{method:method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:body?JSON.stringify(body):undefined})
     .then(function(r){ return r.text().then(function(t){
       var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); }
       if(!r.ok){ var m=j.error||('status '+r.status); if(j.guardrail) m+=' ('+j.guardrail+')'; if(j.allowedTransitions) m+=' Allowed: '+j.allowedTransitions.join(', '); throw new Error(m); }
       return j;
     }); });
@@ -436,6 +437,7 @@ if(tok()){ mf('GET','/marketing-os/admin/taxonomy').then(function(){ mosShow(); 
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

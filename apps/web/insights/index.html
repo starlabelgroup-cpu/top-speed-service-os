@@ -141,6 +141,7 @@ function mf(path, opts){
   return fetch(API+path,{method:opts.method||'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:opts.body?JSON.stringify(opts.body):undefined})
     .then(function(r){ return r.text().then(function(t){
       var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); }
       if(!r.ok) throw new Error(j.error||('status '+r.status));
       return j;
     }); });
@@ -285,6 +286,7 @@ function insLoadConns(){
 }
 if(tok()){ insShow(); }
 </script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

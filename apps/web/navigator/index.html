@@ -220,7 +220,7 @@ function postNav(message, attempt){
     .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
     .then(function(res){
       if (res.status === 401){ showGate('Your session has expired — sign in again.'); throw new Error('expired'); }
-      if (res.status === 403){ showGate('That account is not a staff account, so the Navigator stays closed for it.'); throw new Error('forbidden'); }
+      if (res.status === 403){ if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('That account is not a staff account, so the Navigator stays closed for it.'); } throw new Error('forbidden'); }
       if (res.status >= 500 && attempt < 1){ return postNav(message, attempt + 1); }
       if (res.status !== 200 || !res.j || !res.j.data || !res.j.data.reply){
         throw new Error((res.j && res.j.error) || ('HTTP ' + res.status));
@@ -294,7 +294,7 @@ function boot(){
     .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
     .then(function(res){
       if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
-      if (res.status === 403){ showGate('That account is not a staff account, so the Navigator stays closed for it.'); return; }
+      if (res.status === 403){ if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('That account is not a staff account, so the Navigator stays closed for it.'); } return; }
       if (res.status !== 200 || !res.j || !res.j.data){ showGate('The Navigator could not be reached — sign in again.'); return; }
       document.getElementById('gateZone').innerHTML = '';
       document.getElementById('staffZone').style.display = 'block';
@@ -347,6 +347,7 @@ document.getElementById('btnSignOut').addEventListener('click', function(){
 boot();
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

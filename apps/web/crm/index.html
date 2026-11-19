@@ -179,7 +179,7 @@ function crmEsc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
 function crmFetch(path,opts){
   opts=opts||{};
   return fetch(CRM_API+path,{method:opts.method||'GET',headers:{'Content-Type':'application/json','Authorization':'Bearer '+crmTok()},body:opts.body?JSON.stringify(opts.body):undefined})
-    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
+    .then(function(r){ if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('status '+r.status)); return j; }); });
 }
 function crmSignIn(){
   var email=document.getElementById('crmEmail').value.trim();
@@ -375,6 +375,7 @@ if(crmTok()){ crmFetch('/crm/home').then(function(){ crmShow(); }).catch(functio
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

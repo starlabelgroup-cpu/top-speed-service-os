@@ -185,7 +185,7 @@ function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ ret
 function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3400); }
 function apiFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({}, {'Content-Type':'application/json','Authorization':'Bearer '+tok()}, opts.headers||{});
-  return fetch(API+path,opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+  return fetch(API+path,opts).then(function(r){ if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
 }
 function setMsg(id,ok,text){ var el=document.getElementById(id); el.className='msg '+(ok?'ok':'err'); el.textContent=text; }
 function when(ts){ if(!ts) return '—'; var d=new Date(ts); return d.toLocaleDateString()+' '+d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}); }
@@ -308,6 +308,7 @@ if(tok()){
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

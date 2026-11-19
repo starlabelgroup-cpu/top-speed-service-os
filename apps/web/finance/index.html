@@ -123,7 +123,7 @@ function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFracti
 function when(iso){ if(!iso) return 'never'; try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
 function apiFetch(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
-  return fetch(API+path,opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+  return fetch(API+path,opts).then(function(r){ if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
 }
 
 fetch(API+'/finance/status').then(function(r){ return r.json(); }).then(function(j){
@@ -208,6 +208,7 @@ if(tok()){
 <style>body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Rajdhani',Inter,Arial,sans-serif}</style>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

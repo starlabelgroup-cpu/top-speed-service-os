@@ -1080,7 +1080,7 @@ function boot(){
   if (!tok()){ showSignedOut(); return; }
   Promise.all([
     authFetch('/auth/me').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
-    authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+    authFetch('/ad-studio/campaigns').then(function(r){ if (r.status === 403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.ok ? r.json() : null; }).catch(function(){ return null; })
   ]).then(function(res){
     var me = res[0];
     if (!me || !res[1]){ showSignedOut(); return; }
@@ -1093,6 +1093,7 @@ function boot(){
 boot();
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

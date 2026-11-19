@@ -799,7 +799,7 @@ function verifyGate(){
   document.getElementById('vgSignOut').addEventListener('click', signOut);
 }
 function managersOnlyGate(email){
-  showGate('<div class="gate"><h2>Managers only</h2><p>Turbo Boss is the manager command home. This account (' + esc(email || '') + ') does not hold a manager role, so the command deck stays closed. Service Setters work from the Dispatch Dashboard; the President and Managers work here.</p>'
+  if (window.TSOSAccess) { window.TSOSAccess.showRestricted('MANAGER ONLY'); return; } showGate('<div class="gate"><h2>Managers only</h2><p>Turbo Boss is the manager command home. This account (' + esc(email || '') + ') does not hold a manager role, so the command deck stays closed. Service Setters work from the Dispatch Dashboard; the President and Managers work here.</p>'
   + '<button class="ghostbtn" type="button" id="moSignOut">Sign out</button></div>');
   document.getElementById('moSignOut').addEventListener('click', signOut);
 }
@@ -856,6 +856,7 @@ boot();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

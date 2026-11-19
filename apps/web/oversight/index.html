@@ -302,7 +302,7 @@ function boot(){
     var me = data(res.j);
     if (!res.ok || !me) { try { localStorage.removeItem('tsos_token'); } catch(e){} loginGate('Your session expired — sign in again.'); return; }
     if (!isStaff(me)) {
-      gateMsg('This console is staff only. You are signed in as <b>' + esc(me.email || 'this account') + '</b>, which does not have a staff role. <a href="/app" style="color:#e94e5c;font-weight:700">Open the customer app</a> or <a href="#" id="gOut" style="color:#e94e5c;font-weight:700">sign out</a> and use a staff account.');
+      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); return; } gateMsg('This console is staff only. You are signed in as <b>' + esc(me.email || 'this account') + '</b>, which does not have a staff role. <a href="/app" style="color:#e94e5c;font-weight:700">Open the customer app</a> or <a href="#" id="gOut" style="color:#e94e5c;font-weight:700">sign out</a> and use a staff account.');
       var g = el('gOut'); if (g) g.addEventListener('click', function(e){ e.preventDefault(); signOut(); });
       return;
     }
@@ -627,6 +627,7 @@ function renderFeed(){
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

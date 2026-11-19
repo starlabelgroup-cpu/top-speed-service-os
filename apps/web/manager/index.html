@@ -444,7 +444,7 @@ function boot(){
     var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
     var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
     if (!isStaff){
-      showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Remote Manager is restricted to Top Speed staff and the owner.</p></div>');
+      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Remote Manager is restricted to Top Speed staff and the owner.</p></div>'); }
       return;
     }
     document.getElementById('gate').innerHTML = '';
@@ -656,6 +656,7 @@ document.getElementById('logoutBtn').addEventListener('click', function(){
 boot();
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

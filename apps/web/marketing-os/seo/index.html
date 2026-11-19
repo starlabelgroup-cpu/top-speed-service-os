@@ -134,6 +134,7 @@ function mf(path){
   return fetch(API+path,{headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()}})
     .then(function(r){ return r.text().then(function(t){
       var j={}; try{ j=t?JSON.parse(t):{}; }catch(e){}
+      if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); }
       if(!r.ok) throw new Error(j.error||('status '+r.status));
       return j;
     }); });
@@ -282,6 +283,7 @@ if(tok()) seoShow();
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Anton',Impact,sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>

@@ -111,6 +111,7 @@ let PROVIDERS = [];
 async function api(path, opts = {}) {
   const res = await fetch(API + path, { ...opts, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token(), ...(opts.headers || {}) } });
   const body = await res.json().catch(() => ({}));
+  if (res.status === 403 && window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); }
   if (!res.ok) throw new Error(body.error || ('Request failed (' + res.status + ')'));
   return body.data;
 }
@@ -239,6 +240,7 @@ if (token()) enter();
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 </body>
 </html>
