@@ -232,10 +232,138 @@ router.post('/admin/cleanup-test-data', ...ownerOnly, async (req, res) => {
 
 
 /**
+ * Unified owner-delete helpers (2026-11-19): one public intake can
+ * live in TWO tables at once. A lead-type connection (commercial
+ * request, service request, PM request…) ALSO mints a lead booking in
+ * the Service Setters queue (services/leadBookings.js) — under its OWN
+ * referenceCode, linked back to the connection by the BOOKING_CREATED
+ * history entry the booking persists. Deleting only one half left the
+ * other rendering in Book OS / CRM, so both admin delete routes now
+ * resolve and remove the WHOLE intake from either reference: the
+ * booking's queue reference or the connection's intake reference.
+ */
+
+// The connection reference a booking was born from, when it is a lead
+// booking: live bookings carry it on booking.lead; persisted rows
+// carry it in the BOOKING_CREATED history entry (a JSON column).
+function leadConnectionReferenceOf(booking) {
+  if (!booking) return null;
+  if (booking.lead?.connectionReference) return booking.lead.connectionReference;
+  const created = (Array.isArray(booking.history) ? booking.history : []).find(
+    (h) => (h?.type || h?.event) === 'BOOKING_CREATED' && h?.connectionReference,
+  );
+  return created?.connectionReference || null;
+}
+
+// Every queued notification tied to ANY of the given references or
+// booking ids — the blob match covers the event-key/subject forms,
+// the payload fields cover the structured forms.
+function collectDeleteOutboxIds(references, bookingIds) {
+  const refs = [...new Set((references || []).filter(Boolean))];
+  const ids = new Set();
+  for (const entry of store.notificationOutbox) {
+    const blob = JSON.stringify(entry || {});
+    if (refs.some((r) => blob.includes(r))) { ids.add(entry.id); continue; }
+    if (entry?.payload?.reference && refs.includes(entry.payload.reference)) ids.add(entry.id);
+    if (entry?.payload?.bookingId && bookingIds.includes(entry.payload.bookingId)) ids.add(entry.id);
+  }
+  return ids;
+}
+
+// The booking half of an intake known by its connection reference:
+// scan the persisted booking history for the lead link.
+async function findLeadBookingByConnectionReference(prisma, connectionReference) {
+  const rows = await prisma.serviceRequest.findMany({ select: { id: true, history: true } });
+  const hit = rows.find((row) => leadConnectionReferenceOf(row) === connectionReference);
+  return hit ? prisma.serviceRequest.findUnique({ where: { id: hit.id } }) : null;
+}
+
+// Resolve BOTH halves of the intake a reference names — the booking
+// and/or connection carrying that exact reference, plus the partner
+// half joined by the lead link — and delete them in one transaction:
+// the booking with its invoices, issued referral and sole-booking
+// customer (exactly the historical bookings-delete set), the
+// connection row(s), and every queued notification tied to either
+// reference. Returns null when the reference exists in neither table.
+async function deleteIntakeByReference(prisma, reference) {
+  let booking = await prisma.serviceRequest.findUnique({ where: { referenceCode: reference } });
+  const connectionsById = new Map();
+  const sameRefConnection = await prisma.connection.findUnique({ where: { reference } });
+  if (sameRefConnection) connectionsById.set(sameRefConnection.id, sameRefConnection);
+  if (booking) {
+    const leadRef = leadConnectionReferenceOf(booking);
+    if (leadRef && leadRef !== reference) {
+      const linked = await prisma.connection.findUnique({ where: { reference: leadRef } });
+      if (linked) connectionsById.set(linked.id, linked);
+    }
+  }
+  if (!booking && sameRefConnection) {
+    booking = await findLeadBookingByConnectionReference(prisma, sameRefConnection.reference);
+  }
+  const connections = [...connectionsById.values()];
+  if (!booking && connections.length === 0) return null;
+
+  let customer = null;
+  let dropCustomer = false;
+  let invoiceRows = [];
+  let referralRows = [];
+  if (booking) {
+    customer = await prisma.customer.findUnique({ where: { id: booking.customerId } });
+    const siblings = await prisma.serviceRequest.count({ where: { customerId: booking.customerId, id: { not: booking.id } } });
+    dropCustomer = Boolean(customer && siblings === 0);
+    invoiceRows = await prisma.invoice.findMany({ where: { serviceRequestId: booking.id }, select: { id: true } });
+    referralRows = await prisma.referral.findMany({ where: { issuedFromBookingId: booking.id }, select: { id: true } });
+  }
+  const outboxIds = collectDeleteOutboxIds(
+    [reference, booking?.referenceCode, ...connections.map((c) => c.reference)],
+    booking ? [booking.id] : [],
+  );
+
+  const ops = [];
+  if (booking) {
+    ops.push(prisma.invoice.deleteMany({ where: { id: { in: invoiceRows.map((r) => r.id) } } }));
+    ops.push(prisma.referral.deleteMany({ where: { id: { in: referralRows.map((r) => r.id) } } }));
+  }
+  ops.push(prisma.notificationOutbox.deleteMany({ where: { id: { in: [...outboxIds] } } }));
+  for (const connection of connections) ops.push(prisma.connection.delete({ where: { id: connection.id } }));
+  if (booking) ops.push(prisma.serviceRequest.delete({ where: { id: booking.id } }));
+  if (dropCustomer) ops.push(prisma.customer.delete({ where: { id: customer.id } }));
+  await prisma.$transaction(ops);
+
+  if (booking) {
+    store.bookings.delete(booking.id);
+    for (const [id, a] of [...store.dispatchAssignments]) if (a.bookingId === booking.id) store.dispatchAssignments.delete(id);
+    for (const [id, pay] of [...store.payments]) if (pay.bookingId === booking.id) store.payments.delete(id);
+    for (const [id, r] of [...store.referrals]) if (r.issuedFromBookingId === booking.id) store.referrals.delete(id);
+    for (const [hash, t] of [...store.trackingTokens]) if (t.bookingId === booking.id) store.trackingTokens.delete(hash);
+    if (dropCustomer) store.customers.delete(customer.id);
+  }
+  if (connections.length) {
+    const goneIds = new Set(connections.map((c) => c.id));
+    const goneRefs = new Set(connections.map((c) => c.reference));
+    store.connections = store.connections.filter((c) => !goneIds.has(c.id) && !goneRefs.has(c.reference));
+  }
+  store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
+
+  return {
+    reference,
+    bookings: booking ? 1 : 0,
+    connections: connections.length,
+    invoices: invoiceRows.length,
+    referrals: referralRows.length,
+    outbox: outboxIds.size,
+    customer: dropCustomer ? 1 : 0,
+  };
+}
+
+/**
  * Owner-only: permanently delete ONE booking by reference (a bogus or
  * mis-entered record, or one the owner says is not a real customer), with
  * its assignments, invoices, issued referral and queued notifications.
  * The customer record is removed too when this was their only booking.
+ * When the booking is the lead half of a public intake, the connection
+ * half is removed with it — and a connection reference resolves the
+ * whole intake too (see deleteIntakeByReference).
  * POST /admin/bookings/delete { reference }
  */
 router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
@@ -244,40 +372,10 @@ router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
   if (!reference) return res.status(400).json({ error: 'A booking reference is required' });
   const prisma = db();
   try {
-    const booking = await prisma.serviceRequest.findUnique({ where: { referenceCode: reference } });
-    if (!booking) return res.status(404).json({ error: 'No booking found with that reference' });
-    const customer = await prisma.customer.findUnique({ where: { id: booking.customerId } });
-    const siblings = await prisma.serviceRequest.count({ where: { customerId: booking.customerId, id: { not: booking.id } } });
-    const invoiceRows = await prisma.invoice.findMany({ where: { serviceRequestId: booking.id }, select: { id: true } });
-    const referralRows = await prisma.referral.findMany({ where: { issuedFromBookingId: booking.id }, select: { id: true } });
-    const outboxIds = new Set();
-    for (const entry of store.notificationOutbox) {
-      const blob = JSON.stringify(entry || {});
-      if (blob.includes(reference) || entry?.payload?.bookingId === booking.id) outboxIds.add(entry.id);
-    }
-    const ops = [
-      prisma.invoice.deleteMany({ where: { id: { in: invoiceRows.map((r) => r.id) } } }),
-      prisma.referral.deleteMany({ where: { id: { in: referralRows.map((r) => r.id) } } }),
-      prisma.notificationOutbox.deleteMany({ where: { id: { in: [...outboxIds] } } }),
-      prisma.serviceRequest.delete({ where: { id: booking.id } }),
-    ];
-    if (customer && siblings === 0) ops.push(prisma.customer.delete({ where: { id: customer.id } }));
-    await prisma.$transaction(ops);
-
-    store.bookings.delete(booking.id);
-    for (const [id, a] of [...store.dispatchAssignments]) if (a.bookingId === booking.id) store.dispatchAssignments.delete(id);
-    for (const [id, pay] of [...store.payments]) if (pay.bookingId === booking.id) store.payments.delete(id);
-    for (const [id, r] of [...store.referrals]) if (r.issuedFromBookingId === booking.id) store.referrals.delete(id);
-    for (const [hash, t] of [...store.trackingTokens]) if (t.bookingId === booking.id) store.trackingTokens.delete(hash);
-    if (customer && siblings === 0) store.customers.delete(customer.id);
-    store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
-
+    const deleted = await deleteIntakeByReference(prisma, reference);
+    if (!deleted) return res.status(404).json({ error: 'No booking found with that reference' });
     const remaining = await prisma.serviceRequest.count();
-    return res.json({
-      ok: true,
-      deleted: { reference, bookings: 1, invoices: invoiceRows.length, referrals: referralRows.length, outbox: outboxIds.size, customer: customer && siblings === 0 ? 1 : 0 },
-      remainingBookings: remaining,
-    });
+    return res.json({ ok: true, deleted, remainingBookings: remaining });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Delete failed' });
   }
@@ -288,8 +386,11 @@ router.post('/admin/bookings/delete', ...ownerOnly, async (req, res) => {
  * Owner-only: permanently delete ONE connection record by reference (a
  * bogus or mis-entered public intake — a commercial request, provider
  * application, PM walkthrough — or one the owner says is not real),
- * with its queued notifications. One record per call, exact reference
- * only; there is deliberately no bulk or pattern delete here.
+ * with its queued notifications. When the intake also minted a lead
+ * booking, that half is removed with it — and a booking reference
+ * resolves the whole intake too (see deleteIntakeByReference). One
+ * record per call, exact reference only; there is deliberately no
+ * bulk or pattern delete here.
  * POST /admin/connections/delete { reference }
  */
 router.post('/admin/connections/delete', ...ownerOnly, async (req, res) => {
@@ -298,27 +399,10 @@ router.post('/admin/connections/delete', ...ownerOnly, async (req, res) => {
   if (!reference) return res.status(400).json({ error: 'A connection reference is required' });
   const prisma = db();
   try {
-    const connection = await prisma.connection.findUnique({ where: { reference } });
-    if (!connection) return res.status(404).json({ error: 'No connection found with that reference' });
-    const outboxIds = new Set();
-    for (const entry of store.notificationOutbox) {
-      const blob = JSON.stringify(entry || {});
-      if (blob.includes(reference) || entry?.payload?.reference === reference) outboxIds.add(entry.id);
-    }
-    await prisma.$transaction([
-      prisma.notificationOutbox.deleteMany({ where: { id: { in: [...outboxIds] } } }),
-      prisma.connection.delete({ where: { id: connection.id } }),
-    ]);
-
-    store.connections = store.connections.filter((c) => c.id !== connection.id && c.reference !== reference);
-    store.notificationOutbox = store.notificationOutbox.filter((e) => !outboxIds.has(e.id));
-
+    const deleted = await deleteIntakeByReference(prisma, reference);
+    if (!deleted) return res.status(404).json({ error: 'No connection found with that reference' });
     const remaining = await prisma.connection.count();
-    return res.json({
-      ok: true,
-      deleted: { reference, connections: 1, outbox: outboxIds.size },
-      remainingConnections: remaining,
-    });
+    return res.json({ ok: true, deleted, remainingConnections: remaining });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Delete failed' });
   }

@@ -11,7 +11,14 @@
  *    → 403, owner → 200.
  *  - Same shapes: missing reference → 400, unknown reference → 404,
  *    success → { ok: true, deleted: { reference, connections: 1,
- *    outbox: N }, remainingConnections }.
+ *    outbox: N, … }, remainingConnections }.
+ *
+ * Unified delete (2026-11-19): a lead-type connection ALSO mints a
+ * lead booking (its own reference) in the setter queue, so the last
+ * section drills the cross-model case — deleting by the CONNECTION
+ * reference removes the booking half, its lead customer and both
+ * references' outbox entries too, and re-deleting 404s on both
+ * admin routes.
  *  - The delete removes the Connection row AND every outbox entry
  *    whose payload/blob references that reference — and the in-memory
  *    store mirrors both (GET /connections no longer lists it).
@@ -242,6 +249,70 @@ async function main() {
   const again = await api('/admin/connections/delete', { token: ownerToken, method: 'POST', body: { reference: refTarget } });
   check('re-delete the same reference → 404', again.status, 404);
   check('bystander still standing at the end', await connectionCount(), 1);
+
+  // ---- Unified delete: a lead-type intake lives in BOTH tables ----
+  // A COMMERCIAL_WORK_ORDER connection also mints a lead booking (its
+  // OWN reference) in the setter queue. Deleting by the CONNECTION
+  // reference must remove both halves + the lead customer + outbox.
+  const leadBookingOf = async (connRef) => {
+    const rows = await prisma.serviceRequest.findMany();
+    return rows.find((r) => (Array.isArray(r.history) ? r.history : []).some(
+      (h) => (h?.type || h?.event) === 'BOOKING_CREATED' && h?.connectionReference === connRef,
+    )) || null;
+  };
+  const connBaseline = await connectionCount();
+  const dual = await api('/connections', {
+    method: 'POST',
+    body: {
+      type: 'COMMERCIAL_WORK_ORDER', name: 'Dual Fake One', email: 'dual@test.local',
+      phone: '9545550177', source: 'flagship-commercial', message: 'Walk-in cooler down — spam work order',
+    },
+  });
+  check('dual-intake connection created → 201', dual.status, 201);
+  const refDualConn = dual.json?.data?.reference || '';
+  checkTrue('dual connection carries a TS- reference', /^TS-/.test(refDualConn));
+  await settle();
+  const dualBooking = await leadBookingOf(refDualConn);
+  checkTrue('dual intake minted a lead booking', dualBooking);
+  const refDualBooking = dualBooking?.referenceCode || '';
+  checkTrue('lead booking carries its OWN reference', Boolean(refDualBooking) && refDualBooking !== refDualConn);
+  check('connection count rose by one', await connectionCount(), connBaseline + 1);
+  checkTrue('lead customer persisted', await prisma.customer.findUnique({ where: { id: dualBooking.customerId } }));
+
+  const queueBefore = await api('/bookos/setter-queue', { token: setterToken });
+  check('setter queue (staff) → 200', queueBefore.status, 200);
+  checkTrue('setter queue shows the lead booking', (queueBefore.json?.data?.queue || []).some((q) => q.referenceCode === refDualBooking));
+
+  const setterCross = await api('/admin/connections/delete', { token: setterToken, method: 'POST', body: { reference: refDualConn } });
+  check('dispatcher cross-delete → 403', setterCross.status, 403);
+  const managerCross = await api('/admin/bookings/delete', { token: managerToken, method: 'POST', body: { reference: refDualBooking } });
+  check('manager cross-delete (bookings route) → 403', managerCross.status, 403);
+  checkTrue('connection survives unauthorized cross attempts', await prisma.connection.findUnique({ where: { reference: refDualConn } }));
+  checkTrue('lead booking survives unauthorized cross attempts', await prisma.serviceRequest.findUnique({ where: { referenceCode: refDualBooking } }));
+
+  const cross = await api('/admin/connections/delete', { token: ownerToken, method: 'POST', body: { reference: refDualConn } });
+  check('owner delete by connection reference → 200', cross.status, 200);
+  check('cross deleted.connections is 1', cross.json?.deleted?.connections, 1);
+  check('cross deleted.bookings is 1', cross.json?.deleted?.bookings, 1);
+  check('cross deleted.customer is 1', cross.json?.deleted?.customer, 1);
+  await settle();
+  check('dual connection gone from the database', await prisma.connection.findUnique({ where: { reference: refDualConn } }), null);
+  check('dual lead booking gone from the database', await prisma.serviceRequest.findUnique({ where: { referenceCode: refDualBooking } }), null);
+  check('dual lead customer gone from the database', await prisma.customer.findUnique({ where: { id: dualBooking.customerId } }), null);
+  check('outbox entries for the connection reference are gone', await outboxReferencing(refDualConn), 0);
+  check('outbox entries for the booking reference are gone', await outboxReferencing(refDualBooking), 0);
+  const queueAfter = await api('/bookos/setter-queue', { token: setterToken });
+  checkTrue('setter queue no longer shows the lead booking', !(queueAfter.json?.data?.queue || []).some((q) => q.referenceCode === refDualBooking));
+  const listAfter = await api('/connections', { token: setterToken });
+  checkTrue('staff list no longer contains the dual connection', !(listAfter.json?.data || []).map((c) => c.reference).includes(refDualConn));
+  check('connection count back to baseline', await connectionCount(), connBaseline);
+  checkTrue('bystander connection untouched by the cross delete', await prisma.connection.findUnique({ where: { reference: refBystander } }));
+  checkTrue('bystander lead booking untouched by the cross delete', await leadBookingOf(refBystander));
+
+  const crossAgain = await api('/admin/connections/delete', { token: ownerToken, method: 'POST', body: { reference: refDualConn } });
+  check('re-delete the dual intake (connections route) → 404', crossAgain.status, 404);
+  const crossAgainB = await api('/admin/bookings/delete', { token: ownerToken, method: 'POST', body: { reference: refDualBooking } });
+  check('re-delete the dual intake (bookings route, booking ref) → 404', crossAgainB.status, 404);
 
   console.log(`\n${passed} passed, ${failed} failed`);
   return failed;
