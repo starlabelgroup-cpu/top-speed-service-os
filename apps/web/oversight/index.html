@@ -633,6 +633,255 @@ function renderFeed(){
   }).join('');
 }
 </script>
+
+<style>
+  /* WORKSTATION STANDARD (Oversight station): activity rows open a
+     read-only detail on click — the pointer is the affordance; the
+     row's own Open/View link keeps its behavior. */
+  .ov-ev{cursor:pointer}
+  .ovws-ic{width:15px;height:15px;vertical-align:-2px}
+  .ovws-f{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-top:1px solid #eef1f6;font-size:13.5px}
+  .ovws-f .k{color:#8591a4;flex:none}
+  .ovws-f .v{color:#182742;font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
+</style>
+
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (Oversight station, 2026-11-19):
+     every control here changes real behavior (the automatic
+     refresh cycle, which activity the feed shows, how many rows).
+     Preferences save on this device only. Same backdrop pattern as
+     the other consoles' standard panels; below the Ask Pepper
+     launcher (9995). -->
+<div id="ovWsOptBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="ovWsOptBackdrop(event)">
+  <div style="background:#fff;color:#182742;max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Oversight options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:#182742">Options</h3><div style="font-size:12.5px;color:#8591a4;margin-top:2px">Oversight preferences — saved on this device only.</div></div><button class="iconbtn" type="button" onclick="ovWsOptClose()">Close</button></div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:#8591a4;font-size:12.5px">This console refreshes itself every minute — that is its original behavior, and the default here. Turning it off stops the automatic cycle; the Refresh button still works. An automatic refresh never runs while a detail or this panel is open.</span></div>
+      <button class="iconbtn" id="ovWsAutoBtn" type="button" onclick="ovWsToggleAuto()">&#9679; ON</button>
+    </div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Activity feed</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Show:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="iconbtn" id="ovWsFeedAll" type="button" onclick="ovWsSetFilter('all')">All activity</button>
+      <button class="iconbtn" id="ovWsFeedEvents" type="button" onclick="ovWsSetFilter('events')">Platform events</button>
+      <button class="iconbtn" id="ovWsFeedPubs" type="button" onclick="ovWsSetFilter('pubs')">Publishes</button>
+    </div>
+    <div style="font-size:13.5px;margin:10px 0 6px">Rows:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="iconbtn" id="ovWsLen28" type="button" onclick="ovWsSetLength(28)">28 rows</button>
+      <button class="iconbtn" id="ovWsLen10" type="button" onclick="ovWsSetLength(10)">10 rows</button>
+    </div>
+    <div style="font-size:12.5px;color:#8591a4;margin-top:6px">All activity at 28 rows is the console's original behavior.</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="iconbtn" type="button" onclick="ovWsOptClose()">Done</button></div>
+  </div>
+</div>
+
+<!-- WORKSTATION STANDARD — ACTIVITY DETAIL (Oversight station):
+     clicking an activity row (not its Open/View link) opens this
+     READ-ONLY detail — Oversight is view-only by design, so there
+     are no action buttons here, only the record itself and, for
+     booking events, the booking's current state read live through
+     the same staff endpoint the consoles already use. -->
+<div id="ovWsBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="ovWsBackdrop(event)">
+  <div style="background:#fff;color:#182742;max-width:560px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Activity detail">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:#182742">Activity detail</h3><div style="font-size:12.5px;color:#8591a4;margin-top:2px">Read-only — Oversight watches; the working consoles act.</div></div><button class="iconbtn" type="button" onclick="ovWsClose()">Close</button></div>
+    <div id="ovWsBody" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<script>
+/* ================= WORKSTATION STANDARD — OVERSIGHT STATION (2026-11-19) =================
+   Station 5 of the platform-wide workstation standard (Book OS
+   1f4e5f1 set the pattern; CRM e7aea1b, Tech web 74911a2, Dispatch
+   c9bfba9 followed). Ramone's standing rule for the rollout:
+   "Don't change — just integrate." Everything in this section is
+   ADDITIVE: no existing Oversight function, flow, layout or API
+   contract is modified. The section only (a) wraps refresh() so
+   the console's own automatic cycle can be paused by preference
+   or while a window is open, (b) observes the activity feed to
+   tag each rendered row with the record it came from and apply
+   the feed preferences, (c) injects one Options button into the
+   topbar, and (d) opens a read-only detail when a feed row itself
+   is clicked. Out of the box (default preferences) the console
+   behaves exactly as before: auto-refresh ON (its original
+   behavior), all activity, 28 rows.
+   OVERSIGHT IS VIEW-ONLY BY DESIGN: this station adds NO action
+   buttons and NO write calls. The one enrichment read (a booking
+   event's current state) uses GET /bookings/:id — the existing
+   staff read — and shows operational fields only, in keeping with
+   the feed's own no-PII-details rule.
+   (1) PREFERENCES — a this-device store (localStorage,
+       tsos_oversight_prefs) behind the Options panel.
+   (2) RECORD OPENS ON CLICK — an activity row opens the full
+       event (or publish) behind it. */
+var OV_WS_PREFS_KEY='tsos_oversight_prefs';
+var ovWsPrefs={autoRefresh:true,feedFilter:'all',feedLength:28};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(OV_WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.autoRefresh===false) ovWsPrefs.autoRefresh=false; if(p.feedFilter==='events'||p.feedFilter==='pubs') ovWsPrefs.feedFilter=p.feedFilter; if(p.feedLength===10) ovWsPrefs.feedLength=10; } }catch(e){} })();
+function ovWsSavePrefs(){ try{ localStorage.setItem(OV_WS_PREFS_KEY,JSON.stringify(ovWsPrefs)); }catch(e){} }
+function ovWsById(id){ return document.getElementById(id); }
+var OV_WS_SLIDERS_SVG='<svg class="ovws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg>';
+
+/* ---- (1a) Auto-refresh gate. The console's own cycle calls
+   refresh(false) (the boot interval); the Refresh button and the
+   boot load call refresh(true). Only the automatic calls are
+   gated — by the preference, and while the detail or the options
+   panel is open (a refresh re-renders the feed under an open
+   detail; the detail is a snapshot and is never disturbed). ---- */
+function ovWsModalOpen(){
+  var a=ovWsById('ovWsOptBack'), b=ovWsById('ovWsBack');
+  return !!((a&&a.style.display==='block')||(b&&b.style.display==='block'));
+}
+var ovWsOrigRefresh=refresh;
+refresh=function(full){
+  if(full===false&&(!ovWsPrefs.autoRefresh||ovWsModalOpen())) return;
+  ovWsOrigRefresh(full);
+};
+
+/* ---- (1b)+(2) Feed mapping. renderFeed merges platform events
+   (OV.fast.events) and publishes (OV.slow.pub), sorts newest
+   first and renders the top 28 as .ov-ev rows. This section
+   reproduces that exact merge to know which record each rendered
+   row is, tags the row element with it, and applies the feed
+   preferences (filter + row count) by showing/hiding rows. With
+   default preferences every row stays visible, exactly as
+   rendered. If the merge ever disagrees with the render, the row
+   is simply left untagged (never hidden) — a safe degrade. ---- */
+function ovWsFeedItems(){
+  var items=[];
+  if(typeof OV!=='undefined'){
+    if(OV.fast&&Array.isArray(OV.fast.events)) OV.fast.events.forEach(function(ev){ items.push({kind:'event',at:ev.at,ev:ev}); });
+    if(OV.slow&&Array.isArray(OV.slow.pub)) OV.slow.pub.forEach(function(p){ items.push({kind:'pub',at:p.at,pub:p}); });
+  }
+  items.sort(function(a,b){ return new Date(b.at)-new Date(a.at); });
+  return items.slice(0,28);
+}
+function ovWsMapFeed(){
+  var list=ovWsById('feedList'); if(!list) return;
+  var rows=list.querySelectorAll('.ov-ev');
+  var items=ovWsFeedItems();
+  var shown=0;
+  for(var i=0;i<rows.length;i++){
+    var it=items[i]||null;
+    rows[i]._ovWs=it;
+    if(!it) continue;
+    var vis=true;
+    if(ovWsPrefs.feedFilter==='events'&&it.kind!=='event') vis=false;
+    if(ovWsPrefs.feedFilter==='pubs'&&it.kind!=='pub') vis=false;
+    if(vis){ shown++; if(shown>ovWsPrefs.feedLength) vis=false; }
+    rows[i].style.display=vis?'flex':'none';
+  }
+}
+if(window.MutationObserver){
+  var ovWsFeedEl=ovWsById('feedList');
+  if(ovWsFeedEl) new MutationObserver(function(){ ovWsMapFeed(); }).observe(ovWsFeedEl,{childList:true});
+}
+
+/* ---- (1c) Options panel ---- */
+function ovWsOptOpen(){ ovWsSyncOptionsUi(); ovWsById('ovWsOptBack').style.display='block'; }
+function ovWsOptClose(){ var b=ovWsById('ovWsOptBack'); if(b) b.style.display='none'; }
+function ovWsOptBackdrop(ev){ if(ev&&ev.target===ovWsById('ovWsOptBack')) ovWsOptClose(); }
+function ovWsMarkBtn(el,on){ if(!el) return; el.style.borderColor=on?'#e94e5c':''; el.style.color=on?'#c23340':''; el.style.fontWeight=on?'800':''; }
+function ovWsSyncOptionsUi(){
+  var a=ovWsById('ovWsAutoBtn'); if(a) a.textContent=ovWsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF';
+  ovWsMarkBtn(ovWsById('ovWsFeedAll'),ovWsPrefs.feedFilter==='all');
+  ovWsMarkBtn(ovWsById('ovWsFeedEvents'),ovWsPrefs.feedFilter==='events');
+  ovWsMarkBtn(ovWsById('ovWsFeedPubs'),ovWsPrefs.feedFilter==='pubs');
+  ovWsMarkBtn(ovWsById('ovWsLen28'),ovWsPrefs.feedLength===28);
+  ovWsMarkBtn(ovWsById('ovWsLen10'),ovWsPrefs.feedLength===10);
+}
+function ovWsToggleAuto(){ ovWsPrefs.autoRefresh=!ovWsPrefs.autoRefresh; ovWsSavePrefs(); ovWsSyncOptionsUi(); }
+function ovWsSetFilter(v){ ovWsPrefs.feedFilter=(v==='events'||v==='pubs')?v:'all'; ovWsSavePrefs(); ovWsSyncOptionsUi(); ovWsMapFeed(); }
+function ovWsSetLength(n){ ovWsPrefs.feedLength=(n===10)?10:28; ovWsSavePrefs(); ovWsSyncOptionsUi(); ovWsMapFeed(); }
+
+/* The Options button joins the topbar next to Refresh and follows
+   its visibility (Refresh only appears once a manager session is
+   live, so Options keeps the same lifecycle). */
+(function(){
+  var rb=ovWsById('refreshBtn'); if(!rb||!rb.parentNode) return;
+  var b=document.createElement('button');
+  b.className='iconbtn'; b.type='button'; b.id='ovWsOptBtn'; b.style.display='none';
+  b.innerHTML=OV_WS_SLIDERS_SVG+' Options';
+  b.addEventListener('click',function(){ ovWsOptOpen(); });
+  rb.parentNode.insertBefore(b,rb);
+  if(window.MutationObserver){ new MutationObserver(function(){ b.style.display=rb.style.display; }).observe(rb,{attributes:true,attributeFilter:['style']}); }
+})();
+
+/* ---- (2) Activity detail (read-only) ---- */
+function ovWsField(k,v){ return '<div class="ovws-f"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>'; }
+function ovWsDetailVal(x){
+  if(x===null||x===undefined) return '\u2014';
+  if(typeof x==='object'){ var s=''; try{ s=JSON.stringify(x); }catch(e){ s=''; } return s.length>300?s.slice(0,300)+'\u2026':s; }
+  return String(x);
+}
+function ovWsOpen(item){
+  if(!item) return;
+  var h='';
+  if(item.kind==='pub'){
+    var p=item.pub;
+    h+='<div style="font-size:15px;font-weight:800;color:#182742;overflow-wrap:anywhere">Published \u2014 '+esc(p.title||'Page update')+'</div>';
+    h+='<div style="font-size:12.5px;color:#8591a4;margin:2px 0 6px">'+esc(fmtDay(p.at))+(p.at?' \u00b7 '+esc(ago(p.at)):'')+'</div>';
+    h+=ovWsField('Source','Publish Center');
+    if(p.url) h+=ovWsField('Page',p.url);
+    h+='<div style="margin-top:14px"><a class="go" href="'+esc(p.url||'/publish-center')+'">View</a></div>';
+  } else {
+    var ev=item.ev;
+    var label=(typeof EV_LABELS!=='undefined'&&EV_LABELS[ev.type])||humanize(ev.type||'event');
+    h+='<div style="font-size:15px;font-weight:800;color:#182742;overflow-wrap:anywhere">'+esc(label)+'</div>';
+    h+='<div style="font-size:12.5px;color:#8591a4;margin:2px 0 6px">'+esc(fmtDay(ev.at))+(ev.at?' \u00b7 '+esc(ago(ev.at)):'')+'</div>';
+    h+=ovWsField('Event type',ev.type||'\u2014');
+    if(ev.source) h+=ovWsField('Source',humanize(ev.source));
+    if(ev.actor) h+=ovWsField('Actor',ev.actor);
+    if(ev.referenceCode) h+=ovWsField('Reference',ev.referenceCode);
+    if(ev.entityType) h+=ovWsField('Record',ev.entityType+(ev.entityId?' \u00b7 '+ev.entityId:''));
+    if(ev.details&&typeof ev.details==='object'){
+      var keys=Object.keys(ev.details);
+      if(keys.length){
+        h+='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 2px">Details</div>';
+        keys.forEach(function(k){ h+=ovWsField(humanize(k),ovWsDetailVal(ev.details[k])); });
+      }
+    }
+    if(ev.entityType==='BOOKING'&&ev.entityId){
+      h+='<div id="ovWsBk"><div style="font-size:12.5px;color:#8591a4;margin-top:14px">Loading the booking\u2019s current state\u2026</div></div>';
+    }
+    h+='<div style="margin-top:14px"><a class="go" href="'+(ev.referenceCode?'/dispatch-dashboard':'/applianceman')+'">Open</a></div>';
+  }
+  ovWsById('ovWsBody').innerHTML=h;
+  ovWsById('ovWsBack').style.display='block';
+  if(item.kind==='event'&&item.ev.entityType==='BOOKING'&&item.ev.entityId){
+    var eid=item.ev.entityId;
+    get('/bookings/'+encodeURIComponent(eid)).then(function(r){
+      var slot=ovWsById('ovWsBk'); if(!slot) return;
+      if(!r.ok||!r.j||!r.j.data){ slot.innerHTML='<div style="font-size:12.5px;color:#8591a4;margin-top:14px">The booking\u2019s current state could not be loaded.</div>'; return; }
+      var bk=r.j.data;
+      var bh='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 2px">Booking \u2014 current state</div>';
+      if(bk.referenceCode) bh+=ovWsField('Reference',bk.referenceCode);
+      if(bk.status) bh+=ovWsField('Status',humanize(bk.status));
+      var svc=bk.appliance||bk.serviceType||bk.service||bk.applianceType;
+      if(svc) bh+=ovWsField('Service',svc);
+      if(bk.city) bh+=ovWsField('City',bk.city);
+      if(bk.appointment) bh+=ovWsField('Appointment',(bk.appointment.date||'')+((bk.appointment.windowLabel||bk.appointment.window)?' \u00b7 '+(bk.appointment.windowLabel||bk.appointment.window):'')+(bk.appointment.status?' \u00b7 '+humanize(bk.appointment.status):''));
+      else bh+=ovWsField('Appointment','Not set');
+      var prov=bk.providerBusinessName||bk.providerName;
+      if(prov) bh+=ovWsField('Provider',prov);
+      if(bk.payment) bh+=ovWsField('Diagnostic',bk.payment.diagnosticPaid?'Paid':'Not paid');
+      slot.innerHTML=bh;
+    });
+  }
+}
+function ovWsClose(){ var b=ovWsById('ovWsBack'); if(b) b.style.display='none'; }
+function ovWsBackdrop(ev){ if(ev&&ev.target===ovWsById('ovWsBack')) ovWsClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ ovWsClose(); ovWsOptClose(); } });
+
+/* One delegated listener: a click on a feed row itself (not its
+   Open/View link, not any control) opens the read-only detail. */
+document.addEventListener('click',function(ev){
+  var t=ev.target; if(!t||!t.closest) return;
+  if(t.closest('#ovWsBack')||t.closest('#ovWsOptBack')) return;
+  if(t.closest('a, button, input, select, textarea, label')) return;
+  var row=t.closest('.ov-ev'); if(!row||!row._ovWs) return;
+  ovWsOpen(row._ovWs);
+});
+</script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>

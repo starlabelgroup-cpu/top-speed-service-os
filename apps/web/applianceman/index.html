@@ -665,6 +665,252 @@ document.getElementById('logoutBtn').addEventListener('click', function(){
 });
 boot();
 </script>
+
+<style>
+  /* WORKSTATION STANDARD (ApplianceMan station): Speedy Verify
+     account rows open the account detail on click — the pointer is
+     the affordance; the buttons inside a row keep their own actions. */
+  #svPanel > div{cursor:pointer}
+  .amws-ic{width:15px;height:15px;vertical-align:-2px}
+  .amws-f{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-top:1px solid #eef1f6;font-size:13.5px}
+  .amws-f .k{color:#8591a4;flex:none}
+  .amws-f .v{color:#182742;font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
+</style>
+
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (ApplianceMan station, 2026-11-19):
+     every control here changes real behavior (Speedy Verify list
+     sort, auto-refresh). Preferences save on this device only. Same
+     backdrop pattern as the other consoles' standard panels; sits
+     below the Ask Pepper launcher (9995). -->
+<div id="amWsOptBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="amWsOptBackdrop(event)">
+  <div style="background:#fff;color:#182742;max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="ApplianceMan options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:#182742">Options</h3><div style="font-size:12.5px;color:#8591a4;margin-top:2px">ApplianceMan preferences — saved on this device only.</div></div><button class="iconbtn" type="button" onclick="amWsOptClose()">Close</button></div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Speedy Verify accounts</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Sort the account list:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="iconbtn" id="amWsSortServer" type="button" onclick="amWsSetSort('server')">As listed</button>
+      <button class="iconbtn" id="amWsSortEmail" type="button" onclick="amWsSetSort('email')">Email A–Z</button>
+      <button class="iconbtn" id="amWsSortNewest" type="button" onclick="amWsSetSort('newest')">Newest first</button>
+      <button class="iconbtn" id="amWsSortOldest" type="button" onclick="amWsSetSort('oldest')">Oldest first</button>
+    </div>
+    <div style="font-size:12.5px;color:#8591a4;margin-top:6px">As listed is the platform's own order — the approval queue first, then A–Z. That is the console's original behavior.</div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:#8591a4;font-size:12.5px">Re-runs the full live load on its own. Pauses while a window (account detail, options) is open or the tab is hidden.</span></div>
+      <button class="iconbtn" id="amWsAutoBtn" type="button" onclick="amWsToggleAuto()">&#9675; OFF</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="iconbtn" type="button" onclick="amWsOptClose()">Done</button></div>
+  </div>
+</div>
+
+<!-- WORKSTATION STANDARD — ACCOUNT DETAIL (ApplianceMan station):
+     clicking a Speedy Verify account row (not its buttons) opens
+     this detail. The action buttons inside are the panel's own —
+     same data-sv attributes, same handlers, same endpoints. -->
+<div id="amWsBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="amWsBackdrop(event)">
+  <div style="background:#fff;color:#182742;max-width:560px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Account detail">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:#182742">Account detail</h3><div style="font-size:12.5px;color:#8591a4;margin-top:2px">Speedy Verify — the full record behind the row.</div></div><button class="iconbtn" type="button" onclick="amWsClose()">Close</button></div>
+    <div id="amWsBody" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<script>
+/* ================= WORKSTATION STANDARD — APPLIANCEMAN STATION (2026-11-19) =================
+   Station 5 of the platform-wide workstation standard (Book OS
+   1f4e5f1 set the pattern; CRM e7aea1b, Tech web 74911a2, Dispatch
+   c9bfba9 followed). Ramone's standing rule for the rollout:
+   "Don't change — just integrate." Everything in this section is
+   ADDITIVE: no existing ApplianceMan function, flow, layout or API
+   contract is modified. The section only (a) wraps get() for the
+   single Speedy Verify accounts path so the list can render from a
+   sorted COPY, (b) injects one Options button into the topbar, and
+   (c) opens an account detail when a Verify row itself is clicked.
+   Out of the box (default preferences) the console behaves exactly
+   as before.
+   (1) PREFERENCES — a this-device store (localStorage,
+       tsos_applianceman_prefs) behind the Options panel: Verify
+       list sort and an auto-refresh cycle that pauses while any
+       window is open or the tab is hidden. No decorative toggles.
+   (2) RECORD OPENS ON CLICK — a Speedy Verify account row opens
+       its full record (identity, roles, tech system, and the whole
+       verify state the accounts endpoint already returns). The
+       action buttons in the detail are the panel's OWN buttons —
+       same data-sv attributes, handled by the page's existing
+       delegation, same endpoints (issue / revoke / requirement).
+       Nothing is widened: the platform deliberately has no
+       deactivate / demote / delete account actions (Rule Zero),
+       and none are invented here. The Master row carries no
+       buttons, exactly as in the panel. */
+var AM_WS_PREFS_KEY='tsos_applianceman_prefs';
+var amWsPrefs={svSort:'server',autoRefresh:false};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(AM_WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.svSort==='email'||p.svSort==='newest'||p.svSort==='oldest') amWsPrefs.svSort=p.svSort; amWsPrefs.autoRefresh=!!p.autoRefresh; } }catch(e){} })();
+function amWsSavePrefs(){ try{ localStorage.setItem(AM_WS_PREFS_KEY,JSON.stringify(amWsPrefs)); }catch(e){} }
+function amWsById(id){ return document.getElementById(id); }
+var AM_WS_SLIDERS_SVG='<svg class="amws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg>';
+
+/* ---- (1a) Verify list sort: the platform sends the accounts in
+   its own order ('server' — the default — renders untouched). A
+   chosen sort renders a sorted COPY; the response object and every
+   other endpoint pass through exactly as before. The copy is kept
+   so a row click can resolve its record by position. ---- */
+var amWsRows=null;
+var amWsOrigGet=get;
+get=function(path,auth){
+  var p=amWsOrigGet(path,auth);
+  if(path!=='/speedy-verify/accounts') return p;
+  return p.then(function(res){
+    if(!res||!res.j||!Array.isArray(res.j.data)){ amWsRows=[]; return res; }
+    var copy=res.j.data.slice();
+    if(amWsPrefs.svSort==='email') copy.sort(function(a,b){ return String(a.user.email).localeCompare(String(b.user.email)); });
+    else if(amWsPrefs.svSort==='newest') copy.sort(function(a,b){ return String(b.user.createdAt||'').localeCompare(String(a.user.createdAt||'')); });
+    else if(amWsPrefs.svSort==='oldest') copy.sort(function(a,b){ return String(a.user.createdAt||'').localeCompare(String(b.user.createdAt||'')); });
+    amWsRows=copy;
+    var j2={}; Object.keys(res.j).forEach(function(k){ j2[k]=res.j[k]; }); j2.data=copy;
+    return { ok:res.ok, status:res.status, j:j2 };
+  });
+};
+/* The page's first accounts load is already in flight when this
+   section runs (boot() precedes it), so the first render can beat
+   the wrapper. If account rows appear before the wrapper has
+   captured them, re-run the panel load once through the wrapper —
+   same endpoint, same render, now with the record copy captured.
+   Self-limiting: once captured, this never fires again. */
+if(window.MutationObserver){
+  var amWsPanelObs=new MutationObserver(function(){
+    if(amWsRows!==null) return;
+    var panel=amWsById('svPanel'); if(!panel||!token()) return;
+    var has=false, ch=panel.children;
+    for(var i=0;i<ch.length;i++){ if(ch[i].tagName==='DIV'){ has=true; break; } }
+    if(has) loadVerifyPanel();
+  });
+  var amWsPanelEl=amWsById('svPanel');
+  if(amWsPanelEl) amWsPanelObs.observe(amWsPanelEl,{childList:true});
+}
+
+/* ---- (1b) Auto-refresh: OFF by default (the console's original
+   behavior is manual Refresh). When ON it re-runs the existing
+   loadAll() every minute, and never while the account detail or
+   the options panel is open, never while the tab is hidden, and
+   never signed out. The detail is a snapshot — a refresh never
+   rewrites an open record. ---- */
+var amWsTimer=null;
+function amWsModalOpen(){
+  var a=amWsById('amWsOptBack'), b=amWsById('amWsBack');
+  return !!((a&&a.style.display==='block')||(b&&b.style.display==='block'));
+}
+function amWsApplyAuto(){
+  if(amWsTimer){ clearInterval(amWsTimer); amWsTimer=null; }
+  if(!amWsPrefs.autoRefresh) return;
+  amWsTimer=setInterval(function(){
+    if(document.hidden||amWsModalOpen()) return;
+    var portal=amWsById('portal'); if(!portal||portal.style.display==='none') return;
+    if(!token()) return;
+    loadAll();
+  },60000);
+}
+
+/* ---- (1c) Options panel ---- */
+function amWsOptOpen(){ amWsSyncOptionsUi(); amWsById('amWsOptBack').style.display='block'; }
+function amWsOptClose(){ var b=amWsById('amWsOptBack'); if(b) b.style.display='none'; }
+function amWsOptBackdrop(ev){ if(ev&&ev.target===amWsById('amWsOptBack')) amWsOptClose(); }
+function amWsSyncOptionsUi(){
+  var map={server:'amWsSortServer',email:'amWsSortEmail',newest:'amWsSortNewest',oldest:'amWsSortOldest'};
+  Object.keys(map).forEach(function(k){
+    var el=amWsById(map[k]); if(!el) return;
+    var on=amWsPrefs.svSort===k;
+    el.style.borderColor=on?'#e94e5c':'';
+    el.style.color=on?'#c23340':'';
+    el.style.fontWeight=on?'800':'';
+  });
+  var a=amWsById('amWsAutoBtn'); if(a) a.textContent=amWsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF';
+}
+function amWsSetSort(v){
+  amWsPrefs.svSort=(v==='email'||v==='newest'||v==='oldest')?v:'server';
+  amWsSavePrefs(); amWsSyncOptionsUi();
+  loadVerifyPanel();
+}
+function amWsToggleAuto(){ amWsPrefs.autoRefresh=!amWsPrefs.autoRefresh; amWsSavePrefs(); amWsApplyAuto(); amWsSyncOptionsUi(); }
+
+/* The Options button joins the topbar next to Refresh and follows
+   its visibility (Refresh only appears once a manager session is
+   live, so Options keeps the same lifecycle). */
+(function(){
+  var rb=amWsById('refreshBtn'); if(!rb||!rb.parentNode) return;
+  var b=document.createElement('button');
+  b.className='iconbtn'; b.type='button'; b.id='amWsOptBtn'; b.style.display='none';
+  b.innerHTML=AM_WS_SLIDERS_SVG+' Options';
+  b.addEventListener('click',function(){ amWsOptOpen(); });
+  rb.parentNode.insertBefore(b,rb);
+  if(window.MutationObserver){ new MutationObserver(function(){ b.style.display=rb.style.display; }).observe(rb,{attributes:true,attributeFilter:['style']}); }
+})();
+
+/* ---- (2) Account detail ---- */
+function amWsField(k,v){ return '<div class="amws-f"><span class="k">'+esc(k)+'</span><span class="v">'+esc(v)+'</span></div>'; }
+function amWsOpen(r){
+  if(!r||!r.user||!r.verify) return;
+  var u=r.user, v=r.verify;
+  var name=((u.firstName||'')+' '+(u.lastName||'')).trim();
+  var h='<div style="font-size:15px;font-weight:800;color:#182742;overflow-wrap:anywhere">'+esc(u.email)+'</div>';
+  h+='<div style="font-size:12.5px;color:#8591a4;margin:2px 0 6px">'+esc(svKind(u))+(u.active?'':' \u00b7 inactive')+'</div>';
+  if(name) h+=amWsField('Name',name);
+  h+=amWsField('Roles',(u.roles||[]).join(', ')||'\u2014');
+  if(u.signupAudience) h+=amWsField('Signup audience',u.signupAudience);
+  if(u.system) h+=amWsField('Tech system',u.system==='COMPANY'?'Company Tech':u.system==='NETWORK'?'Service Network Tech':u.system);
+  h+=amWsField('Account created',u.createdAt?fmtWhen(u.createdAt):'\u2014');
+  h+='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 2px">Speedy Verify</div>';
+  h+=amWsField('Status',svStatus(v));
+  h+=amWsField('Code requirement',v.required?'Required':'Off for this account');
+  h+=amWsField('Gate enforced at sign-in',v.enforced?'Yes':'No');
+  h+=amWsField('Code state',v.codeStatus||'NONE');
+  if(v.issuedAt) h+=amWsField('Code issued',fmtWhen(v.issuedAt));
+  if(v.lastUsedAt) h+=amWsField('Code last used',fmtWhen(v.lastUsedAt));
+  if(v.revokedAt) h+=amWsField('Code revoked',fmtWhen(v.revokedAt));
+  if(v.lockedUntil) h+=amWsField('Code entry locked until',fmtWhen(v.lockedUntil));
+  if(v.pendingApproval) h+=amWsField('Approval','WAITING \u2014 sign-in is blocked until a code is issued');
+  if(!v.master){
+    var btns='';
+    if(v.codeStatus==='ACTIVE'){
+      btns+='<button type="button" class="iconbtn" data-sv="issue" data-u="'+esc(u.id)+'">Reset code</button> <button type="button" class="iconbtn" data-sv="revoke" data-u="'+esc(u.id)+'">Revoke</button>';
+    } else {
+      btns+='<button type="button" class="iconbtn" data-sv="issue" data-u="'+esc(u.id)+'">Issue code</button>';
+    }
+    btns+=' <button type="button" class="iconbtn" data-sv="requirement" data-on="'+(v.required?'0':'1')+'" data-u="'+esc(u.id)+'">'+(v.required?'Waive requirement':'Require code')+'</button>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px">'+btns+'</div>';
+    h+='<div style="font-size:12.5px;color:#8591a4;margin-top:8px">These are the panel\u2019s own actions \u2014 same buttons, same endpoints. An issued code shows once, in the panel above.</div>';
+  } else {
+    h+='<div style="font-size:12.5px;color:#8591a4;margin-top:12px">Master account \u2014 exempt from Speedy Verify by Rule Zero. No code actions apply.</div>';
+  }
+  amWsById('amWsBody').innerHTML=h;
+  amWsById('amWsBack').style.display='block';
+}
+function amWsClose(){ var b=amWsById('amWsBack'); if(b) b.style.display='none'; }
+function amWsBackdrop(ev){ if(ev&&ev.target===amWsById('amWsBack')) amWsClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ amWsClose(); amWsOptClose(); } });
+
+/* One delegated listener: a click on a Verify row (not on its
+   buttons or links) opens the detail; a click on an action button
+   inside the detail is left to the page's own data-sv delegation
+   (it performs the action) and simply closes the detail so the
+   panel \u2014 including a one-time code \u2014 is what you see. */
+document.addEventListener('click',function(ev){
+  var t=ev.target; if(!t||!t.closest) return;
+  var back=amWsById('amWsBack');
+  if(back&&back.style.display==='block'&&t.closest('#amWsBack')){
+    if(t.closest('[data-sv]')) amWsClose();
+    return;
+  }
+  if(t.closest('button, a, input, select, textarea, label')) return;
+  var panel=amWsById('svPanel'); if(!panel||!amWsRows||!t.closest('#svPanel')) return;
+  var n=t; while(n&&n.parentNode!==panel) n=n.parentNode;
+  if(!n||n.tagName!=='DIV') return;
+  var divs=[], ch=panel.children;
+  for(var i=0;i<ch.length;i++){ if(ch[i].tagName==='DIV') divs.push(ch[i]); }
+  var idx=divs.indexOf(n);
+  if(idx>=0&&amWsRows[idx]) amWsOpen(amWsRows[idx]);
+});
+
+amWsApplyAuto();
+</script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
