@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { buildPepperStatus } from '../services/pepperConsole.js';
+import { pepperChat, pepperChatStatus } from '../services/pepperChat.js';
 import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReportsRepo.js';
 
 /**
@@ -22,6 +23,13 @@ import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReports
  *                                 Rule Zero.
  *   GET  /pepper-console/reports  the report log, newest first.
  *   POST /pepper-console/reports  staff file a report.
+ *   POST /pepper/chat             the Workstation chat bar: staff
+ *                                 ask Pepper about the platform,
+ *                                 their work and onboarding; live
+ *                                 status questions answer from the
+ *                                 real board payload; problem
+ *                                 reports file a NEEDS_OWNER report
+ *                                 (services/pepperChat.js).
  *
  * Gate: the staff set exactly (STAFF_ROLES — Service Setters,
  * managers, the Master, platform admin), carried PER ROUTE. This
@@ -99,6 +107,37 @@ router.post('/pepper-console/reports', ...staffGate, async (req, res, next) => {
       createdByUserId: req.user.id,
     });
     return res.status(201).json({ data: publicReport(row) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+const chatHistoryTurn = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().trim().min(1).max(2000),
+});
+
+const chatSchema = z.object({
+  message: z.string().trim().min(1, 'Message is required').max(2000),
+  history: z.array(chatHistoryTurn).max(10).optional(),
+  // Which console the bar is embedded in (e.g. "/book-os") — filed
+  // with problem reports so the owner sees where it happened.
+  surface: z.string().trim().max(60).optional(),
+});
+
+router.post('/pepper/chat', ...staffGate, async (req, res, next) => {
+  try {
+    const parsed = chatSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid chat message', details: parsed.error.flatten() });
+    }
+    const result = await pepperChat({
+      message: parsed.data.message,
+      history: parsed.data.history || [],
+      user: { id: req.user.id, email: req.user.email },
+      surface: parsed.data.surface || null,
+    });
+    return res.json({ data: { ...result, chat: pepperChatStatus() } });
   } catch (error) {
     return next(error);
   }
