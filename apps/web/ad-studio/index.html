@@ -1092,6 +1092,376 @@ function boot(){
 }
 boot();
 </script>
+
+<style>
+  /* WORKSTATION STANDARD (Ad Studio station): campaign rows in the
+     owner approval queue and the campaigns list open the campaign
+     detail on click — the pointer is the affordance; the buttons
+     and links inside a row keep their own actions. */
+  #queueRows .crow, #campRows .crow{cursor:pointer}
+  .asws-ic{width:15px;height:15px;vertical-align:-2px}
+  .asws-f{display:flex;justify-content:space-between;gap:14px;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+  .asws-f .k{color:var(--mut);flex:none}
+  .asws-f .v{color:var(--txt);font-weight:600;text-align:right;min-width:0;overflow-wrap:anywhere}
+  .asws-f .v a{color:var(--blue);font-weight:600}
+</style>
+
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (Ad Studio station, 2026-11-19):
+     every control here changes real behavior (campaigns list sort,
+     campaigns list status filter, auto-refresh). Preferences save
+     on this device only. The owner approval queue is never sorted
+     or filtered by these controls — it always shows everything
+     waiting, in the platform's order. Sits below the Ask Pepper
+     launcher (9995). -->
+<div id="asWsOptBack" style="display:none;position:fixed;inset:0;background:rgba(3,6,14,.72);z-index:9992;overflow-y:auto" onclick="asWsOptBackdrop(event)">
+  <div style="background:var(--panel);color:var(--txt);border:1px solid var(--line);max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.5)" role="dialog" aria-modal="true" aria-label="Ad Studio options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:var(--txt)">Options</h3><div style="font-size:12.5px;color:var(--mut);margin-top:2px">Ad Studio preferences — saved on this device only.</div></div><button class="btn ghost sm" type="button" onclick="asWsOptClose()">Close</button></div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:16px 0 8px">Campaigns &amp; results list</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Sort the list:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn sm" id="asWsSortServer" type="button" onclick="asWsSetSort('server')">As loaded</button>
+      <button class="btn ghost sm" id="asWsSortName" type="button" onclick="asWsSetSort('name')">Name A–Z</button>
+      <button class="btn ghost sm" id="asWsSortNewest" type="button" onclick="asWsSetSort('newest')">Newest first</button>
+      <button class="btn ghost sm" id="asWsSortOldest" type="button" onclick="asWsSetSort('oldest')">Oldest first</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--mut);margin-top:6px">As loaded is the platform's own order (most recently updated first) — the studio's original behavior.</div>
+    <div style="font-size:13.5px;margin:12px 0 6px">Show in the list:</div>
+    <select id="asWsStatusSel" onchange="asWsSetStatus(this.value)" style="background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:9px 11px;font-size:13.5px;font-family:Inter;width:100%">
+      <option value="ALL">All statuses</option>
+      <option value="DRAFT">Draft</option>
+      <option value="PENDING_APPROVAL">Pending approval</option>
+      <option value="ACTIVE">Active</option>
+      <option value="PAUSED">Paused</option>
+      <option value="ENDED">Ended</option>
+    </select>
+    <div style="font-size:12.5px;color:var(--mut);margin-top:6px">Sort and filter apply to Campaigns &amp; results only. The owner approval queue above always shows everything waiting, in the platform's order — a filtered view can never hide a campaign that is waiting for a decision.</div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:16px 0 8px">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:var(--mut);font-size:12.5px">Re-loads the campaigns, the approval queue and the results on its own. Pauses while a window (campaign detail, options) is open or the tab is hidden — a refresh never disturbs an open record.</span></div>
+      <button class="btn ghost sm" id="asWsAutoBtn" type="button" onclick="asWsToggleAuto()">&#9675; OFF</button>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn sm" type="button" onclick="asWsOptClose()">Done</button></div>
+  </div>
+</div>
+
+<!-- WORKSTATION STANDARD — CAMPAIGN DETAIL (Ad Studio station):
+     clicking a campaign row in the approval queue or the campaigns
+     list (not its buttons or links) opens this detail: the full
+     record as the campaigns endpoint returns it, enriched on open
+     by the page's own single-campaign read. The action buttons
+     inside are the campaign's OWN list buttons — same data-act
+     attributes, same page delegation, same endpoints — surfaced,
+     never fired by this section. -->
+<div id="asWsBack" style="display:none;position:fixed;inset:0;background:rgba(3,6,14,.72);z-index:9992;overflow-y:auto" onclick="asWsBackdrop(event)">
+  <div style="background:var(--panel);color:var(--txt);border:1px solid var(--line);max-width:620px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.5)" role="dialog" aria-modal="true" aria-label="Campaign detail">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:var(--txt)">Campaign detail</h3><div style="font-size:12.5px;color:var(--mut);margin-top:2px">The full record behind the row — status, destination, approval state and results.</div></div><button class="btn ghost sm" type="button" onclick="asWsClose()">Close</button></div>
+    <div id="asWsBody" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<script>
+/* ================= WORKSTATION STANDARD — AD STUDIO STATION (2026-11-19) =================
+   Station 6 of the platform-wide workstation standard (Book OS
+   1f4e5f1 set the pattern; CRM e7aea1b, Tech web 74911a2, Dispatch
+   c9bfba9, ApplianceMan/Oversight f8e03a4 followed). Ramone's
+   standing rule for the rollout: "Don't change — just integrate."
+   Everything in this section is ADDITIVE: no existing Ad Studio
+   function, flow, layout or API contract is modified, and there
+   are ZERO API changes. The section only (a) wraps the two list
+   renderers (renderCampaigns / renderQueue) so rendered rows carry
+   their campaign id and the campaigns list can be re-ordered and
+   filtered on this device, (b) injects one Options button into the
+   Campaigns & results header and one note line under its counts,
+   and (c) opens a campaign detail when a row itself is clicked.
+   Out of the box (default preferences) the studio behaves exactly
+   as before.
+   (1) PREFERENCES — a this-device store (localStorage,
+       tsos_adstudio_prefs) behind the Options panel: campaigns
+       list sort, campaigns list status filter, and an auto-refresh
+       cycle that pauses while any window is open or the tab is
+       hidden. The counts line always describes ALL campaigns (it
+       renders from the untouched array); sort/filter only
+       re-order and show/hide the already-rendered rows, and a note
+       under the counts says when a view is filtered. The owner
+       approval queue is NEVER sorted or filtered — it always
+       shows everything waiting, in the platform's order.
+   (2) RECORD OPENS ON CLICK — a campaign row in the queue or the
+       list opens its full record: status, business line, source
+       tag, objective, destination + tracked URL, placement and
+       streaming creative as stored, banner state, attributed
+       results, the approval state, notes, and created/updated
+       stamps. On open it enriches through the page's own
+       single-campaign read (GET /ad-studio/campaigns/:id — staff),
+       which also carries the campaign's attributed results; if
+       that read fails, the list snapshot simply stays. House
+       campaigns store NO budget fields (the AdCampaign record has
+       none) — the detail says so plainly instead of inventing a
+       number; budgets live with the external platform campaigns.
+   (3) CTA BAR — inside the detail: the campaign's OWN action
+       buttons, produced by the page's own actionButtons() (same
+       data-act / data-id attributes, handled by the page's
+       existing delegation, same endpoints), plus one entry button
+       that jumps to the builder's existing Draft with Speedy
+       control. AD RULES, unchanged and enforced by the existing
+       server gates: drafts never auto-publish; approve / resume
+       exist only on the owner (MASTER) session, here exactly as
+       in the list; this section never calls an action itself —
+       every action remains the deliberate human click it is today.
+       Plan prices and caps are not touched by this station, and
+       the streaming-pack loader stays owner-clicked as built —
+       this section does not reference it. */
+var AS_WS_PREFS_KEY='tsos_adstudio_prefs';
+var asWsPrefs={campSort:'server',campStatus:'ALL',autoRefresh:false};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(AS_WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.campSort==='name'||p.campSort==='newest'||p.campSort==='oldest') asWsPrefs.campSort=p.campSort; if(['DRAFT','PENDING_APPROVAL','ACTIVE','PAUSED','ENDED'].indexOf(p.campStatus)>-1) asWsPrefs.campStatus=p.campStatus; asWsPrefs.autoRefresh=!!p.autoRefresh; } }catch(e){} })();
+function asWsSavePrefs(){ try{ localStorage.setItem(AS_WS_PREFS_KEY,JSON.stringify(asWsPrefs)); }catch(e){} }
+function asWsById(id){ return document.getElementById(id); }
+var AS_WS_SLIDERS_SVG='<svg class="asws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg>';
+function asWsRecord(id){ for(var i=0;i<campaigns.length;i++){ if(campaigns[i].id===id) return campaigns[i]; } return null; }
+function asWsWhen(ts){ return ts ? String(ts).slice(0,16).replace('T',' ') : '\u2014'; }
+
+/* ---- (1a) Row identity + list sort/filter: renderers render in
+   array order (queue = the pending subset, in array order), so a
+   stamp pass can give every rendered row its campaign id. Sort
+   and filter then work on the rendered rows themselves — the
+   campaigns array, and every other reader of it, is untouched,
+   and the counts line keeps describing all campaigns. ---- */
+function asWsStamp(){
+  var q=asWsById('queueRows');
+  if(q){
+    var pend=campaigns.filter(function(c){ return c.status==='PENDING_APPROVAL'; });
+    var qr=q.querySelectorAll('.crow');
+    for(var i=0;i<qr.length&&i<pend.length;i++){ if(!qr[i].getAttribute('data-asws-cid')) qr[i].setAttribute('data-asws-cid',pend[i].id); }
+  }
+  var list=asWsById('campRows');
+  if(list){
+    var rows=list.querySelectorAll('.crow');
+    for(var j=0;j<rows.length&&j<campaigns.length;j++){ if(!rows[j].getAttribute('data-asws-cid')) rows[j].setAttribute('data-asws-cid',campaigns[j].id); }
+  }
+}
+function asWsRenderNote(){
+  var n=asWsById('asWsListNote'); if(!n) return;
+  if(asWsPrefs.campSort==='server'&&asWsPrefs.campStatus==='ALL'){ n.textContent=''; return; }
+  var list=asWsById('campRows');
+  var total=campaigns.length, shown=0;
+  if(list){ var rows=list.querySelectorAll('.crow'); for(var i=0;i<rows.length;i++){ if(rows[i].style.display!=='none') shown++; } }
+  var bits=[];
+  if(asWsPrefs.campStatus!=='ALL') bits.push('showing '+(STATUS_LABEL[asWsPrefs.campStatus]||asWsPrefs.campStatus)+' only');
+  if(asWsPrefs.campSort==='name') bits.push('sorted Name A\u2013Z');
+  if(asWsPrefs.campSort==='newest') bits.push('sorted newest first');
+  if(asWsPrefs.campSort==='oldest') bits.push('sorted oldest first');
+  n.textContent='Options (this device): '+bits.join(' \u00b7 ')+' \u2014 '+shown+' of '+total+' campaign(s) shown. Change in Options (top of this section).';
+}
+function asWsApplyListPrefs(){
+  var list=asWsById('campRows'); if(!list) return;
+  var rows=Array.prototype.slice.call(list.querySelectorAll('.crow'));
+  rows.forEach(function(r){
+    var c=asWsRecord(r.getAttribute('data-asws-cid'));
+    var show=asWsPrefs.campStatus==='ALL'||(c&&c.status===asWsPrefs.campStatus);
+    r.style.display=show?'':'none';
+  });
+  if(asWsPrefs.campSort!=='server'){
+    var keyed=rows.map(function(r){ return { r:r, c:asWsRecord(r.getAttribute('data-asws-cid')) }; });
+    keyed.sort(function(a,b){
+      if(!a.c||!b.c) return 0;
+      if(asWsPrefs.campSort==='name') return String(a.c.name).localeCompare(String(b.c.name));
+      if(asWsPrefs.campSort==='newest') return String(b.c.createdAt||'').localeCompare(String(a.c.createdAt||''));
+      return String(a.c.createdAt||'').localeCompare(String(b.c.createdAt||''));
+    });
+    keyed.forEach(function(k){ list.appendChild(k.r); });
+  }
+  asWsRenderNote();
+}
+var asWsOrigRenderCampaigns=renderCampaigns;
+renderCampaigns=function(){ asWsOrigRenderCampaigns(); asWsStamp(); asWsApplyListPrefs(); };
+var asWsOrigRenderQueue=renderQueue;
+renderQueue=function(){ asWsOrigRenderQueue(); asWsStamp(); };
+/* The first loads can beat this section (boot() precedes it), so
+   an observer stamps any rows that appear before the wrappers
+   capture them — same pass, self-limiting: once a row carries its
+   id the pass leaves it alone, and attribute writes do not
+   retrigger the childList observer. */
+if(window.MutationObserver){
+  ['campRows','queueRows'].forEach(function(id){
+    var el=asWsById(id);
+    if(el) new MutationObserver(function(){ asWsStamp(); }).observe(el,{childList:true});
+  });
+}
+
+/* ---- (1b) Auto-refresh: OFF by default (the studio's original
+   behavior is load-on-arrival + reload after each action). When
+   ON it re-runs the existing loadAll() every minute — campaigns,
+   queue and results — and never while the campaign detail or the
+   options panel is open, and never while the tab is hidden. An
+   open record is a snapshot and is never rewritten. ---- */
+var asWsTimer=null;
+function asWsModalOpen(){
+  var a=asWsById('asWsOptBack'), b=asWsById('asWsBack');
+  return !!((a&&a.style.display==='block')||(b&&b.style.display==='block'));
+}
+function asWsApplyAuto(){
+  if(asWsTimer){ clearInterval(asWsTimer); asWsTimer=null; }
+  if(!asWsPrefs.autoRefresh) return;
+  asWsTimer=setInterval(function(){
+    if(document.hidden||asWsModalOpen()) return;
+    var z=asWsById('staffZone'); if(!z||z.style.display==='none') return;
+    if(!tok()) return;
+    loadAll();
+  },60000);
+}
+
+/* ---- (1c) Options panel ---- */
+function asWsOptOpen(){ asWsSyncOptionsUi(); asWsById('asWsOptBack').style.display='block'; }
+function asWsOptClose(){ var b=asWsById('asWsOptBack'); if(b) b.style.display='none'; }
+function asWsOptBackdrop(ev){ if(ev&&ev.target===asWsById('asWsOptBack')) asWsOptClose(); }
+function asWsSyncOptionsUi(){
+  var map={server:'asWsSortServer',name:'asWsSortName',newest:'asWsSortNewest',oldest:'asWsSortOldest'};
+  Object.keys(map).forEach(function(k){ var el=asWsById(map[k]); if(el) el.className='btn sm'+(asWsPrefs.campSort===k?'':' ghost'); });
+  var sel=asWsById('asWsStatusSel'); if(sel) sel.value=asWsPrefs.campStatus;
+  var a=asWsById('asWsAutoBtn'); if(a){ a.className='btn sm'+(asWsPrefs.autoRefresh?'':' ghost'); a.textContent=asWsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF'; }
+}
+function asWsSetSort(v){ asWsPrefs.campSort=(v==='name'||v==='newest'||v==='oldest')?v:'server'; asWsSavePrefs(); asWsSyncOptionsUi(); renderCampaigns(); }
+function asWsSetStatus(v){ asWsPrefs.campStatus=(['DRAFT','PENDING_APPROVAL','ACTIVE','PAUSED','ENDED'].indexOf(v)>-1)?v:'ALL'; asWsSavePrefs(); renderCampaigns(); }
+function asWsToggleAuto(){ asWsPrefs.autoRefresh=!asWsPrefs.autoRefresh; asWsSavePrefs(); asWsApplyAuto(); asWsSyncOptionsUi(); }
+
+/* The Options button joins the Campaigns & results header, and a
+   note line sits under that section's counts (it speaks only when
+   a sort or filter is actually on). */
+(function(){
+  var heads=document.querySelectorAll('h2.sec');
+  for(var i=0;i<heads.length;i++){
+    if(heads[i].textContent.indexOf('Campaigns & results')>-1){
+      var b=document.createElement('button');
+      b.className='btn ghost sm'; b.type='button'; b.id='asWsOptBtn'; b.style.marginLeft='auto';
+      b.innerHTML=AS_WS_SLIDERS_SVG+' Options';
+      b.addEventListener('click',function(){ asWsOptOpen(); });
+      heads[i].appendChild(b);
+      break;
+    }
+  }
+  var cc=asWsById('campCounts');
+  if(cc&&cc.parentNode){
+    var n=document.createElement('div');
+    n.className='small mut'; n.id='asWsListNote'; n.style.marginTop='4px';
+    cc.parentNode.insertBefore(n, asWsById('campRows'));
+  }
+})();
+
+/* ---- (2) Campaign detail ---- */
+var asWs={ current:null };
+function asWsField(k,v){ return '<div class="asws-f"><span class="k">'+esc(k)+'</span><span class="v">'+v+'</span></div>'; }
+function asWsApprovalLine(c){
+  if(c.status==='PENDING_APPROVAL') return 'Waiting for the owner (MASTER) decision \u2014 nothing is live';
+  if(c.approvedAt) return 'Approved '+asWsWhen(c.approvedAt)+(c.status==='ACTIVE'?' \u2014 live now':'');
+  if(c.status==='DRAFT') return 'Not submitted for approval yet';
+  return '\u2014';
+}
+function asWsPlacement(c){
+  if(c.placement==='BANNER') return 'Banner \u2014 flagship footer rotation';
+  if(c.placement==='STREAMING') return 'Streaming \u2014 '+(c.streamingFormat||'')+' ad for streaming TV providers';
+  return 'Link only \u2014 tracked URL, no placement';
+}
+function asWsRenderDetail(c, res){
+  var r=res||resultsById[c.id]||{ bookings:0, connections:0 };
+  var h='<div style="font-size:17px;font-weight:700;font-family:Rajdhani,sans-serif;color:var(--txt);overflow-wrap:anywhere">'+esc(c.name)+' '+statusPill(c.status)+'</div>';
+  h+='<div style="font-size:12.5px;color:var(--mut);margin:2px 0 6px">'+esc(LINE_LABEL[c.businessLine]||c.businessLine)+' \u00b7 tag <span class="tag">'+esc(c.sourceTag)+'</span></div>';
+  if(c.notes&&c.notes.indexOf('Drafted by Speedy')===0){
+    h+='<div style="font-size:12.5px;color:var(--mut);margin:4px 0">Drafted by Speedy (the AI copy drafter) under the house brand rules \u2014 no invented reviews, ratings or prices, enforced by the server drafter. Every word waits for the owner\u2019s approval; the AI never publishes.</div>';
+  }
+  h+=asWsField('Status', esc(STATUS_LABEL[c.status]||c.status));
+  h+=asWsField('Approval', esc(asWsApprovalLine(c)));
+  h+=asWsField('Objective', esc(c.objective||'\u2014'));
+  h+=asWsField('Destination', '<a href="'+esc(c.trackedUrl||c.destinationUrl)+'" target="_blank" rel="noopener">'+esc(c.destinationUrl)+'</a>');
+  h+=asWsField('Placement', esc(asWsPlacement(c)));
+  h+=asWsField('Creative', esc(c.creative?c.creative.title:'No creative attached'));
+  if(c.imageUrl) h+=asWsField('House image', esc(c.imageUrl));
+  if(c.advertiserName) h+=asWsField('Advertiser name', esc(c.advertiserName));
+  if(c.offering) h+=asWsField('Offering', esc(c.offering));
+  if(c.headline) h+=asWsField('Headline', esc(c.headline));
+  if(c.copy) h+=asWsField('Copy', esc(c.copy));
+  if(c.ctaText) h+=asWsField('CTA text', esc(c.ctaText));
+  if(c.category) h+=asWsField('Category', esc(c.category));
+  if(c.placement==='STREAMING'){
+    h+=asWsField('Streaming format', esc(c.streamingFormat||'\u2014'));
+    h+=asWsField('Provider targets', esc(providerLabels(c.streamingProviders)||'\u2014'));
+    if(c.headlines&&c.headlines.length) h+=asWsField('Headlines', esc(c.headlines.join(' | ')));
+    if(c.descriptions&&c.descriptions.length) h+=asWsField('Descriptions', esc(c.descriptions.join(' ')));
+    if(c.longHeadline) h+=asWsField('Long headline', esc(c.longHeadline));
+    if(c.displayPath) h+=asWsField('Display path', esc('/'+c.displayPath));
+    if(c.displaySizes&&c.displaySizes.length) h+=asWsField('Display sizes', esc(c.displaySizes.join(' \u00b7 ')));
+    h+='<div style="margin-top:8px">'+streamingPreview(c)+'</div>';
+  }
+  if(c.banner) h+=asWsField('Banner', esc((c.banner.active?'Rotating in the flagship footer':'Off')+bannerStats(c.banner)));
+  h+=asWsField('Results so far', esc((r.bookings||0)+' booking(s) \u00b7 '+(r.connections||0)+' lead(s) attributed'));
+  h+=asWsField('Budget', 'None stored \u2014 house campaigns run on Top Speed\u2019s own surfaces; budgets live with the external platform campaigns');
+  if(c.notes) h+=asWsField('Notes', esc(c.notes));
+  h+=asWsField('Created', esc(asWsWhen(c.createdAt)));
+  h+=asWsField('Last updated', esc(asWsWhen(c.updatedAt)));
+  /* ---- (3) CTA bar: the campaign's OWN action buttons (the
+     page's actionButtons(), same data-act / data-id, fired only
+     by the page's own delegation on a human click) plus the
+     entry to the builder's existing Draft with Speedy control.
+     This section never invokes an action itself. ---- */
+  var acts=actionButtons(c);
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:16px">'+acts+'<button class="btn ghost sm" type="button" data-asws-draft="1">Draft with Speedy</button></div>';
+  h+='<div style="font-size:12.5px;color:var(--mut);margin-top:8px">'+(acts
+    ? 'These are the campaign\u2019s own actions \u2014 the same buttons as in the list, fired only by your click. Approving is the owner\u2019s deliberate decision; nothing here fires on its own. '
+    : (c.status==='PENDING_APPROVAL'&&!isOwner ? 'Approval buttons exist only on the owner (MASTER) session \u2014 this record is waiting for that decision. ' : 'No list actions apply to this record right now. '))
+    +'Draft with Speedy jumps to the builder\u2019s drafter \u2014 it drafts into the approval queue and never publishes.</div>';
+  asWsById('asWsBody').innerHTML=h;
+}
+function asWsOpen(c){
+  if(!c||!c.id) return;
+  asWs.current=c.id;
+  asWsRenderDetail(c, null);
+  asWsById('asWsBack').style.display='block';
+  /* Enrich through the page's own single-campaign read (staff):
+     the same record, fresh, plus its attributed results. If the
+     read fails, the list snapshot above simply stays. */
+  authFetch('/ad-studio/campaigns/'+encodeURIComponent(c.id)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if(!j||!j.data) return;
+    if(asWs.current!==c.id) return;
+    var back=asWsById('asWsBack'); if(!back||back.style.display!=='block') return;
+    var rec=j.data, res=rec.results||null;
+    delete rec.results;
+    asWsRenderDetail(rec, res);
+  }).catch(function(){});
+}
+function asWsClose(){ var b=asWsById('asWsBack'); if(b) b.style.display='none'; asWs.current=null; }
+function asWsBackdrop(ev){ if(ev&&ev.target===asWsById('asWsBack')) asWsClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ asWsClose(); asWsOptClose(); } });
+
+/* One delegated listener: the Draft with Speedy entry inside the
+   detail jumps to the builder's own drafter control (focus, never
+   a click); a click on one of the detail's own action buttons is
+   left to the page's data-act delegation (it performs the action)
+   and simply closes the detail so the result message and the
+   refreshed lists are what you see; a click anywhere else on a
+   queue / list row (not its buttons, links or form controls)
+   opens that row's campaign. */
+document.addEventListener('click',function(ev){
+  var t=ev.target; if(!t||!t.closest) return;
+  var draftEntry=t.closest('[data-asws-draft]');
+  if(draftEntry){
+    asWsClose();
+    var form=asWsById('buildForm'); if(form) form.scrollIntoView({ behavior:'smooth', block:'start' });
+    var d=asWsById('draftBtn'); if(d) d.focus({ preventScroll:true });
+    return;
+  }
+  var back=asWsById('asWsBack');
+  if(back&&back.style.display==='block'&&t.closest('#asWsBack')){
+    if(t.closest('[data-act]')) asWsClose();
+    return;
+  }
+  if(t.closest('button, a, input, select, textarea, label')) return;
+  var row=t.closest('#campRows .crow, #queueRows .crow');
+  if(row){
+    var cid=row.getAttribute('data-asws-cid');
+    if(cid){ var c=asWsRecord(cid); if(c) asWsOpen(c); }
+  }
+});
+
+asWsApplyAuto();
+</script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
