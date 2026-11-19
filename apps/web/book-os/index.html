@@ -55,6 +55,14 @@ a{color:inherit}
 @media(prefers-color-scheme:dark){.badge{color:#B9D2FF}}
 .qcard{padding:14px 16px;border-bottom:1px solid var(--line)}
 .qcard:last-child{border-bottom:0}
+.jd-card{cursor:pointer}
+.jd-hint{margin-top:8px;text-align:right;font-size:12px;font-weight:800;color:var(--blue)}
+.jd-rows{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.jd-row{display:flex;justify-content:space-between;gap:14px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13.5px}
+.jd-row:last-child{border-bottom:0}
+.jd-row>span{color:var(--mut);font-weight:700;flex:none}
+.jd-row>b{font-weight:600;text-align:right;overflow-wrap:anywhere;min-width:0}
+.jd-sec{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut);margin:14px 0 6px}
 .qmedia{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px}
 .qm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:9px;margin-top:4px}
 .qm-item{margin:0;min-width:0}
@@ -564,7 +572,7 @@ function renderLiveQueue(items){
     actions+='<button class="btn ghost" id="qmnyb-'+i+'" aria-expanded="false" onclick="toggleMoney('+i+')">Estimate · Invoice · Receipt</button>';
     var moneySec='<div class="qmedia" id="qmoney-'+i+'" hidden><div class="qm-load">Money loads here when opened.</div></div>';
     actions+='<button class="btn ghost" id="rm-'+i+'" onclick="liveRemove('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg> Remove</button>';
-    return '<article class="qcard"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div>'+mediaSec+moneySec+'</article>';
+    return '<article class="qcard jd-card" onclick="jdOpen(event,\'queue\','+i+')"><div class="qtop"><b>'+escH(q.customerName||'Customer')+' <span style="color:var(--mut);font-weight:600;font-size:12px">'+escH(q.referenceCode||'')+'</span></b><span class="age">'+ageLabel(q.ageMinutes)+'</span></div><div class="meta"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+escH(q.appliance||'')+'<br><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(q.zip||'')+' \u00b7 '+escH(q.city||'')+' &nbsp;\u2022&nbsp; '+escH(q.issue||'')+'</div><div class="tags"><span class="tag src">'+escH(q.source||'WEB')+'</span><span class="tag win">'+winTag+'</span><span class="tag">$99 DIAG \u00b7 AT BOOKING</span>'+(q.area?'<span class="tag" style="background:#dcebfd;color:#0a265c"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> AREA: '+escH(q.area)+'</span>':'')+(q.needsAreaReview?'<span class="tag" style="background:#fde8e8;color:#b00020">AREA REVIEW</span>':'')+(q.payment&&q.payment.diagnosticPaid?'<span class="tag" style="background:#e5f4ea;color:#0f7a3d"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> $99 PAID ONLINE</span>':'')+'</div><div class="actions">'+actions+((q.payment&&q.payment.diagnosticPaid)?'':'<button class="btn ghost" onclick="livePayLink('+i+')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3 10.2h18" stroke="#E8322E"/></svg> Pay Link</button>')+'</div>'+jdHintHtml()+mediaSec+moneySec+'</article>';
   }).join('');
 }
 /* ============ CUSTOMER MEDIA VIEWER (Pepper Lists submissions) ============
@@ -700,9 +708,11 @@ function renderLiveBoard(board){
   document.getElementById('mAwait').textContent=counts['MATCH_PENDING_APPROVAL']||0;
   document.getElementById('mDispatched').textContent=counts['CONFIRMED']||0;
   var groups=board.groups||{};
+  liveBoardItems={};
   document.getElementById('dispatchCols').innerHTML=BOARD_COLS.map(function(col){
     var items=groups[col[0]]||[];
     return '<div class="col"><h3>'+col[1]+' <span>'+items.length+'</span></h3>'+(items.length?items.map(function(b){
+      liveBoardItems[b.bookingId]={item:b,col:col[0],colLabel:col[1]};
       var appt=b.appointment&&b.appointment.status==='SET'?('Appt: '+dateLabel(b.appointment.date)+' \u00b7 '+escH(b.appointment.windowLabel||'')):'No appointment set yet';
       var prov=b.providerId?'Provider assigned':'Awaiting match';
       var actions='';
@@ -722,7 +732,7 @@ function renderLiveBoard(board){
       } else if(col[0]==='COMPLETED'){
         actions='<span style="font-size:12px;color:var(--green);font-weight:800"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.6l2.5 5.2 5.7.7-4.2 4 1.1 5.6L12 16.4l-5.1 2.7 1.1-5.6-4.2-4 5.7-.7z"/><circle cx="12" cy="11.4" r="1" fill="#E8322E" stroke="none"/></svg> Review engine fired</span>';
       }
-      return '<article class="dcard"><b>'+escH(b.appliance||'Appliance job')+'</b> <span style="color:var(--mut);font-size:11px">'+escH(b.referenceCode||'')+'</span><p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(b.area||b.city||'')+'</p><p>'+escH(b.customerName||'')+' \u00b7 '+appt+'</p><div class="score"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0" stroke="#E8322E"/></svg><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+prov+'</span><strong>'+escH(b.source||'')+'</strong></div><div class="actions">'+actions+'</div></article>';
+      return '<article class="dcard jd-card" onclick="jdOpen(event,\'board\',\''+b.bookingId+'\')"><b>'+escH(b.appliance||'Appliance job')+'</b> <span style="color:var(--mut);font-size:11px">'+escH(b.referenceCode||'')+'</span><p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+escH(b.area||b.city||'')+'</p><p>'+escH(b.customerName||'')+' \u00b7 '+appt+'</p><div class="score"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0" stroke="#E8322E"/></svg><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> '+prov+'</span><strong>'+escH(b.source||'')+'</strong></div><div class="actions">'+actions+'</div>'+jdHintHtml()+'</article>';
     }).join(''):'<div class="empty">No jobs</div>')+'</div>';
   }).join('');
 }
@@ -762,6 +772,160 @@ function renderLiveToday(board){
   el.innerHTML=keys.map(function(w){
     return '<div class="win"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.8V12l3 2" stroke="#E8322E"/></svg> '+w+'</h3>'+byWin[w].map(function(j){ return '<div class="job"><b>'+escH(j.n)+'</b><br>'+escH(j.a)+'<br><span class="st '+(stClsL[j.s]||'c')+'">'+stTxt[j.s]+'</span></div>'; }).join('')+'</div>';
   }).join('');
+}
+
+/* ============ JOB DETAIL POP-UP (2026-11-19) ============
+   Ramone's directive: clicking a job card pops up ALL appointment
+   details. Real data only: the queue/board payload renders instantly,
+   then GET /bookings/:id (the full staff booking record) and
+   GET /bookos/bookings/:id/money enrich it, and the dispatch roster
+   resolves an assigned provider's name + tech system. Clicks that land
+   on a card's own controls (buttons, links, form fields, the expanded
+   media/money panels) never open the pop-up — those handlers run
+   exactly as before. The pop-up is a snapshot: loadLive() refreshes
+   the lists underneath it; close and reopen a card for fresh data. */
+var liveBoardItems={}, jdProvidersCache=null, jdOpenId=null, jdItem=null, jdColLabel='';
+var JD_STATUS_TXT={PENDING_DISPATCH:'New \u2014 awaiting match',MATCH_PENDING_APPROVAL:'Awaiting Approval',CONFIRMED:'Confirmed / Dispatched',COMPLETED:'Complete'};
+function jdHintHtml(){ return '<div class="jd-hint">Details <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></div>'; }
+function jdIsInteractive(ev){ var t=ev&&ev.target; if(!t||!t.closest) return false; return !!t.closest('button,a,input,select,textarea,label,video,.qmedia'); }
+function jdFmt(c){ if(typeof moneyFmt==='function') return moneyFmt(c); if(c==null) return '\u2014'; return '$'+(Math.round(c)/100).toFixed(2); }
+function jdRow(k,v){ return '<div class="jd-row"><span>'+escH(k)+'</span><b>'+(v==null||v===''?'\u2014':v)+'</b></div>'; }
+function jdDateTime(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function jdOpen(ev,kind,key){
+  if(!LIVE) return;
+  if(jdIsInteractive(ev)) return;
+  var item=null;
+  if(kind==='queue'){ item=liveQueue[key]; jdColLabel='Setter Queue'; if(item&&!item.status) item=Object.assign({},item,{status:'PENDING_DISPATCH'}); }
+  else { var rec=liveBoardItems[key]; if(rec){ item=rec.item; jdColLabel=rec.colLabel; if(item&&!item.status) item=Object.assign({},item,{status:rec.col}); } }
+  if(!item||!item.bookingId) return;
+  jdItem=item; jdOpenId=item.bookingId;
+  jdRender(item,null);
+  document.getElementById('jdBack').style.display='block';
+  jdEnrich(item);
+}
+function jdClose(){ jdOpenId=null; jdItem=null; var b=document.getElementById('jdBack'); if(b) b.style.display='none'; }
+function jdBackdrop(ev){ if(ev&&ev.target===document.getElementById('jdBack')) jdClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') jdClose(); });
+function jdModel(item,bk){
+  var c=(bk&&bk.customer)||{};
+  var m={};
+  m.bookingId=item.bookingId;
+  m.referenceCode=item.referenceCode||(bk&&bk.referenceCode)||null;
+  m.customerName=item.customerName||c.name||null;
+  m.customerPhone=item.customerPhone||c.phone||(bk&&bk.phone)||null;
+  m.customerEmail=c.email||null;
+  m.appliance=item.appliance||(bk&&bk.appliance)||null;
+  m.issue=item.issue||(bk&&bk.issue)||null;
+  m.segment=item.segment||(bk&&bk.segment)||null;
+  m.source=item.source||(bk&&bk.source)||null;
+  m.via=(bk&&bk.via)||item.via||null;
+  m.status=item.status||(bk&&bk.status)||null;
+  m.city=item.city||(bk&&bk.city)||c.city||null;
+  m.zip=item.zip||(bk&&bk.zip)||c.zip||null;
+  m.area=item.area||null;
+  m.needsAreaReview=!!item.needsAreaReview;
+  m.serviceAddress=item.serviceAddress||(bk&&bk.serviceAddress)||c.address||null;
+  m.preferredWindow=item.preferredWindow||(bk&&bk.preferredWindow)||null;
+  m.appointment=item.appointment||(bk&&bk.appointment)||null;
+  m.createdAt=item.createdAt||(bk&&bk.createdAt)||null;
+  m.ageMinutes=(item.ageMinutes!=null)?item.ageMinutes:null;
+  m.mediaCount=(item.mediaCount!=null)?item.mediaCount:null;
+  m.payment=item.payment||(bk&&bk.payment)||null;
+  m.priorityTier=item.priorityTier||(bk&&bk.priorityTier)||null;
+  m.providerId=item.providerId||(bk&&bk.dispatch&&bk.dispatch.providerId)||null;
+  m.dispatch=(bk&&bk.dispatch)||null;
+  return m;
+}
+function jdRender(item,bk){
+  var m=jdModel(item,bk);
+  document.getElementById('jdTitle').textContent=(m.appliance||'Appliance job')+' \u2014 '+(m.customerName||'Customer');
+  document.getElementById('jdSub').textContent=(m.referenceCode||'')+(jdColLabel?' \u00b7 '+jdColLabel:'');
+  var h='';
+  h+='<div class="jd-sec">Appointment</div><div class="jd-rows">';
+  var statusTxt=(jdColLabel==='Setter Queue')?'In the Setter Queue \u2014 awaiting the confirmation call':(JD_STATUS_TXT[m.status]||m.status||'');
+  h+=jdRow('Status',escH(statusTxt));
+  var appt=m.appointment;
+  if(appt&&appt.status==='SET'){
+    var lab=appt.windowLabel||WIN_LABEL[appt.window]||appt.window||'';
+    h+=jdRow('Appointment',escH(dateLabel(appt.date)+' \u00b7 '+lab));
+    if(appt.setBy) h+=jdRow('Set by',escH(appt.setBy));
+  } else { h+=jdRow('Appointment','Not set yet'); }
+  if(m.preferredWindow) h+=jdRow('Preferred window',escH(m.preferredWindow));
+  if(m.createdAt) h+=jdRow('Created',escH(jdDateTime(m.createdAt)));
+  if(m.ageMinutes!=null) h+=jdRow('Waiting',escH(ageLabel(m.ageMinutes)));
+  h+='</div>';
+  h+='<div class="jd-sec">Customer</div><div class="jd-rows">';
+  h+=jdRow('Name',escH(m.customerName||''));
+  var digits=(''+(m.customerPhone||'')).replace(/\D/g,'');
+  h+=jdRow('Phone',digits?('<a href="tel:+1'+digits+'" style="color:var(--blue);text-decoration:none">'+escH(m.customerPhone)+'</a>'):'');
+  if(m.customerEmail) h+=jdRow('Email',escH(m.customerEmail));
+  h+=jdRow('Address',escH(m.serviceAddress||''));
+  h+=jdRow('City',escH(m.city||''));
+  h+=jdRow('ZIP',escH(m.zip||''));
+  if(m.area) h+=jdRow('Service area',escH(m.area)+(m.needsAreaReview?' \u2014 AREA REVIEW':''));
+  h+='</div>';
+  h+='<div class="jd-sec">Job</div><div class="jd-rows">';
+  h+=jdRow('Appliance',escH(m.appliance||''));
+  h+=jdRow('Issue',escH(m.issue||''));
+  if(m.segment) h+=jdRow('Segment',escH(m.segment==='COMMERCIAL'?'Commercial':'Residential'));
+  if(m.priorityTier) h+=jdRow('Priority',escH(m.priorityTier));
+  h+=jdRow('Reference',escH(m.referenceCode||''));
+  if(m.source) h+=jdRow('Source',escH(m.source));
+  if(m.via) h+=jdRow('Via',escH(m.via));
+  if(m.payment) h+=jdRow('$99 diagnostic',m.payment.diagnosticPaid?'Paid online':'Due at booking');
+  if(m.mediaCount) h+=jdRow('Customer media',escH(m.mediaCount+' attached \u2014 open from the card'));
+  h+='</div>';
+  h+='<div class="jd-sec">Provider</div><div class="jd-rows">';
+  h+='<div class="jd-row"><span>Assignment</span><b id="jdProvVal">'+(m.providerId?'Provider assigned':'Awaiting match')+'</b></div>';
+  if(m.dispatch&&m.dispatch.approvedBy) h+=jdRow('Approved by',escH(m.dispatch.approvedBy));
+  if(m.dispatch&&m.dispatch.approvedAt) h+=jdRow('Approved at',escH(jdDateTime(m.dispatch.approvedAt)));
+  h+='</div>';
+  document.getElementById('jdBody').innerHTML=h;
+  if(m.providerId) jdResolveProvider(m.providerId,m.bookingId);
+}
+function jdResolveProvider(providerId,bookingId){
+  function apply(rows){
+    if(jdOpenId!==bookingId) return;
+    var p=(rows||[]).filter(function(x){ return x.id===providerId; })[0];
+    var el=document.getElementById('jdProvVal'); if(!el) return;
+    if(p&&p.businessName) el.textContent=p.businessName+' \u00b7 '+(p.system==='COMPANY'?'Company Tech':'Service Network');
+  }
+  if(jdProvidersCache){ apply(jdProvidersCache); return; }
+  apiFetch('/bookos/providers').then(function(j){ jdProvidersCache=j.data||[]; apply(jdProvidersCache); }).catch(function(){});
+}
+function jdRenderMoney(d){
+  var el=document.getElementById('jdMoney'); if(!el) return;
+  var est=d.estimate, dec=d.estimateDecision, inv=d.invoice, pay=d.payments||{};
+  var h='<div class="jd-sec">Money \u2014 read-only summary</div><div class="jd-rows">';
+  if(est){
+    h+=jdRow('Estimate',escH('v'+(est.version||'')+' \u00b7 '+(est.kind||''))+' \u2014 '+jdFmt(est.totalCents));
+    if(dec) h+=jdRow('Decision',escH(dec.decision||'')+(dec.authorizedByName?' \u00b7 by '+escH(dec.authorizedByName):'')+(dec.method?' \u00b7 '+escH(dec.method):''));
+    else h+=jdRow('Decision','Awaiting the customer');
+  } else { h+=jdRow('Estimate','None yet'); }
+  if(inv) h+=jdRow('Invoice',jdFmt(pay.invoiceTotalCents)+(inv.status?' \u00b7 '+escH(inv.status):''));
+  h+=jdRow('Received',jdFmt(pay.receiptsTotalCents||0));
+  h+=jdRow('Balance due',jdFmt(pay.balanceDueCents||0));
+  h+='</div>';
+  if(!est&&!inv) h+='<div class="qm-note">No estimate or invoice yet \u2014 create them from the Estimate \u00b7 Invoice \u00b7 Receipt panel on the job card.</div>';
+  if((d.receipts||[]).length) h+='<div class="qm-note">Receipts: '+d.receipts.map(function(r){ return escH(r.method||'')+' '+jdFmt(r.amountCents); }).join(' \u00b7 ')+'</div>';
+  el.innerHTML=h;
+}
+function jdEnrich(item){
+  var id=item.bookingId;
+  var mel=document.getElementById('jdMoney');
+  if(mel) mel.innerHTML='<div class="jd-sec">Money \u2014 read-only summary</div><div class="qm-load">Loading the money record\u2026</div>';
+  apiFetch('/bookings/'+encodeURIComponent(id)).then(function(j){
+    if(jdOpenId!==id||!jdItem) return;
+    jdRender(jdItem,j.data||null);
+  }).catch(function(){});
+  apiFetch('/bookos/bookings/'+encodeURIComponent(id)+'/money').then(function(j){
+    if(jdOpenId!==id) return;
+    jdRenderMoney(j.data||{});
+  }).catch(function(e){
+    if(jdOpenId!==id) return;
+    var m2=document.getElementById('jdMoney');
+    if(m2) m2.innerHTML='<div class="jd-sec">Money \u2014 read-only summary</div><div class="qm-err">Could not load the money record ('+escH(e.message)+').</div>';
+  });
 }
 
 /* ============ SERVICE BOOK PRO — book by area (Top Speed CRM) ============ */
@@ -1243,6 +1407,17 @@ function inboxComposeSend(){
     </div>
     <div id="boWoMsg" style="font-size:13.5px;margin:10px 0"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn ghost" type="button" onclick="boWoClose()">Cancel</button><button class="btn primary" type="button" onclick="boWoSubmit()">Create work order</button></div>
+  </div>
+</div>
+<!-- JOB DETAIL POP-UP (2026-11-19): clicking any live job card in the Setter
+     Queue or on the Dispatch Board opens the full appointment record.
+     Same backdrop pattern as the New work order modal above. -->
+<div id="jdBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9991;overflow-y:auto" onclick="jdBackdrop(event)">
+  <div style="background:var(--card);color:var(--ink);max-width:620px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Job details">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 id="jdTitle" style="font-size:17px;margin:0"></h3><div id="jdSub" style="font-size:12.5px;color:var(--mut);margin-top:2px"></div></div><button class="btn ghost" type="button" onclick="jdClose()">Close</button></div>
+    <div id="jdBody"></div>
+    <div id="jdMoney"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn primary" type="button" onclick="jdClose()">Done</button></div>
   </div>
 </div>
 <script>
