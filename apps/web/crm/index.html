@@ -63,6 +63,11 @@ tr.cust:hover{background:#eef4fd}
 .tool{display:block;background:var(--light);border-radius:14px;padding:18px;color:var(--ink)}
 .tool b{color:var(--navy);font-size:16.5px;display:block;margin-bottom:4px}
 .tool p{color:var(--muted);font-size:13.5px;line-height:1.5}
+.pipe-col{flex:1 1 0;min-width:214px;background:var(--light);border-radius:14px;padding:14px}
+.pipe-col-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--navy);font-size:15.5px;font-weight:800;margin-bottom:2px}
+.pipe-card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.pipe-card .who{color:var(--navy);font-weight:800;cursor:pointer}
+.pipe-card select{margin-top:2px;padding:7px 9px;font-size:13.5px}
 .speedy{background:#eaf1fe;border:1px solid #c3d7fb;border-radius:14px;padding:18px;margin-top:18px}
 .speedy h3{color:var(--navy)}
 .speedyBody{max-height:50vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px}
@@ -107,6 +112,7 @@ footer strong{color:#fff}
       <button class="tab on" id="tab-home" onclick="crmTab('home')">Home</button>
       <button class="tab" id="tab-customers" onclick="crmTab('customers')">Customers</button>
       <button class="tab" id="tab-waitlist" onclick="crmTab('waitlist')">Expansion Waitlist</button>
+      <button class="tab" id="tab-pipeline" onclick="crmTab('pipeline')">Leads &amp; Pipeline</button>
       <button class="tab" id="tab-tools" onclick="crmTab('tools')">Business Tools</button>
     </div>
 
@@ -131,8 +137,8 @@ footer strong{color:#fff}
       <div class="msg" id="crmMsg"></div>
       <div class="sx">
         <table>
-          <thead><tr><th>Customer</th><th>Contact</th><th>Area</th><th>Bookings</th><th>Last booking</th></tr></thead>
-          <tbody id="crmRows"><tr><td colspan="5">Loading…</td></tr></tbody>
+          <thead><tr><th>Customer</th><th>Contact</th><th>Area</th><th>Bookings</th><th>Last booking</th><th>Lifetime value</th><th>Status</th></tr></thead>
+          <tbody id="crmRows"><tr><td colspan="7">Loading…</td></tr></tbody>
         </table>
       </div>
       <div id="crmDetail" style="margin-top:20px;"></div>
@@ -147,6 +153,12 @@ footer strong{color:#fff}
           <tbody id="wlRows"><tr><td colspan="5">Loading…</td></tr></tbody>
         </table>
       </div>
+    </section>
+
+    <section id="pane-pipeline" style="display:none;">
+      <p class="sub" style="margin-top:0;">Every lead from the platform's intake in one pipeline — the same records the setter queue works. A lead whose job completed, or whose invoice is fully paid, reads as <b>Won</b> on its own; an estimate on the job moves it to <b>Estimate</b>. Setters can set any stage by hand, and a hand-set stage always wins. Values are the linked job's real estimate or invoice total only — a dash means no figure exists yet.</p>
+      <div class="msg" id="pipeMsg"></div>
+      <div class="sx"><div id="pipeBoard" style="display:flex;gap:12px;align-items:flex-start;min-width:1118px;padding-bottom:6px;"><p class="mut">Loading the pipeline…</p></div></div>
     </section>
 
     <section id="pane-tools" style="display:none;">
@@ -288,11 +300,11 @@ function crmLoad(){
       document.getElementById('crmMsg').textContent=rows.length+' customer'+(rows.length===1?'':'s');
       document.getElementById('crmRows').innerHTML=rows.length?rows.map(function(c){
         var last=c.lastBooking?(crmEsc(c.lastBooking.appliance)+' · '+crmEsc(c.lastBooking.referenceCode)+' · <span class="pill">'+crmEsc(c.lastBooking.status)+'</span>'):'—';
-        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td></tr>';
-      }).join(''):'<tr><td colspan="5">No customers match.</td></tr>';
+        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td><td>'+crmUpMoney(c.lifetimeValueCents)+'</td><td>'+crmUpFlagPill(c.crmFlag)+'</td></tr>';
+      }).join(''):'<tr><td colspan="7">No customers match.</td></tr>';
     })
     .catch(function(e){
-      document.getElementById('crmRows').innerHTML='<tr><td colspan="5"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
+      document.getElementById('crmRows').innerHTML='<tr><td colspan="7"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
     });
 }
 function crmDetail(id){
@@ -827,6 +839,128 @@ function crmWsInitHeader(){
   var d=crmWsById('crmDetail');
   if(d&&crmWsObserver) crmWsObserver.observe(d,{childList:true});
   crmWsApplyAutoRefresh();
+})();
+</script>
+<script>
+/* ================= CRM UPGRADES — LEADS & PIPELINE + CUSTOMER FLAGS (2026-11-19) =================
+   Ramone approved both upgrades from the CRM prototype review,
+   built onto the live CRM the same additive way as the workstation
+   station above: no existing function, flow, layout or API
+   contract is changed. This section (a) wraps crmTab so the new
+   Pipeline tab shows/hides its own pane alongside the existing
+   four, (b) wraps crmDetail only to remember which record is open,
+   (c) injects ONE status section into the record card (the same
+   MutationObserver idiom the workstation bar uses), and (d) drives
+   the new staff endpoints: GET /crm/pipeline,
+   POST /crm/pipeline/:connectionId/stage and
+   POST /crm/customers/:id/flag. The customer list's Lifetime
+   value + Status columns are rendered by crmLoad from the ADDED
+   summary fields (lifetimeValueCents / crmFlag) using the two
+   helpers below. */
+function crmUpMoney(cents){ if(cents==null) return '\u2014'; return '$'+(Math.round(cents)/100).toFixed(2); }
+function crmUpFlagPill(flag){
+  if(flag==='PRIORITY') return '<span class="pill red">PRIORITY</span>';
+  if(flag==='FOLLOW_UP') return '<span class="pill amber">FOLLOW-UP</span>';
+  return '<span class="pill green">ACTIVE</span>';
+}
+
+/* ---- Pipeline tab ---- */
+var crmUpOrigTab=crmTab;
+crmTab=function(name){
+  crmUpOrigTab(name);
+  var pane=document.getElementById('pane-pipeline');
+  var tab=document.getElementById('tab-pipeline');
+  if(name==='pipeline'){
+    if(pane) pane.style.display='';
+    if(tab) tab.className='tab on';
+    crmUpPipelineLoad();
+  } else {
+    if(pane) pane.style.display='none';
+    if(tab) tab.className='tab';
+  }
+};
+var CRM_UP_STAGES=[['NEW','New'],['CONTACTED','Contacted'],['ESTIMATE','Estimate'],['WON','Won'],['LOST','Lost']];
+function crmUpPipelineLoad(){
+  var board=document.getElementById('pipeBoard'); if(!board) return;
+  crmFetch('/crm/pipeline').then(function(j){ crmUpRenderBoard(j.data||{}); })
+    .catch(function(e){ board.innerHTML='<p class="mut">Could not load the pipeline ('+crmEsc(e.message)+').</p>'; });
+}
+function crmUpRenderBoard(data){
+  var board=document.getElementById('pipeBoard'); if(!board) return;
+  var msg=document.getElementById('pipeMsg');
+  if(msg) msg.textContent=(data.totalLeads||0)+' lead'+(data.totalLeads===1?'':'s')+' in the pipeline \u00b7 values are real money only (the linked job\u2019s estimate or invoice total) \u2014 a dash means no figure exists yet';
+  board.innerHTML=(data.columns||[]).map(function(col){
+    var cards=(col.leads||[]).map(crmUpCardHtml).join('')||'<p class="mut" style="font-size:13px;">No leads in this stage.</p>';
+    return '<div class="pipe-col"><div class="pipe-col-head"><span>'+crmEsc(col.label)+'</span><span class="pill">'+col.count+'</span></div>'
+      +'<div class="mut" style="font-size:12.5px;margin-bottom:8px;">Known value: <b>'+crmUpMoney(col.valueCents)+'</b></div>'+cards+'</div>';
+  }).join('');
+}
+function crmUpCardHtml(lead){
+  var sub=[lead.typeLabel, lead.source?('via '+lead.source):null].filter(Boolean).join(' \u00b7 ');
+  var svc=[lead.service, lead.city].filter(Boolean).join(' \u00b7 ');
+  var open=lead.customerId?'<div style="margin-top:6px;"><a href="#" onclick="crmUpOpenLead(\''+lead.customerId+'\');return false;" style="color:var(--blue);font-weight:700;font-size:13px;">Open customer record \u2192</a></div>':'';
+  var opts=CRM_UP_STAGES.map(function(s){ return '<option value="'+s[0]+'"'+(lead.stage===s[0]?' selected':'')+'>'+s[1]+'</option>'; }).join('');
+  return '<div class="pipe-card"><div class="who" '+(lead.customerId?'onclick="crmUpOpenLead(\''+lead.customerId+'\')" title="Open the customer record"':'')+'>'+crmEsc(lead.name)+'</div>'
+    +'<div class="mut" style="font-size:12.5px;">'+crmEsc(lead.reference)+' \u00b7 '+crmEsc(String(lead.createdAt||'').slice(0,10))+'</div>'
+    +(sub?'<div style="font-size:13px;margin-top:2px;">'+crmEsc(sub)+'</div>':'')
+    +(svc?'<div style="font-size:13px;">'+crmEsc(svc)+'</div>':'')
+    +'<div style="font-size:13.5px;margin-top:2px;">Value: <b>'+crmUpMoney(lead.valueCents)+'</b>'+(lead.bookingReference?' \u00b7 job '+crmEsc(lead.bookingReference):'')+'</div>'
+    +open
+    +'<label style="font-size:12px;margin:6px 0 0;">Stage<select onchange="crmUpStageChange(this,\''+lead.id+'\')">'+opts+'</select></label></div>';
+}
+function crmUpOpenLead(customerId){ crmTab('customers'); crmDetail(customerId); }
+function crmUpStageChange(sel, connectionId){
+  var stage=sel.value;
+  sel.disabled=true;
+  crmFetch('/crm/pipeline/'+encodeURIComponent(connectionId)+'/stage',{method:'POST',body:{stage:stage}})
+    .then(function(){ crmUpPipelineLoad(); })
+    .catch(function(e){ sel.disabled=false; var m=document.getElementById('pipeMsg'); if(m){ m.textContent='Could not move that lead: '+e.message; m.className='msg err'; } });
+}
+
+/* ---- Customer status flag inside the record view ---- */
+var crmUp={customerId:null};
+var crmUpOrigDetail=crmDetail;
+crmDetail=function(id){ crmUp.customerId=id; crmUpOrigDetail(id); };
+function crmUpMaybeInjectFlag(){
+  var host=document.getElementById('crmDetail'); if(!host) return;
+  if(document.getElementById('crmUpFlagSec')) return;
+  var card=host.querySelector('.card'); if(!card||!crmUp.customerId) return;
+  var sec=document.createElement('div');
+  sec.className='section'; sec.id='crmUpFlagSec';
+  sec.innerHTML='<h3>Customer status &amp; lifetime value</h3><p class="mut">Loading\u2026</p>';
+  var first=card.querySelector('.section');
+  if(first) card.insertBefore(sec,first); else card.appendChild(sec);
+  crmFetch('/crm/customers/'+encodeURIComponent(crmUp.customerId)).then(function(j){
+    if(!document.getElementById('crmUpFlagSec')) return;
+    crmUpRenderFlag((j.data||{}).customer||{});
+  }).catch(function(){ var el=document.getElementById('crmUpFlagSec'); if(el) el.innerHTML='<h3>Customer status &amp; lifetime value</h3><p class="mut">Could not load the status block. The record above is unaffected.</p>'; });
+}
+function crmUpRenderFlag(c){
+  var sec=document.getElementById('crmUpFlagSec'); if(!sec) return;
+  var cur=c.crmFlag||'';
+  var btn=function(val,label){ return '<button class="btn small '+(cur===val?'blue':'ghost')+'" type="button" onclick="crmUpSetFlag(\''+val+'\')">'+label+'</button>'; };
+  sec.innerHTML='<h3>Customer status &amp; lifetime value</h3>'
+    +'<p class="mut">Lifetime value: <b>'+crmUpMoney(c.lifetimeValueCents)+'</b> \u00b7 real money received (card payments + recorded receipts across every job).</p>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'+btn('','Active')+btn('PRIORITY','Priority')+btn('FOLLOW_UP','Follow-up')+'</div>'
+    +'<div class="msg" id="crmUpFlagMsg"></div>';
+}
+function crmUpSetFlag(flag){
+  var id=crmUp.customerId; if(!id) return;
+  var msg=document.getElementById('crmUpFlagMsg');
+  if(msg){ msg.textContent='Saving\u2026'; msg.className='msg'; }
+  crmFetch('/crm/customers/'+encodeURIComponent(id)+'/flag',{method:'POST',body:{flag:flag||null}})
+    .then(function(j){
+      crmUpRenderFlag((j.data||{}).customer||{});
+      var m2=document.getElementById('crmUpFlagMsg'); if(m2){ m2.textContent='Status saved.'; m2.className='msg ok'; }
+      crmLoad();
+    })
+    .catch(function(e){ var m3=document.getElementById('crmUpFlagMsg'); if(m3){ m3.textContent='Could not save: '+e.message; m3.className='msg err'; } });
+}
+var crmUpObserver=null;
+if(window.MutationObserver){ crmUpObserver=new MutationObserver(function(){ crmUpMaybeInjectFlag(); }); }
+(function crmUpInit(){
+  var d=document.getElementById('crmDetail');
+  if(d&&crmUpObserver) crmUpObserver.observe(d,{childList:true});
 })();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>

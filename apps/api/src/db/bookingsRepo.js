@@ -71,6 +71,7 @@ function customerToRow(record) {
     address: record.address ?? null,
     city: record.city ?? '',
     zip: record.zip ?? '',
+    crmFlag: record.crmFlag ?? null,
   };
 }
 
@@ -87,6 +88,7 @@ function customerFromRow(row) {
     address: row.address ?? undefined,
     city: row.city,
     zip: row.zip,
+    crmFlag: row.crmFlag ?? undefined,
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
   };
 }

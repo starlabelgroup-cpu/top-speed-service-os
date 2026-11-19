@@ -28,6 +28,7 @@ function toStoreConnection(row) {
     message: row.message || null,
     ...(attribution ? { attribution } : {}),
     reference: row.reference,
+    pipelineStage: row.pipelineStage || null,
     createdAt: iso(row.createdAt),
   };
 }
@@ -45,6 +46,7 @@ export async function persistConnection(record) {
       message: record.message || null,
       ...attributionToColumns(record.attribution),
       reference: record.reference,
+      pipelineStage: record.pipelineStage ?? null,
       createdAt: new Date(record.createdAt),
     };
     await db().connection.upsert({ where: { id: row.id }, update: row, create: row });

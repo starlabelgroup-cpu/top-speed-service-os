@@ -241,6 +241,13 @@ model Customer {
   address        String?
   city           String
   zip            String
+  // Top Speed CRM pipeline + status flag (2026-11-19): the staff-set
+  // CRM status flag — PRIORITY or FOLLOW_UP; null means Active (the
+  // ordinary state, never stored as a string). Set only from the CRM
+  // console (POST /crm/customers/:id/flag); no intake or booking flow
+  // writes it. Lifetime value is NOT stored — it is computed at read
+  // time from real money (PAID Payment rows + recorded receipts).
+  crmFlag        String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -746,6 +753,15 @@ model Connection {
   fbclid      String?
   msclkid     String?
   reference   String   @unique
+  // Top Speed CRM Leads & Pipeline (2026-11-19): the stage a Service
+  // Setter deliberately set on this lead (NEW / CONTACTED / ESTIMATE /
+  // WON / LOST). Null means "no human has staged this lead" — the
+  // pipeline board then DERIVES the stage from the linked booking
+  // (completed or fully paid → WON, an estimate on file → ESTIMATE,
+  // otherwise NEW). A stored stage always wins over the derivation.
+  // Only lead-type connections (services/leadBookings.js LEAD_TYPES)
+  // appear on the board; the column is inert on every other type.
+  pipelineStage String?
   createdAt   DateTime @default(now())
 }
 

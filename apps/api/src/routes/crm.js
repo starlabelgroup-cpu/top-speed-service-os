@@ -7,8 +7,13 @@ import { effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/se
 import { slotForArea, todayDateString, APPOINTMENT_WINDOWS, CREWS_PER_AREA_WINDOW } from '../services/bookos.js';
 import { suggestProviders } from '../services/dispatch.js';
 import { persistCrmNote } from '../db/crmRepo.js';
+import { persistConnection } from '../db/connectionsRepo.js';
+import { persistCustomer } from '../db/bookingsRepo.js';
 import { findUserById } from '../services/handoff.js';
 import { createWorkOrder, workOrderCreateSchema } from '../services/workOrders.js';
+import { jobReceipts } from '../services/jobMoney.js';
+import { PIPELINE_STAGES, leadConnectionReferenceOf, pipelineBoard, pipelineRow } from '../services/crmPipeline.js';
+import { leadTypeOf } from '../services/leadBookings.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -45,6 +50,38 @@ function customerBookings(customerId) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
+/* Lifetime value (2026-11-19 CRM upgrade): money ACTUALLY RECEIVED
+ * for this customer, in integer cents, summed across all of their
+ * bookings from the platform's two money-received ledgers — the
+ * Payment table's PAID rows (card money collected online; the table
+ * is the source of truth for online receipts, matched to the
+ * customer through their bookings since a payment's customerId can
+ * be null) plus the external receipts recorded on the bookings
+ * (RECEIPT_RECORDED history events — cash / check / Zelle taken in
+ * the field, the same receipts jobMoney counts against invoices).
+ * The two never double-count: invoice totals are net of the
+ * diagnostic credit, receipts are capped at the invoice balance
+ * due, and PAID Payment rows are the diagnostic checkouts
+ * themselves. A customer with no received money reads 0 — a true
+ * zero, not a placeholder. */
+function paidCentsByBooking() {
+  const map = new Map();
+  for (const payment of store.payments.values()) {
+    if (payment.status !== 'PAID') continue;
+    map.set(payment.bookingId, (map.get(payment.bookingId) || 0) + (payment.amountCents || 0));
+  }
+  return map;
+}
+
+function customerLifetimeValueCents(customerId, paidMap = paidCentsByBooking()) {
+  let total = 0;
+  for (const booking of customerBookings(customerId)) {
+    total += paidMap.get(booking.id) || 0;
+    for (const receipt of jobReceipts(booking)) total += receipt.amountCents || 0;
+  }
+  return total;
+}
+
 function bookingBrief(b) {
   return {
     id: b.id,
@@ -69,7 +106,7 @@ function bookingBrief(b) {
   };
 }
 
-function customerSummary(customer) {
+function customerSummary(customer, paidMap = paidCentsByBooking()) {
   const bookings = customerBookings(customer.id);
   const last = bookings[0] || null;
   return {
@@ -81,6 +118,11 @@ function customerSummary(customer) {
     zip: customer.zip || null,
     area: last ? effectiveArea(last) : null,
     source: customer.source || null,
+    // CRM upgrade (2026-11-19): ADDED fields — the staff-set status
+    // flag (null = Active) and lifetime value in integer cents.
+    // Every pre-existing field above is unchanged.
+    crmFlag: customer.crmFlag || null,
+    lifetimeValueCents: customerLifetimeValueCents(customer.id, paidMap),
     bookingsCount: bookings.length,
     lastBooking: last
       ? { referenceCode: last.referenceCode, appliance: last.appliance, status: last.status, area: effectiveArea(last), createdAt: last.createdAt }
@@ -126,7 +168,8 @@ router.get('/crm/home', ...staffOnly, (req, res) => {
 
 router.get('/crm/customers', ...staffOnly, (req, res) => {
   const q = String(req.query.q || '').trim().toLowerCase();
-  let customers = [...store.customers.values()].map(customerSummary);
+  const paidMap = paidCentsByBooking();
+  let customers = [...store.customers.values()].map((c) => customerSummary(c, paidMap));
   if (q) {
     customers = customers.filter(
       (c) =>
@@ -277,6 +320,10 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
         ...customer,
         leadSource: customer.source || null,
         referredByCode: customer.referredByCode || null,
+        // CRM upgrade (2026-11-19): ADDED fields, same pair the list
+        // summaries carry — staff status flag + lifetime value.
+        crmFlag: customer.crmFlag || null,
+        lifetimeValueCents: customerLifetimeValueCents(customer.id),
       },
       account,
       properties,
@@ -359,6 +406,68 @@ router.post('/crm/customers/:id/notes', ...staffOnly, async (req, res) => {
     details: { noteId: note.id },
   });
   return res.status(201).json({ data: { note } });
+});
+
+/* ---------------- CRM upgrades (2026-11-19): pipeline + flags ----------------
+ * Ramone approved both upgrades from the CRM prototype review, built
+ * onto the live records — never a second system:
+ *  1. Leads & Pipeline: the lead-type Connections (the exact
+ *     LEAD_TYPES set) as a staged board. Stage moves store ONE
+ *     nullable column on the connection and mutate nothing else.
+ *  2. Customer status flag: ONE nullable column on the customer
+ *     (PRIORITY / FOLLOW_UP / null = Active), set from the record.
+ * Both inherit this router's existing staff gate, unchanged. */
+
+router.get('/crm/pipeline', ...staffOnly, (req, res) => {
+  return res.json({ data: pipelineBoard() });
+});
+
+const pipelineStageSchema = z.object({ stage: z.enum(PIPELINE_STAGES) });
+
+router.post('/crm/pipeline/:connectionId/stage', ...staffOnly, async (req, res) => {
+  const connection = (store.connections || []).find((c) => c.id === req.params.connectionId);
+  // Only lead-type connections live on the board; anything else —
+  // unknown id, provider application, advertiser contact — is a 404
+  // here, exactly as if it were not a lead at all.
+  if (!connection || !leadTypeOf(connection.type)) {
+    return res.status(404).json({ error: 'Lead not found' });
+  }
+  const parsed = pipelineStageSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid pipeline stage', details: parsed.error.flatten() });
+  }
+  connection.pipelineStage = parsed.data.stage;
+  await persistConnection(connection);
+  appendEvent('CRM_PIPELINE_STAGE_SET', {
+    actor: staffName(req),
+    entityType: 'CONNECTION',
+    entityId: connection.id,
+    referenceCode: connection.reference,
+    details: { stage: parsed.data.stage, type: connection.type },
+  });
+  const booking =
+    [...store.bookings.values()].find((b) => leadConnectionReferenceOf(b) === connection.reference) || null;
+  return res.json({ data: { lead: pipelineRow(connection, booking) } });
+});
+
+const customerFlagSchema = z.object({ flag: z.enum(['PRIORITY', 'FOLLOW_UP']).nullable() });
+
+router.post('/crm/customers/:id/flag', ...staffOnly, async (req, res) => {
+  const customer = store.customers.get(req.params.id);
+  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  const parsed = customerFlagSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid customer flag', details: parsed.error.flatten() });
+  }
+  customer.crmFlag = parsed.data.flag;
+  await persistCustomer(customer);
+  appendEvent('CRM_CUSTOMER_FLAG_SET', {
+    actor: staffName(req),
+    entityType: 'CUSTOMER',
+    entityId: customer.id,
+    details: { flag: parsed.data.flag },
+  });
+  return res.json({ data: { customer: customerSummary(customer) } });
 });
 
 /* ---------------- Speedy assist (drafts & suggestions only) ---------------- */
