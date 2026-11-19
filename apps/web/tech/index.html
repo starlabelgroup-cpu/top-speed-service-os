@@ -212,7 +212,7 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
       <div id="techWrongDoor" style="display:none"></div>
       <div id="techBar" style="display:none">
         <p class="note" id="techWho" style="margin:0 0 8px;font-weight:700"></p>
-        <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">↻ Refresh</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
+        <div class="btnrow"><button class="btn navy" type="button" onclick="loadTech()">↻ Refresh</button><button class="btn no" type="button" onclick="twOptOpen()">Options</button><button class="btn no" type="button" onclick="techSignOut()">Sign out</button></div>
       </div>
     </div>
     <!-- TODAY -->
@@ -375,6 +375,32 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
     </div>
     <div id="woMsg" style="font-size:13.5px;margin:6px 0"></div>
     <div class="btnrow"><button class="btn no" type="button" onclick="woClose()">Cancel</button><button class="btn go" type="button" onclick="woSubmit()">Create work order</button></div>
+  </div>
+</div>
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (2026-11-19): board
+     auto-refresh, board layout, and the remembered oversight bucket
+     filter. Preferences save on this device only. Backdrop pattern
+     matches the page's other overlays; z-index 9992 sits below the
+     menu drawer (9995) and the Ask Pepper launcher. -->
+<div id="twOptBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="twOptBackdrop(event)">
+  <div style="background:var(--card,#fff);color:var(--ink);max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Tech App options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:17px;margin:0;color:var(--navy)">Options</h3><div id="twOptSub" style="font-size:12.5px;color:var(--soft);margin-top:2px">Tech App workstation preferences — saved on this device only.</div></div><button class="btn no" type="button" style="flex:0 1 90px" onclick="twOptClose()">Close</button></div>
+    <p class="demo" style="margin-top:14px">Live board</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:var(--soft);font-size:12.5px">Reloads your board on its own. Pauses while a menu, sheet, work-order form, camera or an open job workspace is on screen, and while the tab is hidden.</span></div>
+      <button class="btn no" id="twAutoBtn" type="button" style="flex:0 1 110px" onclick="twToggleAutoRefresh()">○ OFF</button>
+    </div>
+    <p class="demo" style="margin-top:14px">Dispatch board layout</p>
+    <div style="font-size:13.5px;margin-bottom:6px">How the board shows jobs under the counters:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn navy" id="twViewSections" type="button" onclick="twSetBoardView('sections')">Sections — full job lists</button>
+      <button class="btn no" id="twViewBuckets" type="button" onclick="twSetBoardView('buckets')">Counters only — tap to open</button>
+    </div>
+    <p class="demo" style="margin-top:14px">Oversight bucket filter</p>
+    <div style="font-size:13.5px">On an oversight board, the bucket pages' All / Company crew / Service Network choice is remembered on this device and comes back on your next visit.</div>
+    <div id="twFilterEcho" style="font-size:13px;color:var(--soft);margin:6px 0"></div>
+    <div class="btnrow"><button class="btn no" type="button" onclick="twClearBucketFilter()">Clear saved filter</button></div>
+    <div class="btnrow" style="margin-top:16px"><button class="btn go" type="button" onclick="twOptClose()">Done</button></div>
   </div>
 </div>
 <div id="toast" role="status"></div>
@@ -2358,6 +2384,7 @@ function sheetGroups(){
     ]},
     {label:'SETTINGS & MORE', items:[
       {t:'Settings', s:'Profile, vehicle, areas, appliances, notifications', ic:'gear', fn:function(){ go('settings'); }},
+      {t:'Options', s:'Auto-refresh, board layout, saved filters — this device', ic:'gear', fn:function(){ twOptOpen(); }},
       {t:'Provider portal', s:'Credentials, documents, account', ic:'doc', href:'/service/'},
       {t:'Parts Supply OS', s:'The full parts platform', ic:'box', href:'/parts'},
       {t:'Training Academy', s:'Your courses — you enter as a trainee', ic:'cap', href:'/academy'},
@@ -2560,6 +2587,176 @@ function lookupJobs(){
   });
   box.innerHTML=mine.length?mine.map(boardRow).join(''):'<p class="note" style="margin:4px 0">No job on your board matches that.</p>';
 }
+</script>
+<script>
+/* ================= WORKSTATION STANDARD — TECH APP (2026-11-19) ====
+   The Tech App web doors (Company Tech + Network Tech) brought to the
+   platform workstation standard, following the Book OS pattern
+   (1f4e5f1): prefs store -> Options panel -> CTA bar inside the
+   record view. INTEGRATE, DON'T CHANGE (Ramone, 2026-11-19):
+   everything here is additive — the dispatch board, bucket pages,
+   job workspace, create flows, More sheet, movable Ask Pepper
+   launcher and both sign-in pipelines are untouched. This section
+   only wraps four existing functions (boardSection, openBucket,
+   bucketSetFilter, wsRender) and adds its own panel + bar.
+   (1) PREFERENCES — this-device store (per-door key): board
+       auto-refresh (off by default, 60s, pauses while a menu, sheet,
+       work-order form, camera or an open job workspace is on screen),
+       board layout (sections vs counters-only), and the oversight
+       bucket filter (ALL / COMPANY / NETWORK) remembered across
+       visits.
+   (2) CTA BAR — injected into the job workspace under the existing
+       Call / Text / Navigate row: the SET appointment off the
+       consolidated record (display only — appointment setting lives
+       on the office side), Call customer (tel:+1), one-tap jumps to
+       the existing workspace tabs (the panes keep their own logic —
+       nothing is duplicated), and Send links on the real Link Center
+       contract. Link Center is staff-gated, so the send group
+       renders for oversight (staff) sessions; a tech's own review
+       request already lives in Pay & close, and the bar says so
+       instead of offering a send the API would refuse. Oversight
+       stays view-only for job work: the bar carries no workflow
+       action — the panes' own controls remain under wsLockActions
+       exactly as before. */
+var TW_DOOR=(window.TECH_DOOR==='NETWORK')?'NETWORK':'COMPANY';
+var TW_PREFS_KEY=(TW_DOOR==='NETWORK')?'tsos_technetwork_prefs':'tsos_tech_prefs';
+var twPrefs={autoRefresh:false,boardView:'sections',bucketFilter:'ALL'};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(TW_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ twPrefs.autoRefresh=!!p.autoRefresh; if(p.boardView==='buckets') twPrefs.boardView='buckets'; if(['ALL','COMPANY','NETWORK'].indexOf(p.bucketFilter)>=0) twPrefs.bucketFilter=p.bucketFilter; } }catch(e){} })();
+function twSavePrefs(){ try{ localStorage.setItem(TW_PREFS_KEY,JSON.stringify(twPrefs)); }catch(e){} }
+function twById(id){ return document.getElementById(id); }
+
+/* ---- (1a) Board layout: counters-only hides the section lists the
+   board renderer builds (the counters stay, and every counter still
+   opens its bucket page). Wrapping boardSection means the provider
+   filter re-render honors the choice too. ---- */
+var twOrigBoardSection=boardSection;
+boardSection=function(title,list){ if(twPrefs.boardView==='buckets') return ''; return twOrigBoardSection(title,list); };
+function twSetBoardView(v){ twPrefs.boardView=(v==='buckets')?'buckets':'sections'; twSavePrefs(); twSyncOptionsUi(); if(tTok()) loadDispatchBoard(); }
+
+/* ---- (1b) Oversight bucket filter persists on this device: the
+   choice is saved when a chip is tapped, and re-applied when a
+   bucket page opens (before the board fetch lands, so the filtered
+   render is the first one the viewer sees). ---- */
+var twOrigBucketSetFilter=bucketSetFilter;
+bucketSetFilter=function(f){ if(['ALL','COMPANY','NETWORK'].indexOf(f)>=0){ twPrefs.bucketFilter=f; twSavePrefs(); twRenderFilterEcho(); } twOrigBucketSetFilter(f); };
+var twOrigOpenBucket=openBucket;
+openBucket=function(key){ twOrigOpenBucket(key); if(window._bucket&&twPrefs.bucketFilter!=='ALL'){ window._bucket.filter=twPrefs.bucketFilter; if(window._fpOverview) renderBucket(); } };
+function twRenderFilterEcho(){ var el=twById('twFilterEcho'); if(!el) return; el.textContent=twPrefs.bucketFilter==='ALL'?'Saved now: All (no system filter).':('Saved now: '+(twPrefs.bucketFilter==='COMPANY'?'Company crew':'Service Network')+'.'); }
+function twClearBucketFilter(){ twPrefs.bucketFilter='ALL'; twSavePrefs(); twRenderFilterEcho(); if(window._bucket&&window._bucket.kind==='bucket') twOrigBucketSetFilter('ALL'); toast('Saved bucket filter cleared'); }
+
+/* ---- (1c) Auto-refresh: OFF by default. When ON it re-runs the
+   existing loadTech() every minute (which reloads the board with
+   it), and never while a menu, sheet, modal, camera or an open job
+   workspace is on screen, and never while the tab is hidden. ---- */
+var twRefreshTimer=null;
+function twAnyOpen(){
+  var wo=twById('woModal'); if(wo&&wo.classList.contains('on')) return true;
+  var ms=twById('moreSheet'); if(ms&&ms.classList.contains('on')) return true;
+  var dr=twById('tchDrawer'); if(dr&&dr.classList.contains('on')) return true;
+  var ob=twById('twOptBack'); if(ob&&ob.style.display==='block') return true;
+  var job=twById('s-job'); if(job&&job.classList.contains('on')&&window._wsId) return true;
+  var plug=twById('s-plug'); if(plug&&plug.classList.contains('on')) return true;
+  return false;
+}
+function twApplyAutoRefresh(){
+  if(twRefreshTimer){ clearInterval(twRefreshTimer); twRefreshTimer=null; }
+  if(!twPrefs.autoRefresh) return;
+  twRefreshTimer=setInterval(function(){ if(document.hidden||!tTok()) return; if(twAnyOpen()) return; loadTech(); },60000);
+}
+function twToggleAutoRefresh(){ twPrefs.autoRefresh=!twPrefs.autoRefresh; twSavePrefs(); twApplyAutoRefresh(); twSyncOptionsUi(); toast(twPrefs.autoRefresh?'Auto-refresh on — the board refreshes itself every minute':'Auto-refresh off'); }
+
+/* ---- (1d) Options panel ---- */
+function twOptOpen(){ twSyncOptionsUi(); var sub=twById('twOptSub'); if(sub) sub.textContent=(TW_DOOR==='NETWORK'?'Network Tech':'Company Tech')+' workstation preferences — saved on this device only.'; var b=twById('twOptBack'); if(b) b.style.display='block'; }
+function twOptClose(){ var b=twById('twOptBack'); if(b) b.style.display='none'; }
+function twOptBackdrop(ev){ if(ev&&ev.target===twById('twOptBack')) twOptClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') twOptClose(); });
+function twSyncOptionsUi(){
+  var t=twById('twAutoBtn'); if(t){ t.className='btn '+(twPrefs.autoRefresh?'go':'no'); t.textContent=twPrefs.autoRefresh?'● ON':'○ OFF'; }
+  var s=twById('twViewSections'), u=twById('twViewBuckets');
+  if(s) s.className='btn '+(twPrefs.boardView==='sections'?'navy':'no');
+  if(u) u.className='btn '+(twPrefs.boardView==='buckets'?'navy':'no');
+  twRenderFilterEcho();
+}
+
+/* ================= (2) CTA BAR ================= */
+var twLinkChannel='SMS';
+var twOrigWsRender=wsRender;
+wsRender=function(){ twOrigWsRender(); twCtaInject(); };
+function twDigits(phone){ var d=(''+(phone||'')).replace(/\D/g,''); if(d.length===11&&d.charAt(0)==='1') d=d.slice(1); return d; }
+function twCtaInject(){
+  var view=window._wsView; if(!view||!view.assignment) return;
+  var root=twById('wsRoot'); if(!root) return;
+  if(twById('twCtaBar')) return;
+  var acts=root.querySelector('.ws-acts'); if(!acts) return;
+  var bk=view.booking||{}, ab=view.assignment.booking||{};
+  var rec=(view.customer&&view.customer.record)||{};
+  var phone=rec.phone||(ab.customer||{}).phone||'';
+  var email=rec.email||'';
+  var custName=rec.name||(ab.customer||{}).name||'';
+  var digits=twDigits(phone);
+  var appt=bk.appointment||null;
+  var completed=bk.status==='COMPLETED';
+  var oversight=!!window._techOversight;
+  var ref=bk.referenceCode||ab.referenceCode||'';
+  var h='<div class="card" id="twCtaBar" style="margin-bottom:12px"><p class="demo">Actions — workstation standard</p>';
+  h+='<div class="kv"><span>Appointment</span><b>'+(appt?('SET · '+escT(appt.windowLabel||appt.window||'')+' · '+tDateLabel(appt.date)):'Not set yet — dispatch sets it in Book OS')+'</b></div>';
+  h+='<div class="btnrow" style="margin-top:9px">';
+  if(digits){ h+='<a class="btn red" href="tel:+1'+digits+'" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Call customer</a>'; }
+  else { h+='<button class="btn red" type="button" onclick="toast(\'No phone number on this job\')">Call customer</button>'; }
+  h+='<button class="btn no" type="button" onclick="wsTabShow(\'checklist\')">Checklist</button>';
+  h+='<button class="btn no" type="button" onclick="wsTabShow(\'diagnosis\')">Diagnosis</button>';
+  h+='<button class="btn no" type="button" onclick="wsTabShow(\'estimate\')">Estimate</button>';
+  h+='<button class="btn no" type="button" onclick="wsTabShow(\'parts\')">Parts</button>';
+  h+='<button class="btn no" type="button" onclick="wsTabShow(\'pay\')">Pay &amp; close</button>';
+  h+='</div>';
+  if(oversight){
+    h+='<p class="demo" style="margin-top:12px">Send links — Link Center</p>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span style="font-size:13px;font-weight:700">Send by:</span>'
+      +'<button class="btn '+(twLinkChannel==='SMS'?'navy':'no')+'" type="button" style="flex:0 1 90px" onclick="twSetLinkChannel(\'SMS\')">Text</button>'
+      +'<button class="btn '+(twLinkChannel==='EMAIL'?'navy':'no')+'" type="button" style="flex:0 1 90px" onclick="twSetLinkChannel(\'EMAIL\')">Email</button>'
+      +(twLinkChannel==='EMAIL'&&!email?'<span style="font-size:12.5px;color:#c2262e">No email on this job — text it instead.</span>':'')
+      +'</div>';
+    h+='<div class="btnrow">'
+      +'<button class="btn no" type="button" onclick="twSendLink(\'BOOKING\')">Booking link</button>'
+      +'<button class="btn no" type="button" onclick="twSendLink(\'PAYMENT\')">Payment link ($99)</button>'
+      +(completed?'<button class="btn no" type="button" onclick="twSendLink(\'REVIEW\')">Review link</button>':'<button class="btn no" type="button" disabled style="opacity:.45">Review link — after completion</button>')
+      +'</div>';
+    h+='<div id="twLinkMsg" style="font-size:13.5px;margin-top:8px"></div>';
+    h+='<div id="twLinkCtx" data-ref="'+escT(ref)+'" data-name="'+escT(custName)+'" data-email="'+escT(email)+'" data-phone="'+escT(phone)+'" style="display:none"></div>';
+  } else {
+    h+='<p class="note" style="margin:9px 0 0">Booking, payment and review links are sent by the office (Book OS · Link Center). Your own customer sends on this job: Call and Text above — and the review request in Pay &amp; close once the job is complete.</p>';
+  }
+  h+='</div>';
+  var wrap=document.createElement('div');
+  wrap.innerHTML=h;
+  acts.parentNode.insertBefore(wrap.firstChild, acts.nextSibling);
+}
+function twSetLinkChannel(ch){ twLinkChannel=(ch==='EMAIL')?'EMAIL':'SMS'; var bar=twById('twCtaBar'); if(bar&&bar.parentNode){ bar.parentNode.removeChild(bar); twCtaInject(); } }
+function twSendLink(linkType){
+  var ctx=twById('twLinkCtx'); if(!ctx) return;
+  var msg=twById('twLinkMsg');
+  var body={linkType:linkType,channel:twLinkChannel,recipientName:ctx.getAttribute('data-name')||null,bookingRef:ctx.getAttribute('data-ref')||null};
+  if(twLinkChannel==='EMAIL'){
+    var email=ctx.getAttribute('data-email')||'';
+    if(!email){ if(msg){ msg.textContent='No email address on this job — text the link instead.'; msg.style.color='#c2262e'; } return; }
+    body.email=email;
+  } else {
+    var phone=ctx.getAttribute('data-phone')||'';
+    if(twDigits(phone).length<10){ if(msg){ msg.textContent='No valid phone number on this job.'; msg.style.color='#c2262e'; } return; }
+    body.phone=phone;
+  }
+  if(msg){ msg.textContent='Sending…'; msg.style.color='var(--soft)'; }
+  tFetch('/link-center/send',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){
+      var d=j.data||{}, m2=twById('twLinkMsg'); if(!m2) return;
+      if(d.status==='SENT'){ m2.textContent='✓ Sent by '+(twLinkChannel==='EMAIL'?'email':'text')+' to '+(d.to||'')+' — the customer has the link.'; m2.style.color='#0f7a3d'; }
+      else { m2.textContent='Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:''); m2.style.color='#c2262e'; }
+    })
+    .catch(function(e){ var m3=twById('twLinkMsg'); if(m3){ m3.textContent='Send failed: '+(e.message||'error'); m3.style.color='#c2262e'; } });
+}
+
+/* ---- Init: start auto-refresh if it was left on. ---- */
+twApplyAutoRefresh();
 </script>
 <script src="/shared/pepper-chat.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 <script src="/shared/session-vault.js" defer></script>
