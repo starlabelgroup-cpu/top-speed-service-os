@@ -136,7 +136,7 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
   const commercial = segment === 'COMMERCIAL';
   const hasAreaInput = Boolean(input.city || input.zip);
   const resolution = hasAreaInput ? resolveArea({ city: input.city, zip: input.zip }) : null;
-  const city = resolution?.area || input.city || customer.city || null;
+  let city = resolution?.area || input.city || customer.city || null;
   const serviceAddress = input.address || customer.address || null;
   // ZIP resolution (2026-11-19 hygiene fix): the request body first,
   // then the customer record, then the customer's existing Property
@@ -157,6 +157,25 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
     // leaves no orphan record behind.
     if (resolved.created) store.customers.delete(customer.id);
     return { ok: false, status: 400, error: 'A ZIP code is required to create a work order', code: 'ZIP_REQUIRED' };
+  }
+  // CITY resolution (2026-11-19 hygiene fix, mirroring ZIP above):
+  // the city computed above comes from the area resolution, then the
+  // request body, then the customer record. When none of those yields
+  // one, fall back to the customer's Property record (the one at the
+  // service address when there is one), exactly as ZIP does.
+  // ServiceRequest.city is a required column — when NO source yields
+  // a city the create died as a 500 at persistence. Fail BEFORE
+  // anything is persisted with a clean 400 the surfaces can show.
+  // Never invent a default city. ZIP is checked first, so a request
+  // missing both gets ZIP_REQUIRED.
+  if (!city && Array.isArray(store.properties)) {
+    const owned = store.properties.filter((p) => p.customerId === customer.id && p.city);
+    const atAddress = serviceAddress ? owned.find((p) => p.address === serviceAddress) : null;
+    city = (atAddress || owned[0])?.city || null;
+  }
+  if (!city) {
+    if (resolved.created) store.customers.delete(customer.id);
+    return { ok: false, status: 400, error: 'A city is required to create a work order', code: 'CITY_REQUIRED' };
   }
   if (resolved.created) await persistCustomer(customer);
   const area = resolution ? resolution.area : null;
