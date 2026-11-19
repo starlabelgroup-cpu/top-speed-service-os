@@ -75,6 +75,21 @@ const remindersSchema = z.object({
   date: dateParam,
 });
 
+/**
+ * Today in the business timezone (America/New_York) as YYYY-MM-DD.
+ * Appointment setting refuses past dates against THIS clock — the
+ * setters work Eastern days, and a UTC "today" would wrongly refuse
+ * same-day evening appointments (and wrongly allow yesterday's).
+ */
+function todayInNewYork() {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
 function visibleBookings(req) {
   return [...store.bookings.values()].filter(
     (booking) => req.user.roles.includes(ROLES.PLATFORM_ADMIN) || booking.companyId === req.companyId,
@@ -361,6 +376,9 @@ router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
 
   const booking = store.bookings.get(bookingId);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (date < todayInNewYork()) {
+    return res.status(400).json({ error: 'Appointment date cannot be in the past' });
+  }
   if (booking.status === 'COMPLETED') {
     return res.status(409).json({ error: 'Booking is already completed' });
   }
@@ -433,6 +451,9 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (r
 
   const booking = store.bookings.get(req.params.bookingId);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (date < todayInNewYork()) {
+    return res.status(400).json({ error: 'Appointment date cannot be in the past' });
+  }
   if (booking.status === 'COMPLETED') {
     return res.status(409).json({ error: 'Booking is already completed' });
   }

@@ -188,6 +188,7 @@ body:not(.live) .gated{display:none!important}</style>
 <span id="staffWho" style="font-weight:700"></span>
 <button class="btn primary" onclick="boWoOpen()">+ New work order</button>
 <button class="btn navy" onclick="loadLive()">↻ Refresh live data</button>
+<button class="btn ghost" onclick="wsOptOpen()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg> Options</button>
 <button class="btn ghost" id="cleanupBtn" onclick="cleanupTestData()"> <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.8 3.4L9 15.4M9 15.4l-3.4 4.4M9 15.4l4.6 2.6M9 15.4l-1 5" stroke="#E8322E"/><path d="M13 4.6l3 1.4-4.6 9.6-3-1.4z"/></svg> Clear test data</button>
 <button class="btn ghost" onclick="staffSignOut()">Sign out</button>
 </div>
@@ -800,10 +801,11 @@ function jdOpen(ev,kind,key){
   if(!item||!item.bookingId) return;
   jdItem=item; jdOpenId=item.bookingId;
   jdRender(item,null);
+  if(window.wsCtaOpen) wsCtaOpen(item);
   document.getElementById('jdBack').style.display='block';
   jdEnrich(item);
 }
-function jdClose(){ jdOpenId=null; jdItem=null; var b=document.getElementById('jdBack'); if(b) b.style.display='none'; }
+function jdClose(){ jdOpenId=null; jdItem=null; if(window.wsCtaClose) wsCtaClose(); var b=document.getElementById('jdBack'); if(b) b.style.display='none'; }
 function jdBackdrop(ev){ if(ev&&ev.target===document.getElementById('jdBack')) jdClose(); }
 document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') jdClose(); });
 function jdModel(item,bk){
@@ -917,6 +919,7 @@ function jdEnrich(item){
   apiFetch('/bookings/'+encodeURIComponent(id)).then(function(j){
     if(jdOpenId!==id||!jdItem) return;
     jdRender(jdItem,j.data||null);
+    if(window.wsCtaEnrich) wsCtaEnrich(j.data||null);
   }).catch(function(){});
   apiFetch('/bookos/bookings/'+encodeURIComponent(id)+'/money').then(function(j){
     if(jdOpenId!==id) return;
@@ -1417,7 +1420,34 @@ function inboxComposeSend(){
     <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 id="jdTitle" style="font-size:17px;margin:0"></h3><div id="jdSub" style="font-size:12.5px;color:var(--mut);margin-top:2px"></div></div><button class="btn ghost" type="button" onclick="jdClose()">Close</button></div>
     <div id="jdBody"></div>
     <div id="jdMoney"></div>
+    <div id="wsCta"></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn primary" type="button" onclick="jdClose()">Done</button></div>
+  </div>
+</div>
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (2026-11-19): every control here
+     changes real behavior (queue sort, auto-refresh, persisted board
+     filters). Preferences save on this device only. Same backdrop
+     pattern as the other Book OS modals; sits below the Ask Pepper
+     launcher (9995) like the job-details pop-up (9991). -->
+<div id="wsOptBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="wsOptBackdrop(event)">
+  <div style="background:var(--card);color:var(--ink);max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Book OS options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:17px;margin:0">Options</h3><div style="font-size:12.5px;color:var(--mut);margin-top:2px">Book OS workstation preferences — saved on this device only.</div></div><button class="btn ghost" type="button" onclick="wsOptClose()">Close</button></div>
+    <div class="jd-sec">Setter Queue</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Sort the queue:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" id="wsSortOldest" type="button" onclick="wsSetQueueSort('oldest')">Oldest first</button>
+      <button class="btn" id="wsSortNewest" type="button" onclick="wsSetQueueSort('newest')">Newest first</button>
+    </div>
+    <div class="jd-sec">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:var(--mut);font-size:12.5px">Re-runs the live load on its own. Pauses while any window (create, details, options) is open.</span></div>
+      <button class="toggle" id="wsAutoBtn" type="button" onclick="wsToggleAutoRefresh()">○ OFF</button>
+    </div>
+    <div class="jd-sec">Dispatch Board filters</div>
+    <div style="font-size:13.5px">The board's Area and Window filters stay saved on this device and come back on your next visit.</div>
+    <div id="wsFilterEcho" style="font-size:13px;color:var(--mut);margin:6px 0"></div>
+    <button class="btn ghost" type="button" onclick="wsClearSavedFilters()">Clear saved filters</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn primary" type="button" onclick="wsOptClose()">Done</button></div>
   </div>
 </div>
 <script>
@@ -1564,6 +1594,368 @@ function moneyReceipt(i){
     .then(function(){ toast('Receipt recorded on '+q.referenceCode, ICO_CHECK); loadMoney(i); })
     .catch(function(e){ mnyMsg(i, 'Refused: '+(e.message||'error')); });
 }
+</script>
+<script>
+/* ================= WORKSTATION STANDARD (2026-11-19) =================
+   Station 1 of the platform-wide workstation standard (Ramone:
+   "a more advanced setup for everything workstations with options
+   and CTA methods... including for a appointment setting and
+   Dispatching team"). Three pieces, all real behavior:
+   (1) PREFERENCES — a this-device store (localStorage) behind the
+       Options panel: Setter Queue sort, persisted Dispatch Board
+       filters, and an auto-refresh cycle that pauses while any
+       modal is open. No decorative toggles.
+   (2) CTA ACTION BAR — inside the job-details pop-up (#wsCta), the
+       one standard place every action on a job lives: Call, the
+       appointment setter (a real date + window form on the existing
+       appointment endpoints), Send links (real Link Center sends),
+       Dispatch (Speedy Suggest + roster picker + Auto-Match on the
+       existing match/approve endpoints), and Estimate / Invoice /
+       Receipt (the existing per-booking money panel flow).
+   (3) The pop-up stays the foundation: this section only adds the
+       #wsCta container's contents and three one-line hooks the
+       pop-up calls (wsCtaOpen / wsCtaEnrich / wsCtaClose).
+   Later stations (CRM, Dispatch console, Tech App) copy this shape:
+   prefs store -> Options panel -> CTA bar inside the record pop-up,
+   every control wired to the same endpoints the cards already use. */
+var WS_PREFS_KEY='tsos_bookos_prefs';
+var wsPrefs={queueSort:'oldest',autoRefresh:false,boardArea:'',boardWindow:''};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.queueSort==='newest') wsPrefs.queueSort='newest'; wsPrefs.autoRefresh=!!p.autoRefresh; if(typeof p.boardArea==='string') wsPrefs.boardArea=p.boardArea; if(typeof p.boardWindow==='string') wsPrefs.boardWindow=p.boardWindow; } }catch(e){} })();
+function wsSavePrefs(){ try{ localStorage.setItem(WS_PREFS_KEY,JSON.stringify(wsPrefs)); }catch(e){} }
+function wsById(id){ return document.getElementById(id); }
+function wsActor(){ return (staffUser&&staffUser.email)?staffUser.email:'Service Setters'; }
+var WS_WIN_IDS=['08-10','10-12','12-14','14-16','16-18'];
+var WS_PHONE_SVG='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg>';
+var WS_CHECK_SVG='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>';
+
+/* ---- (1a) Queue sort: the API returns oldest first. Newest-first
+   reverses a copy BEFORE the original renderer assigns liveQueue,
+   so every index-based card handler (Call, Confirm, money panel,
+   the details pop-up) keeps pointing at the row on screen. ---- */
+var wsOrigRenderLiveQueue=renderLiveQueue;
+renderLiveQueue=function(items){
+  if(wsPrefs.queueSort==='newest'&&items&&items.length>1){ items=items.slice().reverse(); }
+  wsOrigRenderLiveQueue(items);
+};
+
+/* ---- (1b) Board filters persist on this device. sbpQuery() reads
+   the live selects, so restoring the saved values before the first
+   loadLive() is all it takes; Clear wipes the saved values too. ---- */
+function wsApplyBoardPrefs(){
+  var a=wsById('sbpArea'), w=wsById('sbpWindow');
+  if(a&&wsPrefs.boardArea){ for(var i=0;i<a.options.length;i++){ if(a.options[i].value===wsPrefs.boardArea){ a.value=wsPrefs.boardArea; break; } } }
+  if(w&&wsPrefs.boardWindow){ w.value=wsPrefs.boardWindow; }
+}
+function wsPersistBoardFilters(){
+  var a=wsById('sbpArea'), w=wsById('sbpWindow');
+  wsPrefs.boardArea=a?a.value:''; wsPrefs.boardWindow=w?w.value:'';
+  wsSavePrefs(); wsRenderFilterEcho();
+}
+var wsOrigSbpClearFilters=sbpClearFilters;
+sbpClearFilters=function(){ wsPrefs.boardArea=''; wsPrefs.boardWindow=''; wsSavePrefs(); wsOrigSbpClearFilters(); wsRenderFilterEcho(); };
+function wsRenderFilterEcho(){
+  var el=wsById('wsFilterEcho'); if(!el) return;
+  var bits=[]; if(wsPrefs.boardArea) bits.push('Area: '+wsPrefs.boardArea); if(wsPrefs.boardWindow) bits.push('Window: '+(WIN_LABEL[wsPrefs.boardWindow]||wsPrefs.boardWindow));
+  el.textContent=bits.length?('Saved now: '+bits.join(' \u00b7 ')):'No filters saved right now.';
+}
+function wsClearSavedFilters(){ sbpClearFilters(); toast('Saved board filters cleared'); }
+
+/* ---- (1c) Auto-refresh: OFF by default. When ON it re-runs the
+   existing loadLive() every minute, and never while a modal (create
+   work order, job details, options) or the media lightbox is open,
+   and never while the tab is hidden. ---- */
+var wsRefreshTimer=null;
+function wsAnyModalOpen(){
+  var ids=['boWoBack','jdBack','wsOptBack'];
+  for(var i=0;i<ids.length;i++){ var el=wsById(ids[i]); if(el&&el.style.display==='block') return true; }
+  var lb=wsById('qmLb'); if(lb&&lb.classList&&lb.classList.contains('on')) return true;
+  return false;
+}
+function wsApplyAutoRefresh(){
+  if(wsRefreshTimer){ clearInterval(wsRefreshTimer); wsRefreshTimer=null; }
+  if(!wsPrefs.autoRefresh) return;
+  wsRefreshTimer=setInterval(function(){
+    if(!LIVE||document.hidden) return;
+    if(wsAnyModalOpen()) return;
+    loadLive();
+  },60000);
+}
+
+/* ---- (1d) Options panel ---- */
+function wsOptOpen(){ wsSyncOptionsUi(); wsById('wsOptBack').style.display='block'; }
+function wsOptClose(){ var b=wsById('wsOptBack'); if(b) b.style.display='none'; }
+function wsOptBackdrop(ev){ if(ev&&ev.target===wsById('wsOptBack')) wsOptClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') wsOptClose(); });
+function wsSyncOptionsUi(){
+  var o=wsById('wsSortOldest'), n=wsById('wsSortNewest');
+  if(o) o.className='btn '+(wsPrefs.queueSort==='oldest'?'primary':'ghost');
+  if(n) n.className='btn '+(wsPrefs.queueSort==='newest'?'primary':'ghost');
+  var t=wsById('wsAutoBtn');
+  if(t){ t.className='toggle'+(wsPrefs.autoRefresh?'':' off'); t.textContent=wsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF'; }
+  wsRenderFilterEcho();
+}
+function wsSetQueueSort(v){ wsPrefs.queueSort=(v==='newest')?'newest':'oldest'; wsSavePrefs(); wsSyncOptionsUi(); if(LIVE) loadLive(); }
+function wsToggleAutoRefresh(){ wsPrefs.autoRefresh=!wsPrefs.autoRefresh; wsSavePrefs(); wsApplyAutoRefresh(); wsSyncOptionsUi(); toast(wsPrefs.autoRefresh?'Auto-refresh on \u2014 the board refreshes itself every minute':'Auto-refresh off'); }
+
+/* ================= (2) CTA ACTION BAR ================= */
+var wsCtx=null, wsLinkChannel='SMS', wsRosterCache=null;
+function wsCtaOpen(item){
+  wsCtx={bookingId:item.bookingId,item:item,bk:null,formDate:null,formWin:null};
+  wsLinkChannel='SMS';
+  wsCtaRender();
+}
+function wsCtaClose(){ wsCtx=null; var el=wsById('wsCta'); if(el) el.innerHTML=''; }
+function wsCtaEnrich(bk){ if(!wsCtx) return; wsCtx.bk=bk; wsCtaRender(); }
+function wsStatus(){ if(!wsCtx) return ''; if(wsCtx.bk&&wsCtx.bk.status) return wsCtx.bk.status; return (wsCtx.item&&wsCtx.item.status)||'PENDING_DISPATCH'; }
+function wsAppt(){ if(!wsCtx) return null; if(wsCtx.bk&&wsCtx.bk.appointment) return wsCtx.bk.appointment; return (wsCtx.item&&wsCtx.item.appointment)||null; }
+function wsCust(){ var bk=wsCtx&&wsCtx.bk, c=(bk&&bk.customer)||{}, it=(wsCtx&&wsCtx.item)||{}; return { name:it.customerName||c.name||'', phone:it.customerPhone||c.phone||(bk&&bk.phone)||'', email:c.email||'' }; }
+function wsRef(){ var it=(wsCtx&&wsCtx.item)||{}, bk=wsCtx&&wsCtx.bk; return it.referenceCode||(bk&&bk.referenceCode)||''; }
+
+function wsCtaRender(){
+  var host=wsById('wsCta'); if(!host||!wsCtx) return;
+  var dEl=wsById('wsApptDate'), wEl=wsById('wsApptWindow');
+  if(dEl) wsCtx.formDate=dEl.value; if(wEl) wsCtx.formWin=wEl.value;
+  var st=wsStatus(), appt=wsAppt(), cust=wsCust();
+  var digits=(''+(cust.phone||'')).replace(/\D/g,'');
+  var h='<div class="jd-sec">Actions \u2014 workstation standard</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+  if(digits){ h+='<a class="btn red" href="tel:+1'+digits+'" style="text-decoration:none">'+WS_PHONE_SVG+' Call customer</a>'; }
+  else { h+='<button class="btn red" type="button" onclick="toast(\'No phone number on this booking\')">'+WS_PHONE_SVG+' Call customer</button>'; }
+  h+='<button class="btn ghost" type="button" onclick="wsMoneyOpen()">Estimate \u00b7 Invoice \u00b7 Receipt</button>';
+  h+='</div>';
+  if(st==='COMPLETED'){
+    h+='<div class="jd-sec">Appointment</div><div style="font-size:13.5px;color:var(--mut)">This job is complete \u2014 its appointment is final.</div>';
+  } else if(st!=='CANCELLED'){
+    var isSet=!!(appt&&appt.status==='SET');
+    h+='<div class="jd-sec">'+(isSet?'Appointment \u2014 reschedule':'Appointment \u2014 set it now')+'</div>';
+    if(isSet){ h+='<div style="font-size:13.5px;margin-bottom:6px">Currently: <b>'+escH(dateLabel(appt.date)+' \u00b7 '+(appt.windowLabel||WIN_LABEL[appt.window]||appt.window||''))+'</b></div>'; }
+    var pref=(wsCtx.item&&wsCtx.item.preferredWindow)||(wsCtx.bk&&wsCtx.bk.preferredWindow)||'';
+    var defDate=wsCtx.formDate||(isSet?appt.date:tomorrowStr());
+    var defWin=wsCtx.formWin||(isSet?(appt.window||'10-12'):windowIdFromText(pref));
+    h+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'
+      +'<label style="font-size:13px;font-weight:700">Date<br><input id="wsApptDate" type="date" min="'+todayStr()+'" value="'+escH(defDate)+'" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"></label>'
+      +'<label style="font-size:13px;font-weight:700">Window<br><select id="wsApptWindow" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px">'
+      +WS_WIN_IDS.map(function(w){ return '<option value="'+w+'"'+(w===defWin?' selected':'')+'>'+WIN_LABEL[w]+'</option>'; }).join('')
+      +'</select></label></div>';
+    h+='<div id="wsApptMsg" style="font-size:13.5px;margin:8px 0"></div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" onclick="wsApptSave()">'+(isSet?'Reschedule appointment':'Set appointment')+'</button>'
+      +(isSet?'<button class="btn ghost" type="button" onclick="wsApptTomorrow()">\u21bb Move to Tomorrow</button>':'')
+      +'</div>';
+  }
+  /* Send links — real Link Center sends against this booking. */
+  h+='<div class="jd-sec">Send links</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span style="font-size:13px;font-weight:700">Send by:</span>'
+    +'<button class="btn '+(wsLinkChannel==='SMS'?'navy':'ghost')+'" type="button" onclick="wsSetLinkChannel(\'SMS\')">Text</button>'
+    +'<button class="btn '+(wsLinkChannel==='EMAIL'?'navy':'ghost')+'" type="button" onclick="wsSetLinkChannel(\'EMAIL\')">Email</button>'
+    +(wsLinkChannel==='EMAIL'&&!cust.email?'<span style="font-size:12.5px;color:#c2262e">No email on this booking \u2014 text it instead.</span>':'')
+    +'</div>';
+  var pay=(wsCtx.item&&wsCtx.item.payment)||(wsCtx.bk&&wsCtx.bk.payment);
+  var paidDiag=!!(pay&&pay.diagnosticPaid);
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<button class="btn ghost" type="button" onclick="wsSendLink(\'BOOKING\')">Booking link</button>'
+    +(paidDiag?'<button class="btn ghost" type="button" disabled>Payment link \u2014 $99 paid</button>':'<button class="btn ghost" type="button" onclick="wsSendLink(\'PAYMENT\')">Payment link ($99)</button>')
+    +(st==='COMPLETED'?'<button class="btn ghost" type="button" onclick="wsSendLink(\'REVIEW\')">Review link</button>':'<button class="btn ghost" type="button" disabled>Review link \u2014 after completion</button>')
+    +'</div>';
+  h+='<div id="wsLinkMsg" style="font-size:13.5px;margin-top:8px"></div>';
+  /* Dispatch — only while the job is undispatched. */
+  if(st==='PENDING_DISPATCH'||st==='MATCH_PENDING_APPROVAL'){
+    h+='<div class="jd-sec">Dispatch</div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn navy" type="button" onclick="wsSuggestLoad()">Speedy Suggest</button>'
+      +'<button class="btn ghost" type="button" onclick="wsAutoMatch()">Auto-Match</button>'
+      +'</div>';
+    h+='<div id="wsSuggestBox" style="margin-top:8px"></div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px"><label style="flex:1;min-width:190px;font-size:13px;font-weight:700">Assign to a provider<br><select id="wsProvPick" style="width:100%;padding:10px;margin-top:4px;border:1px solid var(--line);border-radius:10px;font-size:15px"><option value="">Loading the roster\u2026</option></select></label>'
+      +'<button class="btn primary" type="button" onclick="wsDispatchPick()">Dispatch</button></div>';
+    h+='<div id="wsDispatchMsg" style="font-size:13.5px;margin-top:8px"></div>';
+    h+='<div id="wsCandBox" style="margin-top:6px"></div>';
+  }
+  host.innerHTML=h;
+  if(st==='PENDING_DISPATCH'||st==='MATCH_PENDING_APPROVAL'){ wsLoadRosterIntoPicker(); if(st==='MATCH_PENDING_APPROVAL') wsRenderCandidatesFromBk(); }
+}
+
+/* After a CTA mutation, re-read the booking and re-render BOTH the
+   pop-up details (syncing the payload snapshot's appointment /
+   status / provider so the rows show the new state) and this CTA
+   bar; the queue + board refresh through loadLive() as usual. */
+function wsReloadPopup(){
+  if(!wsCtx||!jdOpenId) return;
+  var id=wsCtx.bookingId;
+  wsCtx.formDate=null; wsCtx.formWin=null;
+  apiFetch('/bookings/'+encodeURIComponent(id)).then(function(j){
+    if(!wsCtx||jdOpenId!==id) return;
+    var bk=j.data||null;
+    if(bk&&jdItem){
+      if(bk.appointment) jdItem.appointment=bk.appointment;
+      if(bk.status) jdItem.status=bk.status;
+      jdItem.providerId=(bk.dispatch&&bk.dispatch.providerId)||jdItem.providerId||null;
+    }
+    jdRender(jdItem,bk);
+    wsCtx.bk=bk;
+    wsCtaRender();
+  }).catch(function(){});
+  apiFetch('/bookos/bookings/'+encodeURIComponent(id)+'/money').then(function(j){
+    if(jdOpenId!==id) return;
+    jdRenderMoney(j.data||{});
+  }).catch(function(){});
+}
+
+/* ---- Appointment setter ---- */
+function wsApptMsg(text,ok){ var m=wsById('wsApptMsg'); if(m){ m.textContent=text; m.style.color=ok?'#0f7a3d':'#c2262e'; } }
+function wsApptSave(){
+  if(!wsCtx) return;
+  var dEl=wsById('wsApptDate'), wEl=wsById('wsApptWindow');
+  var date=dEl?dEl.value:'', win=wEl?wEl.value:'';
+  if(!date){ wsApptMsg('Pick a date first.',false); return; }
+  if(date<todayStr()){ wsApptMsg('That date is in the past \u2014 pick today or later.',false); return; }
+  if(!win){ wsApptMsg('Pick a window.',false); return; }
+  var appt=wsAppt(), isSet=!!(appt&&appt.status==='SET');
+  wsApptMsg(isSet?'Rescheduling\u2026':'Setting the appointment\u2026',true);
+  var req=isSet
+    ? apiFetch('/bookos/appointments/'+encodeURIComponent(wsCtx.bookingId)+'/reschedule',{method:'POST',body:JSON.stringify({date:date,window:win,rescheduledBy:wsActor()})})
+    : apiFetch('/bookos/appointments',{method:'POST',body:JSON.stringify({bookingId:wsCtx.bookingId,date:date,window:win,setBy:wsActor()})});
+  req.then(function(j){
+    toast('\u2713 Appointment '+(isSet?'moved':'set')+' \u2014 '+dateLabel(j.data.appointment.date)+' \u00b7 '+j.data.appointment.windowLabel+' \u00b7 confirmation queued');
+    loadLive(); wsReloadPopup();
+  }).catch(function(e){ wsApptMsg('Could not '+(isSet?'reschedule':'set')+' it: '+e.message,false); });
+}
+function wsApptTomorrow(){
+  if(!wsCtx) return;
+  var appt=wsAppt(); if(!appt) return;
+  apiFetch('/bookos/appointments/'+encodeURIComponent(wsCtx.bookingId)+'/reschedule',{method:'POST',body:JSON.stringify({date:tomorrowStr(),window:appt.window,rescheduledBy:wsActor()})})
+    .then(function(j){ toast('\u21bb Moved \u2014 '+dateLabel(j.data.appointment.date)+' \u00b7 '+j.data.appointment.windowLabel); loadLive(); wsReloadPopup(); })
+    .catch(function(e){ wsApptMsg('Move failed: '+e.message,false); });
+}
+
+/* ---- Send links ---- */
+function wsSetLinkChannel(ch){ wsLinkChannel=(ch==='EMAIL')?'EMAIL':'SMS'; wsCtaRender(); }
+function wsSendLink(linkType){
+  if(!wsCtx) return;
+  var cust=wsCust(), msg=wsById('wsLinkMsg');
+  var body={linkType:linkType,channel:wsLinkChannel,recipientName:cust.name||null,bookingRef:wsRef()||null};
+  if(wsLinkChannel==='EMAIL'){
+    if(!cust.email){ if(msg){ msg.textContent='No email address on this booking \u2014 text the link instead.'; msg.style.color='#c2262e'; } return; }
+    body.email=cust.email;
+  } else {
+    var digits=(''+(cust.phone||'')).replace(/\D/g,'');
+    if(digits.length<10){ if(msg){ msg.textContent='No valid phone number on this booking.'; msg.style.color='#c2262e'; } return; }
+    body.phone=cust.phone;
+  }
+  if(msg){ msg.textContent='Sending\u2026'; msg.style.color='var(--mut)'; }
+  apiFetch('/link-center/send',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){
+      var d=j.data||{}, m2=wsById('wsLinkMsg'); if(!m2) return;
+      if(d.status==='SENT'){ m2.textContent='\u2713 Sent by '+(wsLinkChannel==='EMAIL'?'email':'text')+' to '+(d.to||'')+' \u2014 the customer has the link.'; m2.style.color='#0f7a3d'; }
+      else { m2.textContent='Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')); m2.style.color='#c2262e'; }
+    })
+    .catch(function(e){ var m3=wsById('wsLinkMsg'); if(m3){ m3.textContent='Send failed: '+e.message; m3.style.color='#c2262e'; } });
+}
+
+/* ---- Money: the existing per-booking money panel flow ---- */
+function wsMoneyOpen(){
+  if(!wsCtx) return;
+  var idx=-1;
+  for(var i=0;i<liveQueue.length;i++){ if(liveQueue[i]&&liveQueue[i].bookingId===wsCtx.bookingId){ idx=i; break; } }
+  if(idx>-1){
+    jdClose();
+    var sec=wsById('qmoney-'+idx);
+    if(sec&&sec.hidden) toggleMoney(idx);
+    if(sec){ var card=sec.closest?sec.closest('article'):null; (card||sec).scrollIntoView({behavior:'smooth',block:'center'}); }
+  } else {
+    var mel=wsById('jdMoney');
+    if(mel){ mel.scrollIntoView({behavior:'smooth',block:'nearest'}); toast('The money summary is in this pop-up \u2014 the editable panel lives on the Setter Queue card'); }
+  }
+}
+
+/* ---- Dispatch ---- */
+function wsLoadRoster(cb){
+  if(wsRosterCache){ cb(wsRosterCache); return; }
+  if(jdProvidersCache){ wsRosterCache=jdProvidersCache; cb(wsRosterCache); return; }
+  apiFetch('/bookos/providers').then(function(j){ wsRosterCache=j.data||[]; jdProvidersCache=wsRosterCache; cb(wsRosterCache); }).catch(function(){ cb([]); });
+}
+function wsLoadRosterIntoPicker(){
+  wsLoadRoster(function(rows){
+    var sel=wsById('wsProvPick'); if(!sel||!wsCtx) return;
+    sel.innerHTML='<option value="">Pick a provider\u2026</option>'+rows.map(function(p){ return '<option value="'+escH(p.id)+'">'+escH(p.businessName)+' \u2014 '+(p.system==='COMPANY'?'Company Tech':'Service Network')+'</option>'; }).join('');
+  });
+}
+function wsProvRow(id){ var rows=wsRosterCache||jdProvidersCache||[]; return rows.filter(function(x){ return x.id===id; })[0]||null; }
+function wsRenderCandidatesFromBk(){
+  var bk=wsCtx&&wsCtx.bk, box=wsById('wsCandBox'); if(!box) return;
+  var ids=(bk&&bk.dispatch&&bk.dispatch.candidateProviderIds)||[];
+  if(!ids.length){ box.innerHTML=''; return; }
+  wsLoadRoster(function(){
+    if(!wsCtx) return; var b2=wsById('wsCandBox'); if(!b2) return;
+    b2.innerHTML='<div style="font-size:13px;font-weight:700;margin:4px 0">Auto-match candidates \u2014 tap to dispatch:</div>'+ids.map(function(id){
+      var p=wsProvRow(id);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+escH(p?p.businessName:'Provider')+'</b>'+(p?' \u00b7 '+(p.system==='COMPANY'?'Company Tech':'Service Network'):'')+'</span><button class="btn primary" type="button" onclick="wsApprove(\''+id+'\')">'+WS_CHECK_SVG+' Assign</button></div>';
+    }).join('');
+  });
+}
+function wsRenderCandidates(list){
+  var box=wsById('wsCandBox'); if(!box) return;
+  if(!list||!list.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Auto-match proposed no providers for this job.</div>'; return; }
+  box.innerHTML='<div style="font-size:13px;font-weight:700;margin:4px 0">Auto-match candidates \u2014 tap to dispatch:</div>'+list.map(function(c){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+escH(c.businessName||'Provider')+'</b>'+(c.matchScore!=null?' \u00b7 '+c.matchScore+'% match':'')+'</span><button class="btn primary" type="button" onclick="wsApprove(\''+c.providerId+'\')">'+WS_CHECK_SVG+' Assign</button></div>';
+  }).join('');
+}
+function wsDispatchMsg(text){ var m=wsById('wsDispatchMsg'); if(m){ m.textContent=text; m.style.color='#c2262e'; } }
+function wsApprove(providerId){
+  if(!wsCtx) return;
+  apiFetch('/dispatch/approve',{method:'POST',body:JSON.stringify({bookingId:wsCtx.bookingId,providerId:providerId,approvedBy:wsActor()})})
+    .then(function(){ toast('\u2713 Dispatched \u2014 provider approved and notified'); loadLive(); wsReloadPopup(); })
+    .catch(function(e){ wsDispatchMsg('Dispatch failed: '+e.message); });
+}
+function wsApproveChain(providerId){
+  if(!wsCtx) return;
+  if(wsStatus()==='MATCH_PENDING_APPROVAL'){ wsApprove(providerId); return; }
+  apiFetch('/dispatch/match',{method:'POST',body:JSON.stringify({bookingId:wsCtx.bookingId})})
+    .then(function(j){
+      var cands=(j.data&&j.data.candidates)||[];
+      var hit=cands.filter(function(c){ return c.providerId===providerId; })[0];
+      if(!hit){ wsDispatchMsg('Auto-match did not propose that provider for this job \u2014 pick from the proposed candidates below.'); wsRenderCandidates(cands); if(wsCtx) wsCtx.bk=Object.assign({},wsCtx.bk||{},{status:'MATCH_PENDING_APPROVAL'}); return; }
+      wsApprove(providerId);
+    })
+    .catch(function(e){ wsDispatchMsg('Match failed: '+e.message); });
+}
+function wsDispatchPick(){
+  var sel=wsById('wsProvPick');
+  if(!sel||!sel.value){ wsDispatchMsg('Pick a provider first.'); return; }
+  wsApproveChain(sel.value);
+}
+function wsAutoMatch(){
+  if(!wsCtx) return;
+  apiFetch('/dispatch/match',{method:'POST',body:JSON.stringify({bookingId:wsCtx.bookingId})})
+    .then(function(j){
+      var cands=(j.data&&j.data.candidates)||[];
+      if(!cands.length){ toast('No provider scored high enough for this job yet \u2014 check the network roster'); }
+      else { toast('Auto-match proposed '+cands.length+' candidate(s) \u2014 setter approval required'); }
+      loadLive(); wsReloadPopup();
+    })
+    .catch(function(e){ toast('Match failed: '+e.message); });
+}
+function wsSuggestLoad(){
+  var box=wsById('wsSuggestBox'); if(!box||!wsCtx) return;
+  box.innerHTML='<div style="font-size:13px;color:var(--mut)">Speedy is scoring the network for this job\u2026</div>';
+  apiFetch('/crm/bookings/'+encodeURIComponent(wsCtx.bookingId)+'/speedy-match').then(function(j){
+    if(!wsCtx) return; var b2=wsById('wsSuggestBox'); if(!b2) return;
+    var s=(j.data&&j.data.suggestions)||[];
+    if(!s.length){ b2.innerHTML='<div style="font-size:13px">No provider clears the match threshold for this booking yet.</div>'; return; }
+    b2.innerHTML=s.map(function(x){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+escH(x.businessName)+'</b> \u00b7 score '+x.matchScore+'<br><span style="color:var(--mut)">'+escH((x.reasons||[]).join('; '))+'</span></span><button class="btn primary" type="button" onclick="wsApproveChain(\''+x.providerId+'\')">'+WS_CHECK_SVG+' Assign</button></div>';
+    }).join('')+'<div style="font-size:12.5px;color:var(--mut);margin-top:6px">Suggestions only \u2014 Assign runs the real match + setter approval.</div>';
+  }).catch(function(e){ var b3=wsById('wsSuggestBox'); if(b3) b3.innerHTML='<div style="font-size:13px;color:#c2262e">Speedy Suggest failed: '+escH(e.message)+'</div>'; });
+}
+
+/* ---- Init: restore persisted board filters before the first
+   loadLive(), persist them on change, start auto-refresh if on. ---- */
+(function wsInit(){
+  wsApplyBoardPrefs();
+  var a=wsById('sbpArea'), w=wsById('sbpWindow');
+  if(a) a.addEventListener('change',wsPersistBoardFilters);
+  if(w) w.addEventListener('change',wsPersistBoardFilters);
+  wsApplyAutoRefresh();
+})();
 </script>
 
 </body>
