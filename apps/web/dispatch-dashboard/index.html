@@ -344,6 +344,8 @@
           </div>
           <div id="detailOut"><p class="empty">No booking loaded yet.</p></div>
           <div id="detailActions"></div>
+          <!-- WORKSTATION STANDARD (Dispatch station): the CTA action bar renders here. -->
+          <div id="ddWsBar"></div>
         </div>
       </section>
 
@@ -982,7 +984,7 @@ function boot(){
     var roles = (me.user.roles && me.user.roles.length) ? me.user.roles : (me.user.role ? [me.user.role] : []);
     var isStaff = roles.some(function(r){ return STAFF.indexOf(r) !== -1; });
     if (!isStaff){
-      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Dispatch Dashboard is restricted to Top Speed staff and the owner.</p></div>');
+      if (window.TSOSAccess) { window.TSOSAccess.showRestricted('STAFF ONLY'); } else { showGate('<div class="gate"><h2>Staff only</h2><p>This account (' + esc(me.user.email || '') + ') is a customer account. The Dispatch Dashboard is restricted to Top Speed staff and the owner.</p></div>'); }
       return;
     }
     DD.user = me.user;
@@ -1129,6 +1131,548 @@ function ddWoSubmit(){
     if(window.loadAll) loadAll();
   });
 }
+</script>
+
+<style>
+  /* WORKSTATION STANDARD (Dispatch station): queue, exception and
+     recovery rows and board chips open the job detail on click —
+     the pointer is the affordance; the buttons inside them keep
+     their own actions. */
+  .qrow,.xrow,.chip2{cursor:pointer}
+  .ddws-ic{width:15px;height:15px;vertical-align:-2px}
+</style>
+
+<!-- WORKSTATION STANDARD — OPTIONS PANEL (Dispatch station, 2026-11-19):
+     every control here changes real behavior (intake queue sort,
+     persisted search filters, auto-refresh). Preferences save on
+     this device only. Same backdrop pattern as the console's other
+     modals; sits below the Ask Pepper launcher (9995). -->
+<div id="ddWsOptBack" style="display:none;position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:9992;overflow-y:auto" onclick="ddWsOptBackdrop(event)">
+  <div style="background:#fff;color:#182742;max-width:520px;margin:18px auto;border-radius:16px;padding:18px;box-shadow:0 12px 40px rgba(10,18,32,.3)" role="dialog" aria-modal="true" aria-label="Dispatch Dashboard options">
+    <div style="display:flex;align-items:flex-start;gap:10px"><div style="flex:1;min-width:0"><h3 style="font-size:16px;margin:0;color:#182742">Options</h3><div style="font-size:12.5px;color:#8591a4;margin-top:2px">Dispatch Dashboard preferences — saved on this device only.</div></div><button class="btn2 ghost" type="button" onclick="ddWsOptClose()">Close</button></div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Intake queue</div>
+    <div style="font-size:13.5px;margin-bottom:6px">Sort the queue:</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn2" id="ddWsSortServer" type="button" onclick="ddWsSetQueueSort('server')">Server order</button>
+      <button class="btn2 ghost" id="ddWsSortOldest" type="button" onclick="ddWsSetQueueSort('oldest')">Oldest waiting</button>
+      <button class="btn2 ghost" id="ddWsSortNewest" type="button" onclick="ddWsSetQueueSort('newest')">Newest first</button>
+    </div>
+    <div style="font-size:12.5px;color:#8591a4;margin-top:6px">Server order is how the Service OS sends the queue — the console's original behavior.</div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Live data</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Auto-refresh every minute<br><span style="color:#8591a4;font-size:12.5px">Re-runs the live load on its own. Pauses while a window (new work order, options, photo viewer) is open or the tab is hidden.</span></div>
+      <button class="btn2 ghost" id="ddWsAutoBtn" type="button" onclick="ddWsToggleAuto()">&#9675; OFF</button>
+    </div>
+    <div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Search &amp; filters</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <div style="font-size:13.5px">Remember my filters<br><span style="color:#8591a4;font-size:12.5px">The Search &amp; filters choices stay saved on this device and come back on your next visit. Turning this off forgets them.</span></div>
+      <button class="btn2 ghost" id="ddWsRememberBtn" type="button" onclick="ddWsToggleRemember()">&#9675; OFF</button>
+    </div>
+    <div id="ddWsFilterEcho" style="font-size:13px;color:#8591a4;margin:8px 0"></div>
+    <button class="btn2 ghost" type="button" onclick="ddWsClearSavedFilters()">Clear saved filters</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px"><button class="btn2" type="button" onclick="ddWsOptClose()">Done</button></div>
+  </div>
+</div>
+
+<script>
+/* ================= WORKSTATION STANDARD — DISPATCH STATION (2026-11-19) =================
+   Station 4 of the platform-wide workstation standard (Book OS
+   1f4e5f1 set the pattern; CRM e7aea1b is station 2; the Tech App
+   web side is station 3). Ramone's standing rule for the rollout:
+   "Don't change — just integrate." Everything in this section is
+   ADDITIVE: no existing dispatch function, flow, layout or API
+   contract is modified. The section only (a) wraps three page
+   functions (renderQueue / loadDetail / renderDetailActions)
+   without altering their behavior, (b) injects one Options button
+   into the topbar and one action bar into the Job Detail section
+   the page already renders, and (c) drives the SAME endpoints the
+   platform already exposes. Out of the box (default preferences)
+   the console behaves exactly as before.
+   (1) PREFERENCES — a this-device store (localStorage,
+       tsos_dispatch_prefs) behind the Options panel: intake queue
+       sort, persisted Search & filters, and an auto-refresh cycle
+       that pauses while any modal is open or the tab is hidden.
+       No decorative toggles.
+   (2) RECORDS OPEN ON CLICK — queue, exception and recovery rows
+       and board chips open the existing Job Detail view when the
+       row itself (not its buttons) is clicked, through the page's
+       own ddDetail().
+   (3) CTA ACTION BAR — inside the Job Detail view (#ddWsBar):
+       Call customer, the appointment setter (a real date + the
+       five real windows on POST /bookos/appointments and its
+       reschedule sibling — the same contract Book OS and CRM
+       drive), Send links (real Link Center sends; REVIEW only
+       when the booking is COMPLETED, PAYMENT disabled once the
+       $99 diagnostic shows paid), Dispatch (Speedy Suggest +
+       Auto-Match + roster picker on the existing /dispatch/match
+       + /dispatch/approve endpoints — the console's own
+       Assignment panel above keeps its tracking-console flow,
+       untouched), and a read-only money summary from
+       GET /bookos/bookings/:id/money (editing stays in Book OS /
+       Service Book Pro; the summary says so). After a mutation
+       the detail reloads through the console's own loadDetail()
+       and the board through loadAll(). */
+var DD_WS_PREFS_KEY='tsos_dispatch_prefs';
+var ddWsPrefs={queueSort:'server',rememberFilters:false,autoRefresh:false,filters:null};
+(function(){ try{ var p=JSON.parse(localStorage.getItem(DD_WS_PREFS_KEY)||'{}'); if(p&&typeof p==='object'){ if(p.queueSort==='oldest'||p.queueSort==='newest') ddWsPrefs.queueSort=p.queueSort; ddWsPrefs.rememberFilters=!!p.rememberFilters; ddWsPrefs.autoRefresh=!!p.autoRefresh; if(p.filters&&typeof p.filters==='object') ddWsPrefs.filters=p.filters; } }catch(e){} })();
+function ddWsSavePrefs(){ try{ localStorage.setItem(DD_WS_PREFS_KEY,JSON.stringify(ddWsPrefs)); }catch(e){} }
+function ddWsById(id){ return document.getElementById(id); }
+var DD_WS_WIN_IDS=['08-10','10-12','12-14','14-16','16-18'];
+var DD_WS_WIN_LABEL={'08-10':'8\u201310 AM','10-12':'10 AM\u201312 PM','12-14':'12\u20132 PM','14-16':'2\u20134 PM','16-18':'4\u20136 PM'};
+var DD_WS_PHONE_SVG='<svg class="ddws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M4 21.2h16" stroke="#E8322E"/></svg>';
+var DD_WS_CHECK_SVG='<svg class="ddws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>';
+var DD_WS_SLIDERS_SVG='<svg class="ddws-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h9M19 8h1M4 16h3M13 16h7"/><circle cx="16" cy="8" r="2.2" stroke="#E8322E"/><circle cx="10" cy="16" r="2.2" stroke="#E8322E"/></svg>';
+function ddWsToday(){ return new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()); }
+function ddWsPlusDays(ds,n){ var d=new Date(ds+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+function ddWsDateLabel(ds){ try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+function ddWsWindowFromText(t){ if(!t) return '10-12'; t=(''+t).toLowerCase();
+  if(t.indexOf('morning')>-1||t.indexOf('8')===0) return '08-10';
+  if(t.indexOf('10')===0) return '10-12';
+  if(t.indexOf('12')===0||t.indexOf('noon')>-1||t.indexOf('midday')>-1) return '12-14';
+  if(t.indexOf('2')===0||t.indexOf('afternoon')>-1) return '14-16';
+  if(t.indexOf('4')===0||t.indexOf('evening')>-1) return '16-18';
+  return '10-12'; }
+function ddWsActor(){ return (DD.user&&DD.user.email)?DD.user.email:'Service Setters'; }
+function ddWsMoneyFmt(cents){ return cents==null?'\u2014':fmtMoney(cents); }
+
+/* ---- (1a) Intake queue sort: the Service OS sends the queue in
+   its own order ('server' — the default — renders it untouched).
+   A sort renders a sorted COPY and restores the original array
+   afterwards, so every other reader of DD.queue (the Assign
+   picker, the filter builder, the stats) keeps the server order
+   and its booking-id lookups. ---- */
+var ddWsOrigRenderQueue=renderQueue;
+renderQueue=function(){
+  if(ddWsPrefs.queueSort==='server'){ ddWsOrigRenderQueue(); return; }
+  var keep=DD.queue;
+  var sorted=keep.slice().sort(function(a,b){
+    var av=(typeof a.ageMinutes==='number')?a.ageMinutes:0;
+    var bv=(typeof b.ageMinutes==='number')?b.ageMinutes:0;
+    return ddWsPrefs.queueSort==='oldest' ? (bv-av) : (av-bv);
+  });
+  DD.queue=sorted;
+  try{ ddWsOrigRenderQueue(); } finally { DD.queue=keep; }
+};
+
+/* ---- (1b) Search & filters persist on this device (opt-in):
+   values save on every change while the preference is on, and are
+   restored before the first loadAll() renders. City and Door are
+   data-built selects, so a saved value gets a placeholder option
+   at restore time; populateFilters() then rebuilds the real
+   options and keeps the value when the city/door still exists. ---- */
+var DD_WS_FILTER_IDS=['fSearch','fCity','fSegment','fStatus','fDoor'];
+function ddWsReadFilters(){
+  var g=function(id){ var el=ddWsById(id); return el?el.value:''; };
+  return { q:g('fSearch'), city:g('fCity'), seg:g('fSegment'), status:g('fStatus'), door:g('fDoor') };
+}
+function ddWsSaveFiltersFromUi(){ if(!ddWsPrefs.rememberFilters) return; ddWsPrefs.filters=ddWsReadFilters(); ddWsSavePrefs(); }
+function ddWsApplyFilters(){
+  if(!ddWsPrefs.rememberFilters||!ddWsPrefs.filters) return;
+  var f=ddWsPrefs.filters;
+  var map={ fSearch:f.q, fCity:f.city, fSegment:f.seg, fStatus:f.status, fDoor:f.door };
+  Object.keys(map).forEach(function(id){
+    var el=ddWsById(id); if(!el||map[id]==null||map[id]==='') return;
+    if(el.tagName==='SELECT'){
+      var found=false;
+      for(var i=0;i<el.options.length;i++){ if(el.options[i].value===map[id]){ found=true; break; } }
+      if(!found){ var o=document.createElement('option'); o.value=map[id]; o.textContent=map[id]; el.appendChild(o); }
+    }
+    el.value=map[id];
+  });
+}
+function ddWsRenderFilterEcho(){
+  var el=ddWsById('ddWsFilterEcho'); if(!el) return;
+  var f=ddWsPrefs.filters;
+  if(!ddWsPrefs.rememberFilters||!f){ el.textContent='Nothing is being remembered right now.'; return; }
+  var bits=[];
+  if(f.q) bits.push('Search \u201c'+f.q+'\u201d');
+  if(f.city) bits.push('City: '+f.city);
+  if(f.seg) bits.push('Segment: '+f.seg);
+  if(f.status) bits.push('Status: '+f.status);
+  if(f.door) bits.push('Door: '+doorLabel(f.door));
+  el.textContent=bits.length?('Remembered now: '+bits.join(' \u00b7 ')):'Remembering is on \u2014 no filters set yet.';
+}
+function ddWsClearSavedFilters(){
+  ddWsPrefs.filters=null; ddWsSavePrefs();
+  DD_WS_FILTER_IDS.forEach(function(id){ var el=ddWsById(id); if(el) el.value=''; });
+  renderQueue(); renderBoard(); ddWsRenderFilterEcho();
+}
+
+/* ---- (1c) Auto-refresh: OFF by default. When ON it re-runs the
+   existing loadAll() every minute, and never while a modal (new
+   work order, options) or the media lightbox is open, never while
+   the tab is hidden, and never signed out. The Job Detail section
+   is not touched by loadAll(), so an open record — and this
+   section's forms — are never disturbed by a refresh. ---- */
+var ddWsRefreshTimer=null;
+function ddWsAnyModalOpen(){
+  var ids=['ddWoBack','ddWsOptBack'];
+  for(var i=0;i<ids.length;i++){ var el=ddWsById(ids[i]); if(el&&el.style.display==='block') return true; }
+  if(document.querySelector('.ddmlb.on')) return true;
+  return false;
+}
+function ddWsApplyAutoRefresh(){
+  if(ddWsRefreshTimer){ clearInterval(ddWsRefreshTimer); ddWsRefreshTimer=null; }
+  if(!ddWsPrefs.autoRefresh) return;
+  ddWsRefreshTimer=setInterval(function(){
+    if(document.hidden||ddWsAnyModalOpen()) return;
+    var portal=ddWsById('portal'); if(!portal||portal.style.display==='none') return;
+    if(!token()) return;
+    loadAll();
+  },60000);
+}
+
+/* ---- (1d) Options panel ---- */
+function ddWsOptOpen(){ ddWsSyncOptionsUi(); ddWsById('ddWsOptBack').style.display='block'; }
+function ddWsOptClose(){ var b=ddWsById('ddWsOptBack'); if(b) b.style.display='none'; }
+function ddWsOptBackdrop(ev){ if(ev&&ev.target===ddWsById('ddWsOptBack')) ddWsOptClose(); }
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') ddWsOptClose(); });
+function ddWsSyncOptionsUi(){
+  var map={server:'ddWsSortServer',oldest:'ddWsSortOldest',newest:'ddWsSortNewest'};
+  Object.keys(map).forEach(function(k){ var el=ddWsById(map[k]); if(el) el.className='btn2'+(ddWsPrefs.queueSort===k?'':' ghost'); });
+  var a=ddWsById('ddWsAutoBtn'); if(a){ a.className='btn2'+(ddWsPrefs.autoRefresh?'':' ghost'); a.textContent=ddWsPrefs.autoRefresh?'\u25cf ON':'\u25cb OFF'; }
+  var r=ddWsById('ddWsRememberBtn'); if(r){ r.className='btn2'+(ddWsPrefs.rememberFilters?'':' ghost'); r.textContent=ddWsPrefs.rememberFilters?'\u25cf ON':'\u25cb OFF'; }
+  ddWsRenderFilterEcho();
+}
+function ddWsSetQueueSort(v){ ddWsPrefs.queueSort=(v==='oldest'||v==='newest')?v:'server'; ddWsSavePrefs(); ddWsSyncOptionsUi(); renderQueue(); }
+function ddWsToggleAuto(){ ddWsPrefs.autoRefresh=!ddWsPrefs.autoRefresh; ddWsSavePrefs(); ddWsApplyAutoRefresh(); ddWsSyncOptionsUi(); }
+function ddWsToggleRemember(){
+  ddWsPrefs.rememberFilters=!ddWsPrefs.rememberFilters;
+  if(ddWsPrefs.rememberFilters){ ddWsPrefs.filters=ddWsReadFilters(); } else { ddWsPrefs.filters=null; }
+  ddWsSavePrefs(); ddWsSyncOptionsUi();
+}
+
+/* ---- (2) Records open on click: one delegated listener. Clicks
+   on buttons, links and form controls keep their own actions;
+   a click anywhere else on a queue / exception / recovery row
+   opens that row's booking through the page's own ddDetail()
+   (the booking id comes from the row's own Detail button), and
+   a board chip resolves through the tracking jobs already in
+   memory (each carries its booking id). ---- */
+document.addEventListener('click',function(ev){
+  var t=ev.target; if(!t||!t.closest) return;
+  if(t.closest('button, a, input, select, textarea, label, video')) return;
+  var row=t.closest('.qrow, .xrow');
+  if(row){
+    var btn=row.querySelector('button[onclick*="ddDetail"]');
+    if(btn){ var m=/ddDetail\('([^']+)'\)/.exec(btn.getAttribute('onclick')||''); if(m) ddDetail(m[1]); }
+    return;
+  }
+  var chip=t.closest('.chip2');
+  if(chip){
+    var b=chip.querySelector('b'); if(!b) return;
+    var ref=b.textContent.trim(), job=null;
+    for(var i=0;i<DD.jobs.length;i++){ if(DD.jobs[i].reference===ref){ job=DD.jobs[i]; break; } }
+    if(job&&job.id) ddDetail(job.id);
+  }
+});
+
+/* ================= (3) CTA ACTION BAR ================= */
+var ddWs={bk:null,linkChannel:'SMS',roster:null,form:null,moneyOpen:false,moneyHtml:'',moneyFor:null,flash:''};
+
+/* Hooks: loadDetail clears the bar for the incoming record;
+   renderDetailActions — which the page calls with the freshly
+   loaded booking — attaches the bar to it. Neither original
+   function's behavior changes. */
+var ddWsOrigLoadDetail=loadDetail;
+loadDetail=function(){
+  ddWs.bk=null; ddWs.form=null; ddWs.moneyOpen=false; ddWs.moneyHtml=''; ddWs.moneyFor=null;
+  var bar=ddWsById('ddWsBar'); if(bar) bar.innerHTML='';
+  ddWsOrigLoadDetail();
+};
+var ddWsOrigRenderDetailActions=renderDetailActions;
+renderDetailActions=function(b){
+  ddWsOrigRenderDetailActions(b);
+  ddWs.bk=b||null;
+  ddWsRender();
+};
+
+function ddWsCaptureForm(){
+  var d=ddWsById('ddWsApptDate'), w=ddWsById('ddWsApptWindow');
+  if(d&&w) ddWs.form={date:d.value,win:w.value};
+}
+function ddWsMsg(id,text,kind){
+  var m=ddWsById(id); if(!m) return;
+  if(kind==='ok') m.innerHTML='<div class="note-ok" style="margin-top:8px">'+esc(text)+'</div>';
+  else if(kind==='err') m.innerHTML='<div class="note-err" style="margin-top:8px">'+esc(text)+'</div>';
+  else m.innerHTML='<p class="empty" style="margin-top:8px">'+esc(text)+'</p>';
+}
+
+function ddWsRender(){
+  var host=ddWsById('ddWsBar'); if(!host) return;
+  var bk=ddWs.bk;
+  if(!bk||!bk.id){ host.innerHTML=''; return; }
+  ddWsCaptureForm();
+  var c=bk.customer||{};
+  var digits=(''+(c.phone||'')).replace(/\D/g,'');
+  var h='<div style="border-top:1px solid var(--cc-line);margin-top:14px;padding-top:12px">';
+  h+='<h4 style="margin:0 0 8px;color:#182742;font-size:13px">Actions \u2014 workstation standard</h4>';
+  if(ddWs.flash){ h+='<div class="note-ok" style="margin:0 0 10px">'+esc(ddWs.flash)+'</div>'; ddWs.flash=''; }
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">';
+  if(digits){ h+='<a class="btn2 red" href="tel:+1'+digits+'" style="text-decoration:none">'+DD_WS_PHONE_SVG+' Call customer</a>'; }
+  else { h+='<button class="btn2 red" type="button" onclick="ddWsMsg(\'ddWsBarMsg\',\'No phone number on this booking.\',\'err\')">'+DD_WS_PHONE_SVG+' Call customer</button>'; }
+  h+='<button class="btn2 ghost" type="button" onclick="ddWsMoneyToggle()">Money summary</button>';
+  h+='</div><div id="ddWsBarMsg"></div>';
+  var job=null, ji;
+  for(ji=0;ji<DD.jobs.length;ji++){ if(DD.jobs[ji].id===bk.id){ job=DD.jobs[ji]; break; } }
+  if(job&&job.providerId){
+    h+='<div style="font-size:13px;color:#34445c;margin-top:8px">Provider: <b style="color:#182742">'+esc(job.technician||'Assigned')+'</b>'
+      +(typeof job.stageIndex==='number'?' \u00b7 Stage '+(job.stageIndex+1)+' of 8 \u2014 '+esc(STAGES[job.stageIndex]||''):'')+'</div>';
+  }
+  /* Appointment — the real setter on the existing endpoints. */
+  h+='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Appointment</div>';
+  if(bk.status==='COMPLETED'){
+    h+='<p class="empty">This job is complete \u2014 its appointment is final.</p>';
+  } else if(bk.status==='CANCELLED'){
+    h+='<p class="empty">This booking is cancelled.</p>';
+  } else if(bk.areaStatus==='OUT_OF_AREA'){
+    h+='<p class="empty">Outside the service area \u2014 on the expansion waitlist, so no appointment can be set.</p>';
+  } else if(bk.areaStatus==='AREA_REVIEW'){
+    h+='<p class="empty">The service area needs a setter decision first \u2014 confirm coverage with the customer before setting an appointment.</p>';
+  } else {
+    var appt=bk.appointment, isSet=!!(appt&&appt.status==='SET');
+    if(isSet){ h+='<div style="font-size:13.5px;margin-bottom:8px">Currently: <b>'+esc(ddWsDateLabel(appt.date)+' \u00b7 '+(appt.windowLabel||DD_WS_WIN_LABEL[appt.window]||appt.window||''))+'</b></div>'; }
+    var f=ddWs.form||{};
+    var defDate=f.date||(isSet?appt.date:ddWsToday());
+    var defWin=f.win||(isSet?(appt.window||'10-12'):ddWsWindowFromText(bk.preferredWindow));
+    h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end">'
+      +'<label style="font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#65758e;display:flex;flex-direction:column;gap:5px">Date<input id="ddWsApptDate" type="date" min="'+ddWsToday()+'" value="'+esc(defDate)+'" style="padding:8px 10px;border:1px solid var(--cc-line);border-radius:9px;font:inherit;font-size:13.5px;text-transform:none;letter-spacing:0"></label>'
+      +'<label style="font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#65758e;display:flex;flex-direction:column;gap:5px">Window<select id="ddWsApptWindow" style="padding:8px 10px;border:1px solid var(--cc-line);border-radius:9px;font:inherit;font-size:13.5px;text-transform:none;letter-spacing:0">'
+      +DD_WS_WIN_IDS.map(function(w){ return '<option value="'+w+'"'+(w===defWin?' selected':'')+'>'+DD_WS_WIN_LABEL[w]+'</option>'; }).join('')
+      +'</select></label>'
+      +'<button class="btn2" type="button" onclick="ddWsApptSave()">'+(isSet?'Reschedule appointment':'Set appointment')+'</button>'
+      +(isSet?'<button class="btn2 ghost" type="button" onclick="ddWsApptTomorrow()">\u21bb Move to Tomorrow</button>':'')
+      +'</div><div id="ddWsApptMsg"></div>';
+  }
+  /* Send links — real Link Center sends against this booking. */
+  h+='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Send links</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px"><span style="font-size:13px;font-weight:700;color:#182742">Send by:</span>'
+    +'<button class="btn2'+(ddWs.linkChannel==='SMS'?'':' ghost')+'" type="button" onclick="ddWsSetLinkChannel(\'SMS\')">Text</button>'
+    +'<button class="btn2'+(ddWs.linkChannel==='EMAIL'?'':' ghost')+'" type="button" onclick="ddWsSetLinkChannel(\'EMAIL\')">Email</button>'
+    +(ddWs.linkChannel==='EMAIL'&&!c.email?'<span style="font-size:12.5px;color:#c2262e">No email on this booking \u2014 text it instead.</span>':'')
+    +'</div>';
+  var paidDiag=!!(bk.payment&&bk.payment.diagnosticPaid);
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<button class="btn2 ghost" type="button" onclick="ddWsSendLink(\'BOOKING\')">Booking link</button>'
+    +(paidDiag?'<button class="btn2 ghost" type="button" disabled>Payment link \u2014 $99 paid</button>':'<button class="btn2 ghost" type="button" onclick="ddWsSendLink(\'PAYMENT\')">Payment link ($99)</button>')
+    +(bk.status==='COMPLETED'?'<button class="btn2 ghost" type="button" onclick="ddWsSendLink(\'REVIEW\')">Review link</button>':'<button class="btn2 ghost" type="button" disabled>Review link \u2014 after completion</button>')
+    +'</div><div id="ddWsLinkMsg"></div>';
+  /* Dispatch — only while the job is undispatched. */
+  if(bk.status==='PENDING_DISPATCH'||bk.status==='MATCH_PENDING_APPROVAL'){
+    h+='<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin:16px 0 8px">Dispatch \u2014 match &amp; approve</div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn2" type="button" onclick="ddWsSuggestLoad()">Speedy Suggest</button>'
+      +'<button class="btn2 ghost" type="button" onclick="ddWsAutoMatch()">Auto-Match</button>'
+      +'</div>';
+    h+='<div id="ddWsSuggestBox" style="margin-top:8px"></div>';
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-top:10px"><label style="flex:1;min-width:190px;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#65758e;display:flex;flex-direction:column;gap:5px">Assign to a provider<select id="ddWsProvPick" style="padding:8px 10px;border:1px solid var(--cc-line);border-radius:9px;font:inherit;font-size:13.5px;text-transform:none;letter-spacing:0"><option value="">Loading the roster\u2026</option></select></label>'
+      +'<button class="btn2 red" type="button" onclick="ddWsDispatchPick()">Dispatch</button></div>';
+    h+='<div id="ddWsDispatchMsg"></div>';
+    h+='<div id="ddWsCandBox" style="margin-top:6px"></div>';
+  }
+  h+='<div id="ddWsMoneyBox">'+((ddWs.moneyOpen&&ddWs.moneyFor===bk.id)?ddWs.moneyHtml:'')+'</div>';
+  h+='</div>';
+  host.innerHTML=h;
+  if(bk.status==='PENDING_DISPATCH'||bk.status==='MATCH_PENDING_APPROVAL'){ ddWsLoadRosterIntoPicker(); if(bk.status==='MATCH_PENDING_APPROVAL') ddWsRenderCandidatesFromBk(); }
+}
+
+/* ---- Appointment setter ---- */
+function ddWsApptSave(){
+  var bk=ddWs.bk; if(!bk) return;
+  var dEl=ddWsById('ddWsApptDate'), wEl=ddWsById('ddWsApptWindow');
+  var date=dEl?dEl.value:'', win=wEl?wEl.value:'';
+  if(!date){ ddWsMsg('ddWsApptMsg','Pick a date first.','err'); return; }
+  if(date<ddWsToday()){ ddWsMsg('ddWsApptMsg','That date is in the past \u2014 pick today or later.','err'); return; }
+  if(!win){ ddWsMsg('ddWsApptMsg','Pick a window.','err'); return; }
+  var isSet=!!(bk.appointment&&bk.appointment.status==='SET');
+  ddWsMsg('ddWsApptMsg',isSet?'Rescheduling\u2026':'Setting the appointment\u2026','');
+  var req=isSet
+    ? post('/bookos/appointments/'+encodeURIComponent(bk.id)+'/reschedule',{date:date,window:win,rescheduledBy:ddWsActor()})
+    : post('/bookos/appointments',{bookingId:bk.id,date:date,window:win,setBy:ddWsActor()});
+  req.then(function(res){
+    if(!res.ok){ ddWsMsg('ddWsApptMsg','Could not '+(isSet?'reschedule':'set')+' it: '+errText(res,'request failed.'),'err'); return; }
+    var a=(data(res.j)||{}).appointment||{};
+    ddWs.flash='Appointment '+(isSet?'moved':'set')+' \u2014 '+ddWsDateLabel(a.date||date)+' \u00b7 '+(a.windowLabel||DD_WS_WIN_LABEL[win]||win)+' \u00b7 confirmation queued';
+    ddWs.form=null;
+    loadDetail(); loadAll();
+  });
+}
+function ddWsApptTomorrow(){
+  var bk=ddWs.bk; if(!bk||!bk.appointment) return;
+  post('/bookos/appointments/'+encodeURIComponent(bk.id)+'/reschedule',{date:ddWsPlusDays(ddWsToday(),1),window:bk.appointment.window,rescheduledBy:ddWsActor()})
+    .then(function(res){
+      if(!res.ok){ ddWsMsg('ddWsApptMsg','Move failed: '+errText(res,'request failed.'),'err'); return; }
+      var a=(data(res.j)||{}).appointment||{};
+      ddWs.flash='Moved \u2014 '+ddWsDateLabel(a.date||'')+' \u00b7 '+(a.windowLabel||'');
+      ddWs.form=null;
+      loadDetail(); loadAll();
+    });
+}
+
+/* ---- Send links ---- */
+function ddWsSetLinkChannel(ch){ ddWs.linkChannel=(ch==='EMAIL')?'EMAIL':'SMS'; ddWsRender(); }
+function ddWsSendLink(linkType){
+  var bk=ddWs.bk; if(!bk) return;
+  var c=bk.customer||{};
+  var body={linkType:linkType,channel:ddWs.linkChannel,recipientName:c.name||null,bookingRef:bk.referenceCode||null};
+  if(ddWs.linkChannel==='EMAIL'){
+    if(!c.email){ ddWsMsg('ddWsLinkMsg','No email address on this booking \u2014 text the link instead.','err'); return; }
+    body.email=c.email;
+  } else {
+    var digits=(''+(c.phone||'')).replace(/\D/g,'');
+    if(digits.length<10){ ddWsMsg('ddWsLinkMsg','No valid phone number on this booking.','err'); return; }
+    body.phone=c.phone;
+  }
+  ddWsMsg('ddWsLinkMsg','Sending\u2026','');
+  post('/link-center/send', body).then(function(res){
+    var d=(res.j&&res.j.data)||{};
+    if(res.ok&&d.status==='SENT'){ ddWsMsg('ddWsLinkMsg','\u2713 Sent by '+(ddWs.linkChannel==='EMAIL'?'email':'text')+' to '+(d.to||'')+' \u2014 the customer has the link.','ok'); }
+    else if(res.ok){ ddWsMsg('ddWsLinkMsg','Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')),'err'); }
+    else { ddWsMsg('ddWsLinkMsg','Not sent: '+(((res.j||{}).error)||('request failed ('+res.status+')')),'err'); }
+  });
+}
+
+/* ---- Money summary: read-only, from the existing endpoint.
+   Estimates, invoices and receipts are edited in Book OS /
+   Service Book Pro — the summary says so instead of duplicating
+   that panel. ---- */
+function ddWsMoneyHtml(d){
+  var est=d.estimate, dec=d.estimateDecision, inv=d.invoice, pay=d.payments||{};
+  var h='<div style="background:#fbfcfe;border:1px solid var(--cc-line);border-radius:10px;padding:10px 12px;margin-top:10px">';
+  h+='<div style="font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#65758e">Money \u2014 read-only summary</div>';
+  if(est){ h+='<div style="font-size:13.5px;margin-top:6px"><b>Estimate v'+esc(est.version||'')+'</b> \u00b7 '+esc(est.kind||'')+' \u00b7 Total <b>'+ddWsMoneyFmt(est.totalCents)+'</b></div>'; }
+  else { h+='<div style="font-size:13.5px;margin-top:6px;color:#8591a4">No estimate on this job yet.</div>'; }
+  if(dec){ h+='<div style="font-size:13.5px;margin-top:4px">Decision: <b>'+esc(dec.decision||'')+'</b>'+(dec.authorizedByName?' by '+esc(dec.authorizedByName):'')+'</div>'; }
+  if(inv){ h+='<div style="font-size:13.5px;margin-top:4px">Invoice: <b>'+ddWsMoneyFmt(Math.round(Number(inv.total||0)*100))+'</b> \u00b7 '+esc(inv.status||'')+' \u00b7 Balance due <b>'+ddWsMoneyFmt(pay.balanceDueCents)+'</b> \u00b7 Received '+ddWsMoneyFmt(pay.receiptsTotalCents)+'</div>'; }
+  else if(est){ h+='<div style="font-size:13.5px;margin-top:4px;color:#8591a4">No invoice yet. Balance reference: '+ddWsMoneyFmt(pay.balanceDueCents)+'</div>'; }
+  if((d.receipts||[]).length){ h+='<div style="font-size:13px;color:#8591a4;margin-top:4px">'+d.receipts.map(function(r){ return esc(r.method||'')+' '+ddWsMoneyFmt(r.amountCents); }).join(' \u00b7 ')+'</div>'; }
+  h+='<div style="font-size:13px;margin-top:8px">Estimates, invoices and receipts are edited in <a href="/book-os" style="color:#e94e5c;font-weight:700">Book OS / Service Book Pro</a> \u2014 one money record, shared with the Tech App.</div>';
+  return h+'</div>';
+}
+function ddWsMoneyToggle(){
+  var bk=ddWs.bk; if(!bk) return;
+  if(ddWs.moneyOpen&&ddWs.moneyFor===bk.id){ ddWs.moneyOpen=false; var box=ddWsById('ddWsMoneyBox'); if(box) box.innerHTML=''; return; }
+  ddWs.moneyOpen=true; ddWs.moneyFor=bk.id;
+  var box2=ddWsById('ddWsMoneyBox'); if(box2) box2.innerHTML='<p class="empty" style="margin-top:8px">Loading the money record\u2026</p>';
+  get('/bookos/bookings/'+encodeURIComponent(bk.id)+'/money', true).then(function(res){
+    if(!ddWs.moneyOpen||ddWs.moneyFor!==bk.id) return;
+    var html=res.ok?ddWsMoneyHtml(data(res.j)||{}):'<p class="empty" style="margin-top:8px">Could not load the money record ('+esc(errText(res,'request failed.'))+').</p>';
+    ddWs.moneyHtml=html;
+    var b3=ddWsById('ddWsMoneyBox'); if(b3) b3.innerHTML=html;
+  });
+}
+
+/* ---- Dispatch: Speedy Suggest + Auto-Match + roster picker on
+   the existing match/approve endpoints (the same flow the Book OS
+   pop-up drives). The console's own Assignment panel above keeps
+   its tracking-console assign flow — untouched. ---- */
+function ddWsLoadRoster(cb){
+  if(ddWs.roster){ cb(ddWs.roster); return; }
+  get('/bookos/providers', true).then(function(res){ ddWs.roster=data(res.j)||[]; cb(ddWs.roster); });
+}
+function ddWsLoadRosterIntoPicker(){
+  ddWsLoadRoster(function(rows){
+    var sel=ddWsById('ddWsProvPick'); if(!sel||!ddWs.bk) return;
+    sel.innerHTML='<option value="">Pick a provider\u2026</option>'+rows.map(function(p){ return '<option value="'+esc(p.id)+'">'+esc(p.businessName)+' \u2014 '+(p.system==='COMPANY'?'Company Tech':'Service Network')+'</option>'; }).join('');
+  });
+}
+function ddWsProvRow(id){ return (ddWs.roster||[]).filter(function(x){ return x.id===id; })[0]||null; }
+function ddWsRenderCandidatesFromBk(){
+  var bk=ddWs.bk, box=ddWsById('ddWsCandBox'); if(!box||!bk) return;
+  var ids=(bk.dispatch&&bk.dispatch.candidateProviderIds)||[];
+  if(!ids.length){ box.innerHTML=''; return; }
+  ddWsLoadRoster(function(){
+    if(!ddWs.bk) return;
+    var b2=ddWsById('ddWsCandBox'); if(!b2) return;
+    b2.innerHTML='<div style="font-size:13px;font-weight:700;color:#182742;margin:4px 0">Auto-match candidates \u2014 tap to dispatch:</div>'+ids.map(function(id){
+      var p=ddWsProvRow(id);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+esc(p?p.businessName:'Provider')+'</b>'+(p?' \u00b7 '+(p.system==='COMPANY'?'Company Tech':'Service Network'):'')+'</span><button class="btn2" type="button" onclick="ddWsApprove(\''+esc(id)+'\')">'+DD_WS_CHECK_SVG+' Assign</button></div>';
+    }).join('');
+  });
+}
+function ddWsRenderCandidates(list){
+  var box=ddWsById('ddWsCandBox'); if(!box) return;
+  if(!list||!list.length){ box.innerHTML='<p class="empty">Auto-match proposed no providers for this job.</p>'; return; }
+  box.innerHTML='<div style="font-size:13px;font-weight:700;color:#182742;margin:4px 0">Auto-match candidates \u2014 tap to dispatch:</div>'+list.map(function(c){
+    return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+esc(c.businessName||'Provider')+'</b>'+(c.matchScore!=null?' \u00b7 '+c.matchScore+'% match':'')+'</span><button class="btn2" type="button" onclick="ddWsApprove(\''+esc(c.providerId)+'\')">'+DD_WS_CHECK_SVG+' Assign</button></div>';
+  }).join('');
+}
+function ddWsApprove(providerId){
+  var bk=ddWs.bk; if(!bk) return;
+  post('/dispatch/approve',{bookingId:bk.id,providerId:providerId,approvedBy:ddWsActor()})
+    .then(function(res){
+      if(!res.ok){ ddWsMsg('ddWsDispatchMsg','Dispatch failed: '+errText(res,'request failed.'),'err'); return; }
+      ddWs.flash='Dispatched \u2014 provider approved and notified';
+      ddWs.form=null;
+      loadDetail(); loadAll();
+    });
+}
+function ddWsApproveChain(providerId){
+  var bk=ddWs.bk; if(!bk) return;
+  if(bk.status==='MATCH_PENDING_APPROVAL'){ ddWsApprove(providerId); return; }
+  post('/dispatch/match',{bookingId:bk.id}).then(function(res){
+    if(!res.ok){ ddWsMsg('ddWsDispatchMsg','Match failed: '+errText(res,'request failed.'),'err'); return; }
+    var cands=((data(res.j)||{}).candidates)||[];
+    var hit=cands.filter(function(c){ return c.providerId===providerId; })[0];
+    if(!hit){ ddWsMsg('ddWsDispatchMsg','Auto-match did not propose that provider for this job \u2014 pick from the proposed candidates below.','err'); ddWsRenderCandidates(cands); if(ddWs.bk) ddWs.bk.status='MATCH_PENDING_APPROVAL'; return; }
+    ddWsApprove(providerId);
+  });
+}
+function ddWsDispatchPick(){
+  var sel=ddWsById('ddWsProvPick');
+  if(!sel||!sel.value){ ddWsMsg('ddWsDispatchMsg','Pick a provider first.','err'); return; }
+  ddWsApproveChain(sel.value);
+}
+function ddWsAutoMatch(){
+  var bk=ddWs.bk; if(!bk) return;
+  post('/dispatch/match',{bookingId:bk.id}).then(function(res){
+    if(!res.ok){ ddWsMsg('ddWsDispatchMsg','Match failed: '+errText(res,'request failed.'),'err'); return; }
+    var cands=((data(res.j)||{}).candidates)||[];
+    ddWs.flash=cands.length?('Auto-match proposed '+cands.length+' candidate(s) \u2014 setter approval required'):'Auto-match proposed no providers for this job yet \u2014 check the network roster';
+    loadDetail(); loadAll();
+  });
+}
+function ddWsSuggestLoad(){
+  var box=ddWsById('ddWsSuggestBox'); if(!box||!ddWs.bk) return;
+  box.innerHTML='<p class="empty">Speedy is scoring the network for this job\u2026</p>';
+  get('/crm/bookings/'+encodeURIComponent(ddWs.bk.id)+'/speedy-match', true).then(function(res){
+    var b2=ddWsById('ddWsSuggestBox'); if(!b2||!ddWs.bk) return;
+    if(!res.ok){ b2.innerHTML='<div class="note-err">Speedy Suggest failed: '+esc(errText(res,'request failed.'))+'</div>'; return; }
+    var s=((data(res.j)||{}).suggestions)||[];
+    if(!s.length){ b2.innerHTML='<p class="empty">No provider clears the match threshold for this booking yet.</p>'; return; }
+    b2.innerHTML=s.map(function(x){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px"><span style="font-size:13px"><b>'+esc(x.businessName)+'</b> \u00b7 score '+x.matchScore+'<br><span style="color:#8591a4">'+esc((x.reasons||[]).join('; '))+'</span></span><button class="btn2" type="button" onclick="ddWsApproveChain(\''+esc(x.providerId)+'\')">'+DD_WS_CHECK_SVG+' Assign</button></div>';
+    }).join('')+'<p class="empty" style="margin-top:6px">Suggestions only \u2014 Assign runs the real match + setter approval.</p>';
+  });
+}
+
+/* ---- Init: topbar Options button (revealed when the portal
+   shows, watched off #portal's own display state), saved-filter
+   restore before the first data load, filter save listeners,
+   auto-refresh if the preference is on. ---- */
+function ddWsInitHeader(){
+  var right=document.querySelector('.cc-topbar-right'); if(!right||ddWsById('ddWsOptBtn')) return;
+  var btn=document.createElement('button');
+  btn.id='ddWsOptBtn'; btn.type='button'; btn.className='iconbtn'; btn.style.display='none';
+  btn.innerHTML=DD_WS_SLIDERS_SVG+' Options';
+  btn.addEventListener('click',function(){ ddWsOptOpen(); });
+  var rb=ddWsById('refreshBtn');
+  if(rb&&rb.parentNode===right) right.insertBefore(btn,rb); else right.appendChild(btn);
+  var portal=ddWsById('portal');
+  var sync=function(){ btn.style.display=(portal&&portal.style.display!=='none')?'':'none'; };
+  sync();
+  if(window.MutationObserver&&portal){ new MutationObserver(sync).observe(portal,{attributes:true,attributeFilter:['style']}); }
+}
+(function ddWsInit(){
+  ddWsInitHeader();
+  ddWsApplyFilters();
+  DD_WS_FILTER_IDS.forEach(function(id){
+    var el=ddWsById(id); if(!el) return;
+    el.addEventListener('input',ddWsSaveFiltersFromUi);
+    el.addEventListener('change',ddWsSaveFiltersFromUi);
+  });
+  ddWsApplyAutoRefresh();
+})();
 </script>
 
 </body>
