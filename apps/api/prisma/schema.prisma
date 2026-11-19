@@ -1874,3 +1874,100 @@ model PepperReport {
   @@index([createdAt])
   @@index([createdByUserId, createdAt])
 }
+
+// Tech App dispatch package (2026-11-19, Ramone's full-package rebuild
+// shaped by the "Top Speed Service OS Enterprise" blueprint): the two
+// record types the platform did not have. Plain id columns in the
+// CrmNote / InboxMessage style — the working set is the in-memory store
+// with write-through persistence, and a field record must never fail to
+// save because a referenced row lives only in memory.
+//
+// Property: a customer's service location as its own record — the
+// address a job is worked at plus the access notes a technician needs
+// (gate, parking, pets). Bookings keep their own serviceAddress
+// snapshot; a Property row is the durable, editable version of that
+// address, created from the field or the office. (Blueprint: the
+// enterprise package's Property — name/customerId/address/unit/
+// accessNotes; label is its name, city/zip are the live platform's
+// required address fields.)
+model Property {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyId   String   @db.Uuid
+  customerId  String   @db.Uuid
+  label       String?
+  address     String
+  city        String
+  zip         String
+  unit        String?
+  accessNotes String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([customerId])
+}
+
+// Warranty: the coverage record for ONE job's appliance (blueprint:
+// the enterprise package's Warranty, looked up BY APPLIANCE in its
+// /work-orders/:id/full join). The live platform has no standalone
+// appliance table for jobs — a job's appliance identity is the
+// booking's type plus the rating-plate facts the technician records
+// (diagnosis brand/model/serial) — so the row carries that identity
+// snapshot and the lookup matches on it (same customer + serial when
+// a serial is known, else the job itself). Coverage RECORDED here is
+// a fact a human entered; the platform's standard repair warranty
+// terms live in Speedy's knowledge base and are never restated by
+// this record.
+model Warranty {
+  id               String    @id @default(uuid()) @db.Uuid
+  companyId        String    @db.Uuid
+  serviceRequestId String    @db.Uuid
+  customerId       String?   @db.Uuid
+  applianceType    String?
+  brand            String?
+  model            String?
+  serial           String?
+  provider         String
+  coverage         String?
+  policyNumber     String?
+  expiresAt        DateTime?
+  claimStatus      String    @default("Not Filed")
+  createdBy        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([companyId])
+  @@index([serviceRequestId])
+  @@index([serial])
+}
+
+// WarrantyClaim: a first-class warranty claim filed against a job
+// (blueprint: the package's WarrantyClaim — warrantyId + jobId,
+// authorization, status, notes). A claim is the durable, searchable
+// record the warranty lookup reads — status moves OPEN → FILED →
+// APPROVED / DENIED → CLOSED, one recorded step at a time, never on
+// its own. Amounts are claim amounts recorded by a human — filing a
+// claim never approves, pays, or certifies anything (2026-11-10
+// authority limits: refunds and compliance stay human decisions).
+model WarrantyClaim {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  serviceRequestId String   @db.Uuid
+  assignmentId     String?  @db.Uuid
+  customerId       String?  @db.Uuid
+  warrantyId       String?  @db.Uuid
+  claimNumber      String?
+  warrantyProvider String?
+  authorization    String?
+  status           String   @default("OPEN")
+  description      String
+  notes            String?
+  amountCents      Int?
+  createdBy        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([companyId, status])
+  @@index([serviceRequestId])
+  @@index([warrantyId])
+}

@@ -796,6 +796,47 @@ export async function speedyStructureNote(text) {
   return JSON.parse(extractText(body));
 }
 
+const DIAGNOSIS_DRAFT_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_diagnosis_draft',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      brand: { type: ['string', 'null'], description: 'Appliance brand the technician named, or null if not stated.' },
+      model: { type: ['string', 'null'], description: 'Model exactly as the technician stated it, or null.' },
+      serial: { type: ['string', 'null'], description: 'Serial exactly as the technician stated it, or null.' },
+      symptoms: { type: 'string', description: 'What the customer reported and the tech observed, rewritten cleanly — facts only, nothing added.' },
+      confirmed_fault: { type: ['string', 'null'], description: 'The fault the technician says they confirmed by testing, or null if they did not state one. Never invent a confirmed fault.' },
+      recommended_repair: { type: ['string', 'null'], description: 'The repair the technician recommends in their words, or null if not stated.' },
+      parts_suggested: { type: 'array', items: { type: 'string' }, description: 'Part CATEGORIES the technician named or the fault plainly calls for (e.g. "Drain pump"). Categories only — never an OEM part number, never a price.' },
+    },
+    required: ['brand', 'model', 'serial', 'symptoms', 'confirmed_fault', 'recommended_repair', 'parts_suggested'],
+  },
+};
+
+/**
+ * AI-fill for the Field Pro diagnosis form (Ramone, 2026-11-19): the
+ * tech describes the job in their own words and Speedy drafts the
+ * form fields. The result is a DRAFT only — nothing persists until
+ * the tech reviews, edits and taps Save in the app (the same
+ * confirm-before-commit rule as the Speedy summary gate). No prices
+ * exist in this schema: estimate money is computed by the server
+ * pricing rules, never by the model.
+ */
+export async function speedyDraftDiagnosis(text) {
+  const body = await responsesRequest({
+    instructions:
+      speedySystemPrompt() +
+      '\nDiagnosis draft mode: a field technician described a job in free text or dictation. Draft the diagnosis form fields in the required structured format. Preserve every fact; add none — a field the tech did not state stays null, and a confirmed fault is NEVER invented. Never certify that a repair is safe. Part suggestions are categories only, with no part numbers and no prices.',
+    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 4000) }] }],
+    text: { format: DIAGNOSIS_DRAFT_FORMAT },
+    max_output_tokens: 700,
+  });
+  return JSON.parse(extractText(body));
+}
+
 /* ---------------- Appliance Plug: model plate + parts finder ----------------
  * The field-tech side of Speedy (Appliance Plug, inside Speedy Pro).
  * The plate reader transcribes ONLY what is printed on the rating plate

@@ -33,12 +33,13 @@
         if (vt) return vt;
       }
     } catch (e) {}
-    try { return localStorage.getItem('tsos_token') || ''; } catch (e) { return ''; }
+    try { return localStorage.getItem('tsos_token') || localStorage.getItem('tsos_tech_token') || ''; } catch (e) { return ''; }
   }
 
   var css = [
-    '.pcb-bar{position:fixed;right:18px;bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:9995;display:flex;align-items:center;gap:9px;background:#0C162B;color:#fff;border:1.5px solid #E94E5C;border-radius:999px;padding:11px 18px 11px 13px;font:700 14px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:0 10px 30px rgba(6,15,35,.5);transition:opacity .18s ease,visibility .18s ease}',
-    '.pcb-bar svg{width:21px;height:21px;display:block}',
+    '.pcb-bar{position:fixed;right:16px;bottom:18px;bottom:calc(18px + env(safe-area-inset-bottom,0px));z-index:9995;display:flex;align-items:center;gap:8px;background:#0C162B;color:#fff;border:1.5px solid #E94E5C;border-radius:999px;padding:9px 14px 9px 11px;font:700 13.5px Inter,system-ui,sans-serif;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;box-shadow:0 10px 30px rgba(6,15,35,.5);transition:opacity .18s ease,visibility .18s ease}',
+    '.pcb-bar svg{width:20px;height:20px;display:block}',
+    '.pcb-bar.pcb-dragging{cursor:grabbing;transition:none;opacity:.92}',
     '.pcb-bar small{display:block;font:600 10.5px Inter,system-ui,sans-serif;color:#B9C6DE;letter-spacing:.02em}',
     'body:has(.pcb-panel.open) .pcb-bar{opacity:0;visibility:hidden;pointer-events:none}',
     '.pcb-panel{position:fixed;right:18px;bottom:76px;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:9996;width:min(400px,calc(100vw - 24px));max-height:min(78vh,720px);max-height:min(720px,calc(100dvh - 108px));display:flex;flex-direction:column;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(6,15,35,.5);overflow:hidden;font-family:Inter,system-ui,sans-serif;color:#0C162B;visibility:hidden;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s}',
@@ -105,6 +106,87 @@
 
   document.body.appendChild(bar);
   document.body.appendChild(panel);
+
+  /* Movable launcher (Ramone, 2026-11-19, from his Tech App photo:
+     the assistant bubble covered the bottom tab bar). Press-and-drag
+     moves the pill anywhere on screen; a tap without real movement
+     still opens the chat. Default dock sits CLEAR of any fixed
+     bottom navigation (e.g. the Tech App's tab bar); a dragged
+     position is remembered for the session. */
+  var pcbSuppressClick = false;
+  var pcbDrag = { active: false, moved: false, sx: 0, sy: 0, ox: 0, oy: 0 };
+  function pcbClamp(x, y) {
+    var w = bar.offsetWidth || 150, h = bar.offsetHeight || 46;
+    return {
+      x: Math.min(Math.max(4, x), Math.max(4, window.innerWidth - w - 4)),
+      y: Math.min(Math.max(4, y), Math.max(4, window.innerHeight - h - 4)),
+    };
+  }
+  function pcbPlace(x, y) {
+    var c = pcbClamp(x, y);
+    bar.style.left = c.x + 'px';
+    bar.style.top = c.y + 'px';
+    bar.style.right = 'auto';
+    bar.style.bottom = 'auto';
+  }
+  function pcbBottomNavHeight() {
+    var nav = document.querySelector('nav.tabs, .tabbar, [data-bottom-nav]');
+    if (!nav) return 0;
+    var r = nav.getBoundingClientRect();
+    return r.height > 0 && r.bottom >= window.innerHeight - 2 ? r.height : 0;
+  }
+  function pcbDefaultDock() {
+    var navH = pcbBottomNavHeight();
+    var w = bar.offsetWidth || 150, h = bar.offsetHeight || 46;
+    pcbPlace(window.innerWidth - w - 16, window.innerHeight - h - navH - 14);
+    if (navH) panel.style.bottom = navH + 66 + 'px';
+  }
+  function pcbRestore() {
+    try {
+      var raw = sessionStorage.getItem('pcb_pos');
+      if (raw) {
+        var pos = JSON.parse(raw);
+        if (pos && isFinite(pos.x) && isFinite(pos.y)) { pcbPlace(pos.x, pos.y); return; }
+      }
+    } catch (e) {}
+    pcbDefaultDock();
+  }
+  bar.addEventListener('pointerdown', function (ev) {
+    pcbDrag.active = true;
+    pcbDrag.moved = false;
+    pcbDrag.sx = ev.clientX;
+    pcbDrag.sy = ev.clientY;
+    var r = bar.getBoundingClientRect();
+    pcbDrag.ox = r.left;
+    pcbDrag.oy = r.top;
+    try { bar.setPointerCapture(ev.pointerId); } catch (e) {}
+  });
+  bar.addEventListener('pointermove', function (ev) {
+    if (!pcbDrag.active) return;
+    var dx = ev.clientX - pcbDrag.sx, dy = ev.clientY - pcbDrag.sy;
+    if (!pcbDrag.moved && Math.sqrt(dx * dx + dy * dy) < 7) return;
+    if (!pcbDrag.moved) { pcbDrag.moved = true; bar.classList.add('pcb-dragging'); pcbPlace(pcbDrag.ox, pcbDrag.oy); }
+    pcbPlace(pcbDrag.ox + dx, pcbDrag.oy + dy);
+    if (ev.cancelable) ev.preventDefault();
+  });
+  function pcbEndDrag() {
+    if (!pcbDrag.active) return;
+    pcbDrag.active = false;
+    bar.classList.remove('pcb-dragging');
+    if (pcbDrag.moved) {
+      var r = bar.getBoundingClientRect();
+      try { sessionStorage.setItem('pcb_pos', JSON.stringify({ x: Math.round(r.left), y: Math.round(r.top) })); } catch (e) {}
+      pcbSuppressClick = true;
+      setTimeout(function () { pcbSuppressClick = false; }, 80);
+    }
+  }
+  bar.addEventListener('pointerup', pcbEndDrag);
+  bar.addEventListener('pointercancel', pcbEndDrag);
+  pcbRestore();
+  window.addEventListener('resize', function () {
+    var r = bar.getBoundingClientRect();
+    if (r.width) pcbPlace(r.left, r.top);
+  });
 
   var body = panel.querySelector('.pcb-body');
   var quick = panel.querySelector('.pcb-quick');
@@ -231,6 +313,7 @@
   }
 
   bar.addEventListener('click', function () {
+    if (pcbSuppressClick) return;
     panel.classList.add('open');
     refreshMode(null);
   });

@@ -124,6 +124,15 @@ export const store = {
   // Tech Pro van stock (2026-11-17): per-provider on-van quantities,
   // hydrated from the VanStock table alongside the rest of Parts OS.
   vanStock: [],
+  // Tech App dispatch package (2026-11-19): customer service properties
+  // (Property table), first-class warranty claims (WarrantyClaim table)
+  // and job invoices (the Invoice table — it existed without a creation
+  // path; the Tech App's approved-estimate → invoice flow is that path).
+  // Hydrated from their tables via db/techPackageRepo.
+  properties: [],
+  warranties: [],
+  warrantyClaims: [],
+  invoices: [],
   // QuickBooks finance integration (built dark): connection state +
   // synced snapshots + invoice mirror, hydrated from the Finance*
   // tables. financeConnection stays null until the first real sync —

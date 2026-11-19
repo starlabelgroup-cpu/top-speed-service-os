@@ -14,6 +14,7 @@ import { hydrateBanners } from './bannersRepo.js';
 import { hydrateTrackingTokens } from './trackingRepo.js';
 import { hydrateMarketingOs } from './marketingOsRepo.js';
 import { hydrateParts } from './partsRepo.js';
+import { hydrateTechPackage } from './techPackageRepo.js';
 import { hydrateFinance } from './financeRepo.js';
 import { hydrateNotificationSettings } from './notificationsRepo.js';
 import { hydrateReferrals } from './referralsRepo.js';
@@ -288,6 +289,13 @@ export async function hydrateStore() {
     await hydrateFinance();
   } catch (error) {
     console.error('hydrateFinance failed (module degraded, platform continues)', error?.message || error);
+  }
+  // Tech App dispatch package (properties, warranty claims, invoices)
+  // is an add-on module too: degrade to empty, never block hydration.
+  try {
+    await hydrateTechPackage();
+  } catch (error) {
+    console.error('hydrateTechPackage failed (module degraded, platform continues)', error?.message || error);
   }
   // Notification settings are an add-on too: missing table mid-deploy
   // degrades to the ALL-ON defaults, never blocks hydration.

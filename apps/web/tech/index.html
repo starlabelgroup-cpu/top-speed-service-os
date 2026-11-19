@@ -3,7 +3,7 @@
 <head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Speedy Pro — Top Speed Tech App</title>
+<title>Field Pro — Top Speed Tech App</title>
 <link rel="icon" href="data:,">
 <link rel="apple-touch-icon" href="https://top-speed-service-os.vercel.app/api/v1/app/icons/speedy-192.png">
 <link rel="manifest" href="/tech/manifest.webmanifest">
@@ -107,7 +107,21 @@ textarea.ws-note{width:100%;border:1.5px solid var(--line);border-radius:10px;pa
 .tch-item small{display:block;color:var(--soft);font-size:11.5px;font-weight:400;margin-top:2px}
 .tch-item .grow{flex:1}
 .tch-sec{font-size:10.5px;letter-spacing:1.2px;color:#8494ab;font-weight:800;margin:16px 4px 2px}
-body.signedout section.screen,body.signedout .tabs{display:none!important}</style>
+body.signedout section.screen,body.signedout .tabs{display:none!important}
+/* ===== FULL-PACKAGE FIELD PRO (2026-11-19): fit any screen 320–1366 ===== */
+@media(min-width:900px){
+  .phone{max-width:1120px}
+  nav.tabs{max-width:1120px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  .ovw{grid-template-columns:repeat(6,1fr)}
+  .board-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}
+  .ws-acts{grid-template-columns:repeat(4,1fr)}
+  main{padding:20px 22px 96px}
+}
+.board-sec{margin-bottom:14px}
+.board-sec h3{font-size:13px;color:var(--navy);margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em}
+.draft-fill{background:#fff7e0!important;border-color:#ffb020!important}
+select.tp-in{appearance:auto}</style>
 <script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body class="signedout">
@@ -123,16 +137,19 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
   </header>
   <div class="tch-back" id="tchBack" onclick="tchToggle(false)"></div>
   <aside class="tch-drawer" id="tchDrawer" aria-label="Tech App menu">
-    <div class="tch-head"><b>Speedy Pro</b><button class="tch-x" type="button" onclick="tchToggle(false)" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
-    <p style="color:var(--soft);font-size:12px;line-height:1.5">Top Speed Tech App — Field Pro + Appliance Plug.</p>
+    <div class="tch-head"><b>Field Pro</b><button class="tch-x" type="button" onclick="tchToggle(false)" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <p style="color:var(--soft);font-size:12px;line-height:1.5">Field Pro is your work-order app — dispatch board, job records, estimates, invoices, warranty. Appliance Plug is the camera + parts tool inside it.</p>
     <div class="tch-sec">MY DAY</div>
     <button class="tch-item" type="button" onclick="tchGo('today')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3.5 5h17v15.5h-17z"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/></svg><span class="grow">Today</span></button>
-    <button class="tch-item" type="button" onclick="tchMyJobs()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 5h12v16H6z"/><path d="M9.5 5V3h5v2"/><path d="M9 10.5h6M9 14h6"/></svg><span class="grow">My Jobs<small>Your confirmed jobs, on the Today screen</small></span></button>
+    <button class="tch-item" type="button" onclick="tchMyJobs()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 5h12v16H6z"/><path d="M9.5 5V3h5v2"/><path d="M9 10.5h6M9 14h6"/></svg><span class="grow">My Jobs<small>Your confirmed jobs — tap one to open its full workspace</small></span></button>
     <button class="tch-item" type="button" onclick="tchGo('offers')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4.5h16V15l-2.6 4.5H6.6L4 15z"/><path d="M12 7v6.4M9 10.6l3 3 3-3"/></svg><span class="grow">Job Offers</span></button>
-    <button class="tch-item" type="button" onclick="tchGo('job')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg><span class="grow">Field Pro Workspace</span></button>
+    <button class="tch-item" type="button" onclick="tchFieldPro()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg><span class="grow">Field Pro Workspace<small>The full job record — booking to payment</small></span></button>
     <div class="tch-sec">APPLIANCE PLUG</div>
     <button class="tch-item" type="button" onclick="tchGo('plug')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M9 2.8v5M15 2.8v5"/><path d="M6.5 7.8h11V13a5.5 5.5 0 0 1-11 0z"/><path d="M12 18.5V21"/></svg><span class="grow">Appliance Plug</span></button>
-    <button class="tch-item" type="button" onclick="tchParts()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/></svg><span class="grow">Parts Orders<small>Your order queue, in the Plug tab</small></span></button>
+    <button class="tch-item" type="button" onclick="tchGo('parts')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/></svg><span class="grow">Parts &amp; Suppliers<small>Van stock, order queue, supplier directory</small></span></button>
+    <div class="tch-sec">COMPANY</div>
+    <button class="tch-item" type="button" onclick="tchGo('company')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 21V8l8-5 8 5v13"/><path d="M9.5 21v-6h5v6M4 21h16"/></svg><span class="grow">Company &amp; Policies<small>Top Speed business card, pricing, warranty terms</small></span></button>
+    <button class="tch-item" type="button" onclick="tchClaims()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg><span class="grow">Warranty Claims<small>Look up and advance claims on your jobs</small></span></button>
     <div class="tch-sec">ACCOUNT</div>
     <button class="tch-item" type="button" onclick="tchAvail()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span class="grow">Availability<small>Uses the Available / Offline switch in the header</small></span></button>
     <button class="tch-item" type="button" onclick="tchSettings()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span class="grow">Settings</span></button>
@@ -166,14 +183,8 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     </div>
     <!-- TODAY -->
     <section class="screen on" id="s-today">
-      <h2 class="sec">Field Pro · Today</h2>
-      <div class="card" style="background:linear-gradient(135deg,#262e36,#131920);color:#fff;border:0">
-        <p style="font-size:10px;color:#ff9d94;text-transform:uppercase;letter-spacing:.08em;font-weight:700">Speedy Pro — the pro suite</p>
-        <h3 style="color:#fff;font-size:16px;margin:4px 0 3px">Field Pro + Appliance Plug</h3>
-        <p style="font-size:12px;color:#c3cedb;line-height:1.55">One suite for Top Speed techs: Field Pro runs your work orders, checklists and reports; Appliance Plug snaps the model plate and lines up parts — both on your real Service OS jobs, dispatched by Service Setters.</p>
-        <a href="#" onclick="go('plug');return false;" style="display:block;margin-top:12px"><img src="/api/v1/app/platform-images/speedy-pro-tech.webp" alt="Illustration: a Speedy Pro technician scanning a refrigerator rating plate with a parts box beside him — technician app and parts finder" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"></a>
-        <div class="btnrow" style="margin-top:10px"><button class="btn red" type="button" onclick="go('today')">Field Pro — my jobs</button><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="go('plug')">Appliance Plug</button></div>
-      </div>
+      <h2 class="sec">Field Pro · Dispatch board</h2>
+      <div id="dispatchBoard"><div class="card"><p class="note" style="margin:0">Sign in above to load the live dispatch board — offers waiting, accepted jobs, work in progress, jobs waiting on parts or diagnosis, and today's completions, straight from Service OS dispatch. Every row opens the full job record.</p></div></div>
       <div id="ovwStrip"></div>
       <div class="ws-tabs" id="todayFilter" style="display:none;margin:0 0 8px"><button type="button" data-tf="all" class="on" onclick="tchFilter('all',this)">All</button><button type="button" data-tf="open" onclick="tchFilter('open',this)">Open</button><button type="button" data-tf="awaiting" onclick="tchFilter('awaiting',this)">Awaiting</button><button type="button" data-tf="completed" onclick="tchFilter('completed',this)">Completed</button></div><input class="tp-in" id="todaySearch" placeholder="Search jobs — customer, appliance, city…" style="display:none;margin:0 0 10px" oninput="tchFilterApply()"><div id="todayList"><p class="note">No jobs yet — your confirmed jobs for today appear here once Service Setters dispatch assigns them.</p></div>
       </div>
@@ -187,17 +198,33 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     </section>
     <!-- JOB DETAIL -->
     <section class="screen" id="s-job"><h2 class="sec">Field Pro · Job workspace</h2><div id="wsRoot"><div class="card"><p class="note" style="margin:0">Select a job from Today to open its field workspace — job steps, service checklist, tech notes, the written-quote facts, and a downloadable service report, all on the real job record.</p></div></div></section>
-    <!-- APPLIANCE PLUG (Speedy Pro module) -->
+    <!-- APPLIANCE PLUG — the camera tool app (opens straight into the camera) -->
     <section class="screen" id="s-plug">
-      <h2 class="sec">Appliance Plug</h2>
-      <div class="card">
-        <h3 style="font-size:14px;color:var(--navy)">Snap the plate. Order the right parts.</h3>
-        <p class="note" style="margin:4px 0 10px">Appliance Plug runs inside each job's workspace: snap the model plate, Speedy reads it, you confirm every field, Parts Finder lines up part categories with fitment notes, and the order draft carries the job's TS reference — Appliance Plus Parts Supply first, other distributors second. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p>
-        <img src="/api/v1/app/scenario-images/speedy-serial-scan.webp" alt="Illustration: a technician scanning an appliance model plate with a phone — Appliance Plug reads the plate, the technician confirms it" style="width:100%;height:auto;border-radius:12px;display:block;margin:4px 0 10px" loading="lazy">
-        <div class="btnrow"><button class="btn navy" type="button" onclick="go('today')">Pick a job to start</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/appliance-plug-app">Open Plug app</a></div>
+      <h2 class="sec">Appliance Plug — camera tool</h2>
+      <div class="card" style="border-left:4px solid var(--red)">
+        <h3 style="font-size:14px;color:var(--navy)">Camera first — snap the rating plate</h3>
+        <p class="note" style="margin:4px 0 10px">The Plug opens your device camera right here — live viewfinder first, camera capture next, file picker last (the Pepper Lists camera ladder). The photo runs the real plate read: brand, model and serial with a confidence score, for you to confirm. Then attach the photo to a job and carry the plate into its parts flow. For Top Speed technicians and subcontractor providers alike — same account, same gates.</p>
+        <div class="btnrow"><button class="btn red" type="button" onclick="plugCamOpen()">Open camera</button><button class="btn no" type="button" onclick="document.getElementById('plugStandFile').click()">Upload a photo instead</button></div>
+        <input id="plugStandFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="plugStandFilePick(this)">
+        <div id="plugStandMsg" style="font-size:13px;margin-top:8px"></div>
+        <div id="plugStandResult"></div>
       </div>
       <h2 class="sec">My parts orders</h2>
       <div id="plugOrdersList"><p class="note">Your parts orders across all your jobs appear here once you are signed in.</p></div>
+    </section>
+    <!-- PARTS & SUPPLIERS -->
+    <section class="screen" id="s-parts">
+      <h2 class="sec">Parts — van stock</h2>
+      <div id="partsVan"><div class="card"><p class="note" style="margin:0">Sign in to load your van stock from the Parts Supply OS catalog.</p></div></div>
+      <h2 class="sec">Parts orders queue</h2>
+      <div id="partsOrdersList"><p class="note">Your parts orders across all your jobs appear here once you are signed in.</p></div>
+      <h2 class="sec">Suppliers &amp; partners</h2>
+      <div id="suppliersList"><div class="card"><p class="note" style="margin:0">Sign in to load the supplier directory.</p></div></div>
+    </section>
+    <!-- COMPANY -->
+    <section class="screen" id="s-company">
+      <h2 class="sec">Company — Top Speed Appliance</h2>
+      <div id="companyBody"><div class="card"><p class="note" style="margin:0">Sign in to load the company card — business info, pricing structure, warranty terms and partners, from the platform's own records.</p></div></div>
     </section>
     <!-- EARNINGS -->
     <section class="screen" id="s-earn"><h2 class="sec">My week</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n">—</div><div class="l">Jobs this week</div></div></div><div class="card" style="margin-top:12px"><p class="note" style="margin:0">Payout amounts follow your provider agreement. Your live statement appears here when you are signed in with your provider account.</p></div></section>
@@ -224,12 +251,18 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <section class="screen" id="s-more">
       <h2 class="sec">More</h2>
       <div class="card" id="techSpeedyCard">
-        <h3 style="font-size:14px;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Speedy — your in-app assistant</h3>
-        <p class="note" style="margin:4px 0 10px">Ask about your assignments, offers, or today’s jobs. For a job update, Speedy drafts the wording in the job workspace and <b>you</b> tap “Save to job” — Speedy never submits an update, changes a status, or certifies a repair on its own.</p>
+        <h3 style="font-size:14px;color:var(--navy)"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3.5h12l2 2v7l-2 2h-5l-4.6 3.9v-3.9H6l-2-2v-7z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/><circle cx="8.4" cy="18.4" r="1.2" fill="currentColor" stroke="none"/></svg> Ask Pepper — your operations assistant</h3>
+        <p class="note" style="margin:4px 0 10px">Pepper is the staff assistant on every workstation — platform questions, work rules, and problem reports (Pepper files them for Ramone). Board questions answer right here from your live assignments; job-update drafts live in each job’s workspace, where <b>you</b> review and tap “Save to job” — nothing submits itself.</p>
         <textarea id="techSpeedyQ" rows="2" placeholder="e.g. What jobs do I have today? or: draft an update — replaced the drain pump, tested fine" style="width:100%;border:1.5px solid var(--line);border-radius:10px;padding:9px;font:inherit;font-size:14px;"></textarea>
-        <div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="techSpeedyAsk()">Ask Speedy</button></div>
+        <div class="btnrow" style="margin-top:7px;"><button class="btn navy" type="button" onclick="techSpeedyAsk()">Ask</button></div>
         <div class="btnrow" style="margin-top:7px;"><button class="btn no" type="button" onclick="techSpeedyQuick('today')">Today’s jobs</button><button class="btn no" type="button" onclick="techSpeedyQuick('offers')">Open offers</button><button class="btn no" type="button" onclick="techSpeedyQuick('draft')">Draft an update</button></div>
         <div id="techSpeedyA" style="margin-top:9px;font-size:13.5px;line-height:1.5;"></div>
+      </div>
+      <div class="card" id="claimsCard">
+        <h3 style="font-size:14px;color:var(--navy)">Warranty claims</h3>
+        <p class="note" style="margin:4px 0 8px">Claims on your jobs — search by claim number, warranty provider, booking reference, customer or phone. File new claims inside a job's Warranty tab.</p>
+        <div class="tp-row"><input class="tp-in" id="claimsQ" placeholder="Search claims…" onkeydown="if(event.key==='Enter')claimsLoad()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="claimsLoad()">Search</button></div>
+        <div id="claimsList" style="margin-top:8px"><p class="note" style="margin:0">Sign in to load warranty claims.</p></div>
       </div>
       <div class="card">
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 4L3 6v14l5.5-2 6.5 2 5.5-2V4L15 6 8.5 4zm0 0v14M15 6v14" stroke="#E8322E"/><circle cx="11.8" cy="10" r="1.2" fill="#E8322E" stroke="none"/></svg> My service areas <span class="r">12 Broward areas</span></div>
@@ -239,7 +272,10 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 3.8h3.6l1.3 4.1-2 1.7a13.8 13.8 0 0 0 6.5 6.5l1.7-2 4.1 1.3v3.6l-2 1.9A17 17 0 0 1 3.1 5.9z"/><path d="M15.8 3.6l4.8 4.8M15.8 7.2l2.2 2.2" stroke="#E8322E"/></svg> Call dispatch <a href="tel:+19549317997">954-931-7997</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M20.04 15.33L15.33 20.04L8.67 20.04L3.96 15.33L3.96 8.67L8.67 3.96L15.33 3.96L20.04 8.67z"/><path d="M3.3 12h17.4M12 3.3l2.8 3.4L15.9 12l-1.1 5.3L12 20.7l-2.8-3.4L8.1 12l1.1-5.3z" stroke="#E8322E"/></svg> Provider portal <a href="/service/">Open</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4h14l2 2v8.5l-2 2H5L3 14.5V6z"/><path d="M12 16.5v3.4M8 21h8" stroke="#E8322E"/><path d="M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4" opacity=".85"/></svg> Service OS web portal <a href="/portal">Open</a></div>
-        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Appliance Plug — model &amp; parts <a href="/appliance-plug-app">Open</a></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Appliance Plug — camera &amp; parts <span class="r"><button class="btn no" type="button" onclick="go('plug')">Open camera tool</button></span></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5" stroke="#E8322E"/></svg> Parts &amp; suppliers <span class="r"><button class="btn no" type="button" onclick="go('parts')">Open</button></span></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 21V8l8-5 8 5v13"/><path d="M9.5 21v-6h5v6M4 21h16" stroke="#E8322E"/></svg> Company &amp; policies <span class="r"><button class="btn no" type="button" onclick="go('company')">Open</button></span></div>
+        <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4v16.5h16.5"/><path d="M8.5 16.5v-5M12.5 16.5V8M16.5 16.5v-8.5" stroke="#E8322E"/></svg> My week <span class="r"><button class="btn no" type="button" onclick="go('earn')">Open</button></span></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8l8-4.5L20 8v8l-8 4.5L4 16z"/><path d="M4 8l8 4.5L20 8M12 12.5v8" stroke="#E8322E"/><circle cx="12" cy="12.5" r="1.2" fill="currentColor" stroke="none"/></svg> Parts Supply OS <a href="/parts">Open</a></div>
         <div class="row"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 4.5h13.5L20 6v13.5H5z"/><path d="M8.5 9h8M8.5 12.5h8M8.5 16h5" stroke="#E8322E"/></svg> Training Academy <a href="/academy">Open</a></div>
         <div class="row" style="border-bottom:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M8.5 2.8h7L17 4.3v15.4l-1.5 1.5h-7L7 19.7V4.3z"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/><circle cx="12" cy="2.8" r="1.2" fill="currentColor" stroke="none"/></svg> Customer app <a href="/app">Appliance Connect</a></div>
@@ -252,7 +288,7 @@ body.signedout section.screen,body.signedout .tabs{display:none!important}</styl
     <button data-tab="offers" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16V15l-2.6 4.5H6.6L4 15z"/><path d="M12 7v6.4M9 10.6l3 3 3-3M4 15h5l1.2 1.8h3.6L15 15h5" stroke="#E8322E"/><circle cx="12" cy="13.4" r="1.2" fill="currentColor" stroke="none"/></svg> Offers<span class="bdg" id="offerBdg">2</span></button>
     <button data-tab="job" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> Job</button>
     <button data-tab="plug" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M9 2.8v5M15 2.8v5" stroke="#E8322E"/><path d="M6.5 7.8h11V13a5.5 5.5 0 0 1-11 0z"/><path d="M12 18.5V21"/></svg> Plug</button>
-    <button data-tab="earn" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4v16.5h16.5"/><path d="M8.5 16.5v-5M12.5 16.5V8M16.5 16.5v-8.5" stroke="#E8322E"/><circle cx="8.5" cy="11.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.5" cy="8" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.5" cy="8" r="1.2" fill="currentColor" stroke="none"/></svg> Week</button>
+    <button data-tab="parts" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5" stroke="#E8322E"/></svg> Parts</button>
     <button data-tab="more" type="button"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><path d="M18.2 5.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/><path d="M5.8 16.4l1.1 1.1-1.1 1.1-1.1-1.1z" fill="#E8322E" stroke="none"/></svg> More</button>
   </nav>
 </div>
@@ -265,7 +301,9 @@ function tchToggle(open){
 }
 function tchGo(tab){ tchToggle(false); go(tab); }
 function tchMyJobs(){ tchToggle(false); go('today'); setTimeout(function(){ var el=document.getElementById('todayList'); if(el) el.scrollIntoView({block:'start'}); }, 60); }
-function tchParts(){ tchToggle(false); go('plug'); setTimeout(function(){ var el=document.getElementById('plugOrdersList'); if(el) el.scrollIntoView({block:'start'}); }, 60); }
+function tchParts(){ tchToggle(false); go('parts'); }
+function tchFieldPro(){ tchToggle(false); go('job'); if(!window._wsId && window.wsJobPicker) wsJobPicker(); }
+function tchClaims(){ tchToggle(false); go('more'); setTimeout(function(){ var el=document.getElementById('claimsCard'); if(el) el.scrollIntoView({block:'start'}); if(window.claimsLoad) claimsLoad(); }, 60); }
 function tchAvail(){ tchToggle(false); var b=document.getElementById('availBtn'); if(b) b.click(); }
 function tchSettings(){ tchToggle(false); go('settings'); tchLoadSettings(); }
 function tchLoadSettings(){
@@ -295,7 +333,18 @@ const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
    file's own static ICO_* SVG strings, parsed as markup inside a wrapper span. */
 const ICO_ACCEPT='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg>';
 function toast(m,icon){const t=$('#toast');t.innerHTML='';if(icon){const ic=document.createElement('span');ic.innerHTML=icon;t.appendChild(ic);t.appendChild(document.createTextNode(' '))}t.appendChild(document.createTextNode(m));t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2400)}
-function go(tab){$$('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+tab));$$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));window.scrollTo(0,0)}
+function go(tab){
+  $$('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+tab));
+  $$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  window.scrollTo(0,0);
+  // Full-package hooks (2026-11-19): every destination is a working
+  // screen that loads its real data on entry — no landing pages.
+  if(tab==='plug'&&window.plugAutoCam) plugAutoCam();
+  if(tab==='parts'&&window.partsScreenLoad) partsScreenLoad();
+  if(tab==='company'&&window.companyLoad) companyLoad();
+  if(tab==='more'&&window.claimsLoad&&tTok()) claimsLoad();
+  if(tab==='job'&&!window._wsId&&window.wsJobPicker) wsJobPicker();
+}
 $$('nav.tabs button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.tab)));
 $$('[data-open-job]').forEach(c=>c.addEventListener('click',()=>go('job')));
 let offers=2;
@@ -473,6 +522,7 @@ function renderTechOversight(assignments,user){
   var tfEl=document.getElementById('todayFilter'); if(tfEl) tfEl.style.display=accepted.length?'':'none';
   var tsEl=document.getElementById('todaySearch'); if(tsEl) tsEl.style.display=accepted.length?'':'none';
   if(window.tchFilterApply) tchFilterApply();
+  loadDispatchBoard();
 }
 function renderTech(provider,assignments,user){
   window._techAssignments=assignments||[]; window._techProvider=provider||null;
@@ -504,7 +554,7 @@ function renderTech(provider,assignments,user){
     '<div class="tile"><div class="n">'+offerList.length+'</div><div class="l">Offers waiting</div></div>'+
     '<div class="tile"><div class="n">'+doneCount+'</div><div class="l">Completed</div></div></div>'+
     (nextJob?('<div class="card" style="border-left:4px solid var(--red)"><p class="demo" style="color:var(--red)">Next job</p><h3 style="font-size:14px;margin-top:3px">'+escT((nextJob.booking||{}).appliance||'Appliance')+' \u2014 '+escT((nextJob.booking||{}).issue||'')+'</h3><p class="note" style="margin-top:3px">'+((nextJob.booking||{}).appointment?escT(nextJob.booking.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(nextJob.booking.appointment.date):'Window TBD')+' \u00b7 '+escT((nextJob.booking||{}).city||'')+'</p><div class="btnrow"><button class="btn navy" type="button" onclick="openWorkspace(\''+nextJob.id+'\')">Open workspace</button></div></div>'):'')+
-    '<div class="btnrow" style="margin-bottom:12px"><button class="btn no" type="button" onclick="go(\'more\')">Ask Speedy</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/appliance-plug-app">Appliance Plug</a><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/parts">Parts Supply OS</a></div>';
+    '<div class="btnrow" style="margin-bottom:12px"><button class="btn no" type="button" onclick="askPepper()">Ask Pepper</button><button class="btn no" type="button" onclick="go(\'plug\')">Appliance Plug — camera</button><button class="btn no" type="button" onclick="go(\'parts\')">Parts &amp; suppliers</button></div>';
   document.getElementById('todayList').innerHTML=accepted.length?accepted.map(function(a){
     var b=a.booking||{};
     var when=b.appointment?(escT(b.appointment.windowLabel||'')+' \u00b7 '+tDateLabel(b.appointment.date)):'Window TBD';
@@ -515,6 +565,7 @@ function renderTech(provider,assignments,user){
   var tfEl=document.getElementById('todayFilter'); if(tfEl) tfEl.style.display=accepted.length?'':'none';
   var tsEl=document.getElementById('todaySearch'); if(tsEl) tsEl.style.display=accepted.length?'':'none';
   tchFilterApply();
+  loadDispatchBoard();
 }
 function liveAcceptTech(id){
   tFetch('/provider/assignments/'+id+'/accept',{method:'POST',body:JSON.stringify({})})
@@ -568,7 +619,7 @@ function aiNotePreview(id){
   var raw=document.getElementById('ainote-'+id).value.trim();
   var slot=document.getElementById('ainote-prev-'+id);
   if(raw.length<3){ slot.innerHTML='<p class="note">Type or dictate the update first.</p>'; return; }
-  slot.innerHTML='<p class="note">Speedy is structuring\u2026</p>';
+  slot.innerHTML='<p class="note">Building the draft\u2026</p>';
   tFetch('/provider/assignments/'+id+'/ai-note/preview',{method:'POST',body:JSON.stringify({text:raw})})
     .then(function(j){
       var st=j.data.structured; window._aiNote=window._aiNote||{}; window._aiNote[id]={raw:raw,structured:st};
@@ -579,12 +630,12 @@ function aiNotePreview(id){
         '<br><b>Status suggestion:</b> '+escT(st.status_suggestion)+' <span style="color:#5A6E94">(advisory \u2014 the status buttons still rule)</span>' +
         '<div class="btnrow" style="margin-top:8px;"><button class="btn go" type="button" onclick="aiNoteSave(\''+id+'\')">Save to job</button></div></div>';
     })
-    .catch(function(e){ slot.innerHTML='<p class="note">'+ICO_WARN+' '+(e.message||'Speedy could not structure that')+' \u2014 your words are still in the box above.</p>'; });
+    .catch(function(e){ slot.innerHTML='<p class="note">'+ICO_WARN+' '+(e.message||'The draft could not be built')+' \u2014 your words are still in the box above.</p>'; });
 }
 function aiNoteSave(id){
   var entry=window._aiNote&&window._aiNote[id];
   var slot=document.getElementById('ainote-prev-'+id);
-  if(!entry){ slot.innerHTML='<p class="note">Structure the note with Speedy first.</p>'; return; }
+  if(!entry){ slot.innerHTML='<p class="note">Build the structured draft first.</p>'; return; }
   var st=entry.structured;
   tFetch('/provider/assignments/'+id+'/ai-note',{method:'POST',body:JSON.stringify({raw:entry.raw,note:st.note,partsUsed:st.parts_used||[],nextStep:st.next_step||null,statusSuggestion:st.status_suggestion||'NONE'})})
     .then(function(){ slot.innerHTML='<p class="note" style="color:#1E9E6A; font-weight:700;">'+ICO_CHECK+' Saved to the job record \u2014 it is on the customer history now.</p>'; document.getElementById('ainote-'+id).value=''; })
@@ -606,10 +657,10 @@ function techSpeedyQuick(kind){
   var offers=all.filter(function(a){ return a.status==='APPROVED'; });
   if(kind==='today'){ techSpeedySay(accepted.length? '<b>Today’s accepted jobs ('+accepted.length+'):</b>'+techSpeedyList(accepted) : 'No accepted jobs yet. Accepted offers land in the Today tab.'); return; }
   if(kind==='offers'){ techSpeedySay(offers.length? '<b>Open offers ('+offers.length+'):</b>'+techSpeedyList(offers)+'<p class="note">Accept or decline in the Offers tab — those buttons answer dispatch for real.</p>' : 'No open offers right now. Keep availability on — dispatch matches by area, appliance, and rating.'); return; }
-  if(!accepted.length){ techSpeedySay('You need an accepted job before drafting an update. Once you accept an offer, its job workspace has the “AI job update” box Speedy drafts into.'); return; }
+  if(!accepted.length){ techSpeedySay('You need an accepted job before drafting an update. Once you accept an offer, its job workspace has the “AI job update” box the draft is built into.'); return; }
   window._wsFocusNote=accepted[0].id;
   openWorkspace(accepted[0].id);
-  toast('Type the update in the job workspace — Speedy drafts, you save');
+  toast('Type the update in the job workspace — the AI drafts it, you review and save');
 }
 function techSpeedyAsk(){
   var input=document.getElementById('techSpeedyQ');
@@ -625,22 +676,13 @@ function techSpeedyAsk(){
     if(text.length<3 || text===q){ techSpeedyQuick('draft'); return; }
     window._wsDraftText={id:accepted[0].id,text:text};
     openWorkspace(accepted[0].id);
-    techSpeedySay('I put your words in the first accepted job’s workspace and asked Speedy to structure them. Review the draft in the workspace Notes tab — nothing saves until you tap “Save to job”.');
+    techSpeedySay('I put your words in the first accepted job’s workspace and built the structured draft. Review it in the workspace Notes tab — nothing saves until you tap “Save to job”.');
     return;
   }
-  if(/certif|safe|refund|credential|compliance/.test(low)){ techSpeedySay('That is outside Speedy’s authority: Speedy never certifies repair safety, issues refunds, overrides credentials, or changes compliance status. A human professional or Service Setters handle those — call dispatch at 954-931-7997.'); return; }
-  if(/pay|payout|earn/.test(low)){ techSpeedySay('Payout amounts follow your provider agreement — Speedy does not state or change them. Your Week tab shows job counts; the office can confirm anything about your statement.'); return; }
-  techSpeedySay('Speedy is thinking…');
-  /* Retry ONCE after ~2s on a network error or a 5xx — a single dropped
-     request should read as "still thinking", not as a failure. */
-  var techChatAttempt=function(){
-    return fetch(T_API+'/speedy/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,history:[]})})
-      .then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||'Speedy unavailable'); e.status=r.status; throw e; } return j; }); });
-  };
-  techChatAttempt()
-    .catch(function(e){ if(e&&e.status&&e.status<500) throw e; return new Promise(function(res){ setTimeout(res,2000); }).then(techChatAttempt); })
-    .then(function(j){ techSpeedySay(escT((j.data&&j.data.reply)||'Speedy had no answer for that one.')); })
-    .catch(function(e){ techSpeedySay('Speedy could not answer just now ('+escT(e.message)+'). For assignment questions, the quick buttons above read your live jobs directly.'); });
+  if(/certif|safe|refund|credential|compliance/.test(low)){ techSpeedySay('That is a human decision, not the assistant’s: refunds, repair-safety certification, credential overrides and compliance changes belong to a human professional, Service Setters, or Ramone — call dispatch at 954-931-7997.'); return; }
+  if(/pay|payout|earn/.test(low)){ techSpeedySay('Payout amounts follow your provider agreement — the assistant does not state or change them. Your Week view shows job counts; the office can confirm anything about your statement.'); return; }
+  askPepper(q);
+  techSpeedySay('I opened Ask Pepper with your question — Pepper is the staff assistant on this workstation. Board questions (today’s jobs, open offers) also answer with the quick buttons above.');
 }
 </script>
 
@@ -670,12 +712,15 @@ var ICO_WARN='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentCo
 var ICO_STOP='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><rect x="6.5" y="6.5" width="11" height="11"/></svg>';
 function wsTime(at){ try{ return new Date(at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
 function openWorkspace(id){
-  _wsId=id; _wsTab='details'; _plugCands=[]; _plugFields=null; go('job');
+  _wsId=id; _wsTab='details'; _plugCands=[];
+  if(!window._plugKeepFields){ _plugFields=null; }
+  window._plugKeepFields=false;
+  go('job');
   var root=document.getElementById('wsRoot');
   var a=(window._techAssignments||[]).filter(function(x){ return x.id===id; })[0];
   if(!a){ root.innerHTML='<div class="card"><p class="note" style="margin:0">That job is no longer on your list — tap Refresh in the sign-in card above.</p></div>'; return; }
   root.innerHTML='<div class="card"><p class="note" style="margin:0">Loading the field workspace…</p></div>';
-  tFetch('/provider/assignments/'+id+'/workspace')
+  tFetch('/provider/assignments/'+id+'/full')
     .then(function(j){ _wsView=j.data; wsRender(); })
     .catch(function(e){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Workspace unavailable: '+escT(e.message)+'</p></div>'; });
 }
@@ -700,7 +745,7 @@ function wsTabShow(name){
 function tpMoney(cents){ if(cents==null) return '—'; var v=Math.round(cents)/100; return '$'+v.toFixed(2); }
 function tpTime(iso){ return iso?wsTime(iso):''; }
 function wsReload(id, tab){
-  tFetch('/provider/assignments/'+id+'/workspace')
+  tFetch('/provider/assignments/'+id+'/full')
     .then(function(j){ _wsView=j.data; if(tab) _wsTab=tab; wsRender(); })
     .catch(function(e){ toast('Could not reload the job: '+(e.message||'error')); });
 }
@@ -748,7 +793,7 @@ function tpDiagPane(view, id){
   var readings=(d.readings&&d.readings.length?d.readings:[{label:'',value:''}]).map(function(r){
     return '<div class="tp-row" style="margin-top:6px"><input class="tp-in dg-rk" placeholder="Reading — e.g. Pump resistance" value="'+escT(r.label||'')+'"><input class="tp-in dg-rv" placeholder="Value — e.g. 12.4 ohm" value="'+escT(r.value||'')+'"></div>';
   }).join('');
-  return saved+
+  return tpAiFillHtml(id)+saved+
   '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Structured diagnosis</h3>'+
   '<span class="tp-lab">Appliance brand</span><input class="tp-in" id="dg-brand" value="'+escT(d.applianceBrand||'')+'" placeholder="e.g. Samsung">'
   +'<span class="tp-lab">Model</span><input class="tp-in" id="dg-model" value="'+escT(d.model||'')+'" placeholder="From the rating plate">'
@@ -808,27 +853,36 @@ function tpPhotosPane(view, id){
   '<p class="note" style="margin:4px 0 8px">Before, during and after — they save to the job record with the time and your name.</p>'+
   '<div class="tp-row"><select class="tp-in" id="ph-cat" style="flex:0 1 40%"><option value="BEFORE">Before</option><option value="DURING">During</option><option value="AFTER">After</option></select>'+
   '<input class="tp-in" id="ph-cap" placeholder="Caption (optional)"></div>'+
-  '<label class="btn no" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;cursor:pointer">'+ICO_CAM+' Take or choose a photo<input id="ph-file" type="file" accept="image/*" capture="environment" style="display:none" onchange="tpPhotoPick(this)"></label>'+
+  '<div class="btnrow" style="margin-top:8px"><button class="btn red" type="button" onclick="tpPhotoCam()">'+ICO_CAM+' Take photo — camera</button></div>'+
+  '<label class="btn no" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;cursor:pointer">'+ICO_CAM+' Or choose from this device<input id="ph-file" type="file" accept="image/*" capture="environment" style="display:none" onchange="tpPhotoPick(this)"></label>'+
   '<img id="ph-prev" alt="Selected job photo preview" style="display:none;width:100%;border-radius:10px;margin-top:8px">'
   +'<div class="btnrow" style="margin-top:8px"><button class="btn navy" type="button" id="ph-save" disabled onclick="tpPhotoSave(\''+id+'\')">Save photo to job</button></div>'
   +'<div id="ph-msg" style="margin-top:7px; font-size:13.5px;"></div>'+groups+'</div>';
 }
+function tpPhotoSet(dataUrl){
+  var img=new Image();
+  img.onload=function(){
+    var max=1280, w=img.width, h=img.height, scale=Math.min(1, max/Math.max(w,h));
+    var cv=document.createElement('canvas'); cv.width=Math.round(w*scale); cv.height=Math.round(h*scale);
+    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+    window._tpPhotoData=cv.toDataURL('image/jpeg',0.82);
+    var prev=document.getElementById('ph-prev'); if(prev){ prev.src=window._tpPhotoData; prev.style.display='block'; }
+    var btn=document.getElementById('ph-save'); if(btn) btn.disabled=false;
+  };
+  img.src=dataUrl;
+}
 function tpPhotoPick(input){
   var file=input.files&&input.files[0]; if(!file) return;
   var reader=new FileReader();
-  reader.onload=function(){
-    var img=new Image();
-    img.onload=function(){
-      var max=1280, w=img.width, h=img.height, scale=Math.min(1, max/Math.max(w,h));
-      var cv=document.createElement('canvas'); cv.width=Math.round(w*scale); cv.height=Math.round(h*scale);
-      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
-      window._tpPhotoData=cv.toDataURL('image/jpeg',0.82);
-      var prev=document.getElementById('ph-prev'); if(prev){ prev.src=window._tpPhotoData; prev.style.display='block'; }
-      var btn=document.getElementById('ph-save'); if(btn) btn.disabled=false;
-    };
-    img.src=reader.result;
-  };
+  reader.onload=function(){ tpPhotoSet(reader.result); };
   reader.readAsDataURL(file);
+}
+function tpPhotoCam(){
+  if(window.PLCamera&&PLCamera.open){
+    PLCamera.open({title:'Job photo', allowVideo:false, onPhoto:function(blob){ blobToDataUrl(blob).then(tpPhotoSet); }});
+    return;
+  }
+  var f=document.getElementById('ph-file'); if(f) f.click();
 }
 function tpPhotoSave(id){
   var m=document.getElementById('ph-msg');
@@ -909,7 +963,8 @@ function tpEstPane(view, id, quoteHtml){
   '<span class="tp-lab">Work type</span><select class="tp-in" id="est-kind" onchange="tpEstPreview()"><option value="REPAIR">Repair — $210 flat labor</option><option value="INSTALLATION">Installation — $150 flat labor</option></select>'+
   (commercial?'<span class="tp-lab">Quoted labor (commercial custom quote) $</span><input class="tp-in" id="est-labor" type="number" min="0" step="0.01" placeholder="Custom-quoted labor" oninput="tpEstPreview()">':'')+
   '<span class="tp-lab">Parts (at the quoted price)</span><div id="est-lines"></div>'+
-  '<div class="btnrow" style="margin-top:7px"><button class="btn no" type="button" onclick="tpEstAddLine()">Add a part line</button></div>'+
+  '<div class="btnrow" style="margin-top:7px"><button class="btn no" type="button" onclick="tpEstAddLine()">Add a part line</button><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="tpEstFillFromSpeedy(\''+id+'\')">'+ICO_SPARK+' AI suggestions</button></div>'+
+  '<p class="note" style="margin:6px 0 0">The AI fills part-line descriptions only — you enter every quoted price. Money is computed by the platform from the real pricing structure.</p>'+
   '<div class="tp-row" style="margin-top:8px"><div><span class="tp-lab">Discount $</span><input class="tp-in" id="est-disc" type="number" min="0" step="0.01" value="0" oninput="tpEstPreview()"></div>'+
   '<div><span class="tp-lab">Tax on parts %</span><input class="tp-in" id="est-tax" type="number" min="0" max="30" step="0.01" value="0" oninput="tpEstPreview()"></div></div>'+
   '<div id="est-prev" style="margin-top:10px"></div>'+
@@ -922,7 +977,7 @@ function tpEstPane(view, id, quoteHtml){
   +'<div class="btnrow" style="margin-top:9px"><button class="btn go" type="button" onclick="tpAuthSave(\''+id+'\')">'+ICO_CHECK+' Record authorization</button></div>'
   +'<div id="auth-msg" style="margin-top:7px; font-size:13.5px;"></div>'
   :'<p class="note" style="margin:4px 0 0">Save the estimate first — an authorization attaches to the written quote.</p>')+
-  (log?'<span class="tp-lab">Authorization log</span>'+log:'')+'</div>';
+  (log?'<span class="tp-lab">Authorization log</span>'+log:'')+'</div>'+fpDecisionHtml(view,id);
 }
 function tpEstInit(){
   var box=document.getElementById('est-lines'); if(!box||!_wsView) return;
@@ -1026,7 +1081,10 @@ var TP_EVENT_LABELS={
   ESTIMATE_APPROVED:'Estimate authorized', JOB_PHOTO_ADDED:'Photo added', JOB_PHOTO_REMOVED:'Photo removed',
   TECH_WORK_STARTED:'Work started', JOB_AWAITING_PARTS:'Awaiting parts', JOB_AWAITING_DIAGNOSIS:'Awaiting diagnosis',
   PART_USED_FROM_VAN:'Part installed from van', RECEIPT_RECORDED:'Receipt recorded', JOB_COMPLETED:'Job completed',
-  TECH_NOTE:'Tech note', FIELD_CHECKLIST_UPDATED:'Checklist updated', PLUG_ORDER_CREATED:'Parts order created', PLUG_ORDER_STATUS:'Parts order update'
+  TECH_NOTE:'Tech note', FIELD_CHECKLIST_UPDATED:'Checklist updated', PLUG_ORDER_CREATED:'Parts order created', PLUG_ORDER_STATUS:'Parts order update',
+  ESTIMATE_DECLINED:'Estimate declined by customer', INVOICE_GENERATED:'Invoice generated', WARRANTY_RECORDED:'Warranty coverage recorded',
+  WARRANTY_CLAIM_FILED:'Warranty claim filed', WARRANTY_CLAIM_STATUS:'Warranty claim update', PROPERTY_UPDATED:'Property updated',
+  JOB_DETAILS_UPDATED:'Job details edited', REVIEW_REQUEST_SENT:'Review request sent'
 };
 function tpPayPane(view, id){
   var b=(view.assignment||{}).booking||{};
@@ -1043,11 +1101,17 @@ function tpPayPane(view, id){
   var activity=(view.activity||[]).map(function(e){
     return '<div class="kv"><span>'+escT(TP_EVENT_LABELS[e.type]||e.type.replace(/_/g,' ').toLowerCase())+'</span><b>'+tpTime(e.at)+'</b></div>';
   }).join('');
+  var inv=view.invoice||null;
+  var stripeRows=(pay.stripePayments||[]).map(function(p){
+    return '<div class="kv"><span>'+escT(p.purpose||'DIAGNOSTIC')+' — '+escT(p.status||'')+'</span><b>'+tpMoney(p.amountCents)+'</b></div>';
+  }).join('');
   return '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Payments on this job</h3>'+
   '<div class="kv"><span>Estimate total</span><b>'+(pay.estimateTotalCents!=null?tpMoney(pay.estimateTotalCents):'No estimate saved yet')+'</b></div>'+
+  (inv?'<div class="kv"><span>Invoice</span><b>'+tpMoney(Math.round(Number(inv.total||0)*100))+' · '+escT(inv.status||'')+'</b></div>':'<div class="kv"><span>Invoice</span><b>Not generated yet</b></div>')+
   '<div class="kv"><span>Received (recorded here)</span><b>'+tpMoney(pay.receiptsTotalCents||0)+'</b></div>'+
   '<div class="kv" style="border-bottom:0"><span>Balance due</span><b>'+(pay.balanceDueCents!=null?tpMoney(pay.balanceDueCents):'—')+'</b></div>'+
-  '<p class="note" style="margin:6px 0 0">A balance never blocks closing the job — it is tracked separately, per the Tech Pro quality gate.</p></div>'+
+  (stripeRows?'<span class="tp-lab">Card payments (Stripe)</span>'+stripeRows:'<p class="note" style="margin:6px 0 0">No Stripe card payments recorded on this job.</p>')+
+  '<p class="note" style="margin:6px 0 0">A balance never blocks closing the job — it is tracked separately, per the Tech Pro quality gate.</p></div>'+fpReviewHtml(view,id)+
   '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Record a receipt — money taken outside the app</h3>'+
   '<p class="note" style="margin:4px 0 8px">Cash, check, or a payment the customer made another way. This records that money was received — never enter card numbers here.</p>'+
   '<div class="tp-row"><select class="tp-in" id="rc-method" style="flex:0 1 45%"><option value="CASH">Cash</option><option value="CHECK">Check</option><option value="CARD_EXTERNAL">Card — outside app</option><option value="ZELLE">Zelle</option><option value="VENMO">Venmo</option><option value="OTHER">Other</option></select>'+
@@ -1105,9 +1169,13 @@ function wsLockActions(){
   var root=document.getElementById('wsRoot'); if(!root) return;
   root.querySelectorAll('button').forEach(function(b){ if(!b.closest('.ws-tabs')){ b.disabled=true; b.style.opacity='.45'; } });
   root.querySelectorAll('input,textarea,select').forEach(function(i){ i.disabled=true; });
+  // Office-level fields stay live for oversight/staff (2026-11-19):
+  // the office job-details form writes through the office endpoint
+  // under the staff gate — everything else stays read-only.
+  root.querySelectorAll('[data-office-write]').forEach(function(el){ el.disabled=false; el.style.opacity=''; });
   var note=document.createElement('div');
   note.className='card';
-  note.innerHTML='<p class="note" style="margin:0"><b>Oversight view \u2014 read only.</b> Job actions stay with the assigned technician\u2019s account.</p>';
+  note.innerHTML='<p class="note" style="margin:0"><b>Oversight view.</b> The full record is read-only here except the office fields in Details; job work actions stay with the assigned technician\u2019s account.</p>';
   root.insertBefore(note, root.firstChild);
 }
 function wsRender(){
@@ -1130,7 +1198,7 @@ function wsRender(){
     return '<div class="note-entry"><p>'+escT(n.note)+'</p>'+
       (n.partsUsed&&n.partsUsed.length?'<p style="font-size:12.5px;color:var(--soft)">Parts used: '+n.partsUsed.map(escT).join(', ')+'</p>':'')+
       (n.nextStep?'<p style="font-size:12.5px;color:var(--soft)">Next step: '+escT(n.nextStep)+'</p>':'')+
-      '<small>'+(n.at?wsTime(n.at):'')+(n.structuredBy==='SPEEDY'?' · Speedy draft, confirmed by you':' · Tech note')+'</small></div>';
+      '<small>'+(n.at?wsTime(n.at):'')+(n.structuredBy==='SPEEDY'?' · AI draft, confirmed by you':' · Tech note')+'</small></div>';
   }).join(''):'<p class="note">No notes on this job yet. Document findings, readings, and customer conversations — they save to the job record.</p>';
   var pricing=view.pricing||{};
   var quoteHtml;
@@ -1148,9 +1216,9 @@ function wsRender(){
       '<p class="note">Parts and materials are extra, on the written quote. No work starts without the customer\u2019s approved written quote — once they approve it, record it with the “Estimate approved” button above. This app does not build or send estimates; the quote is prepared after diagnosis.</p>';
   }
   var speedyBox='<div style="border-top:1px dashed #D5E2F4; padding-top:10px; margin-top:4px;">' +
-    '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">AI job update — say it, Speedy writes it</label>' +
+    '<label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">AI job update — dictate it, review the draft, save it</label>' +
     '<textarea id="ainote-'+id+'" rows="2" placeholder="e.g. Replaced the drain pump, tested two cycles, running fine." style="width:100%; margin-top:6px; border:1.5px solid #D5E2F4; border-radius:10px; padding:9px; font:inherit; font-size:14px;"></textarea>' +
-    '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+id+'\')">'+ICO_SPARK+' Structure with Speedy</button></div>' +
+    '<div class="btnrow" style="margin-top:7px;"><button class="btn" type="button" onclick="aiNotePreview(\''+id+'\')">'+ICO_SPARK+' Structure the draft</button></div>' +
     '<div id="ainote-prev-'+id+'" style="margin-top:8px;"></div></div>';
   var html='';
   html+='<button class="btn no" type="button" onclick="go(\'today\')" style="flex:none;padding:8px 14px;margin-bottom:10px">← All jobs</button>';
@@ -1158,7 +1226,7 @@ function wsRender(){
   html+='<div class="ws-acts">'+
     (c.phone?'<a class="ws-act" href="tel:'+escT(c.phone)+'">'+ICO_CALL+'Call</a><a class="ws-act" href="sms:'+escT(c.phone)+'">'+ICO_TEXT+'Text</a>':'<span class="ws-act" style="opacity:.45">'+ICO_CALL+'No number</span><span class="ws-act" style="opacity:.45">'+ICO_TEXT+'No number</span>')+
     '<a class="ws-act" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+mapsQ+'">'+ICO_NAV+'Navigate</a>'+
-    '<button class="ws-act primary" type="button" onclick="wsAskSpeedy(\''+id+'\')">'+ICO_BOLT+'Ask Speedy</button></div>';
+    '<button class="ws-act primary" type="button" onclick="wsAskPepper(\''+id+'\')">'+ICO_BOLT+'Ask Pepper</button></div>';
   html+='<div class="card"><p class="demo">Job progress — customer tracking</p>'+stepsHtml+'</div>';
   html+='<div class="card"><p class="demo">Field journey \u2014 Tech Pro workflow</p>'+tpJourneyHtml(view)+'</div>';
   html+='<div class="card"><label style="font-size:12px; font-weight:800; color:#5A6E94; text-transform:uppercase; letter-spacing:.05em;">Track My Tech — update the customer</label>'+
@@ -1183,26 +1251,15 @@ function wsRender(){
     '<button type="button" data-wstab="estimate" onclick="wsTabShow(\'estimate\')">Estimate</button>'+
     '<button type="button" data-wstab="parts" onclick="wsTabShow(\'parts\')">Parts</button>'+
     '<button type="button" data-wstab="pay" onclick="wsTabShow(\'pay\')">Pay &amp; close</button>'+
+    '<button type="button" data-wstab="warranty" onclick="wsTabShow(\'warranty\')">Warranty</button>'+
     '<button type="button" data-wstab="report" onclick="wsTabShow(\'report\')">Report</button></div>';
-  html+='<div class="ws-pane" data-pane="details"><div class="card">'+
-    '<div class="kv"><span>Appliance</span><b>'+escT(b.appliance||'—')+'</b></div>'+
-    '<div class="kv"><span>Reported issue</span><b style="text-align:right;max-width:60%">'+escT(b.issue||'—')+'</b></div>'+
-    '<div class="kv"><span>Customer</span><b>'+escT(c.name||'—')+'</b></div>'+
-    '<div class="kv"><span>Phone</span><b>'+escT(c.phone||'—')+'</b></div>'+
-    '<div class="kv"><span>Address</span><b style="text-align:right;max-width:60%">'+escT(addr||'—')+'</b></div>'+
-    '<div class="kv"><span>City · ZIP</span><b>'+escT(cityLine||'—')+'</b></div>'+
-    '<div class="kv"><span>Appointment</span><b>'+(b.appointment?escT(b.appointment.windowLabel||'')+' · '+tDateLabel(b.appointment.date):'To be set by dispatch')+'</b></div>'+
-    '<div class="kv"><span>Match score</span><b>'+(a.matchScore!=null?a.matchScore+'%':'—')+'</b></div>'+
-    '<div class="kv"><span>Booking status</span><b>'+escT(b.status||'—')+'</b></div>'+
-    '<div class="kv" style="border-bottom:0"><span>Assignment</span><b>'+escT(a.status||'—')+'</b></div>'+
-    '</div>'+
-    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Need a part for this job?</h3><p class="note" style="margin:4px 0 10px">Snap the model plate in Appliance Plug — Speedy returns part categories with fitment and verify-first notes. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p><div class="btnrow"><button class="btn navy" type="button" onclick="wsTabShow(\'parts\')">Snap &amp; order parts</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="/parts">Parts Supply OS</a></div></div></div>';
+  html+='<div class="ws-pane" data-pane="details">'+fpDetailsHtml(view,id)+'</div>';
   html+='<div class="ws-pane" data-pane="checklist"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Service checklist</h3>'+
     '<div class="chk-progress"><i id="wsChkBar" style="width:'+chkPct+'%"></i></div>'+
     '<p class="note" id="wsChkCount" style="margin:0">'+chkDone+' of '+chk.length+' steps done — every change saves to the job record.</p>'+
     chkHtml+
     '<p class="note">Safety first: isolate power, water, or gas as the manufacturer requires. Never bypass appliance safety protections.</p></div></div>';
-  html+='<div class="ws-pane" data-pane="diagnosis">'+tpDiagPane(view,id)+'</div>';
+  html+='<div class="ws-pane" data-pane="diagnosis">'+tpDiagPane(view,id)+tpKbHtml(view)+'</div>';
   html+='<div class="ws-pane" data-pane="photos">'+tpPhotosPane(view,id)+'</div>';
   html+='<div class="ws-pane" data-pane="notes"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Technician notes</h3>'+
     '<div style="margin-top:8px">'+notesHtml+'</div>'+
@@ -1213,6 +1270,7 @@ function wsRender(){
   html+='<div class="ws-pane" data-pane="estimate">'+tpEstPane(view,id,quoteHtml)+'</div>';
   html+='<div class="ws-pane" data-pane="parts">'+plugPaneHtml(id, b)+tpVanPane(id)+'</div>';
   html+='<div class="ws-pane" data-pane="pay">'+tpPayPane(view,id)+'</div>';
+  html+='<div class="ws-pane" data-pane="warranty">'+fpWarrantyHtml(view,id)+'</div>';
   html+='<div class="ws-pane" data-pane="report"><div class="card"><h3 style="font-size:14px;color:var(--navy)">Service report</h3>'+
     '<p class="note" style="margin:4px 0 10px">A portable HTML summary of this visit — job details, checklist, your notes, and the tracking timeline — generated from the real job record. It is a service summary, not an invoice.</p>'+
     '<div class="btnrow"><button class="btn navy" type="button" onclick="wsReport(\''+id+'\')">Download service report</button></div></div></div>';
@@ -1229,6 +1287,7 @@ function wsRender(){
     var bx=document.getElementById('ainote-'+id);
     if(bx){ bx.value=dt.text; bx.scrollIntoView({behavior:'smooth',block:'center'}); aiNotePreview(id); }
   }
+  if(window._plugOpenParts){ window._plugOpenParts=false; wsTabShow('parts'); }
   wsLockActions();
 }
 function wsToggleCheck(id){
@@ -1253,15 +1312,16 @@ function wsSaveNote(id){
     .then(function(j){ if(_wsView) _wsView.notes=j.data.notes; _wsTab='notes'; wsRender(); toast('Note saved to the job record'); })
     .catch(function(e){ toast('Note save failed: '+e.message); });
 }
-function wsAskSpeedy(id){
+function askPepper(prefill){
+  var bar=document.querySelector('.pcb-bar');
+  if(!bar){ toast('Ask Pepper is still loading — try again in a moment'); return; }
+  bar.click();
+  if(prefill){ setTimeout(function(){ var inp=document.querySelector('.pcb-input input[type="text"]'); if(inp){ inp.value=prefill; inp.focus(); } },300); }
+}
+function wsAskPepper(id){
   var a=(window._techAssignments||[]).filter(function(x){ return x.id===id; })[0];
   var b=(a&&a.booking)||{};
-  var q='About my job '+(b.referenceCode||'')+': '+(b.appliance||'appliance')+' — '+(b.issue||'')+'. ';
-  if(window.TSOpenSpeedy){ TSOpenSpeedy(); }
-  setTimeout(function(){
-    var inp=document.querySelector('#tswForm input[type="text"]');
-    if(inp){ inp.value=q; inp.focus(); }
-  },220);
+  askPepper('About my job '+(b.referenceCode||'')+': '+(b.appliance||'appliance')+' \u2014 '+(b.issue||'')+' in '+(b.city||'')+'. ');
 }
 function wsReport(id){
   var view=_wsView;
@@ -1315,8 +1375,8 @@ function plugPaneHtml(id, b){
   var orders=(_wsView&&_wsView.partsOrders)||[];
   return '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Appliance Plug — snap &amp; order for this job</h3>'+
     '<p class="note" style="margin:4px 0 10px">Orders created here carry this job\u2019s reference ('+escT(b.referenceCode||'')+') automatically. Appliance Plus Parts Supply is routed first as a Parts Supply OS draft; other distributors second.</p>'+
-    '<p class="demo" style="color:var(--red)">Step 1 — Snap the model plate</p>'+
-    '<div class="btnrow" style="margin:8px 0"><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="document.getElementById(\'plugFile\').click()">'+ICO_CAM+' Snap / upload plate photo</button></div>'+
+    '<p class="demo" style="color:var(--red)">Step 1 — Snap the model plate (camera opens in place)</p>'+
+    '<div class="btnrow" style="margin:8px 0"><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="plugCamOpen(\''+id+'\')">'+ICO_CAM+' Open camera — snap the plate</button><button class="btn no" type="button" onclick="document.getElementById(\'plugFile\').click()">Upload instead</button></div>'+
     '<input id="plugFile" type="file" accept="image/*" capture="environment" style="display:none" onchange="plugSnap(this,\''+id+'\')">'+
     '<div id="plugMsg" style="font-size:13px;margin:2px 0 8px"></div>'+
     '<label style="font-size:12px;font-weight:800;color:#5A6E94">BRAND</label><input id="plug-brand" style="'+inp+'" value="'+escT(f.brand)+'" oninput="_plugFields.brand=this.value" placeholder="As printed on the plate">'+
@@ -1324,9 +1384,9 @@ function plugPaneHtml(id, b){
     '<label style="font-size:12px;font-weight:800;color:#5A6E94">SERIAL</label><input id="plug-serial" style="'+inp+'" value="'+escT(f.serial)+'" oninput="_plugFields.serial=this.value" placeholder="As printed on the plate">'+
     '<div style="display:flex;gap:8px"><div style="flex:1"><label style="font-size:12px;font-weight:800;color:#5A6E94">TYPE</label><input id="plug-type" style="'+inp+'" value="'+escT(f.type)+'" oninput="_plugFields.type=this.value"></div>'+
     '<div style="flex:1"><label style="font-size:12px;font-weight:800;color:#5A6E94">FUEL / POWER</label><input id="plug-fuel" style="'+inp+'" value="'+escT(f.fuel)+'" oninput="_plugFields.fuel=this.value" placeholder="Electric, gas…"></div></div>'+
-    '<p class="note">Speedy\u2019s read is a draft — confirm every field against the plate. Wrong model means wrong parts.</p></div>'+
+    '<p class="note">The plate read is a draft — confirm every field against the plate. Wrong model means wrong parts.</p></div>'+
     '<div class="card"><p class="demo" style="color:var(--red)">Step 2 — Find part categories</p>'+
-    '<div class="btnrow" style="margin:8px 0"><button class="btn navy" type="button" onclick="plugFind(\''+id+'\')">Find parts with Speedy</button></div>'+
+    '<div class="btnrow" style="margin:8px 0"><button class="btn navy" type="button" onclick="plugFind(\''+id+'\')">Find part categories</button></div>'+
     '<div id="plugCands"><p class="note" style="margin:0">Categories appear here with fitment and verify-first notes — never OEM part numbers or prices.</p></div></div>'+
     '<div class="card"><p class="demo" style="color:var(--red)">Step 3 — Order draft for '+escT(b.referenceCode||'this job')+'</p>'+
     '<label style="font-size:12px;font-weight:800;color:#5A6E94">ROUTE TO</label>'+
@@ -1366,22 +1426,7 @@ function plugSnap(input, id){
     cv.width=Math.max(1, Math.round(img.width*sc)); cv.height=Math.max(1, Math.round(img.height*sc));
     cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
     URL.revokeObjectURL(url);
-    var dataUrl=cv.toDataURL('image/jpeg', 0.85);
-    plugMsg('Speedy is reading the plate…');
-    tFetch('/provider/assignments/'+id+'/plate-read', {method:'POST', body:JSON.stringify({imageDataUrl:dataUrl})})
-      .then(function(j){
-        var p=j.data.plate||{};
-        if(!_plugFields) _plugFields={brand:'',model:'',serial:'',type:'',fuel:''};
-        if(p.brand) _plugFields.brand=p.brand;
-        if(p.model) _plugFields.model=p.model;
-        if(p.serial) _plugFields.serial=p.serial;
-        if(p.appliance_type) _plugFields.type=p.appliance_type;
-        if(p.fuel) _plugFields.fuel=p.fuel;
-        var set=function(eid, v){ var n=document.getElementById(eid); if(n&&v) n.value=v; };
-        set('plug-brand', p.brand); set('plug-model', p.model); set('plug-serial', p.serial); set('plug-type', p.appliance_type); set('plug-fuel', p.fuel);
-        plugMsg('Plate read'+(p.confidence!=null?' ('+Math.round(p.confidence*100)+'% read confidence)':'')+' — check every field against the plate, then find parts.', true);
-      })
-      .catch(function(e){ plugMsg('Plate read unavailable: '+e.message+' You can still type the plate details in by hand.'); });
+    plugReadDataUrl(cv.toDataURL('image/jpeg', 0.85), id);
   };
   img.onerror=function(){ URL.revokeObjectURL(url); plugMsg('That photo could not be opened — try another.'); };
   img.src=url;
@@ -1393,11 +1438,11 @@ function plugFind(id){
   var get=function(eid, cur){ var n=document.getElementById(eid); return n?n.value.trim():(cur||''); };
   f.brand=get('plug-brand', f.brand); f.model=get('plug-model', f.model); f.serial=get('plug-serial', f.serial); f.type=get('plug-type', f.type); f.fuel=get('plug-fuel', f.fuel);
   _plugFields=f;
-  box.innerHTML='<p class="note" style="margin:0">Speedy is lining up part categories…</p>';
+  box.innerHTML='<p class="note" style="margin:0">Lining up part categories…</p>';
   tFetch('/provider/assignments/'+id+'/parts-finder', {method:'POST', body:JSON.stringify({brand:f.brand||undefined, model:f.model||undefined, applianceType:f.type||undefined})})
     .then(function(j){
       _plugCands=j.data.candidates||[];
-      if(!_plugCands.length){ box.innerHTML='<p class="note" style="margin:0">Speedy returned no categories for this one — add the confirmed model details and try again, or ask Speedy in chat.</p>'; return; }
+      if(!_plugCands.length){ box.innerHTML='<p class="note" style="margin:0">No categories came back for this one — add the confirmed model details and try again, or ask dispatch.</p>'; return; }
       box.innerHTML=_plugCands.map(function(cd, ix){
         return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px">'+
           '<label class="chk" style="border:0;padding:0"><input type="checkbox" class="plug-pick" data-ix="'+ix+'" checked><span><b>'+escT(cd.category)+'</b></span></label>'+
@@ -1455,6 +1500,8 @@ function loadPlugOrders(){
     .then(function(j){
       var orders=j.data.orders||[];
       box.innerHTML=orders.length?orders.map(function(o){ return plugOrderCard(o, o.assignmentId, 'plug'); }).join(''):'<p class="note">No parts orders yet. Open a job from Field Pro and use its Parts tab to snap &amp; order.</p>';
+      var pbox=document.getElementById('partsOrdersList');
+      if(pbox) pbox.innerHTML=box.innerHTML;
     })
     .catch(function(e){ box.innerHTML='<p class="note">Orders unavailable: '+escT(e.message)+'</p>'; });
 }
@@ -1464,10 +1511,620 @@ function loadPlugOrders(){
 })();
 </script>
 
+
+<script>
+/* ================= FIELD PRO — FULL PACKAGE (2026-11-19) =================
+   The dispatch board, the consolidated job record (/full), unified
+   data-entry forms (the SAME Service OS records Book OS / CRM read),
+   AI-fill drafts (Speedy populates, the tech confirms — nothing
+   saves from a draft alone), the review-link flow, warranty records,
+   and the Parts / Company screens. Every panel below reads and
+   writes real endpoints; an empty record renders an honest empty
+   state, never placeholder data. */
+function blobToDataUrl(blob){
+  return new Promise(function(resolve, reject){
+    var reader=new FileReader();
+    reader.onload=function(){ resolve(reader.result); };
+    reader.onerror=reject;
+    reader.readAsDataURL(blob);
+  });
+}
+function money0(cents){ return tpMoney(cents); }
+
+/* ---------------- Dispatch board (Today) ---------------- */
+function boardRow(a){
+  var b=a.booking||{};
+  var done=b.status==='COMPLETED';
+  var chip=done?'<span class="st done">DONE</span>':(a.status==='APPROVED'?'<span class="st wait">OFFER</span>':'<span class="st next">ACCEPTED</span>');
+  var when=b.appointment?(escT(b.appointment.windowLabel||'')+' · '+tDateLabel(b.appointment.date)):'Window TBD';
+  return '<div class="card job" onclick="openWorkspace(\''+a.id+'\')"><div class="when">'+when+'</div><div><h3>'+escT(b.appliance||'Appliance')+' — '+escT(b.issue||'')+'</h3><p>'+escT(b.city||'')+' · '+escT(b.zip||'')+(b.customer?' · '+escT(b.customer.name||''):'')+(a.providerBusinessName?' · '+escT(a.providerBusinessName):'')+'</p><p style="color:var(--navy);font-weight:700;margin-top:4px">Open full record →</p></div>'+chip+'</div>';
+}
+function boardSection(title, list){
+  if(!list||!list.length) return '';
+  return '<div class="board-sec"><h3>'+escT(title)+' ('+list.length+')</h3>'+list.map(boardRow).join('')+'</div>';
+}
+function loadDispatchBoard(){
+  var host=document.getElementById('dispatchBoard');
+  if(!host||!tTok()) return;
+  tFetch('/provider/overview').then(function(j){
+    var d=j.data||{};
+    window._fpOverview=d;
+    var c=d.counts||{};
+    var html='<div class="ovw">'+
+      '<div class="tile"><div class="n">'+(c.offers||0)+'</div><div class="l">Offers waiting</div></div>'+
+      '<div class="tile"><div class="n">'+(c.accepted||0)+'</div><div class="l">Accepted — active</div></div>'+
+      '<div class="tile"><div class="n">'+(c.inProgress||0)+'</div><div class="l">In progress</div></div>'+
+      '<div class="tile"><div class="n">'+(c.awaitingParts||0)+'</div><div class="l">Awaiting parts</div></div>'+
+      '<div class="tile"><div class="n">'+(c.awaitingDiagnosis||0)+'</div><div class="l">Awaiting diagnosis</div></div>'+
+      '<div class="tile"><div class="n">'+(c.completedToday||0)+'</div><div class="l">Completed today</div></div></div>';
+    if(d.oversight&&d.perProvider&&d.perProvider.length){
+      html+='<div class="card"><span class="tp-lab" style="margin-top:0">Team — all providers</span>'+
+        d.perProvider.map(function(p){ return '<div class="kv"><span>'+escT(p.businessName)+'</span><b>'+p.offers+' offers · '+p.accepted+' accepted · '+p.completedToday+' done today</b></div>'; }).join('')+
+        '<span class="tp-lab">Filter board by provider</span><select class="tp-in" id="boardProvFilter" onchange="boardFilter(this.value)"><option value="">All providers</option>'+
+        d.perProvider.map(function(p){ return '<option value="'+p.providerId+'">'+escT(p.businessName)+'</option>'; }).join('')+'</select></div>';
+    }
+    html+='<div id="boardGroups"><div class="board-grid">'+
+      '<div>'+boardSection('Offers waiting', d.offers)+boardSection('Accepted — active jobs', d.accepted)+'</div>'+
+      '<div>'+boardSection('In progress', d.inProgress)+boardSection('Awaiting parts', d.awaitingParts)+boardSection('Awaiting diagnosis', d.awaitingDiagnosis)+boardSection('Completed today', d.completedToday)+'</div>'+
+      '</div></div>';
+    if(!(c.offers||c.accepted||c.completedToday)) html+='<div class="card"><p class="note" style="margin:0">The board is clear — no offers waiting, no active jobs, nothing completed yet today. New dispatch from Service Setters lands here live.</p></div>';
+    if(c.lowStock) html+='<div class="card" style="border-left:4px solid #ffb020"><p class="note" style="margin:0"><b>'+c.lowStock+' catalog part'+(c.lowStock===1?' is':'s are')+' at or below reorder point.</b> See Parts for van stock and suppliers.</p></div>';
+    if(c.openWarrantyClaims) html+='<div class="card" style="border-left:4px solid var(--navy)"><p class="note" style="margin:0"><b>'+c.openWarrantyClaims+' open warranty claim'+(c.openWarrantyClaims===1?'':'s')+'.</b> Look them up under More → Warranty claims.</p></div>';
+    host.innerHTML=html;
+  }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Dispatch board unavailable: '+escT(e.message)+'</p></div>'; });
+}
+function boardFilter(providerId){
+  var d=window._fpOverview; if(!d) return;
+  var host=document.getElementById('boardGroups'); if(!host) return;
+  var pick=function(list){ return providerId?(list||[]).filter(function(a){ return a.providerId===providerId; }):(list||[]); };
+  host.innerHTML='<div class="board-grid"><div>'+boardSection('Offers waiting', pick(d.offers))+boardSection('Accepted — active jobs', pick(d.accepted))+'</div>'+
+    '<div>'+boardSection('In progress', pick(d.inProgress))+boardSection('Awaiting parts', pick(d.awaitingParts))+boardSection('Awaiting diagnosis', pick(d.awaitingDiagnosis))+boardSection('Completed today', pick(d.completedToday))+'</div></div>';
+}
+
+/* ---------------- Job picker (Field Pro with no job open) ---------------- */
+function wsJobPicker(){
+  var root=document.getElementById('wsRoot'); if(!root) return;
+  if(!tTok()){ root.innerHTML='<div class="card"><p class="note" style="margin:0">Sign in above — your jobs and their full records load here.</p></div>'; return; }
+  var all=window._techAssignments||[];
+  var accepted=all.filter(function(a){ return a.status==='ACCEPTED'; });
+  var offers=all.filter(function(a){ return a.status==='APPROVED'; });
+  var html='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Field Pro — pick a job</h3><p class="note" style="margin:4px 0 0">Every accepted job opens its full record: customer, property, appliance, diagnosis, estimate, invoice, payments, warranty and review — one record, the same one the office sees.</p></div>';
+  html+=accepted.length?accepted.map(boardRow).join(''):'<div class="card"><p class="note" style="margin:0">No accepted jobs right now.'+(offers.length?' You have '+offers.length+' offer'+(offers.length===1?'':'s')+' waiting — accept from the Offers tab and it lands here.':' Offers land in the Offers tab when Service Setters dispatch matches you.')+'</p></div>';
+  root.innerHTML=html;
+}
+
+/* ---------------- Details pane: the consolidated record ---------------- */
+function fpDetailsHtml(view, id){
+  var bk=view.booking||{};
+  var cust=(view.customer&&view.customer.record)||{};
+  var ab=view.assignment.booking||{};
+  var name=cust.name||(ab.customer||{}).name||'';
+  var phone=cust.phone||(ab.customer||{}).phone||'';
+  var email=cust.email||'';
+  var address=bk.serviceAddress||cust.address||(ab.customer||{}).address||'';
+  var prop=view.property||null;
+  var ap=view.appliance||{};
+  var hist=(view.customer&&view.customer.serviceHistory)||[];
+  var oversight=!!window._techOversight;
+  var ow=oversight?' data-office-write':'';
+  var h='';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Job</h3>'+
+    '<div class="kv"><span>Reference</span><b>'+escT(bk.referenceCode||'')+'</b></div>'+
+    '<div class="kv"><span>Status</span><b>'+escT(bk.status||'')+'</b></div>'+
+    '<div class="kv"><span>Appointment</span><b>'+(bk.appointment?escT(bk.appointment.windowLabel||'')+' · '+tDateLabel(bk.appointment.date):'To be set by dispatch')+'</b></div>'+
+    '<div class="kv"><span>Segment</span><b>'+escT(bk.segment||'RESIDENTIAL')+'</b></div>'+
+    '<div class="kv"><span>Source</span><b>'+escT(bk.source||'—')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Assigned to</span><b>'+escT((view.technician&&view.technician.provider&&view.technician.provider.businessName)||'—')+'</b></div></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Customer &amp; account</h3>'+
+    '<div class="kv"><span>Name</span><b>'+escT(name||'—')+'</b></div>'+
+    '<div class="kv"><span>Phone</span><b>'+(phone?'<a href="tel:'+escT(phone)+'">'+escT(phone)+'</a>':'—')+'</b></div>'+
+    '<div class="kv"><span>Email</span><b>'+escT(email||'—')+'</b></div>'+
+    '<div class="kv"><span>Service address</span><b style="text-align:right;max-width:60%">'+escT(address||'—')+'</b></div>'+
+    '<div class="kv"><span>Bookings on this account</span><b>'+((view.customer&&view.customer.bookingHistoryCount)||0)+'</b></div>'+
+    (hist.length?'<span class="tp-lab">Service history</span>'+hist.slice(0,8).map(function(x){ return '<div class="kv"><span>'+escT(x.referenceCode||'')+' · '+escT(x.appliance||'')+'</span><b>'+escT(x.status||'')+'</b></div>'; }).join(''):'<p class="note" style="margin:6px 0 0">No earlier bookings on this customer record.</p>')+
+    '</div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Property</h3>'+
+    (prop?'<div class="kv"><span>Label</span><b>'+escT(prop.label||'Service address')+'</b></div>'+
+      '<div class="kv"><span>Address</span><b style="text-align:right;max-width:60%">'+escT(prop.address||'')+(prop.unit?' · Unit '+escT(prop.unit):'')+'</b></div>'+
+      '<div class="kv"><span>City · ZIP</span><b>'+escT(prop.city||'')+' '+escT(prop.zip||'')+'</b></div>'+
+      '<div class="kv" style="border-bottom:0"><span>Access notes</span><b style="text-align:right;max-width:60%">'+escT(prop.accessNotes||'—')+'</b></div>'
+    :'<p class="note" style="margin:4px 0 0">No property record saved for this customer yet — save one below and it attaches to the customer record for every future job.</p>')+
+    '<span class="tp-lab">Label</span><input class="tp-in" id="pf-label" value="'+escT(prop?prop.label||'':'')+'" placeholder="e.g. Main home, Rental unit 4">'+
+    '<div class="tp-row"><div><span class="tp-lab">Unit</span><input class="tp-in" id="pf-unit" value="'+escT(prop?prop.unit||'':'')+'" placeholder="Unit / apt"></div>'+
+    '<div><span class="tp-lab">Address</span><input class="tp-in" id="pf-address" value="'+escT(prop?prop.address||'':address)+'" placeholder="Street address"></div></div>'+
+    '<span class="tp-lab">Access notes (gate code, parking, entry)</span><textarea class="tp-in" id="pf-access" rows="2" placeholder="Anything the next tech needs to get in">'+escT(prop?prop.accessNotes||'':'')+'</textarea>'+
+    '<div class="btnrow" style="margin-top:8px"><button class="btn navy" type="button" onclick="fpPropertySave(\''+id+'\')">Save property</button></div>'+
+    '<div id="pf-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Appliance</h3>'+
+    '<div class="kv"><span>Type</span><b>'+escT(ap.type||'—')+'</b></div>'+
+    '<div class="kv"><span>Brand</span><b>'+escT(ap.brand||'—')+'</b></div>'+
+    '<div class="kv"><span>Model</span><b>'+escT(ap.model||'—')+'</b></div>'+
+    '<div class="kv"><span>Serial</span><b>'+escT(ap.serial||'—')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Reported issue</span><b style="text-align:right;max-width:60%">'+escT(ap.issue||'—')+'</b></div>'+
+    ((ap.garage&&ap.garage.length)?'<span class="tp-lab">Customer appliance garage</span>'+ap.garage.map(function(g){ return '<div class="kv"><span>'+escT(g.type||'Appliance')+'</span><b>'+escT(g.brand||'')+' '+escT(g.model||'')+'</b></div>'; }).join(''):'<p class="note" style="margin:6px 0 0">Brand, model and serial land here from the Diagnosis tab or an Appliance Plug plate read. The customer\u2019s saved appliance garage is empty for this account.</p>')+
+    '</div>';
+  // The unified edit form — same record Book OS / CRM read.
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">'+(oversight?'Office fields — edit the shared record':'Edit job details — the shared record')+'</h3>'+
+    '<p class="note" style="margin:4px 0 6px">These fields ARE the booking and CRM customer record — saving here updates what the office sees in Book OS / CRM, and office edits show here. Every change is logged on the job with what changed.</p>'+
+    '<span class="tp-lab">Customer name</span><input class="tp-in" id="bd-name"'+ow+' value="'+escT(name)+'">'+
+    '<div class="tp-row"><div><span class="tp-lab">Phone</span><input class="tp-in" id="bd-phone"'+ow+' value="'+escT(phone)+'"></div>'+
+    '<div><span class="tp-lab">Email</span><input class="tp-in" id="bd-email"'+ow+' value="'+escT(email)+'" placeholder="customer@email.com"></div></div>'+
+    '<span class="tp-lab">Service address</span><input class="tp-in" id="bd-address"'+ow+' value="'+escT(address)+'">'+
+    '<div class="tp-row"><div><span class="tp-lab">City</span><input class="tp-in" id="bd-city"'+ow+' value="'+escT(bk.city||'')+'"></div>'+
+    '<div><span class="tp-lab">ZIP</span><input class="tp-in" id="bd-zip"'+ow+' value="'+escT(bk.zip||'')+'"></div></div>'+
+    '<div class="tp-row"><div><span class="tp-lab">Appliance</span><input class="tp-in" id="bd-appliance"'+ow+' value="'+escT(bk.appliance||'')+'"></div>'+
+    '<div><span class="tp-lab">Preferred window</span><input class="tp-in" id="bd-window"'+ow+' value="'+escT(bk.preferredWindow||'')+'" placeholder="e.g. Weekday mornings"></div></div>'+
+    '<span class="tp-lab">Reported issue</span><textarea class="tp-in" id="bd-issue" rows="2"'+ow+'>'+escT(bk.issue||'')+'</textarea>'+
+    '<span class="tp-lab">Resolution (what fixed it / outcome)</span><textarea class="tp-in" id="bd-resolution" rows="2"'+ow+' placeholder="Filled in as the job wraps up">'+escT(bk.resolution||'')+'</textarea>'+
+    (oversight?'<div class="tp-row"><div><span class="tp-lab">Source</span><input class="tp-in" id="bd-source" data-office-write value="'+escT(bk.source||'')+'"></div>'+
+      '<div><span class="tp-lab">Segment</span><select class="tp-in" id="bd-segment" data-office-write><option value="RESIDENTIAL"'+(bk.segment!=='COMMERCIAL'?' selected':'')+'>Residential</option><option value="COMMERCIAL"'+(bk.segment==='COMMERCIAL'?' selected':'')+'>Commercial</option></select></div></div>':'')+
+    '<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button"'+ow+' onclick="fpDetailsSave(\''+id+'\','+(oversight?'true':'false')+')">Save changes to the shared record</button></div>'+
+    '<div id="bd-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Need a part for this job?</h3><p class="note" style="margin:4px 0 10px">Open Appliance Plug in the Parts tab — the camera reads the model plate, the parts finder lines up part categories, and the order draft carries this job\u2019s reference. Exact OEM part numbers and prices are confirmed by Parts Supply OS at order time.</p><div class="btnrow"><button class="btn navy" type="button" onclick="wsTabShow(\'parts\')">Snap &amp; order parts</button><button class="btn no" type="button" onclick="go(\'parts\')">Parts &amp; suppliers</button></div></div>';
+  return h;
+}
+function fpVal(elId){ var n=document.getElementById(elId); return n?n.value.trim():''; }
+function fpDetailsSave(id, office){
+  var m=document.getElementById('bd-msg');
+  var body={};
+  var put=function(key, elId){ var v=fpVal(elId); if(v) body[key]=v; };
+  put('customerName','bd-name'); put('customerPhone','bd-phone'); put('serviceAddress','bd-address');
+  put('city','bd-city'); put('zip','bd-zip'); put('appliance','bd-appliance'); put('issue','bd-issue');
+  var email=fpVal('bd-email'); body.customerEmail=email?email:null;
+  var win=fpVal('bd-window'); body.preferredWindow=win?win:null;
+  var res=fpVal('bd-resolution'); body.resolution=res?res:null;
+  if(office){ put('source','bd-source'); var seg=document.getElementById('bd-segment'); if(seg) body.segment=seg.value; }
+  tFetch('/provider/assignments/'+id+'/job-details'+(office?'/office':''),{method:'PATCH',body:JSON.stringify(body)})
+    .then(function(j){ toast('Saved — the office sees this record now ('+((j.data.updated||[]).length)+' fields)', ICO_CHECK); wsReload(id,'details'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not save'); m.style.color='#c2262e'; } });
+}
+function fpPropertySave(id){
+  var m=document.getElementById('pf-msg');
+  var body={ label:fpVal('pf-label')||null, unit:fpVal('pf-unit')||null, accessNotes:fpVal('pf-access')||null };
+  var addr=fpVal('pf-address'); if(addr) body.address=addr;
+  tFetch('/provider/assignments/'+id+'/property',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Property saved to the customer record', ICO_CHECK); wsReload(id,'details'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not save the property'); m.style.color='#c2262e'; } });
+}
+</script>
+
+<script>
+/* ================= FIELD PRO — AI FILL, KNOWLEDGE, MONEY, WARRANTY ================= */
+function tpAiFillHtml(id){
+  return '<div class="card" style="border-left:4px solid #ffb020"><h3 style="font-size:14px;color:var(--navy)">Describe it — AI fills the form</h3>'+
+  '<p class="note" style="margin:4px 0 8px">Say or type what you found, in your own words. The AI drafts the diagnosis fields below — a <b>draft</b>: review and edit every field, then tap “Save diagnosis”. Nothing saves or sends from the draft alone, and the AI never invents a confirmed fault or a price.</p>'+
+  '<textarea class="tp-in" id="dg-ai-text" rows="3" placeholder="e.g. Samsung fridge, warm on top, frost on the back wall, fan not running — tested the fan motor, open winding. Needs a new evaporator fan motor."></textarea>'+
+  '<div class="btnrow" style="margin-top:8px"><button class="btn" type="button" style="background:#FFB300;color:#141414" onclick="tpAiFill(\''+id+'\')">'+ICO_SPARK+' Fill the form with AI</button></div>'+
+  '<div id="dg-ai-msg" style="margin-top:7px;font-size:13.5px"></div><div id="dg-ai-parts"></div></div>';
+}
+function tpAiFill(id){
+  var m=document.getElementById('dg-ai-msg');
+  var text=fpVal('dg-ai-text');
+  if(text.length<3){ if(m){ m.textContent='Describe the job first.'; m.style.color='#c2262e'; } return; }
+  if(m){ m.textContent='Drafting the form…'; m.style.color='#5A6E94'; }
+  tFetch('/provider/assignments/'+id+'/ai-diagnosis/preview',{method:'POST',body:JSON.stringify({text:text})})
+    .then(function(j){
+      var d=j.data.draft||{};
+      var filled=[];
+      var set=function(elId, v, label){ if(!v) return; var n=document.getElementById(elId); if(n){ n.value=v; n.classList.add('draft-fill'); filled.push(label); } };
+      set('dg-brand', d.brand, 'brand'); set('dg-model', d.model, 'model'); set('dg-serial', d.serial, 'serial');
+      set('dg-symptoms', d.symptoms, 'symptoms'); set('dg-fault', d.confirmed_fault, 'confirmed fault'); set('dg-repair', d.recommended_repair, 'recommended repair');
+      var partsBox=document.getElementById('dg-ai-parts');
+      if(partsBox){
+        partsBox.innerHTML=(d.parts_suggested&&d.parts_suggested.length)
+          ? '<p class="note" style="margin:8px 0 0"><b>Part categories suggested:</b> '+d.parts_suggested.map(escT).join(' · ')+'<br>Find and order them in the Parts tab (Appliance Plug) — exact part and price are confirmed by Parts Supply OS.</p>'
+          : '';
+      }
+      if(m){ m.innerHTML=ICO_CHECK+' Draft filled: '+(filled.length?filled.join(', '):'no fields matched')+'. Review every field below, then tap <b>Save diagnosis to job</b>.'; m.style.color='#0f7a3d'; }
+    })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'The draft could not be built'); m.style.color='#c2262e'; } });
+}
+function tpKbHtml(view){
+  var initial=(view.knowledge||[]).map(tpKbRow).join('');
+  return '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Repair reference — platform knowledge base</h3>'+
+  '<p class="note" style="margin:4px 0 8px">Real platform knowledge only — the platform’s own knowledge entries. Search a symptom, appliance or repair.</p>'+
+  '<div class="tp-row"><input class="tp-in" id="kb-q" placeholder="e.g. refrigerator not cooling" onkeydown="if(event.key===\'Enter\')tpKbSearch()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="tpKbSearch()">Search</button></div>'+
+  '<div id="kb-results" style="margin-top:8px">'+(initial||'<p class="note" style="margin:0">Suggestions for this job\u2019s appliance appear here.</p>')+'</div></div>';
+}
+function tpKbRow(r){
+  return '<div class="note-entry"><p><b>'+escT(r.topic||'')+'</b></p><p>'+escT(r.answer||'')+'</p><small>'+escT(r.pack||'')+'</small></div>';
+}
+function tpKbSearch(){
+  var q=fpVal('kb-q');
+  var box=document.getElementById('kb-results'); if(!box) return;
+  if(q.length<2){ box.innerHTML='<p class="note" style="margin:0">Type at least two characters.</p>'; return; }
+  box.innerHTML='<p class="note" style="margin:0">Searching the knowledge base…</p>';
+  tFetch('/provider/knowledge?q='+encodeURIComponent(q))
+    .then(function(j){
+      var rows=(j.data.results||[]).map(tpKbRow).join('');
+      box.innerHTML=rows||'<p class="note" style="margin:0">No knowledge entry matches that yet — the base grows from real platform content only.</p>';
+    })
+    .catch(function(e){ box.innerHTML='<p class="note" style="margin:0">Knowledge search unavailable: '+escT(e.message)+'</p>'; });
+}
+/* Estimate: Speedy part suggestions fill LINES (descriptions only).
+   Prices stay blank for the tech — the server computes money from
+   the real pricing rules; AI never proposes a price. */
+function tpEstFillFromSpeedy(id){
+  var m=document.getElementById('est-msg');
+  var d=(_wsView&&_wsView.diagnosis)||{};
+  if(m){ m.textContent='Lining up part categories…'; m.style.color='#5A6E94'; }
+  tFetch('/provider/assignments/'+id+'/parts-finder',{method:'POST',body:JSON.stringify({brand:d.applianceBrand||undefined, model:d.model||undefined, applianceType:(_wsView&&_wsView.assignment&&_wsView.assignment.booking&&_wsView.assignment.booking.appliance)||undefined})})
+    .then(function(j){
+      var cands=j.data.candidates||[];
+      if(!cands.length){ if(m){ m.textContent='No part categories came back for this job — add lines by hand or run the finder in the Parts tab.'; m.style.color='#c2262e'; } return; }
+      // Drop the initial blank line if it is untouched.
+      var box=document.getElementById('est-lines');
+      if(box&&box.children.length===1){ var only=box.children[0]; if(only&&!only.querySelector('.est-d').value.trim()) box.innerHTML=''; }
+      cands.forEach(function(cd){ tpEstAddLine(cd.category, 1, ''); });
+      tpEstPreview();
+      if(m){ m.innerHTML=ICO_CHECK+' AI filled '+cands.length+' part line'+(cands.length===1?'':'s')+' — descriptions only. Enter each quoted price, then Save estimate.'; m.style.color='#0f7a3d'; }
+    })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Parts Finder unavailable'); m.style.color='#c2262e'; } });
+}
+/* ---------------- Estimate decision + invoice ---------------- */
+function fpDecisionHtml(view, id){
+  var e=view.estimate;
+  if(!e) return '';
+  var dec=view.estimateDecision||null;
+  var current=dec&&dec.estimateId===e.id;
+  var inv=view.invoice||null;
+  var h='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Customer decision &amp; invoice</h3>';
+  if(current&&dec.decision==='APPROVED'){
+    h+='<p class="note" style="margin:4px 0 0;color:#157347;font-weight:700">'+ICO_CHECK+' Customer APPROVED estimate v'+e.version+' — '+tpTime(dec.at)+(dec.authorizedByName?' · '+escT(dec.authorizedByName):'')+'</p>';
+  } else if(current&&dec.decision==='DECLINED'){
+    h+='<p class="note" style="margin:4px 0 0;color:#c2262e;font-weight:700">Customer DECLINED estimate v'+e.version+' — '+tpTime(dec.at)+(dec.note?' · '+escT(dec.note):'')+'</p>'+
+       '<p class="note" style="margin:4px 0 0">A declined quote stays on the record. Revise the estimate above and save a new version if the customer reconsiders.</p>';
+  } else {
+    h+='<p class="note" style="margin:4px 0 6px">No decision recorded for estimate v'+e.version+' yet. Record what the customer decided — approval unlocks the invoice.</p>'+
+    '<span class="tp-lab">How did they decide?</span><select class="tp-in" id="dec-method"><option value="IN_PERSON_VERBAL">In person — verbal</option><option value="SIGNATURE_ON_DEVICE">Signature on device</option><option value="PHONE">By phone</option><option value="TEXT">By text</option><option value="EMAIL">By email</option><option value="OTHER">Other</option></select>'+
+    '<span class="tp-lab">Customer name (for approval)</span><input class="tp-in" id="dec-name" placeholder="Who approved">'+
+    '<span class="tp-lab">Note (optional)</span><input class="tp-in" id="dec-note" placeholder="Anything about the decision worth recording">'+
+    '<div class="btnrow" style="margin-top:9px"><button class="btn go" type="button" onclick="tpDecision(\''+id+'\',\'APPROVED\')">'+ICO_CHECK+' Record approval</button><button class="btn no" type="button" onclick="tpDecision(\''+id+'\',\'DECLINED\')">Record decline</button></div>';
+  }
+  h+='<div id="dec-msg" style="margin-top:7px;font-size:13.5px"></div>';
+  if(inv){
+    h+='<div class="kv" style="margin-top:6px"><span>Invoice</span><b>'+money0(Math.round(Number(inv.total||0)*100))+' · '+escT(inv.status||'')+'</b></div>'+
+       '<p class="note" style="margin:4px 0 0">Generated from approved estimate v'+e.version+'. Receipts recorded in Pay &amp; close move it to partially paid / paid — a receipt can never exceed the balance due.</p>';
+  } else if(current&&dec.decision==='APPROVED'){
+    h+='<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button" onclick="tpInvoiceGen(\''+id+'\')">Generate invoice from this estimate</button></div>';
+  }
+  return h+'</div>';
+}
+function tpDecision(id, decision){
+  var m=document.getElementById('dec-msg');
+  var body={ decision:decision };
+  var method=document.getElementById('dec-method'); if(method) body.method=method.value;
+  var nm=fpVal('dec-name'); if(nm) body.authorizedByName=nm;
+  var nt=fpVal('dec-note'); if(nt) body.note=nt;
+  tFetch('/provider/assignments/'+id+'/estimate/decision',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast(decision==='APPROVED'?'Customer approval recorded':'Customer decline recorded — on the job record', ICO_CHECK); wsReload(id,'estimate'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not record the decision'); m.style.color='#c2262e'; } });
+}
+function tpInvoiceGen(id){
+  var m=document.getElementById('dec-msg');
+  tFetch('/provider/assignments/'+id+'/invoice',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){ toast('Invoice generated — '+money0(Math.round(Number(j.data.invoice.total||0)*100)), ICO_CHECK); wsReload(id,'estimate'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not generate the invoice'); m.style.color='#c2262e'; } });
+}
+/* ---------------- Review link (Pepper Lists reviews) ---------------- */
+function fpReviewHtml(view, id){
+  var rv=view.review||{};
+  if(!rv.link) return '';
+  var reqs=(rv.requests||[]).map(function(r){
+    return '<div class="kv"><span>'+escT(r.channel==='email'?'Email':'Text')+' → '+escT(r.to||'')+'</span><b>'+escT(r.status||'')+'</b></div>';
+  }).join('');
+  var h='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Review — after the job</h3>'+
+  '<div class="kv"><span>Review link</span><b style="text-align:right;max-width:62%;word-break:break-all">'+escT(rv.link)+'</b></div>'+
+  '<div class="btnrow" style="margin-top:8px"><button class="btn no" type="button" onclick="tpReviewCopy()">Copy review link</button><a class="btn no" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="'+escT(rv.link)+'" target="_blank" rel="noopener noreferrer">View reviews wall</a></div>';
+  if(rv.requested){
+    h+='<span class="tp-lab">Review request — sent through the platform outbox</span>'+reqs;
+  } else if(rv.completed){
+    h+='<p class="note" style="margin:8px 0 0">No review request has gone out for this job yet.</p>';
+  } else {
+    h+='<p class="note" style="margin:8px 0 0">The review request goes out after the job is completed.</p>';
+  }
+  if(rv.completed){
+    h+='<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button" onclick="tpReviewSend(\''+id+'\')">Send review request by email</button></div>'+
+       '<p class="note" style="margin:6px 0 0">Sends through the real notification outbox to the customer email on this job'+(rv.customerEmail?' ('+escT(rv.customerEmail)+')':' — none on record; add one in Details first')+'. If completion already queued it, this shows its live status instead of double-sending.</p>';
+  }
+  h+='<div id="rv-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  return h;
+}
+function tpReviewCopy(){
+  var rv=(_wsView&&_wsView.review)||{};
+  if(!rv.link) return;
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(rv.link).then(function(){ toast('Review link copied', ICO_CHECK); }).catch(function(){ toast('Copy failed — the link is shown on the card'); });
+  } else { toast('Copy is not available on this device — the link is shown on the card'); }
+}
+function tpReviewSend(id){
+  var m=document.getElementById('rv-msg');
+  tFetch('/provider/assignments/'+id+'/review-request',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){
+      if(m){ m.innerHTML=ICO_CHECK+(j.data.newlyQueued?' Review request queued in the outbox — it sends through the platform\u2019s real email delivery.':' Already queued at completion — status above is live; nothing was double-sent.'); m.style.color='#0f7a3d'; }
+      wsReload(id,'pay');
+    })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not send the review request'); m.style.color='#c2262e'; } });
+}
+/* ---------------- Warranty pane ---------------- */
+function fpWarrantyHtml(view, id){
+  var ws=view.warranties||[];
+  var claims=view.warrantyClaims||[];
+  var h='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Warranty coverage — this appliance</h3>';
+  if(ws.length){
+    h+=ws.map(function(w){
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin:8px 0 0">'+
+      '<div class="kv" style="padding-top:0"><span>Provider</span><b>'+escT(w.provider||'')+'</b></div>'+
+      '<div class="kv"><span>Coverage</span><b style="text-align:right;max-width:60%">'+escT(w.coverage||'—')+'</b></div>'+
+      '<div class="kv"><span>Policy #</span><b>'+escT(w.policyNumber||'—')+'</b></div>'+
+      '<div class="kv"><span>Expires</span><b>'+escT(w.expiresAt?String(w.expiresAt).slice(0,10):'—')+'</b></div>'+
+      '<div class="kv" style="border-bottom:0"><span>Claim status</span><b>'+escT(w.claimStatus||'Not Filed')+'</b></div></div>';
+    }).join('');
+  } else {
+    h+='<p class="note" style="margin:4px 0 0"><b>No warranty recorded</b> for this job\u2019s appliance. If the customer has coverage (home warranty, manufacturer, extended plan), record exactly what their paperwork says below — never guess coverage.</p>';
+  }
+  h+='<span class="tp-lab">Warranty provider (as printed on their paperwork)</span><input class="tp-in" id="w-provider" placeholder="e.g. American Home Shield, Samsung">'+
+  '<span class="tp-lab">Coverage notes</span><input class="tp-in" id="w-coverage" placeholder="What the plan covers for this appliance">'+
+  '<div class="tp-row"><div><span class="tp-lab">Policy #</span><input class="tp-in" id="w-policy" placeholder="Policy / contract #"></div>'+
+  '<div><span class="tp-lab">Expires</span><input class="tp-in" id="w-expires" type="date"></div></div>'+
+  '<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button" onclick="tpWarrantySave(\''+id+'\')">Save warranty coverage</button></div>'+
+  '<div id="w-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Warranty claims on this job</h3>';
+  if(claims.length){
+    h+=claims.map(function(cl){
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin:8px 0 0">'+
+      '<div style="display:flex;gap:8px;align-items:center"><b style="font-size:13.5px">'+escT(cl.claimNumber||'Claim — number pending')+'</b><span class="st '+(cl.status==='CLOSED'?'done':(cl.status==='APPROVED'?'done':'prog'))+'" style="margin-left:auto">'+escT(cl.status||'OPEN')+'</span></div>'+
+      '<p style="font-size:13px;margin:6px 0 0">'+escT(cl.description||'')+'</p>'+
+      '<p class="note" style="margin:4px 0 0">'+escT(cl.warrantyProvider||'')+(cl.authorization?' · Auth: '+escT(cl.authorization):'')+(cl.amountCents!=null?' · '+money0(cl.amountCents):'')+' · '+tpTime(cl.createdAt)+'</p>'+
+      '<div class="tp-row" style="margin-top:7px"><select class="tp-in" id="wc-status-'+cl.id+'">'+
+      ['OPEN','FILED','APPROVED','DENIED','CLOSED'].map(function(st){ return '<option value="'+st+'"'+(cl.status===st?' selected':'')+'>'+st+'</option>'; }).join('')+
+      '</select><button class="btn no" type="button" style="flex:0 1 130px" onclick="tpClaimStatus(\''+cl.id+'\',\''+id+'\')">Update status</button></div></div>';
+    }).join('');
+  } else {
+    h+='<p class="note" style="margin:4px 0 0">No claims filed on this job yet.</p>';
+  }
+  h+='<span class="tp-lab">File a claim — what failed / what is needed</span><textarea class="tp-in" id="wc-desc" rows="2" placeholder="The covered failure and the work it needs"></textarea>'+
+  '<div class="tp-row"><div><span class="tp-lab">Claim # (if assigned)</span><input class="tp-in" id="wc-number" placeholder="From the warranty provider"></div>'+
+  '<div><span class="tp-lab">Authorization (if given)</span><input class="tp-in" id="wc-auth" placeholder="Auth # / name"></div></div>'+
+  '<span class="tp-lab">Amount claimed $ (optional)</span><input class="tp-in" id="wc-amount" type="number" min="0" step="0.01" placeholder="0.00">'+
+  '<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button" onclick="tpClaimSave(\''+id+'\')">File warranty claim</button></div>'+
+  '<div id="wc-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  return h;
+}
+function tpWarrantySave(id){
+  var m=document.getElementById('w-msg');
+  var provider=fpVal('w-provider');
+  if(provider.length<2){ if(m){ m.textContent='Enter the warranty provider exactly as the customer\u2019s paperwork names it.'; m.style.color='#c2262e'; } return; }
+  var body={ provider:provider, coverage:fpVal('w-coverage')||null, policyNumber:fpVal('w-policy')||null };
+  var exp=fpVal('w-expires'); if(exp) body.expiresAt=exp;
+  tFetch('/provider/assignments/'+id+'/warranty',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Warranty coverage recorded on the job', ICO_CHECK); wsReload(id,'warranty'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not save coverage'); m.style.color='#c2262e'; } });
+}
+function tpClaimSave(id){
+  var m=document.getElementById('wc-msg');
+  var desc=fpVal('wc-desc');
+  if(desc.length<3){ if(m){ m.textContent='Describe the covered failure first.'; m.style.color='#c2262e'; } return; }
+  var body={ description:desc, claimNumber:fpVal('wc-number')||null, authorization:fpVal('wc-auth')||null };
+  var amt=parseFloat(fpVal('wc-amount')); if(!isNaN(amt)&&amt>0) body.amountCents=Math.round(amt*100);
+  tFetch('/provider/assignments/'+id+'/warranty-claims',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Warranty claim filed on the job record', ICO_CHECK); wsReload(id,'warranty'); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not file the claim'); m.style.color='#c2262e'; } });
+}
+function tpClaimStatus(claimId, jobId){
+  var sel=document.getElementById('wc-status-'+claimId); if(!sel) return;
+  tFetch('/provider/warranty-claims/'+claimId+'/status',{method:'POST',body:JSON.stringify({status:sel.value})})
+    .then(function(){ toast('Claim status updated', ICO_CHECK); wsReload(jobId,'warranty'); })
+    .catch(function(e){ toast('Status update failed: '+(e.message||'error')); });
+}
+</script>
+
+<script>
+/* ================= APPLIANCE PLUG CAMERA + PARTS / COMPANY SCREENS ================= */
+/* The Plug opens straight into the camera (Ramone, 2026-11-19): the
+   PLCamera ladder — live viewfinder, capture input, file picker —
+   in place, never a bounce to another page. Captures feed the real
+   plate read; with a job they attach to that job's record, without
+   one the tech picks the job to attach to. */
+function plugCamOpen(jobId){
+  if(window.PLCamera&&PLCamera.open){
+    PLCamera.open({
+      title: jobId?'Appliance Plug — rating plate':'Appliance Plug — snap the plate',
+      allowVideo:false,
+      onPhoto:function(blob){
+        blobToDataUrl(blob).then(function(dataUrl){
+          if(jobId) plugReadDataUrl(dataUrl, jobId);
+          else plugStandRead(dataUrl);
+        });
+      }
+    });
+    return;
+  }
+  if(jobId){ var f=document.getElementById('plugFile'); if(f){ f.click(); return; } }
+  var sf=document.getElementById('plugStandFile'); if(sf) sf.click();
+}
+function plugAutoCam(){
+  if(!tTok()||window._plugCamAuto) return;
+  window._plugCamAuto=true;
+  setTimeout(function(){ plugCamOpen(); }, 400);
+}
+function plugReadDataUrl(dataUrl, id){
+  plugMsg('Reading the plate…');
+  tFetch('/provider/assignments/'+id+'/plate-read', {method:'POST', body:JSON.stringify({imageDataUrl:dataUrl})})
+    .then(function(j){
+      var p=j.data.plate||{};
+      if(!_plugFields) _plugFields={brand:'',model:'',serial:'',type:'',fuel:''};
+      if(p.brand) _plugFields.brand=p.brand;
+      if(p.model) _plugFields.model=p.model;
+      if(p.serial) _plugFields.serial=p.serial;
+      if(p.appliance_type) _plugFields.type=p.appliance_type;
+      if(p.fuel) _plugFields.fuel=p.fuel;
+      var set=function(eid, v){ var n=document.getElementById(eid); if(n&&v) n.value=v; };
+      set('plug-brand', p.brand); set('plug-model', p.model); set('plug-serial', p.serial); set('plug-type', p.appliance_type); set('plug-fuel', p.fuel);
+      plugMsg('Plate read'+(p.confidence!=null?' ('+Math.round(p.confidence*100)+'% read confidence)':'')+' — check every field against the plate, then find parts.', true);
+    })
+    .catch(function(e){ plugMsg('Plate read unavailable: '+e.message+' You can still type the plate details in by hand.'); });
+}
+function plugStandFilePick(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  blobToDataUrl(file).then(plugStandRead);
+  input.value='';
+}
+function plugStandMsg(text, ok){
+  var el=document.getElementById('plugStandMsg');
+  if(el){ el.textContent=text; el.style.color=ok?'#0f7a3d':'#5A6E94'; }
+}
+function plugStandRead(dataUrl){
+  window._plugPhoto=dataUrl;
+  plugStandMsg('Reading the plate…');
+  tFetch('/pepper-lists/plate-read',{method:'POST',body:JSON.stringify({imageDataUrl:dataUrl})})
+    .then(function(j){
+      var p=j.data.plate||{};
+      var accepted=(window._techAssignments||[]).filter(function(a){ return a.status==='ACCEPTED'; });
+      var jobs=accepted.length?accepted.map(function(a){
+        var b=a.booking||{};
+        return '<option value="'+a.id+'">'+escT(b.referenceCode||'')+' — '+escT(b.appliance||'Appliance')+' · '+escT(b.city||'')+'</option>';
+      }).join(''):'';
+      document.getElementById('plugStandResult').innerHTML=
+      '<div style="border-top:1px dashed var(--line);margin-top:10px;padding-top:10px">'+
+      '<p class="note" style="margin:0 0 4px"><b>Plate read'+(p.confidence!=null?' — '+Math.round(p.confidence*100)+'% confidence':'')+'.</b> Confirm every field against the plate before it goes on a job.</p>'+
+      '<span class="tp-lab">Brand</span><input class="tp-in" id="ps-brand" value="'+escT(p.brand||'')+'">'+
+      '<div class="tp-row"><div><span class="tp-lab">Model</span><input class="tp-in" id="ps-model" value="'+escT(p.model||'')+'"></div>'+
+      '<div><span class="tp-lab">Serial</span><input class="tp-in" id="ps-serial" value="'+escT(p.serial||'')+'"></div></div>'+
+      '<span class="tp-lab">Appliance type</span><input class="tp-in" id="ps-type" value="'+escT(p.appliance_type||'')+'">'+
+      (accepted.length?
+        '<span class="tp-lab">Attach the photo to this job</span><select class="tp-in" id="ps-job">'+jobs+'</select>'+
+        '<span class="tp-lab">Photo kind</span><select class="tp-in" id="ps-cat"><option value="BEFORE">Before</option><option value="DURING">During</option><option value="AFTER">After</option></select>'+
+        '<div class="btnrow" style="margin-top:9px"><button class="btn navy" type="button" onclick="plugStandAttach()">Attach photo + open the job\u2019s parts</button></div>'
+      :'<p class="note" style="margin:8px 0 0">No accepted job to attach to yet — accept an offer first, then snap the plate from that job\u2019s Parts tab, or come back here.</p>')+
+      '<div id="ps-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+      plugStandMsg('Plate read complete — confirm the fields below.', true);
+    })
+    .catch(function(e){ plugStandMsg('Plate read unavailable: '+e.message+' — sign in is required, and the plate-read service must be configured. You can still open a job and type the plate in its Parts tab.'); });
+}
+function plugStandAttach(){
+  var m=document.getElementById('ps-msg');
+  var sel=document.getElementById('ps-job'); if(!sel) return;
+  var jobId=sel.value;
+  var cat=(document.getElementById('ps-cat')||{}).value||'BEFORE';
+  _plugFields={ brand:fpVal('ps-brand'), model:fpVal('ps-model'), serial:fpVal('ps-serial'), type:fpVal('ps-type'), fuel:'' };
+  tFetch('/provider/assignments/'+jobId+'/photos',{method:'POST',body:JSON.stringify({category:cat, dataUrl:window._plugPhoto, caption:'Rating plate — Appliance Plug'})})
+    .then(function(){
+      window._plugKeepFields=true; window._plugOpenParts=true;
+      toast('Plate photo attached to the job — plate carried into its parts flow', ICO_CHECK);
+      openWorkspace(jobId);
+    })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not attach the photo'); m.style.color='#c2262e'; } });
+}
+/* ---------------- Parts screen ---------------- */
+function partsScreenLoad(){
+  if(!tTok()) return;
+  partsVanLoad(); loadPlugOrders(); suppliersLoad();
+}
+function partsVanLoad(){
+  var host=document.getElementById('partsVan'); if(!host) return;
+  tFetch('/provider/van-stock').then(function(j){
+    var items=j.data.items||[], catalog=j.data.catalog||[];
+    var oversight=!!j.data.oversight;
+    var rows=items.length?items.map(function(it){
+      return '<div class="kv" style="align-items:center"><span>'+escT(it.name||'')+(it.providerBusinessName?' · '+escT(it.providerBusinessName):'')+'<br><small style="color:var(--soft)">'+escT(it.sku||'')+'</small></span>'+
+      (oversight?'<b>'+it.qty+' on van</b>':'<span style="display:flex;gap:5px;align-items:center"><input class="tp-in" id="pv-qty-'+it.partId+'" type="number" min="0" value="'+it.qty+'" style="width:64px;padding:6px"><button class="btn no" type="button" style="padding:6px 10px" onclick="pvSet(\''+it.partId+'\')">Set</button></span>')+'</div>';
+    }).join(''):'<p class="note" style="margin:0 0 6px">Nothing on the van yet — add what you carry below.</p>';
+    var opts=catalog.map(function(p){ return '<option value="'+p.id+'">'+escT(p.name)+' ('+escT(p.sku)+')</option>'; }).join('');
+    host.innerHTML='<div class="card"><h3 style="font-size:14px;color:var(--navy)">'+(oversight?'Van stock — all providers':'Van stock — parts on your truck')+'</h3>'+rows+
+      (!oversight&&catalog.length?'<span class="tp-lab">Add from the Parts Supply OS catalog</span><div class="tp-row"><select class="tp-in" id="pv-add-sel" style="flex:2">'+opts+'</select><input class="tp-in" id="pv-add-qty" type="number" min="0" value="1" style="flex:0 1 70px"><button class="btn navy" type="button" onclick="pvAdd()">Add</button></div>':'')+
+      (!oversight?'<p class="note" style="margin:8px 0 0">To install a van part on a job, open the job\u2019s Parts tab — the allocation lands on the job record and the van count drops.</p>':'<p class="note" style="margin:8px 0 0">Oversight view — van counts per provider; stock changes stay with each provider\u2019s own account.</p>')+
+      '<div id="pv-msg" style="margin-top:7px;font-size:13.5px"></div></div>';
+  }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Van stock unavailable: '+escT(e.message)+'</p></div>'; });
+}
+function pvSet(partId){
+  var m=document.getElementById('pv-msg');
+  var q=parseInt((document.getElementById('pv-qty-'+partId)||{}).value,10);
+  if(isNaN(q)||q<0){ if(m){ m.textContent='Enter the quantity on the van.'; m.style.color='#c2262e'; } return; }
+  tFetch('/provider/van-stock',{method:'POST',body:JSON.stringify({partId:partId, qty:q})})
+    .then(function(){ toast('Van stock updated', ICO_CHECK); partsVanLoad(); })
+    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not update'); m.style.color='#c2262e'; } });
+}
+function pvAdd(){
+  var sel=document.getElementById('pv-add-sel'); if(!sel) return;
+  var q=parseInt((document.getElementById('pv-add-qty')||{}).value,10);
+  if(isNaN(q)||q<0){ toast('Enter a quantity'); return; }
+  tFetch('/provider/van-stock',{method:'POST',body:JSON.stringify({partId:sel.value, qty:q})})
+    .then(function(){ toast('Added to your van stock', ICO_CHECK); partsVanLoad(); })
+    .catch(function(e){ toast('Could not add: '+(e.message||'error')); });
+}
+function suppliersLoad(){
+  var host=document.getElementById('suppliersList'); if(!host) return;
+  tFetch('/provider/suppliers').then(function(j){
+    var list=j.data.suppliers||[];
+    host.innerHTML=list.length?list.map(function(s){
+      return '<div class="card"><div style="display:flex;gap:8px;align-items:center"><h3 style="font-size:14px;color:var(--navy)">'+escT(s.name)+'</h3>'+(s.vendorType==='PARTNER_DISTRIBUTOR'?'<span class="st next" style="margin-left:auto">PARTNER</span>':'<span class="st wait" style="margin-left:auto">SUPPLIER</span>')+'</div>'+
+      '<div class="kv" style="margin-top:6px"><span>Contact</span><b>'+escT(s.contact||'—')+'</b></div>'+
+      '<div class="kv"><span>Phone</span><b>'+(s.phone?'<a href="tel:'+escT(s.phone)+'">'+escT(s.phone)+'</a>':'—')+'</b></div>'+
+      '<div class="kv"><span>Email</span><b>'+escT(s.email||'—')+'</b></div>'+
+      '<div class="kv" style="border-bottom:0"><span>Terms</span><b>'+escT(s.terms||'—')+'</b></div>'+
+      (s.vendorType==='PARTNER_DISTRIBUTOR'?'<p class="note" style="margin:6px 0 0">Partner distributor — order through the Appliance Plug flow in a job\u2019s Parts tab; the partner confirms the exact part and price at order time.</p>':'')+'</div>';
+    }).join(''):'<div class="card"><p class="note" style="margin:0">No suppliers on record yet — Parts Supply OS adds them.</p></div>';
+  }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Suppliers unavailable: '+escT(e.message)+'</p></div>'; });
+}
+/* ---------------- Company screen ---------------- */
+function companyLoad(){
+  var host=document.getElementById('companyBody'); if(!host||!tTok()) return;
+  tFetch('/provider/company').then(function(j){
+    var d=j.data||{}, b=d.business||{}, p=d.pricing||{};
+    host.innerHTML=
+    '<div class="card" style="background:linear-gradient(135deg,#262e36,#131920);color:#fff;border:0"><p style="font-size:10px;color:#ff9d94;text-transform:uppercase;letter-spacing:.08em;font-weight:700">'+escT(b.slogan||'')+'</p>'+
+    '<h3 style="color:#fff;font-size:17px;margin:4px 0 3px">'+escT(b.name||'Top Speed Appliance LLC')+'</h3>'+
+    '<p style="font-size:12.5px;color:#c3cedb;line-height:1.55">'+escT(b.officeAddress||'')+'</p>'+
+    '<div class="btnrow" style="margin-top:10px"><a class="btn red" style="display:flex;align-items:center;justify-content:center;text-decoration:none" href="tel:+19549317997">Call — '+escT(b.phoneDisplay||'(954) 931-7997')+'</a></div></div>'+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Dispatch</h3>'+
+    '<div class="kv"><span>Team</span><b>'+escT((d.dispatch||{}).team||'Service Setters')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Hours</span><b>'+escT((d.dispatch||{}).hours||'Monday–Friday, 8 AM–7 PM')+'</b></div></div>'+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Pricing structure — the real rules</h3>'+
+    '<div class="kv"><span>Diagnostic (residential)</span><b>$'+escT(String(p.diagnosticFee!=null?p.diagnosticFee:99))+'</b></div>'+
+    '<div class="kv"><span>Diagnostic terms</span><b style="text-align:right;max-width:60%">'+escT(p.feeTerms||'Collected at booking, credited toward an approved repair')+'</b></div>'+
+    '<div class="kv"><span>Repair labor</span><b>$'+escT(String(p.repairLaborFlat||210))+' flat</b></div>'+
+    '<div class="kv"><span>Installation labor</span><b>$'+escT(String(p.installationLaborFlat||150))+' flat</b></div>'+
+    '<div class="kv"><span>Parts</span><b style="text-align:right;max-width:60%">'+escT(p.parts||'')+'</b></div>'+
+    '<div class="kv"><span>Commercial</span><b style="text-align:right;max-width:60%">'+escT(p.commercial||'')+'</b></div>'+
+    '<div class="kv" style="border-bottom:0"><span>Payment due</span><b style="text-align:right;max-width:60%">'+escT(p.paymentDue||'')+'</b></div></div>'+
+    (d.warrantyTerms?'<div class="card"><h3 style="font-size:14px;color:var(--navy)">Warranty terms — Top Speed\u2019s own work</h3><p class="note" style="margin:4px 0 0;white-space:pre-line">'+escT(d.warrantyTerms)+'</p></div>':'')+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Partners</h3>'+
+    (d.partners||[]).map(function(pt){ return '<div style="padding:8px 0;border-bottom:1px dashed var(--line)"><b style="font-size:13.5px">'+escT(pt.name)+'</b><p class="note" style="margin:2px 0 0">'+escT(pt.role)+(pt.phoneDisplay?' · '+escT(pt.phoneDisplay):'')+'</p><p class="note" style="margin:2px 0 0">'+escT(pt.note)+'</p></div>'; }).join('')+
+    '</div>'+
+    '<div class="card"><h3 style="font-size:14px;color:var(--navy)">Coverage</h3><p class="note" style="margin:4px 0 0">'+((d.coverage||{}).autoMatchCities||0)+' cities auto-match at booking across '+((d.coverage||{}).landingCities||65)+' published city pages. '+escT((d.coverage||{}).note||'')+'</p></div>';
+  }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Company info unavailable: '+escT(e.message)+'</p></div>'; });
+}
+/* ---------------- Warranty claims lookup (More) ---------------- */
+function claimsLoad(){
+  var host=document.getElementById('claimsList'); if(!host||!tTok()) return;
+  var q=fpVal('claimsQ');
+  tFetch('/provider/warranty-claims'+(q?'?q='+encodeURIComponent(q):'')).then(function(j){
+    var list=j.data.claims||[];
+    var oversight=!!window._techOversight;
+    host.innerHTML=list.length?list.map(function(cl){
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:10px">'+
+      '<div style="display:flex;gap:8px;align-items:center"><b style="font-size:13.5px">'+escT(cl.claimNumber||'Claim — number pending')+'</b><span class="st '+(cl.status==='CLOSED'?'done':'prog')+'" style="margin-left:auto">'+escT(cl.status||'OPEN')+'</span></div>'+
+      '<p style="font-size:13px;margin:6px 0 0">'+escT(cl.description||'')+'</p>'+
+      '<p class="note" style="margin:4px 0 0">'+escT(cl.warrantyProvider||'')+' · Job '+escT(cl.bookingReference||'')+' · '+escT(cl.customerName||'')+' · '+escT(cl.appliance||'')+'</p>'+
+      (oversight?'':'<div class="tp-row" style="margin-top:7px"><select class="tp-in" id="cl-status-'+cl.id+'">'+['OPEN','FILED','APPROVED','DENIED','CLOSED'].map(function(st){ return '<option value="'+st+'"'+(cl.status===st?' selected':'')+'>'+st+'</option>'; }).join('')+'</select><button class="btn no" type="button" style="flex:0 1 130px" onclick="claimAdvance(\''+cl.id+'\')">Update status</button></div>')+
+      '</div>';
+    }).join(''):'<p class="note" style="margin:0">No warranty claims match. Claims filed inside a job\u2019s Warranty tab appear here.</p>';
+  }).catch(function(e){ host.innerHTML='<p class="note" style="margin:0">Claims unavailable: '+escT(e.message)+'</p>'; });
+}
+function claimAdvance(claimId){
+  var sel=document.getElementById('cl-status-'+claimId); if(!sel) return;
+  tFetch('/provider/warranty-claims/'+claimId+'/status',{method:'POST',body:JSON.stringify({status:sel.value})})
+    .then(function(){ toast('Claim status updated', ICO_CHECK); claimsLoad(); })
+    .catch(function(e){ toast('Status update failed: '+(e.message||'error')); });
+}
+</script>
+<script src="/pepper-lists-site/pl-camera.js"></script>
+
 <!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
+<script src="/shared/pepper-chat.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 <script src="/shared/session-vault.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>

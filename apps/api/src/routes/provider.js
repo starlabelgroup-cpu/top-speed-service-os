@@ -1,17 +1,22 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { addBookingEvent, appendEvent, createId, store } from '../data/store.js';
-import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
+import { persistAssignment, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { windowById } from '../services/bookos.js';
 import { notifyReviewRequest, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { persistPartUsage, persistVanStock } from '../db/partsRepo.js';
+import { persistInvoice, persistProperty, persistWarranty, persistWarrantyClaim } from '../db/techPackageRepo.js';
+import { PLATFORM_CONSTANTS } from '../config/platform.js';
+import { searchKnowledge } from '../knowledge/index.js';
+import { speedyKnowledgeSections } from '../services/speedyKnowledge.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
-import { speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { catalogEntry, LINK_TYPES } from '../services/linkCenter.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -606,6 +611,108 @@ function authorizationLog(booking) {
     .reverse();
 }
 
+/* ------------- Tech dispatch package read models (2026-11-19) -------------
+ * Ramone's full-package rebuild, shaped by the enterprise blueprint's
+ * consolidated work-order view: the estimate DECISION (approved /
+ * declined, recorded against a specific estimate version), the
+ * approved-estimate INVOICE (the Invoice table finally has a creation
+ * path), WARRANTY coverage + claims as first-class records, and the
+ * job's Stripe payments — all folded into the workspace view and the
+ * /full record below. Everything here reads real records only; a
+ * missing record reads back as an explicit empty state, never a
+ * fabricated one.
+ */
+function estimateDecision(booking) {
+  let found = null;
+  for (const event of booking.history || []) {
+    if (event.type === 'ESTIMATE_APPROVED') {
+      found = {
+        decision: 'APPROVED',
+        estimateId: event.estimateId || null,
+        at: event.at || null,
+        actor: event.actor || null,
+        method: event.method || 'RECORDED_IN_APP',
+        authorizedByName: event.authorizedByName || null,
+        note: event.note || null,
+      };
+    }
+    if (event.type === 'ESTIMATE_DECLINED') {
+      found = {
+        decision: 'DECLINED',
+        estimateId: event.estimateId || null,
+        at: event.at || null,
+        actor: event.actor || null,
+        method: null,
+        authorizedByName: null,
+        note: event.note || null,
+      };
+    }
+  }
+  return found;
+}
+
+function jobWarranties(booking) {
+  // Blueprint rule: warranties are looked up BY APPLIANCE. A job's
+  // appliance identity is its type + the recorded rating-plate facts;
+  // a warranty recorded on another job for the same customer and the
+  // same serial is the same appliance's coverage.
+  const diagnosis = latestDiagnosis(booking);
+  const serial = diagnosis?.serial || null;
+  return (store.warranties || [])
+    .filter((w) => {
+      if (w.serviceRequestId === booking.id) return true;
+      return Boolean(serial && w.customerId && booking.customerId && w.customerId === booking.customerId && w.serial && w.serial === serial);
+    })
+    .slice()
+    .reverse();
+}
+
+function jobWarrantyClaims(booking) {
+  return (store.warrantyClaims || [])
+    .filter((claim) => claim.serviceRequestId === booking.id)
+    .slice()
+    .reverse();
+}
+
+function jobInvoice(booking) {
+  const list = (store.invoices || []).filter((inv) => inv.serviceRequestId === booking.id && inv.status !== 'VOID');
+  return list.length ? list[list.length - 1] : null;
+}
+
+function jobStripePayments(booking) {
+  return [...(store.payments?.values() || [])]
+    .filter((payment) => payment.bookingId === booking.id)
+    .map((payment) => ({
+      id: payment.id,
+      purpose: payment.purpose || 'DIAGNOSTIC',
+      amountCents: payment.amountCents,
+      currency: payment.currency || 'usd',
+      status: payment.status || 'PENDING',
+      paidAt: payment.paidAt || null,
+      createdAt: payment.createdAt || null,
+    }))
+    .reverse();
+}
+
+function invoiceMoney(booking) {
+  // The invoice is the balance of record once one exists (blueprint:
+  // payments are recorded against the invoice, never past its total).
+  // Before that, the estimate total is the reference, as before.
+  const invoice = jobInvoice(booking);
+  const receipts = jobReceipts(booking);
+  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
+  const estimate = latestEstimate(booking);
+  const invoiceTotalCents = invoice ? Math.round(Number(invoice.total || 0) * 100) : null;
+  const referenceTotalCents = invoiceTotalCents != null ? invoiceTotalCents : estimate ? estimate.totalCents : null;
+  return {
+    invoice,
+    receipts,
+    receiptsTotalCents,
+    invoiceTotalCents,
+    balanceDueCents: referenceTotalCents == null ? null : Math.max(0, referenceTotalCents - receiptsTotalCents),
+  };
+}
+
 function jobPhotos(booking) {
   const byId = new Map();
   const removed = new Set();
@@ -640,8 +747,9 @@ function jobPartsUsed(booking) {
 function workspaceView(assignment, booking) {
   const history = booking.history || [];
   const estimate = latestEstimate(booking);
-  const receipts = jobReceipts(booking);
-  const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
+  const money = invoiceMoney(booking);
+  const receipts = money.receipts;
+  const receiptsTotalCents = money.receiptsTotalCents;
   const estimateTotalCents = estimate ? estimate.totalCents : null;
   const authorized = history.some((event) => event.type === 'ESTIMATE_APPROVED');
   const diagDone = diagnosisComplete(booking);
@@ -665,6 +773,14 @@ function workspaceView(assignment, booking) {
     diagnosis: latestDiagnosis(booking),
     estimate,
     authorizationLog: authorizationLog(booking),
+    // Tech dispatch package (2026-11-19): the customer's recorded
+    // decision on the current estimate, the generated invoice, the
+    // warranty coverage + claims on this job's appliance.
+    estimateDecision: estimateDecision(booking),
+    invoice: money.invoice,
+    warranties: jobWarranties(booking),
+    warrantyClaims: jobWarrantyClaims(booking),
+    review: reviewState(booking),
     photos: jobPhotos(booking),
     receipts,
     partsUsed: jobPartsUsed(booking),
@@ -673,7 +789,10 @@ function workspaceView(assignment, booking) {
       receiptsTotalCents,
       // The balance is information, never a gate: the guide's rule is
       // that payment may remain outstanding and is tracked separately.
-      balanceDueCents: estimateTotalCents == null ? null : Math.max(0, estimateTotalCents - receiptsTotalCents),
+      // Once an invoice exists it is the balance of record.
+      invoiceTotalCents: money.invoiceTotalCents,
+      balanceDueCents: money.balanceDueCents,
+      stripePayments: jobStripePayments(booking),
     },
     gate: {
       diagnosisRecorded: Boolean(latestDiagnosis(booking)),
@@ -1491,6 +1610,19 @@ router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, r
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid receipt', details: parsed.error.flatten() });
   }
+  // Overpayment prevention (blueprint rule, 2026-11-19): once an
+  // invoice exists for this job, recorded payments may never exceed
+  // its total — a receipt past the balance due is refused, not
+  // clamped, so the record always says what a human actually took.
+  const moneyBefore = invoiceMoney(booking);
+  if (moneyBefore.invoice && moneyBefore.balanceDueCents != null) {
+    if (parsed.data.amountCents > moneyBefore.balanceDueCents) {
+      return res.status(409).json({
+        error: `That receipt would overpay the invoice — the balance due is $${(moneyBefore.balanceDueCents / 100).toFixed(2)}`,
+        balanceDueCents: moneyBefore.balanceDueCents,
+      });
+    }
+  }
   const t = new Date().toISOString();
   const receipt = {
     id: createId(),
@@ -1515,6 +1647,17 @@ router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, r
     referenceCode: booking.referenceCode,
     details: { receiptId: receipt.id, method: receipt.method, amountCents: receipt.amountCents },
   });
+  // Keep the invoice's status honest against what has actually been
+  // recorded: fully covered → PAID, partly → PARTIALLY_PAID.
+  const moneyAfter = invoiceMoney(booking);
+  if (moneyAfter.invoice) {
+    const nextStatus = moneyAfter.balanceDueCents === 0 ? 'PAID' : moneyAfter.receiptsTotalCents > 0 ? 'PARTIALLY_PAID' : moneyAfter.invoice.status;
+    if (nextStatus !== moneyAfter.invoice.status) {
+      moneyAfter.invoice.status = nextStatus;
+      moneyAfter.invoice.updatedAt = t;
+      await persistInvoice(moneyAfter.invoice);
+    }
+  }
   const receipts = jobReceipts(booking);
   const estimate = latestEstimate(booking);
   const receiptsTotalCents = receipts.reduce((sum, r) => sum + (r.amountCents || 0), 0);
@@ -1525,7 +1668,9 @@ router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, r
       payments: {
         estimateTotalCents: estimate ? estimate.totalCents : null,
         receiptsTotalCents,
-        balanceDueCents: estimate ? Math.max(0, estimate.totalCents - receiptsTotalCents) : null,
+        invoiceTotalCents: moneyAfter.invoiceTotalCents,
+        balanceDueCents: moneyAfter.balanceDueCents,
+        invoice: moneyAfter.invoice,
       },
     },
   });
@@ -1610,4 +1755,948 @@ router.post('/provider/assignments/:id/complete', ...providerOnly, async (req, r
       referral: { code: referral.code, created: referralCreated },
     },
   });
+});
+
+/* ================= Tech dispatch package routes (2026-11-19) =================
+ * The full-package Field Pro build, shaped by the enterprise
+ * blueprint (docs/INTEGRATION_PLAN.md fold-in rule: the live Service
+ * OS keeps its auth, gates and data; the package contributes
+ * structure). Everything below reads and writes the SAME records the
+ * booking platform and CRM use — ServiceRequest/booking, the CRM
+ * customer record, the Parts Supply OS catalog — plus the package's
+ * new first-class structures (Property, Warranty, WarrantyClaim,
+ * Invoice) attached to those same records. No parallel tech-only
+ * store exists. Gates follow the file's standing pattern: reads on
+ * providerBoard (assigned provider + oversight viewers), writes on
+ * providerOnly bound to the caller's own assignment (another
+ * provider's job is a 404), office-level field edits on the staff
+ * gate. Every mutation lands on the booking history (the audit
+ * trail) and the global event log.
+ */
+
+/* ---------------- Review link state (Pepper Lists reviews) ----------------
+ * The job's review destination is the platform's real review link —
+ * the Pepper Lists reviews wall, the same URL the Link Center
+ * catalog carries. The request state is read off the notification
+ * outbox: the completion flow already queues a REVIEW_REQUEST per
+ * customer channel; a job with no entry has honestly not been asked
+ * yet, and staff can fire the real send from the workspace.
+ */
+function reviewState(booking) {
+  const entry = catalogEntry(LINK_TYPES.REVIEW);
+  const requests = (store.notificationOutbox || [])
+    .filter((item) => item.template === 'REVIEW_REQUEST' && item.payload?.bookingId === booking.id)
+    .map((item) => ({
+      id: item.id,
+      channel: item.channel,
+      to: item.to,
+      status: item.status || 'QUEUED',
+      createdAt: item.createdAt || null,
+    }))
+    .reverse();
+  return {
+    link: entry?.url || null,
+    linkName: entry?.name || 'Review link',
+    completed: booking.status === 'COMPLETED',
+    requested: requests.length > 0,
+    requests,
+    customerEmail: booking.customer?.email || null,
+  };
+}
+
+/* ---------------- Dispatch overview (the Field Pro board) ---------------- */
+router.get('/provider/overview', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  const oversight = isOversightViewer(req);
+  if (!provider && !oversight) return noProvider(res);
+  const scoped = [...store.dispatchAssignments.values()].filter(
+    (assignment) => !provider || assignment.providerId === provider.id,
+  );
+  const todayNY = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+  const isToday = (iso) => Boolean(iso) && new Date(iso).toLocaleDateString('en-CA', { timeZone: 'America/New_York' }) === todayNY;
+  const groups = { offers: [], accepted: [], inProgress: [], awaitingParts: [], awaitingDiagnosis: [], completedToday: [] };
+  let completedTotal = 0;
+  for (const assignment of scoped) {
+    const booking = store.bookings.get(assignment.bookingId);
+    if (assignment.status === 'APPROVED') groups.offers.push(assignment);
+    if (assignment.status !== 'ACCEPTED' || !booking) continue;
+    if (booking.status === 'COMPLETED') {
+      completedTotal += 1;
+      if (isToday(booking.completedAt)) groups.completedToday.push(assignment);
+      continue;
+    }
+    groups.accepted.push(assignment);
+    const flags = jobFlags(booking);
+    if (flags.workStarted || booking.status === 'IN_PROGRESS') groups.inProgress.push(assignment);
+    if (flags.awaitingParts) groups.awaitingParts.push(assignment);
+    if (flags.awaitingDiagnosis) groups.awaitingDiagnosis.push(assignment);
+  }
+  const view = (list) =>
+    list.slice(0, 50).map((assignment) => ({
+      ...publicAssignment(assignment),
+      providerId: assignment.providerId,
+      providerBusinessName: providerNameById(assignment.providerId),
+    }));
+  const lowStock = store.parts.filter((part) => part.active !== false && (part.stockOnHand || 0) <= (part.reorderPoint || 0));
+  const data = {
+    oversight: !provider && oversight,
+    provider: provider ? { id: provider.id, businessName: provider.businessName } : null,
+    counts: {
+      offers: groups.offers.length,
+      accepted: groups.accepted.length,
+      inProgress: groups.inProgress.length,
+      awaitingParts: groups.awaitingParts.length,
+      awaitingDiagnosis: groups.awaitingDiagnosis.length,
+      completedToday: groups.completedToday.length,
+      completedTotal,
+      lowStock: lowStock.length,
+      openWarrantyClaims: (store.warrantyClaims || []).filter((claim) => claim.status !== 'CLOSED').length,
+    },
+    offers: view(groups.offers),
+    accepted: view(groups.accepted),
+    inProgress: view(groups.inProgress),
+    awaitingParts: view(groups.awaitingParts),
+    awaitingDiagnosis: view(groups.awaitingDiagnosis),
+    completedToday: view(groups.completedToday),
+  };
+  if (!provider && oversight) {
+    data.perProvider = store.providers.map((p) => {
+      const own = scoped.filter((a) => a.providerId === p.id);
+      return {
+        providerId: p.id,
+        businessName: p.businessName,
+        offers: own.filter((a) => a.status === 'APPROVED').length,
+        accepted: own.filter((a) => a.status === 'ACCEPTED').length,
+        completedToday: own.filter((a) => {
+          const b = store.bookings.get(a.bookingId);
+          return b?.status === 'COMPLETED' && isToday(b.completedAt);
+        }).length,
+      };
+    });
+  }
+  return res.json({ data });
+});
+
+/* ---------------- The consolidated job record (/full) ----------------
+ * The blueprint's GET /work-orders/:id/full, composed on live
+ * records: customer + account + service history, property, appliance
+ * (+ the customer's appliance garage), technician, the full
+ * workspace (diagnosis, checklist, notes, photos, estimate +
+ * decision, invoice, payments, parts, activity), warranty coverage
+ * looked up BY APPLIANCE, warranty claims, and the review-link
+ * state. Payment detail rides the same board gate as the workspace —
+ * providers see their own jobs only; oversight reads.
+ */
+router.get('/provider/assignments/:id/full', ...providerBoard, (req, res) => {
+  const loaded = loadAssignmentForView(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!['APPROVED', 'ACCEPTED'].includes(assignment.status)) {
+    return res.status(409).json({ error: 'Assignment is not active' });
+  }
+  const customerRecord = booking.customerId ? store.customers.get(booking.customerId) || null : null;
+  const history = [...store.bookings.values()].filter((b) => booking.customerId && b.customerId === booking.customerId);
+  const diagnosis = latestDiagnosis(booking);
+  const properties = (store.properties || []).filter((p) => booking.customerId && p.customerId === booking.customerId);
+  const property =
+    properties.find((p) => p.address === (booking.serviceAddress || booking.customer?.address)) ||
+    properties[properties.length - 1] ||
+    null;
+  const providerRecord = store.providers.find((p) => p.id === assignment.providerId) || null;
+  const knowledgeQuery = `${booking.appliance || ''} ${booking.issue || ''}`.trim();
+  return res.json({
+    data: {
+      ...workspaceView(assignment, booking),
+      booking: {
+        id: booking.id,
+        referenceCode: booking.referenceCode || null,
+        status: booking.status,
+        source: booking.source || null,
+        segment: booking.segment || 'RESIDENTIAL',
+        city: booking.city || null,
+        zip: booking.zip || null,
+        serviceAddress: booking.serviceAddress || null,
+        appliance: booking.appliance || null,
+        issue: booking.issue || null,
+        preferredWindow: booking.preferredWindow || null,
+        resolution: booking.resolution || null,
+        appointment: appointmentSummary(booking),
+        createdAt: booking.createdAt || null,
+        completedAt: booking.completedAt || null,
+      },
+      customer: {
+        record: customerRecord,
+        accountUserId: customerRecord?.userId || null,
+        bookingHistoryCount: history.length,
+        serviceHistory: history
+          .slice()
+          .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
+          .slice(0, 25)
+          .map((b) => ({
+            id: b.id,
+            referenceCode: b.referenceCode || null,
+            appliance: b.appliance || null,
+            issue: b.issue || null,
+            status: b.status,
+            createdAt: b.createdAt || null,
+            completedAt: b.completedAt || null,
+          })),
+      },
+      property,
+      properties,
+      appliance: {
+        type: booking.appliance || null,
+        issue: booking.issue || null,
+        brand: diagnosis?.applianceBrand || null,
+        model: diagnosis?.model || null,
+        serial: diagnosis?.serial || null,
+        garage: booking.customerId
+          ? [...(store.appliances?.values() || [])].filter((a) => a.userId && customerRecord?.userId && a.userId === customerRecord.userId)
+          : [],
+      },
+      technician: {
+        provider: providerRecord
+          ? { id: providerRecord.id, businessName: providerRecord.businessName, phone: providerRecord.phone || null }
+          : null,
+        assignmentStatus: assignment.status,
+        approvedBy: assignment.approvedBy ?? null,
+        approvedAt: assignment.approvedAt ?? null,
+      },
+      knowledge: knowledgeQuery
+        ? searchKnowledge(knowledgeQuery, 4).map((hit) => ({ topic: hit.entry.topic, answer: hit.entry.answer, pack: hit.entry.pack }))
+        : [],
+      review: reviewState(booking),
+    },
+  });
+});
+
+/* ---------------- Estimate decision (approved / declined) ----------------
+ * The blueprint's estimate → invoice workflow starts with the
+ * customer's recorded decision. APPROVED writes the same
+ * ESTIMATE_APPROVED event the authorization log, the tracking
+ * timeline and the completion gate already read; DECLINED is its own
+ * audited event so a refused quote is on the record, not lost.
+ */
+const estimateDecisionSchema = z.object({
+  decision: z.enum(['APPROVED', 'DECLINED']),
+  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER']).optional(),
+  authorizedByName: z.string().trim().max(120).nullable().optional(),
+  note: z.string().trim().max(300).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/estimate/decision', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = estimateDecisionSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid estimate decision', details: parsed.error.flatten() });
+  }
+  const estimate = latestEstimate(booking);
+  if (!estimate) {
+    return res.status(409).json({ error: 'Save the estimate first — a decision must attach to a written quote' });
+  }
+  const t = new Date().toISOString();
+  if (parsed.data.decision === 'APPROVED') {
+    addBookingEvent(booking, 'ESTIMATE_APPROVED', req.user.email, {
+      assignmentId: assignment.id,
+      estimateId: estimate.id,
+      method: parsed.data.method || 'RECORDED_IN_APP',
+      authorizedByName: parsed.data.authorizedByName || null,
+      note: parsed.data.note || null,
+      confirmedBy: 'TECHNICIAN',
+    });
+  } else {
+    addBookingEvent(booking, 'ESTIMATE_DECLINED', req.user.email, {
+      assignmentId: assignment.id,
+      estimateId: estimate.id,
+      note: parsed.data.note || null,
+      confirmedBy: 'TECHNICIAN',
+    });
+  }
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent(parsed.data.decision === 'APPROVED' ? 'ESTIMATE_APPROVED' : 'ESTIMATE_DECLINED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { estimateId: estimate.id, decision: parsed.data.decision },
+  });
+  if (parsed.data.decision === 'APPROVED') {
+    notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:ESTIMATE_APPROVED:${t}`);
+  }
+  return res.status(201).json({
+    data: { estimateDecision: estimateDecision(booking), authorizationLog: authorizationLog(booking) },
+  });
+});
+
+/* ---------------- Invoice generation (approved estimate → invoice) -------- */
+router.post('/provider/assignments/:id/invoice', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const estimate = latestEstimate(booking);
+  if (!estimate) {
+    return res.status(409).json({ error: 'Save the estimate first — an invoice is generated from the approved estimate' });
+  }
+  const approved = (booking.history || []).some(
+    (event) => event.type === 'ESTIMATE_APPROVED' && event.estimateId === estimate.id,
+  );
+  if (!approved) {
+    return res.status(409).json({ error: 'The customer has not approved this estimate yet — record the decision before invoicing' });
+  }
+  const existing = (store.invoices || []).find(
+    (inv) => inv.serviceRequestId === booking.id && inv.status !== 'VOID' && inv.estimateId === estimate.id,
+  );
+  if (existing) return res.json({ data: { invoice: existing, created: false } });
+  const t = new Date().toISOString();
+  const invoice = {
+    id: createId(),
+    companyId: booking.companyId,
+    serviceRequestId: booking.id,
+    customerId: booking.customerId || null,
+    status: 'SENT',
+    subtotal: ((estimate.laborCents || 0) + estimate.partsSubtotalCents + estimate.taxCents - estimate.discountCents) / 100,
+    diagnosticFee: estimate.diagnosticFeeCents / 100,
+    diagnosticCredit: estimate.diagnosticCreditCents / 100,
+    total: estimate.totalCents / 100,
+    currency: 'USD',
+    estimateId: estimate.id,
+    createdBy: req.user.email,
+    createdAt: t,
+    updatedAt: t,
+  };
+  store.invoices.push(invoice);
+  await persistInvoice(invoice);
+  addBookingEvent(booking, 'INVOICE_GENERATED', req.user.email, {
+    assignmentId: assignment.id,
+    invoiceId: invoice.id,
+    estimateId: estimate.id,
+    totalCents: estimate.totalCents,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('INVOICE_GENERATED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { invoiceId: invoice.id, estimateId: estimate.id, totalCents: estimate.totalCents },
+  });
+  return res.status(201).json({ data: { invoice, created: true } });
+});
+
+/* ---------------- Warranty coverage + claims ----------------
+ * First-class records (blueprint models Warranty / WarrantyClaim),
+ * attached to the job and looked up by appliance. Recording coverage
+ * never invents it: the tech enters what the customer's warranty
+ * paperwork actually says — provider, policy, expiry.
+ */
+const warrantySchema = z.object({
+  provider: z.string().trim().min(2).max(160),
+  coverage: z.string().trim().max(500).nullable().optional(),
+  policyNumber: z.string().trim().max(120).nullable().optional(),
+  expiresAt: z.string().trim().max(40).nullable().optional(),
+  claimStatus: z.enum(['Not Filed', 'Filed', 'Approved', 'Denied', 'Closed']).optional(),
+  applianceType: z.string().trim().max(80).nullable().optional(),
+  brand: z.string().trim().max(80).nullable().optional(),
+  model: z.string().trim().max(120).nullable().optional(),
+  serial: z.string().trim().max(120).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/warranty', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = warrantySchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid warranty record', details: parsed.error.flatten() });
+  }
+  const diagnosis = latestDiagnosis(booking);
+  const t = new Date().toISOString();
+  let warranty = (store.warranties || []).find((w) => w.serviceRequestId === booking.id);
+  if (!warranty) {
+    warranty = {
+      id: createId(),
+      companyId: booking.companyId,
+      serviceRequestId: booking.id,
+      createdAt: t,
+    };
+    store.warranties.push(warranty);
+  }
+  Object.assign(warranty, {
+    customerId: booking.customerId || null,
+    applianceType: parsed.data.applianceType || diagnosis?.applianceType || booking.appliance || null,
+    brand: parsed.data.brand || diagnosis?.applianceBrand || null,
+    model: parsed.data.model || diagnosis?.model || null,
+    serial: parsed.data.serial || diagnosis?.serial || null,
+    provider: parsed.data.provider,
+    coverage: parsed.data.coverage || null,
+    policyNumber: parsed.data.policyNumber || null,
+    expiresAt: parsed.data.expiresAt || null,
+    claimStatus: parsed.data.claimStatus || warranty.claimStatus || 'Not Filed',
+    createdBy: req.user.email,
+    updatedAt: t,
+  });
+  await persistWarranty(warranty);
+  addBookingEvent(booking, 'WARRANTY_RECORDED', req.user.email, {
+    assignmentId: assignment.id,
+    warrantyId: warranty.id,
+    warrantyProvider: warranty.provider,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('WARRANTY_RECORDED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { warrantyId: warranty.id, warrantyProvider: warranty.provider },
+  });
+  return res.status(201).json({ data: { warranty, warranties: jobWarranties(booking) } });
+});
+
+const warrantyClaimSchema = z.object({
+  description: z.string().trim().min(3).max(1000),
+  claimNumber: z.string().trim().max(120).nullable().optional(),
+  warrantyProvider: z.string().trim().max(160).nullable().optional(),
+  authorization: z.string().trim().max(300).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+  amountCents: z.number().int().min(0).max(100000000).nullable().optional(),
+  warrantyId: z.string().uuid().nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/warranty-claims', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = warrantyClaimSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid warranty claim', details: parsed.error.flatten() });
+  }
+  const warranties = jobWarranties(booking);
+  const t = new Date().toISOString();
+  const claim = {
+    id: createId(),
+    companyId: booking.companyId,
+    serviceRequestId: booking.id,
+    assignmentId: assignment.id,
+    customerId: booking.customerId || null,
+    warrantyId: parsed.data.warrantyId || warranties[0]?.id || null,
+    claimNumber: parsed.data.claimNumber || null,
+    warrantyProvider: parsed.data.warrantyProvider || warranties[0]?.provider || null,
+    authorization: parsed.data.authorization || null,
+    status: 'OPEN',
+    description: parsed.data.description,
+    notes: parsed.data.notes || null,
+    amountCents: parsed.data.amountCents ?? null,
+    createdBy: req.user.email,
+    createdAt: t,
+    updatedAt: t,
+  };
+  store.warrantyClaims.push(claim);
+  await persistWarrantyClaim(claim);
+  addBookingEvent(booking, 'WARRANTY_CLAIM_FILED', req.user.email, {
+    assignmentId: assignment.id,
+    claimId: claim.id,
+    claimNumber: claim.claimNumber,
+    warrantyProvider: claim.warrantyProvider,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('WARRANTY_CLAIM_FILED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { claimId: claim.id, claimNumber: claim.claimNumber },
+  });
+  return res.status(201).json({ data: { claim, warrantyClaims: jobWarrantyClaims(booking) } });
+});
+
+const warrantyClaimStatusSchema = z.object({
+  status: z.enum(['OPEN', 'FILED', 'APPROVED', 'DENIED', 'CLOSED']),
+  authorization: z.string().trim().max(300).nullable().optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+});
+
+router.post('/provider/warranty-claims/:claimId/status', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = warrantyClaimStatusSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid claim status update', details: parsed.error.flatten() });
+  }
+  const claim = (store.warrantyClaims || []).find((c) => c.id === req.params.claimId);
+  if (!claim) return res.status(404).json({ error: 'Warranty claim not found' });
+  const booking = store.bookings.get(claim.serviceRequestId);
+  const mine = booking
+    ? [...store.dispatchAssignments.values()].some((a) => a.bookingId === booking.id && a.providerId === provider.id)
+    : false;
+  if (!mine) return res.status(404).json({ error: 'Warranty claim not found' });
+  const t = new Date().toISOString();
+  claim.status = parsed.data.status;
+  if (parsed.data.authorization !== undefined) claim.authorization = parsed.data.authorization;
+  if (parsed.data.notes !== undefined) claim.notes = parsed.data.notes;
+  claim.updatedAt = t;
+  await persistWarrantyClaim(claim);
+  addBookingEvent(booking, 'WARRANTY_CLAIM_STATUS', req.user.email, {
+    claimId: claim.id,
+    status: claim.status,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('WARRANTY_CLAIM_STATUS', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { claimId: claim.id, status: claim.status },
+  });
+  return res.json({ data: { claim } });
+});
+
+router.get('/provider/warranty-claims', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  const oversight = isOversightViewer(req);
+  if (!provider && !oversight) return noProvider(res);
+  const q = String(req.query.q || '').trim().toLowerCase();
+  const rows = [];
+  for (const claim of store.warrantyClaims || []) {
+    const booking = store.bookings.get(claim.serviceRequestId);
+    if (!booking) continue;
+    if (provider) {
+      const mine = [...store.dispatchAssignments.values()].some(
+        (a) => a.bookingId === booking.id && a.providerId === provider.id,
+      );
+      if (!mine) continue;
+    }
+    const row = {
+      ...claim,
+      bookingReference: booking.referenceCode || null,
+      customerName: booking.customer?.name || null,
+      customerPhone: booking.customer?.phone || null,
+      appliance: booking.appliance || null,
+    };
+    if (q) {
+      const haystack = [claim.claimNumber, claim.warrantyProvider, row.bookingReference, row.customerName, row.customerPhone]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      if (!haystack.includes(q)) continue;
+    }
+    rows.push(row);
+  }
+  rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return res.json({ data: { claims: rows.slice(0, 100) } });
+});
+
+/* ---------------- Property (first-class, attached to the customer) -------- */
+const propertySchema = z.object({
+  label: z.string().trim().max(120).nullable().optional(),
+  address: z.string().trim().min(4).max(240).optional(),
+  city: z.string().trim().min(2).max(80).optional(),
+  zip: z.string().trim().min(3).max(16).optional(),
+  unit: z.string().trim().max(40).nullable().optional(),
+  accessNotes: z.string().trim().max(1000).nullable().optional(),
+});
+
+router.post('/provider/assignments/:id/property', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  if (!booking.customerId) {
+    return res.status(409).json({ error: 'This booking has no customer record to attach a property to' });
+  }
+  const parsed = propertySchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid property record', details: parsed.error.flatten() });
+  }
+  const address = parsed.data.address || booking.serviceAddress || booking.customer?.address || null;
+  if (!address) {
+    return res.status(400).json({ error: 'No service address on this job yet — enter the property address' });
+  }
+  const t = new Date().toISOString();
+  let property = (store.properties || []).find((p) => p.customerId === booking.customerId && p.address === address);
+  if (!property) {
+    property = { id: createId(), companyId: booking.companyId, customerId: booking.customerId, createdAt: t };
+    store.properties.push(property);
+  }
+  Object.assign(property, {
+    label: parsed.data.label ?? property.label ?? null,
+    address,
+    city: parsed.data.city || booking.city || property.city || '',
+    zip: parsed.data.zip || booking.zip || property.zip || '',
+    unit: parsed.data.unit ?? property.unit ?? null,
+    accessNotes: parsed.data.accessNotes ?? property.accessNotes ?? null,
+    updatedAt: t,
+  });
+  await persistProperty(property);
+  addBookingEvent(booking, 'PROPERTY_UPDATED', req.user.email, {
+    assignmentId: assignment.id,
+    propertyId: property.id,
+    confirmedBy: 'TECHNICIAN',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('PROPERTY_UPDATED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { propertyId: property.id },
+  });
+  return res.status(201).json({ data: { property } });
+});
+
+/* ---------------- Suppliers, company card, repair knowledge --------------- */
+router.get('/provider/suppliers', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const suppliers = (store.suppliers || [])
+    .filter((s) => s.active !== false)
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      contact: s.contact || null,
+      phone: s.phone || null,
+      email: s.email || null,
+      terms: s.terms || null,
+      vendorType: s.vendorType || 'STANDARD',
+    }))
+    .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  return res.json({ data: { suppliers } });
+});
+
+router.get('/provider/company', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const warrantySection = speedyKnowledgeSections().find((section) => section.startsWith('WARRANTY'));
+  return res.json({
+    data: {
+      business: {
+        name: PLATFORM_CONSTANTS.platformOwner,
+        slogan: PLATFORM_CONSTANTS.slogan,
+        phoneDisplay: PLATFORM_CONSTANTS.phoneDisplay,
+        phone: PLATFORM_CONSTANTS.phone,
+        officeAddress: PLATFORM_CONSTANTS.officeAddress,
+      },
+      dispatch: { team: PLATFORM_CONSTANTS.dispatchTeam, hours: 'Monday–Friday, 8 AM–7 PM' },
+      pricing: {
+        diagnosticFee: PLATFORM_CONSTANTS.diagnosticFee,
+        feeTerms: PLATFORM_CONSTANTS.feeTerms,
+        repairLaborFlat: 210,
+        installationLaborFlat: 150,
+        parts: 'Priced on the written quote — no work without an approved written quote.',
+        commercial: 'Custom quote — the $99 diagnostic does not apply to commercial work.',
+        paymentDue: 'Payment is due on completion unless agreed in writing.',
+      },
+      warrantyTerms: warrantySection ? warrantySection.split('\n').slice(1).join('\n').trim() || null : null,
+      partners: [
+        {
+          name: 'Cleanout Vents',
+          role: 'Registered vendor partner — dryer vent cleaning',
+          phoneDisplay: '(954) 931-7997',
+          note: 'Route vent work to Cleanout Vents. Never quote a vent price — none exists on Top Speed surfaces.',
+        },
+        {
+          name: 'Appliance Plus Parts Supply',
+          role: 'Partner distributor (Parts Supply OS)',
+          phoneDisplay: null,
+          note: 'Order parts through the Parts Supply OS flow in this app; the partner confirms exact part and price at order time.',
+        },
+      ],
+      coverage: {
+        landingCities: 65,
+        autoMatchCities: (PLATFORM_CONSTANTS.serviceCities || []).length,
+        note: 'Bookings outside the auto-match cities land in the Service Setters review queue.',
+      },
+    },
+  });
+});
+
+router.get('/provider/knowledge', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const q = String(req.query.q || '').trim();
+  if (q.length < 2) return res.json({ data: { results: [] } });
+  const results = searchKnowledge(q, 6).map((hit) => ({
+    topic: hit.entry.topic,
+    answer: hit.entry.answer,
+    pack: hit.entry.pack,
+    score: Math.round(hit.score * 100) / 100,
+  }));
+  return res.json({ data: { results } });
+});
+
+/* ---------------- Unified job-details editing (NO SILO) ----------------
+ * Ramone (2026-11-19): full data-entry fields across the lifecycle,
+ * and every field reads/writes the SAME ServiceRequest + CRM
+ * customer record the booking platform and Book OS use. An edit here
+ * is the office's record the moment it saves — booking fields land on
+ * the booking, customer fields land on booking.customer AND the CRM
+ * customer row (persisted through the same bookingsRepo bridge), and
+ * every change is written to the booking history with from → to.
+ * The assigned tech edits their own accepted jobs; oversight/staff
+ * use the office variant, which additionally owns the provenance
+ * fields (source, segment) a tech must never rewrite.
+ */
+const jobDetailsBase = {
+  customerName: z.string().trim().min(2).max(120),
+  customerPhone: z.string().trim().min(7).max(32),
+  customerEmail: z.string().trim().email().max(160).nullable(),
+  serviceAddress: z.string().trim().min(4).max(240),
+  city: z.string().trim().min(2).max(80),
+  zip: z.string().trim().min(3).max(16),
+  appliance: z.string().trim().min(2).max(80),
+  issue: z.string().trim().min(3).max(1000),
+  preferredWindow: z.string().trim().max(120).nullable(),
+  resolution: z.string().trim().max(1000).nullable(),
+};
+const jobDetailsSchema = z
+  .object(Object.fromEntries(Object.entries(jobDetailsBase).map(([key, schema]) => [key, schema.optional()])))
+  .refine((data) => Object.values(data).some((value) => value !== undefined), { message: 'Send at least one field to update' });
+const officeJobDetailsSchema = z
+  .object({
+    ...Object.fromEntries(Object.entries(jobDetailsBase).map(([key, schema]) => [key, schema.optional()])),
+    source: z.string().trim().min(2).max(60).optional(),
+    segment: z.enum(['RESIDENTIAL', 'COMMERCIAL']).optional(),
+  })
+  .refine((data) => Object.values(data).some((value) => value !== undefined), { message: 'Send at least one field to update' });
+
+async function applyJobDetails(req, booking, data, scope) {
+  const changes = [];
+  const set = (field, target, key, value) => {
+    if (value === undefined) return;
+    const from = target[key] ?? null;
+    if (from !== value) {
+      changes.push({ field, from, to: value });
+      target[key] = value;
+    }
+  };
+  if (!booking.customer) booking.customer = {};
+  const customer = booking.customer;
+  set('customerName', customer, 'name', data.customerName);
+  set('customerPhone', customer, 'phone', data.customerPhone);
+  set('customerEmail', customer, 'email', data.customerEmail);
+  if (data.serviceAddress !== undefined) {
+    set('serviceAddress', booking, 'serviceAddress', data.serviceAddress);
+    set('customerAddress', customer, 'address', data.serviceAddress);
+  }
+  if (data.city !== undefined) {
+    set('city', booking, 'city', data.city);
+    set('customerCity', customer, 'city', data.city);
+  }
+  if (data.zip !== undefined) {
+    set('zip', booking, 'zip', data.zip);
+    set('customerZip', customer, 'zip', data.zip);
+  }
+  set('appliance', booking, 'appliance', data.appliance);
+  set('issue', booking, 'issue', data.issue);
+  set('preferredWindow', booking, 'preferredWindow', data.preferredWindow);
+  set('resolution', booking, 'resolution', data.resolution);
+  set('source', booking, 'source', data.source);
+  set('segment', booking, 'segment', data.segment);
+  if (!changes.length) return changes;
+  const t = new Date().toISOString();
+  // The CRM customer row is the same record the office reads: sync
+  // the customer fields onto it and persist through the same bridge
+  // the booking platform uses.
+  const record = booking.customerId ? store.customers.get(booking.customerId) : null;
+  if (record && record !== customer) {
+    record.name = customer.name;
+    record.phone = customer.phone;
+    if (customer.email !== undefined) record.email = customer.email;
+    if (customer.address !== undefined) record.address = customer.address;
+    record.city = booking.city;
+    record.zip = booking.zip;
+    await persistCustomer(record);
+  } else if (customer.id) {
+    await persistCustomer(customer);
+  }
+  // A stored Property for the old address follows the job's address.
+  const addressChanged = changes.some((c) => ['serviceAddress', 'city', 'zip'].includes(c.field));
+  if (addressChanged && booking.customerId) {
+    const oldAddress = changes.find((c) => c.field === 'serviceAddress')?.from;
+    const property = (store.properties || []).find(
+      (p) => p.customerId === booking.customerId && (!oldAddress || p.address === oldAddress),
+    );
+    if (property) {
+      property.address = booking.serviceAddress || property.address;
+      property.city = booking.city || property.city;
+      property.zip = booking.zip || property.zip;
+      property.updatedAt = t;
+      await persistProperty(property);
+    }
+  }
+  addBookingEvent(booking, 'JOB_DETAILS_UPDATED', req.user.email, {
+    scope,
+    changes,
+    confirmedBy: scope === 'FIELD' ? 'TECHNICIAN' : 'OFFICE',
+  });
+  booking.updatedAt = t;
+  await persistBooking(booking);
+  appendEvent('JOB_DETAILS_UPDATED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { scope, fields: changes.map((c) => c.field) },
+  });
+  return changes;
+}
+
+function jobDetailsView(booking) {
+  return {
+    referenceCode: booking.referenceCode || null,
+    customerName: booking.customer?.name || null,
+    customerPhone: booking.customer?.phone || null,
+    customerEmail: booking.customer?.email || null,
+    serviceAddress: booking.serviceAddress || null,
+    city: booking.city || null,
+    zip: booking.zip || null,
+    appliance: booking.appliance || null,
+    issue: booking.issue || null,
+    preferredWindow: booking.preferredWindow || null,
+    resolution: booking.resolution || null,
+    source: booking.source || null,
+    segment: booking.segment || 'RESIDENTIAL',
+  };
+}
+
+router.patch('/provider/assignments/:id/job-details', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  const parsed = jobDetailsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid job details', details: parsed.error.flatten() });
+  }
+  const changes = await applyJobDetails(req, booking, parsed.data, 'FIELD');
+  return res.json({ data: { updated: changes.map((c) => c.field), changes, booking: jobDetailsView(booking) } });
+});
+
+const officeGate = [
+  authenticate,
+  requireCompany,
+  requireRole(ROLES.DISPATCHER, ...OVERSIGHT_ROLES),
+];
+
+router.patch('/provider/assignments/:id/job-details/office', ...officeGate, async (req, res) => {
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment) return res.status(404).json({ error: 'Assignment not found' });
+  const booking = store.bookings.get(assignment.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const parsed = officeJobDetailsSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid job details', details: parsed.error.flatten() });
+  }
+  const changes = await applyJobDetails(req, booking, parsed.data, 'OFFICE');
+  return res.json({ data: { updated: changes.map((c) => c.field), changes, booking: jobDetailsView(booking) } });
+});
+
+/* ---------------- Review request send (real outbox, by email) -------------
+ * Fires the platform's real review request (services/notifications)
+ * — the same one completion queues — through the notification
+ * outbox. Idempotent by the outbox's event keys: if the completion
+ * send already queued the email, this reports its live status
+ * instead of double-sending. Honest refusals: not completed yet, or
+ * no customer email on the record (add one under Booking details).
+ */
+router.post('/provider/assignments/:id/review-request', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (booking.status !== 'COMPLETED') {
+    return res.status(409).json({ error: 'The review request goes out after the job is completed' });
+  }
+  if (!booking.customer?.email) {
+    return res.status(409).json({
+      error: 'No customer email on this job — add one under Booking details, then send the review request',
+      review: reviewState(booking),
+    });
+  }
+  const before = reviewState(booking);
+  notifyReviewRequest(booking, 'TECH_APP');
+  const after = reviewState(booking);
+  const newlyQueued = after.requests.filter((r) => !before.requests.some((b) => b.id === r.id));
+  if (newlyQueued.length) {
+    const t = new Date().toISOString();
+    addBookingEvent(booking, 'REVIEW_REQUEST_SENT', req.user.email, {
+      assignmentId: assignment.id,
+      channels: newlyQueued.map((r) => r.channel),
+      confirmedBy: 'TECHNICIAN',
+    });
+    booking.updatedAt = t;
+    await persistBooking(booking);
+  }
+  appendEvent('REVIEW_REQUEST_TRIGGERED', {
+    source: 'TECH_APP',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { newlyQueued: newlyQueued.length },
+  });
+  return res.json({ data: { review: after, newlyQueued: newlyQueued.length } });
+});
+
+/* ---------------- AI-fill: diagnosis form draft (never persists) ----------
+ * Ramone's interaction model (2026-11-19): forms complete two ways —
+ * typing, and AI filling. This preview is the AI-fill leg for the
+ * diagnosis form: Speedy drafts the fields from the tech's own
+ * description/dictation and the app drops them into the form as a
+ * DRAFT. Nothing is written to the job here — no booking event, no
+ * persistence — the tech reviews, edits and taps "Save diagnosis"
+ * (the existing confirmed save) before anything commits. Mirrors the
+ * ai-note preview's binding and honest 503/502 handling.
+ */
+const aiDiagnosisPreviewSchema = z.object({
+  text: z.string().trim().min(3).max(4000),
+});
+
+router.post('/provider/assignments/:id/ai-diagnosis/preview', ...providerOnly, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const assignment = store.dispatchAssignments.get(req.params.id);
+  if (!assignment || assignment.providerId !== provider.id) {
+    return res.status(404).json({ error: 'Assignment not found' });
+  }
+  if (assignment.status !== 'ACCEPTED') {
+    return res.status(409).json({ error: 'Accept the job before drafting its diagnosis' });
+  }
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy is not configured yet' });
+  }
+  const parsed = aiDiagnosisPreviewSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid description text' });
+  }
+  try {
+    const draft = await speedyDraftDiagnosis(parsed.data.text);
+    return res.json({ data: { draft, persisted: false } });
+  } catch (error) {
+    return res.status(502).json({
+      error: 'Speedy could not draft that — your words are kept; type the form or try again',
+      detail: String(error?.message || error),
+    });
+  }
 });
