@@ -123,7 +123,7 @@ export const DEPARTMENTS = [
         starters: ['Which cities auto-match?', 'What happens to an out-of-area request?', 'What is the waitlist?'],
         keywords: ['area', 'cities', 'coverage', 'waitlist', 'out of area', 'expansion', 'area day'],
         answer:
-          'The booking matcher auto-matches the 12 core Broward cities: Lauderhill, Plantation, Sunrise, Tamarac, Fort Lauderdale, Lauderdale Lakes, North Lauderdale, Davie, Coral Springs, Pompano Beach, Oakland Park, and Margate. The published landing coverage is wider — 131 landing pages across 65 tri-county cities — but a booking from a city outside the core 12 lands in AREA_REVIEW for a setter to decide, and a clearly out-of-area request is recorded on the expansion waitlist: the customer is told honestly that no visit has been booked and no charge made, and never sent a confirmation with service terms. Book OS has an area-day view (GET /bookos/area-day) so setters see the day by area.',
+          'The booking matcher auto-matches the 12 core Broward cities: Lauderhill, Plantation, Sunrise, Tamarac, Fort Lauderdale, Lauderdale Lakes, North Lauderdale, Davie, Coral Springs, Pompano Beach, Oakland Park, and Margate. The published landing coverage is wider — 170 landing pages across 65 tri-county cities — but a booking from a city outside the core 12 lands in AREA_REVIEW for a setter to decide, and a clearly out-of-area request is recorded on the expansion waitlist: the customer is told honestly that no visit has been booked and no charge made, and never sent a confirmation with service terms. Book OS has an area-day view (GET /bookos/area-day) so setters see the day by area.',
       },
     ],
   },
@@ -493,7 +493,7 @@ export const DEPARTMENTS = [
         starters: ['How does a page get published?', 'What is the publish feed?', 'What happens when a service changes in the Service OS?'],
         keywords: ['page studio', 'publish', 'published', 'get published', 'page published', 'draft', 'review', 'publish feed', 'indexnow', 'landing pages'],
         answer:
-          'Pages are built in the Page Studio (Marketing OS) and move draft → review → publish → verify: nothing reaches the public without human review, and a direct draft-to-published jump is refused. The published library stands at 131 landing pages across 65 tri-county cities — say it exactly that way ("131 landing pages", "65 cities", never "131 cities"). Publishing is wired into the platform: when business data changes in the Service OS (services, cities, pages, offers), a publish event fires to the publish feed, IndexNow, and webhooks so surfaces and search engines stay current — business data only; customer records are never published. The Publish Center and GET /marketing-os/publish-events show the flow.',
+          'Pages are built in the Page Studio (Marketing OS) and move draft → review → publish → verify: nothing reaches the public without human review, and a direct draft-to-published jump is refused. The published library stands at 170 landing pages across 65 tri-county cities — say it exactly that way ("170 landing pages", "104 cities", never "131 cities"). Publishing is wired into the platform: when business data changes in the Service OS (services, cities, pages, offers), a publish event fires to the publish feed, IndexNow, and webhooks so surfaces and search engines stay current — business data only; customer records are never published. The Publish Center and GET /marketing-os/publish-events show the flow.',
       },
       {
         id: 'seo-google',

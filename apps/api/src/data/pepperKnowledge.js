@@ -65,7 +65,7 @@ export const PEPPER_STAFF_PACK = [
     topic: 'Coverage — cities and the booking matcher',
     keywords: ['coverage', 'service areas', 'how many cities', 'which cities', 'area review', 'new city booking', 'landing pages count'],
     answer:
-      'Top Speed publishes 131 landing pages across 65 tri-county cities (Broward, Palm Beach, Miami-Dade) — say "65 cities", never "131 cities". The booking matcher auto-matches only the original 12 Broward cities: Lauderhill, Plantation, Sunrise, Tamarac, Fort Lauderdale, Lauderdale Lakes, North Lauderdale, Davie, Coral Springs, Pompano Beach, Oakland Park, Margate. A booking from any other covered city lands in the Service Setters AREA_REVIEW queue for a human decision.',
+      'Top Speed publishes 170 landing pages across 65 tri-county cities (Broward, Palm Beach, Miami-Dade) — say "104 cities", never "131 cities". The booking matcher auto-matches only the original 12 Broward cities: Lauderhill, Plantation, Sunrise, Tamarac, Fort Lauderdale, Lauderdale Lakes, North Lauderdale, Davie, Coral Springs, Pompano Beach, Oakland Park, Margate. A booking from any other covered city lands in the Service Setters AREA_REVIEW queue for a human decision.',
   },
   {
     topic: 'Lead flow — no auto-dispatch',

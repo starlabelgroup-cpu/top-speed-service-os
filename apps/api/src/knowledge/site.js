@@ -320,13 +320,13 @@ export function buildSitePack() {
     },
     {
       id: 'site-landing-pages',
-      topic: 'Landing pages — 131 pages across 65 cities',
+      topic: 'Landing pages — 170 pages across 104 cities',
       keywords: [
-        'landing pages', '131 landing pages', '65 cities', 'city pages',
+        'landing pages', '170 landing pages', '104 cities', 'city pages',
         'how many cities do you serve', 'local service pages',
       ],
       answer:
-        `Top Speed publishes 131 service landing pages covering 65 cities across Broward, Palm Beach, and Miami-Dade counties — a page for the services offered in each city. ` +
+        `Top Speed publishes 170 service landing pages covering 104 cities across Broward, Palm Beach, and Miami-Dade counties — a page for the services offered in each city. ` +
         `The Service Areas directory lists every city and links to its pages, so you can start from your own city and book from there.`,
       link: `${SITE}/service-areas-directory`,
     },

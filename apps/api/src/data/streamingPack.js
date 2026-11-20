@@ -238,12 +238,12 @@ export const STREAMING_PACK = [
   },
   {
     tag: 'flywheel-streaming-10',
-    name: 'Streaming — Tri-County Coverage, 65 Cities (Display)',
+    name: 'Streaming — Tri-County Coverage, 104 Cities (Display)',
     format: 'DISPLAY',
     providers: ALL_PROVIDERS,
     offering: 'Tri-county appliance repair coverage',
-    objective: 'Streaming display ad: local appliance repair bookings across the 65-city tri-county coverage area.',
-    headlines: ['65 Cities. One Fast Team.'],
+    objective: 'Streaming display ad: local appliance repair bookings across the 104-city tri-county coverage area.',
+    headlines: ['104 Cities. One Fast Team.'],
     descriptions: [
       'Broward, Palm Beach & Miami-Dade: book appliance repair in your city in minutes.',
     ],

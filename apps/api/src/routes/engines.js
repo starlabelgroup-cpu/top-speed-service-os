@@ -42,7 +42,7 @@ import { allKnowledgeEntries, matchSafetyEntry } from '../knowledge/index.js';
  *                                  cell says so instead of guessing.
  *
  * Facts discipline (all four): hours Mon–Fri 8 AM–7 PM; coverage is
- * "65 cities / 131 landing pages", never "131 cities"; bookings
+ * "104 cities / 170 landing pages", never "131 cities"; bookings
  * auto-confirm only in the 12 core cities — other published cities
  * link to their landing pages and are confirmed by a Service Setter;
  * no reviews/ratings claims anywhere; vent work routes to the
@@ -302,7 +302,7 @@ function appDocs() {
       keywords: ['offer', 'offers', 'discount', 'deal', 'promotion', 'rewards', 'coupon', 'savings', 'special'],
     },
     {
-      id: 'app-directory', type: 'App', title: 'Service Areas Directory — 65 cities, 131 landing pages',
+      id: 'app-directory', type: 'App', title: 'Service Areas Directory — 104 cities, 170 landing pages',
       snippet: 'Every published Top Speed city and landing page across Broward, Palm Beach and Miami-Dade — search by city, appliance or problem.',
       url: `${SITE}/service-areas-directory`,
       keywords: ['cities', 'areas', 'coverage', 'near me', 'directory', 'locations', 'serve'],

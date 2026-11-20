@@ -256,13 +256,6 @@ model Customer {
   // writes it. Lifetime value is NOT stored — it is computed at read
   // time from real money (PAID Payment rows + recorded receipts).
   crmFlag        String?
-  // Duplicate merge (2026-11-20, CRM depth D5): when staff merge this
-  // record into a survivor, this points at the survivor's id and the
-  // row becomes a tombstone — excluded from customer lists, kept so
-  // its phone / email / name still resolve to the survivor (alias
-  // lookup) and the merge history is never lost. Null on every live
-  // record. Set only by POST /crm/customers/merge.
-  mergedIntoId   String?  @db.Uuid
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -272,7 +265,6 @@ model Customer {
 
   @@index([companyId])
   @@index([companyId, phone])
-  @@index([mergedIntoId])
 }
 
 // The booking record exposed by the API as /bookings.
@@ -1778,6 +1770,23 @@ model HelpArticleState {
   @@index([status])
 }
 
+// Before/after video factory (2026-11-20, E9): the rendered MP4 bytes
+// for a MediaContent record the factory generated from a completed
+// job's own before/after photos. Media OS content records are
+// URL-based, so the bytes live here — the same raw-Bytes discipline
+// as ReviewMedia — and are served through the factory's byte route
+// (staff, or anyone once the content is PUBLISHED through the normal
+// editorial workflow). The content record is always created as a
+// DRAFT: the factory never publishes.
+model MediaVideoBlob {
+  id        String   @id @default(uuid()) @db.Uuid
+  contentId String   @unique @db.Uuid
+  mimeType  String
+  sizeBytes Int
+  data      Bytes
+  createdAt DateTime @default(now())
+}
+
 // ─── Ad Studio (in-house advertising system, 2026-11-14) ────────────
 // Ramone's own ad system on the Service OS: campaigns are built from
 // Media OS creatives, send traffic to his own published landing pages,
@@ -2414,4 +2423,35 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// Call recordings + transcripts (2026-11-20, D8 — SHIPS DARK).
+// Rows land here ONLY from the Twilio call-recording callbacks, and
+// those callbacks can only fire when the CALL_RECORDING_ENABLED flag
+// is on: with the flag off (the default, and the shipped state) the
+// voice TwiML carries no recording instruction and the callback
+// handlers store nothing. Florida is a two-party-consent state, so
+// recording stays off until the owner sets the consent policy and
+// announcement wording and flips the flag himself. Recordings are
+// staff-only data — no public endpoint ever returns them; the CRM
+// customer record is the display surface. This is the platform's own
+// call recording, distinct from the voicemail <Record> flow, whose
+// recordings keep living in the notification alerts as before.
+model CallRecording {
+  id                        String   @id @default(uuid()) @db.Uuid
+  callSid                   String   @unique
+  recordingSid              String?  @unique
+  fromNumber                String
+  toNumber                  String
+  recordingUrl              String?
+  durationSec               Int?
+  status                    String   @default("RECORDED")
+  transcript                String?  @db.Text
+  transcriptStatus          String   @default("NONE")
+  consentAnnouncementPlayed Boolean  @default(false)
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@index([fromNumber, createdAt])
+  @@index([toNumber, createdAt])
 }

@@ -918,7 +918,7 @@ function jobStripePayments(booking) {
 }
 
 
-function jobPhotos(booking) {
+export function jobPhotos(booking) {
   const byId = new Map();
   const removed = new Set();
   for (const event of booking.history || []) {

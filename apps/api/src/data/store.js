@@ -188,6 +188,17 @@ export const store = {
   // library, never blocks hydration.
   mediaContent: [],
   mediaAssets: [],
+  // Before/after video factory (2026-11-20, E9): rendered MP4 bytes
+  // for factory-generated MediaContent, keyed by contentId. Hydrated
+  // lazily from the MediaVideoBlob table via db/videoFactoryRepo (the
+  // bytes are only ever read through the factory's byte route, so
+  // boot hydration skips them); a missing table degrades to empty.
+  mediaVideoBlobs: new Map(),
+  // Call recordings + transcripts (2026-11-20, D8 — ships dark):
+  // hydrated from the CallRecording table via db/callRecordingsRepo.
+  // Rows can only exist when CALL_RECORDING_ENABLED was on for a
+  // call; with the flag off this stays empty forever.
+  callRecordings: [],
   // Ad Studio (2026-11-14): the in-house advertising system — campaigns
   // built from Media OS creatives, run on the platform's own surfaces,
   // approved by the owner. Hydrated from the AdCampaign table via

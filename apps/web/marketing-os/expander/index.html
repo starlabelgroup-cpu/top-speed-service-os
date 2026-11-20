@@ -29,7 +29,7 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink
 <body>
 <div class="wrap">
   <h1>Marketing OS — Tri-County Expander</h1>
-  <p class="sub">Staff tool. Builds and publishes the owner-directed expansion: 53 tri-county city pages, 5 commercial repair categories, problem pages for every service, and 15 installation categories. Runs from your signed-in staff session — every step is logged below, existing pages are never modified, and duplicates are skipped automatically.</p>
+  <p class="sub">Staff tool. Builds and publishes the owner-directed expansion: 53 tri-county city pages, 5 commercial repair categories, problem pages for every service, and 15 installation categories. Phase 5 (2026-11-20) adds the next ring: the remaining 39 municipalities of Palm Beach and Miami-Dade counties — Broward is already complete — bringing published coverage to 104 cities and 170 pages. Runs from your signed-in staff session — every step is logged below, existing pages are never modified, and duplicates are skipped automatically.</p>
   <div id="status">Checking session…</div>
   <div class="warn">Run one phase at a time and let it finish. If a phase reports errors, copy the log and send it to Pepper Agent — do not re-run blindly; the tool is idempotent, so a re-run safely skips what already exists.</div>
   <div class="panel">
@@ -37,8 +37,10 @@ button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink
     <p>1) Cities — seeds each city as service-covered, creates and publishes its landing page.<br>
        2) Categories — commercial repair (5), residential installation (9), commercial installation (6).<br>
        3) Problem pages — symptom pages for all residential services and commercial categories (runs a recon check on the existing problem pages first).<br>
-       4) Core service pages — a main page for every residential repair service. Every page in every phase carries the Speedy Booking + Speedy AI links in its booking section.</p>
+       4) Core service pages — a main page for every residential repair service. Every page in every phase carries the Speedy Booking + Speedy AI links in its booking section.<br>
+       5) Next-ring cities (2026-11-20) — the remaining Palm Beach (23) and Miami-Dade (16) municipalities, same pipeline as Phase 1: service-covered taxonomy record, city page with the Speedy booking links, published. Bookings from these cities follow the same Service Setters review path as every expansion city — the 12-city auto-match is unchanged.</p>
     <button id="btnCities">Run Phase 1 — Cities (53)</button>
+    <button id="btnCitiesNext">Run Phase 5 — Next-Ring Cities (39)</button>
     <button id="btnCats">Run Phase 2 — Categories (20)</button>
     <button id="btnProblems">Run Phase 3 — Problem Pages (31)</button>
     <button id="btnCore">Run Phase 4 — Core Service Pages (8)</button>
@@ -57,6 +59,16 @@ var GEO = 'Broward, Palm Beach & Miami-Dade';
 var CITIES = ['Hollywood','Pembroke Pines','Miramar','Deerfield Beach','Coconut Creek','Dania Beach','Cooper City','Weston','Parkland','Hallandale Beach','Wilton Manors','Lighthouse Point','Lauderdale-by-the-Sea','Southwest Ranches','West Park','Pembroke Park','Hillsboro Beach','Sea Ranch Lakes','Lazy Lake',
 'West Palm Beach','Boca Raton','Boynton Beach','Delray Beach','Wellington','Jupiter','Palm Beach Gardens','Lake Worth Beach','Riviera Beach','Greenacres','Royal Palm Beach','Palm Beach','Belle Glade','Palm Springs','North Palm Beach','Lake Park',
 'Miami','Hialeah','Miami Gardens','Miami Beach','North Miami','Homestead','Doral','Coral Gables','Aventura','Cutler Bay','Hialeah Gardens','Sunny Isles Beach','North Miami Beach','Sweetwater','Florida City','Key Biscayne','Surfside','Bal Harbour'];
+
+// Phase 5 (2026-11-20): the next ring — every remaining municipality of
+// Palm Beach County (23) and Miami-Dade County (16). Broward's 31
+// municipalities are already fully published (the original 12 plus the
+// Phase 1 Broward rows above), so this ring completes the tri-county
+// map: 104 cities, 170 published pages. This list MUST stay identical
+// to apps/api/src/data/expansionCities.js — the expansion-cities drill
+// suite fails if the two drift.
+var CITIES_NEXT = ['Atlantis','Briny Breezes','Cloud Lake','Glen Ridge','Golf','Gulf Stream','Haverhill','Highland Beach','Hypoluxo','Juno Beach','Jupiter Inlet Colony','Lake Clarke Shores','Lantana','Loxahatchee Groves','Manalapan','Mangonia Park','Ocean Ridge','Pahokee','Palm Beach Shores','South Bay','South Palm Beach','Tequesta','Westlake',
+'Bay Harbor Islands','Biscayne Park','El Portal','Golden Beach','Indian Creek','Medley','Miami Lakes','Miami Shores','Miami Springs','North Bay Village','Opa-locka','Palmetto Bay','Pinecrest','South Miami','Virginia Gardens','West Miami'];
 
 var CAT_SERVICES = [
  // kind 'com' — under Commercial Appliance Repair
@@ -179,8 +191,10 @@ function enrichCtasOnly(pageId, ctaHeading){
     return api('PATCH','/marketing-os/admin/pages/'+pageId,{sections:sections, note:'Speedy booking links 2026-11-13'}).then(function(r2){ return r2.status<300; });
   });
 }
-function runCities(btn){
-  btn.disabled = true; log('\n=== PHASE 1: CITIES ('+CITIES.length+') ===');
+function runCities(btn){ runCityList(btn, CITIES, 'PHASE 1: CITIES', 'Tri-county expansion 2026-11-13'); }
+function runCitiesNext(btn){ runCityList(btn, CITIES_NEXT, 'PHASE 5: NEXT-RING CITIES', 'Tri-county expansion ring 2 2026-11-20'); }
+function runCityList(btn, list, label, note){
+  btn.disabled = true; log('\n=== '+label+' ('+list.length+') ===');
   var done=0, existed=0, failed=0, skipped=0;
   var publishedCityIds = {}, cityByName = {};
   var chain = Promise.all([taxonomy(), api('GET','/marketing-os/admin/pages?type=CITY')]).then(function(res){
@@ -190,7 +204,7 @@ function runCities(btn){
     pages.forEach(function(p){ if(p.status==='PUBLISHED' && p.city && p.city.id) publishedCityIds[p.city.id]=true; });
     log('Pre-check: '+Object.keys(publishedCityIds).length+' city pages already published — those cities will be skipped at no API cost.');
   });
-  CITIES.forEach(function(name){
+  list.forEach(function(name){
     chain = chain.then(function(){
       if(cityByName[name] && publishedCityIds[cityByName[name].id]){ skipped++; log('skip ✓ '+name+' (already published)'); return; }
       return api('POST','/marketing-os/admin/taxonomy/cities',{name:name, serviceCovered:true, state:'FL'}).then(function(r){
@@ -207,7 +221,7 @@ function runCities(btn){
         return cityId;
       }).then(function(cityId){
         if(!cityId) return;
-        return api('POST','/marketing-os/admin/pages',{type:'CITY', cityId:cityId, note:'Tri-county expansion 2026-11-13'}).then(function(r){
+        return api('POST','/marketing-os/admin/pages',{type:'CITY', cityId:cityId, note:note}).then(function(r){
           if(r.status===409){ log('  page = '+name+' (already exists)'); existed++; return; }
           if(r.status>=300){ log('  ! '+name+': page create '+r.status+' '+(r.text||'').slice(0,140)); failed++; return; }
           var pid = r.json.data.id;
@@ -218,7 +232,7 @@ function runCities(btn){
       }).then(function(){ return sleep(120); });
     });
   });
-  chain.then(function(){ log('PHASE 1 DONE — published '+done+', already existed '+existed+', skipped '+skipped+', failed '+failed); btn.disabled=false; refreshCounts(); });
+  chain.then(function(){ log(label+' DONE — published '+done+', already existed '+existed+', skipped '+skipped+', failed '+failed); btn.disabled=false; refreshCounts(); });
 }
 
 function catTitleMeta(s){
@@ -400,6 +414,7 @@ function refreshCounts(){
     });
   }
   document.getElementById('btnCities').onclick = function(){ runCities(this); };
+  document.getElementById('btnCitiesNext').onclick = function(){ runCitiesNext(this); };
   document.getElementById('btnCats').onclick = function(){ runCats(this); };
   document.getElementById('btnProblems').onclick = function(){ runProblems(this); };
   document.getElementById('btnCore').onclick = function(){ runCore(this); };

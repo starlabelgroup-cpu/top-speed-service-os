@@ -67,7 +67,7 @@
       { label: 'Services & Pricing', href: 'https://topspeedserviceos.com/home-appliance-services', keys: 'services pricing repair cost diagnostic labor installation' },
       { label: 'Warranty & Terms', href: 'https://topspeedserviceos.com/legal', keys: 'warranty guarantee terms legal 90 day' },
       { label: 'Reviews Wall', href: 'https://www.pepperlists.com', keys: 'reviews ratings wall pepper lists post verified' },
-      { label: 'Service Areas — 65 Cities', href: 'https://topspeedserviceos.com/service-areas-directory', keys: 'cities areas coverage near me landing pages directory' }
+      { label: 'Service Areas — 104 Cities', href: 'https://topspeedserviceos.com/service-areas-directory', keys: 'cities areas coverage near me landing pages directory' }
     ]},
     { title: 'Platforms', items: [
       { label: 'Top Speed Service OS', href: 'https://topspeedserviceos.com/', keys: 'hub home main platform service os' },
@@ -144,7 +144,7 @@
                   insight: "These pages hold your offers and rewards — what's available, and how each one works. When you're ready, booking a repair is one tap away." },
     areas:      { here: "You're in the Service Areas directory",
                   exits: [L.book, L.speedy, L.track],
-                  insight: "This directory lists all 65 cities we cover and every service page. Pick your city to see what's available near you." },
+                  insight: "This directory lists all 104 cities we cover and every service page. Pick your city to see what's available near you." },
     speedy:     { here: "You're on Photo Diagnosis with Speedy",
                   exits: [L.book, L.track, L.garage],
                   insight: "Here's what happens on this page: send a photo of the problem and Speedy explains, in plain language, what it usually means and what happens next. A technician confirms everything in person before any work." },
@@ -197,7 +197,7 @@
     { title: 'Track My Tech', href: '/track', line: 'Think of it like being kept updated during care: your repair moves through eight stages, from request received to repair completed, and you can see exactly where things stand at any moment.' },
     { title: 'My Garage', href: '/app', line: 'Your garage keeps your appliances and their full service history in one place — like a chart for your home, ready whenever you need it.' },
     { title: 'Offers & Refer & Earn', href: '/offers-rewards', line: 'See the offers and rewards waiting for you, and earn service credit when friends book through Refer & Earn.' },
-    { title: 'Service Areas', href: '/service-areas-directory', line: 'We cover 65 cities across Broward, Palm Beach, and Miami-Dade — with a page for every service.' }
+    { title: 'Service Areas', href: '/service-areas-directory', line: 'We cover 104 cities across Broward, Palm Beach, and Miami-Dade — with a page for every service.' }
   ];
 
   /* ---- Styles ---- */

@@ -47,6 +47,24 @@ export function voiceConfig() {
     tollFreeNumber: toE164(process.env.TWILIO_PHONE_NUMBER, '+18444607038'),
     forwardTo: toE164(process.env.VOICE_FORWARD_TO, '+19549317997'),
     dialTimeoutSeconds: 30,
+    // Call recording (2026-11-20, D8 — SHIPS DARK): a hard flag,
+    // default OFF, read live from the environment on every call so
+    // flipping it needs no code change. Florida is a two-party-
+    // consent state: recording stays off until the owner sets the
+    // consent policy and approves the announcement wording, then
+    // sets CALL_RECORDING_ENABLED=true himself. While off, the
+    // voice TwiML carries no recording instruction at all and the
+    // recording callbacks store nothing. This governs the platform's
+    // call recording only — the voicemail <Record> flow is separate
+    // and unchanged.
+    callRecordingEnabled: process.env.CALL_RECORDING_ENABLED === 'true',
+    // The consent announcement played before a recorded call connects
+    // (only ever rendered when the flag above is on). PLUMBING-POINT
+    // WORDING: the owner's approved policy text replaces this line
+    // when he sets the policy — until then it is never spoken,
+    // because the flag is off.
+    callRecordingAnnouncement:
+      'This call may be recorded for quality and training purposes.',
   };
 }
 

@@ -8,6 +8,7 @@ import { hydrateChatSessions } from './chatsRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
 import { hydrateVideoRequests } from './videoRepo.js';
+import { hydrateCallRecordings } from './callRecordingsRepo.js';
 import { hydratePayments } from './paymentsRepo.js';
 import { hydrateConnections } from './connectionsRepo.js';
 import { hydrateAppliances } from './appliancesRepo.js';
@@ -75,7 +76,6 @@ function customerToRow(record) {
     city: record.city ?? '',
     zip: record.zip ?? '',
     crmFlag: record.crmFlag ?? null,
-    mergedIntoId: record.mergedIntoId ?? null,
   };
 }
 
@@ -93,7 +93,6 @@ function customerFromRow(row) {
     city: row.city,
     zip: row.zip,
     crmFlag: row.crmFlag ?? undefined,
-    mergedIntoId: row.mergedIntoId ?? undefined,
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
   };
 }
@@ -310,6 +309,7 @@ export async function hydrateStore() {
 
   const flywheel = await hydrateFlywheel();
   const video = await hydrateVideoRequests();
+  await hydrateCallRecordings();
   await hydratePayments();
   await hydrateConnections();
   await hydrateAppliances();

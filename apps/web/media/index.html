@@ -194,6 +194,17 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     </div>
 
     <div class="console">
+      <h3>Before/after video factory</h3>
+      <p class="small mut">Renders a short branded video from a completed job — its own before and after photos, the appliance and city from the job record, nothing invented. The video lands in the library above as a <b>Draft</b>; it is never published from here — publishing stays with the review workflow. The job needs at least one BEFORE and one AFTER photo (added by the technician in the job workspace).</p>
+      <form class="cform" id="factoryForm">
+        <div><label>Job reference (e.g. TS-XXXXXX)</label><input id="fRef" required maxlength="60" placeholder="TS-XXXXXX"></div>
+        <div class="full"><button class="btn" type="submit">Generate draft video</button></div>
+      </form>
+      <div class="msg" id="factoryMsg"></div>
+      <div class="small mut" id="factoryStatus">Checking renderer availability…</div>
+    </div>
+
+    <div class="console">
       <h3>Asset registry — rights</h3>
       <p class="small mut">Every original, version and thumbnail the network holds, with its rights status. Nothing customer-owned is published without a permission record.</p>
       <div class="rows" id="assetRows" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading assets…</span></div>
@@ -451,6 +462,31 @@ document.getElementById('createForm').addEventListener('submit', function(ev){
       loadConsole();
     })
     .catch(function(){ setMsg('createMsg', 'Create failed — connection error.', false); });
+});
+
+/* ── Before/after video factory ────────────────────────── */
+authFetch('/media-os/video-factory/status').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+  var el = document.getElementById('factoryStatus');
+  if (!el) return;
+  if (!j){ el.textContent = 'Renderer status could not be loaded.'; return; }
+  el.textContent = j.data && j.data.available
+    ? 'Renderer available (' + (j.data.ffmpeg || 'ffmpeg') + ').'
+    : 'Renderer not available in the current API environment — generation will report that honestly until an ffmpeg binary is configured there.';
+}).catch(function(){});
+document.getElementById('factoryForm').addEventListener('submit', function(ev){
+  ev.preventDefault();
+  var ref = document.getElementById('fRef').value.trim();
+  if (!ref) return;
+  setMsg('factoryMsg', 'Rendering — this can take a few seconds…', true);
+  authFetch('/media-os/video-factory', { method: 'POST', body: JSON.stringify({ referenceCode: ref }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ setMsg('factoryMsg', (res.j && res.j.error) || 'Generation failed.', false); return; }
+      setMsg('factoryMsg', 'Draft video created: ' + res.j.data.title + ' (' + res.j.data.durationSec + 's) — find it in the library above as a Draft.', true);
+      ev.target.reset();
+      loadConsole();
+    })
+    .catch(function(){ setMsg('factoryMsg', 'Generation failed — connection error.', false); });
 });
 
 /* ── Assets registry ───────────────────────────────────── */

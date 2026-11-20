@@ -629,7 +629,7 @@ function loadAll(){
     kpis += kpi(c.waitingReview != null ? c.waitingReview : 0, 'WAITING FOR REVIEW', 'Requests a Service Setter needs to look at.');
     kpis += kpi(c.enRoute != null ? c.enRoute : 0, 'TECHS EN ROUTE', 'Live GPS — customer pins show only while en route.');
     kpis += kpi(c.completedToday != null ? c.completedToday : 0, 'COMPLETED TODAY', 'Finished jobs across the network.');
-    kpis += kpi('131', 'LANDING PAGES LIVE', '65 cities · 31 services · tri-county.');
+    kpis += kpi('170', 'LANDING PAGES LIVE', '104 cities · 31 services · tri-county.');
     kpis += kpi(pay.configured ? 'ON' : '$99', 'DIAGNOSTIC', pay.configured ? 'Card payment is on.' : 'Collected at booking — card checkout turns on with Stripe keys.');
     document.getElementById('kpiGrid').innerHTML = kpis;
     tick();

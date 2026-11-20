@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { voiceConfig } from '../config/platform.js';
 import { notifyStaffAlert } from '../services/notifications.js';
 import { logInboundContact } from '../services/trackingNumbers.js';
+import { attachCallTranscript, recordCallRecording } from '../db/callRecordingsRepo.js';
 
 /**
  * Twilio Voice — inbound call forwarding for the toll-free business line.
@@ -75,7 +76,8 @@ function rejectBadSignature(res) {
 
 function handleIncoming(req, res) {
   if (!signatureOk(req)) return rejectBadSignature(res);
-  const { tollFreeNumber, forwardTo, dialTimeoutSeconds } = voiceConfig();
+  const { tollFreeNumber, forwardTo, dialTimeoutSeconds, callRecordingEnabled, callRecordingAnnouncement } =
+    voiceConfig();
   // Present the inbound caller's own number to the owner's phone so he
   // sees who is calling (and can call back from his call log). Twilio
   // permits the original caller's number as the <Dial> callerId on a
@@ -84,8 +86,24 @@ function handleIncoming(req, res) {
   const inboundFrom = String((req.body || {}).From || '').trim();
   const callerId = inboundFrom || tollFreeNumber;
   const recordingCallback = `${publicBase(req)}/api/v1/twilio/voice/recording`;
+  // Call recording (D8, 2026-11-20) ships dark: while
+  // CALL_RECORDING_ENABLED is off (the default), both fragments below
+  // are empty strings and the TwiML is byte-identical to the
+  // pre-recording document. With the flag on, the caller first hears
+  // the consent announcement and the dial records both legs,
+  // reporting to the call-recording callback (a different endpoint
+  // from the voicemail callback above — the two flows stay distinct).
+  const consentAnnouncement = callRecordingEnabled
+    ? `<Say voice="Polly.Joanna">${xmlEscape(callRecordingAnnouncement)}</Say>`
+    : '';
+  const dialRecording = callRecordingEnabled
+    ? ` record="record-from-answer-dual" recordingStatusCallback="${xmlEscape(
+        `${publicBase(req)}/api/v1/twilio/voice/call-recording`,
+      )}" recordingStatusCallbackMethod="POST"`
+    : '';
   const body =
-    `<Dial callerId="${xmlEscape(callerId)}" timeout="${dialTimeoutSeconds}">` +
+    consentAnnouncement +
+    `<Dial callerId="${xmlEscape(callerId)}" timeout="${dialTimeoutSeconds}"${dialRecording}>` +
     `<Number>${xmlEscape(forwardTo)}</Number></Dial>` +
     `<Say voice="Polly.Joanna">Thanks for calling Top Speed Appliance. ` +
     `We&apos;re with another customer right now — please leave your name, number, ` +
@@ -144,6 +162,68 @@ router.post('/twilio/voice/recording', (req, res) => {
     } catch (error) {
       // The alert is best-effort; Twilio only needs the 200 below.
       console.error(JSON.stringify({ level: 'error', message: 'voicemail alert failed', error: String(error?.message || error) }));
+    }
+  }
+  return emptyTwiml(res);
+});
+
+/**
+ * Call-recording status callback (D8, 2026-11-20) — the platform's
+ * own call recording, DISTINCT from the voicemail callback above:
+ * Twilio posts here when a <Dial record="record-from-answer-dual">
+ * recording completes. That Dial attribute only exists while
+ * CALL_RECORDING_ENABLED is on, and this handler double-guards: with
+ * the flag off it acknowledges and stores NOTHING, so even a stray
+ * or replayed callback can never create a recording record while
+ * recording is disabled. With the flag on, a completed recording is
+ * upserted by CallSid (redeliveries update the same row) for the CRM
+ * customer timeline.
+ */
+router.post('/twilio/voice/call-recording', async (req, res) => {
+  if (!signatureOk(req)) return rejectBadSignature(res);
+  const body = req.body || {};
+  if (voiceConfig().callRecordingEnabled && body.RecordingStatus === 'completed' && body.CallSid) {
+    try {
+      await recordCallRecording({
+        callSid: String(body.CallSid),
+        recordingSid: body.RecordingSid ? String(body.RecordingSid) : null,
+        fromNumber: String(body.From || ''),
+        toNumber: String(body.To || ''),
+        recordingUrl: body.RecordingUrl ? String(body.RecordingUrl) : null,
+        durationSec: body.RecordingDuration ? Number(body.RecordingDuration) : null,
+        // The recording instruction only rides TwiML that also
+        // played the consent announcement first.
+        consentAnnouncementPlayed: true,
+      });
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'call recording store failed', error: String(error?.message || error) }));
+    }
+  }
+  return emptyTwiml(res);
+});
+
+/**
+ * Call-transcription callback (D8): Twilio posts the transcript of a
+ * recorded call here (transcription is requested on the recording
+ * resource; the callback URL is configured with it). Same dark-ship
+ * guard as the recording callback: flag off → acknowledged, ignored,
+ * nothing stored. Flag on → the transcript attaches to the recording
+ * row for the call, or the row is marked FAILED when Twilio reports
+ * a transcription error.
+ */
+router.post('/twilio/voice/call-transcription', async (req, res) => {
+  if (!signatureOk(req)) return rejectBadSignature(res);
+  const body = req.body || {};
+  if (voiceConfig().callRecordingEnabled && body.CallSid) {
+    try {
+      const failed = Boolean(body.TranscriptionStatus && body.TranscriptionStatus !== 'completed');
+      await attachCallTranscript({
+        callSid: String(body.CallSid),
+        transcript: body.TranscriptionText ? String(body.TranscriptionText) : '',
+        failed,
+      });
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'call transcript store failed', error: String(error?.message || error) }));
     }
   }
   return emptyTwiml(res);

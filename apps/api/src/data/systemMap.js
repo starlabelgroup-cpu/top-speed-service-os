@@ -763,7 +763,7 @@ export const SYSTEM_MAP_AREAS = [
     url: 'https://www.topspeedappliance.net',
     purpose: 'The customer website: services, service areas, and the 131 published landing pages across 65 tri-county cities, with booking and portal login. Its bookings flow into the same Service OS setter queue.',
     access: 'Public',
-    actions: ['Customer information and booking', '131 landing pages across 65 cities'],
+    actions: ['Customer information and booking', '170 landing pages across 104 cities'],
     related: ['flagship', 'book'],
     keywords: ['topspeedappliance.net', '.net', 'dot net', 'customer website', 'landing pages', 'service pages'],
   },
@@ -1005,7 +1005,7 @@ export const SYSTEM_HOWTOS = [
       'Publish from the Studio.',
       'Verify the page live in a browser, then watch it in the SEO dashboard (/marketing-os/seo) as search data comes in.',
     ],
-    note: 'The published set today is 131 landing pages across 65 tri-county cities — say "131 landing pages" and "65 cities", never "131 cities".',
+    note: 'The published set today is 170 landing pages across 65 tri-county cities — say "170 landing pages" and "104 cities", never "131 cities".',
   },
   {
     id: 'moderate-review',
