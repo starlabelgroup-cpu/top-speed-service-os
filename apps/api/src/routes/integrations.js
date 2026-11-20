@@ -12,6 +12,7 @@ import { notifyBookingConfirmation, notifyNewBooking, notifySubmission } from '.
 import { drainOutbox, providersStatus } from '../services/senders.js';
 import { sweepReferralCreditExpiry } from '../services/referrals.js';
 import { runReminderSweep } from '../services/reminders.js';
+import { sweepReviewReminders } from '../services/reviewFunnel.js';
 
 /**
  * Referral credit expiry enforcement rides the outbox drains (Phase 2):
@@ -24,6 +25,21 @@ async function sweepReferralExpiryQuietly() {
     return await sweepReferralCreditExpiry();
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'referral expiry sweep failed', error: String(error?.message || error) }));
+    return null;
+  }
+}
+
+/**
+ * Review funnel reminders (F1, 2026-11-20) ride the same drains: every
+ * staff drain and every cron drain first queues any due review
+ * reminders, so the drain that follows delivers them. A sweep failure
+ * never blocks the drain.
+ */
+async function sweepReviewRemindersQuietly() {
+  try {
+    return await sweepReviewReminders();
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'review reminder sweep failed', error: String(error?.message || error) }));
     return null;
   }
 }
@@ -408,8 +424,9 @@ router.post(
   requireRole(...STAFF_ROLES),
   async (req, res) => {
     const referralExpiry = await sweepReferralExpiryQuietly();
+    const reviewReminders = await sweepReviewRemindersQuietly();
     const summary = await drainOutbox();
-    return res.json({ data: { ...summary, referralExpiry, providers: providersStatus() } });
+    return res.json({ data: { ...summary, referralExpiry, reviewReminders, providers: providersStatus() } });
   },
 );
 
@@ -425,8 +442,9 @@ router.get('/notifications/cron-drain', async (req, res) => {
     return res.status(401).json({ error: 'Invalid cron secret' });
   }
   const referralExpiry = await sweepReferralExpiryQuietly();
+  const reviewReminders = await sweepReviewRemindersQuietly();
   const summary = await drainOutbox();
-  return res.json({ data: { ...summary, referralExpiry } });
+  return res.json({ data: { ...summary, referralExpiry, reviewReminders } });
 });
 
 /**

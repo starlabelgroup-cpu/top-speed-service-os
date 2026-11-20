@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tell the Office — Top Speed Service OS</title>
+<meta name="description" content="Something not right with your service? Tell the Top Speed Appliance office directly — a person reads every note and we will make it right.">
+<link rel="canonical" href="https://topspeedserviceos.com/feedback">
+<meta name="theme-color" content="#060B18">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<script src="/google-tag.js"></script>
+<style>
+:root{--red:#e94e5c;--navy:#1c2b46;--ink:#1b2840;--mut:#8591a4;--line:#e7ecf3;--bg:#f5f7fb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none}
+.hero{background:#0c162b;color:#fff;padding:26px 16px 30px;text-align:center}
+.hero .mark{display:inline-flex;align-items:center;gap:9px;font-family:'Rajdhani',sans-serif;font-weight:800;letter-spacing:2.5px;font-size:12px;color:#f3b7bd;text-transform:uppercase}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(26px,5vw,36px);font-weight:800;letter-spacing:-.5px;margin-top:10px}
+.hero p{color:#b9c4d6;font-size:14px;line-height:1.6;max-width:520px;margin:8px auto 0}
+.wrap{width:100%;max-width:460px;margin:-16px auto 40px;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 10px 30px rgba(12,22,43,.08)}
+.card h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:9px}
+.card .who{font-size:13px;color:#52647c;margin-top:6px;line-height:1.55}
+label.fl{display:block;font-size:10px;font-weight:800;color:#65758e;letter-spacing:1.1px;margin:16px 0 6px;text-transform:uppercase}
+input.fi,textarea.fi{width:100%;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:var(--ink);padding:12px;font-size:15px;font-family:inherit}
+textarea.fi{min-height:120px;resize:vertical}
+input.fi:focus,textarea.fi:focus{outline:none;border-color:#ed6372}
+.btn{background:var(--red);border:1px solid var(--red);color:#fff;border-radius:8px;padding:12px 16px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;display:inline-block}
+.btn:hover{background:#d83d4d}
+.btn.block{width:100%;margin-top:20px}
+.btn:disabled{opacity:.55;cursor:wait}
+.policy{font-size:12.5px;color:#52647c;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.6;margin-top:16px}
+.msg{font-size:13px;line-height:1.55;margin-top:14px;display:none}
+.msg.ok{display:block;background:#eefaf3;border:1px solid #cdeeda;color:#0f6a38;border-radius:10px;padding:12px 14px}
+.msg.err{display:block;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;border-radius:10px;padding:12px 14px}
+.foot{margin-top:auto;text-align:center;padding:18px 16px 26px;font-size:12px;color:var(--mut);line-height:1.6}
+.foot a{color:var(--navy);font-weight:700}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div class="hero">
+  <span class="mark"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Top Speed Service OS</span>
+  <h1>Tell the office first</h1>
+  <p>If anything about your service was not right, tell us here before anywhere else. A person in the office reads every note — and we will make it right.</p>
+</div>
+
+<main class="wrap">
+  <div class="card">
+    <div id="formState">
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6"/></svg>Your note to the office</h2>
+      <p class="who">This goes straight to the office queue — it is not a public review and it is never posted anywhere. Prefer to talk? Call <a href="tel:+18444607038">844-460-7038</a>.</p>
+      <form id="fbForm" novalidate>
+        <label class="fl" for="fbMessage">What happened?</label>
+        <textarea class="fi" id="fbMessage" maxlength="2000" placeholder="Tell us what went wrong, or what we could do better"></textarea>
+        <label class="fl" for="fbRef">Booking reference (optional)</label>
+        <input class="fi" type="text" id="fbRef" autocomplete="off" placeholder="TS-XXXXXX — on your booking texts and emails">
+        <label class="fl" for="fbName">Your name (optional)</label>
+        <input class="fi" type="text" id="fbName" autocomplete="name" placeholder="So we know who to thank for the heads-up">
+        <label class="fl" for="fbContact">Email or phone (optional)</label>
+        <input class="fi" type="text" id="fbContact" autocomplete="email" placeholder="So the office can follow up with you">
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="fbWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+        <div class="policy">Your note goes to the office only. It does not change your booking, your warranty, or anything else — it just gets a person involved.</div>
+        <div class="msg" id="fbMsg" role="alert"></div>
+        <button class="btn block" type="submit" id="fbBtn">Send to the office</button>
+      </form>
+    </div>
+
+    <div id="doneState" hidden>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Got it — thank you</h2>
+      <p class="who">Your note is in the office queue. If you left a way to reach you, expect a follow-up from a person on our team. If it is urgent, call <a href="tel:+18444607038">844-460-7038</a>.</p>
+      <a class="btn block" href="/">Back to Top Speed</a>
+    </div>
+  </div>
+</main>
+
+<p class="foot">Top Speed Appliance LLC — The Faster, The Better.<br>Book a repair: <a href="/book">topspeedserviceos.com/book</a></p>
+
+<script>
+(function () {
+  'use strict';
+  var API = 'https://top-speed-service-os.vercel.app/api/v1';
+  function $(id) { return document.getElementById(id); }
+  function val(id) { var n = $(id); return n ? String(n.value || '').trim() : ''; }
+
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+  if (ref) $('fbRef').value = ref.slice(0, 40);
+
+  function showMsg(kind, text) {
+    var msg = $('fbMsg');
+    msg.className = 'msg ' + kind;
+    msg.textContent = text;
+  }
+
+  $('fbForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    var message = val('fbMessage');
+    if (message.length < 3) {
+      showMsg('err', 'Please tell us a little about what happened first.');
+      return;
+    }
+    var contact = val('fbContact');
+    var payload = {
+      message: message,
+      referenceCode: val('fbRef') || undefined,
+      name: val('fbName') || undefined,
+      email: contact.indexOf('@') > -1 ? contact : undefined,
+      phone: contact.indexOf('@') > -1 ? undefined : (contact || undefined),
+      companyWebsite: val('fbWebsite'),
+    };
+    var btn = $('fbBtn');
+    btn.disabled = true;
+    fetch(API + '/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).then(function (res) {
+      if (!res.ok) throw new Error('send failed');
+      $('formState').hidden = true;
+      $('doneState').hidden = false;
+    }).catch(function () {
+      btn.disabled = false;
+      showMsg('err', 'That did not go through — please try again, or call the office at 844-460-7038.');
+    });
+  });
+})();
+</script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

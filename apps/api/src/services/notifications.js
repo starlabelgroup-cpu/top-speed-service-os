@@ -1,6 +1,6 @@
 import { waitUntil } from '@vercel/functions';
 import { appendEvent, createId, store } from '../data/store.js';
-import { PLATFORM_CONSTANTS } from '../config/platform.js';
+import { PLATFORM_CONSTANTS, reviewFunnelLinks } from '../config/platform.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { persistNotification } from '../db/flywheelRepo.js';
 import { activeSubscriptionsForUser } from '../db/pushSubscriptionsRepo.js';
@@ -45,6 +45,7 @@ export const NOTIFICATION_TEMPLATES = {
   DISPATCH_MATCHED: 'DISPATCH_MATCHED',
   DISPATCH_APPROVED: 'DISPATCH_APPROVED',
   REVIEW_REQUEST: 'REVIEW_REQUEST',
+  REVIEW_REMINDER: 'REVIEW_REMINDER',
   APPOINTMENT_REMINDER: 'APPOINTMENT_REMINDER',
   REFERRAL_CODE: 'REFERRAL_CODE',
   REFERRAL_INVITE: 'REFERRAL_INVITE',
@@ -126,6 +127,7 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   NOTIFICATION_TEMPLATES.TRACKING_UPDATE,
   NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
   NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
+  NOTIFICATION_TEMPLATES.REVIEW_REMINDER,
   NOTIFICATION_TEMPLATES.REFERRAL_CODE,
   NOTIFICATION_TEMPLATES.REFERRAL_INVITE,
   NOTIFICATION_TEMPLATES.REFERRAL_BOOKED,
@@ -1611,8 +1613,56 @@ export function notifyCommercialWorkOrderReceived(workOrder, booking, account, f
   ];
 }
 
+/**
+ * The review funnel's link set for one booking (recommendations F1,
+ * 2026-11-20). Every completed job asks EVERY customer the same way —
+ * there is no satisfaction signal anywhere in this funnel and no code
+ * path that suppresses the ask: the private feedback path below is
+ * offered ALONGSIDE the public ask, never instead of it.
+ *  - Pepper Lists review wall: the Link Center REVIEW catalog URL
+ *    (config/platform.js reviewFunnelLinks mirrors it).
+ *  - Google review: a real link ONLY when GOOGLE_REVIEW_URL is set
+ *    (Google issues it inside the Business Profile); until then the
+ *    ask names Google without a URL — never an invented link.
+ *  - Feedback: the private "tell the office first" page, carrying the
+ *    booking reference so the office sees which job it belongs to.
+ */
+export function reviewAskLinks(booking) {
+  const links = reviewFunnelLinks();
+  const reference = booking?.referenceCode || null;
+  return {
+    pepperListsReviewUrl: links.pepperListsReviewUrl,
+    googleReviewUrl: links.googleReviewUrl,
+    feedbackUrl: reference
+      ? `${links.feedbackUrl}?ref=${encodeURIComponent(reference)}`
+      : links.feedbackUrl,
+  };
+}
+
+function reviewAskMessage(booking, channel, { reminder = false } = {}) {
+  const links = reviewAskLinks(booking);
+  const lead = reminder
+    ? `Top Speed Appliance: a quick follow-up on your ${booking.appliance} service`
+    : `Top Speed Appliance: thanks for your ${booking.appliance} service`;
+  if (channel === 'sms') {
+    // SMS rule (see the reach block above): exactly one action link.
+    return `${lead}. If we earned it, a short review helps neighbors find us: ${links.pepperListsReviewUrl}`;
+  }
+  const googleLine = links.googleReviewUrl
+    ? `Review us on Google: ${links.googleReviewUrl}\n`
+    : 'If we earned it, a Google review helps neighbors find us — search "Top Speed Appliance" on Google and tap Reviews.\n';
+  return (
+    `${lead}. If we earned it, a short review helps neighbors find us:\n` +
+    googleLine +
+    `Review us on Pepper Lists: ${links.pepperListsReviewUrl}\n` +
+    `Something not right? Tell the office first — a person reads every note and we will make it right: ${links.feedbackUrl}\n` +
+    `You can also call us at ${PLATFORM_CONSTANTS.phoneDisplay}.`
+  );
+}
+
 /** Sent when a job is completed — the review engine's trigger point. */
 export function notifyReviewRequest(booking, source = null) {
+  const links = reviewAskLinks(booking);
   const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
@@ -1626,10 +1676,8 @@ export function notifyReviewRequest(booking, source = null) {
         referenceCode: booking.referenceCode || null,
         customerName: booking.customer?.name,
         appliance: booking.appliance,
-        message:
-          `Top Speed Appliance: thanks for your ${booking.appliance} service. ` +
-          'If we earned it, a Google review helps neighbors find us — and if anything is not right, call ' +
-          `${PLATFORM_CONSTANTS.phoneDisplay} and we will make it right. Book again or ask Speedy: ${REACH_LINKS.speedy}`,
+        reviewLinks: links,
+        message: reviewAskMessage(booking, channel),
       },
     }),
   );
@@ -1644,6 +1692,34 @@ export function notifyReviewRequest(booking, source = null) {
     eventKeyBase: `booking:${booking.id}:review`,
   });
   return entries;
+}
+
+/**
+ * The funnel's ONE reminder (recommendations F1): queued by
+ * services/reviewFunnel.js's sweep when a completed booking has no
+ * Pepper Lists review after REVIEW_REMINDER_DELAY_MS. The eventKey
+ * makes it exactly-once per channel however often the sweep runs.
+ */
+export function notifyReviewReminder(booking, source = null) {
+  const links = reviewAskLinks(booking);
+  return customerChannels(booking).map(({ channel, to }) =>
+    queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.REVIEW_REMINDER,
+      to,
+      source,
+      eventKey: `booking:${booking.id}:review-reminder:${channel}`,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        customerName: booking.customer?.name,
+        appliance: booking.appliance,
+        reviewLinks: links,
+        message: reviewAskMessage(booking, channel, { reminder: true }),
+      },
+    }),
+  );
 }
 
 /**

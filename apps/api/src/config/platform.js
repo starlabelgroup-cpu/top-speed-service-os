@@ -68,6 +68,24 @@ export function voiceConfig() {
   };
 }
 
+/**
+ * Review funnel links (2026-11-20, recommendations F1). The Pepper
+ * Lists review wall is a real platform surface (the same URL the Link
+ * Center REVIEW catalog entry carries). The Google review URL is
+ * different: Google issues it inside the Business Profile ("Ask for
+ * reviews" short link) and it exists nowhere else — it is read from
+ * the GOOGLE_REVIEW_URL env var and stays null until Ramone provides
+ * the real link, so no message ever carries an invented Google URL.
+ * The feedback page is the private "tell the office first" path.
+ */
+export function reviewFunnelLinks() {
+  return {
+    pepperListsReviewUrl: 'https://pepperlists.com/#reviews',
+    googleReviewUrl: process.env.GOOGLE_REVIEW_URL || null,
+    feedbackUrl: 'https://topspeedserviceos.com/feedback',
+  };
+}
+
 export const INTAKE_SOURCES = [
   'NET_SITE',
   'COM_SITE',

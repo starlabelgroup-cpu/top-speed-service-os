@@ -73,13 +73,11 @@ export const INTAKE_RATE_LIMITS = {
   // authenticated requests, so the cap is enforced in-handler). A
   // generous hourly cap: real conversation is fine, floods are not.
   pepperListsMessage: { limit: 30, windowMs: 60 * 60 * 1000 },
-  // Pepper Lists Trust & Growth (2026-11-20): signed-in listing
-  // actions (comments, listing reports) are consumed per ACCOUNT via
-  // consumeIntakeAttempt in routes/pepperListsTrust.js — the intake
-  // middleware skips authenticated requests, so the cap is enforced
-  // in-handler. A generous hourly cap: real conversation is fine,
-  // scripted spam is not.
-  listingActions: { limit: 30, windowMs: 60 * 60 * 1000 },
+  // Customer feedback (POST /feedback, 2026-11-20): the review
+  // funnel's private "tell the office first" door — a public form
+  // that files to the staff report queue, so it gets the same hourly
+  // per-IP cap plus the honeypot as the other public doors.
+  feedback: { limit: 10, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */
