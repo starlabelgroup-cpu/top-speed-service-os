@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CocoCane — Coconut + Sugarcane Juice Co. | Order Ahead for Pickup & Wholesale Coconuts</title>
+<meta name="description" content="CocoCane: fresh-pressed coconut water and sugarcane juice, whole and dry coconuts, sugarcane sticks and coconut meat. Order ahead for pickup in Coconut Creek, or talk to the wholesale desk for bulk coconuts (200–500).">
+<link rel="canonical" href="https://topspeedserviceos.com/cococane-site">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CocoCane">
+<meta property="og:title" content="CocoCane — Coconut + Sugarcane Juice Co.">
+<meta property="og:description" content="Fresh-pressed coconut & sugarcane juice, whole coconuts and cane — order ahead for pickup, or ask the wholesale desk about bulk orders.">
+<meta property="og:url" content="https://topspeedserviceos.com/cococane-site">
+<meta property="og:image" content="https://topspeedserviceos.com/icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#0B3D2E">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--green:#0B3D2E;--green2:#0e4d39;--lime:#7FB069;--amber:#E8A13A;--cream:#FFF9F0;--ink:#1d2b22;--muted:#5c6f63;--line:#e3ddcb}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:var(--cream)}
+a{text-decoration:none}
+header{background:var(--green);color:#fff;display:flex;align-items:center;gap:16px;padding:14px 28px;flex-wrap:wrap}
+header .brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:.02em}
+header .brand small{display:block;font-size:12px;font-weight:600;color:#bfe3cf;letter-spacing:.04em}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#d8efe0;font-size:15px;font-weight:600}
+.btn{background:var(--amber);color:#23180a;padding:13px 24px;border-radius:9px;font-weight:800;display:inline-block;border:none;cursor:pointer;font-size:16px;font-family:inherit}
+.btn.green{background:var(--green);color:#fff}
+.btn:disabled{opacity:.55;cursor:wait}
+.hero{background:linear-gradient(180deg,#082b20,var(--green2));color:#fff;text-align:center;padding:54px 24px 44px}
+.hero h1{font-size:clamp(32px,5vw,46px);margin-bottom:12px}
+.hero p{color:#cfe8d8;font-size:18px;max-width:700px;margin:0 auto;line-height:1.55}
+.hero .cta{margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.heroimg{max-width:1020px;margin:0 auto;padding:26px 24px 0}
+.heroimg img{width:100%;height:auto;border-radius:16px;display:block}
+section{max-width:1020px;margin:0 auto;padding:44px 24px}
+h2{font-size:28px;color:var(--green);margin-bottom:10px}
+.sub{color:var(--muted);margin-bottom:24px;font-size:16.5px;line-height:1.55;max-width:760px}
+.menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.dish{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px}
+.dish h3{color:var(--green);font-size:19px;margin-bottom:6px}
+.dish p{color:var(--muted);font-size:14.5px;line-height:1.5;margin-bottom:12px}
+.dish .sizes{display:grid;gap:8px}
+.dish .sizes label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14.5px;font-weight:600;color:var(--ink)}
+.dish .price{color:var(--green);font-weight:800;white-space:nowrap}
+.qty{width:74px;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:15px}
+.note{background:#fdf3e0;border:1px solid #f0d48a;border-radius:12px;padding:14px 18px;font-size:14.5px;line-height:1.55;color:#6b5312;margin-top:22px}
+form.shop{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px;margin-top:22px}
+form.shop .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){form.shop .row{grid-template-columns:1fr}}
+form.shop label{display:block;font-size:13px;font-weight:700;color:var(--green);margin:10px 0 5px}
+form.shop input,form.shop select,form.shop textarea{width:100%;padding:12px 13px;border:1.5px solid var(--line);border-radius:9px;font:inherit;font-size:15px;background:#fff}
+form.shop input:focus,form.shop select:focus,form.shop textarea:focus{outline:2px solid var(--lime);border-color:var(--lime)}
+.totalbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--cream);border:1px dashed var(--lime);border-radius:10px;padding:13px 16px;margin-top:18px;font-size:15.5px}
+.totalbar b{color:var(--green);font-size:17px}
+.err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+.ok{display:none;background:#e8f7ee;border:1px solid #a9dfc0;color:#0d5c2e;border-radius:10px;padding:14px 16px;font-size:15px;margin-top:14px;line-height:1.55}
+.err.show,.ok.show{display:block}
+.family{background:var(--green);color:#d8efe0;border-radius:18px;padding:32px 28px}
+.family h2{color:#fff}
+.family p{line-height:1.6;font-size:15.5px;max-width:760px}
+.family a{color:#fff;font-weight:700;text-decoration:underline}
+footer{background:#06231a;color:#a9cbb6;padding:34px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+footer a{color:#d8efe0}
+</style>
+<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="/cococane-site">CocoCane<small>COCONUT + SUGARCANE JUICE CO.</small></a>
+  <nav>
+    <a href="#order">Menu &amp; Order</a>
+    <a href="#wholesale">Wholesale Desk</a>
+    <a href="https://topspeedserviceos.com/">Top Speed Service OS</a>
+    <a class="btn" style="padding:10px 18px;" href="tel:+18444607038">Call or Text</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Fresh-pressed coconut &amp; cane</h1>
+  <p>Coconut water and sugarcane juice pressed to order, whole and dry coconuts, sugarcane sticks and coconut meat — nothing added: no refined sugar, no concentrate, no preservatives. Order ahead and we will have it ready for pickup.</p>
+  <div class="cta">
+    <a class="btn" href="#order">Order ahead</a>
+    <a class="btn green" href="#wholesale" style="background:#fff;color:var(--green);">Wholesale desk</a>
+  </div>
+</div>
+
+<div class="heroimg">
+  <img src="/api/v1/app/platform-images/cococane-wide.webp" alt="CocoCane — fresh coconuts and sugarcane, pressed to order" loading="lazy">
+</div>
+
+<section id="order" style="padding-top:30px;">
+  <h2>Menu &amp; order-ahead pickup</h2>
+  <p class="sub">Set your quantities, tell us when you want to pick up, and send the order. We confirm by text or call with your pickup time — sized coconuts (whole and dry) are priced by size inside their range, so we confirm those exact prices on the same message. Pay at pickup.</p>
+
+  <div class="menu" id="menuGrid">
+    <div class="dish">
+      <h3>Bottled Coconut Water</h3>
+      <p>One ingredient, poured straight from the coconut. Light, clean, naturally full of electrolytes.</p>
+      <div class="sizes">
+        <label><span>12 oz bottle · <span class="price">$5</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — 12 oz bottle" data-price="5"></label>
+        <label><span>Half gallon · <span class="price">$15</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Half gallon" data-price="15"></label>
+        <label><span>Gallon · <span class="price">$30</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Gallon" data-price="30"></label>
+      </div>
+    </div>
+    <div class="dish">
+      <h3>Bottled Sugarcane Juice</h3>
+      <p>Super cane, pressed fresh. Naturally sweet the way the cane made it — nothing added.</p>
+      <div class="sizes">
+        <label><span>12 oz bottle · <span class="price">$5</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — 12 oz bottle" data-price="5"></label>
+        <label><span>Half gallon · <span class="price">$15</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Half gallon" data-price="15"></label>
+        <label><span>Gallon · <span class="price">$30</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Gallon" data-price="30"></label>
+      </div>
+    </div>
+    <div class="dish">
+      <h3>Whole Coconut</h3>
+      <p>Fresh whole coconuts, priced by size — drink it, jelly and all, or take it home to cook.</p>
+      <div class="sizes">
+        <label><span>Each · <span class="price">$2–$4 by size</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Coconut (each, by size)" data-low="2" data-high="4"></label>
+      </div>
+    </div>
+    <div class="dish">
+      <h3>Whole Dry Coconut</h3>
+      <p>Mature dry coconuts for grating, milk and cooking — priced by size.</p>
+      <div class="sizes">
+        <label><span>Each · <span class="price">$2–$3 by size</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Dry Coconut (each, by size)" data-low="2" data-high="3"></label>
+      </div>
+    </div>
+    <div class="dish">
+      <h3>Sugarcane Sticks</h3>
+      <p>Cut super cane sticks, ready to chew — sweet, fresh and fibrous, the old-fashioned way.</p>
+      <div class="sizes">
+        <label><span>Per bundle · <span class="price">$7</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Sugarcane Sticks (per bundle)" data-price="7"></label>
+      </div>
+    </div>
+    <div class="dish">
+      <h3>Coconut Meat</h3>
+      <p>Fresh coconut meat, ready to eat or blend — per container.</p>
+      <div class="sizes">
+        <label><span>Per container · <span class="price">$7</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Coconut Meat (per container)" data-price="7"></label>
+      </div>
+    </div>
+  </div>
+
+  <div class="note"><strong>Straight talk on stock:</strong> right now it is coconut and cane only — fresh fruit like ackee is not available. When that changes, it will be right here on this menu.</div>
+
+  <form class="shop" id="orderForm" novalidate>
+    <div class="row">
+      <div><label for="coName">Your name</label><input id="coName" type="text" autocomplete="name" required placeholder="Full name"></div>
+      <div><label for="coPhone">Phone (for your confirmation)</label><input id="coPhone" type="tel" autocomplete="tel" required placeholder="(954) 000-0000"></div>
+    </div>
+    <div class="row">
+      <div><label for="coDate">Pickup day</label><input id="coDate" type="date"></div>
+      <div><label for="coTime">Pickup time preference</label>
+        <select id="coTime">
+          <option>As soon as possible</option>
+          <option>Morning</option>
+          <option>Midday</option>
+          <option>Afternoon</option>
+          <option>Evening (before 7pm)</option>
+        </select></div>
+    </div>
+    <div><label for="coNotes">Notes</label><textarea id="coNotes" rows="2" placeholder="Size preference for coconuts, jelly or hard, anything else…"></textarea></div>
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="coWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+    <div class="totalbar"><span>Order total</span><b id="coTotal">$0</b></div>
+    <button class="btn green" type="submit" id="coBtn" style="margin-top:16px;">Send my order</button>
+    <div class="err" id="coErr"></div>
+    <div class="ok" id="coOk"></div>
+  </form>
+</section>
+
+<section id="wholesale" style="padding-top:0;">
+  <h2>Wholesale desk — bulk coconuts, scheduled</h2>
+  <p class="sub">Buying in bulk — 200, 300, 500 coconuts for your shop, market stall or event? Skip the text chase. Send the wholesale desk your quantity, the deposit you can place, and the delivery date you need. You get a reference number on the spot, and the desk replies with availability, your quote for the quantity, deposit details and a delivery date in writing — trackable by your reference on any call.</p>
+  <img src="/api/v1/app/platform-images/cococane-juice.webp" alt="CocoCane coconut and sugarcane juice" style="width:100%;height:auto;border-radius:16px;display:block;margin-bottom:6px;" loading="lazy">
+  <form class="shop" id="wsForm" novalidate>
+    <div class="row">
+      <div><label for="wsName">Your name</label><input id="wsName" type="text" autocomplete="name" required placeholder="Full name"></div>
+      <div><label for="wsBiz">Business / organization</label><input id="wsBiz" type="text" autocomplete="organization" placeholder="Shop, market, church, event…"></div>
+    </div>
+    <div class="row">
+      <div><label for="wsPhone">Phone</label><input id="wsPhone" type="tel" autocomplete="tel" required placeholder="(954) 000-0000"></div>
+      <div><label for="wsEmail">Email</label><input id="wsEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    </div>
+    <div class="row">
+      <div><label for="wsProduct">Product</label>
+        <select id="wsProduct">
+          <option>Whole coconuts (bulk)</option>
+          <option>Dry coconuts (bulk)</option>
+          <option>Sugarcane (bulk)</option>
+          <option>Mixed coconut &amp; cane</option>
+        </select></div>
+      <div><label for="wsQty">Quantity needed</label><input id="wsQty" type="number" min="1" max="100000" required placeholder="e.g. 300"></div>
+    </div>
+    <div class="row">
+      <div><label for="wsDeposit">Deposit you can place</label><input id="wsDeposit" type="text" placeholder="e.g. 25% of the order — or 'discuss'"></div>
+      <div><label for="wsDate">Delivery date needed</label><input id="wsDate" type="date"></div>
+    </div>
+    <div><label for="wsWhere">Delivery area / address</label><input id="wsWhere" type="text" placeholder="City and address or area"></div>
+    <div><label for="wsNotes">Notes</label><textarea id="wsNotes" rows="2" placeholder="Repeat schedule, size preference, unloading help, anything else…"></textarea></div>
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="wsWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+    <button class="btn green" type="submit" id="wsBtn" style="margin-top:16px;">Send to the wholesale desk</button>
+    <div class="err" id="wsErr"></div>
+    <div class="ok" id="wsOk"></div>
+  </form>
+</section>
+
+<section style="padding-top:0;">
+  <div class="family">
+    <h2>Part of the Top Speed family</h2>
+    <p>CocoCane runs on the same team as <a href="https://topspeedserviceos.com/">Top Speed Appliance</a> — South Florida's appliance repair and installation service. Dryer acting up too? The vent crew at <a href="https://topspeedserviceos.com/cleanout-vents-site">Cleanout Vents</a> and the repair team are one call away at <a href="tel:+18444607038">844-460-7038</a>.</p>
+  </div>
+</section>
+
+<footer>
+  <strong>CocoCane</strong> · Coconut + Sugarcane Juice Co. · Coconut Creek, Florida · <strong>844-460-7038</strong><br>
+  Order ahead for pickup · Wholesale desk for bulk coconuts · Mon–Fri 8am–7pm<br>
+  <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="https://topspeedserviceos.com/privacy">Privacy Policy</a>
+</footer>
+
+<script>
+(function () {
+  var API = 'https://top-speed-service-os.vercel.app/api/v1/connections';
+  function money(n) { return '$' + n.toFixed(2).replace(/\.00$/, ''); }
+  function collectItems() {
+    var lines = [], fixed = 0, low = 0, high = 0, count = 0;
+    var inputs = document.querySelectorAll('#menuGrid .qty');
+    for (var i = 0; i < inputs.length; i++) {
+      var q = parseInt(inputs[i].value, 10) || 0;
+      if (q <= 0) continue;
+      count += q;
+      var name = inputs[i].getAttribute('data-name');
+      if (inputs[i].getAttribute('data-price')) {
+        var p = Number(inputs[i].getAttribute('data-price'));
+        fixed += p * q; low += p * q; high += p * q;
+        lines.push(q + ' x ' + name + ' @ ' + money(p) + ' = ' + money(p * q));
+      } else {
+        var lo = Number(inputs[i].getAttribute('data-low')), hi = Number(inputs[i].getAttribute('data-high'));
+        low += lo * q; high += hi * q;
+        lines.push(q + ' x ' + name + ' @ ' + money(lo) + '–' + money(hi) + ' by size = ' + money(lo * q) + '–' + money(hi * q));
+      }
+    }
+    return { lines: lines, fixed: fixed, low: low, high: high, count: count };
+  }
+  function totalsText(t) {
+    if (!t.count) return '$0';
+    if (t.low === t.high) return money(t.low);
+    return money(t.low) + '–' + money(t.high) + ' (sized items confirmed at pickup)';
+  }
+  function refreshTotal() { document.getElementById('coTotal').textContent = totalsText(collectItems()); }
+  var qtys = document.querySelectorAll('#menuGrid .qty');
+  for (var i = 0; i < qtys.length; i++) qtys[i].addEventListener('input', refreshTotal);
+  refreshTotal();
+
+  function send(payload, okEl, errEl, btn, btnText, okHtml, onOk) {
+    btn.disabled = true; btn.textContent = 'Sending…';
+    errEl.classList.remove('show'); okEl.classList.remove('show');
+    fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (x) {
+        if (x.s !== 200 && x.s !== 201) throw new Error((x.j && x.j.error) || 'send failed');
+        var ref = (x.j.data && x.j.data.reference) || '';
+        if (onOk) onOk();
+        okEl.innerHTML = okHtml(ref);
+        okEl.classList.add('show');
+        okEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }).catch(function (ex) {
+        errEl.textContent = (ex && ex.message && ex.message !== 'send failed') ? ex.message : 'Something went wrong sending that — please call 844-460-7038 and we will take it by phone.';
+        errEl.classList.add('show');
+      }).finally(function () { btn.disabled = false; btn.textContent = btnText; });
+  }
+  function val(id) { return document.getElementById(id).value.trim(); }
+
+  document.getElementById('orderForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('coErr');
+    var t = collectItems();
+    var name = val('coName'), phone = val('coPhone');
+    if (!t.count) { err.textContent = 'Set a quantity on at least one menu item first — then send the order.'; err.classList.add('show'); return; }
+    if (name.length < 2 || phone.replace(/\D/g, '').length < 7) { err.textContent = 'Please add your name and a phone number we can text or call to confirm your pickup.'; err.classList.add('show'); return; }
+    var message = 'CocoCane order-ahead pickup. Items:\n' + t.lines.join('\n') +
+      '\nTotal: ' + totalsText(t) + (t.low !== t.high ? ' (exact total for sized coconuts confirmed with the customer)' : '') +
+      '\nPickup: ' + (val('coDate') || 'no day given') + ' · ' + val('coTime') +
+      (val('coNotes') ? '\nNotes: ' + val('coNotes') : '');
+    send({ type: 'COCOCANE_ORDER', name: name, phone: phone, source: 'cococane-site', companyWebsite: document.getElementById('coWebsite').value, message: message },
+      document.getElementById('coOk'), err, document.getElementById('coBtn'), 'Send my order',
+      function (ref) {
+        return '<strong>Order received' + (ref ? ' — reference ' + ref : '') + '.</strong> We will text or call ' +
+          'to confirm your pickup time' + (t.low !== t.high ? ' and the exact price of your sized coconuts' : '') +
+          '. Pay at pickup — see you soon.';
+      },
+      function () { document.getElementById('orderForm').reset(); refreshTotal(); });
+  });
+
+  document.getElementById('wsForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var err = document.getElementById('wsErr');
+    var name = val('wsName'), phone = val('wsPhone'), qty = val('wsQty');
+    if (name.length < 2 || phone.replace(/\D/g, '').length < 7 || !qty) { err.textContent = 'Please add your name, phone, and the quantity you need — the desk quotes from those.'; err.classList.add('show'); return; }
+    var email = val('wsEmail');
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = 'That email address does not look complete — check it, or leave it blank.'; err.classList.add('show'); return; }
+    var message = 'CocoCane WHOLESALE request. Product: ' + val('wsProduct') + '. Quantity: ' + qty +
+      (val('wsBiz') ? '\nBusiness: ' + val('wsBiz') : '') +
+      '\nDeposit the buyer can place: ' + (val('wsDeposit') || 'not stated — discuss') +
+      '\nDelivery date needed: ' + (val('wsDate') || 'not stated — discuss') +
+      '\nDelivery area: ' + (val('wsWhere') || 'not stated') +
+      (val('wsNotes') ? '\nNotes: ' + val('wsNotes') : '') +
+      '\nDesk to reply with: availability, quote for the quantity, deposit details and a delivery date — in writing, against this reference.';
+    send({ type: 'COCOCANE_WHOLESALE', name: name, phone: phone, email: email || undefined, source: 'cococane-site', companyWebsite: document.getElementById('wsWebsite').value, message: message },
+      document.getElementById('wsOk'), err, document.getElementById('wsBtn'), 'Send to the wholesale desk',
+      function (ref) {
+        return '<strong>Wholesale request received' + (ref ? ' — your reference is ' + ref : '') + '.</strong> The wholesale desk will reply with availability, your quote for ' +
+          qty + ', deposit details and a delivery date — in writing. Quote your reference on any call and the desk can pull your request straight up.';
+      },
+      function () { document.getElementById('wsForm').reset(); });
+  });
+})();
+</script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

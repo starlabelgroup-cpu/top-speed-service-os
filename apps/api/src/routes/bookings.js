@@ -7,7 +7,7 @@ import { persistAssignment, persistAssignmentsForBooking, persistBooking, persis
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
-import { computeTracking } from '../services/tracking.js';
+import { computeTracking, photoReportOf } from '../services/tracking.js';
 import {
   notifyBookingAssigned,
   notifyBookingConfirmation,
@@ -246,7 +246,7 @@ router.get('/bookings/track/:reference', (req, res) => {
   }
   // Stage math lives in services/tracking.js (shared with the signed-in
   // customer view and the staff console, so every surface agrees).
-  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id) } });
+  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
 });
 
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {

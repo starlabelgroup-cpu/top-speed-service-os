@@ -67,6 +67,7 @@ footer a{color:#cfe0f5}
     <a href="#why">Why Clean</a>
     <a href="#coverage">Coverage</a>
     <a href="#faq">FAQ</a>
+    <a href="#plans">Vent Care Plans</a>
     <a href="https://topspeedserviceos.com/">Top Speed Service OS</a>
     <a class="btn" style="padding:10px 18px;" href="tel:+18444607038">Call or Text</a>
   <a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> 844-460-7038</a></nav>
@@ -166,6 +167,65 @@ footer a{color:#cfe0f5}
   </div>
 </section>
 
+<section style="padding-top:0;" id="plans">
+  <h2>Vent Care Plans — annual service for properties</h2>
+  <p class="sub">Built for property managers, HOAs, condo associations and apartment communities: every dryer vent on the property cleaned on an annual schedule, building by building, so no unit's vent is ever forgotten. Tell us about the property and the office prepares a written quote for it — every property is quoted individually after a quick review of the vent runs, and no work ever starts without your approved quote.</p>
+  <div class="grid3" style="margin-bottom:26px;">
+    <div class="card"><h3>Annual visits, scheduled</h3><p>One planned visit cycle a year covers every unit on the plan. The office schedules with your team and your residents ahead of time — no per-unit phone tag.</p></div>
+    <div class="card"><h3>Photo report after every visit</h3><p>Each visit closes with a photo report: before and after photos from the job, attached to the job record. View them any time on the Top Speed tracking page with the job reference — proof of work for boards, owners and insurance files.</p></div>
+    <div class="card"><h3>One written quote</h3><p>Plans are quoted per property in writing — the number of units, the vent runs and the access involved set the quote. Nothing is billed until you approve it.</p></div>
+  </div>
+  <style>
+    .planform{background:var(--light);border-radius:14px;padding:26px}
+    .planform .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    @media(max-width:640px){.planform .row{grid-template-columns:1fr}}
+    .planform label{display:block;font-size:13px;font-weight:700;color:var(--navy);margin:10px 0 5px}
+    .planform input,.planform select,.planform textarea{width:100%;padding:12px 13px;border:1.5px solid #d5dfec;border-radius:9px;font:inherit;font-size:15px;background:#fff}
+    .planform input:focus,.planform select:focus,.planform textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
+    .planform .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:11px 13px;font-size:14px;margin-top:14px}
+    .planform .ok{display:none;background:#e8f7ee;border:1px solid #a9dfc0;color:#0d5c2e;border-radius:10px;padding:14px 16px;font-size:15px;margin-top:14px;line-height:1.55}
+    .planform .ok.show,.planform .err.show{display:block}
+  </style>
+  <form class="planform" id="planForm" novalidate>
+    <div class="row">
+      <div><label for="vpName">Your name</label><input id="vpName" type="text" autocomplete="name" required placeholder="Full name"></div>
+      <div><label for="vpOrg">Property / organization</label><input id="vpOrg" type="text" autocomplete="organization" required placeholder="HOA, community or management company"></div>
+    </div>
+    <div class="row">
+      <div><label for="vpPhone">Phone</label><input id="vpPhone" type="tel" autocomplete="tel" required placeholder="(954) 000-0000"></div>
+      <div><label for="vpEmail">Email</label><input id="vpEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+    </div>
+    <div class="row">
+      <div><label for="vpType">Property type</label>
+        <select id="vpType" required>
+          <option value="">Choose one…</option>
+          <option>Property management company</option>
+          <option>HOA / condo association</option>
+          <option>Apartment community</option>
+          <option>Rental portfolio</option>
+          <option>Other property</option>
+        </select></div>
+      <div><label for="vpUnits">Units with dryers (approx.)</label><input id="vpUnits" type="number" min="1" max="100000" required placeholder="e.g. 120"></div>
+    </div>
+    <div class="row">
+      <div><label for="vpCity">Property city</label><input id="vpCity" type="text" required placeholder="City in Broward County"></div>
+      <div><label for="vpStart">Preferred start</label>
+        <select id="vpStart">
+          <option>As soon as possible</option>
+          <option>Next 30–60 days</option>
+          <option>Next quarter</option>
+          <option>Just gathering quotes</option>
+        </select></div>
+    </div>
+    <div><label for="vpNotes">Anything the office should know</label><textarea id="vpNotes" rows="3" placeholder="Buildings, vent exit types (roof / wall), access notes, current cleaning schedule…"></textarea></div>
+    <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="vpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+    <button class="btn" type="submit" id="vpBtn" style="margin-top:16px;">Request my written quote</button>
+    <div class="err" id="vpErr"></div>
+    <div class="ok" id="vpOk"></div>
+    <p style="color:var(--muted);font-size:13.5px;margin-top:12px;">Prefer to talk it through? Call or text <a href="tel:+18444607038" style="color:var(--navy);font-weight:700;">844-460-7038</a> and ask for a Vent Care Plan quote.</p>
+  </form>
+</section>
+
 <section style="padding-top:0;" class="faq" id="faq">
   <h2>Questions, answered</h2>
   <p class="sub">Straight answers about dryer vent cleaning — and how to get the crew to your home.</p>
@@ -175,6 +235,8 @@ footer a{color:#cfe0f5}
   <details><summary>How much does vent cleaning cost?</summary><p>It depends on your vent setup — the length of the run, where it exits, and how much buildup is in the line. Call or text 844-460-7038 and Cleanout Vents will walk through the details for your home.</p></details>
   <details><summary>My dryer itself is broken — can you help?</summary><p>Yes — through the network. Cleanout Vents handles the vent line; appliance repair is handled by Top Speed Appliance, and it is the same phone number: 844-460-7038. One call covers the dryer and the vent behind it.</p></details>
   <details><summary>Which areas do you cover?</summary><p>All of Broward County — including Fort Lauderdale, Plantation, Sunrise, Coral Springs, Pompano Beach, Coconut Creek, Hollywood and the surrounding cities listed above.</p></details>
+  <details><summary>Do you offer annual plans for communities and property managers?</summary><p>Yes — Vent Care Plans cover every dryer vent on a property on an annual schedule. Plans are quoted per property in writing after a quick review; request a quote in the Vent Care Plans section above or call 844-460-7038. No work starts without your approved quote.</p></details>
+  <details><summary>What do I get after each plan visit?</summary><p>A photo report: before and after photos from the job, attached to the job record. Open the Top Speed tracking page (topspeedserviceos.com/track), enter the job reference and the phone number on file, and the visit's photos are right there with the job — handy for boards, owners and insurance files.</p></details>
 </section>
 
 <section style="padding-top:0;">
@@ -224,6 +286,53 @@ footer a{color:#cfe0f5}
 <script src="/speedy-guide.js" defer></script>
 <!-- TOP SPEED TYPE SYSTEM (Futuristic Font System 2026-11-16) -->
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
+<script>
+(function () {
+  var form = document.getElementById('planForm');
+  if (!form) return;
+  function val(id) { return document.getElementById(id).value.trim(); }
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var btn = document.getElementById('vpBtn');
+    var err = document.getElementById('vpErr');
+    var ok = document.getElementById('vpOk');
+    err.classList.remove('show'); ok.classList.remove('show');
+    var name = val('vpName'), org = val('vpOrg'), phone = val('vpPhone'), email = val('vpEmail');
+    var type = val('vpType'), units = val('vpUnits'), city = val('vpCity'), start = val('vpStart'), notes = val('vpNotes');
+    if (name.length < 2 || org.length < 2 || phone.replace(/\D/g, '').length < 7 || !type || !units || city.length < 2) {
+      err.textContent = 'Please complete your name, property, phone, property type, unit count and city so the office can prepare your quote.';
+      err.classList.add('show');
+      return;
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      err.textContent = 'That email address does not look complete — check it, or leave it blank and we will work by phone.';
+      err.classList.add('show');
+      return;
+    }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    var message = 'Vent Care Plan request — ' + org + ' (' + type + ', ' + city + '). Units with dryers: ' + units +
+      '. Preferred start: ' + start + '. Every visit includes a before/after photo report on the job record.' +
+      (notes ? ' Notes: ' + notes : '');
+    fetch('https://top-speed-service-os.vercel.app/api/v1/connections', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'VENT_PLAN_REQUEST', name: name, phone: phone, email: email || undefined, source: 'cleanout-vents-site', companyWebsite: document.getElementById('vpWebsite').value, message: message })
+    }).then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (x) {
+        if (x.s !== 200 && x.s !== 201) throw new Error((x.j && x.j.error) || 'send failed');
+        var ref = (x.j.data && x.j.data.reference) || '';
+        ok.innerHTML = '<strong>Request received' + (ref ? ' — reference ' + ref : '') + '.</strong> The office will review ' +
+          org + ' and reply with your written Vent Care Plan quote. Nothing is scheduled or billed until you approve it.' +
+          (ref ? ' Keep your reference — you can quote it on any call.' : '');
+        ok.classList.add('show');
+        ok.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        form.reset();
+      }).catch(function (ex) {
+        err.textContent = (ex && ex.message && ex.message !== 'send failed') ? ex.message : 'Something went wrong sending that — please call 844-460-7038 and ask for a Vent Care Plan quote, and we will open your request by phone.';
+        err.classList.add('show');
+      }).finally(function () { btn.disabled = false; btn.textContent = 'Request my written quote'; });
+  });
+})();
+</script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

@@ -60,6 +60,15 @@
   .timeline li.now{color:var(--navy);font-weight:700}
   .timeline li.now .n{background:var(--blue);color:#fff}
   .techline{margin-top:10px;font-size:14.5px;color:#2a3c58}
+  .photoreport{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
+  .photoreport h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px}
+  .photoreport .pr-sub{color:var(--mut);font-size:13.5px;margin-bottom:10px}
+  .pr-group{margin-top:10px}
+  .pr-group h4{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);margin-bottom:6px}
+  .pr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .pr-grid figure{margin:0}
+  .pr-grid img{width:100%;height:auto;border-radius:10px;display:block;border:1px solid var(--line)}
+  .pr-grid figcaption{font-size:12.5px;color:var(--mut);margin-top:4px;line-height:1.4}
   .empty{color:var(--mut);font-size:15px;padding:8px 0}
   footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
   footer a{color:#fff;font-weight:600;text-decoration:none}
@@ -186,11 +195,27 @@ function locLine(t) {
   return `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>${embed}`;
 }
 
+function escText(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function photoReportHTML(t) {
+  const r = t.photoReport;
+  if (!r || !r.total) return '';
+  const group = (label, photos) => {
+    if (!photos || !photos.length) return '';
+    const figs = photos.map((p) => `<figure><img src="${p.dataUrl}" alt="${label} photo from your visit" loading="lazy">${p.caption ? `<figcaption>${escText(p.caption)}</figcaption>` : ''}</figure>`).join('');
+    return `<div class="pr-group"><h4>${label}</h4><div class="pr-grid">${figs}</div></div>`;
+  };
+  return `<div class="photoreport"><h3>Visit photo report</h3><p class="pr-sub">Photos your technician took on this job — before the work, during it, and after.</p>${group('Before', r.before)}${group('During', r.during)}${group('After', r.after)}</div>`;
+}
+
 function jobCard(t, extra) {
   return `<div class="job">
     <div class="job-head"><span class="ref">${t.reference}</span><span class="meta">${t.appliance || ''}${t.city ? ' · ' + t.city : ''}${t.preferredWindow ? ' · Window ' + t.preferredWindow : ''}</span></div>
     ${extra || ''}
     ${timelineHTML(t)}
+    ${photoReportHTML(t)}
   </div>`;
 }
 

@@ -6,7 +6,7 @@ import { persistAssignment, persistAssignmentsForBooking, persistBooking } from 
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
-import { activeAssignmentFor, computeTracking, providerById } from '../services/tracking.js';
+import { activeAssignmentFor, computeTracking, photoReportOf, providerById } from '../services/tracking.js';
 import { priorityTierOf } from '../services/dispatchOps.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
@@ -60,6 +60,7 @@ router.get('/tracking/mine', authenticate, (req, res) => {
       issue: b.issue ?? null,
       zip: b.zip ?? null,
       createdAt: b.createdAt,
+      photoReport: photoReportOf(b),
     }))
     .sort((a, b) => {
       const rank = (j) => (j.stageIndex >= 7 ? 1 : 0);
@@ -361,7 +362,7 @@ router.get('/tracking/by-token/:token', (req, res) => {
   ) {
     return res.status(410).json({ error: 'This tracking link has expired' });
   }
-  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id) } });
+  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
 });
 
 export default router;

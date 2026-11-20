@@ -120,3 +120,37 @@ export function computeTracking(booking) {
     preferredWindow: booking.preferredWindow ?? null,
   };
 }
+
+/**
+ * Visit photo report (2026-11-20, recommendation C20) — the before /
+ * during / after photos the technician attached to THIS job in the
+ * Tech App, grouped for the customer. Derived from the same booking
+ * history events the provider workspace reads (JOB_PHOTO_ADDED minus
+ * JOB_PHOTO_REMOVED), so the customer sees exactly the photos of
+ * record — nothing staged, nothing from another job. Powers the
+ * per-visit photo reports Cleanout Vents plan customers (and every
+ * other customer) get on the tracking page. Returns null when the job
+ * has no photos, so surfaces render nothing rather than an empty
+ * report shell.
+ */
+export function photoReportOf(booking) {
+  const history = Array.isArray(booking?.history) ? booking.history : [];
+  const byId = new Map();
+  const removed = new Set();
+  for (const event of history) {
+    if (event.type === 'JOB_PHOTO_ADDED' && event.photo && event.photo.id) byId.set(event.photo.id, event.photo);
+    if (event.type === 'JOB_PHOTO_REMOVED' && event.photoId) removed.add(event.photoId);
+  }
+  const photos = [...byId.values()].filter((photo) => !removed.has(photo.id));
+  if (!photos.length) return null;
+  const pick = (category) =>
+    photos
+      .filter((p) => p.category === category)
+      .map((p) => ({ id: p.id, dataUrl: p.dataUrl, caption: p.caption || null, at: p.at || null }));
+  return {
+    before: pick('BEFORE'),
+    during: pick('DURING'),
+    after: pick('AFTER'),
+    total: photos.length,
+  };
+}
