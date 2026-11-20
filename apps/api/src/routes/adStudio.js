@@ -15,6 +15,7 @@ import {
 } from '../data/externalAds.js';
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
 import { requirePlanFeature } from '../services/adPlans.js';
+import { campaignOutcomeReport } from '../services/adOutcomes.js';
 
 /**
  * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
@@ -321,6 +322,22 @@ router.get('/ad-studio/results', ...staffOnly, (req, res) => {
     ...attributedCounts(c.sourceTag),
   }));
   return res.json({ data });
+});
+
+/**
+ * Cost per WON job (2026-11-20, approved recommendation E1): each
+ * campaign joined through the CRM pipeline to its won jobs and the
+ * real money collected on them — see services/adOutcomes.js for the
+ * full grounding. Read-only: nothing here writes a campaign, a
+ * pipeline stage, or a booking. Cost per won job is computed only
+ * from a spend figure recorded on the campaign itself; no campaign
+ * carries one today, so the cost block honestly reports
+ * NO_COST_RECORDED instead of dividing by a budget label or an
+ * external platform's numbers.
+ */
+router.get('/ad-studio/cost-per-won', ...staffOnly, (req, res) => {
+  const days = Math.min(365, Math.max(1, Number(req.query.days) || 30));
+  return res.json({ data: campaignOutcomeReport({ days }) });
 });
 
 // ─── Top Speed Ads: attribution view (2026-11-17) ───────────────────

@@ -259,6 +259,18 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
       <div class="msg" id="attrMsg"></div>
     </div>
 
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M15 9.2c-.6-1-1.7-1.4-3-1.4-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.2 0 1.3-1.3 2.2-3 2.2-1.3 0-2.4-.5-3-1.5" stroke="#E8322E"/></svg>Cost per won job</h2>
+    <p class="sub">Every campaign joined to what it actually produced: attributed leads carried through the CRM pipeline to won jobs, and the real money collected on those jobs — card payments plus recorded receipts, never an estimate dressed up as revenue. Impressions and clicks are the in-house banner counters, all time (they are running counters, not a windowed log). <b style="color:var(--txt)">Cost per won job needs a spend figure recorded on the campaign, and no campaign in this system carries one</b> — the in-house studio spends nothing outside itself, and Google / Meta / Microsoft spend lives in those platforms. Until spend is recorded on a campaign, that column says "No cost recorded" instead of dividing by a budget label.</p>
+    <div class="console">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="small mut" for="cpwDays">Window</label>
+        <select id="cpwDays"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
+        <button class="btn ghost" type="button" id="cpwReload">Refresh</button>
+      </div>
+      <div id="cpwBody" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading campaign outcomes…</span></div>
+      <div class="msg" id="cpwMsg"></div>
+    </div>
+
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1" stroke="#E8322E"/><path d="M21 3.5v4h-4"/></svg>The Flywheel loop</h2>
     <p class="sub">The loop this system turns: placements served, clicks, attributed bookings — then the stages that connect as real jobs complete. A stage with no data yet says so instead of inventing a number.</p>
     <div class="console">
@@ -746,6 +758,49 @@ function loadAttribution(){
 document.getElementById('attrDays').addEventListener('change', loadAttribution);
 document.getElementById('attrReload').addEventListener('click', loadAttribution);
 
+/* ── Top Speed Ads: cost per won job ─────────────────── */
+function cpwMoney(cents){
+  if (cents === null || cents === undefined) return '—';
+  return '$' + (cents / 100).toFixed(2);
+}
+function cpwRowHtml(r){
+  var kind = r.kind === 'ADVERTISER'
+    ? '<span class="pill draft">Advertiser</span>'
+    : '<span class="pill live">House</span>';
+  var reach = (r.impressions === null || r.impressions === undefined)
+    ? 'No in-house banner — nothing counted'
+    : r.impressions + ' impression(s) · ' + (r.clicks || 0) + ' click(s) (all time)';
+  var cost = r.cost && r.cost.perWonCents !== null && r.cost.perWonCents !== undefined
+    ? '<b style="color:var(--txt)">' + cpwMoney(r.cost.perWonCents) + '</b> per won job (recorded spend ' + cpwMoney(r.cost.recordedCents) + ')'
+    : '<span class="pill draft">No cost recorded</span>';
+  return '<div class="crow"><div class="meta"><b>' + esc(r.name) + '</b> ' + kind +
+    '<div class="desc">' + esc(reach) + ' · Tag ' + esc(r.sourceTag) + ' · ' + esc(r.status) + '</div>' +
+    '<div class="desc"><b style="color:var(--txt)">' + r.leads + ' lead(s)</b> → ' + r.estimates + ' with estimate(s) → <b style="color:var(--txt)">' + r.won + ' won</b> · Collected on won jobs: <b style="color:var(--txt)">' + cpwMoney(r.wonCollectedCents) + '</b></div>' +
+    '<div class="desc">Cost per won job: ' + cost + '</div>' +
+    '</div></div>';
+}
+function loadCostPerWon(){
+  var days = document.getElementById('cpwDays').value || '30';
+  authFetch('/ad-studio/cost-per-won?days=' + encodeURIComponent(days)).then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var body = document.getElementById('cpwBody');
+      if (!j || !j.data){ body.innerHTML = '<span class="mut small">Campaign outcomes could not be loaded for this session.</span>'; return; }
+      var d = j.data;
+      var html = '<div class="desc">Last ' + d.windowDays + ' days: <b style="color:var(--txt)">' + d.totals.leads + ' lead(s)</b> across every source, <b style="color:var(--txt)">' + d.totals.won + ' won</b>, <b style="color:var(--txt)">' + cpwMoney(d.totals.wonCollectedCents) + '</b> collected on won jobs.</div>';
+      html += '<div class="rows" style="margin-top:6px">' + (d.rows || []).map(cpwRowHtml).join('') + '</div>';
+      var u = d.unattributed;
+      if (u){
+        html += '<div class="small" style="font-weight:800;margin-top:14px">Not attributed to any campaign</div>' +
+          '<div class="desc">' + u.leads + ' lead(s) in the window carried no campaign tag — ' + u.won + ' won, ' + cpwMoney(u.wonCollectedCents) + ' collected. They count in the totals above and in no campaign row.</div>';
+      }
+      if (d.costNote) html += '<div class="desc" style="margin-top:10px">' + esc(d.costNote) + '</div>';
+      body.innerHTML = html;
+    })
+    .catch(function(){ document.getElementById('cpwBody').innerHTML = '<span class="mut small">Campaign outcomes could not be loaded — connection error.</span>'; });
+}
+document.getElementById('cpwDays').addEventListener('change', loadCostPerWon);
+document.getElementById('cpwReload').addEventListener('click', loadCostPerWon);
+
 /* ── Top Speed Ads: the Flywheel loop ──────────────────── */
 function loadLoop(){
   authFetch('/ad-studio/loop').then(function(r){ return r.ok ? r.json() : null; })
@@ -1058,7 +1113,7 @@ function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
   loadAll(); loadCreatives(); loadDestinations(); loadPack();
-  loadCreativeLibrary(); loadAttribution(); loadLoop(); loadExternal(); loadProviders(); loadPlansAdmin();
+  loadCreativeLibrary(); loadAttribution(); loadCostPerWon(); loadLoop(); loadExternal(); loadProviders(); loadPlansAdmin();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();
