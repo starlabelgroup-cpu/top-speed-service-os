@@ -224,6 +224,8 @@ model User {
 
   passwordResetTokens PasswordResetToken[]
 
+  emailSignInTokens EmailSignInToken[]
+
   emailChangeTokens EmailChangeToken[]
 
   pushSubscriptions PushSubscription[]
@@ -1240,6 +1242,28 @@ model EmailVerificationToken {
 // the reset link. Tokens live 30 minutes, are single-use, and issuing
 // a new one supersedes every still-unused token for the account.
 model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Email sign-in link tokens (2026-11-20, Ramone's approved verification
+// method): the passwordless sign-in door. Same discipline as
+// PasswordResetToken — only the SHA-256 hash of the emailed token is
+// stored; the raw token travels only inside the sign-in link. Tokens
+// live 30 minutes, are single-use, and issuing a new one supersedes
+// every still-unused token for the account. Consuming one mints a
+// normal device session (30-day trusted-device lifetime) — see
+// services/emailSignIn.js.
+model EmailSignInToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
   userId    String    @db.Uuid

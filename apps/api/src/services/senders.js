@@ -65,6 +65,7 @@ const SUBJECTS = {
   SIGNIN_LINK: 'Your Top Speed sign-in link',
   EMAIL_VERIFICATION: 'Verify your Top Speed Appliance account email',
   PASSWORD_RESET: 'Reset your Top Speed Appliance password',
+  SIGN_IN_LINK: 'Sign in to Top Speed Service OS',
   PHOTO_DIAGNOSIS: 'Your Top Speed photo diagnosis',
 };
 

@@ -13,7 +13,17 @@ function base64UrlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-export function signAccessToken(user, { expiresInSeconds, speedyVerified, sessionId } = {}) {
+/**
+ * Mint one access token.
+ *
+ * @param {{ expiresInSeconds?: number, speedyVerified?: boolean, sessionId?: string, emailLink?: boolean }} [options]
+ *   speedyVerified is set only by the Speedy Verify code-step exchange;
+ *   emailLink is set only by the email sign-in link exchange
+ *   (services/emailSignIn.js) — /auth/me accepts either as proof the
+ *   sign-in gate was satisfied, because the link door replaces the
+ *   code step (Ramone's approved verification method, 2026-11-20).
+ */
+export function signAccessToken(user, { expiresInSeconds, speedyVerified, sessionId, emailLink } = {}) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not configured');
 
@@ -31,6 +41,14 @@ export function signAccessToken(user, { expiresInSeconds, speedyVerified, sessio
     // a session that passed the Master's access-code check carries
     // sv: true; /auth/me requires it for activated accounts.
     ...(speedyVerified ? { sv: true } : {}),
+    // Email sign-in link (2026-11-20): set ONLY by the email-link
+    // exchange — a session whose holder proved control of the
+    // account's mailbox with a one-time link carries el: true;
+    // /auth/me accepts it in place of the Speedy Verify code step
+    // for activated accounts (the link is the verification method
+    // Ramone approved; the password and code steps do not apply
+    // to this door).
+    ...(emailLink ? { el: true } : {}),
     // Device sessions (2026-11-20, F3): the UserSession row this
     // sign-in created, when the minting route recorded one (see
     // services/sessions.js). The session guard in server.js refuses a

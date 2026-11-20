@@ -83,6 +83,10 @@ export function authenticate(req, res, next) {
       // Speedy Verify (2026-11-16): true only when this session passed
       // the Master's access-code step (services/speedyVerify.js).
       sv: payload.sv === true,
+      // Email sign-in link (2026-11-20): true only when this session
+      // was minted by the one-time email-link exchange — /auth/me
+      // accepts it in place of the code step for activated accounts.
+      el: payload.el === true,
     };
     // Device sessions (2026-11-20, F3): the UserSession row this token
     // was minted from, when it carries one — the session manager uses

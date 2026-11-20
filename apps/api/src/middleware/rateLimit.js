@@ -47,6 +47,7 @@ function createRateLimiter({ limit, windowMs }, keyPrefix) {
  *    locks) are untouched and still bind per account. */
 const SESSION_SUCCESS_PATHS = [
   '/auth/login',
+  '/auth/email-sign-in/consume',
   '/auth/layer2/verify',
   '/auth/set-password',
   '/auth/passkeys/login/verify',

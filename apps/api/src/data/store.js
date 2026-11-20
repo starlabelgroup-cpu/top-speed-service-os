@@ -46,6 +46,10 @@ export const store = {
   // uses the PasswordResetToken table). Keyed by token SHA-256 hash,
   // same discipline as emailVerificationTokens.
   passwordResetTokens: new Map(),
+  // Email sign-in link tokens (skeleton-mode fallback; the database
+  // mode uses the EmailSignInToken table). Keyed by token SHA-256
+  // hash, same discipline as passwordResetTokens.
+  emailSignInTokens: new Map(),
   // Username (email) change tokens (skeleton-mode fallback; the
   // database mode uses the EmailChangeToken table). Keyed by token
   // SHA-256 hash, same discipline as passwordResetTokens.

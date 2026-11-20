@@ -142,7 +142,7 @@ function queueNewDeviceAlert(user, record) {
  * cross-host handoff redemption, which are continuations, not new
  * sign-ins.
  */
-export async function recordSignInSession(req, user, { speedyVerified, alertOnNewDevice = false } = {}) {
+export async function recordSignInSession(req, user, { speedyVerified, alertOnNewDevice = false, emailLink = false, expiresInSeconds } = {}) {
   let record = null;
   try {
     const prior = await listSessionRows(user.id);
@@ -152,7 +152,7 @@ export async function recordSignInSession(req, user, { speedyVerified, alertOnNe
       try { queueNewDeviceAlert(user, record); } catch { /* alerts never break sign-in */ }
     }
   } catch { /* session recording never breaks sign-in */ }
-  return signAccessToken(user, { speedyVerified, sessionId: record?.id });
+  return signAccessToken(user, { speedyVerified, sessionId: record?.id, emailLink, expiresInSeconds });
 }
 
 export function sessionView(row, currentSessionId) {

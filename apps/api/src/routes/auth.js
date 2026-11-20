@@ -15,6 +15,12 @@ import {
   consumePasswordReset,
   requestPasswordReset,
 } from '../services/passwordReset.js';
+import {
+  EMAIL_SIGN_IN_GENERIC_MESSAGE,
+  EMAIL_SIGN_IN_SESSION_SECONDS,
+  consumeEmailSignIn,
+  requestEmailSignIn,
+} from '../services/emailSignIn.js';
 import { resolveArea } from '../config/serviceAreas.js';
 import { persistCustomer } from '../db/bookingsRepo.js';
 import { persistAppliance } from '../db/appliancesRepo.js';
@@ -989,12 +995,20 @@ router.get('/auth/me', authenticate, async (req, res, next) => {
       // must present a session that passed the code step AND still hold
       // a live code. The Master is exempt by construction.
       if (verifyGateApplies(user)) {
-        const state = await getVerifyState(user);
-        if (req.user.sv !== true || !state.hasActiveCode) {
-          return res.status(403).json({
-            error: 'Speedy Verify required — sign in and complete the access-code step to continue.',
-            code: 'SPEEDY_VERIFY_REQUIRED',
-          });
+        // Email sign-in link sessions (2026-11-20): the holder proved
+        // control of the account's mailbox through the one-time link
+        // — the verification method Ramone approved to replace the
+        // code step — so the el claim satisfies this gate on its own.
+        // Every other session still needs the code-step claim AND a
+        // live code, exactly as before.
+        if (req.user.el !== true) {
+          const state = await getVerifyState(user);
+          if (req.user.sv !== true || !state.hasActiveCode) {
+            return res.status(403).json({
+              error: 'Speedy Verify required — sign in and complete the access-code step to continue.',
+              code: 'SPEEDY_VERIFY_REQUIRED',
+            });
+          }
         }
       }
       const terms = await termsStatusForUser(user.id);
@@ -1153,6 +1167,64 @@ router.post('/auth/reset-password', async (req, res, next) => {
     }
     await consumePasswordReset(parsed.data.token, parsed.data.newPassword);
     return res.json({ ok: true, message: 'Your password has been changed — sign in with your new password.' });
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
+    }
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Email sign-in link (2026-11-20, Ramone's approved verification
+// method): the passwordless door. The request answers generically
+// whether or not the account exists; the consume exchanges the
+// one-time token for a full device session — 30-day trusted-device
+// lifetime, the email-link claim (el) in place of the Speedy Verify
+// code step, and no Layer 2 (the mailbox was the verification).
+// The Master account is exempt from this door's send limits inside
+// the service (Rule Zero: the owner is never locked out).
+// ---------------------------------------------------------------------------
+const emailSignInRequestSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  next: z.string().trim().max(120).optional(),
+});
+
+const emailSignInConsumeSchema = z.object({
+    token: z.string().min(10).max(4096),
+});
+
+router.post('/auth/email-sign-in/request', async (req, res, next) => {
+  try {
+    const parsed = emailSignInRequestSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'A valid email address is required', details: parsed.error.flatten() });
+    }
+    await requestEmailSignIn({ email: parsed.data.email, ip: req.ip, source: 'EMAIL_SIGN_IN', next: parsed.data.next ?? null });
+    return res.json({ ok: true, message: EMAIL_SIGN_IN_GENERIC_MESSAGE });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/auth/email-sign-in/consume', async (req, res, next) => {
+  try {
+    const parsed = emailSignInConsumeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'This sign-in link is invalid or has expired', code: 'EMAIL_SIGN_IN_INVALID' });
+    }
+    const { user } = await consumeEmailSignIn(parsed.data.token);
+    const terms = await termsStatusForUser(user.id);
+    return res.json({
+      user: publicUser(user),
+      terms,
+      termsStatus: terms,
+      ...(await recordSignInSession(req, user, {
+        emailLink: true,
+        expiresInSeconds: EMAIL_SIGN_IN_SESSION_SECONDS,
+        alertOnNewDevice: true,
+      })),
+    });
   } catch (error) {
     if (error?.status) {
       return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });

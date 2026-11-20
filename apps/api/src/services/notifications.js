@@ -72,6 +72,7 @@ export const NOTIFICATION_TEMPLATES = {
   SIGNIN_LINK: 'SIGNIN_LINK',
   EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
   PASSWORD_RESET: 'PASSWORD_RESET',
+  SIGN_IN_LINK: 'SIGN_IN_LINK',
   EMAIL_CHANGE_CONFIRM: 'EMAIL_CHANGE_CONFIRM',
   EMAIL_CHANGE_REQUESTED: 'EMAIL_CHANGE_REQUESTED',
   EMAIL_CHANGE_COMPLETE: 'EMAIL_CHANGE_COMPLETE',
@@ -148,6 +149,7 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   NOTIFICATION_TEMPLATES.ACCOUNT_WELCOME,
   NOTIFICATION_TEMPLATES.EMAIL_VERIFICATION,
   NOTIFICATION_TEMPLATES.PASSWORD_RESET,
+  NOTIFICATION_TEMPLATES.SIGN_IN_LINK,
   NOTIFICATION_TEMPLATES.PHOTO_DIAGNOSIS,
   NOTIFICATION_TEMPLATES.LINK_SEND,
   NOTIFICATION_TEMPLATES.GIFT_CARD_ISSUED,
@@ -777,6 +779,46 @@ export function notifyPasswordReset(user, { tokenId, resetUrl, expiresAt }, sour
     entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
   } else {
     entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/**
+ * The email sign-in link message (2026-11-20, Ramone's approved
+ * verification method). The link carries the one-time token;
+ * tapping it signs the holder in — no password, no access code.
+ * Mirrors notifyPasswordReset exactly: the outbox entry is the
+ * record of the send, eventKey is unique per issuance (the token
+ * record id), and the copy never confirms anything beyond the
+ * request itself — the endpoint that queues this answers
+ * generically whether or not the account exists.
+ */
+export function notifyEmailSignIn(user, { tokenId, signInUrl, expiresAt }, source = null) {
+  const entries = [];
+  if (!user?.email) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const payload = {
+    userId: user.id,
+    customerName: name,
+    signInUrl,
+    message:
+      `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+      `Here is your one-time sign-in link for Top Speed Service OS:\n\n` +
+      `${signInUrl}\n\n` +
+      `Tap it and you are signed in on this device for 30 days — no password and no ` +
+      `access code needed. The link works once and expires in 30 minutes, and asking ` +
+      `for a new link replaces this one. If you did not request a sign-in link, you ` +
+      `can ignore this email — nobody can use it without access to this inbox.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Sign in to Top Speed Service OS',
+  };
+  const eventKey = `account:${user.id}:email-sign-in:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.SIGN_IN_LINK, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.SIGN_IN_LINK, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
   }
   return entries;
 }
