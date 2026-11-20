@@ -188,7 +188,8 @@ var TYPE_ICONS={
   BOOKING:'<path d="M6 3.5h12a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 19V5A1.5 1.5 0 0 1 6 3.5z"/><path d="M8.5 8.5h7M8.5 12h7" stroke="#E8322E"/><path d="M8.5 15.8h4"/>',
   PAYMENT:'<rect x="2.8" y="6" width="18.4" height="12" rx="2"/><path d="M3 10h18" stroke="#E8322E"/><path d="M6.5 14.5h4"/>',
   ACCOUNT:'<circle cx="12" cy="8.2" r="3.6"/><path d="M5 20c1.2-3.2 3.9-4.8 7-4.8s5.8 1.6 7 4.8" stroke="#E8322E"/>',
-  REVIEW:'<path d="M12 3.8l2.5 5.1 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z" stroke="#E8322E"/>'
+  REVIEW:'<path d="M12 3.8l2.5 5.1 5.6.8-4 4 1 5.6-5.1-2.7-5.1 2.7 1-5.6-4-4 5.6-.8z" stroke="#E8322E"/>',
+  ESTIMATE:'<path d="M14 2.8H6.5a1.5 1.5 0 0 0-1.5 1.5v15.4a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 2.8V8h5" stroke="#E8322E"/><path d="M8.5 13l2.2 2.2 4.3-4.4" stroke="#E8322E"/>'
 };
 function iconFor(type){
   return '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(TYPE_ICONS[type]||'')+'</svg>';
@@ -202,16 +203,21 @@ function renderCards(){
     b.type='button';
     b.className='lcard'+(item.type===selType?' sel':'');
     b.innerHTML='<h3>'+iconFor(item.type)+' '+esc(item.name)+'</h3><p>'+esc(item.description)+'</p>'
-      +(item.url? '<div class="dest">'+esc(item.url)+'</div>' : '<div class="dest">Minted per booking from Stripe checkout</div>');
+      +(item.url? '<div class="dest">'+esc(item.url)+'</div>' : '<div class="dest">'+esc(item.destNote||'Minted per booking')+'</div>');
     b.addEventListener('click',function(){ selType=item.type; renderCards(); syncForm(); });
     box.appendChild(b);
   });
 }
 
+function selNeedsRef(){
+  for(var i=0;i<catalog.length;i++){ if(catalog[i].type===selType) return !!catalog[i].requiresBookingRef; }
+  return selType==='PAYMENT'||selType==='ESTIMATE';
+}
+
 function syncForm(){
   document.getElementById('emailWrap').style.display=selChannel==='EMAIL'?'block':'none';
   document.getElementById('phoneWrap').style.display=selChannel==='SMS'?'block':'none';
-  document.getElementById('refWrap').style.display=selType==='PAYMENT'?'block':'none';
+  document.getElementById('refWrap').style.display=selNeedsRef()?'block':'none';
   document.getElementById('chEmail').className=selChannel==='EMAIL'?'sel':'';
   document.getElementById('chSms').className=selChannel==='SMS'?'sel':'';
 }
@@ -252,9 +258,9 @@ document.getElementById('sendBtn').addEventListener('click',function(){
     body.phone=document.getElementById('rPhone').value.trim();
     if(!body.phone){ setMsg('sendMsg',false,'Enter the recipient mobile number.'); return; }
   }
-  if(selType==='PAYMENT'){
+  if(selNeedsRef()){
     body.bookingRef=document.getElementById('rRef').value.trim();
-    if(!body.bookingRef){ setMsg('sendMsg',false,'A payment link needs the booking reference (e.g. TS-XXXXXX).'); return; }
+    if(!body.bookingRef){ setMsg('sendMsg',false,(selType==='ESTIMATE'?'An estimate approval link':'A payment link')+' needs the booking reference (e.g. TS-XXXXXX).'); return; }
   }
   btn.disabled=true;
   setMsg('sendMsg',true,'Sending…');

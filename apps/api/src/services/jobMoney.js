@@ -48,7 +48,10 @@ export const authorizeSchema = z.object({
 
 export const estimateDecisionSchema = z.object({
   decision: z.enum(['APPROVED', 'DECLINED']),
-  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER']).optional(),
+  // APPROVAL_LINK (2026-11-20): the customer decided on the public
+  // estimate approval page (services/estimateApproval.js) — recorded
+  // through this same schema/recorder so the event shape never forks.
+  method: z.enum(['IN_PERSON_VERBAL', 'SIGNATURE_ON_DEVICE', 'PHONE', 'TEXT', 'EMAIL', 'OTHER', 'APPROVAL_LINK']).optional(),
   authorizedByName: z.string().trim().max(120).nullable().optional(),
   note: z.string().trim().max(300).nullable().optional(),
 });

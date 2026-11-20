@@ -39,7 +39,7 @@ router.get('/link-center/options', ...staffOnly, async (req, res) => {
 });
 
 const sendSchema = z.object({
-  linkType: z.enum([LINK_TYPES.BOOKING, LINK_TYPES.PAYMENT, LINK_TYPES.ACCOUNT, LINK_TYPES.REVIEW]),
+  linkType: z.enum([LINK_TYPES.BOOKING, LINK_TYPES.PAYMENT, LINK_TYPES.ACCOUNT, LINK_TYPES.REVIEW, LINK_TYPES.ESTIMATE]),
   channel: z.enum(['EMAIL', 'SMS']),
   recipientName: z.string().trim().max(120).optional().nullable(),
   email: z.string().trim().email().max(200).optional().nullable(),
@@ -58,6 +58,9 @@ router.post('/link-center/send', ...staffOnly, async (req, res, next) => {
     if (linkType === LINK_TYPES.PAYMENT && !bookingRef) {
       return res.status(400).json({ error: 'bookingRef_required', message: 'A payment link needs the booking reference (e.g. TS-XXXXXX).' });
     }
+    if (linkType === LINK_TYPES.ESTIMATE && !bookingRef) {
+      return res.status(400).json({ error: 'bookingRef_required', message: 'An estimate approval link needs the booking reference (e.g. TS-XXXXXX).' });
+    }
     if (channel === 'EMAIL' && !email) {
       return res.status(400).json({ error: 'email_required', message: 'An email address is required for an email send.' });
     }
@@ -73,7 +76,7 @@ router.post('/link-center/send', ...staffOnly, async (req, res, next) => {
     // honest error — never an invented URL.
     let resolved;
     try {
-      resolved = await resolveLinkUrl(linkType, { bookingRef });
+      resolved = await resolveLinkUrl(linkType, { bookingRef, sentBy: req.user?.email || null });
     } catch (error) {
       if (error?.code === 'stripe_error') return res.status(502).json({ error: 'stripe_error', message: error.message });
       if (error?.status) return res.status(error.status).json({ error: error.code || 'link_resolution_failed', message: error.message });
@@ -127,6 +130,8 @@ router.post('/link-center/send', ...staffOnly, async (req, res, next) => {
         url: resolved.url,
         bookingRef: bookingRef || null,
         reused: resolved.reused || false,
+        estimateId: resolved.estimateId || null,
+        estimateExpiresAt: resolved.expiresAt || null,
         status: entry.status,
         reason: entry.reason || null,
         error: entry.error || null,

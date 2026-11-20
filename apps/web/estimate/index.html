@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your Written Estimate — Top Speed Appliance</title>
+<meta name="description" content="Review the written estimate for your Top Speed Appliance booking and approve or decline it online. No work ever begins without your approval.">
+<link rel="canonical" href="https://topspeedserviceos.com/estimate">
+<meta name="theme-color" content="#060B18">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<script src="/google-tag.js"></script>
+<style>
+:root{--red:#e94e5c;--navy:#1c2b46;--ink:#1b2840;--mut:#8591a4;--line:#e7ecf3;--bg:#f5f7fb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none}
+.hero{background:#0c162b;color:#fff;padding:26px 16px 30px;text-align:center}
+.hero .mark{display:inline-flex;align-items:center;gap:9px;font-family:'Rajdhani',sans-serif;font-weight:800;letter-spacing:2.5px;font-size:12px;color:#f3b7bd;text-transform:uppercase}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(26px,5vw,36px);font-weight:800;letter-spacing:-.5px;margin-top:10px}
+.hero p{color:#b9c4d6;font-size:14px;line-height:1.6;max-width:520px;margin:8px auto 0}
+.wrap{width:100%;max-width:520px;margin:-16px auto 40px;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 10px 30px rgba(12,22,43,.08)}
+.card h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:9px}
+.card .who{font-size:13px;color:#52647c;margin-top:6px;line-height:1.55}
+.rows{margin-top:14px;border-top:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.45}
+.row .lab{color:#34445c}
+.row .lab small{display:block;color:var(--mut);font-size:12px;margin-top:1px}
+.row .amt{font-weight:700;white-space:nowrap}
+.row.credit .amt{color:#0f7a3d}
+.row.total{border-bottom:none;padding-top:13px;font-size:16px}
+.row.total .lab{font-weight:800;color:var(--navy)}
+.row.total .amt{font-weight:800;color:var(--navy)}
+.notes{font-size:13px;color:#52647c;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.6;margin-top:14px}
+.policy{font-size:12.5px;color:#52647c;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.6;margin-top:16px}
+.btn{background:var(--red);border:1px solid var(--red);color:#fff;border-radius:8px;padding:12px 16px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;display:inline-block}
+.btn:hover{background:#d83d4d}
+.btn.ghost{background:#fff;color:#34445c;border-color:#dee5ef}
+.btn.ghost:hover{border-color:#ed6372}
+.btn.block{width:100%;margin-top:14px}
+.btn:disabled{opacity:.55;cursor:wait}
+.btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.btnrow .btn{flex:1;min-width:150px}
+textarea.fi{width:100%;background:#fff;border:1px solid #dfe7f0;border-radius:8px;color:var(--ink);padding:12px;font-size:15px;font-family:inherit;min-height:84px;resize:vertical;margin-top:10px}
+textarea.fi:focus{outline:none;border-color:#ed6372}
+.msg{font-size:13px;line-height:1.55;margin-top:14px;display:none}
+.msg.ok{display:block;background:#eefaf3;border:1px solid #cdeeda;color:#0f6a38;border-radius:10px;padding:12px 14px}
+.msg.err{display:block;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;border-radius:10px;padding:12px 14px}
+.outcome{font-size:14px;line-height:1.6;color:#34445c;margin-top:8px}
+.foot{margin-top:auto;text-align:center;padding:18px 16px 26px;font-size:12px;color:var(--mut);line-height:1.6}
+.foot a{color:var(--navy);font-weight:700}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div class="hero">
+  <span class="mark"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Top Speed Appliance</span>
+  <h1>Your written estimate</h1>
+  <p id="heroSub">Loading your estimate&hellip;</p>
+</div>
+
+<main class="wrap">
+  <div class="card">
+    <!-- LOADING -->
+    <div id="loadState">
+      <h2>One moment</h2>
+      <p class="who">Pulling up the estimate on your booking&hellip;</p>
+    </div>
+
+    <!-- PENDING: the estimate + decision -->
+    <div id="estState" hidden>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span id="estTitle">Estimate</span></h2>
+      <p class="who" id="estWho"></p>
+      <div class="rows" id="estRows"></div>
+      <div class="notes" id="estNotes" hidden></div>
+      <div class="policy" id="estTerms"></div>
+      <div class="msg" id="estMsg" role="alert"></div>
+      <div id="decideBox">
+        <div class="btnrow">
+          <button class="btn" type="button" id="approveBtn">Approve this estimate</button>
+          <button class="btn ghost" type="button" id="declineBtn">Decline</button>
+        </div>
+      </div>
+      <div id="confirmBox" hidden>
+        <p class="who" id="confirmText" style="margin-top:16px"></p>
+        <div id="reasonBox" hidden>
+          <label for="reasonText" style="font-size:12px;font-weight:700;color:#52647c">Anything we should know? (optional)</label>
+          <textarea class="fi" id="reasonText" maxlength="300" placeholder="e.g. the price, the timing, a question first&hellip;"></textarea>
+        </div>
+        <div class="btnrow">
+          <button class="btn" type="button" id="confirmBtn">Yes — record my decision</button>
+          <button class="btn ghost" type="button" id="backBtn">Not yet</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DECIDED: the recorded outcome -->
+    <div id="doneState" hidden>
+      <h2 id="doneTitle"></h2>
+      <p class="outcome" id="doneText"></p>
+      <div class="msg ok" id="doneMsg"></div>
+      <a class="btn block" href="tel:+18444607038">Call the office — 844-460-7038</a>
+    </div>
+
+    <!-- INACTIVE: expired / superseded / invalid -->
+    <div id="badState" hidden>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><span id="badTitle">This link no longer works</span></h2>
+      <p class="who" id="badText"></p>
+      <a class="btn block" href="tel:+18444607038">Call the office — 844-460-7038</a>
+    </div>
+  </div>
+</main>
+
+<p class="foot">Top Speed Appliance LLC — The Faster, The Better.<br>Questions about your estimate? Call <a href="tel:+18444607038">844-460-7038</a>.</p>
+
+<script>
+(function () {
+  'use strict';
+  var API = 'https://top-speed-service-os.vercel.app/api/v1';
+  var qs = new URLSearchParams(window.location.search);
+  var REF = qs.get('ref') || '';
+  var TOKEN = qs.get('token') || '';
+
+  function el(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function money(cents) {
+    var v = Number(cents || 0) / 100;
+    return (v < 0 ? '-$' : '$') + Math.abs(v).toFixed(2);
+  }
+  function when(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString() + ' at ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
+  function show(id) {
+    ['loadState', 'estState', 'doneState', 'badState'].forEach(function (s) { el(s).hidden = s !== id; });
+  }
+  function bad(title, text) {
+    el('badTitle').textContent = title;
+    el('badText').textContent = text;
+    el('heroSub').textContent = 'This estimate link is not active.';
+    show('badState');
+  }
+
+  var view = null;
+  var pendingDecision = null;
+
+  function renderEstimate(data) {
+    view = data;
+    var est = data.estimate || {};
+    var bk = data.booking || {};
+    el('heroSub').textContent = 'Booking ' + (bk.referenceCode || '') + (bk.appliance ? ' — ' + bk.appliance : '') + (bk.city ? ' — ' + bk.city : '');
+    el('estTitle').textContent = (est.kind === 'INSTALLATION' ? 'Installation estimate' : 'Repair estimate') + (est.version ? ' (v' + est.version + ')' : '');
+    el('estWho').textContent = (bk.customerFirstName ? 'Hi ' + bk.customerFirstName + ' — h' : 'H') +
+      'ere is the written estimate for your booking ' + (bk.referenceCode || '') +
+      (bk.appliance ? ', ' + bk.appliance : '') + (bk.city ? ' in ' + bk.city : '') +
+      '. Every line is exactly as quoted — nothing here is charged on this page.';
+
+    var h = '';
+    var laborLabel = est.segment === 'COMMERCIAL'
+      ? 'Labor — custom quote'
+      : (est.kind === 'INSTALLATION' ? 'Labor — flat installation' : 'Labor — flat repair');
+    if (est.laborCents != null) {
+      h += '<div class="row"><span class="lab">' + esc(laborLabel) + '</span><span class="amt">' + money(est.laborCents) + '</span></div>';
+    }
+    (est.parts || []).forEach(function (p) {
+      h += '<div class="row"><span class="lab">' + esc(p.description) + '<small>Qty ' + esc(p.qty) + ' x ' + money(p.unitPriceCents) + '</small></span><span class="amt">' + money(p.lineTotalCents) + '</span></div>';
+    });
+    if ((est.parts || []).length && est.taxCents > 0) {
+      h += '<div class="row"><span class="lab">Tax on parts' + (est.taxRatePercent ? ' (' + esc(est.taxRatePercent) + '%)' : '') + '</span><span class="amt">' + money(est.taxCents) + '</span></div>';
+    }
+    if (est.discountCents > 0) {
+      h += '<div class="row credit"><span class="lab">Discount</span><span class="amt">-' + money(est.discountCents) + '</span></div>';
+    }
+    if (est.diagnosticCreditCents > 0) {
+      h += '<div class="row credit"><span class="lab">Diagnostic credit<small>Your $99 diagnostic, credited toward this repair</small></span><span class="amt">-' + money(est.diagnosticCreditCents) + '</span></div>';
+    }
+    h += '<div class="row total"><span class="lab">Total</span><span class="amt">' + money(est.totalCents) + '</span></div>';
+    el('estRows').innerHTML = h;
+
+    if (est.notes) {
+      el('estNotes').hidden = false;
+      el('estNotes').textContent = 'Note from your technician: ' + est.notes;
+    }
+    el('estTerms').innerHTML = est.segment === 'COMMERCIAL'
+      ? 'Commercial service is priced by custom quote — the total above is the quoted price for the work listed. ' +
+        '<b>No work begins without your approved written quote</b> — approving here is that approval, recorded on your booking with the date and time. ' +
+        'Nothing is charged on this page.'
+      : '<b>No work begins without your approved written quote</b> — approving here is that approval, recorded on your booking with the date and time. ' +
+        '$99 diagnostic fee, collected at booking and credited toward the repair. Nothing is charged on this page.';
+    show('estState');
+  }
+
+  function renderDecided(data, fresh) {
+    var dec = data.decision || {};
+    var bk = data.booking || {};
+    var approved = dec.decision === 'APPROVED';
+    el('doneTitle').innerHTML = approved
+      ? '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>Estimate approved'
+      : '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>Estimate declined';
+    el('heroSub').textContent = 'Booking ' + (bk.referenceCode || REF) + ' — decision recorded.';
+    el('doneText').textContent = approved
+      ? 'Thank you — your approval is on the record' + (dec.at ? ' (' + when(dec.at) + ')' : '') +
+        '. Our office has your decision and will take it from here. If anything changes, call us any time.'
+      : 'Your decline is on the record' + (dec.at ? ' (' + when(dec.at) + ')' : '') +
+        '. No work will be done on this estimate. If you would like to talk it over — a different option, a different day — call us and we will work it out.';
+    var msg = el('doneMsg');
+    msg.textContent = fresh
+      ? 'Recorded just now on booking ' + (bk.referenceCode || REF) + '.'
+      : 'You already answered this link' + (dec.at ? ' on ' + when(dec.at) : '') + ' — this is the recorded outcome.';
+    if (!approved && dec.note) msg.textContent += ' Your note: "' + dec.note + '"';
+    show('doneState');
+  }
+
+  function setMsg(text) {
+    var m = el('estMsg');
+    m.className = 'msg err';
+    m.textContent = text;
+  }
+
+  function askConfirm(decision) {
+    pendingDecision = decision;
+    var est = (view && view.estimate) || {};
+    el('confirmText').textContent = decision === 'APPROVED'
+      ? 'Approve the ' + money(est.totalCents) + ' estimate? This records your approval on the booking — no work starts before it, and nothing is charged on this page.'
+      : 'Decline this estimate? No work will be done on it. You can tell us why below — it helps us make it right.';
+    el('reasonBox').hidden = decision !== 'DECLINED';
+    el('confirmBtn').textContent = decision === 'APPROVED' ? 'Yes — approve it' : 'Yes — decline it';
+    el('decideBox').hidden = true;
+    el('confirmBox').hidden = false;
+  }
+
+  function submitDecision() {
+    var btn = el('confirmBtn');
+    btn.disabled = true;
+    btn.textContent = 'Recording…';
+    var body = { ref: REF, token: TOKEN, decision: pendingDecision };
+    if (pendingDecision === 'DECLINED') {
+      var reason = el('reasonText').value.trim();
+      if (reason) body.reason = reason;
+    }
+    fetch(API + '/estimate-approval/decide', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (json) { return { res: res, json: json }; });
+    }).then(function (out) {
+      if (!out.res.ok) throw new Error(out.json.error || 'The decision could not be recorded.');
+      var d = out.json.data || {};
+      renderDecided({ booking: (view && view.booking) || { referenceCode: REF }, decision: d.decision }, !d.alreadyDecided);
+    }).catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = pendingDecision === 'APPROVED' ? 'Yes — approve it' : 'Yes — decline it';
+      setMsg(err.message + ' You can try again, or call us at 844-460-7038.');
+    });
+  }
+
+  el('approveBtn').addEventListener('click', function () { askConfirm('APPROVED'); });
+  el('declineBtn').addEventListener('click', function () { askConfirm('DECLINED'); });
+  el('backBtn').addEventListener('click', function () {
+    pendingDecision = null;
+    el('confirmBox').hidden = true;
+    el('decideBox').hidden = false;
+  });
+  el('confirmBtn').addEventListener('click', submitDecision);
+
+  if (!REF || !TOKEN) {
+    bad('This estimate link is incomplete', 'The link from your message seems to be missing a piece. Ask the office to send it again, or call us and we will sort it out.');
+    return;
+  }
+  fetch(API + '/estimate-approval?ref=' + encodeURIComponent(REF) + '&token=' + encodeURIComponent(TOKEN))
+    .then(function (res) {
+      return res.json().catch(function () { return {}; }).then(function (json) { return { res: res, json: json }; });
+    })
+    .then(function (out) {
+      if (!out.res.ok) {
+        bad('This estimate link does not work', 'The link may have been copied incompletely. Ask the office to send it again, or call us at 844-460-7038.');
+        return;
+      }
+      var d = out.json.data || {};
+      if (d.state === 'PENDING') renderEstimate(d);
+      else if (d.state === 'DECIDED') renderDecided(d, false);
+      else if (d.state === 'EXPIRED') bad('This estimate link has expired', 'Estimate links stay open for 7 days. Call us or ask the office to send a fresh one — the estimate itself is still on your booking.');
+      else if (d.state === 'SUPERSEDED') bad('A newer estimate replaced this one', 'This link shows an older quote, so it is closed. The office can send you the current estimate link.');
+      else bad('This estimate link does not work', 'Ask the office to send it again, or call us at 844-460-7038.');
+    })
+    .catch(function () {
+      bad('We could not load your estimate', 'Something interrupted the connection. Check your signal and reload this page, or call us at 844-460-7038.');
+    });
+})();
+</script>
+</body>
+</html>

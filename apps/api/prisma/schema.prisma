@@ -223,8 +223,6 @@ model User {
 
   emailChangeTokens EmailChangeToken[]
 
-  pushSubscriptions PushSubscription[]
-
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -343,6 +341,7 @@ model ServiceRequest {
   invoices            Invoice[]
   payments            Payment[]
   trackingTokens      TrackingToken[]
+  estimateApprovalTokens EstimateApprovalToken[]
 
   @@index([companyId, status])
   @@index([companyId, zip])
@@ -1084,6 +1083,34 @@ model EmailChangeToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt])
+}
+
+// Estimate approval links (2026-11-20, Wave 1 D3): the customer-facing
+// approval page for a saved estimate. Only the SHA-256 hash of the
+// link token is stored; the raw token travels only in the link staff
+// send through the Link Center. One decision per link: `decision` is
+// set exactly once (atomic claim), a newer estimate supersedes every
+// outstanding link for the booking (supersededAt, plus the estimateId
+// check at resolve time), and links live 7 days. The decision itself
+// is recorded on the booking's history by the shared job-money
+// recorder — this row only proves WHICH link carried it.
+model EstimateApprovalToken {
+  id           String    @id @default(uuid()) @db.Uuid
+  tokenHash    String    @unique
+  bookingId    String    @db.Uuid
+  estimateId   String
+  decision     String?
+  declineNote  String?
+  decidedAt    DateTime?
+  supersededAt DateTime?
+  expiresAt    DateTime
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+
+  booking ServiceRequest @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
   @@index([expiresAt])
 }
 
@@ -2246,28 +2273,4 @@ model ContactEvent {
   @@index([createdAt])
   @@index([trackingNumberId, createdAt])
   @@index([surfaceKey, createdAt])
-}
-
-// Web Push subscriptions for the customer app (2026-11-20, approved
-// recommendation B1): one row per device/browser a signed-in customer
-// opted in on. The endpoint is the push service's per-device URL
-// (unique); p256dh + auth are the subscription's encryption keys as
-// issued by the browser. revokedAt is set when the customer turns
-// updates off on that device, when they unsubscribe, or when the push
-// service reports the subscription gone (404/410 at delivery) — a
-// revoked row is never sent to again. Subscriptions are per-device:
-// one account can hold several active rows.
-model PushSubscription {
-  id        String    @id @default(uuid()) @db.Uuid
-  userId    String    @db.Uuid
-  endpoint  String    @unique
-  p256dh    String
-  auth      String
-  userAgent String?
-  createdAt DateTime  @default(now())
-  revokedAt DateTime?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }

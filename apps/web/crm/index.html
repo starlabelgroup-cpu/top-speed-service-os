@@ -684,6 +684,7 @@ function crmWsRender(){
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap">'
       +'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'BOOKING\')">Booking link</button>'
       +(paid?'<button class="btn ghost small" type="button" disabled>Payment link \u2014 $99 paid</button>':'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'PAYMENT\')">Payment link ($99)</button>')
+      +'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'ESTIMATE\')">Estimate approval link</button>'
       +(sel.status==='COMPLETED'?'<button class="btn ghost small" type="button" onclick="crmWsSendLink(\'REVIEW\')">Review link</button>':'<button class="btn ghost small" type="button" disabled>Review link \u2014 after completion</button>')
       +'</div><div class="msg" id="crmWsLinkMsg"></div>';
   }

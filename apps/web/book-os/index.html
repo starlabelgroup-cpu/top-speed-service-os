@@ -977,6 +977,7 @@ function jdEnrich(item){
   apiFetch('/bookos/bookings/'+encodeURIComponent(id)+'/money').then(function(j){
     if(jdOpenId!==id) return;
     jdRenderMoney(j.data||{});
+    if(wsCtx&&wsCtx.bookingId===id){ wsCtx.money=j.data||{}; wsCtaRender(); }
   }).catch(function(e){
     if(jdOpenId!==id) return;
     var m2=document.getElementById('jdMoney');
@@ -1809,6 +1810,7 @@ function wsCtaRender(){
     +'<button class="btn ghost" type="button" onclick="wsSendLink(\'BOOKING\')">Booking link</button>'
     +(paidDiag?'<button class="btn ghost" type="button" disabled>Payment link \u2014 $99 paid</button>':'<button class="btn ghost" type="button" onclick="wsSendLink(\'PAYMENT\')">Payment link ($99)</button>')
     +(st==='COMPLETED'?'<button class="btn ghost" type="button" onclick="wsSendLink(\'REVIEW\')">Review link</button>':'<button class="btn ghost" type="button" disabled>Review link \u2014 after completion</button>')
+    +wsEstLinkBtn()
     +'</div>';
   h+='<div id="wsLinkMsg" style="font-size:13.5px;margin-top:8px"></div>';
   /* Dispatch — only while the job is undispatched. */
@@ -1851,6 +1853,7 @@ function wsReloadPopup(){
   apiFetch('/bookos/bookings/'+encodeURIComponent(id)+'/money').then(function(j){
     if(jdOpenId!==id) return;
     jdRenderMoney(j.data||{});
+    if(wsCtx&&wsCtx.bookingId===id){ wsCtx.money=j.data||{}; wsCtaRender(); }
   }).catch(function(){});
 }
 
@@ -1882,6 +1885,17 @@ function wsApptTomorrow(){
 }
 
 /* ---- Send links ---- */
+/* Estimate approval link (Wave 1 D3): the button's state comes from
+   the money view the pop-up's money fetch stashes on wsCtx — no
+   estimate yet, awaiting the customer, or the decision recorded. */
+function wsEstLinkBtn(){
+  var m=(wsCtx&&wsCtx.money)||null;
+  if(!m) return '<button class="btn ghost" type="button" disabled>Estimate link \u2014 loading</button>';
+  var est=m.estimate, dec=m.estimateDecision;
+  if(!est) return '<button class="btn ghost" type="button" disabled>Estimate link \u2014 no estimate yet</button>';
+  if(dec&&dec.estimateId===est.id) return '<button class="btn ghost" type="button" disabled>Estimate link \u2014 '+escH(String(dec.decision||'').toLowerCase())+' recorded</button>';
+  return '<button class="btn ghost" type="button" onclick="wsSendLink(\'ESTIMATE\')">Estimate approval link</button>';
+}
 function wsSetLinkChannel(ch){ wsLinkChannel=(ch==='EMAIL')?'EMAIL':'SMS'; wsCtaRender(); }
 function wsSendLink(linkType){
   if(!wsCtx) return;

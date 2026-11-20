@@ -61,6 +61,12 @@ export const INTAKE_RATE_LIMITS = {
   // requires a session, so the anonymous-skip middleware does not
   // apply); on limit the route answers 429 RATE_LIMITED.
   emailChange: { limit: 10, windowMs: 60 * 60 * 1000 },
+  // Estimate approval links (GET /estimate-approval + POST
+  // /estimate-approval/decide, 2026-11-20): a public token door — the
+  // token is a 32-byte secret, so this cap is a guessing brake, sized
+  // for a customer on a phone (page loads, a retry or two, the
+  // decision) rather than an intake form.
+  estimateApproval: { limit: 60, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */

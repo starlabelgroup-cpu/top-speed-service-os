@@ -237,7 +237,9 @@ async function run() {
   check('options staff: status', options.status, 200);
   const links = options.json?.data?.links || [];
   const byType = Object.fromEntries(links.map((l) => [l.type, l]));
-  check('catalog has 4 link types', links.length, 4);
+  check('catalog has 5 link types', links.length, 5);
+  check('ESTIMATE url is minted per booking (null)', byType.ESTIMATE?.url, null);
+  check('ESTIMATE requires booking ref', byType.ESTIMATE?.requiresBookingRef, true);
   check('BOOKING url', byType.BOOKING?.url, 'https://topspeedserviceos.com/book?src=linkcenter');
   check('ACCOUNT url', byType.ACCOUNT?.url, 'https://topspeedserviceos.com/app');
   check('REVIEW url (Pepper Lists wall)', byType.REVIEW?.url, 'https://pepperlists.com/#reviews');

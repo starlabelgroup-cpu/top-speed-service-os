@@ -3,6 +3,8 @@ import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { latestPaymentForBooking, persistPayment } from '../db/paymentsRepo.js';
 import { createDiagnosticCheckout, DIAGNOSTIC_AMOUNT_CENTS, stripeConfigured } from './stripe.js';
 import { emitReport } from './managementReports.js';
+import { ESTIMATE_APPROVAL_TTL_LABEL, issueEstimateApprovalLink } from './estimateApproval.js';
+import { latestEstimate } from './jobMoney.js';
 
 /**
  * Link Center (Ramone's handwritten note, 2026-11-18: "Create a system
@@ -27,6 +29,7 @@ export const LINK_TYPES = {
   PAYMENT: 'PAYMENT',
   ACCOUNT: 'ACCOUNT',
   REVIEW: 'REVIEW',
+  ESTIMATE: 'ESTIMATE',
 };
 
 const APP_BASE = process.env.PUBLIC_WEB_BASE || 'https://topspeedserviceos.com';
@@ -45,6 +48,15 @@ export const LINK_CATALOG = [
     description: 'Pay the $99 diagnostic for an existing booking (credited toward the repair). Needs the booking reference.',
     url: null,
     requiresBookingRef: true,
+    destNote: 'Minted per booking from Stripe checkout',
+  },
+  {
+    type: LINK_TYPES.ESTIMATE,
+    name: 'Estimate approval link',
+    description: 'The customer reviews the written estimate saved on a booking and approves or declines it online — the decision lands on the job record. Needs the booking reference and a saved estimate.',
+    url: null,
+    requiresBookingRef: true,
+    destNote: 'Minted per booking — secure approval page',
   },
   {
     type: LINK_TYPES.ACCOUNT,
@@ -144,10 +156,14 @@ export async function diagnosticCheckoutUrl(booking) {
 }
 
 /**
- * Resolve the destination URL for a link type. PAYMENT is the only
- * type whose URL is minted per-send (from the booking's checkout).
+ * Resolve the destination URL for a link type. PAYMENT and ESTIMATE
+ * are minted per-send: PAYMENT from the booking's Stripe checkout,
+ * ESTIMATE as a fresh token link to the approval page for the
+ * booking's saved estimate (services/estimateApproval.js). A booking
+ * with no saved estimate gets an honest 409 — never a link to an
+ * empty page.
  */
-export async function resolveLinkUrl(linkType, { bookingRef = null } = {}) {
+export async function resolveLinkUrl(linkType, { bookingRef = null, sentBy = null } = {}) {
   const entry = catalogEntry(linkType);
   if (!entry) {
     const error = new Error(`Unknown link type: ${linkType}`);
@@ -155,13 +171,31 @@ export async function resolveLinkUrl(linkType, { bookingRef = null } = {}) {
     error.code = 'unknown_link_type';
     throw error;
   }
-  if (linkType !== LINK_TYPES.PAYMENT) return { url: entry.url, booking: null };
+  if (linkType !== LINK_TYPES.PAYMENT && linkType !== LINK_TYPES.ESTIMATE) {
+    return { url: entry.url, booking: null };
+  }
   const booking = findBookingByReference(bookingRef);
   if (!booking) {
     const error = new Error(`No booking found with reference ${bookingRef || '(none given)'}.`);
     error.status = 404;
     error.code = 'booking_not_found';
     throw error;
+  }
+  if (linkType === LINK_TYPES.ESTIMATE) {
+    if (!latestEstimate(booking)) {
+      const error = new Error('There is no saved estimate on this booking yet — save the estimate first, then send the approval link.');
+      error.status = 409;
+      error.code = 'no_estimate';
+      throw error;
+    }
+    const issued = await issueEstimateApprovalLink(booking, { createdBy: sentBy });
+    return {
+      url: issued.url,
+      booking,
+      estimateId: issued.estimateId,
+      estimateTotalCents: issued.estimateTotalCents,
+      expiresAt: issued.expiresAt,
+    };
   }
   const checkout = await diagnosticCheckoutUrl(booking);
   return { url: checkout.url, booking, paymentId: checkout.paymentId, reused: checkout.reused };
@@ -226,6 +260,25 @@ export function composeLinkMessage({ linkType, channel, recipientName = null, ur
             subject: null,
             message: `Top Speed Appliance: thanks for choosing us! Review your visit here: ${url} Anything not right? Call ${phone}.`,
           };
+    case LINK_TYPES.ESTIMATE: {
+      const ref = booking?.referenceCode || '';
+      const estimate = booking ? latestEstimate(booking) : null;
+      const total = estimate ? `$${(estimate.totalCents / 100).toFixed(2)}` : null;
+      return isEmail
+        ? {
+            subject: `Your written estimate is ready — booking ${ref} · Top Speed Appliance`,
+            message:
+              `Hi ${first},\n\n` +
+              `Your written estimate for booking ${ref}${total ? ` — total ${total}` : ''} is ready to review:\n${url}\n\n` +
+              `The page shows every line exactly as quoted. You can approve it there, or decline it and tell us why — ` +
+              `no work ever begins without your approval. The link stays open for ${ESTIMATE_APPROVAL_TTL_LABEL}. ` +
+              `Questions? Call ${phone}.${signOff}`,
+          }
+        : {
+            subject: null,
+            message: `Top Speed Appliance: your written estimate for booking ${ref}${total ? ` (total ${total})` : ''} is ready — review and approve it here: ${url} No work begins without your approval. Questions? Call ${phone}.`,
+          };
+    }
     case LINK_TYPES.PAYMENT: {
       const ref = booking?.referenceCode || '';
       return isEmail
