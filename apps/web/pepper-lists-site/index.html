@@ -67,7 +67,7 @@ footer{border-top:1px solid #22301f;color:var(--muted);padding:36px 24px;text-al
 footer strong{color:var(--ink)}
 footer a{color:var(--lime)}
 </style>
-<script src="/google-tag.js"></script><script src="/legal-gate.js"></script><link rel="stylesheet" href="/fonts.css">
+<script src="/google-tag.js"></script><script src="/legal-gate.js"></script><script src="/shared/attribution-capture.js" defer></script><link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
 <!-- ACCOUNT GATE — Pepper Lists is a Top Speed OS Consumer App. The
@@ -1102,6 +1102,11 @@ function plApi(path,opts){
   return fetch(PL_API+path,opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; e.details=j.details; e.status=r.status; throw e; } return j; }); });
 }
 function plMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='plg-msg'+(isErr?' err':''); }
+/* First-touch ad attribution (fbclid / gclid / msclkid + UTM),
+   captured by /shared/attribution-capture.js — attached flat to
+   submission + listing posts so a Facebook click that ends in a
+   listing is credited end to end. No-op when nothing was captured. */
+function plAttachAttribution(payload){ try{ var at=(window.TSOSAttribution&&TSOSAttribution.get())||null; if(at){ Object.keys(at).forEach(function(k){ if(at[k]) payload[k]=at[k]; }); } }catch(e){} return payload; }
 function plMode(m){
   document.getElementById('plTabIn').className=(m==='in')?'on':'';
   document.getElementById('plTabUp').className=(m==='up')?'on':'';
@@ -1604,7 +1609,7 @@ function plbScanReview(){
   plbShowSummary(rows,function(done){
     var jobs=plbMedia.map(function(m){ return plbBlobToB64(m.blob).then(function(b64){ return {kind:m.kind,mime:m.mime,dataBase64:b64}; }); });
     Promise.all(jobs).then(function(media){
-      return plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify({lane:'SCAN_SEND',appliance:v.appliance,issue:v.issue,phone:v.phone,brand:v.brand||undefined,model:v.model||undefined,serial:v.serial||undefined,media:media})});
+      return plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify(plAttachAttribution({lane:'SCAN_SEND',appliance:v.appliance,issue:v.issue,phone:v.phone,brand:v.brand||undefined,model:v.model||undefined,serial:v.serial||undefined,media:media}))});
     }).then(function(j){ done(null,j); }).catch(function(e){ done(e); });
   },function(j){
     var d=j.data||{};
@@ -1634,7 +1639,7 @@ function plbLiveReview(){
   if(v.serial) rows.push(['Serial',v.serial]);
   rows.push(['How it works','This is a request — a Service Setter contacts you to start the live video session. Nothing rings until they respond.']);
   plbShowSummary(rows,function(done){
-    plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify({lane:'LIVE_VIDEO',appliance:v.appliance,issue:v.issue,phone:v.phone,model:v.model||undefined,serial:v.serial||undefined,preferredTime:v.preferredTime})})
+    plApi('/pepper-lists/submissions',{method:'POST',body:JSON.stringify(plAttachAttribution({lane:'LIVE_VIDEO',appliance:v.appliance,issue:v.issue,phone:v.phone,model:v.model||undefined,serial:v.serial||undefined,preferredTime:v.preferredTime}))})
       .then(function(j){ done(null,j); }).catch(function(e){ done(e); });
   },function(j){
     var d=j.data||{};
@@ -1772,16 +1777,64 @@ function plsConfirm(){
   plbMsg('plSellSummaryMsg','Posting your listing…');
   var mediaJob=plsPhotoBlob? plbBlobToB64(plsPhotoBlob).then(function(b64){ return [{kind:'photo',mime:(plsPhotoBlob.type||'image/jpeg').split(';')[0]||'image/jpeg',dataBase64:b64}]; }) : Promise.resolve([]);
   mediaJob.then(function(media){
-    return plApi('/pepper-lists/listings',{method:'POST',body:JSON.stringify({title:v.title,description:v.description||undefined,category:v.category,condition:v.condition,priceCents:v.priceCents,phone:v.phone,media:media})});
+    return plApi('/pepper-lists/listings',{method:'POST',body:JSON.stringify(plAttachAttribution({title:v.title,description:v.description||undefined,category:v.category,condition:v.condition,priceCents:v.priceCents,phone:v.phone,media:media}))});
   }).then(function(j){
     plsEl('plSellSummary').style.display='none';
     var d=j.data||{};
     var box=plsEl('plSellDone'); box.style.display='block';
     box.innerHTML='<b>Listing confirmed — it is with Pepper now.</b><br>Your reference is <b>'+plbEsc(d.reference||'')+'</b>. Pepper posts it to Facebook Marketplace from here; nothing was live before your confirm tap.';
+    if(d.reference){ PLX_REF=d.reference; box.innerHTML+=plxBlockHtml(d.reference); plxLoadStatus(); }
     box.scrollIntoView({behavior:'smooth',block:'nearest'});
   }).catch(function(e){
     plbMsg('plSellSummaryMsg',(e&&e.message)||'That did not post — check your connection and try again.',true);
   });
+}
+</script>
+<script>
+/* FACEBOOK — share + cross-post queue (Phase A, 2026-11-20). The
+   share button opens Facebook's own share dialog with the listing's
+   pepperlists.com URL (no API write — anyone can share). "Post to
+   Facebook" files a cross-post request: Pepper posts the listing
+   through Top Speed's connected Facebook account after the owner's
+   approval, and the status shown here is whatever the server says —
+   Queued, Posted (with the real Facebook link), or Couldn't post
+   (with the real reason). Nothing here posts to Facebook directly. */
+var PLX_REF=null;
+function plxBlockHtml(ref){
+  var view='https://pepperlists.com/listing/'+encodeURIComponent(ref);
+  var share='https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(view);
+  var h='<div style="margin-top:14px;border-top:1px solid rgba(183,227,60,.25);padding-top:12px">';
+  h+='<b>Facebook</b><br><span style="font-size:13.5px">Your listing has its own page — share it anywhere. Or ask Pepper to post it through Top Speed\u2019s connected Facebook account, after the owner\u2019s approval.</span>';
+  h+='<div class="plb-btnrow" style="margin-top:10px">';
+  h+='<button class="btn small" type="button" onclick="plxQueue(\'MARKETPLACE\')">Post to Facebook Marketplace</button>';
+  h+='<button class="btn small dark" type="button" onclick="plxQueue(\'PAGE\')">Post to Facebook Page</button>';
+  h+='<a class="btn small dark" href="'+share+'" target="_blank" rel="noopener">Share to Facebook</a>';
+  h+='</div><div id="plxStatus" style="margin-top:8px;font-size:13.5px;line-height:1.55"></div></div>';
+  return h;
+}
+function plxTargetLabel(t){ return t==='PAGE'?'Facebook Page':'Facebook Marketplace'; }
+function plxStatusLine(x){
+  if(x.status==='QUEUED') return '<b>'+plxTargetLabel(x.target)+':</b> Queued for posting';
+  if(x.status==='POSTED') return '<b>'+plxTargetLabel(x.target)+':</b> Posted — <a href="'+plbEsc(x.externalUrl||'#')+'" target="_blank" rel="noopener" style="color:var(--lime)">view on Facebook</a>';
+  if(x.status==='FAILED') return '<b>'+plxTargetLabel(x.target)+':</b> Couldn\u2019t post — '+plbEsc(x.error||'something went wrong');
+  return '';
+}
+function plxLoadStatus(){
+  var box=document.getElementById('plxStatus'); if(!box||!PLX_REF) return;
+  plApi('/pepper-lists/listings/'+encodeURIComponent(PLX_REF)+'/cross-posts').then(function(j){
+    var rows=(j.data&&j.data.crossPosts)||[];
+    box.innerHTML=rows.map(plxStatusLine).filter(Boolean).join('<br>');
+  }).catch(function(){ /* status is a courtesy read — the queue request itself reports errors */ });
+}
+function plxQueue(target){
+  if(!PLX_REF) return;
+  var box=document.getElementById('plxStatus');
+  plApi('/pepper-lists/listings/'+encodeURIComponent(PLX_REF)+'/cross-posts',{method:'POST',body:JSON.stringify({target:target})})
+    .then(function(){ plxLoadStatus(); })
+    .catch(function(e){
+      if(e&&e.status===409){ plxLoadStatus(); return; }
+      if(box) box.innerHTML='<span style="color:#ff9c9c">'+plbEsc((e&&e.message)||'Could not queue that — try again')+'</span>';
+    });
 }
 </script>
 <script>
@@ -2143,10 +2196,16 @@ function plchCard(ch){
   var h='<div class="plch-card" data-plch="'+key+'">';
   h+='<div class="plch-top">'+(PLCH_ICONS[key]||'')+'<h3>'+plchEsc(ch.label)+'</h3><span class="plch-chip '+st[1]+'">'+st[0]+'</span></div>';
   h+='<p>'+plchEsc(ch.blurb)+'</p>';
+  if(key==='FACEBOOK'&&!conn.platformManaged&&window.PL_PLATFORM_FB&&window.PL_PLATFORM_FB.connected){ h+='<div class="plch-steps">Top Speed\u2019s Facebook account is connected — you don\u2019t need your own to sell there: confirm a listing, tap <b>Post to Facebook</b> on it, and Pepper posts it for you after the owner\u2019s approval. Facebook connection for your own account is coming — for now, Top Speed posts for you.</div>'; }
   if(conn.externalAccountLabel){ h+='<p class="plch-acct">Account: <b>'+plchEsc(conn.externalAccountLabel)+'</b></p>'; }
   if(conn.status==='PENDING'){ h+='<div class="plch-steps">'+plchEsc(ch.nextSteps)+'</div>'; }
-  if(conn.status==='CONNECTED'){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">This channel is connected to your account.</div>'; }
-  if(conn.status!=='PENDING'&&conn.status!=='CONNECTED'){
+  if(conn.status==='CONNECTED'&&conn.platformManaged){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">Connected through Top Speed\u2019s Facebook account — <b>'+plchEsc(conn.platformAccountName||conn.externalAccountLabel||'')+'</b>, verified '+plchEsc(String(conn.platformVerifiedAt||'').slice(0,10))+'. Pepper posts your listings through this account after your approval — use Post to Facebook on a listing. Connecting your OWN Facebook account is coming with Facebook Login (Phase B); for now, Top Speed posts for you.</div>'; }
+  else if(conn.status==='CONNECTED'){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">This channel is connected to your account.</div>'; }
+  if(conn.platformManaged){
+    /* Platform-managed connection: presented read-only — there is no
+       seller-side row to disconnect; the connection is Top Speed's. */
+  }
+  else if(conn.status!=='PENDING'&&conn.status!=='CONNECTED'){
     h+='<label class="plch-lab">Your account on this channel<input type="text" maxlength="120" data-plch-label="'+key+'" placeholder="'+plchEsc(PLCH_PLACEHOLDERS[key]||'Your account name or ID')+'"></label>';
     h+='<div class="plch-btnrow"><button class="btn small" type="button" onclick="plchConnect(this,\''+key+'\')">Request connection</button></div>';
   } else {
@@ -2161,6 +2220,7 @@ function plchLoad(){
   var sell=document.getElementById('plchSell'), post=document.getElementById('plchPost'), dirs=document.getElementById('plchDirs');
   if(!sell||!post) return;
   plApi('/pepper-lists/channels').then(function(j){
+    window.PL_PLATFORM_FB=(j.data&&j.data.platformFacebook)||null;
     var chans=(j.data&&j.data.channels)||[];
     sell.innerHTML=''; post.innerHTML=''; if(dirs) dirs.innerHTML='';
     chans.forEach(function(ch){

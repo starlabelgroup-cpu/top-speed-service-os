@@ -1930,6 +1930,52 @@ model SellerChannelAudit {
   @@index([userId, createdAt])
 }
 
+// Pepper Lists — Facebook cross-post queue (2026-11-20, Phase A of
+// "Pepper Lists fully compatible with the Facebook platform"). A
+// seller asks for one of their confirmed listings (a PEPPER_LISTS_SELL
+// Connection record) to be posted to Facebook; the request lands here
+// as QUEUED and Pepper executes it through the owner's connected
+// Facebook account behind Ramone's per-listing approval — the same
+// manual Marketplace flow as always, now with a durable queue and a
+// truthful seller-facing status. There is NO official API for
+// personal-profile Marketplace posting and NO automated Facebook
+// write anywhere in the server: a row reaches POSTED only when staff
+// record the real outcome (with the real Facebook listing URL), or
+// FAILED with the real reason. connectionId / userId / outcomeById
+// are plain columns (the SubmissionMedia precedent) so the dual-mode
+// repo keeps identical shapes with and without a database.
+enum PepperListsCrossPostTarget {
+  MARKETPLACE
+  PAGE
+}
+
+enum PepperListsCrossPostStatus {
+  QUEUED
+  POSTED
+  FAILED
+}
+
+model PepperListsCrossPost {
+  id               String                     @id @default(uuid()) @db.Uuid
+  connectionId     String                     @db.Uuid
+  listingReference String
+  userId           String                     @db.Uuid
+  target           PepperListsCrossPostTarget
+  pageId           String?
+  status           PepperListsCrossPostStatus @default(QUEUED)
+  externalId       String?
+  externalUrl      String?
+  error            String?
+  outcomeById      String?                    @db.Uuid
+  postedAt         DateTime?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@index([connectionId, target, status])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
 // AdStream Providers (2026-11-18, Phase 1): the platform-level registry
 // of the external ad-serving providers Top Speed Ads can serve through
 // (Kevel, AdButler, Google Ad Manager, SpringServe by Magnite,

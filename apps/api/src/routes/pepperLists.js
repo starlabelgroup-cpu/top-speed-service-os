@@ -7,6 +7,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { STAFF_ROLES } from '../config/security.js';
 import { assertImageDataUrl, LISTING_CATEGORIES, LISTING_CONDITIONS, plateDraft, speedyDiagnose, speedyDraftListing, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
 import { notifySubmission } from '../services/notifications.js';
+import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 
 /**
  * Pepper Lists — Speedy Brain lanes (2026-11-16).
@@ -114,6 +115,12 @@ const submissionSchema = z.object({
   serial: z.string().trim().max(80).optional(),
   preferredTime: z.string().trim().max(80).optional(),
   media: z.array(mediaItemSchema).max(MEDIA_MAX_ITEMS).optional(),
+  // First-touch ad attribution (2026-11-20) — the same capture the
+  // booking forms carry (services/attribution.js); pepperlists.com
+  // loads shared/attribution-capture.js and attaches the stored
+  // fbclid / gclid / msclkid + UTM fields, so a Facebook click that
+  // ends in a submission or listing is credited end to end.
+  ...attributionFields,
 });
 
 function videoBytesOk(mime, head) {
@@ -222,6 +229,7 @@ router.post('/pepper-lists/submissions', authenticate, async (req, res) => {
     type,
     source: 'pepper-lists',
     message: lines.join('\n'),
+    attribution: normalizeAttribution(data),
   });
   if (media.length) {
     await saveSubmissionMedia(record.id, media);
@@ -263,6 +271,7 @@ const listingSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   email: z.string().email().max(200).optional(),
   media: z.array(mediaItemSchema).max(MEDIA_MAX_ITEMS).optional(),
+  ...attributionFields,
 });
 
 router.post('/pepper-lists/listings', authenticate, async (req, res) => {
@@ -311,6 +320,7 @@ router.post('/pepper-lists/listings', authenticate, async (req, res) => {
     type: 'PEPPER_LISTS_SELL',
     source: 'pepper-lists',
     message: lines.join('\n'),
+    attribution: normalizeAttribution(data),
   });
   if (media.length) {
     await saveSubmissionMedia(record.id, media);

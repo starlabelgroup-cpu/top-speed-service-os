@@ -2,7 +2,8 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { sellerChannelsRepo } from '../db/sellerChannelsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { STAFF_ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
+import { platformFacebookConnection } from '../services/facebookConnector.js';
 
 /**
  * Pepper Lists — Channel Connections (2026-11-17, Phase 1).
@@ -31,6 +32,14 @@ import { STAFF_ROLES } from '../config/security.js';
  *    ever set when a real completed connect flow exists (Phase 2,
  *    per channel). No simulated syncs, no placeholder connections,
  *    and Phase 1 stores no third-party tokens at all.
+ *  - Phase A (2026-11-20) adds ONE presentation exception, and it
+ *    writes nothing: for the platform OWNER's own account scope, the
+ *    FACEBOOK row presents the platform's real Facebook connection
+ *    (the owner's account, connected through the facebook_cli
+ *    connector and verified by Pepper — see
+ *    services/facebookConnector.js). Other sellers' rows are
+ *    untouched; their own-account Facebook connection remains this
+ *    request flow until seller-level OAuth exists (Phase B).
  *  - agentAccessGranted is the seller's explicit per-channel grant
  *    for the Muse agent (Pepper) to manage that channel for them —
  *    default OFF, revocable any time, and every change is written to
@@ -173,7 +182,43 @@ function channelOr404(req, res) {
 router.get('/pepper-lists/channels', authenticate, async (req, res, next) => {
   try {
     const rows = await sellerChannelsRepo.listForUser(req.user.id);
-    return res.json({ data: { channels: catalogWithConnections(rows) } });
+    const channels = catalogWithConnections(rows);
+    // Phase A (2026-11-20): the PLATFORM's Facebook connection is
+    // real — the owner's Facebook account is connected through the
+    // facebook_cli connector Pepper operates (verified attestation
+    // in services/facebookConnector.js; null when unverifiable, and
+    // then nothing here changes). It is reported to every seller as
+    // platformFacebook (it is the account their cross-posts ride
+    // on), but it only ever presents as a CONNECTED channel row for
+    // the platform OWNER's own account scope: every other seller's
+    // own Facebook channel stays on the Phase 1 request model until
+    // seller-level Facebook OAuth exists. The owner's stored row is
+    // never mutated by this — the override is presentation-only,
+    // driven by the verified platform record.
+    const platformFb = platformFacebookConnection();
+    const isOwner = Array.isArray(req.user.roles) && req.user.roles.includes(ROLES.COMPANY_OWNER);
+    if (platformFb && isOwner) {
+      const fb = channels.find((c) => c.key === 'FACEBOOK');
+      if (fb) {
+        fb.connection = {
+          ...fb.connection,
+          status: 'CONNECTED',
+          externalAccountLabel: platformFb.accountName,
+          connectedAt: new Date(platformFb.verifiedAt).toISOString(),
+          platformManaged: true,
+          platformAccountName: platformFb.accountName,
+          platformVerifiedAt: platformFb.verifiedAt,
+        };
+      }
+    }
+    return res.json({
+      data: {
+        channels,
+        platformFacebook: platformFb
+          ? { connected: true, accountName: platformFb.accountName, verifiedAt: platformFb.verifiedAt }
+          : { connected: false },
+      },
+    });
   } catch (error) {
     return next(error);
   }
