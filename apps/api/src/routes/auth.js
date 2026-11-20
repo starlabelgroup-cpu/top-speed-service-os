@@ -45,6 +45,7 @@ import {
   tempCredentialState,
 } from '../services/tempPasswords.js';
 import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
+import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import {
   INVALID_PHONE_MESSAGE,
@@ -544,6 +545,202 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
   }
 });
 
+// ---------------------------------------------------------------------------
+// Ad Specialist application (2026-11-19, Ramone's directive).
+//
+// The public door for Top Speed's own ad specialists — the people who
+// RUN the advertising (Google Search/Display/retargeting, Facebook
+// ads, SEO, and the in-house Flywheel system), a staff-class account
+// fully separate from the advertiser marketplace. POST /auth/register
+// keeps refusing the AD_SPECIALIST role (it is not self-serve); this
+// scoped endpoint is the one public path, and it creates the account
+// PENDING, never active:
+//
+// - the account is created with roles [AD_SPECIALIST], Speedy Verify
+//   required and NO access code, so it sits in the Master's approval
+//   queue (the Speedy Verify panel) and sign-in is refused with
+//   SPEEDY_VERIFY_NO_CODE until the Master activates it by issuing
+//   its code — the same pending mechanism as staff, business and
+//   provider accounts;
+// - the applicant sets NO password here. The stored hash is of a
+//   random secret nobody knows, so the account cannot be signed into
+//   with any password until the office issues a temporary password
+//   (Work Time Access) — the pipeline then runs temp → forced
+//   password change → Speedy Verify code → Layer 2, exactly like
+//   every office-activated account;
+// - Layer 2 starts on, and an employee number is minted, under the
+//   same rules as every workforce account;
+// - the application itself (the "why / experience" text) is filed as
+//   an AD_SPECIALIST_APPLICATION connection record — the office reads
+//   it in the Book OS Intake Records panel, the same place provider
+//   applications land. That type is not a lead type, so no booking
+//   is minted for it;
+// - the Intake Shield covers this door like every public intake:
+//   per-IP rate limit (the register family), the companyWebsite
+//   honeypot (a tripped honeypot gets the same 201 pending shape and
+//   persists NOTHING), and NANP phone validation.
+// ---------------------------------------------------------------------------
+const adSpecialistApplySchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  firstName: z.string().trim().min(1).max(80),
+  lastName: z.string().trim().min(1).max(80),
+  phone: z.string().trim().min(7).max(30),
+  message: z.string().trim().min(10, 'Tell us a little about your advertising experience').max(3000),
+  termsAcceptance: z.unknown().optional(),
+});
+
+router.post('/auth/ad-specialist/apply', intakeRateLimit('register'), async (req, res, next) => {
+  try {
+    const parsed = adSpecialistApplySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid application', details: parsed.error.flatten() });
+    }
+    // Intake shield: honeypot — same 201 pending shape a real
+    // application gets, but persist NOTHING and queue NO notification.
+    if (honeypotTripped(req.body)) {
+      const ghost = {
+        id: createId(),
+        companyId: PLATFORM_COMPANY_ID,
+        email: parsed.data.email,
+        firstName: parsed.data.firstName,
+        lastName: parsed.data.lastName,
+        phone: parsed.data.phone,
+        roles: [ROLES.AD_SPECIALIST],
+        active: true,
+        emailVerifiedAt: null,
+        signupSource: 'AD_SPECIALIST_APPLY',
+        signupOfferSlug: null,
+        signupAudience: null,
+        verifyRequired: true,
+        layer2Required: true,
+        mustChangePassword: false,
+        createdAt: new Date().toISOString(),
+      };
+      const terms = await termsStatusForUser(ghost.id);
+      return res.status(201).json({
+        user: publicUser(ghost),
+        emailVerification: emailVerificationState(ghost),
+        terms,
+        termsStatus: terms,
+        speedyVerify: {
+          status: 'PENDING',
+          message: 'Application received — your Ad Specialist account is pending. The office reviews every application; when the Master approves yours, the office sends your sign-in details (a temporary password and your Speedy Verify access code) directly.',
+        },
+        application: { reference: null },
+      });
+    }
+    // Intake shield: the phone must be a plausible NANP number.
+    const phoneCheck = validateNanpPhone(parsed.data.phone);
+    if (!phoneCheck.ok) {
+      return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+    }
+    // Legal gate, identical to public registration: no signed
+    // acceptance of both current legal documents, no account.
+    const validatedTerms = validateTermsAcceptance(parsed.data.termsAcceptance);
+    if (!validatedTerms.ok) {
+      return res.status(422).json({
+        error: validatedTerms.error,
+        code: 'TERMS_ACCEPTANCE_REQUIRED',
+        documents: LEGAL_DOCUMENTS,
+      });
+    }
+    const { email, firstName, lastName, phone, message } = parsed.data;
+    if (await usersRepo.findByEmail(PLATFORM_COMPANY_ID, email)) {
+      return res.status(409).json({ error: 'An account with this email already exists' });
+    }
+
+    const draft = {
+      id: createId(),
+      companyId: PLATFORM_COMPANY_ID,
+      email,
+      // No applicant-chosen password: the hash below is of a random
+      // secret that is never stored or sent anywhere, so NO password
+      // can sign this account in until the office issues a temporary
+      // password through Work Time Access (the holder then sets their
+      // own in the forced-change step of the sign-in pipeline).
+      passwordHash: await hashPassword(`pending-${createId()}-${createId()}`),
+      firstName,
+      lastName,
+      phone,
+      roles: [ROLES.AD_SPECIALIST],
+      active: true,
+      emailVerifiedAt: null,
+      signupSource: 'AD_SPECIALIST_APPLY',
+      signupOfferSlug: null,
+      signupAudience: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    // Pending by construction: Speedy Verify covered + required, no
+    // code issued — the Master's panel is the approval queue.
+    draft.verifyRequired = registrationStartsUnverified(draft, false);
+    draft.layer2Required = registrationLayer2Required(draft);
+
+    let user;
+    try {
+      user = await createUserWithTerms(draft, validatedTerms);
+    } catch (error) {
+      if (error?.code === 'P2002') {
+        return res.status(409).json({ error: 'An account with this email already exists' });
+      }
+      throw error;
+    }
+
+    // Employee number at issuance, guarded exactly like registration.
+    if (isEmployeeAccount(user)) {
+      try {
+        user = await assignEmployeeNumber(user);
+      } catch (error) {
+        console.error(JSON.stringify({ level: 'error', message: 'employee number assignment failed', error: String(error?.message || error) }));
+      }
+    }
+
+    // The application of record for the office (Book OS Intake
+    // Records). Guarded: a filing failure never loses the account.
+    let application = null;
+    try {
+      application = await createConnectionRecord({
+        name: `${firstName} ${lastName}`.trim(),
+        phone,
+        email,
+        type: 'AD_SPECIALIST_APPLICATION',
+        source: 'ad-specialist-page',
+        message,
+      });
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'ad specialist application record failed', error: String(error?.message || error) }));
+    }
+
+    // Same guarded side effects as registration: the office is
+    // alerted and the holder gets the soft email-verification link.
+    try {
+      notifyAccountCreated(user, 'AD_SPECIALIST_APPLY');
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'account-created notification failed', error: String(error?.message || error) }));
+    }
+    try {
+      await issueEmailVerification(user, 'AD_SPECIALIST_APPLY');
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'email verification issue failed', error: String(error?.message || error) }));
+    }
+
+    const terms = await termsStatusForUser(user.id);
+    return res.status(201).json({
+      user: publicUser(user),
+      emailVerification: emailVerificationState(user),
+      terms,
+      termsStatus: terms,
+      speedyVerify: {
+        status: 'PENDING',
+        message: 'Application received — your Ad Specialist account is pending. The office reviews every application; when the Master approves yours, the office sends your sign-in details (a temporary password and your Speedy Verify access code) directly.',
+      },
+      application: { reference: application?.reference ?? null },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
 router.post('/auth/login', async (req, res, next) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
@@ -792,6 +989,7 @@ const verifyEmailSchema = z.object({ token: z.string().trim().min(10).max(200) }
 
 function appPathForUser(user) {
   if (user.signupAudience) return appPathForAudience(user.signupAudience);
+  if ((user.roles || []).includes(ROLES.CONTENT_CREATOR)) return '/media-creator';
   if ((user.roles || []).some((role) => MARKETING_ROLES.includes(role))) return '/advertiser';
   return '/app';
 }

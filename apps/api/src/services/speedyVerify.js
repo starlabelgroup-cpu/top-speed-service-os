@@ -27,6 +27,11 @@ import { consumeEmailVerification, issueEmailVerification } from './emailVerific
  * the gate changed: per-account activation, Master exemption, the
  * 5-wrong-codes → 15-minute lock, and Layer 2 after the code step.
  *
+ * Ad Specialist accounts (2026-11-19, Ramone's directive) are covered
+ * the same way: never self-serve, so coverage is outright — an
+ * office-issued or application-created specialist starts unverified
+ * and cannot sign in until the Master issues their code.
+ *
  * Activation is PER ACCOUNT via User.verifyRequired (default false):
  * every account that existed at launch is grandfathered. Issuing an
  * account's first code turns its requirement on; new staff/business
@@ -92,6 +97,16 @@ export function isSpeedyVerifyCovered(user) {
   // accounts — a business's ADVERTISER account starts unverified and
   // waits for the Master's code exactly like a commercial / PM account.
   if (roles.includes(ROLES.ADVERTISER)) return true;
+  // Media OS Content Creator / Publisher accounts (2026-11-19): an
+  // external family created ONLY by the office (Work Time Access) or
+  // through the scoped creator application endpoint — POST
+  // /auth/register refuses the role for non-administrators and it is
+  // not in PUBLIC_SELF_SERVE_ROLES — so coverage here cannot flip a
+  // public sign-up door (the MARKETING_MANAGER caution below does not
+  // apply). A creator starts unverified, waits in the Master's panel,
+  // and signs in only after he issues their access code, exactly like
+  // a business account.
+  if (roles.includes(ROLES.CONTENT_CREATOR)) return true;
   // Phase 3 (2026-11-19, Ramone's order): provider / technician
   // accounts are covered — a flagged tech's sign-in stops at the code
   // step at both tech doors and at /portal, exactly like staff and
@@ -101,6 +116,16 @@ export function isSpeedyVerifyCovered(user) {
   // refuses them for anyone but an administrator — so coverage here
   // cannot flip a public sign-up door.
   if (roles.some((role) => PROVIDER_ACCOUNT_ROLES.includes(role))) return true;
+  // Ad Specialist (2026-11-19, Ramone's directive): AD_SPECIALIST is
+  // covered outright, on the same reasoning as the provider roles
+  // above — it is never self-serve (PUBLIC_SELF_SERVE_ROLES excludes
+  // it and POST /auth/register refuses it for anyone but an
+  // administrator), so coverage cannot flip a public sign-up door.
+  // Every specialist account is either office-issued in Work Time
+  // Access or created PENDING by the /ad-specialist application; both
+  // start unverified and wait in the Master's panel until he issues
+  // their code — issuing the code IS the activation.
+  if (roles.includes(ROLES.AD_SPECIALIST)) return true;
   // Flywheel AI Advertising (2026-11-17): MARKETING_MANAGER is
   // deliberately NOT added here — coverage would also flip self-serve
   // marketing signups to starts-unverified (the covered branch of

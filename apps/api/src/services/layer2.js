@@ -1,4 +1,5 @@
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
+import { ROLES } from '../config/security.js';
 import { createId, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { hashPassword, verifyPassword } from './passwords.js';
@@ -64,8 +65,26 @@ export const LAYER2 = {
   resendCooldownSeconds: 60,
 };
 
+/**
+ * Roles whose Layer 2 step is mandatory BY ROLE (2026-11-19,
+ * Ramone's order for Media OS Content Creator / Publisher accounts:
+ * 2-step authentication for all platforms and systems). For these
+ * accounts the per-account flag is not the authority — layer2Applies
+ * returns true whatever the flag says, and updateLayer2Settings
+ * refuses to switch it off. Every sign-in surface consumes
+ * layer2Applies (password login, the Google callback, the Speedy
+ * Verify exchange, challenge verification, the status view), so the
+ * rule holds platform-wide from this one enforcement point: there is
+ * no account state in which a creator signs in with password alone.
+ */
+export function layer2RoleMandatory(user) {
+  if (!user) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  return roles.includes(ROLES.CONTENT_CREATOR);
+}
+
 export function layer2Applies(user) {
-  return Boolean(user) && !isMasterAccount(user) && user.layer2Required === true;
+  return Boolean(user) && !isMasterAccount(user) && (user.layer2Required === true || layer2RoleMandatory(user));
 }
 
 /** New accounts start with Layer 2 on — every role except the Master tier. */
@@ -497,6 +516,7 @@ export function layer2StatusView(user) {
   return {
     required: layer2Applies(user),
     flagOn: user.layer2Required === true,
+    roleRequired: layer2RoleMandatory(user),
     master,
     exempt: master,
     channels: availableChannels(user),
@@ -512,6 +532,9 @@ export async function updateLayer2Settings(user, { required, phone, channel } = 
   if (typeof required === 'boolean') {
     if (required && isMasterAccount(user)) {
       fail(400, 'LAYER2_MASTER_EXEMPT', 'The Master account is exempt from Layer 2 by Rule Zero — it can never be switched on.');
+    }
+    if (!required && layer2RoleMandatory(user)) {
+      fail(400, 'LAYER2_ROLE_REQUIRED', '2-step sign-in is mandatory for Content Creator / Publisher accounts — it cannot be switched off.');
     }
     fields.layer2Required = required;
   }

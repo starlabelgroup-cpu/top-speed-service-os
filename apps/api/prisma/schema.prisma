@@ -23,6 +23,8 @@ enum Role {
   ADVERTISER
   MARKETING_MANAGER
   DEVELOPER
+  AD_SPECIALIST
+  CONTENT_CREATOR
 }
 
 enum CompanyType {
@@ -224,6 +226,8 @@ model User {
   speedyVerifyCode SpeedyVerifyCode?
 
   loginChallenges LoginChallenge[]
+
+  creatorContent MediaContent[] @relation("MediaContentOwner")
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -1514,10 +1518,20 @@ model MediaContent {
   tags           String[]           @default([])
   createdBy      String
   updatedBy      String
+  // Content Creator / Publisher accounts (2026-11-19): the owning
+  // creator account for items submitted through the Media OS creator
+  // workspace. Null = staff-owned (every pre-existing record and
+  // everything the admin console creates); a creator only ever sees
+  // and touches rows carrying their own id here.
+  ownerId        String?            @db.Uuid
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
+  owner User? @relation("MediaContentOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
   assets MediaAsset[]
+
+  @@index([ownerId])
 
   adCampaigns AdCampaign[]
 

@@ -28,12 +28,28 @@ import { emitReport } from '../services/managementReports.js';
  * ARCHIVED, with IN_REVIEW → DRAFT as the send-back. A direct
  * DRAFT → PUBLISHED jump is a 422 — nothing reaches the public
  * without human review, per the platform's Speedy governance.
+ *
+ * Creator workspace (2026-11-19, Ramone's order — CONTENT_CREATOR
+ * accounts, an external family):
+ *   GET/POST   /media-os/creator/content
+ *   GET/PATCH  /media-os/creator/content/:id
+ *   POST       /media-os/creator/content/:id/submit   (DRAFT → IN_REVIEW)
+ *   GET/POST   /media-os/creator/assets
+ * A creator sees and touches ONLY records whose ownerId is their own
+ * account id (every lookup is ownership-scoped; someone else's record
+ * is a 404, never a 403 that confirms it exists). Creating lands a
+ * DRAFT owned by the creator; editing and asset attachment are open
+ * only while the record is a DRAFT, so nothing under review can
+ * change underneath the reviewer; submitting moves DRAFT → IN_REVIEW
+ * and every later transition (approve, schedule, publish, send-back)
+ * stays with the admin flow above. Pre-existing and admin-created
+ * records carry ownerId null — staff-owned, invisible here.
  */
 const router = Router();
 const mediaOnly = [
   authenticate,
   requireCompany,
-  requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
+  requireRole(ROLES.MARKETING_MANAGER, ROLES.AD_SPECIALIST, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
 ];
 
 const CONTENT_TYPES = ['VIDEO', 'ARTICLE', 'SOCIAL_POST', 'LIVE', 'IMAGE'];
@@ -82,7 +98,11 @@ function publicContent(record) {
 }
 
 function adminContent(record) {
-  return { ...publicContent(record), assetCount: assetCountFor(record.id) };
+  return { ...publicContent(record), ownerId: record.ownerId || null, assetCount: assetCountFor(record.id) };
+}
+
+function creatorContent(record) {
+  return { ...publicContent(record), ownerId: record.ownerId || null, assetCount: assetCountFor(record.id) };
 }
 
 function publicAsset(record) {
@@ -182,6 +202,7 @@ router.post('/media-os/admin/content', ...mediaOnly, async (req, res) => {
     tags: parsed.data.tags || [],
     createdBy: actorOf(req),
     updatedBy: actorOf(req),
+    ownerId: null,
     createdAt: now,
     updatedAt: now,
   };
@@ -349,6 +370,174 @@ router.patch('/media-os/admin/assets/:id', ...mediaOnly, async (req, res) => {
   Object.assign(record, parsed.data);
   await persistMediaAsset(record);
   return res.json({ data: publicAsset(record) });
+});
+
+// ─── creator workspace (CONTENT_CREATOR accounts only) ─────────────
+// Per-route middleware, never a router-wide use(): this router is
+// mounted on the shared /api/v1 prefix (the 2026-11-17 auth-trap
+// rule). Ownership scoping is server-side on every handler below —
+// a record that is not the caller's own is a 404.
+const creatorOnly = [authenticate, requireRole(ROLES.CONTENT_CREATOR)];
+
+function findOwnContent(req) {
+  const record = findContent(req.params.id);
+  if (!record || record.ownerId !== req.user.id) return null;
+  return record;
+}
+
+router.get('/media-os/creator/content', ...creatorOnly, (req, res) => {
+  const status = String(req.query.status || '').trim().toUpperCase();
+  let items = store.mediaContent
+    .filter((c) => c.ownerId === req.user.id)
+    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+  const mine = store.mediaContent.filter((c) => c.ownerId === req.user.id);
+  const byStatus = Object.fromEntries(CONTENT_STATUSES.map((s) => [s, mine.filter((c) => c.status === s).length]));
+  if (status) items = items.filter((c) => c.status === status);
+  return res.json({ data: items.map(creatorContent), counts: { total: mine.length, byStatus } });
+});
+
+router.post('/media-os/creator/content', ...creatorOnly, async (req, res) => {
+  const parsed = contentCreateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid content', details: parsed.error.flatten() });
+  const slug = slugify(parsed.data.slug || parsed.data.title);
+  if (!slug) return res.status(400).json({ error: 'A title or slug that produces a URL slug is required' });
+  if (store.mediaContent.some((c) => c.slug === slug)) {
+    return res.status(409).json({ error: 'A content record already exists for that slug', slug });
+  }
+  const now = new Date().toISOString();
+  const record = {
+    id: createId(),
+    slug,
+    type: parsed.data.type,
+    division: parsed.data.division,
+    title: parsed.data.title,
+    description: parsed.data.description || null,
+    assetUrl: parsed.data.assetUrl || null,
+    thumbnailUrl: parsed.data.thumbnailUrl || null,
+    durationSec: parsed.data.durationSec ?? null,
+    transcript: parsed.data.transcript || null,
+    destinationUrl: parsed.data.destinationUrl || null,
+    status: 'DRAFT',
+    publishAt: null,
+    publishedAt: null,
+    tags: parsed.data.tags || [],
+    createdBy: actorOf(req),
+    updatedBy: actorOf(req),
+    ownerId: req.user.id,
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.mediaContent.push(record);
+  await persistMediaContent(record);
+  appendEvent('MEDIA_CONTENT_CREATED', {
+    source: 'media-os-creator',
+    actor: actorOf(req),
+    entityType: 'MEDIA_CONTENT',
+    entityId: record.id,
+    details: { slug, type: record.type, division: record.division },
+  });
+  return res.status(201).json({ data: creatorContent(record) });
+});
+
+router.get('/media-os/creator/content/:id', ...creatorOnly, (req, res) => {
+  const record = findOwnContent(req);
+  if (!record) return res.status(404).json({ error: 'Content not found' });
+  return res.json({ data: creatorContent(record) });
+});
+
+router.patch('/media-os/creator/content/:id', ...creatorOnly, async (req, res) => {
+  const record = findOwnContent(req);
+  if (!record) return res.status(404).json({ error: 'Content not found' });
+  if (record.status !== 'DRAFT') {
+    return res.status(422).json({
+      error: `This content is ${record.status.toLowerCase().replace('_', ' ')} and can no longer be edited — ask the Media OS team to send it back to draft if it needs changes.`,
+    });
+  }
+  if (req.body && 'slug' in req.body) {
+    return res.status(400).json({ error: 'Content slug is fixed — create a new record for a different slug' });
+  }
+  const parsed = contentPatchSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid content update', details: parsed.error.flatten() });
+  Object.assign(record, parsed.data, { updatedBy: actorOf(req), updatedAt: new Date().toISOString() });
+  await persistMediaContent(record);
+  return res.json({ data: creatorContent(record) });
+});
+
+router.post('/media-os/creator/content/:id/submit', ...creatorOnly, async (req, res) => {
+  const record = findOwnContent(req);
+  if (!record) return res.status(404).json({ error: 'Content not found' });
+  const allowed = TRANSITIONS[record.status] || [];
+  if (!allowed.includes('IN_REVIEW')) {
+    return res.status(422).json({
+      error: `Cannot submit content from ${record.status} — only a draft can be submitted for review`,
+      allowedTransitions: allowed,
+    });
+  }
+  record.status = 'IN_REVIEW';
+  record.updatedBy = actorOf(req);
+  record.updatedAt = new Date().toISOString();
+  await persistMediaContent(record);
+  appendEvent('MEDIA_CONTENT_IN_REVIEW', {
+    source: 'media-os-creator',
+    actor: actorOf(req),
+    entityType: 'MEDIA_CONTENT',
+    entityId: record.id,
+    details: { slug: record.slug },
+  });
+  return res.json({ data: creatorContent(record) });
+});
+
+router.get('/media-os/creator/assets', ...creatorOnly, (req, res) => {
+  const ownIds = new Set(store.mediaContent.filter((c) => c.ownerId === req.user.id).map((c) => c.id));
+  const contentId = String(req.query.contentId || '').trim();
+  // A specific parent was asked for: it must be the creator's own, or the
+  // answer is the same 404 as every other cross-owner lookup on this surface.
+  if (contentId && !ownIds.has(contentId)) {
+    return res.status(404).json({ error: 'Content not found' });
+  }
+  let items = store.mediaAssets
+    .filter((a) => a.contentId && ownIds.has(a.contentId))
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  if (contentId) items = items.filter((a) => a.contentId === contentId);
+  return res.json({ data: items.map(publicAsset) });
+});
+
+const creatorAssetCreateSchema = assetCreateSchema.extend({
+  contentId: z.string().uuid(),
+});
+
+router.post('/media-os/creator/assets', ...creatorOnly, async (req, res) => {
+  const parsed = creatorAssetCreateSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid asset', details: parsed.error.flatten() });
+  const parent = findContent(parsed.data.contentId);
+  if (!parent || parent.ownerId !== req.user.id) {
+    return res.status(404).json({ error: 'Content not found' });
+  }
+  if (parent.status !== 'DRAFT') {
+    return res.status(422).json({
+      error: `This content is ${parent.status.toLowerCase().replace('_', ' ')} and can no longer take new assets — ask the Media OS team to send it back to draft if it needs changes.`,
+    });
+  }
+  const record = {
+    id: createId(),
+    contentId: parsed.data.contentId,
+    kind: parsed.data.kind,
+    name: parsed.data.name,
+    url: parsed.data.url || null,
+    rightsStatus: parsed.data.rightsStatus || 'PENDING_REVIEW',
+    rightsNote: parsed.data.rightsNote || null,
+    createdAt: new Date().toISOString(),
+  };
+  store.mediaAssets.push(record);
+  await persistMediaAsset(record);
+  appendEvent('MEDIA_ASSET_CREATED', {
+    source: 'media-os-creator',
+    actor: actorOf(req),
+    entityType: 'MEDIA_ASSET',
+    entityId: record.id,
+    details: { name: record.name, kind: record.kind, rightsStatus: record.rightsStatus },
+  });
+  return res.status(201).json({ data: publicAsset(record) });
 });
 
 export default router;

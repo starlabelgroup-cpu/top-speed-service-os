@@ -296,11 +296,16 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
   /* Route by role — the portal's one routing table. */
   function routeFor(user){
     var roles=(user&&user.roles)||[];
+    /* Ad Specialists land on their own station — the Marketing OS
+       hub (Top Speed Local OS) — never the staff Navigator, which
+       their role does not open. */
+    if(roles.indexOf('AD_SPECIALIST')>=0) return '/marketing-os';
     var staff=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN','MARKETING_MANAGER'];
     for(var i=0;i<staff.length;i++) if(roles.indexOf(staff[i])>=0) return '/navigator';
     var prov=['PROVIDER_TECH','PROVIDER_OWNER','TECHNICIAN'];
     for(var j=0;j<prov.length;j++) if(roles.indexOf(prov[j])>=0) return '/tech';
     if(roles.indexOf('ADVERTISER')>=0) return '/advertiser';
+    if(roles.indexOf('CONTENT_CREATOR')>=0) return '/media-creator';
     return '/app';
   }
   function storeSession(j){ try{ if(window.TSOSVault&&j.user&&j.token) TSOSVault.add(j.user,j.token); }catch(e){} try{ localStorage.setItem('tsos_token',j.token); }catch(e){} }

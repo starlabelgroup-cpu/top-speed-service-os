@@ -309,7 +309,7 @@ function doVerify(){
    accounts are routed to their own doors. */
 var CP_STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 var CP_PROVIDER=['PROVIDER_OWNER','PROVIDER_TECH','TECHNICIAN'];
-var CP_MARKETING=['ADVERTISER','MARKETING_MANAGER','DEVELOPER'];
+var CP_MARKETING=['ADVERTISER','MARKETING_MANAGER','DEVELOPER','AD_SPECIALIST'];
 function cpHas(roles,list){ for(var i=0;i<list.length;i++){ if(roles.indexOf(list[i])>=0) return true; } return false; }
 function cpAccess(u){
   var roles=u.roles||[];

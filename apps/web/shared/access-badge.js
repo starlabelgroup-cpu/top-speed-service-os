@@ -36,16 +36,16 @@
     '/service-setters-dispatch': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/notifications': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/link-center': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/insights': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN', 'MARKETING_MANAGER'] },
-    '/ad-studio': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/insights': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN', 'MARKETING_MANAGER', 'AD_SPECIALIST'] },
+    '/ad-studio': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/manager': { label: 'MANAGER ONLY', roles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/finance': { label: 'MANAGER ONLY', roles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/media': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/media': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/chats': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/track-console': { label: 'STAFF ONLY', roles: ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/marketing-os/studio': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/marketing-os/seo': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] }
+    '/marketing-os/studio': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/marketing-os/seo': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] }
   };
 
   function entryFor(path) {

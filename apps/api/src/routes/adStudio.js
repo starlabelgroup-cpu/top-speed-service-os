@@ -49,7 +49,7 @@ const router = Router();
 const staffOnly = [
   authenticate,
   requireCompany,
-  requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
+  requireRole(ROLES.MARKETING_MANAGER, ROLES.AD_SPECIALIST, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN),
 ];
 const ownerOnly = [
   authenticate,

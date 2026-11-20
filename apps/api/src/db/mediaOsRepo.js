@@ -43,6 +43,7 @@ function toStoreContent(row) {
     tags: Array.isArray(row.tags) ? row.tags : [],
     createdBy: row.createdBy || null,
     updatedBy: row.updatedBy || null,
+    ownerId: row.ownerId || null,
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
   };
@@ -81,6 +82,7 @@ function seedStoreRecord(seed) {
     tags: Array.isArray(seed.tags) ? seed.tags : [],
     createdBy: 'media-os-seed',
     updatedBy: 'media-os-seed',
+    ownerId: null,
     createdAt: now,
     updatedAt: now,
   };
@@ -104,6 +106,7 @@ function seedDbRow(seed) {
     tags: Array.isArray(seed.tags) ? seed.tags : [],
     createdBy: 'media-os-seed',
     updatedBy: 'media-os-seed',
+    ownerId: null,
   };
 }
 
@@ -159,6 +162,7 @@ export async function persistMediaContent(record) {
       tags: Array.isArray(record.tags) ? record.tags : [],
       createdBy: record.createdBy || 'media-os',
       updatedBy: record.updatedBy || record.createdBy || 'media-os',
+      ownerId: record.ownerId || null,
       createdAt: new Date(record.createdAt),
       updatedAt: new Date(record.updatedAt || record.createdAt),
     };

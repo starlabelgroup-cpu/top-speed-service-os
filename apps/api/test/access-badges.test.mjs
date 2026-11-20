@@ -20,11 +20,14 @@
  *    — the Turbo Boss page gate; 2026-11-18, Ramone's order):
  *    finance/overview + management/reports (the primary data of
  *    ApplianceMan, Finance, Oversight and Manager). Dispatchers 403.
- *  - Marketing gate (MARKETING_MANAGER, COMPANY_ADMIN, COMPANY_OWNER,
- *    PLATFORM_ADMIN — no DISPATCHER): adStudio, mediaOs admin,
- *    marketingOs admin, marketingSeo, marketingGoogleAccounts (Ad
- *    Studio, Media, Marketing OS Studio/SEO/Google Accounts).
- *  - Insights gate: STAFF_ROLES + MARKETING_MANAGER (insights.js,
+ *  - Marketing gate (MARKETING_MANAGER, AD_SPECIALIST, COMPANY_ADMIN,
+ *    COMPANY_OWNER, PLATFORM_ADMIN — no DISPATCHER): adStudio, mediaOs
+ *    admin, marketingOs admin, marketingSeo, marketingGoogleAccounts
+ *    (Ad Studio, Media, Marketing OS Studio/SEO/Google Accounts).
+ *    AD_SPECIALIST joined the set 2026-11-19 (Top Speed's own
+ *    ad-specialist account class; its full gate matrix is drilled in
+ *    test/ad-specialist.test.mjs).
+ *  - Insights gate: STAFF_ROLES + MARKETING_MANAGER + AD_SPECIALIST (insights.js,
  *    scoped router.use('/insights', ...)).
  *  - Master gate (COMPANY_OWNER only): accessControl (scoped
  *    router.use('/access-control', ...)) + speedyVerify accounts —
@@ -34,7 +37,7 @@
  *    — MANAGER ONLY; its management-reports feed joined the same
  *    manager gate on 2026-11-18.
  *  - Academy: TRAINEE gate (STAFF_ROLES + PROVIDER_TECH +
- *    PROVIDER_OWNER + TECHNICIAN + MARKETING_MANAGER) fits none of
+ *    PROVIDER_OWNER + TECHNICIAN + MARKETING_MANAGER + AD_SPECIALIST) fits none of
  *    the three labels, so the Academy carries NO badge and keeps its
  *    own trainee gate screen. This suite proves the trainee gate
  *    (customer 403, provider 200) instead.
@@ -192,7 +195,7 @@ async function cleanupDb() {
 /* ── The audited badge table (mirrors the route gates above) ────── */
 const STAFF = ['DISPATCHER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
 const MANAGERS = ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
-const MKTG = ['MARKETING_MANAGER', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
+const MKTG = ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'];
 const EXPECTED_TABLE = {
   '/work-time-access': { label: 'OWNER ONLY', roles: ['COMPANY_OWNER'] },
   '/turbo-boss': { label: 'MANAGER ONLY', roles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
@@ -206,7 +209,7 @@ const EXPECTED_TABLE = {
   '/service-setters-dispatch': { label: 'STAFF ONLY', roles: STAFF },
   '/notifications': { label: 'STAFF ONLY', roles: STAFF },
   '/link-center': { label: 'STAFF ONLY', roles: STAFF },
-  '/insights': { label: 'STAFF ONLY', roles: [...STAFF, 'MARKETING_MANAGER'] },
+  '/insights': { label: 'STAFF ONLY', roles: [...STAFF, 'MARKETING_MANAGER', 'AD_SPECIALIST'] },
   '/ad-studio': { label: 'STAFF ONLY', roles: MKTG },
   '/manager': { label: 'MANAGER ONLY', roles: MANAGERS },
   '/finance': { label: 'MANAGER ONLY', roles: MANAGERS },
@@ -287,10 +290,10 @@ function staticChecks() {
   checkTrue('bookos gate is STAFF_ROLES', src('routes/bookos.js').includes('requireRole(...STAFF_ROLES)'));
   checkTrue('accessControl master gate scoped to its subpath', src('routes/accessControl.js').includes("router.use('/access-control', ...masterOnly)") && src('routes/accessControl.js').includes('requireRole(ROLES.COMPANY_OWNER)'));
   checkTrue('speedyVerify accounts master gate', src('routes/speedyVerify.js').includes('requireRole(ROLES.COMPANY_OWNER)'));
-  checkTrue('adStudio gate is the marketing set', src('routes/adStudio.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
-  checkTrue('mediaOs admin gate is the marketing set', src('routes/mediaOs.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
-  checkTrue('marketingOs admin gate is the marketing set', src('routes/marketingOs.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
-  checkTrue('insights gate is staff + MARKETING_MANAGER, scoped', src('routes/insights.js').includes("router.use('/insights', ...insightsStaff)") && src('routes/insights.js').includes('ROLES.MARKETING_MANAGER'));
+  checkTrue('adStudio gate is the marketing set', src('routes/adStudio.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.AD_SPECIALIST, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
+  checkTrue('mediaOs admin gate is the marketing set', src('routes/mediaOs.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.AD_SPECIALIST, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
+  checkTrue('marketingOs admin gate is the marketing set', src('routes/marketingOs.js').includes('requireRole(ROLES.MARKETING_MANAGER, ROLES.AD_SPECIALIST, ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN)'));
+  checkTrue('insights gate is staff + MARKETING_MANAGER + AD_SPECIALIST, scoped', src('routes/insights.js').includes("router.use('/insights', ...insightsStaff)") && src('routes/insights.js').includes('ROLES.MARKETING_MANAGER') && src('routes/insights.js').includes('ROLES.AD_SPECIALIST'));
   checkTrue('academy trainee gate includes providers', src('routes/academy.js').includes('ACADEMY_TRAINEE_ROLES') && src('routes/academy.js').includes('ROLES.PROVIDER_TECH'));
   checkTrue('bookings list scoped by ownership for non-staff', src('routes/bookings.js').includes('isStaff || bookingBelongsToUser(booking, req.user)'));
   checkTrue('management reports gate is MANAGER_ROLES', src('routes/management.js').includes('requireRole(...MANAGER_ROLES)'));

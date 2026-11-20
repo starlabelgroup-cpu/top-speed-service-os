@@ -48,6 +48,10 @@ const ACADEMY_TRAINEE_ROLES = [
   ROLES.PROVIDER_OWNER,
   ROLES.TECHNICIAN,
   ROLES.MARKETING_MANAGER,
+  // Ad Specialist (2026-11-19): trainee entry like every other
+  // workforce role — learning only; Media OS admin stays behind its
+  // own gate in routes/mediaOs.js.
+  ROLES.AD_SPECIALIST,
 ];
 
 const academyTrainee = [

@@ -136,6 +136,41 @@ export const ACCESS_SURFACES = [
     role: ROLES.MARKETING_MANAGER,
     signupAudience: null,
   },
+  {
+    // Ad Specialist (2026-11-19, Ramone's directive): Top Speed's own
+    // ad specialists — a staff-class account fully separate from the
+    // advertiser marketplace (advertisers and self-serve marketing
+    // roles are a different population). Office-issued here like every
+    // workforce account: Speedy Verify starts unverified, Layer 2 on,
+    // and — specialists are employees of the company, never outside
+    // clients — an employee number IS minted (the existing rule in
+    // services/employeeNumbers.js). Their stations are the marketing
+    // workstations only: Marketing OS / Top Speed Local OS, Ad Studio
+    // (Top Speed Ads), Page Studio, Media OS admin and Insights.
+    // Campaign approval stays owner-only. The public door is the
+    // /ad-specialist application, which creates the account PENDING
+    // for the Master's activation — never an instant account.
+    key: 'ad-specialist',
+    label: 'Ad Specialist',
+    detail: 'Top Speed ad specialist — runs Google, Facebook, SEO and Flywheel in-house ads from Marketing OS, Top Speed Ads (Ad Studio), Page Studio, Media OS and Insights. Marketing workstations only.',
+    role: ROLES.AD_SPECIALIST,
+    signupAudience: null,
+  },
+  {
+    // Media OS Content Creator / Publisher (2026-11-19, Ramone's
+    // order): an EXTERNAL account — the creator works in the Media OS
+    // creator workspace on their own content only, and publishing
+    // stays with the Media OS admin flow. Like the advertiser surface
+    // it starts Speedy-Verify unverified (creators are a covered role)
+    // and waits for the Master's code; Layer 2 is mandatory for the
+    // role itself, not just the new-account default. External
+    // accounts are not employees, so no TS- number is minted.
+    key: 'content-creator',
+    label: 'Content Creator / Publisher',
+    detail: 'Media OS creator workspace — external content creators and publishers who submit content for staff review and publishing.',
+    role: ROLES.CONTENT_CREATOR,
+    signupAudience: null,
+  },
 ];
 
 const SURFACE_KEYS = ACCESS_SURFACES.map((surface) => surface.key);

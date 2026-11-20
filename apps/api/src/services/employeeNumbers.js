@@ -25,6 +25,13 @@ export const EMPLOYEE_NUMBER_FIRST = 1001;
 export const EMPLOYEE_ROLES = [
   ...STAFF_ROLES.filter((role) => role !== ROLES.COMPANY_OWNER),
   ...PROVIDER_ACCOUNT_ROLES,
+  // Ad Specialist (2026-11-19): a Top-Speed-only workforce role —
+  // never self-serve, held only by the company's own ad specialists —
+  // so its accounts are numbered like every other employee account.
+  // MARKETING_MANAGER stays OUT on purpose: the same role is also
+  // held by outside agency clients through the self-serve marketing
+  // door, and client accounts are never numbered.
+  ROLES.AD_SPECIALIST,
 ];
 
 export function isEmployeeAccount(user) {

@@ -35,6 +35,7 @@ const insightsStaff = [
     ROLES.COMPANY_OWNER,
     ROLES.PLATFORM_ADMIN,
     ROLES.MARKETING_MANAGER,
+    ROLES.AD_SPECIALIST,
   ),
 ];
 router.use('/insights', ...insightsStaff);

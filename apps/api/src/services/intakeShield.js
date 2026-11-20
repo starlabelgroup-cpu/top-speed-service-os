@@ -50,6 +50,10 @@ export const INTAKE_RATE_LIMITS = {
   // hit the route quietly skips the send and still answers 200, the
   // same way services/passwordReset.js treats its own limits.
   forgotPassword: { limit: 5, windowMs: 60 * 60 * 1000 },
+  // Media OS creator applications (POST /creator/signup, 2026-11-19):
+  // same posture as register — a public account-creating door gets
+  // the hourly per-IP cap plus the honeypot + NANP phone checks.
+  creatorSignup: { limit: 10, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */

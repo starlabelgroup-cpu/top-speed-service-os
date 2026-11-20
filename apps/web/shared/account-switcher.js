@@ -54,6 +54,7 @@
     if (roles.indexOf('COMPANY_ADMIN') !== -1) return 'Manager';
     if (roles.indexOf('DISPATCHER') !== -1) return 'Service Setter';
     if (roles.indexOf('MARKETING_MANAGER') !== -1) return 'Flywheel Marketing Manager';
+    if (roles.indexOf('AD_SPECIALIST') !== -1) return 'Ad Specialist';
     if (roles.indexOf('ADVERTISER') !== -1) return 'Advertiser — Flywheel';
     if (roles.indexOf('PROVIDER_OWNER') !== -1) return 'Provider';
     if (roles.indexOf('PROVIDER_TECH') !== -1 || roles.indexOf('TECHNICIAN') !== -1) return 'Technician — Speedy Pro';

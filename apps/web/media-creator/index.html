@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Creator Workspace — Top Speed Media OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/media-creator">
+<meta name="description" content="The Media OS creator workspace: content creators and publishers manage their own content, submit it for review, and follow it to publication.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="/google-tag.js"></script>
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.55}
+a{color:inherit}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hright a{color:#cfe0f5;font-size:14px;font-weight:600;text-decoration:none;margin-left:10px}
+.callbtn{background:var(--red);color:#fff!important;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap;margin-left:10px}
+main{max-width:1060px;margin:0 auto;padding:26px 16px 56px}
+.eyebrow{color:var(--red);font-weight:800;letter-spacing:.14em;font-size:12px;text-transform:uppercase}
+h1{font-family:"Space Grotesk",Inter,sans-serif;font-size:clamp(28px,4.5vw,38px);line-height:1.15;margin:8px 0 10px}
+.lede{color:var(--mut);font-size:16px;max-width:720px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px;margin-top:18px}
+.card h2{font-family:"Space Grotesk",Inter,sans-serif;font-size:20px;margin-bottom:6px}
+.card .sub{color:var(--mut);font-size:14px;margin-bottom:14px}
+.counts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.count{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:14px}
+.count b{font-size:19px;display:block}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:13px;font-weight:600;color:#C7D5F2;margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--txt);padding:10px 11px;font-size:14.5px;font-family:inherit}
+textarea{min-height:74px;resize:vertical}
+.field{margin-bottom:12px}
+.btn{background:var(--red);color:#fff;font-weight:800;border:none;border-radius:999px;padding:11px 22px;font-size:14.5px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+.btn.small{padding:8px 16px;font-size:13.5px}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--txt)}
+.btn.blue{background:var(--blue)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.msg{margin-top:12px;font-size:14px;min-height:18px}
+.msg.err{color:#FF8A8A}
+.msg.ok{color:var(--grn)}
+.pill{display:inline-block;border-radius:999px;padding:3px 11px;font-size:12px;font-weight:800;letter-spacing:.02em;background:var(--panel2);border:1px solid var(--line);color:#C7D5F2}
+.pill.pub{background:#0d2b1a;border-color:#14532d;color:#7EE2A8}
+.pill.rev{background:#2b230d;border-color:#53450f;color:#F5D67B}
+.pill.draft{color:#C7D5F2}
+.pill.arch{opacity:.65}
+.item{border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:14px;background:var(--panel2)}
+.item h3{font-size:17.5px;margin:8px 0 4px}
+.item .meta{color:var(--mut);font-size:13px}
+.item .outcome{margin-top:8px;font-size:14px;color:#C7D5F2}
+.item .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.assets{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
+.assets .a{font-size:13.5px;color:var(--mut);padding:3px 0}
+.assets .a b{color:var(--txt)}
+.empty{color:var(--mut);font-size:15px;padding:16px 4px}
+.hidden{display:none}
+footer{border-top:1px solid var(--line);padding:24px 16px;text-align:center;color:var(--mut);font-size:13.5px}
+footer a{color:#cfe0f5;text-decoration:none;margin:0 8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none">
+      <img src="/flag.jpg" alt="Top Speed Appliance">
+      <span><span class="htitle">Top Speed Media OS</span><br><span class="hsub">Creator workspace</span></span>
+    </a>
+    <div class="hright">
+      <a href="/media">Published library</a>
+      <a href="/portal">Portal</a>
+      <a class="callbtn" href="tel:+18444607038">Call (844) 460-7038</a>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="eyebrow">Media OS · Creators &amp; Publishers</div>
+  <h1>Your creator workspace</h1>
+  <p class="lede">Everything here is yours alone: your drafts, your submissions, your published pieces. The Media OS team reviews and publishes — you always see exactly where each piece stands.</p>
+
+  <section class="card" id="authCard">
+    <h2 id="authTitle">Checking your session…</h2>
+    <p class="sub" id="authText">One moment while we open your workspace.</p>
+    <a class="btn hidden" id="authBtn" href="/portal">Go to the Service OS Portal</a>
+  </section>
+
+  <div id="workZone" class="hidden">
+    <div class="counts" id="counts"></div>
+
+    <section class="card">
+      <h2>New content</h2>
+      <p class="sub">Start a draft. Add the media link (video, article or image URL), then submit it for review when it is ready — drafts are private to you until you submit.</p>
+      <form id="ncForm">
+        <div class="grid">
+          <div class="field"><label for="ncType">Content type</label>
+            <select id="ncType"><option value="VIDEO">Video</option><option value="ARTICLE">Article</option><option value="SOCIAL_POST">Social post</option><option value="IMAGE">Image</option><option value="LIVE">Live</option></select></div>
+          <div class="field"><label for="ncDivision">Division</label>
+            <select id="ncDivision"><option value="VIDEOS">Videos</option><option value="PUBLISHING">Publishing</option><option value="NEWS">News</option><option value="SOCIAL">Social</option><option value="LIVE">Live</option></select></div>
+        </div>
+        <div class="field"><label for="ncTitle">Title</label><input id="ncTitle" type="text" maxlength="200"></div>
+        <div class="field"><label for="ncDesc">Description</label><textarea id="ncDesc" maxlength="4000"></textarea></div>
+        <div class="grid">
+          <div class="field"><label for="ncAsset">Media URL (the video / article / image link)</label><input id="ncAsset" type="url" maxlength="1000" placeholder="https://"></div>
+          <div class="field"><label for="ncThumb">Thumbnail URL (optional)</label><input id="ncThumb" type="url" maxlength="1000" placeholder="https://"></div>
+        </div>
+        <div class="grid">
+          <div class="field"><label for="ncDest">Destination URL (optional — where viewers go next)</label><input id="ncDest" type="url" maxlength="1000" placeholder="https://"></div>
+          <div class="field"><label for="ncDur">Duration in seconds (video/audio, optional)</label><input id="ncDur" type="number" min="0" max="86400"></div>
+        </div>
+        <div class="field"><label for="ncTags">Tags (comma separated, optional)</label><input id="ncTags" type="text" maxlength="300" placeholder="refrigerator, repair tips"></div>
+        <button class="btn" type="submit">Create draft</button>
+        <div class="msg" id="ncMsg" role="status"></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Your content</h2>
+      <p class="sub">Drafts can be edited and submitted. Once a piece is in review, it is locked so the review team sees exactly what you submitted — if it comes back to Draft, you can edit and resubmit.</p>
+      <div id="list"><div class="empty">Loading your content…</div></div>
+    </section>
+  </div>
+</main>
+<footer>
+  <a href="/">Platform Home</a><a href="/media">Media OS</a><a href="/creator-signup">Creator sign-up</a><a href="/portal">Portal</a><a href="/book">Book Service</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Top Speed Media Network · Part of Top Speed 360 — Powered by Speedy AI</div>
+</footer>
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function $(id){ return document.getElementById(id); }
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){
+  try { if (window.TSOSVault && typeof window.TSOSVault.token === 'function' && window.TSOSVault.token()) return window.TSOSVault.token(); } catch(e){}
+  try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; }
+}
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+var STATUS_LABEL = { DRAFT:'Draft', IN_REVIEW:'In review', APPROVED:'Approved', SCHEDULED:'Scheduled', PUBLISHED:'Published', ARCHIVED:'Archived' };
+var OUTCOME = {
+  DRAFT: 'Draft — only you can see it. Submit it for review when it is ready.',
+  IN_REVIEW: 'With the Media OS team for review. It is locked while they review it.',
+  APPROVED: 'Approved by the Media OS team — waiting to be scheduled or published.',
+  SCHEDULED: 'Scheduled — the Media OS team will publish it at the scheduled time.',
+  PUBLISHED: 'Live now in the Media OS library.',
+  ARCHIVED: 'Archived by the Media OS team — no longer live.'
+};
+function pill(s){
+  var cls = s === 'PUBLISHED' ? 'pub' : (s === 'IN_REVIEW' || s === 'SCHEDULED' || s === 'APPROVED') ? 'rev' : s === 'ARCHIVED' ? 'arch' : 'draft';
+  return '<span class="pill ' + cls + '">' + esc(STATUS_LABEL[s] || s) + '</span>';
+}
+function setMsg(id, text, ok){
+  var el = $(id);
+  if (!el) return;
+  el.textContent = text || '';
+  el.className = 'msg ' + (text ? (ok ? 'ok' : 'err') : '');
+}
+function showAuth(title, text, showBtn){
+  $('authTitle').textContent = title;
+  $('authText').textContent = text;
+  $('authBtn').classList.toggle('hidden', !showBtn);
+  $('authCard').classList.remove('hidden');
+  $('workZone').classList.add('hidden');
+}
+var myItems = [];
+function fmtDate(v){ if (!v) return ''; var d = new Date(v); return isNaN(d.getTime()) ? '' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
+
+function renderCounts(counts){
+  var by = (counts && counts.byStatus) || {};
+  var order = ['DRAFT','IN_REVIEW','APPROVED','SCHEDULED','PUBLISHED','ARCHIVED'];
+  $('counts').innerHTML = order.map(function(s){
+    return '<div class="count"><b>' + (by[s] || 0) + '</b>' + esc(STATUS_LABEL[s]) + '</div>';
+  }).join('');
+}
+
+function itemHtml(c){
+  var h = '<div class="item" data-id="' + esc(c.id) + '">';
+  h += '<div>' + pill(c.status) + ' <span class="pill">' + esc(c.division) + '</span> <span class="pill">' + esc(String(c.type).replace('_',' ')) + '</span></div>';
+  h += '<h3>' + esc(c.title) + '</h3>';
+  if (c.description) h += '<p class="meta">' + esc(c.description) + '</p>';
+  h += '<p class="meta">Updated ' + esc(fmtDate(c.updatedAt)) + (c.publishedAt ? ' · Published ' + esc(fmtDate(c.publishedAt)) : '') + (c.publishAt ? ' · Scheduled for ' + esc(fmtDate(c.publishAt)) : '') + '</p>';
+  h += '<p class="outcome">' + esc(OUTCOME[c.status] || '') + '</p>';
+  if (c.assetUrl) h += '<p class="meta">Media: <a href="' + esc(c.assetUrl) + '" target="_blank" rel="noopener" style="color:#9DB9EC">' + esc(c.assetUrl) + '</a></p>';
+  h += '<div class="assets" id="assets-' + esc(c.id) + '"><span class="meta">Loading assets…</span></div>';
+  if (c.status === 'DRAFT') {
+    h += '<div class="row"><button class="btn small blue" data-act="submit" data-id="' + esc(c.id) + '">Submit for review</button>' +
+      '<button class="btn small ghost" data-act="edit" data-id="' + esc(c.id) + '">Edit draft</button></div>';
+    h += '<div class="editbox hidden" id="edit-' + esc(c.id) + '"></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function loadAssets(id){
+  authFetch('/media-os/creator/assets?contentId=' + encodeURIComponent(id)).then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    var box = $('assets-' + id);
+    if (!box) return;
+    var items = (j && j.data) || [];
+    var item = myItems.filter(function(x){ return x.id === id; })[0];
+    var h = '<b style="font-size:13.5px">Assets (' + items.length + ')</b>';
+    if (items.length) {
+      h += items.map(function(a){
+        return '<div class="a"><b>' + esc(a.name) + '</b> · ' + esc(a.kind) + ' · rights: ' + esc(String(a.rightsStatus).replace('_',' ')) + (a.url ? ' · <a href="' + esc(a.url) + '" target="_blank" rel="noopener" style="color:#9DB9EC">open</a>' : '') + '</div>';
+      }).join('');
+    } else {
+      h += '<div class="a">No assets attached yet.</div>';
+    }
+    if (item && item.status === 'DRAFT') {
+      h += '<div class="row" style="margin-top:8px"><input id="an-' + esc(id) + '" type="text" placeholder="Asset name" style="flex:1;min-width:130px">' +
+        '<input id="ak-' + esc(id) + '" type="text" placeholder="Kind (VIDEO, IMAGE…)" style="width:130px">' +
+        '<input id="au-' + esc(id) + '" type="url" placeholder="Asset URL" style="flex:1;min-width:130px">' +
+        '<select id="ar-' + esc(id) + '" style="width:150px"><option value="OWNED">I own the rights</option><option value="LICENSED">Licensed</option><option value="PENDING_REVIEW">Rights pending</option></select>' +
+        '<button class="btn small" data-act="attach" data-id="' + esc(id) + '">Attach</button></div>';
+    }
+    box.innerHTML = h;
+  }).catch(function(){
+    var box = $('assets-' + id);
+    if (box) box.innerHTML = '<span class="meta">Assets could not be loaded right now.</span>';
+  });
+}
+
+function editBoxHtml(c){
+  var tags = (c.tags || []).join(', ');
+  return '<form data-editform="' + esc(c.id) + '" style="margin-top:14px">' +
+    '<div class="field"><label>Title</label><input name="title" type="text" maxlength="200" value="' + esc(c.title) + '"></div>' +
+    '<div class="field"><label>Description</label><textarea name="description" maxlength="4000">' + esc(c.description || '') + '</textarea></div>' +
+    '<div class="grid"><div class="field"><label>Media URL</label><input name="assetUrl" type="url" maxlength="1000" value="' + esc(c.assetUrl || '') + '"></div>' +
+    '<div class="field"><label>Thumbnail URL</label><input name="thumbnailUrl" type="url" maxlength="1000" value="' + esc(c.thumbnailUrl || '') + '"></div></div>' +
+    '<div class="grid"><div class="field"><label>Destination URL</label><input name="destinationUrl" type="url" maxlength="1000" value="' + esc(c.destinationUrl || '') + '"></div>' +
+    '<div class="field"><label>Tags (comma separated)</label><input name="tags" type="text" maxlength="300" value="' + esc(tags) + '"></div></div>' +
+    '<button class="btn small" type="submit">Save changes</button> <span class="msg" id="emsg-' + esc(c.id) + '"></span></form>';
+}
+
+function loadContent(){
+  authFetch('/media-os/creator/content').then(function(r){
+    if (r.status === 401) { showAuth('Your session has ended', 'Sign in again through the Service OS Portal — creator sign-in always includes your access code and a 2-step code.', true); return null; }
+    if (r.status === 403) { showAuth('Creator accounts only', 'This workspace belongs to Top Speed Media OS Content Creator / Publisher accounts. If your application is still pending, the office activates it with your access code first. If you believe this is your account, call (844) 460-7038.', true); return null; }
+    return r.ok ? r.json() : null;
+  }).then(function(j){
+    if (!j) return;
+    $('authCard').classList.add('hidden');
+    $('workZone').classList.remove('hidden');
+    myItems = j.data || [];
+    renderCounts(j.counts);
+    if (!myItems.length) {
+      $('list').innerHTML = '<div class="empty">Nothing yet — create your first draft above. It stays private to you until you submit it for review.</div>';
+      return;
+    }
+    $('list').innerHTML = myItems.map(itemHtml).join('');
+    myItems.forEach(function(c){ loadAssets(c.id); });
+  }).catch(function(){
+    showAuth('Could not load your workspace', 'The workspace could not be reached just now — please try again in a moment.', true);
+  });
+}
+
+$('list') && $('list').addEventListener('click', function(ev){
+  var btn = ev.target.closest('[data-act]');
+  if (!btn) return;
+  var id = btn.getAttribute('data-id');
+  var act = btn.getAttribute('data-act');
+  var item = myItems.filter(function(x){ return x.id === id; })[0];
+  if (act === 'submit') {
+    btn.disabled = true;
+    authFetch('/media-os/creator/content/' + encodeURIComponent(id) + '/submit', { method: 'POST', body: '{}' }).then(function(r){
+      return r.json().then(function(j){ return { status: r.status, j: j }; });
+    }).then(function(x){
+      if (x.status === 200) { loadContent(); return; }
+      alert((x.j && x.j.error) || 'That submission did not go through.');
+      btn.disabled = false;
+    }).catch(function(){ alert('That submission did not go through — please try again.'); btn.disabled = false; });
+  }
+  if (act === 'edit') {
+    var box = $('edit-' + id);
+    if (!box || !item) return;
+    if (box.classList.contains('hidden')) { box.innerHTML = editBoxHtml(item); box.classList.remove('hidden'); }
+    else { box.classList.add('hidden'); box.innerHTML = ''; }
+  }
+  if (act === 'attach') {
+    var name = $('an-' + id).value.trim(), kind = $('ak-' + id).value.trim(), url = $('au-' + id).value.trim(), rights = $('ar-' + id).value;
+    if (!name || !kind) { alert('Give the asset a name and a kind first.'); return; }
+    btn.disabled = true;
+    authFetch('/media-os/creator/assets', { method: 'POST', body: JSON.stringify({ contentId: id, kind: kind, name: name, url: url || null, rightsStatus: rights }) })
+      .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+      .then(function(x){
+        if (x.status === 201) { loadAssets(id); return; }
+        alert((x.j && x.j.error) || 'That asset did not attach.');
+        btn.disabled = false;
+      }).catch(function(){ alert('That asset did not attach — please try again.'); btn.disabled = false; });
+  }
+});
+
+document.addEventListener('submit', function(ev){
+  var form = ev.target.closest('[data-editform]');
+  if (!form) return;
+  ev.preventDefault();
+  var id = form.getAttribute('data-editform');
+  function fv(name){ var el = form.querySelector('[name="' + name + '"]'); return el ? el.value : ''; }
+  var tags = fv('tags').split(',').map(function(t){ return t.trim(); }).filter(function(t){ return t.length > 0; });
+  var body = {
+    title: fv('title').trim(),
+    description: fv('description').trim() || null,
+    assetUrl: fv('assetUrl').trim() || null,
+    thumbnailUrl: fv('thumbnailUrl').trim() || null,
+    destinationUrl: fv('destinationUrl').trim() || null,
+    tags: tags
+  };
+  authFetch('/media-os/creator/content/' + encodeURIComponent(id), { method: 'PATCH', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(x){
+      if (x.status === 200) { loadContent(); return; }
+      setMsg('emsg-' + id, (x.j && x.j.error) || 'Those changes did not save.');
+    }).catch(function(){ setMsg('emsg-' + id, 'Those changes did not save — please try again.'); });
+});
+
+$('ncForm').addEventListener('submit', function(e){
+  e.preventDefault();
+  var title = $('ncTitle').value.trim();
+  if (title.length < 3) return setMsg('ncMsg', 'Give your content a title (at least 3 characters).');
+  var dur = $('ncDur').value === '' ? null : Number($('ncDur').value);
+  var tags = $('ncTags').value.split(',').map(function(t){ return t.trim(); }).filter(function(t){ return t.length > 0; });
+  var body = {
+    type: $('ncType').value, division: $('ncDivision').value, title: title,
+    description: $('ncDesc').value.trim() || null,
+    assetUrl: $('ncAsset').value.trim() || null,
+    thumbnailUrl: $('ncThumb').value.trim() || null,
+    destinationUrl: $('ncDest').value.trim() || null,
+    durationSec: dur, tags: tags
+  };
+  authFetch('/media-os/creator/content', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(x){
+      if (x.status === 201) {
+        setMsg('ncMsg', 'Draft created — find it in your list below.', true);
+        $('ncForm').reset();
+        loadContent();
+        return;
+      }
+      setMsg('ncMsg', (x.j && x.j.error) || 'That draft was not created.');
+    }).catch(function(){ setMsg('ncMsg', 'That draft was not created — please try again.'); });
+});
+
+if (!tok()) {
+  showAuth('Sign in to open your workspace', 'Creator accounts sign in through the Service OS Portal — password, Speedy Verify access code, and a 2-step code. New here? Apply for a creator account first.', true);
+  $('authBtn').textContent = 'Go to the Service OS Portal';
+} else {
+  loadContent();
+}
+</script>
+<script src="/shared/session-vault.js" defer></script>
+<script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

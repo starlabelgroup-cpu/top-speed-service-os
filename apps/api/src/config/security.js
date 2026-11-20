@@ -23,7 +23,28 @@ export const ROLES = {
   ADVERTISER: 'ADVERTISER',
   MARKETING_MANAGER: 'MARKETING_MANAGER',
   DEVELOPER: 'DEVELOPER',
+  AD_SPECIALIST: 'AD_SPECIALIST',
+  CONTENT_CREATOR: 'CONTENT_CREATOR',
 };
+
+/**
+ * Media OS Content Creator / Publisher accounts (2026-11-19, Ramone's
+ * order): an EXTERNAL account family like advertisers and business/PM
+ * accounts — never staff. A creator works only inside the Media OS
+ * creator workspace (routes/mediaOs.js /media-os/creator/*), on their
+ * OWN content items; publishing stays with the Media OS admin flow.
+ * Two standing security rules ride on the role itself, not on
+ * per-account toggles: Speedy Verify coverage (the account starts
+ * unverified and waits for the Master's code — services/
+ * speedyVerify.js) and MANDATORY Layer 2 at every sign-in (services/
+ * layer2.js layer2Applies — the per-account switch cannot turn it
+ * off for this role). The role is NOT self-serve: POST /auth/register
+ * refuses it like every staff/provider role; accounts are created by
+ * the office (Work Time Access) or through the scoped creator
+ * application endpoint (routes/creatorSignup.js), which lands the
+ * account PENDING until the Master activates it.
+ */
+export const CREATOR_ROLES = [ROLES.CONTENT_CREATOR];
 
 /**
  * Marketing-platform roles (Advertiser Console, added 2026-11-10): the
@@ -58,3 +79,25 @@ export const STAFF_ROLES = [ROLES.DISPATCHER, ROLES.COMPANY_ADMIN, ROLES.COMPANY
  * in the set, so the Master is never locked out.
  */
 export const MANAGER_ROLES = [ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN];
+
+/**
+ * Ad Specialist (2026-11-19, Ramone's directive): the staff-class
+ * account for Top Speed's own ad specialists — the people who RUN the
+ * advertising (Google Search/Display/retargeting, Facebook ads, SEO,
+ * and the in-house Flywheel system) from the marketing workstations:
+ * Marketing OS / Top Speed Local OS, Ad Studio (Top Speed Ads),
+ * Page Studio, Media OS admin and Insights.
+ *
+ * Deliberately in NONE of the sets above:
+ * - NOT in MARKETING_ROLES / PUBLIC_SELF_SERVE_ROLES — those are the
+ *   advertiser marketplace's self-serve accounts; a specialist is
+ *   never self-registered (POST /auth/register refuses the role; the
+ *   doors are Work Time Access and the pending /ad-specialist apply).
+ * - NOT in STAFF_ROLES — that set opens Book OS, CRM, Dispatch, the
+ *   Pepper console and every operations console. Specialists are
+ *   admitted to the marketing workstations by naming AD_SPECIALIST in
+ *   those routes' existing marketing gate lists, and nowhere else.
+ * - NOT in MANAGER_ROLES — no ApplianceMan, Finance, Oversight,
+ *   Turbo Boss or Manager.
+ * Campaign approval stays owner-only, exactly as before.
+ */
