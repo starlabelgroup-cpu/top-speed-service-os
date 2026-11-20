@@ -717,7 +717,7 @@ document.getElementById('draftBtn').addEventListener('click', function(){
   var btn = this;
   var custom = document.getElementById('bDestCustom').value.trim();
   var body = {
-    name: document.getElementById('bName').value.trim(),
+    name: document.getElementById('bName').value.trim() || undefined,
     businessLine: document.getElementById('bLine').value,
     placement: document.getElementById('bPlacement').value,
     destinationUrl: custom || document.getElementById('bDest').value,

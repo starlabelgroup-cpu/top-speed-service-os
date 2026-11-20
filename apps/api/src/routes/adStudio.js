@@ -537,7 +537,18 @@ const draftCopySchema = z.object({
 });
 
 router.post('/ad-studio/draft-copy', ...staffOnly, async (req, res) => {
-  const parsed = draftCopySchema.safeParse(req.body);
+  // The builder sends its raw field values, so a campaign name or
+  // objective the user left blank arrives as an empty string, not an
+  // absent field. Both are optional in this schema — the draft is
+  // auto-named from the topic below — so a blank string must count
+  // as "not given"; otherwise it fails min(3) and the click dies
+  // with a bare "Invalid draft request" on a legitimate draft
+  // (Ramone incident, 2026-11-20: creative picked, name left blank).
+  const body = { ...(req.body || {}) };
+  for (const key of ['name', 'topic']) {
+    if (typeof body[key] === 'string' && body[key].trim() === '') delete body[key];
+  }
+  const parsed = draftCopySchema.safeParse(body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid draft request', details: parsed.error.flatten() });
   const placement = parsed.data.placement || 'BANNER';
   // The topic is what Speedy drafts about: the builder's objective
