@@ -171,6 +171,8 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <a class="cc-nav-link" href="#sec-master"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h8M19 7h0M5 12h2M13 12h6M5 17h10M21 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg><span>Master controls</span></a>
         <a class="cc-nav-link" href="#sec-verify"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg><span>Speedy Verify</span></a>
         <a class="cc-nav-link" href="#sec-tracking"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M9.5 21h11"/></svg><span>Tracking Numbers</span></a>
+        <a class="cc-nav-link" href="#sec-care"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 2.6v5.2c0 5-3 8.4-7 10.2-4-1.8-7-5.2-7-10.2V5.6z"/><path d="M8.8 11.6l2.2 2.2 4.2-4.6"/></svg><span>Care Plans</span></a>
+        <a class="cc-nav-link" href="#sec-agreements"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h9L19 7.5v13H6z"/><path d="M14.5 3.5v4.5H19M9 12h6M9 15.5h6"/></svg><span>Agreements &amp; Quotes</span></a>
         <a class="cc-nav-link" href="#sec-crm-links"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>CRM Connections</span></a>
         <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span>Settings</span></a>
       </div>
@@ -304,6 +306,62 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
             <label class="small">Surface<br><select id="tnNewSurface"></select></label>
             <label class="small"><input id="tnNewShared" type="checkbox"> Shared</label>
             <button type="button" class="iconbtn" data-tn="register">Register</button>
+          </div>
+        </div>
+      </div></div>
+
+      <h2 class="sec" id="sec-care">Appliance Care Plan — membership pricing &amp; members</h2>
+      <div class="grid"><div class="card wide">
+        <p class="small mut" style="margin-top:0">The customer membership: an annual appliance check-up plus priority booking, billed yearly through Stripe. <b>The price is set here, by the owner — nowhere else.</b> Until a price is set, customers see the plan but cannot check out (the API refuses an unpriced checkout before Stripe is ever called). A member's bookings are flagged <b>priority</b> in the setter queue automatically. Setting a price is owner-only; managers can view members and grant or end office-granted memberships.</p>
+        <div id="cpPanel"><span class="mut small"><span class="spin"></span> Loading care plans…</span></div>
+        <div id="cpMsg"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:14px;padding-top:12px">
+          <p style="margin:0 0 8px"><b>Grant a membership (office)</b> <span class="small mut">— for comps and office-arranged plans. Needs the customer's account user ID (from their CRM record).</span></p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <label class="small">Customer user ID<br><input id="cpGrantUser" type="text" placeholder="user id" style="min-width:260px"></label>
+            <label class="small">Plan<br><select id="cpGrantPlan"></select></label>
+            <button type="button" class="iconbtn" data-cp="grant">Grant membership</button>
+          </div>
+        </div>
+        <div id="cpSubs" style="margin-top:14px"></div>
+      </div></div>
+
+      <h2 class="sec" id="sec-agreements">Commercial — Maintenance Agreements &amp; Quotes</h2>
+      <div class="grid"><div class="card wide">
+        <p class="small mut" style="margin-top:0"><b>Maintenance agreements</b> schedule preventive visits for a commercial account: when a visit comes due, the system creates the standard commercial work order in the setter pipeline (reading this panel also runs the check). Agreement terms are whatever the office records per client below — nothing is pre-filled or invented. <b>Quotes</b> are structured, office-priced, and approved by the customer through a one-time link; approval converts the quote into a work order with the exact same line items and total. Commercial work is priced by written quote only.</p>
+        <div id="agPanel"><span class="mut small"><span class="spin"></span> Loading agreements…</span></div>
+        <div id="agMsg"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:14px;padding-top:12px">
+          <p style="margin:0 0 8px"><b>New maintenance agreement</b></p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <label class="small">Account ID<br><input id="agNewAccount" type="text" placeholder="commercial account id" style="min-width:230px"></label>
+            <label class="small">Facility ID (optional if one)<br><input id="agNewFacility" type="text" placeholder="facility id" style="min-width:200px"></label>
+            <label class="small">Cadence<br><select id="agNewCadence"><option value="MONTHLY">Monthly</option><option value="QUARTERLY" selected>Quarterly</option><option value="SEMIANNUAL">Every 6 months</option><option value="ANNUAL">Annual</option></select></label>
+            <label class="small">First visit<br><input id="agNewFirst" type="date"></label>
+            <button type="button" class="iconbtn" data-ag="create">Create agreement</button>
+            <button type="button" class="iconbtn" data-ag="generate">Generate due visits now</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+            <label class="small" style="flex:1;min-width:200px">Scope notes<br><input id="agNewScope" type="text" style="width:100%"></label>
+            <label class="small" style="flex:1;min-width:200px">Terms (office record)<br><input id="agNewTerms" type="text" style="width:100%"></label>
+            <label class="small" style="flex:1;min-width:200px">Billing notes<br><input id="agNewBilling" type="text" style="width:100%"></label>
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:14px;padding-top:12px">
+          <p style="margin:0 0 8px"><b>Commercial quotes</b></p>
+          <div id="qtPanel"><span class="mut small"><span class="spin"></span> Loading quotes…</span></div>
+          <div id="qtMsg"></div>
+          <div style="margin-top:12px">
+            <p style="margin:0 0 8px"><b>New quote</b> <span class="small mut">— one line item per line: Description | Quantity | Unit price in dollars. The total is computed by the server from these lines.</span></p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+              <label class="small">Account ID<br><input id="qtNewAccount" type="text" placeholder="commercial account id" style="min-width:230px"></label>
+              <label class="small">Facility ID<br><input id="qtNewFacility" type="text" placeholder="facility id" style="min-width:200px"></label>
+              <label class="small">Title<br><input id="qtNewTitle" type="text" placeholder="e.g. Walk-in cooler compressor replacement" style="min-width:260px"></label>
+              <label class="small">Valid until<br><input id="qtNewValid" type="date"></label>
+            </div>
+            <label class="small" style="display:block;margin-top:8px">Line items<br><textarea id="qtNewItems" rows="3" style="width:100%" placeholder="Compressor, installed | 1 | 1450.00&#10;Refrigerant recharge | 1 | 220.00"></textarea></label>
+            <label class="small" style="display:block;margin-top:8px">Terms (shown to the customer)<br><input id="qtNewTerms" type="text" style="width:100%"></label>
+            <p style="margin:10px 0 0"><button type="button" class="iconbtn" data-ag="qcreate">Create quote</button></p>
           </div>
         </div>
       </div></div>
@@ -1115,6 +1173,254 @@ document.addEventListener('click', function(ev){
 });
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ ciLoad(0); });
 else ciLoad(0);
+</script>
+<script>
+/* Care Plans + Commercial Agreements & Quotes panels (2026-11-20,
+   B4/B7/B8). Same idiom as the tracking panel: real endpoints only,
+   honest states, nothing invented. */
+function cpMoney(c){ var v = Number(c || 0) / 100; return '$' + (v % 1 === 0 ? String(v) : v.toFixed(2)); }
+function cpMsg(text, bad){
+  var box = document.getElementById('cpMsg');
+  if (box) box.innerHTML = text ? '<p class="small" style="margin:10px 0 0;color:' + (bad ? '#e65766' : '#309d7f') + '">' + esc(text) + '</p>' : '';
+}
+function cpSend(method, path, body){
+  return fetch(API + path, { method: method, headers: hdr(), body: body ? JSON.stringify(body) : undefined })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+    .catch(function(){ return { ok: false, status: 0, j: null }; });
+}
+var cpPlans = [];
+function cpRender(d){
+  var el = document.getElementById('cpPanel');
+  if (!el) return;
+  cpPlans = (d && d.plans) || [];
+  var grace = (d && d.settings && d.settings.graceDays) || 7;
+  if (!cpPlans.length){ el.innerHTML = '<p class="small mut">No care plans are defined yet.</p>'; return; }
+  var html = '';
+  cpPlans.forEach(function(p){
+    var price = p.annualPriceCents == null ? '<span class="pill warn">PRICE NOT SET</span> <span class="small mut">customers cannot check out</span>' : '<b>' + esc(cpMoney(p.annualPriceCents)) + ' / year</b>' + (p.stripePriceId ? ' <span class="small mut">synced to Stripe</span>' : '');
+    html += '<div style="padding:10px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + esc(p.name) + '</b> · ' + price + '</div>' +
+      '<div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:8px">' +
+      '<label class="small"><input type="checkbox" data-cpfeat="annualCheckup" data-key="' + esc(p.key) + '"' + (p.features && p.features.annualCheckup ? ' checked' : '') + '> Annual check-up</label>' +
+      '<label class="small"><input type="checkbox" data-cpfeat="priorityBooking" data-key="' + esc(p.key) + '"' + (p.features && p.features.priorityBooking ? ' checked' : '') + '> Priority booking</label>' +
+      '<label class="small">Annual price $<br><input type="number" min="1" step="1" id="cpPrice-' + esc(p.key) + '" value="' + (p.annualPriceCents == null ? '' : (p.annualPriceCents / 100)) + '" style="width:110px"></label>' +
+      '<button type="button" class="iconbtn" data-cp="price" data-key="' + esc(p.key) + '">Set price (owner)</button>' +
+      '<button type="button" class="iconbtn" data-cp="unset" data-key="' + esc(p.key) + '">Unset price</button>' +
+      '</div></div>';
+  });
+  html += '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-top:10px">' +
+    '<label class="small">Past-due grace days<br><input type="number" min="0" max="30" id="cpGrace" value="' + esc(grace) + '" style="width:90px"></label>' +
+    '<button type="button" class="iconbtn" data-cp="grace">Save grace period</button>' +
+    '<button type="button" class="iconbtn" data-cp="refresh">Refresh</button></div>';
+  el.innerHTML = html;
+  var sel = document.getElementById('cpGrantPlan');
+  if (sel) sel.innerHTML = cpPlans.map(function(p){ return '<option value="' + esc(p.key) + '">' + esc(p.name) + '</option>'; }).join('');
+}
+function cpRenderSubs(subs){
+  var el = document.getElementById('cpSubs');
+  if (!el) return;
+  if (!subs.length){ el.innerHTML = '<p class="small mut">No care plan members yet.</p>'; return; }
+  var html = '<p style="margin:0 0 6px"><b>Members</b></p>';
+  subs.forEach(function(s){
+    var u = s.user || {};
+    var nm = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email || s.userId;
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:8px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + esc(nm) + '</b> <span class="pill">' + esc(s.effectiveStatus) + '</span>' +
+      '<br><span class="small mut">' + esc(u.email || '') + (s.currentPeriodEnd ? ' · period ends ' + esc(fmtWhen(s.currentPeriodEnd)) : '') + (s.checkupBookingRef ? ' · check-up booked ' + esc(s.checkupBookingRef) : '') + '</span></div>' +
+      (s.status === 'OFFICE_GRANTED' ? '<div style="white-space:nowrap"><button type="button" class="iconbtn" data-cp="revoke" data-user="' + esc(s.userId) + '">End grant</button></div>' : '') +
+      '</div>';
+  });
+  el.innerHTML = html;
+}
+function cpLoad(tries){
+  var el = document.getElementById('cpPanel');
+  if (!el) return;
+  get('/admin/care-plans', true).then(function(res){
+    if (res.ok){
+      cpRender(data(res.j));
+      get('/admin/care-plans/subscriptions', true).then(function(r2){ if (r2.ok) cpRenderSubs((data(r2.j) || {}).subscriptions || []); });
+      return;
+    }
+    if ((tries || 0) < 12){ setTimeout(function(){ cpLoad((tries || 0) + 1); }, 2500); return; }
+    el.innerHTML = '<p class="small mut">Care plans load for manager accounts once you are signed in.' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '</p>';
+    var subs = document.getElementById('cpSubs'); if (subs) subs.innerHTML = '';
+  });
+}
+document.addEventListener('click', function(ev){
+  var b = ev.target && ev.target.closest ? ev.target.closest('[data-cp]') : null;
+  if (!b) return;
+  var act = b.getAttribute('data-cp');
+  if (act === 'refresh'){ cpLoad(0); return; }
+  if (act === 'price' || act === 'unset'){
+    var key = b.getAttribute('data-key');
+    var cents = null;
+    if (act === 'price'){
+      var raw = document.getElementById('cpPrice-' + key);
+      var dollars = raw ? Number(raw.value) : NaN;
+      if (!dollars || dollars < 1){ cpMsg('Enter an annual price of at least $1 first.', true); return; }
+      cents = Math.round(dollars * 100);
+    }
+    cpSend('POST', '/admin/care-plans/' + encodeURIComponent(key) + '/price', { annualPriceCents: cents }).then(function(res){
+      if (res.ok){ cpMsg(cents == null ? 'Price unset — customers can no longer check out.' : 'Price set and synced to Stripe.'); cpLoad(0); }
+      else cpMsg((res.j && res.j.error) || 'Could not set the price — price changes are owner-only.', true);
+    });
+    return;
+  }
+  if (act === 'grace'){
+    var g = document.getElementById('cpGrace');
+    cpSend('PATCH', '/admin/care-plans/settings', { graceDays: Number(g ? g.value : 7) }).then(function(res){
+      if (res.ok){ cpMsg('Grace period saved.'); cpLoad(0); } else cpMsg((res.j && res.j.error) || 'Could not save.', true);
+    });
+    return;
+  }
+  if (act === 'grant'){
+    var uid = document.getElementById('cpGrantUser').value.trim();
+    var plan = document.getElementById('cpGrantPlan').value;
+    if (!uid){ cpMsg('Paste the customer user ID first.', true); return; }
+    cpSend('POST', '/admin/care-plans/subscriptions/' + encodeURIComponent(uid) + '/grant', { planKey: plan }).then(function(res){
+      if (res.ok){ cpMsg('Membership granted.'); cpLoad(0); } else cpMsg((res.j && res.j.error) || 'Could not grant — check the user ID.', true);
+    });
+    return;
+  }
+  if (act === 'revoke'){
+    cpSend('POST', '/admin/care-plans/subscriptions/' + encodeURIComponent(b.getAttribute('data-user')) + '/revoke', {}).then(function(res){
+      if (res.ok){ cpMsg('Office grant ended.'); cpLoad(0); } else cpMsg((res.j && res.j.error) || 'Could not end the grant.', true);
+    });
+    return;
+  }
+});
+document.addEventListener('change', function(ev){
+  var c = ev.target && ev.target.closest ? ev.target.closest('[data-cpfeat]') : null;
+  if (!c) return;
+  var key = c.getAttribute('data-key');
+  var feats = {};
+  document.querySelectorAll('[data-cpfeat][data-key="' + key + '"]').forEach(function(x){ feats[x.getAttribute('data-cpfeat')] = x.checked; });
+  cpSend('PATCH', '/admin/care-plans/' + encodeURIComponent(key), { features: feats }).then(function(res){
+    if (res.ok) cpMsg('Plan features saved.'); else { cpMsg((res.j && res.j.error) || 'Could not save features.', true); cpLoad(0); }
+  });
+});
+function agMsg(text, bad){
+  var box = document.getElementById('agMsg');
+  if (box) box.innerHTML = text ? '<p class="small" style="margin:10px 0 0;color:' + (bad ? '#e65766' : '#309d7f') + '">' + esc(text) + '</p>' : '';
+}
+function qtMsg(text, bad){
+  var box = document.getElementById('qtMsg');
+  if (box) box.innerHTML = text ? '<p class="small" style="margin:10px 0 0;color:' + (bad ? '#e65766' : '#309d7f') + '">' + esc(text) + '</p>' : '';
+}
+function agRender(rows){
+  var el = document.getElementById('agPanel');
+  if (!el) return;
+  if (!rows.length){ el.innerHTML = '<p class="small mut">No maintenance agreements yet — create the first one below.</p>'; return; }
+  var html = '';
+  rows.forEach(function(a){
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + esc(a.referenceCode) + '</b> <span class="pill">' + esc(a.status) + '</span> <span class="small">' + esc(a.cadence) + '</span>' +
+      '<br><span class="small">' + esc(a.accountName || '') + (a.facilityName ? ' · ' + esc(a.facilityName) : '') + '</span>' +
+      '<br><span class="small mut">Next visit ' + esc(fmtWhen(a.nextVisitAt)) + ' · visits generated ' + (a.visitsGenerated || 0) + (a.termsNotes ? ' · Terms: ' + esc(a.termsNotes) : '') + '</span></div>' +
+      '<div style="white-space:nowrap">' +
+      (a.status === 'ACTIVE' ? '<button type="button" class="iconbtn" data-ag="pause" data-id="' + esc(a.id) + '">Pause</button> ' : '') +
+      (a.status === 'PAUSED' ? '<button type="button" class="iconbtn" data-ag="resume" data-id="' + esc(a.id) + '">Resume</button> ' : '') +
+      (a.status !== 'ENDED' ? '<button type="button" class="iconbtn" data-ag="end" data-id="' + esc(a.id) + '">End</button>' : '') +
+      '</div></div>';
+  });
+  html += '<p style="margin:10px 0 0"><button type="button" class="iconbtn" data-ag="refresh">Refresh</button></p>';
+  el.innerHTML = html;
+}
+function qtRender(rows){
+  var el = document.getElementById('qtPanel');
+  if (!el) return;
+  if (!rows.length){ el.innerHTML = '<p class="small mut">No quotes yet — build the first one below.</p>'; return; }
+  var html = '';
+  rows.forEach(function(q){
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + esc(q.referenceCode) + '</b> <span class="pill">' + esc(q.effectiveStatus || q.status) + '</span> <span class="small">' + esc(q.title) + '</span>' +
+      '<br><span class="small mut">Total ' + esc(cpMoney(q.totalCents)) + ' · ' + (q.lineItems || []).length + ' line items' + (q.validUntil ? ' · valid until ' + esc(q.validUntil) : '') + (q.workOrderReference ? ' · work order ' + esc(q.workOrderReference) : '') + '</span></div>' +
+      '<div style="white-space:nowrap">' +
+      ((q.effectiveStatus === 'DRAFT' || q.effectiveStatus === 'SENT') ? '<button type="button" class="iconbtn" data-ag="qsend" data-id="' + esc(q.id) + '">' + (q.effectiveStatus === 'SENT' ? 'Re-send link' : 'Send approval link') + '</button>' : '') +
+      '</div></div>';
+  });
+  el.innerHTML = html;
+}
+function agLoad(tries){
+  var el = document.getElementById('agPanel');
+  if (!el) return;
+  get('/commercial/agreements', true).then(function(res){
+    if (res.ok){ agRender(data(res.j) || []); }
+    else if ((tries || 0) < 12){ setTimeout(function(){ agLoad((tries || 0) + 1); }, 2500); return; }
+    else el.innerHTML = '<p class="small mut">Agreements load for staff accounts once you are signed in.' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '</p>';
+  });
+  get('/commercial/quotes', true).then(function(res){
+    if (res.ok) qtRender(data(res.j) || []);
+  });
+}
+document.addEventListener('click', function(ev){
+  var b = ev.target && ev.target.closest ? ev.target.closest('[data-ag]') : null;
+  if (!b) return;
+  var act = b.getAttribute('data-ag');
+  if (act === 'refresh'){ agLoad(0); return; }
+  if (act === 'generate'){
+    cpSend('POST', '/commercial/agreements/generate-due', {}).then(function(res){
+      if (res.ok){ var d = data(res.j) || {}; agMsg('Generation run complete — ' + (d.workOrdersCreated || 0) + ' work order(s) created across ' + (d.agreementsProcessed || 0) + ' agreement(s).'); agLoad(0); }
+      else agMsg((res.j && res.j.error) || 'Generation failed.', true);
+    });
+    return;
+  }
+  if (act === 'pause' || act === 'resume' || act === 'end'){
+    var st = act === 'pause' ? 'PAUSED' : act === 'resume' ? 'ACTIVE' : 'ENDED';
+    cpSend('PATCH', '/commercial/agreements/' + encodeURIComponent(b.getAttribute('data-id')), { status: st }).then(function(res){
+      if (res.ok){ agMsg('Agreement ' + st.toLowerCase() + '.'); agLoad(0); } else agMsg((res.j && res.j.error) || 'Could not update.', true);
+    });
+    return;
+  }
+  if (act === 'create'){
+    var body = { accountId: document.getElementById('agNewAccount').value.trim(), cadence: document.getElementById('agNewCadence').value };
+    var fac = document.getElementById('agNewFacility').value.trim(); if (fac) body.facilityId = fac;
+    var first = document.getElementById('agNewFirst').value; if (first) body.firstVisitAt = new Date(first + 'T13:00:00').toISOString();
+    var scope = document.getElementById('agNewScope').value.trim(); if (scope) body.scopeNotes = scope;
+    var terms = document.getElementById('agNewTerms').value.trim(); if (terms) body.termsNotes = terms;
+    var bill = document.getElementById('agNewBilling').value.trim(); if (bill) body.billingNotes = bill;
+    if (!body.accountId){ agMsg('The commercial account ID is required.', true); return; }
+    cpSend('POST', '/commercial/agreements', body).then(function(res){
+      if (res.ok){ agMsg('Agreement created — ' + ((data(res.j) || {}).referenceCode || '') + '.'); agLoad(0); }
+      else agMsg((res.j && res.j.error) || 'Could not create the agreement.', true);
+    });
+    return;
+  }
+  if (act === 'qcreate'){
+    var lines = document.getElementById('qtNewItems').value.split('\n').map(function(x){ return x.trim(); }).filter(Boolean);
+    var items = [], bad = null;
+    lines.forEach(function(line){
+      var parts = line.split('|').map(function(x){ return x.trim(); });
+      if (parts.length !== 3){ bad = 'Each line needs: Description | Quantity | Unit price'; return; }
+      var qty = Number(parts[1]), price = Number(parts[2].replace(/[$,]/g, ''));
+      if (!parts[0] || !(qty > 0) || !(price >= 0)){ bad = 'Check the line: ' + line; return; }
+      items.push({ description: parts[0], quantity: qty, unitPriceCents: Math.round(price * 100) });
+    });
+    if (bad){ qtMsg(bad, true); return; }
+    if (!items.length){ qtMsg('Add at least one line item.', true); return; }
+    var qb = { accountId: document.getElementById('qtNewAccount').value.trim(), facilityId: document.getElementById('qtNewFacility').value.trim(), title: document.getElementById('qtNewTitle').value.trim(), lineItems: items };
+    var valid = document.getElementById('qtNewValid').value; if (valid) qb.validUntil = valid;
+    var qterms = document.getElementById('qtNewTerms').value.trim(); if (qterms) qb.termsNotes = qterms;
+    if (!qb.accountId || !qb.facilityId || !qb.title){ qtMsg('Account ID, facility ID and a title are required.', true); return; }
+    cpSend('POST', '/commercial/quotes', qb).then(function(res){
+      if (res.ok){ qtMsg('Quote created — ' + ((data(res.j) || {}).referenceCode || '') + ', total ' + cpMoney((data(res.j) || {}).totalCents) + '. Send it when ready.'); agLoad(0); }
+      else qtMsg((res.j && res.j.error) || 'Could not create the quote.', true);
+    });
+    return;
+  }
+  if (act === 'qsend'){
+    cpSend('POST', '/commercial/quotes/' + encodeURIComponent(b.getAttribute('data-id')) + '/send', {}).then(function(res){
+      if (res.ok){
+        var d = data(res.j) || {};
+        qtMsg('Approval link ready' + (d.emailed ? ' — emailed to ' + (d.emailTo || 'the account contact') : ' (no account email on file — share the link directly)') + ': ' + (d.approvalUrl || ''));
+        agLoad(0);
+      } else qtMsg((res.j && res.j.error) || 'Could not send the quote.', true);
+    });
+    return;
+  }
+});
+if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', function(){ cpLoad(0); agLoad(0); }); }
+else { cpLoad(0); agLoad(0); }
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>

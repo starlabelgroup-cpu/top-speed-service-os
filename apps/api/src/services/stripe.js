@@ -105,35 +105,38 @@ export async function stripeApi(method, path, params) {
   return data;
 }
 
-/** One Stripe customer per advertiser account (id stored on the subscription row). */
-export async function createStripeCustomer({ email, name, userId }) {
+/** One Stripe customer per account (id stored on the subscription row). */
+export async function createStripeCustomer({ email, name, userId, purpose = 'AD_PLAN' }) {
   return stripeApi('POST', '/v1/customers', {
     email: email || undefined,
     name: name || undefined,
-    metadata: { purpose: 'AD_PLAN', userId },
+    metadata: { purpose, userId },
   });
 }
 
 /**
- * Plan Product + Price sync — called ONLY from the owner price flow
- * in routes/adPlans.js, with the owner's own amount. Nothing here is
- * ever seeded or defaulted: no owner price, no Stripe objects.
+ * Plan Product + Price sync — called ONLY from the owner price flows
+ * (routes/adPlans.js, routes/carePlans.js), with the owner's own
+ * amount. Nothing here is ever seeded or defaulted: no owner price,
+ * no Stripe objects. `purpose` defaults to AD_PLAN and `interval` to
+ * 'month', so advertiser-plan calls are byte-identical to before; the
+ * Care Plan passes purpose CARE_PLAN + interval 'year'.
  */
-export async function createStripeProduct({ name, planKey }) {
-  return stripeApi('POST', '/v1/products', { name, metadata: { purpose: 'AD_PLAN', planKey } });
+export async function createStripeProduct({ name, planKey, purpose = 'AD_PLAN' }) {
+  return stripeApi('POST', '/v1/products', { name, metadata: { purpose, planKey } });
 }
 
-export async function createStripePrice({ productId, amountCents, currency }) {
+export async function createStripePrice({ productId, amountCents, currency, interval = 'month' }) {
   return stripeApi('POST', '/v1/prices', {
     product: productId,
     unit_amount: amountCents,
     currency: currency || 'usd',
-    recurring: { interval: 'month' },
+    recurring: { interval },
   });
 }
 
-/** Subscription-mode Checkout Session for an advertiser plan. */
-export async function createPlanCheckout({ customerId, priceId, userId, planKey, successUrl, cancelUrl }) {
+/** Subscription-mode Checkout Session for a plan. */
+export async function createPlanCheckout({ customerId, priceId, userId, planKey, successUrl, cancelUrl, purpose = 'AD_PLAN' }) {
   return stripeApi('POST', '/v1/checkout/sessions', {
     mode: 'subscription',
     customer: customerId,
@@ -141,8 +144,8 @@ export async function createPlanCheckout({ customerId, priceId, userId, planKey,
     cancel_url: cancelUrl,
     line_items: [{ price: priceId, quantity: 1 }],
     client_reference_id: userId,
-    metadata: { purpose: 'AD_PLAN', userId, planKey },
-    subscription_data: { metadata: { purpose: 'AD_PLAN', userId, planKey } },
+    metadata: { purpose, userId, planKey },
+    subscription_data: { metadata: { purpose, userId, planKey } },
   });
 }
 

@@ -54,6 +54,7 @@ export const NOTIFICATION_TEMPLATES = {
   REFERRAL_CREDIT_EXPIRING: 'REFERRAL_CREDIT_EXPIRING',
   REFERRAL_CREDIT_EXPIRED: 'REFERRAL_CREDIT_EXPIRED',
   COMMERCIAL_WORK_ORDER_RECEIVED: 'COMMERCIAL_WORK_ORDER_RECEIVED',
+  COMMERCIAL_QUOTE: 'COMMERCIAL_QUOTE',
   REFUND_REQUEST: 'REFUND_REQUEST',
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
   VIDEO_REQUEST: 'VIDEO_REQUEST',
@@ -1449,6 +1450,51 @@ export function notifyDispatchApproved(booking, assignment, source = null) {
       },
     }),
   ];
+}
+
+/**
+ * Commercial quote — the approval email to the account contact
+ * (2026-11-20, B8). The link carries the one-time approval token;
+ * the amounts in the message are the quote's own recorded line items
+ * and server-computed total, quoted verbatim — commercial work is
+ * priced by this written quote only. Sent by routes/commercial.js,
+ * which drains this batch awaited inside the request lifecycle (the
+ * password-reset lesson). eventKey is unique per issuance (the token
+ * record id), so a re-send never duplicates the first email.
+ */
+export function notifyCommercialQuoteSent(account, quote, { tokenId, approvalUrl }, source = null) {
+  const entries = [];
+  if (!account?.email) return entries;
+  const settings = getNotificationSettings();
+  const itemLines = (quote.lineItems || [])
+    .map((item) => `  • ${item.description} ×${item.quantity} — ${formatCents(item.totalCents)}`)
+    .join('\n');
+  const payload = {
+    accountId: account.id,
+    quoteId: quote.id,
+    referenceCode: quote.referenceCode,
+    message:
+      `Hi ${account.contactName ? String(account.contactName).split(' ')[0] : 'there'},\n\n` +
+      `Your written quote from Top Speed Appliance is ready — ${quote.title} (${quote.referenceCode}) ` +
+      `for ${account.companyName}:\n\n` +
+      `${itemLines}\n\n` +
+      `Total: ${formatCents(quote.totalCents)}\n\n` +
+      `Review the full quote and approve it here:\n\n` +
+      `${approvalUrl}\n\n` +
+      (quote.validUntil ? `This quote is valid until ${quote.validUntil}. ` : '') +
+      `Approving it creates your work order with exactly these line items and this total — ` +
+      `no work begins without your approval.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: `Your Top Speed Appliance quote ${quote.referenceCode} — review & approve`,
+  };
+  const eventKey = `commercial-quote:${quote.id}:sent:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.COMMERCIAL_QUOTE, to: account.email, payload, source, eventKey, eventType: 'COMMERCIAL_QUOTE' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.COMMERCIAL_QUOTE, to: account.email, payload, source, eventKey, eventType: 'COMMERCIAL_QUOTE', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
 }
 
 /**

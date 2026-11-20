@@ -8,6 +8,7 @@ import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notificat
 import { emitReport } from '../services/managementReports.js';
 import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, verifyWebhookSignature, webhookConfigured } from '../services/stripe.js';
 import { handleStripePlanEvent } from '../services/adPlans.js';
+import { handleStripeCarePlanEvent } from '../services/carePlans.js';
 
 /**
  * Payments — the built-in checkout (Route B, approved by Ramone
@@ -183,6 +184,11 @@ router.post('/payments/webhook', async (req, res) => {
   // sessions have no diagnostic Payment row — the two flows share
   // only the endpoint and the signature check.
   await handleStripePlanEvent(event);
+  // Appliance Care Plan (2026-11-20): membership subscription
+  // lifecycle, same discipline — runs after the diagnostic and
+  // advertiser-plan handling, never throws, and answers only
+  // purpose CARE_PLAN checkouts / its own subscription ids.
+  await handleStripeCarePlanEvent(event);
   return res.json({ received: true });
 });
 

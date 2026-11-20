@@ -214,6 +214,8 @@ model User {
 
   advertiserSubscription AdvertiserSubscription?
 
+  careSubscription CareSubscription?
+
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
 
@@ -803,18 +805,6 @@ model CustomerAppliance {
   serial      String?
   year        Int?
   notes       String?
-  // Garage care (2026-11-20, recommendations B3): the dates the
-  // warranty heads-ups run on, plus the staff-curated recall notice.
-  // purchaseDate / warrantyExpiresAt are the customer's own facts
-  // (owner-editable). recallNote is set ONLY by staff after checking
-  // the federal CPSC recall feed (services/recallLookup.js) — it is
-  // never auto-populated from the feed, so a customer never sees an
-  // unconfirmed machine match dressed up as a recall on their unit.
-  purchaseDate      DateTime?
-  warrantyExpiresAt DateTime?
-  recallNote        String?
-  recallUrl         String?
-  recallNoteAt      DateTime?
   createdAt   DateTime             @default(now())
   connections ApplianceConnection[]
   events      ApplianceEvent[]
@@ -1581,33 +1571,6 @@ model SpeedyChatMessage {
   @@index([sessionId, createdAt])
 }
 
-// Message the office (2026-11-20, recommendations B2): the per-booking
-// human thread between the customer (in /app) and the office (staff,
-// answered from the Chats console). This is the shared thread store —
-// the Wave 1 D1 setter composer converges on the same rows when it
-// lands; there is exactly one message table per booking, never two.
-// senderKind is CUSTOMER or STAFF and is derived server-side from the
-// caller's roles, never trusted from the client. readAt is when the
-// OTHER side read the message (null = unread for the recipient side).
-// No foreign keys: bookings live in ServiceRequest and threads must
-// survive the same skeleton/database duality as the rest of the store;
-// bookingId/companyId are plain indexed columns, access is enforced
-// in the route (staff role or the booking-belongs-to-user test).
-model BookingMessage {
-  id          String    @id @default(uuid()) @db.Uuid
-  companyId   String    @db.Uuid
-  bookingId   String    @db.Uuid
-  senderKind  String
-  senderUserId String   @db.Uuid
-  senderName  String?
-  body        String
-  readAt      DateTime?
-  createdAt   DateTime  @default(now())
-
-  @@index([bookingId, createdAt])
-  @@index([companyId, createdAt])
-}
-
 // Multi-account Google manager registry (2026-11-13): Ramone runs the
 // Google presence — Business Profile, Local Services Ads, Google Ads,
 // Search Console — from more than one Gmail account, and directed a
@@ -1947,6 +1910,89 @@ model AdvertiserSubscription {
 // Owner-configurable billing settings (singleton row, id 'default'):
 // the past-due grace window in days (default 7, per the plan spec).
 model AdBillingSetting {
+  id        String   @id
+  graceDays Int      @default(7)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CareSubscriptionStatus {
+  NONE
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  OFFICE_GRANTED
+}
+
+// Appliance Care Plan (membership) — B4 (2026-11-20, Ramone approved
+// the recommendations program). Mirrors the Flywheel advertiser-plan
+// discipline exactly: the plan is STRUCTURE seeded with
+// annualPriceCents NULL; the price exists only because the owner set
+// it in the admin surface (routes/carePlans.js), which is also the
+// only place a Stripe Product/Price for the plan is ever created.
+// An unpriced plan refuses checkout with pricing_not_set.
+model CarePlan {
+  id               String   @id @default(uuid()) @db.Uuid
+  key              String   @unique
+  name             String
+  description      String?
+  // NULL = pricing not set by the owner yet — checkout is refused
+  // with an honest "pricing not set" state everywhere it appears.
+  annualPriceCents Int?
+  currency         String   @default("usd")
+  // Feature matrix: { <featureKey>: true|false } over the keys in
+  // services/carePlans.js CARE_FEATURES (annualCheckup,
+  // priorityBooking).
+  features         Json     @default("{}")
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  // Set only by the owner price flow (Stripe sync at price-set time).
+  stripeProductId  String?
+  stripePriceId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions CareSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CareSubscription {
+  id                   String               @id @default(uuid()) @db.Uuid
+  userId               String               @unique @db.Uuid
+  planId               String?              @db.Uuid
+  status               CareSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  // When the first failed invoice landed; the grace clock starts here.
+  pastDueAt            DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  // The included annual check-up: the period-end it was booked for,
+  // and the booking reference that fulfilled it. One per period.
+  checkupBookedForPeriodEnd DateTime?
+  checkupBookingRef         String?
+  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
+  grantedById          String?              @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan CarePlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+// Owner-configurable care-plan billing settings (singleton row, id
+// 'default'): the past-due grace window in days (default 7, mirroring
+// the advertiser-plan setting).
+model CareBillingSetting {
   id        String   @id
   graceDays Int      @default(7)
   updatedBy String?

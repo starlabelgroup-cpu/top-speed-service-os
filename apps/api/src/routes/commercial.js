@@ -6,7 +6,9 @@ import {
   appendEvent,
   createAssetTag,
   createCommercialAccountCode,
+  createCommercialQuoteCode,
   createId,
+  createMaintenanceAgreementCode,
   createWorkOrderCode,
   store,
 } from '../data/store.js';
@@ -22,7 +24,20 @@ import {
   isWorkOrderOpen,
   workOrderEffectiveStatus,
 } from '../services/commercial.js';
-import { notifyCommercialWorkOrderReceived, notifySubmission } from '../services/notifications.js';
+import { notifyCommercialQuoteSent, notifyCommercialWorkOrderReceived, notifySubmission } from '../services/notifications.js';
+import { drainEntries } from '../services/senders.js';
+import {
+  AGREEMENT_CADENCES,
+  AGREEMENT_STATUSES,
+  QUOTE_INVALID_MESSAGE,
+  decideQuoteByToken,
+  findQuoteApproval,
+  generateDueAgreementVisits,
+  issueQuoteApprovalToken,
+  priceQuoteLineItems,
+  publicQuoteView,
+  quoteEffectiveStatus,
+} from '../services/commercialAgreements.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import {
   INVALID_PHONE_MESSAGE,
@@ -497,6 +512,411 @@ router.get('/commercial/overview', ...staffOnly, (req, res) => {
         priorityQueue: openWorkOrders.filter((wo) => wo.priority).length,
       },
       generatedAt: new Date().toISOString(),
+    },
+  });
+});
+
+/* ------------------------------------------------------------------ */
+/* Maintenance agreements (B7, 2026-11-20)                             */
+/*                                                                     */
+/* Scheduled preventive visits on a cadence the office sets per      */
+/* client. Terms are DATA recorded per agreement (scope / terms /    */
+/* billing notes the office types) — the system invents none of      */
+/* them. Due visits generate the standard commercial work order via  */
+/* services/commercialAgreements.js. Generation runs lazily on       */
+/* staff reads of this surface plus the explicit run below (the      */
+/* platform's no-cron idiom).                                        */
+/* ------------------------------------------------------------------ */
+
+const agreementSchema = z.object({
+  accountId: z.string().uuid(),
+  facilityId: z.string().uuid().optional(),
+  equipmentId: z.string().uuid().optional(),
+  cadence: z.enum(AGREEMENT_CADENCES),
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  firstVisitAt: z.string().datetime().optional(),
+  scopeNotes: z.string().trim().max(1000).optional(),
+  termsNotes: z.string().trim().max(2000).optional(),
+  billingNotes: z.string().trim().max(1000).optional(),
+});
+
+const agreementPatchSchema = z.object({
+  status: z.enum(AGREEMENT_STATUSES).optional(),
+  cadence: z.enum(AGREEMENT_CADENCES).optional(),
+  nextVisitAt: z.string().datetime().optional(),
+  scopeNotes: z.string().trim().max(1000).nullable().optional(),
+  termsNotes: z.string().trim().max(2000).nullable().optional(),
+  billingNotes: z.string().trim().max(1000).nullable().optional(),
+});
+
+function findAgreement(req, id) {
+  const agreement = store.maintenanceAgreements.get(id);
+  if (!agreement) return null;
+  if (!isAdmin(req) && agreement.companyId !== req.companyId) return null;
+  return agreement;
+}
+
+function publicAgreement(agreement) {
+  const account = store.commercialAccounts.get(agreement.accountId);
+  const facility = store.commercialFacilities.get(agreement.facilityId);
+  return {
+    ...agreement,
+    accountName: account?.companyName || null,
+    accountReference: account?.referenceCode || null,
+    facilityName: facility?.name || null,
+    visitsGenerated: [...store.commercialWorkOrders.values()].filter((wo) => wo.agreementId === agreement.id).length,
+  };
+}
+
+async function runAgreementGeneration(req) {
+  try {
+    return await generateDueAgreementVisits({ companyId: isAdmin(req) ? null : req.companyId });
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'agreement generation failed', error: String(error?.message || error) }));
+    return [];
+  }
+}
+
+router.post('/commercial/agreements', ...staffOnly, async (req, res) => {
+  const parsed = agreementSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid maintenance agreement', details: parsed.error.flatten() });
+  }
+  const data = parsed.data;
+  const account = findAccount(req, data.accountId);
+  if (!account) return res.status(404).json({ error: 'Commercial account not found' });
+
+  let facility = null;
+  if (data.facilityId) {
+    facility = findFacility(req, data.facilityId);
+    if (!facility) return res.status(404).json({ error: 'Facility not found' });
+    if (facility.accountId !== account.id) {
+      return res.status(422).json({ error: 'Facility does not belong to this account' });
+    }
+  } else {
+    const facilities = visible(store.commercialFacilities, req).filter((f) => f.accountId === account.id);
+    if (facilities.length === 1) facility = facilities[0];
+    else if (facilities.length === 0) return res.status(422).json({ error: 'This account has no facility yet — add one before the agreement' });
+    else return res.status(400).json({ error: 'Pick the facility this agreement covers', facilities: facilities.map((f) => ({ id: f.id, name: f.name })) });
+  }
+  let equipment = null;
+  if (data.equipmentId) {
+    equipment = store.commercialEquipment.get(data.equipmentId) || null;
+    if (!equipment || (!isAdmin(req) && equipment.companyId !== req.companyId)) {
+      return res.status(404).json({ error: 'Equipment not found' });
+    }
+    if (equipment.facilityId !== facility.id) {
+      return res.status(422).json({ error: 'Equipment is not registered at this facility' });
+    }
+  }
+
+  const now = new Date();
+  const nextVisitAt = data.firstVisitAt
+    || (data.startDate ? `${data.startDate}T13:00:00.000Z` : now.toISOString());
+  const agreement = {
+    id: createId(),
+    companyId: req.companyId,
+    referenceCode: createMaintenanceAgreementCode(),
+    accountId: account.id,
+    facilityId: facility.id,
+    equipmentId: equipment?.id || null,
+    cadence: data.cadence,
+    status: 'ACTIVE',
+    startDate: data.startDate || now.toISOString().slice(0, 10),
+    nextVisitAt,
+    lastVisitAt: null,
+    // Terms are the office's own per-client record — stored verbatim,
+    // never defaulted or invented here.
+    scopeNotes: data.scopeNotes || null,
+    termsNotes: data.termsNotes || null,
+    billingNotes: data.billingNotes || null,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  };
+  store.maintenanceAgreements.set(agreement.id, agreement);
+  await appendEvent('MAINTENANCE_AGREEMENT_CREATED', {
+    source: 'COMMERCIAL',
+    actor: req.user.id,
+    entityType: 'MAINTENANCE_AGREEMENT',
+    entityId: agreement.id,
+    referenceCode: agreement.referenceCode,
+    details: { accountId: account.id, facilityId: facility.id, equipmentId: equipment?.id || null, cadence: agreement.cadence, nextVisitAt: agreement.nextVisitAt },
+  });
+  return res.status(201).json({ data: publicAgreement(agreement) });
+});
+
+router.get('/commercial/agreements', ...staffOnly, async (req, res) => {
+  await runAgreementGeneration(req);
+  let agreements = visible(store.maintenanceAgreements, req);
+  if (req.query.accountId) agreements = agreements.filter((a) => a.accountId === req.query.accountId);
+  if (req.query.status) agreements = agreements.filter((a) => a.status === req.query.status);
+  agreements.sort((a, b) => String(a.nextVisitAt).localeCompare(String(b.nextVisitAt)));
+  return res.json({ data: agreements.map(publicAgreement) });
+});
+
+router.get('/commercial/agreements/:id', ...staffOnly, async (req, res) => {
+  await runAgreementGeneration(req);
+  const agreement = findAgreement(req, req.params.id);
+  if (!agreement) return res.status(404).json({ error: 'Maintenance agreement not found' });
+  return res.json({ data: publicAgreement(agreement) });
+});
+
+router.patch('/commercial/agreements/:id', ...staffOnly, async (req, res) => {
+  const agreement = findAgreement(req, req.params.id);
+  if (!agreement) return res.status(404).json({ error: 'Maintenance agreement not found' });
+  const parsed = agreementPatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid agreement update', details: parsed.error.flatten() });
+  }
+  Object.assign(agreement, parsed.data, { updatedAt: new Date().toISOString() });
+  await appendEvent('MAINTENANCE_AGREEMENT_UPDATED', {
+    source: 'COMMERCIAL',
+    actor: req.user.id,
+    entityType: 'MAINTENANCE_AGREEMENT',
+    entityId: agreement.id,
+    referenceCode: agreement.referenceCode,
+    details: { fields: Object.keys(parsed.data), status: agreement.status, cadence: agreement.cadence, nextVisitAt: agreement.nextVisitAt },
+  });
+  return res.json({ data: publicAgreement(agreement) });
+});
+
+router.post('/commercial/agreements/generate-due', ...staffOnly, async (req, res) => {
+  const summary = await runAgreementGeneration(req);
+  const created = summary.reduce((sum, row) => sum + (row.workOrdersCreated || 0), 0);
+  return res.json({ data: { agreementsProcessed: summary.length, workOrdersCreated: created, summary } });
+});
+
+/* ------------------------------------------------------------------ */
+/* Commercial quotes + approve-by-link (B8, 2026-11-20)                */
+/*                                                                     */
+/* Structured custom quotes: line items priced by the OFFICE per     */
+/* quote, totals computed server-side. Commercial is quote-only —    */
+/* no diagnostic fee exists anywhere in this flow. Approval rides a  */
+/* hash-at-rest token link (the email-change idiom); approval        */
+/* converts the quote into a commercial work order carrying the      */
+/* quote's line items and total verbatim.                            */
+/* ------------------------------------------------------------------ */
+
+const quoteLineItemSchema = z.object({
+  description: z.string().trim().min(2).max(200),
+  quantity: z.number().positive().max(10000),
+  unitPriceCents: z.number().int().min(0).max(100000000),
+});
+
+const quoteSchema = z.object({
+  accountId: z.string().uuid(),
+  facilityId: z.string().uuid(),
+  equipmentId: z.string().uuid().optional(),
+  title: z.string().trim().min(3).max(160),
+  lineItems: z.array(quoteLineItemSchema).min(1).max(50),
+  notes: z.string().trim().max(1000).optional(),
+  termsNotes: z.string().trim().max(2000).optional(),
+  validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+});
+
+const quotePatchSchema = z.object({
+  title: z.string().trim().min(3).max(160).optional(),
+  lineItems: z.array(quoteLineItemSchema).min(1).max(50).optional(),
+  notes: z.string().trim().max(1000).nullable().optional(),
+  termsNotes: z.string().trim().max(2000).nullable().optional(),
+  validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+});
+
+function findQuote(req, id) {
+  const quote = store.commercialQuotes.get(id);
+  if (!quote) return null;
+  if (!isAdmin(req) && quote.companyId !== req.companyId) return null;
+  return quote;
+}
+
+function publicQuoteStaff(quote) {
+  return { ...quote, effectiveStatus: quoteEffectiveStatus(quote) };
+}
+
+router.post('/commercial/quotes', ...staffOnly, async (req, res) => {
+  const parsed = quoteSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid quote', details: parsed.error.flatten() });
+  }
+  const data = parsed.data;
+  const account = findAccount(req, data.accountId);
+  if (!account) return res.status(404).json({ error: 'Commercial account not found' });
+  const facility = findFacility(req, data.facilityId);
+  if (!facility) return res.status(404).json({ error: 'Facility not found' });
+  if (facility.accountId !== account.id) {
+    return res.status(422).json({ error: 'Facility does not belong to this account' });
+  }
+  let equipment = null;
+  if (data.equipmentId) {
+    equipment = store.commercialEquipment.get(data.equipmentId) || null;
+    if (!equipment || (!isAdmin(req) && equipment.companyId !== req.companyId)) {
+      return res.status(404).json({ error: 'Equipment not found' });
+    }
+    if (equipment.facilityId !== facility.id) {
+      return res.status(422).json({ error: 'Equipment is not registered at this facility' });
+    }
+  }
+
+  const { lineItems, totalCents } = priceQuoteLineItems(data.lineItems);
+  const now = new Date().toISOString();
+  const quote = {
+    id: createId(),
+    companyId: req.companyId,
+    referenceCode: createCommercialQuoteCode(),
+    accountId: account.id,
+    facilityId: facility.id,
+    equipmentId: equipment?.id || null,
+    title: data.title,
+    lineItems,
+    totalCents,
+    currency: 'USD',
+    notes: data.notes || null,
+    termsNotes: data.termsNotes || null,
+    validUntil: data.validUntil || null,
+    status: 'DRAFT',
+    sentAt: null,
+    decidedAt: null,
+    decidedByName: null,
+    workOrderId: null,
+    workOrderReference: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.commercialQuotes.set(quote.id, quote);
+  await appendEvent('COMMERCIAL_QUOTE_CREATED', {
+    source: 'COMMERCIAL',
+    actor: req.user.id,
+    entityType: 'COMMERCIAL_QUOTE',
+    entityId: quote.id,
+    referenceCode: quote.referenceCode,
+    details: { accountId: account.id, facilityId: facility.id, totalCents, lineItems: lineItems.length },
+  });
+  return res.status(201).json({ data: publicQuoteStaff(quote) });
+});
+
+router.get('/commercial/quotes', ...staffOnly, (req, res) => {
+  let quotes = visible(store.commercialQuotes, req);
+  if (req.query.accountId) quotes = quotes.filter((q) => q.accountId === req.query.accountId);
+  if (req.query.status) quotes = quotes.filter((q) => quoteEffectiveStatus(q) === req.query.status);
+  quotes.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return res.json({ data: quotes.map(publicQuoteStaff) });
+});
+
+router.get('/commercial/quotes/:id', ...staffOnly, (req, res) => {
+  const quote = findQuote(req, req.params.id);
+  if (!quote) return res.status(404).json({ error: 'Quote not found' });
+  return res.json({ data: publicQuoteStaff(quote) });
+});
+
+router.patch('/commercial/quotes/:id', ...staffOnly, async (req, res) => {
+  const quote = findQuote(req, req.params.id);
+  if (!quote) return res.status(404).json({ error: 'Quote not found' });
+  if (quote.status !== 'DRAFT') {
+    return res.status(422).json({ error: 'Only a draft quote can be edited — this one has already been sent or decided.' });
+  }
+  const parsed = quotePatchSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid quote update', details: parsed.error.flatten() });
+  }
+  const data = { ...parsed.data };
+  if (data.lineItems) {
+    const priced = priceQuoteLineItems(data.lineItems);
+    data.lineItems = priced.lineItems;
+    quote.totalCents = priced.totalCents;
+  }
+  Object.assign(quote, data, { updatedAt: new Date().toISOString() });
+  await appendEvent('COMMERCIAL_QUOTE_UPDATED', {
+    source: 'COMMERCIAL',
+    actor: req.user.id,
+    entityType: 'COMMERCIAL_QUOTE',
+    entityId: quote.id,
+    referenceCode: quote.referenceCode,
+    details: { fields: Object.keys(parsed.data), totalCents: quote.totalCents },
+  });
+  return res.json({ data: publicQuoteStaff(quote) });
+});
+
+router.post('/commercial/quotes/:id/send', ...staffOnly, async (req, res) => {
+  const quote = findQuote(req, req.params.id);
+  if (!quote) return res.status(404).json({ error: 'Quote not found' });
+  if (quote.status === 'APPROVED' || quote.status === 'DECLINED') {
+    return res.status(422).json({ error: 'This quote has already been decided — it cannot be sent again.' });
+  }
+  if (quoteEffectiveStatus(quote) === 'EXPIRED') {
+    return res.status(422).json({ error: 'This quote has expired — extend its valid-until date by re-issuing it as a new quote.' });
+  }
+  const account = findAccount(req, quote.accountId);
+  if (!account) return res.status(404).json({ error: 'Commercial account not found' });
+
+  const { token, expiresAt, tokenId } = issueQuoteApprovalToken(quote);
+  quote.status = 'SENT';
+  quote.sentAt = new Date().toISOString();
+  quote.updatedAt = quote.sentAt;
+  const approvalUrl = `${process.env.PUBLIC_WEB_BASE || 'https://topspeedserviceos.com'}/quote/?token=${encodeURIComponent(token)}`;
+
+  // The approval email rides the outbox, drained awaited inside the
+  // request (the password-reset lesson). A drain failure never fails
+  // the send — staff still get the link to share directly.
+  const entries = notifyCommercialQuoteSent(account, quote, { tokenId, approvalUrl }, 'COMMERCIAL');
+  if (entries.length) {
+    await drainEntries(entries).catch((error) => {
+      console.error(JSON.stringify({ level: 'error', message: 'quote email drain failed', error: String(error?.message || error) }));
+    });
+  }
+  await appendEvent('COMMERCIAL_QUOTE_SENT', {
+    source: 'COMMERCIAL',
+    actor: req.user.id,
+    entityType: 'COMMERCIAL_QUOTE',
+    entityId: quote.id,
+    referenceCode: quote.referenceCode,
+    details: { accountId: account.id, totalCents: quote.totalCents, emailed: entries.length > 0, expiresAt },
+  });
+  return res.json({
+    data: {
+      quote: publicQuoteStaff(quote),
+      approvalUrl,
+      expiresAt,
+      emailed: entries.length > 0,
+      emailTo: entries.length ? account.email : null,
+    },
+  });
+});
+
+/* ------- Quote approval link (public; the token is the credential) ------- */
+
+router.get('/commercial/quotes/approval/:token', async (req, res) => {
+  const found = findQuoteApproval(req.params.token);
+  if (found.state === 'invalid' || found.state === 'expired') {
+    return res.status(400).json({ error: QUOTE_INVALID_MESSAGE });
+  }
+  // A decided quote's link shows the recorded outcome; a superseded
+  // link still views the quote (deciding is what's blocked).
+  return res.json({ data: publicQuoteView(found.quote) });
+});
+
+const decideSchema = z.object({
+  decision: z.enum(['APPROVED', 'DECLINED']),
+  name: z.string().trim().max(120).optional(),
+});
+
+router.post('/commercial/quotes/approval/:token/decide', async (req, res) => {
+  const parsed = decideSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid decision', details: parsed.error.flatten() });
+  }
+  const result = await decideQuoteByToken(req.params.token, parsed.data.decision, { decidedByName: parsed.data.name || null });
+  if (!result.ok) {
+    if (result.code === 'QUOTE_ALREADY_DECIDED' && result.quote) {
+      return res.status(409).json({ error: 'already_decided', data: publicQuoteView(result.quote) });
+    }
+    return res.status(result.status).json({ error: result.error, code: result.code });
+  }
+  return res.json({
+    data: {
+      ...publicQuoteView(result.quote),
+      workOrder: result.workOrder
+        ? { id: result.workOrder.id, referenceCode: result.workOrder.referenceCode, bookingReferenceCode: result.workOrder.bookingReferenceCode }
+        : null,
     },
   });
 });

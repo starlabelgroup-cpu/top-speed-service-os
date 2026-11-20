@@ -96,6 +96,15 @@ export const store = {
   commercialFacilities: new Map(),
   commercialEquipment: new Map(),
   commercialWorkOrders: new Map(),
+  // Commercial recurring revenue (2026-11-20, B7/B8): maintenance
+  // agreements (scheduled preventive visits that generate commercial
+  // work orders on cadence) and structured commercial quotes with
+  // approve-by-link. Same in-memory discipline as the rest of the
+  // commercial module; quote approval tokens are stored HASH-ONLY
+  // (the email-change token idiom) keyed by token hash.
+  maintenanceAgreements: new Map(),
+  commercialQuotes: new Map(),
+  commercialQuoteTokens: new Map(),
   // App distribution: PWA install + download-page attribution events
   // recorded by POST /app/track-download. Feeds the flywheel metrics
   // (appInstalls) so Ramone can see which surface (src=flyer, src=qr-…)
@@ -122,12 +131,6 @@ export const store = {
   // (oldest first), mirroring the booking-history pattern. Hydrated
   // from the SpeedyChatSession / SpeedyChatMessage tables.
   chatSessions: new Map(),
-  // Message the office (2026-11-20, B2): per-booking human threads
-  // between the customer (/app) and staff (Chats console), oldest
-  // appended first; hydrated from the BookingMessage table via
-  // db/bookingMessagesRepo. This is THE thread store — the Wave 1
-  // D1 setter composer converges on these same rows when it lands.
-  bookingMessages: [],
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
   // Connected-appliance registry (per garage appliance), hydrated
@@ -313,6 +316,16 @@ export function createAssetTag() {
 /** Commercial work-order reference (e.g. TS-W-7K2Q). */
 export function createWorkOrderCode() {
   return prefixedCode('TS-W');
+}
+
+/** Maintenance agreement reference (e.g. TS-MA-7K2Q), quoted on generated visits. */
+export function createMaintenanceAgreementCode() {
+  return prefixedCode('TS-MA');
+}
+
+/** Commercial quote reference (e.g. TS-Q-7K2Q), quoted on the approval link. */
+export function createCommercialQuoteCode() {
+  return prefixedCode('TS-Q');
 }
 
 /**

@@ -9,6 +9,7 @@ import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { attachReferralToBooking } from '../services/referrals.js';
+import { applyCarePriority } from '../services/carePlans.js';
 import { channelConfigured, twilioTrialState } from '../services/senders.js';
 import { optionalAuthenticate } from '../middleware/auth.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
@@ -354,7 +355,11 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus });
+  // Care Plan priority (2026-11-20): a member's booking is stamped
+  // priority before it is stored, so the setter queue shows the flag
+  // from the first read. Fail-soft by design (the referral idiom).
+  await applyCarePriority(booking);
+  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus, priority: booking.priority || false });
   addBookingEvent(booking, 'AREA_RESOLVED', 'service-book', {
     area: resolution.area,
     areaStatus: resolution.areaStatus,

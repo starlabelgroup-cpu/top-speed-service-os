@@ -4,6 +4,7 @@ import { persistAssignment, persistBooking, persistCustomer } from '../db/bookin
 import { persistProperty } from '../db/techPackageRepo.js';
 import { resolveArea } from '../config/serviceAreas.js';
 import { notifyNewBooking } from './notifications.js';
+import { applyCarePriority } from './carePlans.js';
 
 /**
  * Work-order origination — the ONE create path every surface uses
@@ -218,11 +219,17 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
     updatedAt: t,
   };
 
+  // Care Plan priority (2026-11-20): office/field-created jobs for a
+  // member carry the same priority flag as a member's own booking.
+  // Commercial jobs keep their SLA-derived priority (applyCarePriority
+  // never removes an existing flag). Fail-soft by design.
+  await applyCarePriority(booking, { userId: customer.userId || null });
   addBookingEvent(booking, 'BOOKING_CREATED', actor, {
     source,
     via,
     diagnosticFee: booking.diagnosticFee,
     feeStatus: booking.feeStatus,
+    priority: booking.priority || false,
   });
   if (resolution) {
     addBookingEvent(booking, 'AREA_RESOLVED', 'service-book', {
