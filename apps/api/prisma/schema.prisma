@@ -2052,3 +2052,58 @@ model PlatformEvent {
   @@index([type, createdAt])
   @@index([source, createdAt])
 }
+
+// Satellite Website Tracking Number System (2026-11-19): the registry
+// of the phone numbers and email addresses each surface publishes, so
+// every contact — booking, call, text, email — can be attributed back
+// to the surface it came from. A row with status PLANNED has value null:
+// the surface has no dedicated number yet (honest state, never an
+// invented number). The shared platform line (+18444607038) is one
+// ACTIVE row with shared = true on the 'platform' surface. Rows are
+// never deleted — RETIRED is the end state. seedKey identifies the
+// rows the idempotent seed owns; manager-created rows carry null.
+model TrackingNumber {
+  id         String   @id @default(uuid()) @db.Uuid
+  kind       String // PHONE | EMAIL
+  value      String? // E.164 phone or email address; null while PLANNED
+  label      String
+  surfaceKey String // canonical interconnect surface key, or 'platform'
+  channels   String[] // subset of VOICE / SMS / EMAIL
+  status     String   @default("PLANNED") // ACTIVE | PLANNED | RETIRED
+  shared     Boolean  @default(false)
+  notes      String?
+  seedKey    String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  contactEvents ContactEvent[]
+
+  @@index([surfaceKey])
+  @@index([status])
+  @@index([kind, value])
+}
+
+// One row per inbound call or text that reached a tracked number,
+// written by the Twilio webhooks AFTER their response is computed
+// (fail-open: a logging error never changes the TwiML a caller or
+// texter receives). surfaceKey is resolved from the DIALED number
+// (To): a registered ACTIVE number carries its surface; anything else
+// lands on 'platform' with trackingNumberId null (unattributed —
+// counted as such in ApplianceMan, never guessed). externalSid is the
+// Twilio CallSid / MessageSid; the unique constraint is the dedupe
+// (Twilio retries and repeat deliveries collapse to one row).
+model ContactEvent {
+  id               String          @id @default(uuid()) @db.Uuid
+  channel          String // VOICE | SMS
+  trackingNumberId String?         @db.Uuid
+  surfaceKey       String
+  fromNumber       String
+  toNumber         String
+  externalSid      String?         @unique
+  createdAt        DateTime        @default(now())
+  trackingNumber   TrackingNumber? @relation(fields: [trackingNumberId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([trackingNumberId, createdAt])
+  @@index([surfaceKey, createdAt])
+}

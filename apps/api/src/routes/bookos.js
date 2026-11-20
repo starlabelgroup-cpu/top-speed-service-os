@@ -40,6 +40,7 @@ import {
   saveEstimateForJob,
 } from '../services/jobMoney.js';
 import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '../services/workOrders.js';
+import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 
 const router = Router();
 
@@ -341,6 +342,9 @@ router.get('/bookos/setter-queue', ...staffOnly, async (req, res) => {
       bookingId: booking.id,
       referenceCode: booking.referenceCode || null,
       source: booking.source || null,
+      // Tracking numbers (2026-11-19): originating surface, resolved
+      // from via/source — null when unknown. Additive fields.
+      ...surfaceOfBooking(booking, leadConnectionOf(booking, store.connections)),
       segment: segmentOf(booking),
       ageMinutes: Math.max(0, Math.floor((now - new Date(booking.createdAt).getTime()) / 60000)),
       createdAt: booking.createdAt,
@@ -576,6 +580,8 @@ router.get('/bookos/dispatch-board', ...staffOnly, (req, res) => {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
         source: booking.source || null,
+        // Tracking numbers (2026-11-19): originating surface. Additive.
+        ...surfaceOfBooking(booking, leadConnectionOf(booking, store.connections)),
         segment: segmentOf(booking),
         city: booking.city,
         area: effectiveArea(booking),

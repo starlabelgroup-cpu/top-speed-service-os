@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { voiceConfig } from '../config/platform.js';
 import { notifyStaffAlert } from '../services/notifications.js';
+import { logInboundContact } from '../services/trackingNumbers.js';
 
 /**
  * Twilio Voice — inbound call forwarding for the toll-free business line.
@@ -92,6 +93,20 @@ function handleIncoming(req, res) {
     `<Record maxLength="120" playBeep="true" method="POST" ` +
     `recordingStatusCallback="${xmlEscape(recordingCallback)}" recordingStatusCallbackMethod="POST"/>` +
     `<Say voice="Polly.Joanna">Thank you — we&apos;ll get back to you shortly. Goodbye.</Say>`;
+  // Tracking-number attribution (2026-11-19): the response above is
+  // fully computed; record which number was dialed as a
+  // fire-and-forget side effect. logInboundContact never throws and
+  // never rejects, so the TwiML sent below is byte-identical whether
+  // the log write succeeds, fails, or the database is down.
+  const dialed = String((req.body || {}).To || '').trim();
+  if (dialed && inboundFrom) {
+    void logInboundContact({
+      channel: 'VOICE',
+      to: dialed,
+      from: inboundFrom,
+      externalSid: String((req.body || {}).CallSid || '') || null,
+    });
+  }
   return res.type('text/xml').send(twiml(body));
 }
 

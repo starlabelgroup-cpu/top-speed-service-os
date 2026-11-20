@@ -319,7 +319,7 @@ function crmDetail(id){
       }).join('')||'<p class="mut">No appliances on file.</p>';
       var bk=(d.bookings||[]).map(function(b){
         var appt=b.appointment?(' · <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.8V12l3 2" stroke="#E8322E"/></svg> '+crmEsc(b.appointment.date)+' '+crmEsc(b.appointment.windowLabel||b.appointment.window)):'';
-        return '<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' · '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' · '+crmEsc(b.source)+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span> '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)+appt+
+        return '<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' · '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' · '+crmEsc(b.source)+(b.surfaceLabel?' · From: '+crmEsc(b.surfaceLabel):'')+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span> '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)+appt+
         ' <button class="btn ghost small" onclick="crmMatch(\''+b.id+'\',\''+crmEsc(b.referenceCode)+'\')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy match</button></div>';
       }).join('')||'<p class="mut">No bookings yet.</p>';
       var intake=(d.intake||[]).map(function(x){
@@ -689,7 +689,7 @@ function crmWsRender(){
 
 function crmWsBookingHtml(b,i){
   var h='<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> \u00b7 '+crmEsc(b.appliance)+' '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)
-    +'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' \u00b7 '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' \u00b7 '+crmEsc(b.source)+' \u00b7 '+crmEsc(String(b.createdAt).slice(0,10))+'</span>';
+    +'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' \u00b7 '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' \u00b7 '+crmEsc(b.source)+(b.surfaceLabel?' \u00b7 From: '+crmEsc(b.surfaceLabel):'')+' \u00b7 '+crmEsc(String(b.createdAt).slice(0,10))+'</span>';
   var appt=b.appointment, isSet=!!(appt&&appt.status==='SET');
   if(isSet) h+='<br><span class="mut">'+CRM_WS_CAL_SVG+' '+crmEsc(crmWsDateLabel(appt.date)+' \u00b7 '+(appt.windowLabel||CRM_WS_WIN_LABEL[appt.window]||appt.window||''))+'</span>';
   if(b.status==='COMPLETED'){

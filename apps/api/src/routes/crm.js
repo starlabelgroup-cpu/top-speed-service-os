@@ -13,6 +13,7 @@ import { findUserById } from '../services/handoff.js';
 import { createWorkOrder, workOrderCreateSchema } from '../services/workOrders.js';
 import { jobReceipts } from '../services/jobMoney.js';
 import { PIPELINE_STAGES, leadConnectionReferenceOf, pipelineBoard, pipelineRow } from '../services/crmPipeline.js';
+import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { leadTypeOf } from '../services/leadBookings.js';
 
 /**
@@ -95,6 +96,10 @@ function bookingBrief(b) {
     serviceAddress: b.serviceAddress || b.customer?.address || null,
     status: b.status,
     source: b.source,
+    // Tracking numbers (2026-11-19): which surface this booking came
+    // from, resolved from its via/source — null when no signal names
+    // a surface (honest, never guessed). Additive field.
+    ...surfaceOfBooking(b, leadConnectionOf(b, store.connections)),
     referralCode: b.referralCode || null,
     preferredWindow: b.preferredWindow,
     appointment: b.appointment

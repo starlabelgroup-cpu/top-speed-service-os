@@ -1,7 +1,21 @@
 import { Router } from 'express';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
+import { MANAGER_ROLES } from '../config/security.js';
 import { store } from '../data/store.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
+import {
+  buildTrackingRegistry,
+  ensureTrackingSeeds,
+  normalizePhoneE164,
+  surfaceLabel,
+  SURFACE_LABELS,
+} from '../services/trackingNumbers.js';
+import {
+  createTrackingNumber,
+  updateTrackingNumber,
+  findTrackingNumberById,
+  findLiveByKindValue,
+} from '../db/trackingNumbersRepo.js';
 
 /**
  * Owner-only maintenance: remove the Pepper drill/test data created while
@@ -405,6 +419,143 @@ router.post('/admin/connections/delete', ...ownerOnly, async (req, res) => {
     return res.json({ ok: true, deleted, remainingConnections: remaining });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Delete failed' });
+  }
+});
+
+/**
+ * Satellite Website Tracking Number System (2026-11-19) — the
+ * registry behind the ApplianceMan "Tracking Numbers" panel.
+ * Manager-gated (the panel itself is a manager surface). There is
+ * deliberately NO delete endpoint: a number leaves service by being
+ * set RETIRED. Nothing here touches accounts (Rule Zero).
+ *
+ * GET  /admin/tracking-numbers        registry + 28-day activity
+ * POST /admin/tracking-numbers        register a number/mailbox
+ * POST /admin/tracking-numbers/:id    update (surface/status/label/…)
+ */
+const managerOnly = [authenticate, requireCompany, requireRole(...MANAGER_ROLES)];
+
+const TRACKING_KINDS = ['PHONE', 'EMAIL'];
+const TRACKING_CHANNELS = ['VOICE', 'SMS', 'EMAIL'];
+const TRACKING_STATUSES = ['ACTIVE', 'PLANNED', 'RETIRED'];
+const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function cleanChannels(input, kind) {
+  if (input === undefined) return kind === 'EMAIL' ? ['EMAIL'] : ['VOICE', 'SMS'];
+  if (!Array.isArray(input)) return null;
+  const channels = [...new Set(input.map((c) => String(c || '').toUpperCase()))];
+  return channels.every((c) => TRACKING_CHANNELS.includes(c)) ? channels : null;
+}
+
+function cleanValue(kind, raw) {
+  if (raw === undefined || raw === null || String(raw).trim() === '') return { value: null };
+  if (kind === 'PHONE') {
+    const e164 = normalizePhoneE164(raw);
+    return e164 ? { value: e164 } : { error: 'Phone numbers must be a valid US number (10 digits, or +1 followed by 10 digits).' };
+  }
+  const email = String(raw).trim().toLowerCase();
+  return EMAIL_SHAPE.test(email) ? { value: email } : { error: 'That does not look like an email address.' };
+}
+
+function cleanSurfaceKey(raw) {
+  const key = String(raw || '').trim();
+  return Object.prototype.hasOwnProperty.call(SURFACE_LABELS, key) ? key : null;
+}
+
+router.get('/admin/tracking-numbers', ...managerOnly, async (req, res) => {
+  try {
+    const registry = await buildTrackingRegistry(store.bookings, store.connections);
+    return res.json({ ok: true, data: registry });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Tracking registry failed to load' });
+  }
+});
+
+router.post('/admin/tracking-numbers', ...managerOnly, async (req, res) => {
+  const kind = String(req.body?.kind || '').toUpperCase();
+  if (!TRACKING_KINDS.includes(kind)) return res.status(400).json({ error: 'kind must be PHONE or EMAIL' });
+  const surfaceKey = cleanSurfaceKey(req.body?.surfaceKey);
+  if (!surfaceKey) return res.status(400).json({ error: 'surfaceKey must be a known surface' });
+  const label = String(req.body?.label || '').trim();
+  if (!label) return res.status(400).json({ error: 'A label is required' });
+  const channels = cleanChannels(req.body?.channels, kind);
+  if (!channels) return res.status(400).json({ error: 'channels must be a subset of VOICE, SMS, EMAIL' });
+  const { value, error } = cleanValue(kind, req.body?.value);
+  if (error) return res.status(400).json({ error });
+  const status = req.body?.status !== undefined ? String(req.body.status).toUpperCase() : value ? 'ACTIVE' : 'PLANNED';
+  if (!TRACKING_STATUSES.includes(status)) return res.status(400).json({ error: 'status must be ACTIVE, PLANNED or RETIRED' });
+  if (status === 'ACTIVE' && !value) return res.status(400).json({ error: 'An ACTIVE row needs a value — register the number or address first, or leave the row PLANNED.' });
+  try {
+    await ensureTrackingSeeds();
+    if (value) {
+      const clash = await findLiveByKindValue(kind, value);
+      if (clash) return res.status(409).json({ error: 'That value is already registered', data: clash });
+    }
+    const row = await createTrackingNumber({
+      kind,
+      value,
+      label,
+      surfaceKey,
+      channels,
+      status,
+      shared: !!req.body?.shared,
+      notes: req.body?.notes !== undefined ? String(req.body.notes || '').trim() || null : null,
+      seedKey: null,
+    });
+    return res.status(201).json({ ok: true, data: { ...row, surfaceLabel: surfaceLabel(row.surfaceKey) } });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Register failed' });
+  }
+});
+
+router.post('/admin/tracking-numbers/:id', ...managerOnly, async (req, res) => {
+  const id = String(req.params.id || '');
+  try {
+    await ensureTrackingSeeds();
+    const existing = await findTrackingNumberById(id);
+    if (!existing) return res.status(404).json({ error: 'No tracking row with that id' });
+    const patch = {};
+    if (req.body?.surfaceKey !== undefined) {
+      const surfaceKey = cleanSurfaceKey(req.body.surfaceKey);
+      if (!surfaceKey) return res.status(400).json({ error: 'surfaceKey must be a known surface' });
+      patch.surfaceKey = surfaceKey;
+    }
+    if (req.body?.label !== undefined) {
+      const label = String(req.body.label || '').trim();
+      if (!label) return res.status(400).json({ error: 'A label cannot be empty' });
+      patch.label = label;
+    }
+    if (req.body?.channels !== undefined) {
+      const channels = cleanChannels(req.body.channels, existing.kind);
+      if (!channels) return res.status(400).json({ error: 'channels must be a subset of VOICE, SMS, EMAIL' });
+      patch.channels = channels;
+    }
+    if (req.body?.shared !== undefined) patch.shared = !!req.body.shared;
+    if (req.body?.notes !== undefined) patch.notes = String(req.body.notes || '').trim() || null;
+    if (req.body?.value !== undefined) {
+      const { value, error } = cleanValue(existing.kind, req.body.value);
+      if (error) return res.status(400).json({ error });
+      patch.value = value;
+    }
+    if (req.body?.status !== undefined) {
+      const status = String(req.body.status).toUpperCase();
+      if (!TRACKING_STATUSES.includes(status)) return res.status(400).json({ error: 'status must be ACTIVE, PLANNED or RETIRED' });
+      patch.status = status;
+    }
+    const nextValue = patch.value !== undefined ? patch.value : existing.value;
+    const nextStatus = patch.status !== undefined ? patch.status : existing.status;
+    if (nextStatus === 'ACTIVE' && !nextValue) {
+      return res.status(400).json({ error: 'An ACTIVE row needs a value — add the number or address, or keep the row PLANNED.' });
+    }
+    if (patch.value) {
+      const clash = await findLiveByKindValue(existing.kind, patch.value);
+      if (clash && clash.id !== existing.id) return res.status(409).json({ error: 'That value is already registered', data: clash });
+    }
+    const row = await updateTrackingNumber(id, patch);
+    if (!row) return res.status(404).json({ error: 'No tracking row with that id' });
+    return res.json({ ok: true, data: { ...row, surfaceLabel: surfaceLabel(row.surfaceKey) } });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Update failed' });
   }
 });
 

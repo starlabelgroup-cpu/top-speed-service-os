@@ -301,7 +301,17 @@
     try { var refCode = sessionStorage.getItem('tsos_referral_code'); if (refCode) bookPayload.referralCode = refCode; } catch (e) {}
     try {
       var atStored = (window.TSOSAttribution && TSOSAttribution.get()) || JSON.parse(localStorage.getItem('tsos_attribution') || 'null');
-      if (atStored) ['page', 'utmSource', 'utmMedium', 'utmCampaign', 'gclid', 'fbclid', 'msclkid'].forEach(function (k) { if (atStored[k] && !(k in bookPayload)) bookPayload[k] = atStored[k]; });
+      if (atStored) ['page', 'via', 'utmSource', 'utmMedium', 'utmCampaign', 'gclid', 'fbclid', 'msclkid'].forEach(function (k) { if (atStored[k] && !(k in bookPayload)) bookPayload[k] = atStored[k]; });
+    } catch (e) {}
+    /* Tracking numbers (2026-11-19): when this widget runs on a
+       satellite host served by this deployment, name that host as
+       the via so the booking attributes to its own surface instead
+       of the flagship. Inert on the flagship host itself. */
+    try {
+      if (!bookPayload.via) {
+        var host = String(location.hostname || '').toLowerCase();
+        if (host.indexOf('pepperlists') > -1) bookPayload.via = 'pepperlists.com';
+      }
     } catch (e) {}
     post('/speedy/book', bookPayload).then(function (j) {
       bookedRef = j.data.referenceCode;

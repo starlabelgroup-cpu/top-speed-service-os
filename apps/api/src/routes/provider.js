@@ -34,6 +34,7 @@ import {
 import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '../services/workOrders.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import { catalogEntry, LINK_TYPES } from '../services/linkCenter.js';
+import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -205,6 +206,10 @@ function publicAssignment(assignment) {
           city: booking.city,
           zip: booking.zip,
           status: booking.status,
+          source: booking.source || null,
+          // Tracking numbers (2026-11-19): originating surface for
+          // the Field Pro board — null when unknown. Additive fields.
+          ...surfaceOfBooking(booking, leadConnectionOf(booking, store.connections)),
           customer: booking.customer
             ? {
                 name: booking.customer.name,
@@ -1954,6 +1959,9 @@ router.get('/provider/assignments/:id/full', ...providerBoard, (req, res) => {
         referenceCode: booking.referenceCode || null,
         status: booking.status,
         source: booking.source || null,
+        // Tracking numbers (2026-11-19): originating surface, shown
+        // in the Tech App job view. Additive fields.
+        ...surfaceOfBooking(booking, leadConnectionOf(booking, store.connections)),
         segment: booking.segment || 'RESIDENTIAL',
         city: booking.city || null,
         zip: booking.zip || null,

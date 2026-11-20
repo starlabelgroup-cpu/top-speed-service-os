@@ -170,6 +170,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <p>MASTER</p>
         <a class="cc-nav-link" href="#sec-master"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h8M19 7h0M5 12h2M13 12h6M5 17h10M21 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg><span>Master controls</span></a>
         <a class="cc-nav-link" href="#sec-verify"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg><span>Speedy Verify</span></a>
+        <a class="cc-nav-link" href="#sec-tracking"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M9.5 21h11"/></svg><span>Tracking Numbers</span></a>
         <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span>Settings</span></a>
       </div>
     </div>
@@ -285,6 +286,25 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <p class="small" id="wtAccessRow" style="display:none;margin:0 0 10px"><a href="/work-time-access" style="color:#e94e5c;font-weight:800">Work Time Account Access — create accounts &amp; choose passwords for every platform, employee numbers &amp; 2-step control →</a></p>
         <div id="svCodeOnce"></div>
         <div id="svPanel"><span class="mut small"><span class="spin"></span> Loading access codes…</span></div>
+      </div></div>
+
+      <h2 class="sec" id="sec-tracking">Tracking Numbers — every surface, one registry</h2>
+      <div class="grid"><div class="card wide">
+        <p class="small mut" style="margin-top:0">Every phone number and mailbox a Top Speed surface publishes, and what each one brought in over the last 28 days. Calls and texts are counted from the contacts that actually reached the number; bookings are counted from real booking records by the surface they came from — for mailboxes, bookings show at the <b>surface</b> level, because mail is not attributable per address. A surface with no dedicated number yet shows <b>Planned</b> and “Not yet assigned” — no number is ever invented for it. Rows are never deleted here; <b>Retired</b> is the end state.</p>
+        <div id="tnPanel"><span class="mut small"><span class="spin"></span> Loading tracking numbers…</span></div>
+        <div id="tnMsg"></div>
+        <div id="tnEditBox"></div>
+        <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:14px;padding-top:12px">
+          <p style="margin:0 0 8px"><b>Register a number or mailbox</b> <span class="small mut">— after a number is bought in Twilio and its voice + messaging webhooks point at the Service OS, register it here and its calls and texts attribute automatically.</span></p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+            <label class="small">Kind<br><select id="tnNewKind"><option value="PHONE">Phone</option><option value="EMAIL">Email</option></select></label>
+            <label class="small">Value (blank = planned)<br><input id="tnNewValue" type="text" placeholder="+1 954 555 0100 or name@site.com" style="min-width:230px"></label>
+            <label class="small">Label<br><input id="tnNewLabel" type="text" placeholder="e.g. Fort Lauderdale landing line" style="min-width:200px"></label>
+            <label class="small">Surface<br><select id="tnNewSurface"></select></label>
+            <label class="small"><input id="tnNewShared" type="checkbox"> Shared</label>
+            <button type="button" class="iconbtn" data-tn="register">Register</button>
+          </div>
+        </div>
       </div></div>
 
       <h2 class="sec" id="platform-links">All Platform Links</h2>
@@ -910,6 +930,136 @@ document.addEventListener('click',function(ev){
 });
 
 amWsApplyAuto();
+</script>
+<script>
+/* ============ TRACKING NUMBERS PANEL (2026-11-19) ============
+   The Satellite Website Tracking Number registry: every number and
+   mailbox a surface publishes, with 28-day activity counted from
+   real ContactEvent rows and real bookings. Appended + self-booting
+   (retries until a manager session exists); the endpoints are
+   manager-gated server-side. Nothing here touches accounts. */
+var TN_SURFACES = [
+  ['platform','Top Speed platform (shared)'],['flagship-web','Flagship website (topspeedserviceos.com)'],
+  ['topspeed-net','topspeedappliance.net'],['appliancepro','appliancepro.net (Appliance Pro)'],
+  ['appliance-connect','Appliance Connect'],['cleanoutvents','cleanoutvents.com'],
+  ['pepper-lists','pepperlists.com (Pepper Lists)'],['tsar','topspeedappliancerepair.com'],
+  ['thar','totalhomeappliance.com'],['referral','appliancereferral.com'],
+  ['provider-network','topspeedapplianceservice.com (Provider Network)'],['tech-app','Tech App'],
+  ['appliance-plus','Appliance Plus'],['gateway-express','Gateway Express'],['phone','Phone (office)']
+];
+var tnRows = [];
+function tnSurfaceOptions(sel){
+  return TN_SURFACES.map(function(s){ return '<option value="' + s[0] + '"' + (s[0] === sel ? ' selected' : '') + '>' + esc(s[1]) + '</option>'; }).join('');
+}
+function tnStatusPill(st){
+  if (st === 'ACTIVE') return '<span class="pill ok">ACTIVE</span>';
+  if (st === 'PLANNED') return '<span class="pill warn">PLANNED</span>';
+  return '<span class="pill">RETIRED</span>';
+}
+function tnMsg(text, bad){
+  var box = document.getElementById('tnMsg');
+  if (box) box.innerHTML = text ? '<p class="small" style="margin:10px 0 0;color:' + (bad ? '#e65766' : '#309d7f') + '">' + esc(text) + '</p>' : '';
+}
+function tnRender(reg){
+  var el = document.getElementById('tnPanel');
+  if (!el) return;
+  tnRows = (reg && reg.numbers) || [];
+  var days = (reg && reg.windowDays) || 28;
+  if (!tnRows.length){ el.innerHTML = '<p class="small mut">No tracking rows yet.</p>'; return; }
+  var html = '<p class="small mut" style="margin:0 0 4px">Activity window: last ' + days + ' days. Counts come only from real contact and booking records — no activity shows as 0.</p>';
+  tnRows.forEach(function(r){
+    var value = r.value ? esc(r.value) : '<span class="mut">Not yet assigned</span>';
+    var activity;
+    if (r.kind === 'PHONE'){
+      activity = 'Calls ' + (r.calls28d || 0) + ' · Texts ' + (r.texts28d || 0) + ' · Bookings from this surface ' + (r.bookings28d || 0);
+    } else {
+      activity = 'Bookings from this surface ' + (r.bookings28d || 0) + ' (surface level — mail is not counted per address)';
+    }
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + value + '</b> ' + tnStatusPill(r.status) + (r.shared ? ' <span class="pill">SHARED</span>' : '') +
+      '<br><span class="small">' + esc(r.label) + '</span>' +
+      '<br><span class="small mut">' + esc(r.surfaceLabel || r.surfaceKey) + ' · ' + esc((r.channels || []).join(' + ') || '—') + ' · ' + activity + '</span>' +
+      (r.notes ? '<br><span class="small mut">' + esc(r.notes) + '</span>' : '') +
+      '</div><div style="white-space:nowrap"><button type="button" class="iconbtn" data-tn="edit" data-id="' + esc(r.id) + '">Edit</button></div></div>';
+  });
+  var un = (reg && reg.unattributedContacts28d) || { calls: 0, texts: 0 };
+  html += '<p class="small mut" style="margin:10px 0 0">Unattributed contacts (last ' + days + ' days): ' + (un.calls || 0) + ' calls · ' + (un.texts || 0) + ' texts reached a number that is not registered yet — they are counted here, never guessed into a surface.</p>';
+  html += '<p style="margin:10px 0 0"><button type="button" class="iconbtn" data-tn="refresh">Refresh</button></p>';
+  el.innerHTML = html;
+  var sel = document.getElementById('tnNewSurface');
+  if (sel && !sel.options.length) sel.innerHTML = tnSurfaceOptions('flagship-web');
+}
+function tnPost(path, body){
+  return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .catch(function(){ return { ok: false, j: null }; });
+}
+function tnLoad(tries){
+  var el = document.getElementById('tnPanel');
+  if (!el) return;
+  get('/admin/tracking-numbers', true).then(function(res){
+    if (res.ok){ tnRender(data(res.j)); return; }
+    if ((tries || 0) < 12){ setTimeout(function(){ tnLoad((tries || 0) + 1); }, 2500); return; }
+    el.innerHTML = '<p class="small mut">Tracking numbers load for manager accounts once you are signed in.' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '</p>';
+  });
+}
+function tnOpenEdit(id){
+  var r = null;
+  tnRows.forEach(function(x){ if (x.id === id) r = x; });
+  var box = document.getElementById('tnEditBox');
+  if (!r || !box) return;
+  box.innerHTML = '<div style="border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px;margin-top:12px">' +
+    '<p style="margin:0 0 8px"><b>Editing:</b> ' + esc(r.label) + '</p>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">' +
+    '<label class="small">Label<br><input id="tnEditLabel" type="text" value="' + esc(r.label) + '" style="min-width:200px"></label>' +
+    '<label class="small">Value (blank = not assigned)<br><input id="tnEditValue" type="text" value="' + esc(r.value || '') + '" style="min-width:210px"></label>' +
+    '<label class="small">Surface<br><select id="tnEditSurface">' + tnSurfaceOptions(r.surfaceKey) + '</select></label>' +
+    '<label class="small">Status<br><select id="tnEditStatus"><option value="ACTIVE"' + (r.status === 'ACTIVE' ? ' selected' : '') + '>ACTIVE</option><option value="PLANNED"' + (r.status === 'PLANNED' ? ' selected' : '') + '>PLANNED</option><option value="RETIRED"' + (r.status === 'RETIRED' ? ' selected' : '') + '>RETIRED</option></select></label>' +
+    '<label class="small"><input id="tnEditShared" type="checkbox"' + (r.shared ? ' checked' : '') + '> Shared</label>' +
+    '</div>' +
+    '<label class="small" style="display:block;margin-top:8px">Notes<br><input id="tnEditNotes" type="text" value="' + esc(r.notes || '') + '" style="width:100%"></label>' +
+    '<p style="margin:10px 0 0"><button type="button" class="iconbtn" data-tn="save" data-id="' + esc(r.id) + '">Save changes</button> <button type="button" class="iconbtn" data-tn="cancel">Cancel</button></p>' +
+    '</div>';
+  box.scrollIntoView({ block: 'nearest' });
+}
+document.addEventListener('click', function(ev){
+  var b = ev.target && ev.target.closest ? ev.target.closest('[data-tn]') : null;
+  if (!b) return;
+  var action = b.getAttribute('data-tn');
+  if (action === 'refresh'){ tnMsg(''); tnLoad(0); }
+  else if (action === 'edit'){ tnOpenEdit(b.getAttribute('data-id')); }
+  else if (action === 'cancel'){ document.getElementById('tnEditBox').innerHTML = ''; }
+  else if (action === 'save'){
+    var id = b.getAttribute('data-id');
+    tnPost('/admin/tracking-numbers/' + encodeURIComponent(id), {
+      label: document.getElementById('tnEditLabel').value,
+      value: document.getElementById('tnEditValue').value,
+      surfaceKey: document.getElementById('tnEditSurface').value,
+      status: document.getElementById('tnEditStatus').value,
+      shared: document.getElementById('tnEditShared').checked,
+      notes: document.getElementById('tnEditNotes').value
+    }).then(function(res){
+      if (res.ok){ document.getElementById('tnEditBox').innerHTML = ''; tnMsg('Saved.'); tnLoad(0); }
+      else tnMsg('Save failed' + (res.j && res.j.error ? ': ' + res.j.error : '.'), true);
+    });
+  }
+  else if (action === 'register'){
+    var kind = document.getElementById('tnNewKind').value;
+    tnPost('/admin/tracking-numbers', {
+      kind: kind,
+      value: document.getElementById('tnNewValue').value,
+      label: document.getElementById('tnNewLabel').value,
+      surfaceKey: document.getElementById('tnNewSurface').value,
+      shared: document.getElementById('tnNewShared').checked,
+      channels: kind === 'EMAIL' ? ['EMAIL'] : ['VOICE', 'SMS']
+    }).then(function(res){
+      if (res.ok){ tnMsg('Registered.'); tnLoad(0); }
+      else tnMsg('Register failed' + (res.j && res.j.error ? ': ' + res.j.error : '.'), true);
+    });
+  }
+});
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ tnLoad(0); });
+else tnLoad(0);
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>

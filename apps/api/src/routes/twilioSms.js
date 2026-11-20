@@ -3,6 +3,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { voiceConfig } from '../config/platform.js';
 import { queueNotification, NOTIFICATION_TEMPLATES } from '../services/notifications.js';
 import { drainEntries, normalizePhone } from '../services/senders.js';
+import { logInboundContact } from '../services/trackingNumbers.js';
 
 /**
  * Twilio SMS — inbound text forwarder for the toll-free business line.
@@ -88,9 +89,30 @@ async function handleIncomingSms(req, res) {
   if (!from || !text) return emptyTwiml(res);
 
   const { tollFreeNumber, forwardTo } = voiceConfig();
+  // Tracking-number attribution (2026-11-19): record which number
+  // the text reached, as a fire-and-forget side effect.
+  // logInboundContact never throws and never rejects, so the forward
+  // and reply below are untouched whether the log write succeeds,
+  // fails, or the database is down. The MessageSid dedupes Twilio
+  // retries into one contact row.
+  const trackInbound = () => {
+    const dialed = String(body.To || '').trim();
+    if (dialed) {
+      void logInboundContact({
+        channel: 'SMS',
+        to: dialed,
+        from,
+        externalSid: body.MessageSid ? String(body.MessageSid) : null,
+      });
+    }
+  };
   // Loop guards: never forward the owner's own texts back to him, and
-  // never react to a message from the business number itself.
-  if (from === forwardTo || from === tollFreeNumber) return emptyTwiml(res);
+  // never react to a message from the business number itself. (The
+  // text still arrived at the tracked number, so it is still logged.)
+  if (from === forwardTo || from === tollFreeNumber) {
+    trackInbound();
+    return emptyTwiml(res);
+  }
 
   const forwardText =
     `New text to Top Speed (${tollFreeNumber}) from ${from}:\n${text}`;
@@ -112,6 +134,7 @@ async function handleIncomingSms(req, res) {
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'inbound SMS forward failed', error: String(error?.message || error) }));
   }
+  trackInbound();
   return res.type('text/xml').send(twiml(`<Message>${xmlEscape(REPLY_TEXT)}</Message>`));
 }
 

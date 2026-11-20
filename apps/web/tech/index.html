@@ -1792,6 +1792,7 @@ function fpDetailsHtml(view, id){
     '<div class="kv"><span>Appointment</span><b>'+(bk.appointment?escT(bk.appointment.windowLabel||'')+' · '+tDateLabel(bk.appointment.date):'To be set by dispatch')+'</b></div>'+
     '<div class="kv"><span>Segment</span><b>'+escT(bk.segment||'RESIDENTIAL')+'</b></div>'+
     '<div class="kv"><span>Source</span><b>'+escT(bk.source||'—')+'</b></div>'+
+    (bk.surfaceLabel?'<div class="kv"><span>From</span><b>'+escT(bk.surfaceLabel)+'</b></div>':'')+
     '<div class="kv" style="border-bottom:0"><span>Assigned to</span><b>'+escT((view.technician&&view.technician.provider&&view.technician.provider.businessName)||'—')+'</b></div></div>';
   h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Customer &amp; account</h3>'+
     '<div class="kv"><span>Name</span><b>'+escT(name||'—')+'</b></div>'+
