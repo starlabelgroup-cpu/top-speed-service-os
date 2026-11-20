@@ -1,3 +1,4 @@
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { ASSIGNED_NANP_AREA_CODES } from './nanpAreaCodes.js';
 
@@ -159,4 +160,251 @@ export async function consumeIntakeAttempt(family, ip) {
   const count = (memoryWindows.get(key) || 0) + 1;
   memoryWindows.set(key, count);
   return { allowed: count <= limit, count, limit, retryAfterSeconds };
+}
+
+// ---------------------------------------------------------------------------
+// Intake Shield Phase 2 (2026-11-20, Ramone's directive after the
+// morning's slow-single fake signups — "Xdaurllj" / haydn_philipp@
+// web.de, "Pruihue" / a heavily dotted gmail, two more — slipped the
+// Phase 1 layers: one at a time, valid-format NANP phones, honeypot
+// left empty). Three ADDITIVE layers on the account-creation doors
+// (POST /auth/register, POST /connections, POST /creator/signup,
+// POST /auth/ad-specialist/apply). Every discard uses honeypot
+// semantics: the route answers with the SAME success shape a real
+// submission gets, persists NOTHING, and queues NO notification.
+//
+//  4. Form-timing token — GET /auth/form-token issues a short-lived
+//     HMAC-signed token when a public form renders; the wired forms
+//     attach it on submit. A submission whose token is FORGED or
+//     EXPIRED (> 2h) or returns INHUMANLY FAST (< 3s from issuance)
+//     is discarded on that ground alone — a direct-API bot that
+//     never renders the form, or fires the instant it fetches one,
+//     cannot pass. A MISSING token never hard-blocks on its own
+//     (older cached forms and not-yet-updated satellite pages must
+//     not lock out real customers); it is scored with layer 5.
+//  5. Gibberish scoring — tight, documented signal set (below). One
+//     weak signal alone NEVER blocks a submission that carries a
+//     valid token; two or more discard even then. With a missing
+//     token, one or more signals discard. Real names are too varied
+//     to judge from any single quirk — the thresholds are set so
+//     ordinary international names and ordinary email habits score
+//     ZERO (drilled: "Haydn Philipp", "Giuseppe Szczepan",
+//     john.smith1985@gmail.com all score 0).
+//  6. Cloudflare Turnstile — enforced ONLY when TURNSTILE_SECRET_KEY
+//     is set in the API environment; until then the layer is inert
+//     and layers 4+5 carry. When configured, the wired forms render
+//     the widget (site key served by GET /auth/form-token from
+//     TURNSTILE_SITE_KEY) and a missing or failed Turnstile token
+//     discards. A siteverify TRANSPORT error fails OPEN with an
+//     error log — the Phase 1 rule: a public form must never die
+//     because a protection service hiccuped.
+//
+// Signal set (layer 5) — evaluated on the name fields and the email
+// local part of the submission:
+//   name-no-vowels        a name word of 5+ letters with no a/e/i/o/u
+//   name-consonant-cluster a run of 5+ consecutive consonants in a
+//                         name word (real German/Polish surnames top
+//                         out at 4 — "Schwartz", "Szczepan" — so 5 is
+//                         the false-positive-safe line)
+//   name-case-mash        3+ interior upper/lower case transitions
+//                         in one name word ("xDaUrLlJ" style)
+//   email-heavily-dotted  4+ dots in the email local part
+//   email-digit-stuffed   digits in 2+ dot-separated segments of a
+//                         local part with 3+ dots (awe.so.m…den2.5);
+//                         a birth-year suffix (john.smith1985) is ONE
+//                         segment and scores nothing
+// Name≈email similarity is deliberately NOT a signal — people do
+// that. Free-mail domains are NOT a signal — most real customers
+// use one.
+// ---------------------------------------------------------------------------
+
+export const FORM_TOKEN_FIELD = 'formToken';
+export const TURNSTILE_TOKEN_FIELD = 'turnstileToken';
+export const FORM_TOKEN_TTL_MS = 2 * 60 * 60 * 1000;
+export const FORM_TOKEN_MIN_AGE_MS = 3000;
+const FORM_TOKEN_PURPOSE = 'intake-form';
+const TURNSTILE_DEFAULT_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+
+function formTokenSecret() {
+  return process.env.INTAKE_SHIELD_SECRET || process.env.JWT_SECRET || null;
+}
+
+function signFormPayload(payloadPart) {
+  return createHmac('sha256', formTokenSecret()).update(payloadPart).digest('base64url');
+}
+
+/**
+ * Issue a form-timing token. Returns null when no signing secret is
+ * configured (the endpoint then serves formToken: null and the token
+ * layer scores exactly like a missing token — fail-soft, Phase 1
+ * discipline). `issuedAtMs` exists for drills; production callers
+ * pass nothing.
+ */
+export function issueFormToken({ issuedAtMs } = {}) {
+  if (!formTokenSecret()) return null;
+  const payload = { p: FORM_TOKEN_PURPOSE, iat: Number.isFinite(issuedAtMs) ? issuedAtMs : Date.now() };
+  const payloadPart = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return `${payloadPart}.${signFormPayload(payloadPart)}`;
+}
+
+/**
+ * Judge a submitted form token:
+ *   'missing'     no token arrived
+ *   'unavailable' no signing secret configured (scores as missing)
+ *   'forged'      malformed, wrong purpose, bad signature, or an
+ *                 issued-at implausibly in the future
+ *   'expired'     older than FORM_TOKEN_TTL_MS
+ *   'too-fast'    younger than FORM_TOKEN_MIN_AGE_MS
+ *   'ok'          signed, in window, human-paced
+ */
+export function inspectFormToken(token, nowMs = Date.now()) {
+  if (typeof token !== 'string' || token.trim().length === 0) return 'missing';
+  if (!formTokenSecret()) return 'unavailable';
+  const parts = token.split('.');
+  if (parts.length !== 2) return 'forged';
+  const [payloadPart, signature] = parts;
+  const expected = signFormPayload(payloadPart);
+  const givenBuf = Buffer.from(signature);
+  const expectedBuf = Buffer.from(expected);
+  if (givenBuf.length !== expectedBuf.length || !timingSafeEqual(givenBuf, expectedBuf)) return 'forged';
+  let payload;
+  try {
+    payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8'));
+  } catch {
+    return 'forged';
+  }
+  if (!payload || payload.p !== FORM_TOKEN_PURPOSE || !Number.isFinite(payload.iat)) return 'forged';
+  const ageMs = nowMs - payload.iat;
+  if (ageMs < -60 * 1000) return 'forged';
+  if (ageMs > FORM_TOKEN_TTL_MS) return 'expired';
+  if (ageMs < FORM_TOKEN_MIN_AGE_MS) return 'too-fast';
+  return 'ok';
+}
+
+function stripDiacritics(value) {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function nameSignals(name) {
+  const signals = new Set();
+  for (const word of String(name || '').split(/\s+/)) {
+    const letters = stripDiacritics(word).replace(/[^A-Za-z]/g, '');
+    if (letters.length < 5) continue;
+    if (!/[aeiouAEIOU]/.test(letters)) signals.add('name-no-vowels');
+    let run = 0;
+    let maxRun = 0;
+    for (const ch of letters.toLowerCase()) {
+      if ('aeiou'.includes(ch)) run = 0;
+      else { run += 1; if (run > maxRun) maxRun = run; }
+    }
+    if (maxRun >= 5) signals.add('name-consonant-cluster');
+    let transitions = 0;
+    for (let i = 2; i < letters.length; i += 1) {
+      const prevUp = letters[i - 1] >= 'A' && letters[i - 1] <= 'Z';
+      const curUp = letters[i] >= 'A' && letters[i] <= 'Z';
+      if (prevUp !== curUp) transitions += 1;
+    }
+    if (transitions >= 3) signals.add('name-case-mash');
+  }
+  return signals;
+}
+
+function emailSignals(email) {
+  const signals = new Set();
+  const local = String(email || '').split('@')[0] || '';
+  const dotCount = (local.match(/\./g) || []).length;
+  if (dotCount >= 4) signals.add('email-heavily-dotted');
+  const segments = local.split('.');
+  if (segments.length >= 4 && segments.filter((s) => /\d/.test(s)).length >= 2) {
+    signals.add('email-digit-stuffed');
+  }
+  return signals;
+}
+
+/** The layer-5 signal list for a submission (names + email). */
+export function gibberishSignals({ names = [], email = null } = {}) {
+  const signals = new Set();
+  for (const name of names) for (const s of nameSignals(name)) signals.add(s);
+  if (email) for (const s of emailSignals(email)) signals.add(s);
+  return [...signals];
+}
+
+export function turnstileConfigured() {
+  return Boolean(process.env.TURNSTILE_SECRET_KEY);
+}
+
+export function turnstileSiteKey() {
+  return process.env.TURNSTILE_SITE_KEY || null;
+}
+
+/**
+ * Verify a Turnstile token with Cloudflare's siteverify. Inert
+ * ({ enforced: false, ok: true }) until TURNSTILE_SECRET_KEY exists.
+ * TURNSTILE_SITEVERIFY_URL overrides the endpoint (drills point it
+ * at a local mock — production leaves it unset). A transport error
+ * fails OPEN with an error log (Phase 1 discipline); an answered
+ * success:false or a missing token does not pass.
+ */
+export async function verifyTurnstileToken(token, remoteIp) {
+  if (!turnstileConfigured()) return { enforced: false, ok: true };
+  if (typeof token !== 'string' || token.trim().length === 0) return { enforced: true, ok: false };
+  const url = process.env.TURNSTILE_SITEVERIFY_URL || TURNSTILE_DEFAULT_VERIFY_URL;
+  try {
+    const form = new URLSearchParams({
+      secret: process.env.TURNSTILE_SECRET_KEY,
+      response: token,
+      ...(remoteIp ? { remoteip: String(remoteIp) } : {}),
+    });
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+      signal: AbortSignal.timeout(5000),
+    });
+    const data = await response.json().catch(() => null);
+    return { enforced: true, ok: data?.success === true };
+  } catch (error) {
+    console.error(JSON.stringify({
+      level: 'error',
+      message: 'turnstile siteverify unreachable — failing open',
+      error: String(error?.message || error),
+    }));
+    return { enforced: true, ok: true, transportError: true };
+  }
+}
+
+/**
+ * The Phase 2 verdict for one public-door submission.
+ *   token forged / expired / too-fast        → discard
+ *   token ok + 2 or more gibberish signals   → discard
+ *   token missing/unavailable + 1 or more    → discard
+ *   token ok + 0–1 signals                   → pass to Turnstile
+ *   token missing + 0 signals                → pass to Turnstile
+ *   Turnstile configured + missing/failed    → discard
+ * Returns { discard, tokenState, signals, reasons }.
+ */
+export async function evaluateFormShield(body, { names = [], email = null, ip = null, door = 'intake', enforceTurnstile = true } = {}) {
+  const tokenState = inspectFormToken(body?.[FORM_TOKEN_FIELD]);
+  const signals = gibberishSignals({ names, email });
+  const reasons = [];
+  let discard = false;
+  if (tokenState === 'forged' || tokenState === 'expired' || tokenState === 'too-fast') {
+    discard = true;
+    reasons.push(`form-token-${tokenState}`);
+  } else if (tokenState === 'ok') {
+    if (signals.length >= 2) { discard = true; reasons.push('gibberish-signals>=2'); }
+  } else if (signals.length >= 1) {
+    discard = true;
+    reasons.push('form-token-missing+gibberish');
+  }
+  if (!discard && enforceTurnstile) {
+    const turnstile = await verifyTurnstileToken(body?.[TURNSTILE_TOKEN_FIELD], ip);
+    if (turnstile.enforced && !turnstile.ok) { discard = true; reasons.push('turnstile-failed'); }
+  }
+  if (discard) {
+    console.info(JSON.stringify({
+      level: 'info', message: 'intake shield phase 2 discard', door, tokenState, signals, reasons,
+    }));
+  }
+  return { discard, tokenState, signals, reasons };
 }

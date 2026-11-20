@@ -49,9 +49,13 @@ import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNum
 import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import {
+  FORM_TOKEN_TTL_MS,
   INVALID_PHONE_MESSAGE,
   consumeIntakeAttempt,
+  evaluateFormShield,
   honeypotTripped,
+  issueFormToken,
+  turnstileSiteKey,
   validateNanpPhone,
 } from '../services/intakeShield.js';
 
@@ -269,6 +273,20 @@ function canGrantStaffRoles(req) {
   return req.authMode === 'jwt' && (roles.includes(ROLES.PLATFORM_ADMIN) || roles.includes(ROLES.COMPANY_OWNER));
 }
 
+// Intake Shield Phase 2 (2026-11-20): the public forms fetch this
+// when they render — it issues the signed form-timing token and
+// serves the Turnstile SITE key (null until TURNSTILE_SITE_KEY is
+// set in the API environment; the secret never leaves the server).
+router.get('/auth/form-token', (req, res) => {
+  return res.json({
+    data: {
+      formToken: issueFormToken(),
+      formTokenTtlSeconds: Math.floor(FORM_TOKEN_TTL_MS / 1000),
+      turnstileSiteKey: turnstileSiteKey(),
+    },
+  });
+});
+
 router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'), async (req, res, next) => {
   try {
     const parsed = registerSchema.safeParse(req.body);
@@ -279,7 +297,29 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
     // an automated form-filler. Answer with the same success shape a
     // real pending-activation signup gets (201, user envelope, no
     // token), but persist NOTHING and queue NO notification.
-    if (honeypotTripped(req.body)) {
+    // Phase 2 (2026-11-20) discards land in the same ghost: forged /
+    // expired / inhumanly-fast form tokens, gibberish-scored payloads,
+    // and failed Turnstile (when configured). A signed-in session
+    // (an admin creating accounts) is never shield-scored. Phase 1
+    // precedence is preserved: a honeypot hit ghosts first;
+    // otherwise the NANP phone validation answers a visible 400;
+    // the Phase 2 verdict ghosts after that.
+    const honeypot = honeypotTripped(req.body);
+    if (!honeypot && parsed.data.phone) {
+      const phoneCheck = validateNanpPhone(parsed.data.phone);
+      if (!phoneCheck.ok) {
+        return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+      }
+    }
+    const shieldVerdict = req.user
+      ? { discard: false }
+      : await evaluateFormShield(req.body, {
+          names: [parsed.data.firstName, parsed.data.lastName],
+          email: parsed.data.email,
+          ip: req.ip,
+          door: 'register',
+        });
+    if (honeypot || shieldVerdict.discard) {
       const ghost = {
         id: createId(),
         companyId: PLATFORM_COMPANY_ID,
@@ -309,15 +349,6 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
           message: 'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',
         },
       });
-    }
-    // Intake shield: a supplied phone must be a plausible NANP number
-    // (kills the unassigned-area-code fakes — 355, 691 — at the door).
-    // Registration without a phone stays exactly as before.
-    if (parsed.data.phone) {
-      const phoneCheck = validateNanpPhone(parsed.data.phone);
-      if (!phoneCheck.ok) {
-        return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
-      }
     }
     const { email, password, firstName, lastName, phone } = parsed.data;
     const requestedRole = parsed.data.role ?? ROLES.CUSTOMER;
@@ -598,7 +629,24 @@ router.post('/auth/ad-specialist/apply', intakeRateLimit('register'), async (req
     }
     // Intake shield: honeypot — same 201 pending shape a real
     // application gets, but persist NOTHING and queue NO notification.
-    if (honeypotTripped(req.body)) {
+    // Phase 2 discards (form token / gibberish / Turnstile) land in
+    // the same ghost. Phase 1 precedence preserved: honeypot ghosts
+    // first; otherwise the NANP phone validation answers a visible
+    // 400; the Phase 2 verdict ghosts after that.
+    const honeypot = honeypotTripped(req.body);
+    if (!honeypot) {
+      const phoneCheck = validateNanpPhone(parsed.data.phone);
+      if (!phoneCheck.ok) {
+        return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+      }
+    }
+    const shieldVerdict = await evaluateFormShield(req.body, {
+      names: [parsed.data.firstName, parsed.data.lastName],
+      email: parsed.data.email,
+      ip: req.ip,
+      door: 'ad-specialist-apply',
+    });
+    if (honeypot || shieldVerdict.discard) {
       const ghost = {
         id: createId(),
         companyId: PLATFORM_COMPANY_ID,
@@ -629,11 +677,6 @@ router.post('/auth/ad-specialist/apply', intakeRateLimit('register'), async (req
         },
         application: { reference: null },
       });
-    }
-    // Intake shield: the phone must be a plausible NANP number.
-    const phoneCheck = validateNanpPhone(parsed.data.phone);
-    if (!phoneCheck.ok) {
-      return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
     }
     // Legal gate, identical to public registration: no signed
     // acceptance of both current legal documents, no account.

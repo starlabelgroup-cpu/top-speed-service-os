@@ -120,6 +120,7 @@ footer a{color:#cfe0f5;text-decoration:none;margin:0 8px}
       <div class="field"><label for="csLink3">Link to your work #3 (optional)</label><input id="csLink3" type="url" maxlength="300" placeholder="https://"></div>
       <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="csWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
       <div id="csLegal"></div>
+      <div class="tsos-turnstile-slot"></div>
       <button class="btn" id="csBtn" type="submit" disabled>Submit application</button>
       <div class="msg" id="csMsg" role="status"></div>
     </form>
@@ -170,6 +171,7 @@ $('csForm').addEventListener('submit', function(e){
     termsAcceptance: acceptance,
     companyWebsite: $('csWebsite').value
   };
+  if (window.TSOSIntakeShield) Object.assign(payload, TSOSIntakeShield.fields());
   var btn = $('csBtn');
   btn.disabled = true;
   setMsg('Sending your application…', true);
@@ -195,6 +197,7 @@ $('csForm').addEventListener('submit', function(e){
 });
 </script>
 <script src="/shared/session-vault.js" defer></script>
+<script src="/shared/intake-form-shield.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

@@ -17,6 +17,7 @@ import { notifyAccountCreated } from '../services/notifications.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import {
   INVALID_PHONE_MESSAGE,
+  evaluateFormShield,
   honeypotTripped,
   validateNanpPhone,
 } from '../services/intakeShield.js';
@@ -95,9 +96,27 @@ router.post('/creator/signup', intakeRateLimit('creatorSignup'), async (req, res
     if (!parsed.success) {
       return res.status(400).json({ error: 'Invalid application', details: parsed.error.flatten() });
     }
+    // Intake shield, Phase 1 precedence preserved: honeypot ghosts
+    // first; otherwise an invalid phone is a visible 400; the
+    // Phase 2 verdict ghosts after that.
+    const honeypot = honeypotTripped(req.body);
+    if (!honeypot) {
+      const phoneCheck = validateNanpPhone(parsed.data.phone);
+      if (!phoneCheck.ok) {
+        return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+      }
+    }
     // Honeypot: answer with the same pending shape, persist nothing,
     // queue no notification (the register door's discipline).
-    if (honeypotTripped(req.body)) {
+    // Phase 2 discards (form token / gibberish / Turnstile) land in
+    // the same ghost.
+    const shieldVerdict = await evaluateFormShield(req.body, {
+      names: [parsed.data.firstName, parsed.data.lastName],
+      email: parsed.data.email,
+      ip: req.ip,
+      door: 'creator-signup',
+    });
+    if (honeypot || shieldVerdict.discard) {
       const ghost = {
         id: createId(),
         companyId: PLATFORM_COMPANY_ID,
@@ -118,10 +137,6 @@ router.post('/creator/signup', intakeRateLimit('creatorSignup'), async (req, res
       };
       const terms = await termsStatusForUser(ghost.id);
       return pendingResponse(res, ghost, terms);
-    }
-    const phoneCheck = validateNanpPhone(parsed.data.phone);
-    if (!phoneCheck.ok) {
-      return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
     }
     // Legal gate: a public signup signs the current legal documents —
     // no acceptance, no account (the register door's rule).

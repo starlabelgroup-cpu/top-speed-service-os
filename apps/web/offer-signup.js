@@ -145,6 +145,7 @@
       var payload = { email: email, password: pass, firstName: parts[0], phone: phone, role: 'CUSTOMER', termsAcceptance: acceptance };
       if (parts.length > 1) payload.lastName = parts.slice(1).join(' ');
       if (OFFER.slug) payload.offerSlug = OFFER.slug;
+      if (window.TSOSIntakeShield) Object.assign(payload, TSOSIntakeShield.fields());
       var btn = el('ofCreate'); btn.disabled = true; btn.textContent = 'Creating your account…';
       api('/auth/register', { method: 'POST', body: payload }).then(function (x) {
         if (!x.ok || !x.j.token) {

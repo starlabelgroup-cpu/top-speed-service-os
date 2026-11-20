@@ -365,6 +365,7 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
           <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
           <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="laUpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
           <div id="laLegal"></div>
+          <div class="tsos-turnstile-slot"></div>
           <button class="acct-go" id="laUpBtn" type="submit">Create my account</button>
         </form>
         <div class="acct-err" id="laErr"></div>
@@ -419,6 +420,7 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
         if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
         var parts=name.split(/\s+/);
         var body={email:em,password:pw,firstName:parts[0],phone:ph,role:'CUSTOMER',termsAcceptance:acceptance,companyWebsite:$('laUpWebsite').value};
+        if(window.TSOSIntakeShield)Object.assign(body,TSOSIntakeShield.fields());
         if(parts.length>1) body.lastName=parts.slice(1).join(' ');
         var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
         post('/auth/register',body).then(function(j){ if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Account created — sign in and complete the 2-step code to finish.'); }}); return; } save(j); }).catch(function(x){
@@ -625,6 +627,7 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
                 <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
                 <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="cdWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
                 <div id="cdLegal"></div>
+                <div class="tsos-turnstile-slot"></div>
                 <p class="sub" style="margin:8px 0 0;">Already have an account? <a href="#" onclick="custToggleLogin(event)">Sign in instead</a></p>
               </div>
               <div id="cdLogin" style="display:none;">
@@ -1496,7 +1499,7 @@ function confirmBooking(){
   var acceptance=window.TSOSLegal?TSOSLegal.acceptance('cd'):null;
   if(!acceptance){ setBtn('Confirm booking',true); return toast('Please review both legal documents, check both agreement boxes, and type your full name as your signature.'); }
   var parts=name.split(' ');
-  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance,companyWebsite:document.getElementById('cdWebsite').value})})
+  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance,companyWebsite:document.getElementById('cdWebsite').value},window.TSOSIntakeShield?TSOSIntakeShield.fields():{}))})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
     .then(function(j){
       if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
@@ -2620,7 +2623,7 @@ try {
   load();
 })();
 </script>
-<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script><script src="/shared/passkey.js" defer></script><script src="/shared/pepper-master-gate.js" defer></script>
+<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script><script src="/shared/passkey.js" defer></script><script src="/shared/pepper-master-gate.js" defer></script><script src="/shared/intake-form-shield.js" defer></script>
 <script>
 /* MASTER PEPPER PRESENCE (2026-11-20, Ramone's directive: "every time
    I'm logged in app you must be there to assist me always"): /app is

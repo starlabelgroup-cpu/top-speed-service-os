@@ -190,6 +190,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
             <button type="button" data-acct="pm">Property Manager</button>
           </div>
           <div id="laLegal"></div>
+          <div class="tsos-turnstile-slot"></div>
           <button class="btn btn-red" id="laUpBtn" type="submit">Create my account</button>
           <p class="team-note">Team accounts (staff, managers, technicians/providers) are never self-registered — they are issued personally by the Owner through Work Time Access.</p>
         </form>
@@ -417,6 +418,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     var acceptance=window.TSOSLegal?TSOSLegal.acceptance('la'):null;
     if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
     var body={email:em,password:pw,firstName:first,phone:ph,role:'CUSTOMER',termsAcceptance:acceptance,accountType:acctType,companyWebsite:$('suWebsite').value};
+    if(window.TSOSIntakeShield)Object.assign(body,TSOSIntakeShield.fields());
     if(last) body.lastName=last;
     var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
     post('/auth/register',body).then(handleRegisterResult).catch(function(x){
@@ -467,7 +469,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
 <script src="/layer2.js" defer></script>
 <script src="/temp-password.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
-<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/passkey.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/passkey.js" defer></script><script src="/shared/intake-form-shield.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

@@ -10,6 +10,7 @@ import { recordReferralLead } from '../services/referrals.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import {
   INVALID_PHONE_MESSAGE,
+  evaluateFormShield,
   honeypotTripped,
   validateNanpPhone,
 } from '../services/intakeShield.js';
@@ -46,17 +47,36 @@ router.post('/connections', intakeRateLimit('connections'), async (req, res) => 
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid connection request', details: parsed.error.flatten() });
   }
+  // Intake shield: the phone must be a plausible NANP number (kills
+  // the unassigned-area-code fakes — 355, 691 — at the door). Phase
+  // 1's precedence is preserved exactly: a honeypot hit ghosts
+  // first; otherwise an invalid phone is a visible 400 (never a
+  // silent drop, and it persists nothing either way); the Phase 2
+  // verdict below ghosts after that.
+  const honeypot = honeypotTripped(req.body);
+  if (!honeypot) {
+    const phoneCheck = validateNanpPhone(parsed.data.phone);
+    if (!phoneCheck.ok) {
+      return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
+    }
+  }
   // Intake shield (2026-11-19): honeypot — a filled hidden field is
   // an automated form-filler. Answer with the same 201 shape a real
   // submission gets, but persist NOTHING and queue NO notification.
-  if (honeypotTripped(req.body)) {
+  // Phase 2 (2026-11-20): the form-token + gibberish layers score
+  // every intake type; Turnstile (when configured) is enforced only
+  // for PROVIDER_APPLICATION — the wired provider-join form — so a
+  // configured widget can never silently eat ordinary leads from
+  // forms that do not render it.
+  const shieldVerdict = await evaluateFormShield(req.body, {
+    names: [parsed.data.name],
+    email: parsed.data.email ?? null,
+    ip: req.ip,
+    door: 'connections',
+    enforceTurnstile: parsed.data.type === 'PROVIDER_APPLICATION',
+  });
+  if (honeypot || shieldVerdict.discard) {
     return res.status(201).json({ data: { reference: createReferenceCode(), type: parsed.data.type } });
-  }
-  // Intake shield: the phone must be a plausible NANP number (kills
-  // the unassigned-area-code fakes — 355, 691 — at the door).
-  const phoneCheck = validateNanpPhone(parsed.data.phone);
-  if (!phoneCheck.ok) {
-    return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
   }
   const record = await createConnectionRecord({ ...parsed.data, attribution: normalizeAttribution(parsed.data) });
   // Unified notifications: the submitter gets a confirmation and the

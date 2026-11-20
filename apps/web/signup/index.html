@@ -75,6 +75,7 @@
     </div>
 
     <div class="err" id="err"></div>
+    <div class="tsos-turnstile-slot"></div>
     <button class="create" id="createBtn" type="submit">Create Account</button>
     <p class="hint" id="googleNote" style="text-align:center;margin-top:12px"></p>
   </form>
@@ -112,6 +113,7 @@
     if(!acceptance) return fail('Please review both legal documents, check both agreement boxes, and type your full name as your signature.');
     var parts=name.split(/\s+/);
     var payload={email:email,password:pass,firstName:parts[0],phone:phone,role:'CUSTOMER',accountType:type,termsAcceptance:acceptance,companyWebsite:$('fWebsite').value};
+    if(window.TSOSIntakeShield)Object.assign(payload,TSOSIntakeShield.fields());
     if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
     var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
     fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
@@ -147,6 +149,7 @@
 </script>
 <script src="/speedy-guide.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/intake-form-shield.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>
