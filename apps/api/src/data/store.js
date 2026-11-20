@@ -122,6 +122,12 @@ export const store = {
   // (oldest first), mirroring the booking-history pattern. Hydrated
   // from the SpeedyChatSession / SpeedyChatMessage tables.
   chatSessions: new Map(),
+  // Message the office (2026-11-20, B2): per-booking human threads
+  // between the customer (/app) and staff (Chats console), oldest
+  // appended first; hydrated from the BookingMessage table via
+  // db/bookingMessagesRepo. This is THE thread store — the Wave 1
+  // D1 setter composer converges on these same rows when it lands.
+  bookingMessages: [],
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
   // Connected-appliance registry (per garage appliance), hydrated

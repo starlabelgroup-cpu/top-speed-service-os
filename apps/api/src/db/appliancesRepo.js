@@ -21,6 +21,12 @@ function toStoreAppliance(row) {
     serial: row.serial || null,
     year: row.year ?? null,
     notes: row.notes || null,
+    // Garage care (B3): dates ride as ISO strings in the store.
+    purchaseDate: iso(row.purchaseDate),
+    warrantyExpiresAt: iso(row.warrantyExpiresAt),
+    recallNote: row.recallNote || null,
+    recallUrl: row.recallUrl || null,
+    recallNoteAt: iso(row.recallNoteAt),
     createdAt: iso(row.createdAt),
   };
 }
@@ -36,6 +42,11 @@ export async function persistAppliance(appliance) {
     serial: appliance.serial || null,
     year: appliance.year ?? null,
     notes: appliance.notes || null,
+    purchaseDate: appliance.purchaseDate ? new Date(appliance.purchaseDate) : null,
+    warrantyExpiresAt: appliance.warrantyExpiresAt ? new Date(appliance.warrantyExpiresAt) : null,
+    recallNote: appliance.recallNote || null,
+    recallUrl: appliance.recallUrl || null,
+    recallNoteAt: appliance.recallNoteAt ? new Date(appliance.recallNoteAt) : null,
     createdAt: new Date(appliance.createdAt),
   };
   await db().customerAppliance.upsert({ where: { id: row.id }, update: row, create: row });

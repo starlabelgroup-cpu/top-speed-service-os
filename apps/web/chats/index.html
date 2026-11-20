@@ -126,6 +126,23 @@ footer strong{color:#fff}
       <div class="stat"><small>Unanswered</small><b id="stUnanswered">—</b></div>
     </div>
 
+    <section class="panel" id="officePanel">
+      <h2>Office messages <span id="officeUnread" style="display:none;background:#D63A48;color:#fff;border-radius:99px;padding:2px 10px;font-size:13px;vertical-align:2px;"></span></h2>
+      <p class="note">Customers message the office from the app on their own booking ("Message the office" on their Track screen). Pick a thread to read and answer — your reply lands in the customer's app on that booking. This is the same thread the Service Setters see; one conversation per booking, never two.</p>
+      <div id="officeThreads"><p class="note">Loading threads…</p></div>
+      <div id="officeView" style="display:none;margin-top:14px;">
+        <p class="note" id="officeMeta" style="font-weight:700;"></p>
+        <div class="thread" id="officeMsgs"></div>
+        <div style="margin-top:12px;">
+          <label for="officeReplyText">Reply as the office</label>
+          <textarea id="officeReplyText" rows="2" maxlength="2000" placeholder="Write your reply to the customer…" style="width:100%;"></textarea>
+          <div class="msg" id="officeReplyMsg"></div>
+          <button class="btn blue" id="officeReplyBtn" type="button">Send reply</button>
+          <button class="btn ghost" id="officeCloseBtn" type="button">Close thread</button>
+        </div>
+      </div>
+    </section>
+
     <section class="panel">
       <h2>Where customers chat &amp; what they talk about</h2>
       <p class="note">Surfaces are the doors into Speedy (the website widget, the Speedy page, the .net float, the apps). Topics are mined from the customer's own words against the Marketing OS taxonomy — a conversation counts once per topic.</p>
@@ -301,7 +318,57 @@ function openSession(id){
 function loadAll(){
   loadInsights().catch(function(e){ toast('Insights failed: '+e.message); });
   loadSessions().catch(function(e){ toast('Could not load conversations: '+e.message); });
+  loadOfficeThreads().catch(function(e){ toast('Office messages failed: '+e.message); });
 }
+
+/* ---- Office messages (B2): the staff side of Message the office ---- */
+var officeCurrent=null;
+function loadOfficeThreads(){
+  return apiFetch('/office-messages/threads').then(function(j){
+    var d=j.data||{};
+    var badge=document.getElementById('officeUnread');
+    if(d.unreadTotal>0){ badge.style.display=''; badge.textContent=d.unreadTotal+' unread'; } else { badge.style.display='none'; }
+    var box=document.getElementById('officeThreads');
+    var threads=d.threads||[];
+    if(!threads.length){ box.innerHTML='<p class="note">No office messages yet — when a customer writes from their app, the thread appears here.</p>'; return; }
+    box.innerHTML=threads.map(function(t){
+      return '<div style="border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-bottom:8px;cursor:pointer;background:#fff;" onclick="openOfficeThread(\''+t.bookingId+'\')">' +
+        '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;"><b>'+esc(t.customerName||'Customer')+' · '+esc(t.appliance||'Appliance')+'</b>' +
+        '<span class="mono">'+esc(t.referenceCode||'')+(t.unreadForStaff?' · <b style="color:#D63A48;">'+t.unreadForStaff+' unread</b>':'')+'</span></div>' +
+        '<div style="font-size:13.5px;color:#5b6b84;margin-top:3px;">'+(t.lastMessage?('<b>'+(t.lastMessage.senderKind==='STAFF'?'Office: ':'Customer: ')+'</b>'+esc(t.lastMessage.preview)):'')+'</div>' +
+        '<div style="font-size:12px;color:#8591a4;margin-top:2px;">'+esc(t.status||'')+' · '+when(t.lastActivityAt)+'</div></div>';
+    }).join('');
+  });
+}
+function openOfficeThread(bookingId){
+  officeCurrent=bookingId;
+  apiFetch('/bookings/'+bookingId+'/messages').then(function(j){
+    var d=j.data||{};
+    document.getElementById('officeMeta').textContent='Booking '+(d.referenceCode||bookingId);
+    document.getElementById('officeMsgs').innerHTML=(d.messages||[]).map(function(m){
+      var staff=m.senderKind==='STAFF';
+      return '<div class="m '+(staff?'me':'bot')+'"><div class="who">'+esc(m.senderName||(staff?'Office':'Customer'))+' · '+when(m.createdAt)+'</div>'+esc(m.body)+'</div>';
+    }).join('')||'<p class="note">No messages in this thread yet.</p>';
+    document.getElementById('officeView').style.display='block';
+    return apiFetch('/bookings/'+bookingId+'/messages/read',{method:'POST'}).catch(function(){});
+  }).then(function(){ loadOfficeThreads().catch(function(){}); })
+    .catch(function(e){ toast('Could not open that thread: '+e.message); });
+}
+document.getElementById('officeReplyBtn').addEventListener('click',function(){
+  if(!officeCurrent) return;
+  var ta=document.getElementById('officeReplyText');
+  var body=(ta.value||'').trim();
+  if(!body){ setMsg('officeReplyMsg',false,'Write a reply first.'); return; }
+  var btn=document.getElementById('officeReplyBtn'); btn.disabled=true; btn.textContent='Sending…';
+  apiFetch('/bookings/'+officeCurrent+'/messages',{method:'POST',body:JSON.stringify({body:body})})
+    .then(function(){ ta.value=''; setMsg('officeReplyMsg',true,'Reply sent — it is in the customer\u2019s app now.'); openOfficeThread(officeCurrent); })
+    .catch(function(e){ setMsg('officeReplyMsg',false,'Could not send: '+e.message); })
+    .finally(function(){ btn.disabled=false; btn.textContent='Send reply'; });
+});
+document.getElementById('officeCloseBtn').addEventListener('click',function(){
+  officeCurrent=null;
+  document.getElementById('officeView').style.display='none';
+});
 
 if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });

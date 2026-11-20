@@ -764,6 +764,17 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
 
           <h3 class="sec">Text updates</h3>
           <div class="card"><div class="feed" id="textFeed"></div></div>
+
+          <h3 class="sec">Message the office</h3>
+          <div class="card">
+            <p class="sub" style="margin:0 0 6px;">A direct line to the Top Speed office about this job — a person on our team reads and answers here.</p>
+            <div id="officeThread"><p class="sub" style="margin:4px 0;">Sign in and book a job, and your conversation with the office lives right here.</p></div>
+            <div id="officeComposer" style="display:none; margin-top:10px;">
+              <textarea id="officeInput" rows="2" maxlength="2000" placeholder="Message the office about this job…" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px; resize:vertical;"></textarea>
+              <div id="officeMsg" style="font-size:13.5px; margin:6px 0;"></div>
+              <button class="btn blue small" id="officeSendBtn" onclick="officeSend()">Send message</button>
+            </div>
+          </div>
         </section>
 
         <!-- ================= GARAGE ================= -->
@@ -799,6 +810,10 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
               <div style="display:flex; gap:8px;">
                 <div style="flex:1;"><label class="fl">Serial</label><input id="gaSerial" type="text" placeholder="Optional" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
                 <div style="width:110px;"><label class="fl">Year</label><input id="gaYear" type="number" min="1950" max="2100" placeholder="2021" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
+              </div>
+              <div style="display:flex; gap:8px;">
+                <div style="flex:1;"><label class="fl">Purchase date (optional)</label><input id="gaPurchase" type="date" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
+                <div style="flex:1;"><label class="fl">Warranty until (optional)</label><input id="gaWarranty" type="date" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;"></div>
               </div>
               <div id="gaMsg" style="font-size:14px; margin-top:8px;"></div>
               <button class="btn blue" style="margin-top:10px;" onclick="garageAddAppliance()">＋ Add to my garage</button>
@@ -1020,6 +1035,9 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
               <div><b style="font-size:20px;color:var(--navy);" id="rsCompleted">0</b><span style="display:block;font-size:11.5px;color:var(--mut);">Completed</span></div>
             </div>
 
+            <h3 class="sec">Your progress</h3>
+            <div class="card" id="refProgress"><p class="sub" style="margin:4px 0;">Loading your progress…</p></div>
+
             <h3 class="sec">My service credit</h3>
             <div class="card" id="refCredits"><p class="sub" style="margin:4px 0;">Loading your credits…</p></div>
 
@@ -1160,6 +1178,7 @@ function renderTrack(){
   if(!FEED.length){ document.getElementById('textFeed').innerHTML = '<p class="sub" style="margin:0">Text updates from Service Setters and your technician appear here once you have a live job.</p><img src="/api/v1/app/platform-images/reminders-bell.webp" alt="Illustration: a phone with a bell and a clock — text updates and reminders for your job" style="width:min(240px,100%);height:auto;border-radius:12px;display:block;margin-top:10px" loading="lazy">'; }
   var btn = document.getElementById('advanceBtn');
   if(btn){ btn.style.display = booking.ref ? '' : 'none'; btn.disabled = false; btn.textContent = '↻ Refresh status'; }
+  if(window.loadOfficeThread) window.loadOfficeThread();
 }
 /* ============ tabs & mode ============ */
 function showTab(tab){
@@ -1642,9 +1661,12 @@ function loadGarage(){
       if(list){
         list.innerHTML=apps.length?apps.map(function(a){
           var meta=[a.brand,a.model,a.year?('· '+a.year):'',a.serial?('· S/N '+a.serial):''].filter(Boolean).join(' ');
-          return '<div class="hist"><div><b>'+escC(a.type)+'</b><span>'+escC(meta||'Details on file')+'</span></div>' +
+          return '<div style="border-bottom:1px solid var(--line); padding:4px 0 8px;">' +
+            '<div class="hist" style="border-bottom:none;"><div><b>'+escC(a.type)+'</b><span>'+escC(meta||'Details on file')+'</span></div>' +
             '<button class="btn ghost small" onclick="garageBook(\''+escC(a.type).replace(/'/g,"\'")+'\')">Book service</button>' +
-            '<button class="btn ghost small" style="color:#D63A48;" onclick="garageRemove(\''+a.id+'\')">Remove</button></div>';
+            '<button class="btn ghost small" style="color:#D63A48;" onclick="garageRemove(\''+a.id+'\')">Remove</button></div>' +
+            garageCareHtml(a) +
+            '</div>';
         }).join(''):'<p class="sub" style="margin:10px 0;">No appliances yet — add your first one below. It takes 20 seconds and Speedy will know your home from then on.</p><img src="/api/v1/app/platform-images/app-empty-garage.webp" alt="Illustration: an empty laundry corner with dashed outlines waiting for your first appliance" style="width:100%;height:auto;border-radius:12px;display:block;margin:4px 0 8px" loading="lazy">';
       }
       var history=j.data.serviceHistory||[];
@@ -1662,6 +1684,41 @@ function garageBook(type){
   showTab('speedy');
   var inp=document.getElementById('aspInput');
   if(inp){ inp.value='My '+type+' needs service — '; inp.focus(); }
+}
+/* ============ GARAGE CARE (B3) ============
+   Purchase/warranty dates + the warranty heads-up + the recall
+   notice. Everything renders from the API's computed `care` block:
+   the warranty state is derived server-side from the customer's own
+   dates, and a recall line appears ONLY when our office confirmed a
+   federal recall against this unit and set the note — the app never
+   invents or auto-matches recall data. */
+function garageCareHtml(a){
+  var care=a.care||{};
+  var out='';
+  if(care.recall){
+    out+='<div style="background:#FDECEC; border:1px solid #F3B7BC; border-radius:10px; padding:9px 11px; margin:6px 0; font-size:13.5px; line-height:1.45;"><b style="color:#B3261E;">Recall notice from our office</b><br>'+escC(care.recall.note)+(care.recall.url?' <a href="'+escC(care.recall.url)+'" target="_blank" rel="noopener" style="color:#B3261E; font-weight:700;">Official recall details</a>':'')+'</div>';
+  }
+  var lines=[];
+  if(care.purchaseDate) lines.push('Purchased '+escC(String(care.purchaseDate).slice(0,10)));
+  if(care.warrantyStatus==='ACTIVE') lines.push('<span style="background:#E7F6EE; color:#12805C; padding:2px 8px; border-radius:99px; font-weight:700; font-size:12px;">Warranty active</span> until '+escC(String(care.warrantyExpiresAt).slice(0,10)));
+  else if(care.warrantyStatus==='EXPIRING_SOON') lines.push('<span style="background:#FFF4D6; color:#8A5A00; padding:2px 8px; border-radius:99px; font-weight:700; font-size:12px;">Warranty ending soon</span> '+escC(String(care.warrantyExpiresAt).slice(0,10))+' — '+(care.daysToWarrantyExpiry===0?'today':('in '+care.daysToWarrantyExpiry+' day'+(care.daysToWarrantyExpiry===1?'':'s')))+'. Book any covered repair before it ends.');
+  else if(care.warrantyStatus==='EXPIRED') lines.push('<span style="background:#FDECEC; color:#B3261E; padding:2px 8px; border-radius:99px; font-weight:700; font-size:12px;">Warranty expired</span> '+escC(String(care.warrantyExpiresAt).slice(0,10)));
+  out+='<div style="font-size:13px; color:var(--mut); margin:2px 0 4px;">'+(lines.length?lines.join(' · '):'Add your purchase &amp; warranty dates and we will flag the warranty end date here before it lapses.')+'</div>';
+  out+='<button class="btn ghost small" onclick="var e=document.getElementById(\'ce-'+a.id+'\'); e.style.display=e.style.display===\'none\'?\'\':\'none\';">Care dates</button>' +
+    '<div id="ce-'+a.id+'" style="display:none; padding:8px 0 2px;">' +
+    '<label class="fl">Purchase date</label><input id="cdp-'+a.id+'" type="date" value="'+escC(String(care.purchaseDate||'').slice(0,10))+'" style="width:100%; padding:10px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">' +
+    '<label class="fl">Warranty until</label><input id="cdw-'+a.id+'" type="date" value="'+escC(String(care.warrantyExpiresAt||'').slice(0,10))+'" style="width:100%; padding:10px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">' +
+    '<div id="cdm-'+a.id+'" style="font-size:13.5px; margin:6px 0;"></div>' +
+    '<button class="btn blue small" onclick="garageSaveCare(\''+a.id+'\')">Save care dates</button></div>';
+  return out;
+}
+function garageSaveCare(id){
+  var msg=document.getElementById('cdm-'+id);
+  var p=document.getElementById('cdp-'+id).value;
+  var w=document.getElementById('cdw-'+id).value;
+  cFetch('/connect/appliances/'+id+'/care',{method:'POST',body:JSON.stringify({purchaseDate:p||null,warrantyExpiresAt:w||null})})
+    .then(function(){ if(msg) msg.textContent='Saved — your care dates are on your record.'; loadGarage(); })
+    .catch(function(e){ if(msg) msg.textContent=''+(e.message||'Could not save those dates'); });
 }
 /* ============ CONNECTED APPLIANCES — the foundation registry ============
    Registration = consent + registry on the customer's own account.
@@ -1723,12 +1780,57 @@ function connRevoke(applianceId, connectionId){
 function garageRemove(id){
   cFetch('/connect/appliances/'+id,{method:'DELETE'}).then(function(){ loadGarage(); }).catch(function(){});
 }
+/* ============ MESSAGE THE OFFICE (B2) ============
+   The per-booking human thread: this customer side reads/writes the
+   same thread store the office answers from the Chats console
+   (GET/POST /bookings/:id/messages). Only the signed-in customer's
+   own latest booking is wired here — the API enforces ownership. */
+var _officeLoadedFor=null, _officeLoadedAt=0;
+window.loadOfficeThread=function(force){
+  var box=document.getElementById('officeThread');
+  var composer=document.getElementById('officeComposer');
+  if(!box) return;
+  if(!cTok()||!booking.id){
+    if(composer) composer.style.display='none';
+    box.innerHTML='<p class="sub" style="margin:4px 0;">'+(cTok()?'Book a job and your conversation with the office lives right here.':'Sign in and book a job, and your conversation with the office lives right here.')+'</p>';
+    return;
+  }
+  if(!force && _officeLoadedFor===booking.id && (Date.now()-_officeLoadedAt)<5000) return;
+  _officeLoadedFor=booking.id; _officeLoadedAt=Date.now();
+  cFetch('/bookings/'+booking.id+'/messages')
+    .then(function(j){
+      var msgs=(j.data&&j.data.messages)||[];
+      box.innerHTML=msgs.length?msgs.map(function(m){
+        var mine=m.senderKind==='CUSTOMER';
+        return '<div style="display:flex; '+(mine?'justify-content:flex-end;':'')+' margin:6px 0;"><div style="max-width:85%; padding:9px 12px; border-radius:14px; font-size:14.5px; line-height:1.45; '+(mine?'background:var(--blue); color:#fff;':'background:#EEF3FB; color:var(--ink);')+'"><div style="font-size:11.5px; font-weight:700; opacity:.75; margin-bottom:2px;">'+(mine?'You':escC(m.senderName||'Top Speed office'))+' · '+escC(String(m.createdAt||'').slice(0,16).replace('T',' '))+'</div>'+escC(m.body)+'</div></div>';
+      }).join(''):'<p class="sub" style="margin:4px 0;">No messages yet — ask the office anything about this job and a person will answer here.</p>';
+      if(composer) composer.style.display='';
+      cFetch('/bookings/'+booking.id+'/messages/read',{method:'POST'}).catch(function(){});
+    })
+    .catch(function(){
+      box.innerHTML='<p class="sub" style="margin:4px 0;">Could not load your messages just now — try again in a moment, or call (844) 460-7038.</p>';
+      if(composer) composer.style.display='none';
+    });
+};
+function officeSend(){
+  var inp=document.getElementById('officeInput');
+  var msg=document.getElementById('officeMsg');
+  var btn=document.getElementById('officeSendBtn');
+  var body=(inp&&inp.value||'').trim();
+  if(!body){ if(msg) msg.textContent='Write a message first.'; return; }
+  if(!booking.id){ if(msg) msg.textContent='Book a job first — messages attach to your booking.'; return; }
+  btn.disabled=true; btn.textContent='Sending…';
+  cFetch('/bookings/'+booking.id+'/messages',{method:'POST',body:JSON.stringify({body:body})})
+    .then(function(){ inp.value=''; if(msg) msg.textContent=''; window.loadOfficeThread(true); })
+    .catch(function(e){ if(msg) msg.textContent=''+(e.message||'Could not send — try again or call (844) 460-7038.'); })
+    .finally(function(){ btn.disabled=false; btn.textContent='Send message'; });
+}
 function garageAddAppliance(){
   var msg=document.getElementById('gaMsg');
   var yearVal=document.getElementById('gaYear').value.trim();
-  var payload={ type: document.getElementById('gaType').value, brand: document.getElementById('gaBrand').value.trim()||undefined, model: document.getElementById('gaModel').value.trim()||undefined, serial: document.getElementById('gaSerial').value.trim()||undefined, year: yearVal?parseInt(yearVal,10):undefined };
+  var payload={ type: document.getElementById('gaType').value, brand: document.getElementById('gaBrand').value.trim()||undefined, model: document.getElementById('gaModel').value.trim()||undefined, serial: document.getElementById('gaSerial').value.trim()||undefined, year: yearVal?parseInt(yearVal,10):undefined, purchaseDate: document.getElementById('gaPurchase').value||undefined, warrantyExpiresAt: document.getElementById('gaWarranty').value||undefined };
   cFetch('/connect/appliances',{method:'POST',body:JSON.stringify(payload)})
-    .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Added — it is on your record.'; document.getElementById('gaBrand').value=''; document.getElementById('gaModel').value=''; document.getElementById('gaSerial').value=''; document.getElementById('gaYear').value=''; loadGarage(); })
+    .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Added — it is on your record.'; document.getElementById('gaBrand').value=''; document.getElementById('gaModel').value=''; document.getElementById('gaSerial').value=''; document.getElementById('gaYear').value=''; document.getElementById('gaPurchase').value=''; document.getElementById('gaWarranty').value=''; loadGarage(); })
     .catch(function(e){ msg.textContent=''+(e.message||'Could not add that'); });
 }
 </script>
@@ -1852,10 +1954,35 @@ window.refLoad=function(){
     document.getElementById('rsInvited').textContent=s.invited||0;
     document.getElementById('rsBooked').textContent=s.booked||0;
     document.getElementById('rsCompleted').textContent=s.completed||0;
+    var pEl=document.getElementById('refProgress');
+    if(pEl){
+      var p=d.progress||null;
+      if(!p){
+        pEl.innerHTML='<p class="sub" style="margin:4px 0;">Your progress appears here with your first completed referral.</p>';
+      } else {
+        var rows=[];
+        if(p.nextReward&&p.nextReward.amountCents!=null){
+          rows.push('<div class="hist"><div><b>Your next completed referral earns '+refMoney(p.nextReward.amountCents)+'</b><span>'+(p.completed||0)+' completed so far</span></div></div>');
+        } else {
+          rows.push('<div class="hist"><div><b>'+(p.completed||0)+' completed referral'+((p.completed===1)?'':'s')+' so far</b><span>Rates per the program terms above</span></div></div>');
+        }
+        if(p.nextTier){
+          rows.push('<div class="hist"><div><b>'+p.nextTier.remaining+' more to '+(p.nextTier.amountCents!=null?refMoney(p.nextTier.amountCents)+' each':'the next tier')+'</b><span>Next tier starts at '+p.nextTier.at+' completed referrals</span></div><span class="pill blue">'+escC(p.nextTier.tier.replace('TIER','Tier '))+'</span></div>');
+        } else if((p.tiers||[]).length>1){
+          rows.push('<div class="hist"><div><b>You are at the top tier</b><span>Every completed referral earns the top rate</span></div></div>');
+        }
+        (p.milestones||[]).forEach(function(m){
+          rows.push('<div class="hist"><div><b>'+(m.amountCents!=null?refMoney(m.amountCents):'Milestone')+' bonus at '+m.at+' referrals</b><span>'+(m.reached?'Reached — watch your credits above':'Not yet — '+(m.at-(p.completed||0))+' to go')+'</span></div>'+(m.reached?'<span class="pill blue">Reached</span>':'')+'</div>');
+        });
+        if(p.rewardExpiryDays) rows.push('<p class="sub" style="margin:6px 0 2px;">Credits expire '+Math.round(p.rewardExpiryDays/30.44)+' months after they are issued — each credit above shows its own date.</p>');
+        pEl.innerHTML=rows.join('');
+      }
+    }
     var credits=d.credits||[];
     var cEl=document.getElementById('refCredits');
     if(cEl){
-      var head='<p class="sub" style="margin:2px 0 8px;">Available now: <b style="color:var(--navy);">'+(s.creditsAvailableCount||0)+' credit(s) · '+refMoney(s.creditsAvailableCents)+'</b></p>';
+      var ca=(s.creditsAvailable&&typeof s.creditsAvailable==='object')?s.creditsAvailable:{count:s.creditsAvailableCount||0,totalCents:s.creditsAvailableCents||0};
+      var head='<p class="sub" style="margin:2px 0 8px;">Available now: <b style="color:var(--navy);">'+(ca.count||0)+' credit(s) · '+refMoney(ca.totalCents)+'</b></p>';
       cEl.innerHTML=head+(credits.length?credits.map(function(c){
         return '<div class="hist"><div><b>'+refMoney(c.amountCents)+' service credit</b><span>'+escC(c.status||'')+(c.expiresAt?(' · expires '+escC(String(c.expiresAt).slice(0,10))):'')+'</span></div></div>';
       }).join(''):'<p class="sub" style="margin:4px 0;">No credits yet — when a friend\'s job completes and is approved, your credit lands here.</p>');

@@ -3,7 +3,9 @@ import { z } from 'zod';
 import { createId, store } from '../data/store.js';
 import { deleteAppliance, persistAppliance } from '../db/appliancesRepo.js';
 import { activeConnection, listConnections, persistConnection } from '../db/applianceConnectionsRepo.js';
-import { authenticate } from '../middleware/auth.js';
+import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
+import { STAFF_ROLES } from '../config/security.js';
+import { lookupRecalls } from '../services/recallLookup.js';
 
 /**
  * Appliance Connect — the customer's connected garage. Every appliance
@@ -14,6 +16,8 @@ import { authenticate } from '../middleware/auth.js';
  */
 const router = Router();
 
+const dateString = z.string().trim().refine((v) => !Number.isNaN(Date.parse(v)), 'Invalid date');
+
 const applianceSchema = z.object({
   type: z.string().trim().min(2).max(60),
   brand: z.string().trim().max(60).optional(),
@@ -21,13 +25,42 @@ const applianceSchema = z.object({
   serial: z.string().trim().max(80).optional(),
   year: z.number().int().min(1950).max(2100).optional(),
   notes: z.string().trim().max(300).optional(),
+  // Garage care (B3): the customer's own dates, optional at add time.
+  purchaseDate: dateString.optional(),
+  warrantyExpiresAt: dateString.optional(),
 });
+
+/**
+ * Garage care view (B3): the dates plus the computed warranty state
+ * the heads-ups run on. Status is derived, never stored: UNKNOWN
+ * when the customer never gave a warranty end date, EXPIRED once it
+ * passes, EXPIRING_SOON inside 30 days, ACTIVE otherwise. The recall
+ * block exists only when staff curated one — never from the feed.
+ */
+const DAY_MS = 24 * 60 * 60 * 1000;
+function careFor(a, now = Date.now()) {
+  let warrantyStatus = 'UNKNOWN';
+  let daysToWarrantyExpiry = null;
+  if (a.warrantyExpiresAt) {
+    daysToWarrantyExpiry = Math.ceil((new Date(a.warrantyExpiresAt).getTime() - now) / DAY_MS);
+    warrantyStatus = daysToWarrantyExpiry < 0 ? 'EXPIRED' : daysToWarrantyExpiry <= 30 ? 'EXPIRING_SOON' : 'ACTIVE';
+  }
+  return {
+    purchaseDate: a.purchaseDate || null,
+    warrantyExpiresAt: a.warrantyExpiresAt || null,
+    warrantyStatus,
+    daysToWarrantyExpiry,
+    recall: a.recallNote
+      ? { note: a.recallNote, url: a.recallUrl || null, notedAt: a.recallNoteAt || null }
+      : null,
+  };
+}
 
 router.get('/connect/appliances', authenticate, (req, res) => {
   const mine = [...store.appliances.values()]
     .filter((a) => a.userId === req.user.id)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
-    .map((a) => ({ ...a, connections: listConnections(a.id) }));
+    .map((a) => ({ ...a, connections: listConnections(a.id), care: careFor(a) }));
   return res.json({ data: mine });
 });
 
@@ -124,11 +157,86 @@ router.post('/connect/appliances', authenticate, async (req, res) => {
     serial: parsed.data.serial || null,
     year: parsed.data.year ?? null,
     notes: parsed.data.notes || null,
+    purchaseDate: parsed.data.purchaseDate ? new Date(parsed.data.purchaseDate).toISOString() : null,
+    warrantyExpiresAt: parsed.data.warrantyExpiresAt ? new Date(parsed.data.warrantyExpiresAt).toISOString() : null,
     createdAt: new Date().toISOString(),
   };
   store.appliances.set(appliance.id, appliance);
   await persistAppliance(appliance);
-  return res.status(201).json({ data: appliance });
+  return res.status(201).json({ data: { ...appliance, care: careFor(appliance) } });
+});
+
+/* ------------------------- garage care (B3) ------------------------- */
+
+/** Owner sets or clears the care dates on their own appliance. */
+const careSchema = z.object({
+  purchaseDate: dateString.nullable().optional(),
+  warrantyExpiresAt: dateString.nullable().optional(),
+});
+
+router.post('/connect/appliances/:id/care', authenticate, async (req, res) => {
+  const appliance = myAppliance(req, res);
+  if (!appliance) return;
+  const parsed = careSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid care dates', details: parsed.error.flatten() });
+  }
+  if (parsed.data.purchaseDate !== undefined) {
+    appliance.purchaseDate = parsed.data.purchaseDate ? new Date(parsed.data.purchaseDate).toISOString() : null;
+  }
+  if (parsed.data.warrantyExpiresAt !== undefined) {
+    appliance.warrantyExpiresAt = parsed.data.warrantyExpiresAt ? new Date(parsed.data.warrantyExpiresAt).toISOString() : null;
+  }
+  await persistAppliance(appliance);
+  return res.json({ data: { ...appliance, care: careFor(appliance) } });
+});
+
+/**
+ * Staff-curated recall notice (B3). Staff check the federal feed
+ * (GET /connect/recall-check), confirm the match against the
+ * customer's actual unit, and only then does a notice appear in the
+ * customer's garage. An empty note clears the notice. The feed never
+ * writes here — a human confirms every customer-facing recall.
+ */
+const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
+const recallNoteSchema = z.object({
+  note: z.string().trim().max(1000),
+  url: z.string().trim().url().max(500).optional().nullable(),
+});
+
+router.post('/connect/appliances/:id/recall-note', ...staffOnly, async (req, res) => {
+  const appliance = store.appliances.get(req.params.id);
+  if (!appliance) return res.status(404).json({ error: 'Appliance not found' });
+  const parsed = recallNoteSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid recall note', details: parsed.error.flatten() });
+  }
+  if (parsed.data.note) {
+    appliance.recallNote = parsed.data.note;
+    appliance.recallUrl = parsed.data.url || null;
+    appliance.recallNoteAt = new Date().toISOString();
+  } else {
+    appliance.recallNote = null;
+    appliance.recallUrl = null;
+    appliance.recallNoteAt = null;
+  }
+  await persistAppliance(appliance);
+  return res.json({ data: { id: appliance.id, care: careFor(appliance) } });
+});
+
+/**
+ * Federal recall candidates for staff (B3): a live server-side read
+ * of the CPSC SaferProducts feed. Returns candidates to judge —
+ * never writes anything, and says available:false when the feed is
+ * down rather than serving invented or stale results.
+ */
+router.get('/connect/recall-check', ...staffOnly, async (req, res) => {
+  const result = await lookupRecalls({
+    brand: req.query.brand || null,
+    model: req.query.model || null,
+    type: req.query.type || null,
+  });
+  return res.json({ data: result });
 });
 
 router.delete('/connect/appliances/:id', authenticate, async (req, res) => {
@@ -161,7 +269,9 @@ router.get('/connect/summary', authenticate, (req, res) => {
       status: b.status,
       createdAt: b.createdAt,
     }));
-  const appliances = [...store.appliances.values()].filter((a) => a.userId === req.user.id);
+  const appliances = [...store.appliances.values()]
+    .filter((a) => a.userId === req.user.id)
+    .map((a) => ({ ...a, care: careFor(a) }));
   return res.json({ data: { appliances, serviceHistory: myBookings } });
 });
 

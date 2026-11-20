@@ -803,6 +803,18 @@ model CustomerAppliance {
   serial      String?
   year        Int?
   notes       String?
+  // Garage care (2026-11-20, recommendations B3): the dates the
+  // warranty heads-ups run on, plus the staff-curated recall notice.
+  // purchaseDate / warrantyExpiresAt are the customer's own facts
+  // (owner-editable). recallNote is set ONLY by staff after checking
+  // the federal CPSC recall feed (services/recallLookup.js) — it is
+  // never auto-populated from the feed, so a customer never sees an
+  // unconfirmed machine match dressed up as a recall on their unit.
+  purchaseDate      DateTime?
+  warrantyExpiresAt DateTime?
+  recallNote        String?
+  recallUrl         String?
+  recallNoteAt      DateTime?
   createdAt   DateTime             @default(now())
   connections ApplianceConnection[]
   events      ApplianceEvent[]
@@ -1567,6 +1579,33 @@ model SpeedyChatMessage {
   session SpeedyChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId, createdAt])
+}
+
+// Message the office (2026-11-20, recommendations B2): the per-booking
+// human thread between the customer (in /app) and the office (staff,
+// answered from the Chats console). This is the shared thread store —
+// the Wave 1 D1 setter composer converges on the same rows when it
+// lands; there is exactly one message table per booking, never two.
+// senderKind is CUSTOMER or STAFF and is derived server-side from the
+// caller's roles, never trusted from the client. readAt is when the
+// OTHER side read the message (null = unread for the recipient side).
+// No foreign keys: bookings live in ServiceRequest and threads must
+// survive the same skeleton/database duality as the rest of the store;
+// bookingId/companyId are plain indexed columns, access is enforced
+// in the route (staff role or the booking-belongs-to-user test).
+model BookingMessage {
+  id          String    @id @default(uuid()) @db.Uuid
+  companyId   String    @db.Uuid
+  bookingId   String    @db.Uuid
+  senderKind  String
+  senderUserId String   @db.Uuid
+  senderName  String?
+  body        String
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([bookingId, createdAt])
+  @@index([companyId, createdAt])
 }
 
 // Multi-account Google manager registry (2026-11-13): Ramone runs the

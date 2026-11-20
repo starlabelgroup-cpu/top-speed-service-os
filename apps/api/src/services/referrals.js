@@ -741,7 +741,7 @@ export function getCustomerDashboard(customer) {
     journeys: [],
     credits: [],
   };
-  if (!customer) return empty;
+  if (!customer) return { ...empty, progress: null };
 
   const customerIds = new Set([customer.id].filter(Boolean));
   const myPhone = digits10(customer.phone);
@@ -765,7 +765,7 @@ export function getCustomerDashboard(customer) {
   const referral = [...store.referrals.values()].find(
     (candidate) => customerIds.has(candidate.customerId) && candidate.status === 'ACTIVE',
   ) || [...store.referrals.values()].find((candidate) => customerIds.has(candidate.customerId));
-  if (!referral) return empty;
+  if (!referral) return { ...empty, progress: null };
 
   const journeys = store.referralJourneys
     .filter((journey) => journey.referralId === referral.id || (journey.code === referral.code && customerIds.has(journey.referrerCustomerId)))
@@ -777,6 +777,40 @@ export function getCustomerDashboard(customer) {
     (credit) => credit.status === 'AVAILABLE' && (!credit.expiresAt || new Date(credit.expiresAt).getTime() >= Date.now()),
   );
 
+  const completedCount = journeys.filter((j) => COMPLETED_STATUSES.includes(j.status)).length;
+
+  // Referral hub progress (2026-11-20, B9): where the customer stands
+  // in the program — computed from the SAME owner-set settings and
+  // the SAME tier function the reward engine pays out with, so the
+  // hub can never promise a rate the engine would not pay. Amounts
+  // stay null when the owner has not configured them in this
+  // environment (the app then shows its program-terms copy instead
+  // of a number) — nothing here invents a price.
+  const settings = getProgramSettings(referral.companyId || customer.companyId);
+  const tierRows = [
+    { tier: 'TIER1', threshold: 1, amountCents: settings.rewardAmountCents ?? null },
+    { tier: 'TIER2', threshold: settings.tier2Threshold ?? null, amountCents: settings.tier2AmountCents ?? null },
+    { tier: 'TIER3', threshold: settings.tier3Threshold ?? null, amountCents: settings.tier3AmountCents ?? null },
+  ].filter((row) => row.threshold != null);
+  const nextTierRow = tierRows.find((row) => completedCount < row.threshold) || null;
+  const progress = {
+    completed: completedCount,
+    // The rate the NEXT completed referral earns — tierForCompletedCount
+    // is evaluated at completed+1 because the completing referral
+    // itself counts toward its tier (the engine's own rule).
+    nextReward: tierForCompletedCount(settings, completedCount + 1),
+    tiers: tierRows.map((row) => ({ ...row, reached: completedCount >= row.threshold })),
+    nextTier: nextTierRow
+      ? { tier: nextTierRow.tier, at: nextTierRow.threshold, remaining: nextTierRow.threshold - completedCount, amountCents: nextTierRow.amountCents }
+      : null,
+    milestones: (Array.isArray(settings.milestoneBonuses) ? settings.milestoneBonuses : []).map((m) => ({
+      at: m.at,
+      amountCents: m.amountCents ?? null,
+      reached: completedCount >= m.at,
+    })),
+    rewardExpiryDays: settings.rewardExpiryDays ?? null,
+  };
+
   return {
     code: referral.code,
     link: `https://topspeedserviceos.com/refer?c=${referral.code}`,
@@ -786,12 +820,13 @@ export function getCustomerDashboard(customer) {
       clicks: referral.clickCount || 0,
       invited: journeys.filter((j) => j.status === 'INVITED' || j.status === 'CLICKED').length,
       booked: journeys.filter((j) => j.status === 'BOOKED').length,
-      completed: journeys.filter((j) => COMPLETED_STATUSES.includes(j.status)).length,
+      completed: completedCount,
       creditsAvailable: {
         count: available.length,
         totalCents: available.reduce((sum, credit) => sum + (credit.amountCents || 0), 0),
       },
     },
+    progress,
     journeys: journeys.map(safeJourney),
     credits: credits.map(safeCredit),
   };
