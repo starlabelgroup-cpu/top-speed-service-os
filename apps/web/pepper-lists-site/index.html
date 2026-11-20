@@ -347,6 +347,14 @@ footer a{color:var(--lime)}
         </div>
       </div>
       <div class="plb-success" id="plSellDone" role="status"></div>
+      <!-- TRUST & GROWTH (2026-11-20): cross-promotion — Sell readers
+           meet the Book purpose, and the public listings feed. Never
+           blocks the listing flow above. -->
+      <div class="plt-xpromo">
+        <h4>Need it repaired instead? Book a service visit</h4>
+        <p>Sometimes the smarter move is fixing what you have. Top Speed repairs and installs appliances across Broward — $99 residential diagnostic credited toward the repair, flat $210 labor, parts at a written quote. The classic web form is the primary booking path; Speedy AI booking sits below it.</p>
+        <div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair — web form</a><a class="btn small dark" href="#listings">Browse live listings</a><a class="btn small dark" href="#safety">Selling safely</a></div>
+      </div>
     </div>
       <div style="margin-top:18px;background:var(--panel2);border:1px solid #2c4232;border-radius:13px;padding:16px 18px">
         <h4 style="font-size:16px;margin-bottom:5px;color:var(--lime)">Reach more marketplaces</h4>
@@ -389,8 +397,45 @@ footer a{color:var(--lime)}
           </div>
         </div>
       </div>
+      <!-- TRUST & GROWTH (2026-11-20): real Top Speed service reviews
+           inside the Book panel — the same published store the public
+           wall reads. The aggregate renders only when at least one
+           real review exists; otherwise the honest empty line. -->
+      <div class="plt-sellercard" id="pltBookReviews" style="margin-top:18px">
+        <h4>What neighbors say about Top Speed service</h4>
+        <div id="pltBookReviewsBody"><p class="plt-mini">Loading real reviews…</p></div>
+        <div class="plb-btnrow" style="margin-top:10px"><a class="btn small dark" href="#reviews">See the full review wall</a></div>
+      </div>
+      <!-- TRUST & GROWTH (2026-11-20): cross-promotion — Book readers
+           meet the Sell purpose. Never blocks the booking above. -->
+      <div class="plt-xpromo">
+        <h4>Replacing it instead? Sell your old appliance</h4>
+        <p>If the old unit is headed out anyway, list it on Pepper Lists: snap a photo, Speedy drafts the listing, you set the price. And if it is worth fixing after all, you are already in the right place — the booking form is right above.</p>
+        <div class="plb-btnrow"><button class="btn small" type="button" onclick="plCatShow('sell')">Open Pepper Lists Sell</button><a class="btn small dark" href="#safety">How selling stays safe</a></div>
+      </div>
     </div>
   </div>
+</section>
+
+<!-- PEPPER LISTS TRUST & GROWTH (2026-11-20): the seller dashboard —
+     my listings with real views/comments, sales I can be reviewed
+     for, my analytics (plan feature) and the seller upgrade plans.
+     Everything renders from the live API; prices appear only when
+     the owner has set them. Shown only while signed in. -->
+<section class="plb" id="plSeller" style="display:none" aria-label="Your seller dashboard">
+  <div class="plb-head">
+    <span class="plb-kicker">Pepper Lists · Your seller dashboard</span>
+    <h2>Sell with <span class="lime">confidence</span></h2>
+    <p class="plb-note">Your listings, your sales and your seller tools in one place. Buyers see your verified badges, your completed sales and your real reviews — trust you actually earned. Read <a href="#safety">Safety &amp; Security</a> for how it all fits together.</p>
+  </div>
+  <h3 style="margin:22px 0 10px">My listings</h3>
+  <div id="pltMine"><p class="plt-mini">Loading your listings…</p></div>
+  <div id="pltReviewable" style="margin-top:22px"></div>
+  <div id="pltAnalytics" style="margin-top:22px"></div>
+  <h3 style="margin:26px 0 6px">Seller upgrade plans</h3>
+  <p class="plt-mini" style="margin-bottom:14px">Free is the Pepper Lists you know today — it never goes away. Paid plans add featured placement, bump credits, more photos per listing, your analytics and a public storefront. Prices appear here the moment the office sets them; until then every plan works exactly like Free.</p>
+  <div id="pltPlans"><p class="plt-mini">Loading plans…</p></div>
+  <p class="plt-msg" id="pltPlanMsg" role="status"></p>
 </section>
 <!-- SPEEDY BRAIN — Speedy AI (the assistant) is the commander inside
      Pepper Lists: it recommends the right Top Speed platform, reads
@@ -1048,7 +1093,71 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 .plw-reply p{font-size:14px;line-height:1.6;color:var(--ink)}
 .plw-empty{background:var(--panel);border:1px dashed rgba(183,227,60,.45);border-radius:16px;padding:30px;text-align:center}
 .plw-empty p{color:var(--muted);font-size:15.5px;line-height:1.6;max-width:560px;margin:0 auto 18px}
+/* Pepper Lists Trust & Growth (2026-11-20): listings feed, trust-first
+   detail, comments, seller dashboard, plans and the safety center. */
+.plt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.plt-card{background:var(--panel);border:1px solid #2c4232;border-radius:16px;overflow:hidden;text-align:left;cursor:pointer;padding:0;width:100%;color:var(--ink);font:inherit}
+.plt-card:hover{border-color:rgba(183,227,60,.55)}
+.plt-card img{width:100%;height:150px;object-fit:cover;display:block;background:#0c130d}
+.plt-card .plt-nophoto{height:150px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13.5px;background:#0c130d;padding:0 14px;text-align:center}
+.plt-cardbody{padding:13px 15px 15px}
+.plt-cardbody h3{font-size:16.5px;margin:0 0 4px;line-height:1.3}
+.plt-price{font-weight:800;color:var(--lime);font-size:16px}
+.plt-meta{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.5}
+.plt-feat{display:inline-block;background:var(--lime);color:#0c130d;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;margin-bottom:8px}
+.plt-sold{display:inline-block;background:#5b2323;color:#ffd9d9;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;margin-bottom:8px}
+.plt-detail{background:var(--panel);border:1px solid #2c4232;border-radius:18px;padding:22px;margin-top:20px}
+.plt-detail h3{font-size:22px;margin:0 0 6px}
+.plt-photos{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.plt-photos img{width:170px;height:128px;object-fit:cover;border-radius:12px;border:1px solid #2c4232}
+.plt-sellercard{background:rgba(183,227,60,.05);border:1px solid rgba(183,227,60,.28);border-radius:14px;padding:15px 17px;margin:16px 0}
+.plt-sellercard h4{margin:0 0 8px;font-size:16px}
+.plt-badge{display:inline-block;border:1px solid rgba(183,227,60,.5);color:var(--lime);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700;margin:0 6px 6px 0}
+.plt-badge.plain{border-color:#2c4232;color:var(--muted)}
+.plt-safety{background:rgba(255,196,64,.06);border:1px solid rgba(255,196,64,.35);border-radius:14px;padding:15px 17px;margin:16px 0}
+.plt-safety h4{margin:0 0 8px;font-size:15.5px}
+.plt-safety p,.plt-safety li{font-size:14px;line-height:1.6;color:var(--ink)}
+.plt-safety ul{margin:6px 0 0;padding-left:20px}
+.plt-comment{border-top:1px solid #223528;padding:12px 0}
+.plt-comment .who{font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--lime)}
+.plt-comment .who.seller{color:var(--amber)}
+.plt-comment p{font-size:14.5px;line-height:1.6;margin:4px 0 0;color:var(--ink)}
+.plt-comment .plt-hidebtn{background:none;border:0;color:var(--muted);font-size:12.5px;cursor:pointer;padding:2px 0;text-decoration:underline}
+.plt-stars{color:var(--amber);font-size:15px;letter-spacing:2px}
+.plt-msg{font-size:14px;min-height:20px;margin-top:8px}
+.plt-msg.err{color:#ff9c9c}
+.plt-plan{border:1px solid #2c4232;border-radius:16px;padding:18px;background:var(--panel)}
+.plt-plan h4{margin:0 0 4px;font-size:17px}
+.plt-plan ul{margin:10px 0;padding-left:19px}
+.plt-plan li{font-size:14px;line-height:1.65}
+.plt-plan .plt-pricebig{font-size:21px;font-weight:800;color:var(--lime)}
+.plt-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.plt-mini{font-size:13px;color:var(--muted);line-height:1.55}
+.plt-xpromo{background:rgba(183,227,60,.05);border:1px dashed rgba(183,227,60,.45);border-radius:14px;padding:16px 18px;margin-top:18px}
+.plt-xpromo h4{margin:0 0 6px;font-size:16px}
+.plt-xpromo p{font-size:14.5px;line-height:1.6;margin:0 0 10px}
+.plt-mine{border:1px solid #2c4232;border-radius:14px;padding:15px 17px;margin-bottom:12px;background:var(--panel)}
+.plt-mine h4{margin:0 0 4px;font-size:16px}
+.plt-reportbox{margin-top:14px;border-top:1px solid #223528;padding-top:14px}
+.plt-reportbox select,.plt-reportbox textarea,.plt-commentbox textarea,.plt-commentbox select,.plt-commentbox input{background:#0c130d;border:1px solid #2c4232;border-radius:10px;color:var(--ink);padding:10px 12px;font:inherit;font-size:14.5px;width:100%;box-sizing:border-box}
+.plt-commentbox{margin-top:14px}
+@media(max-width:560px){.plt-photos img{width:calc(50% - 5px);height:110px}}
 </style>
+<!-- PEPPER LISTS TRUST & GROWTH (2026-11-20): the public listings
+     panel. Cards and detail render ONLY from the live listings API —
+     real titles, real seller-set prices, real comment counts, real
+     seller badges. An empty feed says so plainly. -->
+<section style="padding-top:0;" id="listings">
+  <h2>Listings on <span class="lime">Pepper Lists</span></h2>
+  <p class="sub">Real items from real local sellers, posted through Pepper Lists. Every seller signs in with a verified account, comments are public, and anything that looks wrong can be reported to the Top Speed office from the listing itself. New here? Read <a href="#safety">Safety &amp; Security</a> first — it takes a minute and it is worth it.</p>
+  <div class="plt-grid" id="pltFeed"></div>
+  <div class="plw-empty" id="pltFeedEmpty" style="display:none">
+    <p>No listings are live right now. When a neighbor posts something for sale it appears here — or be the first: sign in, snap a photo, and Pepper drafts your listing.</p>
+    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">List something</a>
+  </div>
+  <div id="pltDetail"></div>
+</section>
+
 <section style="padding-top:0;" id="reviews">
   <h2>Pepper Lists <span class="lime">Reviews</span></h2>
   <p class="sub">Real reviews from real repairs, posted by customers from inside Pepper Lists after their service — photos, video and all. Speedy, our Assistant Manager, answers every one.</p>
@@ -1107,10 +1216,46 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <p class="tse-insight"><b>Good to know:</b> Pepper Lists It is part of the Top Speed family — the same Service OS behind it also books repairs, tracks technicians, and runs Refer &amp; Earn.</p>
 </section>
 <!-- /TSE-PANEL -->
+<!-- PEPPER LISTS TRUST & GROWTH (2026-11-20): the Safety & Security
+     center. Plain language, only true claims: email-verified
+     accounts, optional 2-step sign-in, human review of every report,
+     Stripe for booking payments. No buyer-protection promise is
+     made anywhere, because none exists. -->
+<section style="padding-top:0;" id="safety">
+  <h2>Safety &amp; <span class="lime">Security</span></h2>
+  <p class="sub">How Pepper Lists keeps selling, buying and booking straightforward and safe — and what to watch for yourself.</p>
+  <div class="grid">
+    <div class="card">
+      <h3>Verified accounts</h3>
+      <p>Every seller and buyer on Pepper Lists signs in with a real account. Sellers whose email is verified carry an <b>Email verified</b> badge on their listings, and sellers who turned on 2-step sign-in carry a <b>2-step on</b> badge — both badges only ever appear when they are true. You can also see how long a seller has been a member and how many sales they have completed here.</p>
+    </div>
+    <div class="card">
+      <h3>2-step sign-in</h3>
+      <p>Your Pepper Lists account is your Top Speed account. Turn on 2-step sign-in (Layer 2) from your account settings and every sign-in asks for a one-time code on top of your password — so a leaked password alone cannot get anyone into your listings, bookings or reviews.</p>
+    </div>
+    <div class="card">
+      <h3>Reporting works</h3>
+      <p>Every listing has a <b>Report this listing</b> button. Pick a reason, add a note if you like, and the report goes straight to the Top Speed office queue — a person reads every report. Staff can remove comments and listings that break the rules. If someone pressures you to move a conversation off Pepper Lists, that is exactly what the report button is for.</p>
+    </div>
+    <div class="card">
+      <h3>Safe buying &amp; selling</h3>
+      <p>Meet in a public place in daylight when you can, bring a friend for big items, and check the item before money changes hands. <b>Pepper Lists will never ask you to pay by gift card or wire transfer</b>, and neither will Top Speed. If a "buyer" sends a check for more than the price and asks for change back, it is a scam — walk away and report the listing.</p>
+    </div>
+    <div class="card">
+      <h3>Booking through Pepper Lists</h3>
+      <p>Booking a repair here connects you to the real Top Speed Service OS: the classic web form is the primary booking path, Speedy AI sits below it and always summarizes your details for your confirmation before anything reaches the Service Setters office. Booking payments run through Stripe. The residential diagnostic is $99, collected at booking and credited toward an approved repair; repair labor is a flat $210 and installation a flat $150, parts at a written quote — no work ever starts without your approved written quote.</p>
+    </div>
+    <div class="card">
+      <h3>Reviews you can trust</h3>
+      <p>Service reviews on Pepper Lists can only be written after a completed repair, and seller reviews only after a completed sale recorded here. Ratings start from real reviews only — when a seller or a service has no reviews yet, the page says exactly that instead of showing stars nobody earned.</p>
+    </div>
+  </div>
+</section>
+
 <footer>
   <strong>Pepper Lists It</strong> · A Top Speed OS Consumer App · A Top Speed Appliance LLC product · Fort Lauderdale, FL<br>
   Snap it. Pepper lists it — everywhere.<br>
-  <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="https://topspeedserviceos.com/privacy">Privacy Policy</a>
+  <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="#safety">Safety &amp; Security</a> · <a href="#listings">Listings</a> · <a href="https://topspeedserviceos.com/privacy">Privacy Policy</a>
   <br>Workstation: <a href="https://topspeedserviceos.com/crm">Top Speed CRM — Customers &amp; Bookings</a> · <a href="https://topspeedserviceos.com/book-os">Service Setters — Book OS</a> · <a href="https://topspeedserviceos.com/applianceman">ApplianceMan</a> · <a href="https://topspeedserviceos.com/tech">Tech App — Service Providers</a> · <a href="https://top-speed-field-pro.vercel.app">Field Pro — Tech App</a> · <a href="https://topspeedserviceos.com/network">Service Network</a> · <a href="https://topspeedserviceos.com/advertiser">Advertiser Console</a> · <a href="https://topspeedserviceos.com/marketing-os">Top Speed Marketing OS</a> · <a href="https://topspeedserviceos.com/marketing-os/studio">Page Studio</a> · <a href="https://topspeedserviceos.com/media">Media OS</a> · <a href="https://topspeedserviceos.com/portal">Service OS Portal</a> · <a href="https://topspeedserviceos.com/navigator">Workstation — Team Consoles</a>
 </footer>
 </div><!-- /plApp -->
@@ -2609,6 +2754,339 @@ function plmComposeSend(){
   }).catch(function(e){ if(msg) msg.textContent=(e&&e.message)?e.message:'Could not send — try again.'; })
   .finally(function(){ if(btn) btn.disabled=false; });
 }
+=======
+/* Pepper Lists Trust & Growth (2026-11-20) — listings feed, trust-first
+   listing detail (seller badges from real account facts, comments,
+   seller reviews, report flow, safety panel), the Book panel's real
+   service reviews, the seller dashboard (my listings, reviewable
+   sales, analytics) and the seller upgrade plans. Everything renders
+   from the live API; aggregates render only when real reviews exist;
+   plan prices render only when the owner has set them. */
+function pltEl(id){ return document.getElementById(id); }
+function pltEsc(s){ return window.plbEsc ? plbEsc(s) : String(s==null?'':s); }
+function pltMoney(cents){ if(cents==null) return 'Price on request'; return '$'+(cents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function pltStars(n){ var s=''; for(var i=1;i<=5;i++){ s+= i<=Math.round(n) ? '★' : '☆'; } return s; }
+function pltDate(s){ return window.plrDate ? plrDate(s) : ''; }
+function pltSignedIn(){ try{ return !!localStorage.getItem('tsos_token'); }catch(e){ return false; } }
+function pltMyId(){ return (window.plUser && plUser.id) ? plUser.id : null; }
+
+function pltBadges(b, salesCount){
+  var h='';
+  if(!b) return h;
+  if(b.emailVerified) h+='<span class="plt-badge">Email verified</span>';
+  if(b.twoStepOn) h+='<span class="plt-badge">2-step on</span>';
+  if(b.memberSince) h+='<span class="plt-badge plain">Member since '+pltEsc(pltDate(b.memberSince))+'</span>';
+  if(salesCount>0) h+='<span class="plt-badge plain">'+salesCount+' completed sale'+(salesCount===1?'':'s')+' on Pepper Lists</span>';
+  return h;
+}
+
+/* ------------------------------ feed ------------------------------ */
+function pltCardHtml(c){
+  var h='<button type="button" class="plt-card" onclick="pltOpenListing(\''+pltEsc(c.id)+'\')">';
+  if(c.featured) h+='<div style="padding:12px 15px 0"><span class="plt-feat">Featured</span></div>';
+  if(c.photoUrl) h+='<img src="'+pltEsc(PL_API+c.photoUrl)+'" alt="Photo of '+pltEsc(c.title)+'" loading="lazy">';
+  else h+='<div class="plt-nophoto">No photo yet — ask the seller in the comments</div>';
+  h+='<div class="plt-cardbody"><h3>'+pltEsc(c.title)+'</h3><span class="plt-price">'+pltEsc(pltMoney(c.priceCents))+'</span>';
+  h+='<div class="plt-meta">'+pltEsc(c.category||'')+(c.condition?' · '+pltEsc(c.condition):'')+'<br>by '+pltEsc(c.sellerName||'Pepper Lists seller')+' · '+c.commentCount+' comment'+(c.commentCount===1?'':'s')+'</div></div></button>';
+  return h;
+}
+function pltLoadFeed(){
+  var feed=pltEl('pltFeed'); if(!feed) return;
+  plApi('/pepper-lists/listings/public?limit=30').then(function(j){
+    var items=(j&&j.data)||[];
+    feed.innerHTML=items.map(pltCardHtml).join('');
+    var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=items.length?'none':'';
+  }).catch(function(){ var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=''; });
+}
+
+/* ----------------------------- detail ----------------------------- */
+var pltCurrentListing=null;
+function pltCommentHtml(c, isMine){
+  var who=c.authorKind==='SELLER' ? pltEsc(c.authorName||'Seller')+' · the seller' : pltEsc(c.authorName||'Pepper Lists member');
+  var h='<div class="plt-comment"><div class="who'+(c.authorKind==='SELLER'?' seller':'')+'">'+who+' · '+pltEsc(pltDate(c.createdAt))+'</div><p>'+pltEsc(c.body)+'</p>';
+  if(isMine) h+='<button type="button" class="plt-hidebtn" onclick="pltHideComment(\''+pltEsc(c.id)+'\')">Hide this comment on my listing</button>';
+  return h+'</div>';
+}
+function pltOpenListing(id){
+  var box=pltEl('pltDetail'); if(!box) return;
+  box.innerHTML='<div class="plt-detail"><p class="plt-mini">Loading the listing…</p></div>';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  plApi('/pepper-lists/listings/public/'+encodeURIComponent(id)).then(function(j){
+    var d=j.data; pltCurrentListing=d;
+    var mine=pltMyId() && d.seller && d.seller.userId===pltMyId();
+    var h='<div class="plt-detail">';
+    if(d.featured) h+='<span class="plt-feat">Featured listing</span>';
+    if(d.status==='SOLD') h+='<span class="plt-sold">Sold</span>';
+    h+='<h3>'+pltEsc(d.title)+'</h3><span class="plt-price" style="font-size:19px">'+pltEsc(pltMoney(d.priceCents))+'</span>';
+    h+='<p class="plt-meta">'+pltEsc(d.category||'')+(d.condition?' · '+pltEsc(d.condition):'')+' · Listed '+pltEsc(pltDate(d.createdAt))+' · '+d.viewCount+' view'+(d.viewCount===1?'':'s')+'</p>';
+    if(d.photos && d.photos.length){ h+='<div class="plt-photos">'+d.photos.map(function(p){ return '<img src="'+pltEsc(PL_API+p)+'" alt="Photo of '+pltEsc(d.title)+'" loading="lazy">'; }).join('')+'</div>'; }
+    if(d.description) h+='<p style="font-size:15px;line-height:1.65;white-space:pre-line">'+pltEsc(d.description)+'</p>';
+    /* Seller trust card — badges only when the facts are true. */
+    h+='<div class="plt-sellercard"><h4>Sold by '+pltEsc(d.seller.name)+'</h4><div>'+pltBadges(d.seller.badges, d.seller.salesCount)+'</div>';
+    if(d.sellerReviews && d.sellerReviews.count>0){
+      h+='<p style="margin:8px 0 0"><span class="plt-stars">'+pltStars(d.sellerReviews.average)+'</span> <b>'+d.sellerReviews.average+'</b> from '+d.sellerReviews.count+' seller review'+(d.sellerReviews.count===1?'':'s')+'</p>';
+      h+=d.sellerReviews.items.map(function(r){ return '<div class="plt-comment"><div class="who">'+pltEsc(r.buyerName||'Buyer')+' · '+pltEsc(pltDate(r.createdAt))+'</div><p><span class="plt-stars">'+pltStars(r.rating)+'</span> <b>'+pltEsc(r.title)+'</b><br>'+pltEsc(r.body)+'</p></div>'; }).join('');
+    } else {
+      h+='<p class="plt-mini" style="margin-top:8px">No reviews yet for this seller — seller reviews open after a completed sale recorded on Pepper Lists.</p>';
+    }
+    if(d.seller.userId) h+='<div class="plb-btnrow" style="margin-top:10px"><a class="btn small dark" href="#listings" onclick="pltOpenStorefront(\''+pltEsc(d.seller.userId)+'\');return false;">See this seller’s storefront</a></div>';
+    h+='</div>';
+    /* Safety panel */
+    h+='<div class="plt-safety"><h4>Stay safe on this deal</h4><ul><li>Meet in a public place in daylight when you can, and check the item before money changes hands.</li><li><b>Pepper Lists will never ask you to pay by gift card or wire transfer</b> — and neither will Top Speed.</li><li>Keep the conversation here; if anything feels off, report the listing below — a person at the Top Speed office reads every report.</li></ul><p style="margin:8px 0 0"><a href="#safety">Read Safety &amp; Security</a></p></div>';
+    /* Repair cross-promo */
+    h+='<div class="plt-xpromo"><h4>Need it repaired instead? Book a service visit</h4><p>Top Speed repairs and installs appliances across Broward — the classic web form is the primary booking path, with Speedy AI below it.</p><div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair — web form</a></div></div>';
+    /* Comments */
+    h+='<h4 style="margin:20px 0 4px">Comments ('+d.comments.length+')</h4><div id="pltComments">';
+    h+= d.comments.length ? d.comments.map(function(c){ return pltCommentHtml(c, mine); }).join('') : '<p class="plt-mini">No comments yet — ask the seller a question below.</p>';
+    h+='</div>';
+    if(pltSignedIn()){
+      h+='<div class="plt-commentbox"><label class="plb-lab">Add a comment<textarea id="pltCommentBody" rows="3" maxlength="2000" placeholder="Ask about condition, pickup, availability…"></textarea></label><div class="plb-btnrow"><button class="btn small" type="button" onclick="pltPostComment()">Post comment</button></div><p class="plt-msg" id="pltCommentMsg" role="status"></p></div>';
+    } else {
+      h+='<p class="plt-mini" style="margin-top:12px">Sign in to comment — comments are tied to real accounts so conversations stay honest.</p><div class="plb-btnrow"><button class="btn small" type="button" onclick="return plOpenApp(event)">Sign in to comment</button></div>';
+    }
+    /* Report */
+    h+='<div class="plt-reportbox"><h4 style="margin:0 0 8px">Report this listing</h4>';
+    if(pltSignedIn()){
+      h+='<label class="plb-lab">Reason<select id="pltReportReason"><option value="SCAM_OR_FRAUD">Scam or fraud</option><option value="PROHIBITED_ITEM">Prohibited item</option><option value="INACCURATE_LISTING">Listing is inaccurate</option><option value="ALREADY_SOLD">Already sold</option><option value="OTHER">Something else</option></select></label><label class="plb-lab">Details (optional)<textarea id="pltReportDetails" rows="2" maxlength="1000" placeholder="Anything the office should know"></textarea></label><div class="plb-btnrow"><button class="btn small dark" type="button" onclick="pltReport()">Send report to the office</button></div><p class="plt-msg" id="pltReportMsg" role="status"></p>';
+    } else {
+      h+='<p class="plt-mini">Sign in to report — reports come from real accounts so the office can follow up.</p><div class="plb-btnrow"><button class="btn small dark" type="button" onclick="return plOpenApp(event)">Sign in to report</button></div>';
+    }
+    h+='</div></div>';
+    box.innerHTML=h;
+  }).catch(function(e){ box.innerHTML='<div class="plt-detail"><p class="plt-mini">That listing could not be loaded — it may have been removed.</p></div>'; });
+}
+function pltOpenStorefront(userId){
+  var box=pltEl('pltDetail'); if(!box) return;
+  box.innerHTML='<div class="plt-detail"><p class="plt-mini">Loading the storefront…</p></div>';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  plApi('/pepper-lists/sellers/'+encodeURIComponent(userId)+'/public').then(function(j){
+    var s=j.data.seller;
+    var h='<div class="plt-detail"><h3>'+pltEsc(s.name)+'’s storefront</h3><div>'+pltBadges(s.badges, s.salesCount)+'</div>';
+    h+='<h4 style="margin:18px 0 10px">Live listings</h4>';
+    h+= j.data.listings.length ? '<div class="plt-grid">'+j.data.listings.map(pltCardHtml).join('')+'</div>' : '<p class="plt-mini">No live listings right now.</p>';
+    h+='</div>';
+    box.innerHTML=h;
+  }).catch(function(e){
+    box.innerHTML='<div class="plt-detail"><p class="plt-mini">'+pltEsc(e.message||'This seller has not opened a public storefront yet.')+'</p></div>';
+  });
+}
+function pltPostComment(){
+  if(!pltCurrentListing) return;
+  var body=(pltEl('pltCommentBody')||{}).value||'';
+  var msg=pltEl('pltCommentMsg');
+  if(!body.trim()){ if(msg){ msg.textContent='Write something first.'; msg.className='plt-msg err'; } return; }
+  plApi('/pepper-lists/listings/'+encodeURIComponent(pltCurrentListing.id)+'/comments',{method:'POST',body:JSON.stringify({body:body.trim()})})
+    .then(function(){ pltOpenListing(pltCurrentListing.id); })
+    .catch(function(e){ if(msg){ msg.textContent=e.message||'Could not post that comment.'; msg.className='plt-msg err'; } });
+}
+function pltHideComment(commentId){
+  if(!pltCurrentListing) return;
+  plApi('/pepper-lists/listings/'+encodeURIComponent(pltCurrentListing.id)+'/comments/'+encodeURIComponent(commentId)+'/hide',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ pltOpenListing(pltCurrentListing.id); })
+    .catch(function(e){ alert(e.message||'Could not hide that comment.'); });
+}
+function pltReport(){
+  if(!pltCurrentListing) return;
+  var msg=pltEl('pltReportMsg');
+  var reason=(pltEl('pltReportReason')||{}).value||'OTHER';
+  var details=(pltEl('pltReportDetails')||{}).value||'';
+  plApi('/pepper-lists/listings/'+encodeURIComponent(pltCurrentListing.id)+'/report',{method:'POST',body:JSON.stringify({reason:reason,details:details.trim()||undefined})})
+    .then(function(j){ if(msg){ msg.textContent=(j&&j.message)||'Thank you — your report is with the Top Speed office.'; msg.className='plt-msg'; } })
+    .catch(function(e){ if(msg){ msg.textContent=e.message||'Could not send that report.'; msg.className='plt-msg err'; } });
+}
+
+/* --------------------- Book panel service reviews --------------------- */
+function pltLoadBookReviews(){
+  var body=pltEl('pltBookReviewsBody'); if(!body) return;
+  plApi('/pepper-lists/reviews/public?limit=3').then(function(j){
+    var agg=j.aggregate||{count:0,average:null};
+    if(!agg.count){ body.innerHTML='<p class="plt-mini">No reviews yet — real reviews from real repairs will appear here as customers post them. Be the first after your service.</p>'; return; }
+    var h='<p style="margin:0 0 8px"><span class="plt-stars">'+pltStars(agg.average)+'</span> <b>'+agg.average+'</b> average from '+agg.count+' real review'+(agg.count===1?'':'s')+'</p>';
+    h+=(j.data||[]).map(function(r){ return '<div class="plt-comment"><div class="who">'+pltEsc(r.customerName||'Top Speed customer')+' · '+pltEsc(pltDate(r.createdAt))+'</div><p><b>'+pltEsc(r.title)+'</b><br>'+pltEsc(r.body)+'</p></div>'; }).join('');
+    body.innerHTML=h;
+  }).catch(function(){ body.innerHTML='<p class="plt-mini">Reviews are having trouble loading right now — the full wall is under Post.</p>'; });
+}
+
+/* --------------------------- seller dashboard --------------------------- */
+var pltAccess=null;
+function pltPlanMsg(text,isErr){ var m=pltEl('pltPlanMsg'); if(!m) return; m.textContent=text||''; m.className='plt-msg'+(isErr?' err':''); }
+function pltLoadSeller(){
+  var sec=pltEl('plSeller'); if(!sec) return;
+  if(!pltSignedIn()){ sec.style.display='none'; return; }
+  sec.style.display='';
+  pltLoadMine(); pltLoadReviewable(); pltLoadAnalytics(); pltLoadPlans();
+}
+function pltLoadMine(){
+  var box=pltEl('pltMine'); if(!box) return;
+  plApi('/pepper-lists/listings/mine').then(function(j){
+    var items=j.data||[];
+    if(!items.length){ box.innerHTML='<p class="plt-mini">You have no listings yet — your first one takes about a minute from the Sell panel above.</p>'; return; }
+    box.innerHTML=items.map(function(l){
+      var h='<div class="plt-mine"><h4>'+pltEsc(l.title)+(l.featured?' <span class="plt-feat">Featured</span>':'')+(l.status==='SOLD'?' <span class="plt-sold">Sold</span>':'')+'</h4>';
+      h+='<p class="plt-mini">'+pltEsc(pltMoney(l.priceCents))+' · '+l.viewCount+' view'+(l.viewCount===1?'':'s')+' · '+l.commentCount+' comment'+(l.commentCount===1?'':'s')+' · ref '+pltEsc(l.reference)+'</p>';
+      h+='<div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" onclick="pltOpenListing(\''+pltEsc(l.id)+'\')">View listing</button>';
+      if(l.status!=='SOLD'){
+        h+='<button class="btn small dark" type="button" onclick="pltToggleSold(\''+pltEsc(l.id)+'\')">Mark sold</button>';
+        h+= l.featured
+          ? '<button class="btn small dark" type="button" onclick="pltUnfeature(\''+pltEsc(l.id)+'\')">Unfeature</button>'
+          : '<button class="btn small dark" type="button" onclick="pltFeature(\''+pltEsc(l.id)+'\')">Feature it</button>';
+        h+='<button class="btn small dark" type="button" onclick="pltBump(\''+pltEsc(l.id)+'\')">Bump to top</button>';
+      }
+      h+='</div><div id="pltSold-'+pltEsc(l.id)+'"></div><p class="plt-msg" id="pltMineMsg-'+pltEsc(l.id)+'" role="status"></p></div>';
+      return h;
+    }).join('');
+  }).catch(function(e){ box.innerHTML='<p class="plt-mini">Your listings could not load right now.</p>'; });
+}
+function pltMineMsg(id,text,isErr){ var m=pltEl('pltMineMsg-'+id); if(!m) return; m.textContent=text||''; m.className='plt-msg'+(isErr?' err':''); }
+function pltToggleSold(id){
+  var slot=pltEl('pltSold-'+id); if(!slot) return;
+  if(slot.innerHTML){ slot.innerHTML=''; return; }
+  slot.innerHTML='<div class="plt-commentbox"><label class="plb-lab">Buyer’s Pepper Lists email (optional — lets them review you)<input id="pltBuyerEmail-'+pltEsc(id)+'" type="email" placeholder="buyer@example.com" style="background:#0c130d;border:1px solid #2c4232;border-radius:10px;color:var(--ink);padding:10px 12px;font:inherit;font-size:14.5px;width:100%;box-sizing:border-box"></label><div class="plb-btnrow"><button class="btn small" type="button" onclick="pltMarkSold(\''+pltEsc(id)+'\')">Confirm — sold</button></div></div>';
+}
+function pltMarkSold(id){
+  var email=((pltEl('pltBuyerEmail-'+id)||{}).value||'').trim();
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/sold',{method:'POST',body:JSON.stringify(email?{buyerEmail:email}:{})})
+    .then(function(j){ pltMineMsg(id,(j&&j.message)||'Marked sold.'); pltLoadMine(); })
+    .catch(function(e){ pltMineMsg(id,e.message||'Could not mark that sold.',true); });
+}
+function pltFeature(id){
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/featured',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ pltMineMsg(id,'Featured — it now leads the listings feed with a Featured badge.'); pltLoadMine(); pltLoadFeed(); })
+    .catch(function(e){
+      if(e.code==='plan_upgrade_required'||e.status===403){ pltMineMsg(id,'Featured placement is a seller-plan feature — see the upgrade plans below.',true); var p=pltEl('pltPlans'); if(p) p.scrollIntoView({behavior:'smooth',block:'center'}); }
+      else pltMineMsg(id,e.message||'Could not feature that listing.',true);
+    });
+}
+function pltUnfeature(id){
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/unfeature',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ pltLoadMine(); pltLoadFeed(); })
+    .catch(function(e){ pltMineMsg(id,e.message||'Could not unfeature that listing.',true); });
+}
+function pltBump(id){
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/bump',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){ var d=j.data||{}; pltMineMsg(id,'Bumped to the top of the feed. Bumps used this month: '+d.bumpsUsedThisMonth+(d.bumpsPerMonth!=null?' of '+d.bumpsPerMonth:'')+'.'); pltLoadMine(); pltLoadFeed(); })
+    .catch(function(e){
+      if(e.code==='plan_upgrade_required'||e.status===403){ pltMineMsg(id,'Bump credits are a seller-plan feature — see the upgrade plans below.',true); var p=pltEl('pltPlans'); if(p) p.scrollIntoView({behavior:'smooth',block:'center'}); }
+      else pltMineMsg(id,e.message||'Could not bump that listing.',true);
+    });
+}
+function pltLoadReviewable(){
+  var box=pltEl('pltReviewable'); if(!box) return;
+  plApi('/pepper-lists/sales/reviewable').then(function(j){
+    var items=j.data||[];
+    if(!items.length){ box.innerHTML=''; return; }
+    var h='<h3 style="margin:0 0 10px">Review your sellers</h3><p class="plt-mini" style="margin-bottom:12px">These sales were completed with you as the buyer — your review posts on the seller’s profile and helps the next neighbor.</p>';
+    h+=items.map(function(s){
+      var x='<div class="plt-mine"><h4>'+pltEsc(s.listingTitle)+'</h4><p class="plt-mini">Sold by '+pltEsc(s.sellerName)+' · '+pltEsc(pltDate(s.completedAt))+'</p>';
+      x+='<div class="plt-commentbox"><label class="plb-lab">Your rating<select id="pltRvRating-'+pltEsc(s.saleId)+'"><option value="5">5 — excellent</option><option value="4">4 — good</option><option value="3">3 — okay</option><option value="2">2 — poor</option><option value="1">1 — bad</option></select></label>';
+      x+='<label class="plb-lab">Headline<input id="pltRvTitle-'+pltEsc(s.saleId)+'" type="text" maxlength="120" placeholder="How was the deal?" style="background:#0c130d;border:1px solid #2c4232;border-radius:10px;color:var(--ink);padding:10px 12px;font:inherit;font-size:14.5px;width:100%;box-sizing:border-box"></label>';
+      x+='<label class="plb-lab">Your review<textarea id="pltRvBody-'+pltEsc(s.saleId)+'" rows="3" maxlength="2000" placeholder="Was the item as described? Was pickup easy?"></textarea></label>';
+      x+='<div class="plb-btnrow"><button class="btn small" type="button" onclick="pltSubmitSellerReview(\''+pltEsc(s.saleId)+'\',\''+pltEsc(s.sellerId)+'\')">Post review</button></div><p class="plt-msg" id="pltRvMsg-'+pltEsc(s.saleId)+'" role="status"></p></div></div>';
+      return x;
+    }).join('');
+    box.innerHTML=h;
+  }).catch(function(){ box.innerHTML=''; });
+}
+function pltSubmitSellerReview(saleId, sellerId){
+  var msg=pltEl('pltRvMsg-'+saleId);
+  var rating=parseInt((pltEl('pltRvRating-'+saleId)||{}).value||'5',10);
+  var title=((pltEl('pltRvTitle-'+saleId)||{}).value||'').trim();
+  var body=((pltEl('pltRvBody-'+saleId)||{}).value||'').trim();
+  plApi('/pepper-lists/sellers/'+encodeURIComponent(sellerId)+'/reviews',{method:'POST',body:JSON.stringify({saleId:saleId,rating:rating,title:title,body:body})})
+    .then(function(j){ if(msg){ msg.textContent=(j&&j.message)||'Review posted.'; msg.className='plt-msg'; } pltLoadReviewable(); })
+    .catch(function(e){ if(msg){ msg.textContent=e.message||'Could not post that review.'; msg.className='plt-msg err'; } });
+}
+function pltLoadAnalytics(){
+  var box=pltEl('pltAnalytics'); if(!box) return;
+  plApi('/pepper-lists/seller-analytics').then(function(j){
+    var t=j.data.totals||{};
+    var h='<h3 style="margin:0 0 10px">Your seller analytics</h3><p class="plt-mini" style="margin-bottom:10px">Real numbers from your real listings: <b style="color:var(--ink)">'+t.views+' total views</b> · <b style="color:var(--ink)">'+t.comments+' comments</b> · <b style="color:var(--ink)">'+t.sales+' completed sales</b> · <b style="color:var(--ink)">'+t.bumpsUsedThisMonth+' bumps used this month</b>.</p>';
+    if(j.data.listings && j.data.listings.length){
+      h+='<div>'+j.data.listings.map(function(l){ return '<p class="plt-mini" style="margin:3px 0">'+pltEsc(l.title)+' — '+l.viewCount+' views · '+l.commentCount+' comments'+(l.featured?' · Featured':'')+(l.status==='SOLD'?' · Sold':'')+'</p>'; }).join('')+'</div>';
+    }
+    box.innerHTML=h;
+  }).catch(function(e){
+    if(e.code==='plan_upgrade_required'||e.status===403){ box.innerHTML='<div class="plt-xpromo"><h4>Seller analytics is a plan feature</h4><p>See how many neighbors view and comment on each of your listings — analytics comes with the paid seller plans below. Your listings themselves stay free, always.</p></div>'; }
+    else box.innerHTML='';
+  });
+}
+function pltFeatureLabel(f){
+  var map={featured:'Featured placement — badge + top of the feed',bump:'Bump credits — refresh a listing to the top',analytics:'Seller analytics — views & comments per listing',storefront:'Public storefront — your listings & reviews on one page'};
+  return map[f]||f;
+}
+function pltLoadPlans(){
+  var box=pltEl('pltPlans'); if(!box) return;
+  plApi('/pepper-lists/plans').then(function(j){
+    pltAccess=j.data.access;
+    var plans=j.data.plans||[];
+    box.innerHTML='<div class="plt-grid">'+plans.map(function(p){
+      var current=pltAccess && pltAccess.planKey===p.key;
+      var h='<div class="plt-plan"><h4>'+pltEsc(p.name)+(current?' <span class="plt-feat">Your plan</span>':'')+'</h4>';
+      if(p.tagline) h+='<p class="plt-mini">'+pltEsc(p.tagline)+'</p>';
+      h+= p.price
+        ? '<p class="plt-pricebig">'+pltEsc(p.price.formatted)+'<span style="font-size:13px;color:var(--muted)"> / '+pltEsc(p.price.interval||'month')+'</span></p>'
+        : '<p class="plt-mini" style="margin-top:6px">Pricing coming soon — ask us</p>';
+      h+='<ul>'+(p.features||[]).map(function(f){ return '<li>'+pltEsc(pltFeatureLabel(f.key))+'</li>'; }).join('');
+      if(p.limits){ if(p.limits.maxPhotos!=null) h+='<li>Up to '+p.limits.maxPhotos+' photos per listing</li>'; if(p.limits.bumpsPerMonth!=null) h+='<li>'+p.limits.bumpsPerMonth+' bump credits a month</li>'; if(p.limits.featuredListings!=null) h+='<li>'+p.limits.featuredListings+' featured listings at a time</li>'; }
+      h+='</ul>';
+      if(!current && p.key!=='free' && p.price){
+        h+= (pltAccess && pltAccess.hasActiveSubscription)
+          ? '<button class="btn small" type="button" onclick="pltChangePlan(\''+pltEsc(p.key)+'\')">Switch to '+pltEsc(p.name)+'</button>'
+          : '<button class="btn small" type="button" onclick="pltCheckout(\''+pltEsc(p.key)+'\')">Upgrade to '+pltEsc(p.name)+'</button>';
+      }
+      if(current && pltAccess && pltAccess.hasActiveSubscription && !pltAccess.cancelAtPeriodEnd){
+        h+='<button class="btn small dark" type="button" onclick="pltCancelPlan()">Cancel at period end</button>';
+      }
+      if(current && pltAccess && pltAccess.cancelAtPeriodEnd){
+        h+='<p class="plt-mini">Cancels at the end of the current paid period — features stay on until then.</p>';
+      }
+      return h+'</div>';
+    }).join('')+'</div>';
+  }).catch(function(){ box.innerHTML='<p class="plt-mini">Plans could not load right now.</p>'; });
+}
+function pltCheckout(key){
+  pltPlanMsg('Opening secure Stripe checkout…');
+  plApi('/pepper-lists/plans/checkout',{method:'POST',body:JSON.stringify({planKey:key})})
+    .then(function(j){ if(j.data && j.data.checkoutUrl){ window.location.href=j.data.checkoutUrl; } else pltPlanMsg('Checkout did not return a link — please try again.',true); })
+    .catch(function(e){ pltPlanMsg(e.code==='pricing_not_set' ? 'Pricing for this plan has not been set yet — check back soon, or ask us.' : (e.message||'Could not start checkout.'),true); });
+}
+function pltChangePlan(key){
+  plApi('/pepper-lists/plans/change',{method:'POST',body:JSON.stringify({planKey:key})})
+    .then(function(j){ pltPlanMsg((j.data&&j.data.effective)||'Plan change requested.'); pltLoadPlans(); })
+    .catch(function(e){ pltPlanMsg(e.message||'Could not change plans.',true); });
+}
+function pltCancelPlan(){
+  plApi('/pepper-lists/plans/cancel',{method:'POST',body:JSON.stringify({})})
+    .then(function(){ pltPlanMsg('Your plan will cancel at the end of the paid period — features stay on until then.'); pltLoadPlans(); })
+    .catch(function(e){ pltPlanMsg(e.message||'Could not cancel right now.',true); });
+}
+
+/* Featured upsell inside the listing-success box (additive: watches
+   the existing plSellDone box and appends once per success render). */
+(function(){
+  var done=pltEl('plSellDone'); if(!done) return;
+  var obs=new MutationObserver(function(){
+    if(!done.textContent.trim() || done.querySelector('.plt-upsell')) return;
+    var div=document.createElement('div');
+    div.className='plt-upsell';
+    div.style.marginTop='12px';
+    div.innerHTML='<b>Want this listing seen first?</b> Featured listings lead the public feed with a Featured badge. See the seller upgrade plans in your dashboard below — free listings never change.<div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" onclick="var s=document.getElementById(\'plSeller\'); if(s) s.scrollIntoView({behavior:\'smooth\',block:\'start\'});">See seller plans</button></div>';
+    done.appendChild(div);
+  });
+  obs.observe(done,{childList:true,subtree:true});
+})();
+
+/* Show the seller dashboard with the account bar (sign-in state). */
+(function(){
+  var bar=pltEl('plAcctBar');
+  if(bar && window.MutationObserver){
+    new MutationObserver(function(){ pltLoadSeller(); }).observe(bar,{attributes:true,attributeFilter:['style']});
+  }
+  window.addEventListener('load',function(){ setTimeout(function(){ pltLoadSeller(); },1200); });
+})();
+
+pltLoadFeed();
+pltLoadBookReviews();
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>
 <script src="/speedy-guide.js" defer></script>

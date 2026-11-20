@@ -8,6 +8,8 @@ import { STAFF_ROLES } from '../config/security.js';
 import { assertImageDataUrl, LISTING_CATEGORIES, LISTING_CONDITIONS, plateDraft, speedyDiagnose, speedyDraftListing, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
 import { notifySubmission } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
+import { resolveSellerAccess } from '../services/sellerPlans.js';
+import { upsertListingProfile } from '../db/listingTrustRepo.js';
 
 /**
  * Pepper Lists — Speedy Brain lanes (2026-11-16).
@@ -53,6 +55,13 @@ const router = Router();
 const PHOTO_MAX_BYTES = 6 * 1024 * 1024;
 const VIDEO_MAX_BYTES = 15 * 1024 * 1024;
 const MEDIA_MAX_ITEMS = 4;
+
+// Seller Plans (2026-11-20): the listing schema's hard cap is the
+// top plan's photo limit; the caller's own plan limit is enforced in
+// the listings handler below (Free keeps today's 4-photo behavior —
+// see the tier seeds in db/sellerPlansRepo.js). The submissions lane
+// above keeps MEDIA_MAX_ITEMS.
+const LISTING_MEDIA_HARD_CAP = 12;
 const MEDIA_TOTAL_MAX_BYTES = 18 * 1024 * 1024;
 
 const plateReadSchema = z.object({
@@ -270,7 +279,7 @@ const listingSchema = z.object({
   phone: z.string().trim().min(7).max(30),
   name: z.string().trim().min(2).max(120).optional(),
   email: z.string().email().max(200).optional(),
-  media: z.array(mediaItemSchema).max(MEDIA_MAX_ITEMS).optional(),
+  media: z.array(mediaItemSchema).max(LISTING_MEDIA_HARD_CAP).optional(),
   ...attributionFields,
 });
 
@@ -293,6 +302,21 @@ router.post('/pepper-lists/listings', authenticate, async (req, res) => {
   const totalBytes = media.reduce((sum, item) => sum + item.sizeBytes, 0);
   if (totalBytes > MEDIA_TOTAL_MAX_BYTES) {
     return res.status(400).json({ error: 'The files together are over the 18 MB limit — remove one and try again' });
+  }
+
+  // Seller Plans photo limit (2026-11-20): listings take photos only
+  // (validated above), so the media count IS the photo count. Free
+  // keeps today's 4; paid tiers allow more — the plans panel in the
+  // seller dashboard explains the upgrade.
+  const sellerAccess = await resolveSellerAccess(req.user).catch(() => null);
+  const photoLimit = sellerAccess?.limits?.maxPhotos ?? MEDIA_MAX_ITEMS;
+  if (media.length > photoLimit) {
+    return res.status(400).json({
+      error: 'photo_limit',
+      message: `Your current seller plan allows ${photoLimit} photos per listing — remove ${media.length - photoLimit} photo${media.length - photoLimit === 1 ? '' : 's'}, or see the upgrade plans in your seller dashboard for a higher limit.`,
+      photoLimit,
+      photosProvided: media.length,
+    });
   }
 
   const account = store.users.get(req.user.id) || {};
@@ -324,6 +348,16 @@ router.post('/pepper-lists/listings', authenticate, async (req, res) => {
   });
   if (media.length) {
     await saveSubmissionMedia(record.id, media);
+  }
+
+  // Trust & Growth (2026-11-20): every new listing gets its
+  // ListingProfile — the row the public feed, comments, view counter
+  // and seller plans hang off. Failure-tolerant like the notify
+  // below: the listing itself is already saved.
+  try {
+    await upsertListingProfile(record.id, { sellerUserId: req.user.id });
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'pepper lists listing profile failed', error: String(error?.message || error) }));
   }
 
   try {

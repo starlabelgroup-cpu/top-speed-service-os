@@ -10,6 +10,7 @@ import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, ve
 import { handleStripePlanEvent } from '../services/adPlans.js';
 import { handleStripeCarePlanEvent } from '../services/carePlans.js';
 import { handleStripeMarketplaceEvent } from '../services/marketplacePayments.js';
+import { handleStripeSellerPlanEvent } from '../services/sellerPlans.js';
 
 /**
  * Payments — the built-in checkout (Route B, approved by Ramone
@@ -190,6 +191,12 @@ router.post('/payments/webhook', async (req, res) => {
   // advertiser-plan handling, never throws, and answers only
   // purpose CARE_PLAN checkouts / its own subscription ids.
   await handleStripeCarePlanEvent(event);
+
+  // Pepper Lists Seller Plans (2026-11-20): same lane discipline —
+  // this handler only acts on metadata purpose SELLER_PLAN, runs
+  // after the diagnostic and advertiser handling above, and never
+  // throws (it logs and returns instead).
+  await handleStripeSellerPlanEvent(event);
 
   // New money rails (2026-11-20): Pepper Lists Connect orders +
   // gift cards. Runs LAST, never throws, and its sessions are told

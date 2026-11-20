@@ -149,6 +149,39 @@ export async function createPlanCheckout({ customerId, priceId, userId, planKey,
   });
 }
 
+/**
+ * Pepper Lists Seller Plans (2026-11-20) — the SELLER_PLAN twins of
+ * the plan helpers above. Same discipline: these are called ONLY from
+ * the seller checkout flow and the owner's seller-plan price flow in
+ * routes/sellerPlans.js, with the owner's own amount. The purpose tag
+ * is what routes the shared webhook to the right lifecycle handler.
+ */
+export async function createSellerStripeCustomer({ email, name, userId }) {
+  return stripeApi('POST', '/v1/customers', {
+    email: email || undefined,
+    name: name || undefined,
+    metadata: { purpose: 'SELLER_PLAN', userId },
+  });
+}
+
+export async function createSellerStripeProduct({ name, planKey }) {
+  return stripeApi('POST', '/v1/products', { name, metadata: { purpose: 'SELLER_PLAN', planKey } });
+}
+
+/** Subscription-mode Checkout Session for a Pepper Lists seller plan. */
+export async function createSellerPlanCheckout({ customerId, priceId, userId, planKey, successUrl, cancelUrl }) {
+  return stripeApi('POST', '/v1/checkout/sessions', {
+    mode: 'subscription',
+    customer: customerId,
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    line_items: [{ price: priceId, quantity: 1 }],
+    client_reference_id: userId,
+    metadata: { purpose: 'SELLER_PLAN', userId, planKey },
+    subscription_data: { metadata: { purpose: 'SELLER_PLAN', userId, planKey } },
+  });
+}
+
 export async function retrieveStripeSubscription(id) {
   return stripeApi('GET', `/v1/subscriptions/${encodeURIComponent(id)}`);
 }
