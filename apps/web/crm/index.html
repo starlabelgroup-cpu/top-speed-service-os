@@ -317,6 +317,15 @@ function crmDetail(id){
       var apps=(d.appliances||[]).map(function(a){
         return '<div class="line"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> <b>'+crmEsc(a.type)+'</b>'+(a.brand?' · '+crmEsc(a.brand):'')+(a.model?' '+crmEsc(a.model):'')+(a.serial?' · SN '+crmEsc(a.serial):'')+(a.assetTag?' · '+crmEsc(a.assetTag):'')+(a.healthStatus?' · '+crmEsc(a.healthStatus):'')+' <span class="mut">('+(a.origin==='COMMERCIAL_REGISTRY'?'commercial registry':'garage')+')</span></div>';
       }).join('')||'<p class="mut">No appliances on file.</p>';
+      var connProviders={HOME_CONNECT:'Home Connect',SMARTTHINGS:'Samsung SmartThings',THINQ:'LG ThinQ',SMARTHQ:'GE SmartHQ',OTHER:'Another network'};
+      var conns=(d.appliances||[]).filter(function(a){ return (a.connections||[]).length; }).map(function(a){
+        return (a.connections||[]).map(function(c){
+          return '<div class="line"><b>'+crmEsc(a.type)+'</b>'+(a.brand?' · '+crmEsc(a.brand):'')+' — '+crmEsc(connProviders[c.provider]||c.provider)+' <span class="pill">'+crmEsc(c.status)+'</span>' +
+            (c.consentAt?' <span class="mut">consent '+crmEsc(String(c.consentAt).slice(0,10))+'</span>':'') +
+            (c.revokedAt?' <span class="mut">revoked '+crmEsc(String(c.revokedAt).slice(0,10))+'</span>':'') +
+            (c.status==='REGISTERED'?' <span class="mut">— consent on file; no manufacturer link yet</span>':'')+'</div>';
+        }).join('');
+      }).join('')||'<p class="mut">No connected appliances — the customer has not registered a manufacturer network for any appliance.</p>';
       var bk=(d.bookings||[]).map(function(b){
         var appt=b.appointment?(' · <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.4"/><path d="M12 7.8V12l3 2" stroke="#E8322E"/></svg> '+crmEsc(b.appointment.date)+' '+crmEsc(b.appointment.windowLabel||b.appointment.window)):'';
         return '<div class="line"><b>'+crmEsc(b.referenceCode)+'</b> · '+crmEsc(b.appliance)+' — '+crmEsc(b.issue)+'<br><span class="mut">'+crmEsc(b.serviceAddress||'')+' · '+(b.area?crmEsc(b.area):crmEsc(b.city||''))+' · '+crmEsc(b.source)+(b.surfaceLabel?' · From: '+crmEsc(b.surfaceLabel):'')+' · '+crmEsc(String(b.createdAt).slice(0,10))+'</span> '+statusPill(b.areaStatus==='IN_AREA'?b.status:b.areaStatus)+appt+
@@ -340,6 +349,7 @@ function crmDetail(id){
         (d.account?'<p class="mut">Account: <b>'+(d.account.emailVerified?'email verified <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg>':'email not verified yet')+'</b>'+(d.account.signupOfferSlug?' · signed up via offer <b>'+crmEsc(d.account.signupOfferSlug)+'</b>':'')+(d.account.signupAudience?' · '+crmEsc(d.account.signupAudience):'')+(d.account.serviceArea?' · profile area '+crmEsc(d.account.serviceArea)+(d.account.serviceAreaStatus?' ('+crmEsc(d.account.serviceAreaStatus)+')':''):'')+'</p>':'') +
         '<div class="section"><h3>Properties / service addresses</h3>'+props+'</div>' +
         '<div class="section"><h3>Appliances &amp; equipment on file</h3>'+apps+'</div>' +
+        '<div class="section"><h3>Connected appliances</h3>'+conns+'</div>' +
         '<div class="section"><h3>New work order</h3>' +
         '<p class="mut" style="margin:0 0 10px;">Starts a job for <b>'+crmEsc(c.name)+'</b> on the same Service OS intake every surface uses (source OFFICE, via CRM) — it lands in the Service Setters queue and on the dispatch board. Customer details are prefilled from this record.</p>' +
         '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;">' +

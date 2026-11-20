@@ -110,6 +110,10 @@ export const store = {
   chatSessions: new Map(),
   // Appliance Connect garage (per signed-in customer), hydrated from CustomerAppliance.
   appliances: new Map(),
+  // Connected-appliance registry (per garage appliance), hydrated
+  // from ApplianceConnection. REGISTERED records consent only — no
+  // manufacturer link exists until a brand integration lands.
+  applianceConnections: new Map(),
   // Advertiser banner creatives, hydrated from the Banner table.
   banners: [],
   // Top Speed Marketing OS (agency, Phase 1): §3 taxonomy + Page Studio

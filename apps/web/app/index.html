@@ -773,6 +773,12 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
           <img src="/api/v1/app/platform-images/app-garage.webp" alt="Illustration: a homeowner with their refrigerator, washer and oven, each with its own care card — My Garage in Appliance Connect" style="width:100%;height:auto;border-radius:14px;display:block;margin:4px 0 12px" loading="lazy">
           <div class="card" id="garageList" style="padding-top:4px; padding-bottom:6px;"></div>
 
+          <h3 class="sec">Connected Appliances</h3>
+          <p class="sub">Have a smart appliance? Register it with its manufacturer network on your account. Your registration is recorded right away; the live manufacturer link opens brand by brand, as each manufacturer approves Top Speed — until then, booking stays the way to get service.</p>
+          <div class="card" id="connList" style="padding-top:4px; padding-bottom:6px;">
+            <p class="sub" style="margin:10px 0;">Sign in to register your smart appliances here.</p>
+          </div>
+
 <img src="/api/v1/app/scenario-images/need-dryer-no-heat.webp" alt="Illustration: a dryer that runs but will not heat, with a pile of damp laundry waiting — a classic appliance-care reminder moment" style="width:100%;height:auto;border-radius:14px;display:block;margin:12px 0 0" loading="lazy">
 <img src="/api/v1/app/scenario-images/need-fridge-noise-night.webp" alt="Illustration: a refrigerator humming and rattling loudly in a dark kitchen at night, keeping the household awake — the moment a fridge noise repair is needed" style="width:100%;height:auto;border-radius:14px;display:block;margin:12px 0 0" loading="lazy">
 
@@ -1616,6 +1622,7 @@ function loadGarage(){
   var list=document.getElementById('garageList');
   var hist=document.getElementById('garageHistory');
   var addBox=document.getElementById('garageAdd');
+  loadConnected();
   if(!cTok()){
     if(list) list.innerHTML='<p class="sub" style="margin:10px 0;">Sign in (More tab) or book your first repair to start your garage — your appliances and their history live here, on your record.</p>';
     if(hist) hist.innerHTML='<p class="sub" style="margin:8px 0;">Your service history appears here once you are signed in.</p>';
@@ -1649,6 +1656,63 @@ function garageBook(type){
   showTab('speedy');
   var inp=document.getElementById('aspInput');
   if(inp){ inp.value='My '+type+' needs service — '; inp.focus(); }
+}
+/* ============ CONNECTED APPLIANCES — the foundation registry ============
+   Registration = consent + registry on the customer's own account.
+   No manufacturer link exists yet: the live link opens brand by
+   brand as each manufacturer approves Top Speed, and the copy here
+   says exactly that — a registration is never dressed up as a live
+   connection. */
+var CONN_PROVIDERS=[['HOME_CONNECT','Home Connect — Bosch · Siemens · Thermador'],['SMARTTHINGS','Samsung SmartThings'],['THINQ','LG ThinQ'],['SMARTHQ','GE SmartHQ'],['OTHER','Another network']];
+function connProviderLabel(p){ for(var i=0;i<CONN_PROVIDERS.length;i++){ if(CONN_PROVIDERS[i][0]===p) return CONN_PROVIDERS[i][1]; } return p; }
+function loadConnected(){
+  var box=document.getElementById('connList');
+  if(!box) return;
+  if(!cTok()){ box.innerHTML='<p class="sub" style="margin:10px 0;">Sign in to register your smart appliances here.</p>'; return; }
+  cFetch('/connect/appliances')
+    .then(function(j){
+      var apps=j.data||[];
+      if(!apps.length){ box.innerHTML='<p class="sub" style="margin:10px 0;">Add an appliance to your garage first — then you can register it as connected here.</p>'; return; }
+      box.innerHTML=apps.map(function(a){
+        var meta=[a.brand,a.model,a.serial?('· S/N '+a.serial):''].filter(Boolean).join(' ');
+        var conns=a.connections||[];
+        var active={}; conns.forEach(function(c){ if(c.status!=='REVOKED') active[c.provider]=c; });
+        var rows=conns.map(function(c){
+          if(c.status==='REVOKED'){
+            return '<div class="hist"><div><b>'+escC(connProviderLabel(c.provider))+'</b><span>Revoked '+escC(String(c.revokedAt||'').slice(0,10))+'</span></div><span class="pill">Revoked</span></div>';
+          }
+          return '<div class="hist"><div><b>'+escC(connProviderLabel(c.provider))+'</b><span>Consent recorded '+escC(String(c.consentAt||'').slice(0,10))+'</span></div><span class="pill blue">Registered</span>' +
+            '<button class="btn ghost small" style="color:#D63A48;" onclick="connRevoke(\''+a.id+'\',\''+c.id+'\')">Revoke</button></div>';
+        }).join('');
+        var avail=CONN_PROVIDERS.filter(function(p){ return !active[p[0]]; });
+        var form='';
+        if(avail.length){
+          form='<div style="padding:10px 0 4px;">' +
+            '<label class="fl">Manufacturer network</label>' +
+            '<select id="cp-'+a.id+'" style="width:100%; padding:11px; border:1.5px solid var(--line); border-radius:12px; font:inherit; font-size:15px;">' +
+            avail.map(function(p){ return '<option value="'+p[0]+'">'+escC(p[1])+'</option>'; }).join('') + '</select>' +
+            '<label style="display:flex; gap:8px; align-items:flex-start; margin:10px 0; font-size:13.5px; line-height:1.45;"><input type="checkbox" id="cc-'+a.id+'" style="margin-top:2px;"> <span>I agree — Top Speed records this connection on my account today. When the manufacturer link opens for this brand, Top Speed will receive fault and status events from this appliance to help service it. I can revoke this at any time right here.</span></label>' +
+            '<div id="cm-'+a.id+'" style="font-size:14px; margin:4px 0;"></div>' +
+            '<button class="btn blue small" onclick="connRegister(\''+a.id+'\')">Register connection</button></div>';
+        }
+        return '<div style="border-bottom:1px solid var(--line); padding:8px 0 10px;"><div style="margin:2px 0 6px;"><b>'+escC(a.type)+'</b> <span class="sub">'+escC(meta||'Details on file')+'</span></div>' + rows + form + '</div>';
+      }).join('');
+    })
+    .catch(function(){ box.innerHTML='<p class="sub" style="margin:10px 0;">Could not load your connected appliances just now — try again in a moment.</p>'; });
+}
+function connRegister(applianceId){
+  var msg=document.getElementById('cm-'+applianceId);
+  var consent=document.getElementById('cc-'+applianceId);
+  if(!consent || !consent.checked){ if(msg) msg.textContent='Please tick the consent box first — registration only happens with your agreement.'; return; }
+  var provider=document.getElementById('cp-'+applianceId).value;
+  cFetch('/connect/appliances/'+applianceId+'/connections',{method:'POST',body:JSON.stringify({provider:provider,consent:true})})
+    .then(function(){ loadConnected(); })
+    .catch(function(e){ if(msg) msg.textContent=''+(e.message||'Could not register that connection'); });
+}
+function connRevoke(applianceId, connectionId){
+  cFetch('/connect/appliances/'+applianceId+'/connections/'+connectionId+'/revoke',{method:'POST'})
+    .then(function(){ loadConnected(); })
+    .catch(function(){});
 }
 function garageRemove(id){
   cFetch('/connect/appliances/'+id,{method:'DELETE'}).then(function(){ loadGarage(); }).catch(function(){});

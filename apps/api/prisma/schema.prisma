@@ -790,15 +790,68 @@ model InsightsPageSpeedSnapshot {
 }
 
 model CustomerAppliance {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @db.Uuid
-  type      String
-  brand     String?
-  model     String?
-  serial    String?
-  year      Int?
-  notes     String?
-  createdAt DateTime @default(now())
+  id          String               @id @default(uuid()) @db.Uuid
+  userId      String               @db.Uuid
+  type        String
+  brand       String?
+  model       String?
+  serial      String?
+  year        Int?
+  notes       String?
+  createdAt   DateTime             @default(now())
+  connections ApplianceConnection[]
+  events      ApplianceEvent[]
+}
+
+// Connected-appliance foundation (2026-11-19, Ramone's order — the
+// Smart Home Connect takeaway): the registry of manufacturer-network
+// connections a customer consents to for one of their garage
+// appliances, plus the event table manufacturer fault/status events
+// will land in once a brand integration exists. Providers:
+// HOME_CONNECT (Bosch/Siemens/Thermador), SMARTTHINGS (Samsung),
+// THINQ (LG), SMARTHQ (GE), OTHER. Status vocabulary: REGISTERED
+// (customer consented; recorded on their account — NO manufacturer
+// link exists yet), LINKED (a live manufacturer link — part of the
+// vocabulary for the future brand integrations; NO code path in the
+// foundation build may set it), REVOKED (customer withdrew consent;
+// the end state — re-registering creates a fresh row). externalId
+// stays NULL until a real manufacturer link writes it.
+model ApplianceConnection {
+  id         String            @id @default(uuid()) @db.Uuid
+  applianceId String           @db.Uuid
+  appliance  CustomerAppliance @relation(fields: [applianceId], references: [id], onDelete: Cascade)
+  provider   String
+  externalId String?
+  status     String            @default("REGISTERED")
+  consentAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  events     ApplianceEvent[]
+
+  @@index([applianceId])
+  @@index([provider, status])
+}
+
+// One manufacturer event for a connected appliance (fault codes,
+// status changes) as received from the brand's cloud. Written ONLY
+// by a future brand integration — the foundation build ships the
+// table and its read side; there is no ingestion endpoint and no
+// seeded event anywhere.
+model ApplianceEvent {
+  id           String              @id @default(uuid()) @db.Uuid
+  applianceId  String              @db.Uuid
+  appliance    CustomerAppliance   @relation(fields: [applianceId], references: [id], onDelete: Cascade)
+  connectionId String?             @db.Uuid
+  connection   ApplianceConnection? @relation(fields: [connectionId], references: [id], onDelete: SetNull)
+  type         String
+  source       String
+  payload      Json?
+  receivedAt   DateTime            @default(now())
+  createdAt    DateTime            @default(now())
+
+  @@index([applianceId])
+  @@index([connectionId])
 }
 
 // Pepper Lists Speedy Brain (2026-11-16): the actual photo/video bytes

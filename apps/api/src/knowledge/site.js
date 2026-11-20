@@ -602,6 +602,16 @@ export function buildSitePack() {
       link: `${SITE}/garage`,
     },
     {
+      id: 'site-connected-appliances',
+      topic: 'Connected appliances — register your smart appliances',
+      keywords: ['connected appliance', 'connected appliances', 'smart appliance', 'smart appliances', 'home connect', 'smartthings', 'thinq', 'smarthq', 'wifi appliance', 'smart fridge', 'smart washer', 'connect my appliance'],
+      answer:
+        `If your appliance is a smart model, you can register it as a connected appliance in your account today: open My Appliances in the app, pick the appliance, choose its manufacturer network (Home Connect for Bosch, Siemens and Thermador, Samsung SmartThings, LG ThinQ, or GE SmartHQ), and confirm your consent. ` +
+        `Registration records the connection on your Top Speed account right away. The live manufacturer link itself opens brand by brand, as each manufacturer approves Top Speed — once a brand is live, your appliance can share fault and status events with us so we can help service it faster. We never claim a brand is linked before it really is. ` +
+        `Need service now? Booking a repair stays the path — a registered appliance simply means Speedy and your Service Setters already know your home.`,
+      link: `${SITE}/app`,
+    },
+    {
       id: 'site-account',
       topic: 'Your account — dashboard & sign-in',
       keywords: ['my account', 'account dashboard', 'customer dashboard', 'sign in', 'log in', 'my bookings'],

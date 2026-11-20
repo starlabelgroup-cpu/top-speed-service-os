@@ -15,6 +15,7 @@ import { jobReceipts } from '../services/jobMoney.js';
 import { PIPELINE_STAGES, leadConnectionReferenceOf, pipelineBoard, pipelineRow } from '../services/crmPipeline.js';
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { leadTypeOf } from '../services/leadBookings.js';
+import { listConnections } from '../db/applianceConnectionsRepo.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -212,7 +213,17 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   // plus any commercial equipment registry rows tied to their account.
   const appliances = [...store.appliances.values()]
     .filter((a) => customer.userId && a.userId === customer.userId)
-    .map((a) => ({ type: a.type, brand: a.brand || null, model: a.model || null, serial: a.serial || null, year: a.year || null, notes: a.notes || null, origin: 'GARAGE' }));
+    .map((a) => ({
+      id: a.id,
+      type: a.type, brand: a.brand || null, model: a.model || null, serial: a.serial || null, year: a.year || null, notes: a.notes || null, origin: 'GARAGE',
+      // Connected-appliance registry (2026-11-19): the manufacturer
+      // networks this customer has consented to for this appliance.
+      // REGISTERED = consent recorded; no manufacturer link exists
+      // yet, and the payload must never suggest one does.
+      connections: listConnections(a.id).map((c) => ({
+        id: c.id, provider: c.provider, status: c.status, consentAt: c.consentAt, revokedAt: c.revokedAt,
+      })),
+    }));
   for (const equipment of store.commercialEquipment.values()) {
     const account = store.commercialAccounts.get(equipment.accountId);
     const linked =

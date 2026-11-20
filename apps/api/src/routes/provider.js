@@ -35,6 +35,7 @@ import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import { catalogEntry, LINK_TYPES } from '../services/linkCenter.js';
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
+import { listConnections } from '../db/applianceConnectionsRepo.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -2001,7 +2002,19 @@ router.get('/provider/assignments/:id/full', ...providerBoard, (req, res) => {
         model: diagnosis?.model || null,
         serial: diagnosis?.serial || null,
         garage: booking.customerId
-          ? [...(store.appliances?.values() || [])].filter((a) => a.userId && customerRecord?.userId && a.userId === customerRecord.userId)
+          ? [...(store.appliances?.values() || [])]
+              .filter((a) => a.userId && customerRecord?.userId && a.userId === customerRecord.userId)
+              // Connected-appliance registry (2026-11-19): each garage
+              // appliance carries its consented manufacturer-network
+              // registrations, so the tech sees a connected appliance
+              // on the customer's record. REGISTERED = consent only —
+              // no live manufacturer link exists yet.
+              .map((a) => ({
+                ...a,
+                connections: listConnections(a.id).map((c) => ({
+                  id: c.id, provider: c.provider, status: c.status, consentAt: c.consentAt, revokedAt: c.revokedAt,
+                })),
+              }))
           : [],
       },
       technician: {

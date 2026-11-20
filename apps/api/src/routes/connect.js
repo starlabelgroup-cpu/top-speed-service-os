@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { createId, store } from '../data/store.js';
 import { deleteAppliance, persistAppliance } from '../db/appliancesRepo.js';
+import { activeConnection, listConnections, persistConnection } from '../db/applianceConnectionsRepo.js';
 import { authenticate } from '../middleware/auth.js';
 
 /**
@@ -25,8 +26,88 @@ const applianceSchema = z.object({
 router.get('/connect/appliances', authenticate, (req, res) => {
   const mine = [...store.appliances.values()]
     .filter((a) => a.userId === req.user.id)
-    .sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+    .map((a) => ({ ...a, connections: listConnections(a.id) }));
   return res.json({ data: mine });
+});
+
+/**
+ * Connected appliances — the foundation registry (2026-11-19).
+ * A customer registers a manufacturer network for one of their
+ * garage appliances and consents to Top Speed recording the
+ * connection. Registration is consent + registry ONLY: no
+ * manufacturer link exists yet (developer approvals have not been
+ * filed), so the row is created REGISTERED with externalId NULL.
+ * LINKED is part of the status vocabulary for the future brand
+ * integrations and NO endpoint here may set it — any status a
+ * client sends is ignored; the server owns the status.
+ */
+export const APPLIANCE_CONNECTION_PROVIDERS = ['HOME_CONNECT', 'SMARTTHINGS', 'THINQ', 'SMARTHQ', 'OTHER'];
+
+const connectionRegisterSchema = z.object({
+  provider: z.enum(APPLIANCE_CONNECTION_PROVIDERS),
+  consent: z.boolean().optional(),
+});
+
+function myAppliance(req, res) {
+  const appliance = store.appliances.get(req.params.id);
+  if (!appliance || appliance.userId !== req.user.id) {
+    res.status(404).json({ error: 'Appliance not found' });
+    return null;
+  }
+  return appliance;
+}
+
+router.post('/connect/appliances/:id/connections', authenticate, async (req, res) => {
+  const appliance = myAppliance(req, res);
+  if (!appliance) return;
+  const parsed = connectionRegisterSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid connection', details: parsed.error.flatten() });
+  }
+  // Consent is the whole point of the registry: without an explicit
+  // yes there is no registration (422, nothing written).
+  if (parsed.data.consent !== true) {
+    return res.status(422).json({
+      error: 'Consent is required to register a connected appliance.',
+      code: 'CONSENT_REQUIRED',
+    });
+  }
+  if (activeConnection(appliance.id, parsed.data.provider)) {
+    return res.status(409).json({ error: 'This appliance is already registered for that network.' });
+  }
+  const now = new Date().toISOString();
+  const connection = {
+    id: createId(),
+    applianceId: appliance.id,
+    provider: parsed.data.provider,
+    externalId: null,
+    status: 'REGISTERED',
+    consentAt: now,
+    revokedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.applianceConnections.set(connection.id, connection);
+  await persistConnection(connection);
+  return res.status(201).json({ data: connection });
+});
+
+router.post('/connect/appliances/:id/connections/:connectionId/revoke', authenticate, async (req, res) => {
+  const appliance = myAppliance(req, res);
+  if (!appliance) return;
+  const connection = store.applianceConnections.get(req.params.connectionId);
+  if (!connection || connection.applianceId !== appliance.id) {
+    return res.status(404).json({ error: 'Connection not found' });
+  }
+  if (connection.status === 'REVOKED') {
+    return res.json({ data: connection });
+  }
+  connection.status = 'REVOKED';
+  connection.revokedAt = new Date().toISOString();
+  connection.updatedAt = connection.revokedAt;
+  await persistConnection(connection);
+  return res.json({ data: connection });
 });
 
 router.post('/connect/appliances', authenticate, async (req, res) => {
