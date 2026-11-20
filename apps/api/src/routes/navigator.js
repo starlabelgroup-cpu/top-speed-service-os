@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { navigatorChat, navigatorStatus } from '../services/navigator.js';
-import { systemMapPayload } from '../data/systemMap.js';
+import { systemMapPayload, portalDirectoryPayload } from '../data/systemMap.js';
 import {
   captureChatExchange,
   captureSafely,
@@ -16,6 +16,10 @@ import {
  *   GET  /navigator/map     the system directory (areas + how-tos)
  *   GET  /navigator/status  answer mode + map size
  *   POST /navigator/chat    one guide turn
+ *   GET  /navigator/directory  the PUBLIC Portal directory projection
+ *                              (name/group/location/url/access label
+ *                              only — no purposes, actions or how-tos;
+ *                              the staff map above stays staff-only)
  *
  * Access — the STAFF gate, exactly: every staff role (STAFF_ROLES:
  * DISPATCHER, COMPANY_ADMIN, COMPANY_OWNER, PLATFORM_ADMIN) and
@@ -37,6 +41,17 @@ router.get('/navigator/status', ...staffOnly, (req, res) => {
 
 router.get('/navigator/map', ...staffOnly, (req, res) => {
   return res.json({ data: systemMapPayload() });
+});
+
+/* The Service OS Portal's Platform Directory (Ramone, 2026-11-20:
+ * "/portal must be the platform directory for all platforms"). Public
+ * by design — it is the ecosystem's front-door index — and safe by
+ * construction: portalDirectoryPayload() projects only the public-safe
+ * fields off the same system map. It grants nothing: every door it
+ * lists keeps its own gate. */
+router.get('/navigator/directory', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  return res.json({ data: portalDirectoryPayload() });
 });
 
 const historyTurn = z.object({

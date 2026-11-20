@@ -108,6 +108,24 @@ h2.sec em{font-style:normal;color:var(--red)}
 .ficon{width:46px;height:46px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;color:var(--blue);margin-bottom:12px}
 .ficon svg{width:25px;height:25px}
 
+/* ---------- PLATFORM DIRECTORY ---------- */
+.dirgroup{margin:0 0 36px}
+.dirghead{display:flex;gap:13px;align-items:flex-start;margin-bottom:14px}
+.dirghead .ficon{margin:0;flex:none;width:42px;height:42px}
+.dirghead h3{font-size:1.32rem;text-transform:uppercase;line-height:1.1;margin:2px 0 4px}
+.dirghead .gblurb{color:var(--muted);margin:0;font-size:.96rem;max-width:840px}
+.dirgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:960px){.dirgrid{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.dirgrid{grid-template-columns:1fr}}
+.diritem{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;text-decoration:none;color:var(--ink)}
+a.diritem:hover{border-color:var(--blue)}
+.diritem .dname{font-weight:800;font-size:1.02rem;line-height:1.25}
+.diritem .dpurp{color:var(--muted);font-size:.9rem;line-height:1.45;margin:0}
+.diritem .dmeta{margin-top:auto;padding-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dirbadge{font-size:.67rem;font-weight:800;letter-spacing:.08em;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink);white-space:nowrap}
+.dirloc{font-size:.78rem;color:var(--muted);word-break:break-word}
+.dirfail{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;color:var(--muted);font-size:.96rem}
+
 /* ---------- FOOTER ---------- */
 footer{margin-top:60px;background:var(--navy-2);color:#B9CDEA;padding:30px 0}
 .frow{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;font-size:.92rem}
@@ -120,7 +138,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
 <body>
 <div class="topbar">
   <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
-  <nav><a href="/">Platform Home</a><a href="/book">Book a Repair</a><a href="/app">Customer App</a><a href="/tech">Tech App</a><a href="tel:+18444607038">844-460-7038</a></nav>
+  <nav><a href="/">Platform Home</a><a href="#directory">Directory</a><a href="/book">Book a Repair</a><a href="/app">Customer App</a><a href="/tech">Tech App</a><a href="tel:+18444607038">844-460-7038</a></nav>
 </div>
 
 <main>
@@ -249,6 +267,17 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
         <span class="go">Open the Workstation</span>
       </a>
     </div>
+  </div>
+</section>
+
+<!-- ============ PLATFORM DIRECTORY ============ -->
+<section id="directory">
+  <div class="wrap">
+    <div class="center"><span class="kicker">Platform Directory</span>
+      <h2 class="sec">Every platform. <em>One directory.</em></h2>
+      <p class="sub2">This portal is the directory of the whole Top Speed ecosystem — every platform below, grouped by who it serves, each with its own job. The directory shows you where everything lives; every door keeps its own sign-in and checks your account itself.</p>
+    </div>
+    <div id="dirGroups"><p class="sub2">Loading the live directory…</p></div>
   </div>
 </section>
 </main>
@@ -462,6 +491,156 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     var em=TSOSLayer2.popAuthError();
     if(em) fail(em);
     TSOSLayer2.bootFromUrl({api:API,onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }});
+  });
+})();
+</script>
+<script>
+/* Platform Directory (2026-11-20) — the Portal is the directory of
+   ALL platforms. Entries are joined live from the system map's public
+   projection (GET /navigator/directory: name, group, location, url,
+   access label only) so the directory can never drift from the map;
+   the grouping and the one-line purpose under each name live here.
+   Entries marked "add" are platforms with no discrete system-map
+   area; they carry name + url + access label + purpose only. Every
+   door keeps its own gate — the directory informs, the door checks. */
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  var IC={
+    customer:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='7' y='2.8' width='10' height='18.4' rx='2.6'/><path d='M10.8 18.4h2.4' stroke='#E94E5C'/></svg>",
+    business:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='6' y='3.5' width='12' height='17' rx='1'/><path d='M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6' stroke='#E94E5C'/><path d='M10.4 20.5v-3h3.2v3'/></svg>",
+    provider:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='3' y='9' width='18' height='10.5' rx='2'/><path d='M9 9V6.8A2.3 2.3 0 0 1 11.3 4.5h1.4A2.3 2.3 0 0 1 15 6.8V9M3 13.5h18' stroke='#E94E5C'/><path d='M10.2 13.5h3.6v2.4h-3.6z'/></svg>",
+    marketing:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='12' r='8.6'/><circle cx='12' cy='12' r='4.6'/><circle cx='12' cy='12' r='1.3' fill='#E94E5C' stroke='#E94E5C'/></svg>",
+    operations:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='3' y='4' width='18' height='12.5' rx='2'/><path d='M12 16.5v3.4M8 21h8' stroke='#E94E5C'/><path d='M6.8 8l3 2.4-3 2.4M12.4 13.4h4.4' opacity='.85'/></svg>",
+    satellite:"<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='12' cy='12' r='8.6'/><path d='M3.4 12h17.2' stroke='#E94E5C'/><ellipse cx='12' cy='12' rx='4' ry='8.6'/></svg>"
+  };
+  var GROUPS=[
+    { icon:'customer', title:"Customer Platforms",
+      blurb:"For homeowners and residents: book a repair, follow your tech live, keep your appliances in one garage, and earn referral credit.",
+      items:[
+        {a:'flagship', p:"The main Top Speed website — services, cities, booking, and every door into the Service OS."},
+        {a:'book', p:"The classic booking form — the primary way customers book a repair."},
+        {a:'customer-app', p:"The customer's home in the system: bookings, live tech tracking, the appliance garage and referral credit."},
+        {a:'speedy', p:"Speedy, the customer assistant: answers questions, reads appliance photos and helps you book."},
+        {a:'explore', p:"Meet the four engines of the ecosystem and how they work together."},
+        {a:'referral', p:"Refer & Earn: share your code and earn service credit when a friend's job is completed."}
+      ]},
+    { icon:'business', title:"Business Platforms",
+      blurb:"For commercial accounts and property managers. Business doors run on business sign-ins — a customer account never unlocks a commercial platform.",
+      items:[
+        {a:'appliance-pro', p:"The commercial door: service agreements, an equipment registry and one monthly invoice for businesses and facilities."},
+        {a:'connect-pro', p:"For property managers and businesses: properties, units, tenant service requests and statements."}
+      ]},
+    { icon:'provider', title:"Provider Platforms",
+      blurb:"For Top Speed's own technicians and the independent provider network: get jobs, work them end to end, and reach the office from the same system.",
+      items:[
+        {add:1, name:"Tech App — Company Tech", url:"/tech", loc:"topspeedserviceos.com/tech", badge:"PROVIDER ACCOUNT", p:"Company Tech: the full workstation for Top Speed's own technicians — dispatch board, the complete job record, money and messages."},
+        {add:1, name:"Tech App — Network Tech", url:"/tech-network", loc:"topspeedserviceos.com/tech-network", badge:"PROVIDER ACCOUNT", p:"Network Tech: the door for independent network technicians — job offers, assignments and job work."},
+        {add:1, name:"Field Pro — Tech App", url:"https://top-speed-field-pro.vercel.app", loc:"top-speed-field-pro.vercel.app", badge:"PROVIDER ACCOUNT", p:"Field Pro: the mobile app technicians carry in the field, on the same live system."},
+        {a:'speedy-pro', p:"Speedy Pro: the provider app surface for network pros — route, offers and job status."},
+        {a:'provider-join', p:"Join the network: apply to run calls as a Top Speed provider."},
+        {a:'network-site', p:"The provider network's own site, for network businesses and independent pros."},
+        {add:1, name:"Service Network", url:"/network", loc:"topspeedserviceos.com/network", badge:"PUBLIC", p:"The Service Network hub: get more jobs with zero marketing spend."}
+      ]},
+    { icon:'marketing', title:"Marketing Platforms",
+      blurb:"The network's marketing departments. Top Speed Local OS is the main advertiser for the Top Speed Service Network. Flywheel Advertising runs campaigns for the network and for the businesses and advertisers under the Advertiser Console. Top Speed Marketing — the Marketing OS — is the marketing arm for the Service OS and all its platforms, apps, websites and landing pages: SEO and web content publishing.",
+      items:[
+        {add:1, name:"Top Speed Local OS", url:"/marketing-os", loc:"topspeedserviceos.com/marketing-os", badge:"STAFF ONLY", p:"Top Speed Local OS: the main advertiser for the Top Speed Service Network — the network's own house marketing engine."},
+        {a:'marketing-os', p:"Top Speed Marketing: the marketing arm for the Service OS and all its platforms, apps, websites and landing pages — SEO and web content publishing."},
+        {a:'page-studio', p:"Page Studio: where the ecosystem's web pages and landing pages are built and published."},
+        {a:'seo-dashboard', p:"Search performance for every Top Speed website and page, in one board."},
+        {a:'google-accounts', p:"The registry of which Google account runs which property."},
+        {a:'top-speed-ads', p:"Top Speed Ads: the network's advertising platform — campaigns for Top Speed and its advertisers."},
+        {a:'ad-studio', p:"Ad Studio: build campaigns, submit them for the Owner's approval, and manage creatives."},
+        {a:'flywheel', p:"Flywheel Advertising: campaigns for the Service Network and for the businesses and advertisers under the Advertiser Console."},
+        {a:'streaming-ads', p:"Streaming Ads: TV and streaming campaigns, built inside Ad Studio."},
+        {a:'adstream-providers', p:"AdStream Providers: the outside ad networks connected into Top Speed Ads."},
+        {a:'insights', p:"Service OS Insights: traffic, calls and search analytics across the whole ecosystem."},
+        {a:'media-os', p:"Media: the social media and entertainment hub — it connects the social profiles, and it is where Top Speed videos are created and kept in the video library."},
+        {add:1, name:"Media Creator Workspace", url:"/media-creator", loc:"topspeedserviceos.com/media-creator", badge:"CREATOR ACCOUNT", p:"Creators' own room inside Media OS — their content, from draft to published."},
+        {a:'publish-center', p:"Publish Center: release approved content to the network's channels."},
+        {a:'advertiser-console', p:"The Advertiser Console: where businesses and advertisers run their Flywheel campaigns, plans and results."},
+        {a:'advertiser-plans', p:"Advertiser Plans & Billing: subscriptions and billing for advertisers, inside the Advertiser Console."},
+        {a:'ad-specialist', p:"Ad Specialist: apply to join the marketing team — accounts are issued by the Owner."}
+      ]},
+    { icon:'operations', title:"Operations & Workstations",
+      blurb:"The team's workstations: dispatch, management, money, training, and the systems that hold the whole platform together. Team accounts are issued by the Owner, and every door checks your role.",
+      items:[
+        {a:'applianceman', p:"The Owner's command home: the live platform snapshot, Master controls and the Speedy Verify panel."},
+        {a:'turbo-boss', p:"The manager's command home: decision queue, department scorecards, team load and the money snapshot."},
+        {a:'oversight', p:"Management Oversight: every department on one live screen, with the platform activity feed."},
+        {a:'manager', p:"Remote Manager: run the day from anywhere — team and job state for managers."},
+        {a:'pepper-console', p:"Pepper — Systems Manager: the live systems board, and what needs the Owner."},
+        {a:'platform-interconnect', p:"Platform Interconnect: the wiring map of how every platform connects to the one backend."},
+        {a:'navigator', p:"System Navigator: the staff guide to where everything in the system lives."},
+        {a:'book-os', p:"Book OS — Service Book Pro: the Service Setters' home — the booking queue and dispatch board."},
+        {a:'service-setters', p:"Service Setters: the dispatch team that coordinates every booking and technician."},
+        {a:'dispatch-dashboard', p:"The Dispatch Dashboard: today's jobs on one live board."},
+        {a:'setter-exception-queue', p:"The Exception Queue: jobs that need office attention — late, stuck or escalated."},
+        {a:'setter-recovery-queues', p:"Recovery Queues: missed and at-risk appointments, brought back."},
+        {a:'dispatch-capacity', p:"Dispatch Capacity: plan each day's workload across the team."},
+        {a:'crm', p:"Top Speed CRM: customers, bookings, the sales pipeline and lifetime value."},
+        {a:'email-manager', p:"Email Manager: the service inbox inside Book OS, worked by the whole office."},
+        {a:'link-center', p:"Link Center: send customers booking, account, review, payment and estimate links."},
+        {a:'chats', p:"Chat Insights: what customers ask, and where their chats lead."},
+        {a:'review-moderation', p:"Review Moderation: the Pepper Lists review queue, worked from Book OS."},
+        {a:'work-time', p:"Work Time Access: the Owner personally issues every team account here."},
+        {a:'speedy-verify', p:"Speedy Verify: the access codes that verify accounts on top of the password — issued only by the Owner."},
+        {a:'layer2', p:"Layer 2: the 2-step sign-in code protecting accounts at sign-in."},
+        {a:'multi-account-sessions', p:"Multi-Account Sessions: one holder signed into several accounts at once, each kept separate."},
+        {a:'finance', p:"Finance OS: the money picture, with QuickBooks as the book of record."},
+        {a:'payments', p:"Payments: the live Stripe status for platform payments."},
+        {a:'academy', p:"Training Academy: courses and certification for the team and technicians."},
+        {a:'parts', p:"Parts Supply OS: stock, suppliers, purchase orders and the reorder list."},
+        {a:'ext-vercel', p:"Vercel: hosting and deployments for every Top Speed site."},
+        {a:'ext-github', p:"GitHub: the code repositories behind the platforms."},
+        {a:'ext-stripe', p:"Stripe: the payment processor's own dashboard."},
+        {a:'ext-porkbun', p:"Porkbun: the registrar for the platform's domains."},
+        {a:'ext-nsol', p:"Network Solutions: registrar for appliancereferral.com and appliancepro.net."},
+        {a:'ext-resend', p:"Resend: the email service behind platform mail."},
+        {a:'ext-meta', p:"Meta Business Suite: the Facebook Pages, Instagram and Marketplace presence."},
+        {a:'ext-google', p:"Google: Ads, Business Profiles and Workspace admin."}
+      ]},
+    { icon:'satellite', title:"Satellite & Partner Sites",
+      blurb:"Top Speed on its own domains, plus the partner platforms that plug into the Service OS. Each runs its own front door on the same shared system.",
+      items:[
+        {a:'net-site', p:"TopSpeedAppliance.net: the customer website on its own domain."},
+        {add:1, name:"TopSpeedApplianceRepair.com", url:"https://topspeedappliancerepair.com", loc:"topspeedappliancerepair.com", badge:"PUBLIC", p:"Services and booking on the repair domain."},
+        {a:'cleanout-vents', p:"Cleanout Vents: the dryer-vent partner — its own brand and site at cleanoutvents.com, plugged into the Service OS."},
+        {a:'pepper-lists', p:"Pepper Lists: the local marketplace by Top Speed — Sell, Post, Book."},
+        {a:'pepper-lists-channels', p:"Channel Connections: sellers link their Facebook, eBay and Google Shopping channels to Pepper Lists."},
+        {a:'appliance-pro', p:"Appliance Pro on its own domain: the commercial portal at appliancepro.net."},
+        {add:1, name:"Appliance Connect — Web Portal", url:"https://appliance-connect.vercel.app", loc:"appliance-connect.vercel.app", badge:"CUSTOMER ACCOUNT", p:"Appliance Connect on the web: the customer app as a web portal."},
+        {a:'appliance-plus', p:"Appliance Plus Parts Supply: the vendor partner's platform, with PLUS AI — a separate partner, linked from Parts Supply OS."},
+        {add:1, name:"Gateway Express", url:null, loc:"Local only — no public site", badge:"LOCAL ONLY", p:"Gateway Express: the logistics platform. It runs local only, so there is no public door to link."}
+      ]}
+  ];
+  function isExternal(url){ return /^https?:\/\//.test(url) && url.indexOf('https://topspeedserviceos.com')!==0; }
+  function itemHTML(it, area){
+    var name=area?area.name:it.name, url=area?area.url:it.url, loc=area?area.location:it.loc, badge=area?area.accessLabel:it.badge;
+    var inner='<span class="dname">'+esc(name)+'</span><p class="dpurp">'+esc(it.p)+'</p><span class="dmeta">'+(badge?'<span class="dirbadge">'+esc(badge)+'</span>':'')+'<span class="dirloc">'+esc(loc||'')+'</span></span>';
+    if(!url) return '<div class="diritem">'+inner+'</div>';
+    return '<a class="diritem" href="'+esc(url)+'"'+(isExternal(url)?' target="_blank" rel="noopener"':'')+'>'+inner+'</a>';
+  }
+  function render(areas){
+    var byId={};
+    areas.forEach(function(a){ byId[a.id]=a; });
+    var html='';
+    GROUPS.forEach(function(g){
+      html+='<div class="dirgroup"><div class="dirghead"><div class="ficon">'+IC[g.icon]+'</div><div><h3>'+esc(g.title)+'</h3><p class="gblurb">'+esc(g.blurb)+'</p></div></div><div class="dirgrid">';
+      g.items.forEach(function(it){
+        if(it.a){ var area=byId[it.a]; if(area) html+=itemHTML(it, area); }
+        else html+=itemHTML(it, null);
+      });
+      html+='</div></div>';
+    });
+    document.getElementById('dirGroups').innerHTML=html;
+  }
+  fetch(API+'/navigator/directory').then(function(r){ return r.json(); }).then(function(j){
+    if(!j.data||!j.data.areas) throw new Error('directory');
+    render(j.data.areas);
+  }).catch(function(){
+    document.getElementById('dirGroups').innerHTML='<div class="dirfail">The live directory could not load just now. Staff can open the full system map in the <a href="/navigator">Workstation Navigator</a>.</div>';
   });
 })();
 </script>

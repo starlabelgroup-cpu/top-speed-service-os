@@ -1138,6 +1138,50 @@ export function systemMapPayload() {
   };
 }
 
+/* ------------------- Service OS Portal directory -------------------
+ * The PUBLIC projection behind GET /navigator/directory, rendered by
+ * the Service OS Portal (/portal) as its Platform Directory. The staff
+ * map above stays staff-only (it carries purposes, actions and
+ * how-tos); this projection ships ONLY the public-safe fields per
+ * area — name, group, location, url and an access label — derived
+ * from this same file, so the Portal directory can never drift from
+ * the system map. The label is the area's own accessLabel where it
+ * carries one (the audited CONSOLE_ACCESS mirror); otherwise it is
+ * derived from the area's own access string by the conservative rules
+ * in directoryAccessLabel() — the same label vocabulary, never a
+ * weaker claim than the real gate. */
+function directoryAccessLabel(area) {
+  if (area.accessLabel) return area.accessLabel;
+  const access = String(area.access || '');
+  if (/master only/i.test(access) || /^master\b/i.test(access)) return 'OWNER ONLY';
+  if (/public application/i.test(access)) return 'PUBLIC APPLICATION';
+  if (/^signed-in pepper lists sellers/i.test(access)) return 'SELLER ACCOUNT';
+  if (/^all staff \+ provider/i.test(access)) return 'STAFF & PROVIDERS';
+  if (/^public/i.test(access)) return 'PUBLIC';
+  if (/^customers$/i.test(access.trim())) return 'CUSTOMER ACCOUNT';
+  if (/business login/i.test(access)) return 'BUSINESS LOGIN';
+  if (/^advertiser/i.test(access)) return 'ADVERTISER ACCOUNT';
+  if (/^every account holder/i.test(access) || /^everyone who signs in/i.test(access)) return 'ALL ACCOUNTS';
+  if (/^partner/i.test(access)) return 'PARTNER';
+  if (/^providers/i.test(access)) return 'PROVIDERS';
+  if (/staff/i.test(access)) return 'STAFF ONLY';
+  return null;
+}
+
+export function portalDirectoryPayload() {
+  return {
+    areas: SYSTEM_MAP_AREAS.map((area) => ({
+      id: area.id,
+      name: area.name,
+      group: area.group,
+      location: area.location,
+      url: area.url,
+      accessLabel: directoryAccessLabel(area),
+    })),
+    counts: { areas: SYSTEM_MAP_AREAS.length },
+  };
+}
+
 /* --------------------- Academy course (modules 30–38) ---------------------
  * "System Navigator: Know Your Platform" — generated from the SAME map
  * and how-tos above. Each lesson becomes one Media OS content record
