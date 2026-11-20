@@ -90,6 +90,38 @@ for (const nativeOrigin of ['capacitor://localhost', 'https://localhost']) {
 for (const appOrigin of ['https://top-speed-field-pro.vercel.app']) {
   if (!corsOrigin.includes(appOrigin)) corsOrigin.push(appOrigin);
 }
+// The platform's satellite sites are served on their own domains (the
+// web project host-routes pepperlists.com, applianceplug.app,
+// cleanoutvents.com, appliancepro.app, applianceconnectpro.com,
+// fixmyappliancefl.com and topspeedrepairs.com; the Appliance Connect
+// web app and the Broward landing fleet serve from their own projects),
+// while their JavaScript calls this API at its absolute origin. A
+// browser blocks every one of those calls unless the serving origin is
+// allowed here — that is what broke Pepper Lists account creation on
+// 2026-11-20 ("Failed to fetch": the API was healthy, the preflight
+// simply carried no Access-Control-Allow-Origin). These are the
+// platform's own domains only; the list stays closed to anything else.
+for (const satelliteOrigin of [
+  'https://pepperlists.com',
+  'https://www.pepperlists.com',
+  'https://applianceplug.app',
+  'https://www.applianceplug.app',
+  'https://cleanoutvents.com',
+  'https://www.cleanoutvents.com',
+  'https://appliancepro.app',
+  'https://www.appliancepro.app',
+  'https://applianceconnectpro.com',
+  'https://www.applianceconnectpro.com',
+  'https://appliance-connect.vercel.app',
+  'https://topspeedrepairs.com',
+  'https://www.topspeedrepairs.com',
+  'https://fixmyappliancefl.com',
+  'https://www.fixmyappliancefl.com',
+  'https://browardappliancepros.com',
+  'https://www.browardappliancepros.com',
+]) {
+  if (!corsOrigin.includes(satelliteOrigin)) corsOrigin.push(satelliteOrigin);
+}
 
 app.disable('x-powered-by');
 app.use(helmet());
