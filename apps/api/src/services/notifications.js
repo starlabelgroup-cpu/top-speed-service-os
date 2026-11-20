@@ -7,6 +7,7 @@ import { activeSubscriptionsForUser } from '../db/pushSubscriptionsRepo.js';
 import { pushAvailable } from './pushNotifications.js';
 import { drainEntries } from './senders.js';
 import { DEPARTMENT_FOR_INTERNAL_TEMPLATE, DEPARTMENT_FOR_STAFF_KIND, emitReport } from './managementReports.js';
+import { appointmentReminderWhatsApp, bookingConfirmationWhatsApp } from './whatsapp.js';
 
 /**
  * Notification pipeline — ONE system for every email/SMS alert and
@@ -60,7 +61,6 @@ export const NOTIFICATION_TEMPLATES = {
   SAFETY_ESCALATION: 'SAFETY_ESCALATION',
   VIDEO_REQUEST: 'VIDEO_REQUEST',
   PAYMENT_RECEIVED: 'PAYMENT_RECEIVED',
-  SIGN_IN_ALERT: 'SIGN_IN_ALERT',
   BOOKING_RECEIPT: 'BOOKING_RECEIPT',
   SUBMISSION_CONFIRMATION: 'SUBMISSION_CONFIRMATION',
   STAFF_SUBMISSION_ALERT: 'STAFF_SUBMISSION_ALERT',
@@ -81,6 +81,8 @@ export const NOTIFICATION_TEMPLATES = {
   GIFT_CARD_ACTIVE: 'GIFT_CARD_ACTIVE',
   PEPPER_LISTS_ORDER_PAID: 'PEPPER_LISTS_ORDER_PAID',
   STAFF_MESSAGE: 'STAFF_MESSAGE',
+  OFFICE_MESSAGE: 'OFFICE_MESSAGE',
+  WINBACK_OFFER: 'WINBACK_OFFER',
 };
 
 /* ------------------------------------------------------------------ */
@@ -152,6 +154,7 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   // customer-facing email too: they carry the same Book / Call /
   // Tell Speedy footer as every other customer touch.
   NOTIFICATION_TEMPLATES.STAFF_MESSAGE,
+  NOTIFICATION_TEMPLATES.WINBACK_OFFER,
   'SIGNIN_LINK', // composed in routes/handoff.js with a literal template name
 ]);
 
@@ -165,12 +168,17 @@ function withCustomerReachFooter(channel, template, payload) {
 /* ------------------------------------------------------------------ */
 /* Settings — staff toggles, persisted via db/notificationsRepo.       */
 /* Defaults are ALL ON; the store copy is hydrated at cold start.      */
+/* The one exception is whatsappEnabled: the WhatsApp channel's       */
+/* OWNER flag (2026-11-20, F7) — default OFF, owner-only to change    */
+/* (routes/notifications.js enforces the role), and even ON it sends  */
+/* only once Ramone's Meta WhatsApp config exists in the environment. */
 /* ------------------------------------------------------------------ */
 export const NOTIFICATION_SETTING_DEFAULTS = {
   staffEmailAlerts: true,
   staffSmsAlerts: true,
   customerEmailConfirmations: true,
   customerSmsConfirmations: true,
+  whatsappEnabled: false,
 };
 export const NOTIFICATION_SETTING_KEYS = Object.keys(NOTIFICATION_SETTING_DEFAULTS);
 
@@ -280,10 +288,15 @@ export function queueNotification({ channel, template, to, payload = {}, source 
       eventKey: eventKey || `internal:${template}:${payload?.bookingId || entry.id}`,
     });
   }
-  if ((channel === 'email' || channel === 'sms' || channel === 'push') && entry.status === 'QUEUED') {
+  if ((channel === 'email' || channel === 'sms' || channel === 'push' || channel === 'whatsapp') && entry.status === 'QUEUED') {
     scheduleEntryDrain(entry);
   }
   return entry;
+}
+
+/** The WhatsApp owner flag — the ONLY gate the fan-out consults. */
+export function whatsappEnabled() {
+  return getNotificationSettings().whatsappEnabled === true;
 }
 
 /** A notification that cannot be attempted, recorded honestly as GATED. */
@@ -1030,6 +1043,30 @@ export function notifyBookingConfirmation(booking, source = null) {
     source,
     eventKeyBase: `booking:${booking.id}:confirmation:${keyStamp}`,
   });
+  // WhatsApp (F7, 2026-11-20): a third customer channel on the same
+  // event, ONLY when the owner flag is on — flag off queues nothing,
+  // so the channel's absence is total until Ramone activates it. The
+  // payload carries the Meta utility-template shape plus the rendered
+  // text twin the console shows.
+  if (whatsappEnabled() && booking.customer?.phone) {
+    const wa = bookingConfirmationWhatsApp(booking);
+    entries.push(queueNotification({
+      channel: 'whatsapp',
+      template: NOTIFICATION_TEMPLATES.BOOKING_CONFIRMATION,
+      to: booking.customer.phone,
+      source,
+      eventKey: `booking:${booking.id}:confirmation:whatsapp:${keyStamp}`,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        customerName: booking.customer?.name,
+        templateName: wa.templateName,
+        templateParams: wa.templateParams,
+        message: wa.text,
+      },
+    }));
+  }
   return entries;
 }
 
@@ -1077,7 +1114,7 @@ export function notifyNewBooking(booking, source = null) {
  */
 export function notifyAppointmentReminder(booking, source = null) {
   const appointment = booking.appointment || {};
-  return customerChannels(booking).map(({ channel, to }) =>
+  const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.APPOINTMENT_REMINDER,
@@ -1100,6 +1137,52 @@ export function notifyAppointmentReminder(booking, source = null) {
       },
     }),
   );
+  // WhatsApp twin of the reminder (F7) — owner flag on only, same
+  // event key family as the SMS/email legs.
+  if (whatsappEnabled() && booking.customer?.phone) {
+    const wa = appointmentReminderWhatsApp(booking);
+    entries.push(queueNotification({
+      channel: 'whatsapp',
+      template: NOTIFICATION_TEMPLATES.APPOINTMENT_REMINDER,
+      to: booking.customer.phone,
+      source,
+      eventKey: `booking:${booking.id}:reminder:whatsapp:${appointment.date || 'unset'}`,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        customerName: booking.customer?.name,
+        templateName: wa.templateName,
+        templateParams: wa.templateParams,
+        message: wa.text,
+      },
+    }));
+  }
+  return entries;
+}
+
+/**
+ * An office reply to a customer over WhatsApp (F7, 2026-11-20) —
+ * queued by the staff compose endpoint (POST
+ * /notifications/whatsapp/send), which owns the flag check. The
+ * entry is a free-form session text: WhatsApp delivers those only
+ * inside the 24-hour window after the customer's own message, and a
+ * Meta rejection lands here as FAILED with the provider's error.
+ */
+export function notifyWhatsAppOfficeMessage({ to, body, reference = null, source = null }) {
+  return queueNotification({
+    channel: 'whatsapp',
+    template: NOTIFICATION_TEMPLATES.OFFICE_MESSAGE,
+    to,
+    source,
+    eventKey: `office-whatsapp:${createId()}`,
+    eventType: 'MESSAGE',
+    payload: {
+      kind: 'OFFICE_MESSAGE',
+      reference: reference || null,
+      message: body,
+    },
+  });
 }
 
 /**
@@ -1160,6 +1243,71 @@ export function notifyAppointmentReminderWithReply(booking, kind, source = null)
     });
     return { channel, to, entry, created };
   });
+}
+
+/**
+ * Win-back offer (2026-11-20, D6): ONE campaign message to ONE lapsed
+ * customer, queued only because a Service Setter pressed send on the
+ * CRM win-back tool for a segment this customer was evaluated into.
+ * The segment evaluation (services/winback.js) has already excluded
+ * opted-out, open-complaint, no-contact and recently-contacted
+ * customers before this is ever called — this function composes and
+ * queues; it never decides recipients.
+ *
+ * Copy discipline: the offer text is the PUBLISHED benefit string
+ * from the offers catalog, verbatim — no discount or term is
+ * invented here. The elapsed time is the customer's real months
+ * since their last completed job. Every message carries its opt-out
+ * path (SMS: reply STOP — the inbound handler records it; email:
+ * call the business number and staff record it).
+ *
+ * Channel toggles: the customer email/SMS settings gate marketing
+ * sends exactly like other customer messages — a disabled channel
+ * records an honest GATED (SETTING_DISABLED) entry instead of
+ * sending. The campaign eventKey makes a re-send of the same
+ * campaign to the same customer a no-op.
+ */
+export function notifyWinbackOffer({ customer, offer, campaignId, segment, monthsSince = null, lastAppliance = null, sentBy = null, source = null }) {
+  const settings = getNotificationSettings();
+  const first = firstNameOf(customer?.name);
+  const appliance = lastAppliance || 'appliance';
+  const elapsed = monthsSince ? ` It has been about ${monthsSince} months since we serviced your ${appliance}.` : '';
+  const offerLine = `${offer.title} — ${offer.benefit}`;
+  const entries = [];
+  const channels = [];
+  if (customer?.phone) channels.push({ channel: 'sms', to: customer.phone, enabled: settings.customerSmsConfirmations });
+  if (customer?.email) channels.push({ channel: 'email', to: customer.email, enabled: settings.customerEmailConfirmations });
+  for (const { channel, to, enabled } of channels) {
+    const message =
+      channel === 'sms'
+        ? `Top Speed Appliance: Hi ${first}, we miss you!${elapsed} ${offerLine} Book your visit: ${REACH_LINKS.book} Reply STOP to opt out of offers.`
+        : `Hi ${first},\n\nThis is Top Speed Appliance — thanks again for trusting us with your ${appliance}.${elapsed}\n\nWe would love to earn your business again: ${offerLine}\n\nBook your visit any time: ${REACH_LINKS.book}\nOr call us at ${PLATFORM_CONSTANTS.phoneDisplay}.\n\nDon't want offers like this? Call ${PLATFORM_CONSTANTS.phoneDisplay} and we will take you off the list — no hard feelings.`;
+    entries.push(
+      queueNotification({
+        channel,
+        template: NOTIFICATION_TEMPLATES.WINBACK_OFFER,
+        to,
+        source,
+        eventKey: `winback:${campaignId}:${customer.id}:${channel}`,
+        eventType: 'WINBACK',
+        status: enabled ? undefined : 'GATED',
+        reason: enabled ? undefined : 'SETTING_DISABLED',
+        payload: {
+          customerId: customer.id,
+          customerName: customer.name || null,
+          campaignId,
+          segment,
+          offerSlug: offer.slug,
+          sentBy,
+          monthsSince,
+          lastAppliance: appliance,
+          subject: `We miss you, ${first} — ${offer.title} at Top Speed Appliance`,
+          message,
+        },
+      }),
+    );
+  }
+  return entries;
 }
 
 /**
