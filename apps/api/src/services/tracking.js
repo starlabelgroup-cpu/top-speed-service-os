@@ -97,10 +97,23 @@ export function computeTracking(booking) {
     };
   }
 
-  let technician = { assigned: false, name: null };
+  let technician = { assigned: false, name: null, firstName: null, photoAvailable: false };
   if (activeAssignment) {
     const provider = providerById(activeAssignment.providerId);
-    technician = { assigned: true, name: provider?.businessName || 'Your Top Speed technician' };
+    // "On My Way" (A3, 2026-11-20): the en-route tap snapshots the
+    // tech's first name — and their real profile photo, when they have
+    // one — onto the TECH_EN_ROUTE event. The tracking views show the
+    // name, and the photo through the token/auth-gated photo routes;
+    // no snapshot = no name/photo shown, never a placeholder.
+    const enRouteEvents = history.filter((e) => e.type === 'TECH_EN_ROUTE');
+    const named = [...enRouteEvents].reverse().find((e) => e.techFirstName);
+    const withPhoto = [...enRouteEvents].reverse().find((e) => e.techPhotoDataUrl);
+    technician = {
+      assigned: true,
+      name: provider?.businessName || 'Your Top Speed technician',
+      firstName: named?.techFirstName || null,
+      photoAvailable: Boolean(withPhoto),
+    };
   }
 
   return {
@@ -153,4 +166,21 @@ export function photoReportOf(booking) {
     after: pick('AFTER'),
     total: photos.length,
   };
+}
+
+/**
+ * The tech photo snapshotted on the most recent TECH_EN_ROUTE event
+ * that carries one (A3). Returns { mime, bytes } or null — the photo
+ * routes 404 on null so a job without a real tech photo never serves
+ * a placeholder or a broken image.
+ */
+export function techPhotoFor(booking) {
+  const history = Array.isArray(booking?.history) ? booking.history : [];
+  const event = [...history].reverse().find((e) => e.type === 'TECH_EN_ROUTE' && e.techPhotoDataUrl);
+  if (!event) return null;
+  const match = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/.exec(String(event.techPhotoDataUrl));
+  if (!match) return null;
+  const bytes = Buffer.from(match[2].replace(/\s+/g, ''), 'base64');
+  if (!bytes.length) return null;
+  return { mime: match[1] === 'image/jpg' ? 'image/jpeg' : match[1], bytes };
 }

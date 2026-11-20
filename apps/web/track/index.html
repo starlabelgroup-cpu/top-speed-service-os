@@ -69,6 +69,7 @@
   .pr-grid figure{margin:0}
   .pr-grid img{width:100%;height:auto;border-radius:10px;display:block;border:1px solid var(--line)}
   .pr-grid figcaption{font-size:12.5px;color:var(--mut);margin-top:4px;line-height:1.4}
+  .techphoto{width:52px;height:52px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:10px;border:2px solid var(--line,#D7DEE9)}
   .empty{color:var(--mut);font-size:15px;padding:8px 0}
   footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
   footer a{color:#fff;font-weight:600;text-decoration:none}
@@ -162,6 +163,33 @@ const STAFF = ['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
 const token = () => localStorage.getItem('tsos_token');
 const $ = (id) => document.getElementById(id);
 
+/* "On My Way" photo (A3): the tech's real profile photo, loaded from
+   the gated photo routes after render — token link directly, signed-in
+   and guest views by authenticated/proofed fetch. Any failure removes
+   the img: a job never shows a broken image or a placeholder face. */
+let guestCtx = null;
+async function hydrateTechPhotos() {
+  const imgs = document.querySelectorAll('img[data-techphoto]');
+  for (const img of imgs) {
+    img.addEventListener('error', () => img.remove());
+    try {
+      if (typeof linkToken !== 'undefined' && linkToken) {
+        img.src = API + '/tracking/by-token/' + encodeURIComponent(linkToken) + '/tech-photo';
+      } else if (img.dataset.bid && token()) {
+        const r = await fetch(API + '/tracking/bookings/' + encodeURIComponent(img.dataset.bid) + '/tech-photo', { headers: { Authorization: 'Bearer ' + token() } });
+        if (!r.ok) { img.remove(); continue; }
+        img.src = URL.createObjectURL(await r.blob());
+      } else if (img.dataset.ref && img.dataset.phone) {
+        const r = await fetch(API + '/tracking/by-reference/' + encodeURIComponent(img.dataset.ref) + '/tech-photo?phone=' + encodeURIComponent(img.dataset.phone));
+        if (!r.ok) { img.remove(); continue; }
+        img.src = URL.createObjectURL(await r.blob());
+      } else {
+        img.remove();
+      }
+    } catch (e) { img.remove(); }
+  }
+}
+
 function timelineHTML(t) {
   const items = t.stageLabels.map((label, i) => {
     const cls = i < t.stageIndex ? 'done' : (i === t.stageIndex ? (t.stageIndex >= 7 ? 'done' : 'now') : '');
@@ -170,8 +198,17 @@ function timelineHTML(t) {
   }).join('');
   const dots = t.stageLabels.map((_, i) => `<i class="${i < t.stageIndex ? 'done' : (i === t.stageIndex ? 'on' : '')}"></i>`).join('');
   const eta = t.stageIndex === 3 && t.etaMinutes ? `<span class="pill pill-eta">ETA ~${t.etaMinutes} min</span>` : '';
-  const tech = t.technician && t.technician.assigned
-    ? `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> Your technician: <strong>${t.technician.name}</strong></div>`
+  const tn = t.technician || {};
+  const escH = (s) => String(s || '').replace(/</g, '&lt;');
+  const guestAttrs = (!t.id && typeof guestCtx !== 'undefined' && guestCtx)
+    ? ` data-ref="${guestCtx.ref}" data-phone="${guestCtx.phone}"`
+    : '';
+  const techPhoto = tn.photoAvailable
+    ? `<img class="techphoto" data-techphoto${t.id ? ` data-bid="${t.id}"` : ''}${guestAttrs} alt="Photo of your technician" width="52" height="52">`
+    : '';
+  const techName = tn.firstName ? `<strong>${escH(tn.firstName)}</strong> · ${escH(tn.name)}` : `<strong>${escH(tn.name)}</strong>`;
+  const tech = tn.assigned
+    ? `<div class="techline">${techPhoto}<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg> Your technician: ${techName}</div>`
     : `<div class="techline">Technician details appear here once your Service Setter assigns your visit.</div>`;
   return `<div class="dots">${dots}</div>
     <div class="stage-now">${t.stageLabel8} ${eta}</div>
@@ -227,6 +264,7 @@ async function loadMine() {
   $('myJobs').innerHTML = jobs.length
     ? jobs.map((j) => jobCard(j, j.issue ? `<div class="techline">Issue: ${j.issue}</div>` : '')).join('')
     : '<p class="empty">No jobs on this account yet. When you book a repair, its live tracking shows up here automatically.</p>';
+  hydrateTechPhotos();
 }
 
 async function showAccount() {
@@ -285,7 +323,9 @@ $('guestForm').addEventListener('submit', async (e) => {
     const res = await fetch(`${API}/bookings/track/${encodeURIComponent(ref)}?phone=${encodeURIComponent(phone)}`);
     const body = await res.json();
     if (!res.ok) throw new Error(body.error || 'Lookup failed');
+    guestCtx = { ref, phone };
     $('guestResult').innerHTML = jobCard(body.data);
+    hydrateTechPhotos();
   } catch (ex) {
     err.textContent = ex.message;
     err.style.display = 'block';
@@ -301,6 +341,7 @@ async function loadByToken() {
     const body = await res.json();
     if (!res.ok) throw new Error(body.error || 'This tracking link is not valid');
     $('guestResult').innerHTML = jobCard(body.data) + '<p class="empty">This page refreshes itself every 30 seconds while your job is live.</p>';
+    hydrateTechPhotos();
   } catch (ex) {
     const err = $('guestErr');
     err.textContent = ex.message;

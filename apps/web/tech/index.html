@@ -419,6 +419,7 @@ function tchClaims(){ tchToggle(false); go('claims'); }
 function tchAvail(){ tchToggle(false); var b=document.getElementById('availBtn'); if(b) b.click(); }
 function tchSettings(){ tchToggle(false); go('settings'); tchLoadSettings(); }
 var _setProfile=null;
+var _setPhoto=null, _setPhotoDirty=false;
 function setSplitList(v){ return String(v||'').split(/[\n,]+/).map(function(x){ return x.trim(); }).filter(Boolean); }
 function tchLoadSettings(){
   var root=document.getElementById('setRoot'); if(!root) return;
@@ -448,6 +449,14 @@ function setFormHtml(d){
       ? '<span class="tp-lab">Business name (your customers see this)</span><input class="tp-in" id="set-biz" value="'+escT(pv.businessName||'')+'">'
       : '<p class="note" style="margin:8px 0 0">The crew\u2019s business name and official service areas are set by the office — your personal details below are yours.</p>')+
     '</div>';
+  var ph=d.photo||{};
+  _setPhoto = ph.set ? (ph.dataUrl||null) : null; _setPhotoDirty=false;
+  h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Your photo \u2014 sent to customers</h3>'+
+    '<div style="display:flex;gap:12px;align-items:center">'+
+    (ph.set&&ph.dataUrl ? '<img id="set-photo-img" src="'+ph.dataUrl+'" alt="Your profile photo" style="width:64px;height:64px;border-radius:50%;object-fit:cover">' : '<img id="set-photo-img" alt="" style="width:64px;height:64px;border-radius:50%;object-fit:cover;display:none">')+
+    '<div><label class="btn no" style="cursor:pointer">Choose photo<input type="file" id="set-photo-file" accept="image/*" style="display:none" onchange="setPhotoPick(this)"></label>'+
+    (ph.set ? ' <button class="btn no" type="button" onclick="setPhotoRemove()">Remove</button>' : '')+
+    '<p class="note" style="margin:6px 0 0">When you tap En route, the customer gets your first name and this photo with the \u201con my way\u201d text \u2014 so they know who to expect at the door. No photo? The alert simply goes without one.</p></div></div></div>';
   h+='<div class="card"><h3 style="font-size:14px;color:var(--navy)">Vehicle</h3>'+
     '<div class="set-grid"><div><span class="tp-lab">Year</span><input class="tp-in" id="set-v-year" value="'+escT(v.year||'')+'" placeholder="2022"></div>'+
     '<div><span class="tp-lab">Make</span><input class="tp-in" id="set-v-make" value="'+escT(v.make||'')+'" placeholder="Ford"></div>'+
@@ -475,6 +484,20 @@ function setFormHtml(d){
   return h;
 }
 function setVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
+function setPhotoPick(input){
+  var file=input.files&&input.files[0]; if(!file) return;
+  var url=URL.createObjectURL(file); var img=new Image();
+  img.onload=function(){
+    var scale=Math.min(1, 640/Math.max(img.width||1,img.height||1));
+    var c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.width*scale)); c.height=Math.max(1,Math.round(img.height*scale));
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    URL.revokeObjectURL(url);
+    _setPhoto=c.toDataURL('image/jpeg',0.85); _setPhotoDirty=true;
+    var pv=document.getElementById('set-photo-img'); if(pv){ pv.src=_setPhoto; pv.style.display=''; }
+  };
+  img.src=url;
+}
+function setPhotoRemove(){ _setPhoto=null; _setPhotoDirty=true; var pv=document.getElementById('set-photo-img'); if(pv){ pv.removeAttribute('src'); pv.style.display='none'; } }
 function setSave(){
   var d=_setProfile||{}; var network=d.system==='NETWORK';
   var vehicle={ year:setVal('set-v-year')||null, make:setVal('set-v-make')||null, model:setVal('set-v-model')||null, color:setVal('set-v-color')||null, plate:setVal('set-v-plate')||null };
@@ -485,6 +508,7 @@ function setSave(){
     notifications:{ jobOffers:!!document.getElementById('set-n-offers').checked, scheduleChanges:!!document.getElementById('set-n-sched').checked, payments:!!document.getElementById('set-n-pay').checked, messages:!!document.getElementById('set-n-msg').checked },
     myAreas:setSplitList(setVal('set-areas')), myAppliances:setSplitList(setVal('set-apps'))
   };
+  if(_setPhotoDirty) body.photo=_setPhoto;
   if(network) body.businessName=setVal('set-biz');
   var m=document.getElementById('set-msg');
   tFetch('/provider/profile',{method:'PATCH',body:JSON.stringify(body)}).then(function(j){

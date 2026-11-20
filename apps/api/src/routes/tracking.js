@@ -6,7 +6,7 @@ import { persistAssignment, persistAssignmentsForBooking, persistBooking } from 
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
-import { activeAssignmentFor, computeTracking, photoReportOf, providerById } from '../services/tracking.js';
+import { activeAssignmentFor, computeTracking, photoReportOf, providerById, techPhotoFor } from '../services/tracking.js';
 import { priorityTierOf } from '../services/dispatchOps.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
@@ -57,6 +57,7 @@ router.get('/tracking/mine', authenticate, (req, res) => {
   const jobs = bookingsForUser(req.user)
     .map((b) => ({
       ...computeTracking(b),
+      id: b.id,
       issue: b.issue ?? null,
       zip: b.zip ?? null,
       createdAt: b.createdAt,
@@ -247,7 +248,10 @@ router.post('/tracking/console/:reference/stage', ...staffOnly, async (req, res)
   // happen (en route / arrived / diagnosis / estimate), not only when
   // a setter presses the manual notify button.
   if (action === 'EN_ROUTE') {
-    notifyTechEnRoute(booking, 'TRACKING_CONSOLE');
+    // A setter advancing the stage on the tech's behalf has no tech
+    // identity/photo to snapshot — the alert goes out with the window
+    // and ETA only (A3); the tech's own tap adds name + photo.
+    notifyTechEnRoute(booking, 'TRACKING_CONSOLE', { etaMinutes: etaMinutes ?? null });
   } else if (action === 'ARRIVED' || action === 'DIAGNOSIS' || action === 'ESTIMATE') {
     notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TRACKING_CONSOLE', `booking:${booking.id}:stage:${action}:${booking.updatedAt}`);
   }
@@ -343,26 +347,85 @@ router.post('/tracking/console/:reference/tracking-link', ...staffOnly, async (r
   return res.status(201).json({ data: { url: `/track?t=${raw}`, expiresAt: record.expiresAt } });
 });
 
-/** Public tracking via a secure per-job token — no phone number needed. */
-router.get('/tracking/by-token/:token', (req, res) => {
+/** Shared token gate for the public tracking reads: resolves the
+ * booking behind a tracking token, or answers the error itself and
+ * returns null. */
+function bookingForTrackingToken(req, res) {
   const tokenHash = createHash('sha256').update(String(req.params.token || '')).digest('hex');
   const record = store.trackingTokens.get(tokenHash);
   if (!record || record.revokedAt) {
-    return res.status(404).json({ error: 'Tracking link not found' });
+    res.status(404).json({ error: 'Tracking link not found' });
+    return null;
   }
   if (new Date(record.expiresAt).getTime() < Date.now()) {
-    return res.status(410).json({ error: 'This tracking link has expired' });
+    res.status(410).json({ error: 'This tracking link has expired' });
+    return null;
   }
   const booking = store.bookings.get(record.bookingId);
-  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (!booking) {
+    res.status(404).json({ error: 'Booking not found' });
+    return null;
+  }
   if (
     booking.status === 'COMPLETED' &&
     booking.completedAt &&
     Date.now() - new Date(booking.completedAt).getTime() > 24 * 3600 * 1000
   ) {
-    return res.status(410).json({ error: 'This tracking link has expired' });
+    res.status(410).json({ error: 'This tracking link has expired' });
+    return null;
   }
+  return booking;
+}
+
+function serveTechPhoto(req, res, booking) {
+  const photo = techPhotoFor(booking);
+  if (!photo) return res.status(404).json({ error: 'No technician photo on this job' });
+  res.set({
+    'Content-Type': photo.mime,
+    'Cache-Control': 'private, no-store',
+    'Content-Length': photo.bytes.length,
+    'Content-Disposition': 'inline; filename="your-technician"',
+  });
+  return res.end(photo.bytes);
+}
+
+/** Public tracking via a secure per-job token — no phone number needed. */
+router.get('/tracking/by-token/:token', (req, res) => {
+  const booking = bookingForTrackingToken(req, res);
+  if (!booking) return undefined;
   return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
+});
+
+/** The tech's real profile photo for a token-tracked job (A3) — the
+ * "On My Way" MMS and the tracking page read it here. 404 when the
+ * tech has no photo on their profile: never a placeholder. */
+router.get('/tracking/by-token/:token/tech-photo', (req, res) => {
+  const booking = bookingForTrackingToken(req, res);
+  if (!booking) return undefined;
+  return serveTechPhoto(req, res, booking);
+});
+
+/** The same photo for the signed-in customer who owns the booking. */
+router.get('/tracking/bookings/:bookingId/tech-photo', authenticate, (req, res) => {
+  const booking = bookingsForUser(req.user).find((b) => b.id === req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  return serveTechPhoto(req, res, booking);
+});
+
+/** And for the guest lookup: same reference + phone proof the public
+ * tracking read requires (routes/bookings.js /bookings/track). */
+router.get('/tracking/by-reference/:reference/tech-photo', (req, res) => {
+  const phoneDigits = digits10(req.query.phone || '');
+  if (phoneDigits.length < 10) {
+    return res.status(400).json({ error: 'Booking reference and the phone number on the booking are required' });
+  }
+  const booking = findBookingByReference(req.params.reference);
+  if (!booking) return res.status(404).json({ error: 'No booking found with that reference' });
+  const bookingPhone = digits10(booking.customer?.phone || booking.phone || '');
+  if (!bookingPhone || bookingPhone !== phoneDigits) {
+    return res.status(403).json({ error: 'That phone number does not match this booking' });
+  }
+  return serveTechPhoto(req, res, booking);
 });
 
 export default router;

@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from 'node:crypto';
 import { waitUntil } from '@vercel/functions';
 import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS, reviewFunnelLinks } from '../config/platform.js';
@@ -5,6 +6,8 @@ import { DATABASE_ENABLED, db } from '../db/client.js';
 import { persistNotification } from '../db/flywheelRepo.js';
 import { activeSubscriptionsForUser } from '../db/pushSubscriptionsRepo.js';
 import { pushAvailable } from './pushNotifications.js';
+import { persistTrackingToken } from '../db/trackingRepo.js';
+import { windowById } from './bookos.js';
 import { drainEntries } from './senders.js';
 import { DEPARTMENT_FOR_INTERNAL_TEMPLATE, DEPARTMENT_FOR_STAFF_KIND, emitReport } from './managementReports.js';
 import { appointmentReminderWhatsApp, bookingConfirmationWhatsApp } from './whatsapp.js';
@@ -1568,19 +1571,137 @@ export function notifyReferralCreditExpired(credit, source = null) {
   );
 }
 
-export function notifyTechEnRoute(booking, source = null) {
+/* ------------------------------------------------------------------ */
+/* "On My Way" alert (A3, 2026-11-20): when the assigned tech taps     */
+/* En route, the customer hears WHO is coming (first name), WHEN (the  */
+/* set appointment's window, or the window the customer picked), and   */
+/* sees the tech's photo when the tech has a real one on their profile */
+/* — never a placeholder. The photo rides the alert itself: MMS on     */
+/* SMS (a capability URL on the tracking-token pattern: raw token      */
+/* only in the message, SHA-256 hash at rest, 7-day expiry) and an     */
+/* email attachment. One alert per departure: the eventKey carries the */
+/* departure number, where consecutive En route events with no other   */
+/* stage between them count as ONE departure (a double-tap), and a     */
+/* later departure (back after parts, say) alerts again.               */
+/* ------------------------------------------------------------------ */
+const API_PUBLIC_BASE = 'https://top-speed-service-os.vercel.app/api/v1';
+
+function enRouteDepartureIndex(booking) {
+  const history = Array.isArray(booking?.history) ? booking.history : [];
+  let departures = 0;
+  let inDeparture = false;
+  for (const event of history) {
+    if (event?.type === 'TECH_EN_ROUTE') {
+      if (!inDeparture) departures += 1;
+      inDeparture = true;
+    } else if (['TECH_ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED', 'TECH_WORK_STARTED', 'JOB_AWAITING_PARTS', 'JOB_AWAITING_DIAGNOSIS'].includes(event?.type)) {
+      inDeparture = false;
+    }
+  }
+  return Math.max(1, departures);
+}
+
+/** The arrival window the customer can be told about — the SET
+ * appointment first, then the window picked at booking. Null when the
+ * booking carries neither (the alert then simply omits the window). */
+function arrivalWindowFor(booking) {
+  const appointment = booking?.appointment;
+  if (appointment?.status === 'SET' && appointment.window) {
+    const label = windowById(appointment.window)?.label || null;
+    if (label) {
+      let dateBit = null;
+      if (appointment.date) {
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10);
+        const tomorrowStr = new Date(today.getTime() + 24 * 3600 * 1000).toISOString().slice(0, 10);
+        if (appointment.date === todayStr) dateBit = 'today';
+        else if (appointment.date === tomorrowStr) dateBit = 'tomorrow';
+        else {
+          const parsed = new Date(`${appointment.date}T12:00:00Z`);
+          if (!Number.isNaN(parsed.getTime())) {
+            dateBit = `on ${parsed.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' })}`;
+          }
+        }
+      }
+      return { label, dateBit };
+    }
+  }
+  const preferred = booking?.preferredWindow;
+  if (preferred) {
+    const label = windowById(preferred)?.label
+      || (typeof preferred === 'string' && preferred.length <= 40 ? preferred : null);
+    if (label) return { label, dateBit: null };
+  }
+  return null;
+}
+
+function parseDataUrl(dataUrl) {
+  const match = /^data:(image\/(?:jpeg|jpg|png|webp));base64,([A-Za-z0-9+/=\s]+)$/.exec(String(dataUrl || ''));
+  if (!match) return null;
+  return { mime: match[1] === 'image/jpg' ? 'image/jpeg' : match[1], base64: match[2].replace(/\s+/g, '') };
+}
+
+/** Mint a tracking token for the en-route photo link (hash at rest,
+ * same 7-day expiry as staff-issued tracking links). The raw token is
+ * returned for the message only — it is never stored. */
+function mintEnRouteTrackToken(booking) {
+  const raw = randomBytes(32).toString('base64url');
+  const record = {
+    id: createId(),
+    tokenHash: createHash('sha256').update(raw).digest('hex'),
+    bookingId: booking.id,
+    issuedBy: 'EN_ROUTE_ALERT',
+    expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
+    revokedAt: null,
+    createdAt: new Date().toISOString(),
+  };
+  store.trackingTokens.set(record.tokenHash, record);
+  void persistTrackingToken(record).catch((error) => {
+    console.error(JSON.stringify({ level: 'error', message: 'en-route tracking token persist failed', error: String(error?.message || error) }));
+  });
+  return raw;
+}
+
+export function notifyTechEnRoute(booking, source = null, options = {}) {
+  const firstName = String(options.techFirstName || '').trim() || null;
+  const photo = options.techPhotoDataUrl ? parseDataUrl(options.techPhotoDataUrl) : null;
+  const etaMinutes = Number.isFinite(options.etaMinutes) ? options.etaMinutes : null;
+  const window = arrivalWindowFor(booking);
+  const departure = enRouteDepartureIndex(booking);
+
+  let trackLink = REACH_LINKS.track;
+  let mediaUrl = null;
+  if (photo) {
+    const raw = mintEnRouteTrackToken(booking);
+    trackLink = `${REACH_LINKS.track}?t=${raw}`;
+    mediaUrl = `${API_PUBLIC_BASE}/tracking/by-token/${raw}/tech-photo`;
+  }
+
+  const who = firstName ? `${firstName} is on the way` : 'your technician is on the way';
+  let message = `Top Speed Appliance: ${who}`;
+  if (window) message += ` — arriving in your ${window.label} window${window.dateBit ? ` ${window.dateBit}` : ''}`;
+  if (etaMinutes) message += ` · about ${etaMinutes} min away`;
+  message += `. Track the visit live: ${trackLink}`;
+
   return customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.TECH_EN_ROUTE,
       to,
       source,
-      eventKey: `booking:${booking.id}:enroute:${channel}`,
+      eventKey: `booking:${booking.id}:enroute:${departure}:${channel}`,
       eventType: 'BOOKING',
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
-        message: `Top Speed Appliance: your technician is on the way. Track the visit live: ${REACH_LINKS.track}`,
+        techFirstName: firstName,
+        arrivalWindow: window?.label || null,
+        etaMinutes,
+        message,
+        ...(channel === 'sms' && mediaUrl ? { mediaUrl } : {}),
+        ...(channel === 'email' && photo
+          ? { photoAttachment: { filename: 'your-technician.jpg', mime: photo.mime, contentBase64: photo.base64 } }
+          : {}),
       },
     }),
   );

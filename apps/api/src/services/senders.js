@@ -225,7 +225,24 @@ async function sendEmail(entry) {
       Authorization: `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ from: config.from, to: [entry.to], subject, text }),
+    body: JSON.stringify({
+      from: config.from,
+      to: [entry.to],
+      subject,
+      text,
+      // "On My Way" alert (A3): the tech's real profile photo rides
+      // the email as an attachment when the payload carries one.
+      ...(entry.payload?.photoAttachment?.contentBase64
+        ? {
+            attachments: [
+              {
+                filename: entry.payload.photoAttachment.filename || 'photo.jpg',
+                content: entry.payload.photoAttachment.contentBase64,
+              },
+            ],
+          }
+        : {}),
+    }),
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -243,6 +260,10 @@ async function sendSms(entry) {
     To: normalizePhone(entry.to),
     Body: entry.payload?.message || '',
   });
+  // "On My Way" alert (A3): a payload mediaUrl turns the text into an
+  // MMS carrying the tech's real profile photo (Twilio fetches the
+  // capability URL; no URL in the payload = plain SMS, as before).
+  if (entry.payload?.mediaUrl) form.set('MediaUrl', entry.payload.mediaUrl);
   const response = await fetch(`${config.base}/2010-04-01/Accounts/${config.sid}/Messages.json`, {
     method: 'POST',
     headers: {
@@ -326,6 +347,18 @@ async function sendEmailViaSendGrid(entry) {
       from: { email: extractEmailAddress(config.from), name: 'Top Speed Appliance' },
       subject,
       content: [{ type: 'text/plain', value: text }],
+      ...(entry.payload?.photoAttachment?.contentBase64
+        ? {
+            attachments: [
+              {
+                content: entry.payload.photoAttachment.contentBase64,
+                filename: entry.payload.photoAttachment.filename || 'photo.jpg',
+                type: entry.payload.photoAttachment.mime || 'image/jpeg',
+                disposition: 'attachment',
+              },
+            ],
+          }
+        : {}),
     }),
   });
   if (!response.ok) {

@@ -15,7 +15,7 @@ import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
-import { plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { assertImageDataUrl, plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
 import {
   authorizeEstimateForJob,
   authorizeSchema,
@@ -347,6 +347,10 @@ const techProfileSchema = z.object({
   }).optional(),
   myAreas: z.array(z.string().trim().min(1).max(80)).max(60).optional(),
   myAppliances: z.array(z.string().trim().min(1).max(80)).max(60).optional(),
+  // Profile photo (A3, 2026-11-20): the tech's own real headshot, sent
+  // to the customer in the "On My Way" alert. A data URL (magic-byte
+  // validated in the handler), or null to remove it. Absent = untouched.
+  photo: z.string().max(6_500_000).nullable().optional(),
 });
 
 // Dev-only fallback when no database is configured (production and
@@ -386,6 +390,12 @@ function techProfileView(req, provider, user) {
         }
       : null,
     vehicle: settings.vehicle || null,
+    // The tech's own view carries the photo itself (their settings
+    // preview); every other surface reads only photo.set / the
+    // en-route snapshot — the bytes are never listed or broadcast.
+    photo: settings.photo
+      ? { set: true, dataUrl: settings.photo }
+      : { set: false, dataUrl: null },
     notifications: {
       jobOffers: settings.notifications?.jobOffers !== false,
       scheduleChanges: settings.notifications?.scheduleChanges !== false,
@@ -438,6 +448,19 @@ router.patch('/provider/profile', ...providerOnly, async (req, res) => {
   const settings = {
     ...((user?.techSettings && typeof user.techSettings === 'object' ? user.techSettings : null) || memoryTechSettings.get(req.user.id) || {}),
   };
+  if (data.photo !== undefined) {
+    if (data.photo === null) {
+      delete settings.photo;
+    } else {
+      try {
+        assertImageDataUrl(data.photo);
+      } catch (error) {
+        return res.status(400).json({ error: `Profile photo rejected: ${String(error?.message || error)}` });
+      }
+      settings.photo = data.photo;
+    }
+    changed.push('photo');
+  }
   if (data.vehicle !== undefined) { settings.vehicle = data.vehicle; changed.push('vehicle'); }
   if (data.notifications !== undefined) {
     settings.notifications = { ...(settings.notifications || {}), ...data.notifications };
@@ -722,10 +745,28 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   const booking = store.bookings.get(assignment.bookingId);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
   const type = JOB_EVENT_TYPES[parsed.data.action];
+  // "On My Way" (A3): the en-route tap snapshots WHO is coming — the
+  // tech's first name and their real profile photo, when they have
+  // one — onto the job event, so the customer alert and the tracking
+  // views can show them. No photo on the profile = no snapshot, and
+  // the customer simply gets the window + ETA (never a placeholder).
+  let enRouteTech = null;
+  if (parsed.data.action === 'EN_ROUTE') {
+    const account = await loadTechAccount(req.user.id).catch(() => null);
+    const settings = (account?.techSettings && typeof account.techSettings === 'object' ? account.techSettings : null)
+      || memoryTechSettings.get(req.user.id)
+      || {};
+    enRouteTech = {
+      firstName: String(account?.firstName || req.user.firstName || '').trim() || null,
+      photoDataUrl: typeof settings.photo === 'string' && settings.photo ? settings.photo : null,
+    };
+  }
   addBookingEvent(booking, type, req.user.email, {
     assignmentId: assignment.id,
     etaMinutes: parsed.data.action === 'EN_ROUTE' ? parsed.data.etaMinutes ?? null : null,
     confirmedBy: 'TECHNICIAN',
+    ...(enRouteTech?.firstName ? { techFirstName: enRouteTech.firstName } : {}),
+    ...(enRouteTech?.photoDataUrl ? { techPhotoDataUrl: enRouteTech.photoDataUrl } : {}),
   });
   if (parsed.data.action === 'EN_ROUTE' && parsed.data.etaMinutes) {
     assignment.etaMinutes = parsed.data.etaMinutes;
@@ -736,7 +777,11 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
   // Lifecycle updates: when the tech reports a stage, the customer is
   // notified through the same outbox as every other platform message.
   if (parsed.data.action === 'EN_ROUTE') {
-    notifyTechEnRoute(booking, 'TECH_APP');
+    notifyTechEnRoute(booking, 'TECH_APP', {
+      techFirstName: enRouteTech?.firstName || null,
+      techPhotoDataUrl: enRouteTech?.photoDataUrl || null,
+      etaMinutes: parsed.data.etaMinutes ?? null,
+    });
   } else if (['ARRIVED', 'DIAGNOSIS_STARTED', 'ESTIMATE_APPROVED'].includes(parsed.data.action)) {
     notifyTrackingUpdate(booking, computeTracking(booking).stageLabel8, 'TECH_APP', `booking:${booking.id}:stage:${type}:${booking.updatedAt}`);
   }

@@ -527,6 +527,14 @@ header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width
   </div>
 </div></section>
 
+<!-- HONEST COST ESTIMATOR (A4, 2026-11-20): the locked price structure only — no totals, no ranges -->
+<section class="section" id="estimator"><div class="wrap">
+  <div class="eyebrow">Cost Estimator • The Real Structure</div>
+  <h2 class="title">See exactly how pricing works</h2>
+  <p class="sub" style="max-width:640px">Pick your appliance and the kind of visit. What you get is our published price structure — flat labor, the diagnostic credited, parts on a written quote. We never show an invented total: your exact price is confirmed in writing before any work begins.</p>
+  <div data-cost-estimator style="margin-top:16px"></div>
+</div></section>
+
 <!-- OPS / ADMIN -->
 <section style="background:linear-gradient(135deg,var(--navy),#123A7A);color:#fff;padding:52px 0"><div class="wrap" style="text-align:center">
   <h2 style="font-size:clamp(38px,5vw,60px);margin:0">THE FASTER, THE BETTER.</h2><p style="color:#CBDDF7;max-width:620px;margin:10px auto 20px">One Service OS. Two doors. Customers book in 60 seconds, providers get real jobs, and Service Setters keep every repair on track.</p>
@@ -704,6 +712,7 @@ document.getElementById('appChips').innerHTML=SERVICES.map(function(s){return '<
   document.addEventListener('visibilitychange',function(){if(!document.hidden)reviveAll();});
 })();
 </script>
+<script src="/shared/cost-estimator.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 <script src="/shared/google-reviews.js" defer></script>
 <script src="/shared/language-toggle.js" defer></script>
