@@ -4,6 +4,7 @@ import { voiceConfig } from '../config/platform.js';
 import { notifyStaffAlert } from '../services/notifications.js';
 import { logInboundContact } from '../services/trackingNumbers.js';
 import { attachCallTranscript, recordCallRecording } from '../db/callRecordingsRepo.js';
+import { afterHoursAiConfig, afterHoursEntryTwiml, handleAfterHoursStep, shouldRouteToMessageService } from '../services/afterHours.js';
 
 /**
  * Twilio Voice — inbound call forwarding for the toll-free business line.
@@ -76,6 +77,25 @@ function rejectBadSignature(res) {
 
 function handleIncoming(req, res) {
   if (!signatureOk(req)) return rejectBadSignature(res);
+  // After-hours AI message service (F8, 2026-11-20) — SHIPS DARK.
+  // shouldRouteToMessageService() is false unless Ramone activates
+  // AFTER_HOURS_AI_ENABLED (and the moment is outside business
+  // hours), so with the flag off this branch never runs and the
+  // response below is byte-identical to the pre-existing flow. When
+  // it does run, the same tracking-number log fires as a side effect.
+  if (shouldRouteToMessageService()) {
+    const dialed = String((req.body || {}).To || '').trim();
+    const inboundFrom = String((req.body || {}).From || '').trim();
+    if (dialed && inboundFrom) {
+      void logInboundContact({
+        channel: 'VOICE',
+        to: dialed,
+        from: inboundFrom,
+        externalSid: String((req.body || {}).CallSid || '') || null,
+      });
+    }
+    return res.type('text/xml').send(afterHoursEntryTwiml(publicBase(req)));
+  }
   const { tollFreeNumber, forwardTo, dialTimeoutSeconds, callRecordingEnabled, callRecordingAnnouncement } =
     voiceConfig();
   // Present the inbound caller's own number to the owner's phone so he
@@ -130,6 +150,32 @@ function handleIncoming(req, res) {
 
 router.post('/twilio/voice/incoming', handleIncoming);
 router.get('/twilio/voice/incoming', handleIncoming);
+
+/**
+ * After-hours message-service steps (F8). Each Gather in the flow
+ * posts here with the accumulated answers in the query string; the
+ * machine lives in services/afterHours.js. Inert unless the feature
+ * is enabled — with the flag off the endpoint answers an empty
+ * TwiML document and files nothing, so the routes are safe to exist
+ * in production before activation.
+ */
+async function handleAfterHoursStepRoute(req, res) {
+  if (!signatureOk(req)) return rejectBadSignature(res);
+  if (!afterHoursAiConfig().enabled) return emptyTwiml(res);
+  try {
+    const document = await handleAfterHoursStep(req, publicBase(req));
+    return res.type('text/xml').send(document);
+  } catch (error) {
+    // A filing failure must not strand the caller mid-call: close
+    // politely and let the recording/voicemail norms stand. The
+    // error is logged for the office.
+    console.error(JSON.stringify({ level: 'error', message: 'after-hours step failed', error: String(error?.message || error) }));
+    return res.type('text/xml').send(twiml('<Say voice="Polly.Joanna">Thank you — we have your message, and a member of our team will call you back during business hours. Goodbye.</Say><Hangup/>'));
+  }
+}
+
+router.post('/twilio/voice/after-hours/step', handleAfterHoursStepRoute);
+router.get('/twilio/voice/after-hours/step', handleAfterHoursStepRoute);
 
 /**
  * Recording status callback: when a voicemail finishes recording, alert

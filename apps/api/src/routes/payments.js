@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { addBookingEvent, appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
-import { findPaymentBySessionId, latestPaymentForBooking, persistPayment } from '../db/paymentsRepo.js';
+import { findPaymentByIntentId, findPaymentBySessionId, latestPaymentForBooking, persistPayment } from '../db/paymentsRepo.js';
 import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
 import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, verifyWebhookSignature, webhookConfigured } from '../services/stripe.js';
@@ -11,6 +11,7 @@ import { handleStripePlanEvent } from '../services/adPlans.js';
 import { handleStripeCarePlanEvent } from '../services/carePlans.js';
 import { handleStripeMarketplaceEvent } from '../services/marketplacePayments.js';
 import { handleStripeSellerPlanEvent } from '../services/sellerPlans.js';
+import { failTerminalPayment, settleTerminalPayment } from '../services/terminalPayments.js';
 
 /**
  * Payments — the built-in checkout (Route B, approved by Ramone
@@ -177,6 +178,29 @@ router.post('/payments/webhook', async (req, res) => {
     }
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'payment webhook handling failed', error: String(error?.message || error) }));
+  }
+
+  // Tap-to-pay (F10, 2026-11-20): Terminal PaymentIntents carry the
+  // TERMINAL_JOB_PAYMENT metadata purpose. Settlement is the shared
+  // services/terminalPayments.js path (also used by the Tech App
+  // status poll) — payment PAID + the receipt recorded on the job
+  // invoice. Its own try/catch: a Terminal hiccup never disturbs the
+  // diagnostic checkout above or the plan handling below.
+  if ((event.type === 'payment_intent.succeeded' || event.type === 'payment_intent.payment_failed')
+    && event.data?.object?.metadata?.purpose === 'TERMINAL_JOB_PAYMENT') {
+    try {
+      const payment = findPaymentByIntentId(event.data.object.id);
+      if (payment) {
+        if (event.type === 'payment_intent.succeeded') {
+          await settleTerminalPayment(payment, { via: 'webhook' });
+        } else {
+          await failTerminalPayment(payment, { reason: 'payment_intent.payment_failed' });
+        }
+      }
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'terminal webhook settlement failed', error: String(error?.message || error) }));
+    }
+    return res.json({ received: true });
   }
 
   // Flywheel Advertiser Plans (2026-11-17): subscription lifecycle

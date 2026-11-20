@@ -73,6 +73,15 @@ export function findPaymentBySessionId(sessionId) {
   return null;
 }
 
+/** Terminal tap-to-pay rows are found by their PaymentIntent id. */
+export function findPaymentByIntentId(intentId) {
+  if (!intentId) return null;
+  for (const payment of store.payments.values()) {
+    if (payment.stripePaymentIntentId === intentId) return payment;
+  }
+  return null;
+}
+
 export function latestPaymentForBooking(bookingId) {
   let latest = null;
   for (const payment of store.payments.values()) {

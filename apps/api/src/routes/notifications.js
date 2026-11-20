@@ -2,10 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { STAFF_ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import {
   getNotificationSettings,
+  notifyWhatsAppOfficeMessage,
   NOTIFICATION_SETTING_KEYS,
+  whatsappEnabled,
 } from '../services/notifications.js';
 import { persistNotificationSetting } from '../db/notificationsRepo.js';
 import { channelHealth, twilioTrialState } from '../services/senders.js';
@@ -123,6 +125,15 @@ router.get('/notifications/health', ...staffOnly, async (req, res) => {
           : 'Twilio credentials are not set in the API environment — SMS entries gate as TWILIO_NOT_CONFIGURED.')
           + chainNote(health.sms.chain, 'vonage', 'VONAGE_API_KEY + VONAGE_API_SECRET'),
       },
+      whatsapp: {
+        ...health.whatsapp,
+        enabled: getNotificationSettings().whatsappEnabled === true,
+        note: getNotificationSettings().whatsappEnabled !== true
+          ? 'WhatsApp is OFF — the owner flag (whatsappEnabled) is off, so no WhatsApp entries are queued at all. Activation is Ramone\u2019s: Meta WhatsApp Business setup (number + utility-template approval) first, then the owner flips the flag in these settings.'
+          : health.whatsapp.configured
+            ? 'WhatsApp is ON and the Meta Cloud API is configured: booking confirmations and appointment reminders also send as Meta utility templates, and office replies (POST /notifications/whatsapp/send) send as session texts — Meta delivers those only inside the 24-hour window after the customer\u2019s own message; rejections record FAILED with Meta\u2019s error.'
+            : 'The owner flag is ON but WHATSAPP_PHONE_NUMBER_ID / WHATSAPP_ACCESS_TOKEN are not set in the API environment — WhatsApp entries queue and gate as WHATSAPP_NOT_CONFIGURED until the Meta setup lands.',
+      },
       settings: getNotificationSettings(),
       processing: {
         model: 'Entries queue to the persisted outbox at submission time; this process attempts delivery of newly queued entries shortly after queueing (opportunistic drain). Staff can drain the full queue any time with POST /notifications/send, and GET /notifications/cron-drain (CRON_SECRET-guarded) serves external schedulers — no scheduler is configured in vercel.json today.',
@@ -140,6 +151,7 @@ const settingsSchema = z.object({
   staffSmsAlerts: z.boolean().optional(),
   customerEmailConfirmations: z.boolean().optional(),
   customerSmsConfirmations: z.boolean().optional(),
+  whatsappEnabled: z.boolean().optional(),
 }).strict();
 
 router.put('/notifications/settings', ...staffOnly, async (req, res) => {
@@ -147,12 +159,55 @@ router.put('/notifications/settings', ...staffOnly, async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid settings', details: parsed.error.flatten() });
   }
+  // The WhatsApp flag is the OWNER's switch (F7): staff may flip the
+  // alert toggles, but turning a whole customer channel on or off is
+  // reserved to the owner tier (COMPANY_OWNER / PLATFORM_ADMIN) —
+  // Rule Zero posture, same as the other platform activations.
+  if (parsed.data.whatsappEnabled !== undefined
+    && parsed.data.whatsappEnabled !== getNotificationSettings().whatsappEnabled) {
+    const roles = req.user?.roles || [];
+    if (!roles.includes(ROLES.COMPANY_OWNER) && !roles.includes(ROLES.PLATFORM_ADMIN)) {
+      return res.status(403).json({ error: 'whatsapp_owner_only', message: 'The WhatsApp channel flag can only be changed by the owner.' });
+    }
+  }
   for (const key of NOTIFICATION_SETTING_KEYS) {
     if (parsed.data[key] !== undefined) {
       await persistNotificationSetting(key, parsed.data[key], req.user?.email || null);
     }
   }
   return res.json({ data: getNotificationSettings() });
+});
+
+/* ------------------------------------------------------------------ */
+/* WhatsApp office reply (F7, 2026-11-20). A staff member answers a   */
+/* customer on WhatsApp: the message queues as a free-form session    */
+/* text through the same outbox as everything else (Meta delivers     */
+/* session texts only inside the 24-hour window after the customer's  */
+/* own message — outside it the entry records FAILED with Meta's      */
+/* error, never a fake send). With the owner flag off the channel     */
+/* does not exist: a plain 403, nothing queued.                       */
+/* ------------------------------------------------------------------ */
+const whatsappSendSchema = z.object({
+  to: z.string().trim().min(7).max(32),
+  body: z.string().trim().min(1).max(1000),
+  reference: z.string().trim().max(64).optional(),
+}).strict();
+
+router.post('/notifications/whatsapp/send', ...staffOnly, (req, res) => {
+  if (!whatsappEnabled()) {
+    return res.status(403).json({ error: 'whatsapp_disabled', message: 'WhatsApp is off — the owner has not activated the channel.' });
+  }
+  const parsed = whatsappSendSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid WhatsApp message', details: parsed.error.flatten() });
+  }
+  const entry = notifyWhatsAppOfficeMessage({
+    to: parsed.data.to,
+    body: parsed.data.body,
+    reference: parsed.data.reference || null,
+    source: 'NOTIFICATIONS_CONSOLE',
+  });
+  return res.status(201).json({ data: publicEntry(entry) });
 });
 
 export default router;

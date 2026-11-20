@@ -38,6 +38,9 @@ import { jobPlugUrl, parseJobCode, qrSvg } from '../services/qrCodes.js';
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { listConnections } from '../db/applianceConnectionsRepo.js';
 import { certificationsForUser, progressForUser } from '../services/academyCerts.js';
+import { createTerminalConnectionToken, createTerminalPaymentIntent, retrievePaymentIntent, stripeConfigured } from '../services/stripe.js';
+import { persistPayment } from '../db/paymentsRepo.js';
+import { failTerminalPayment, settleTerminalPayment } from '../services/terminalPayments.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -1744,6 +1747,129 @@ router.post('/provider/assignments/:id/receipts', ...providerOnly, async (req, r
   }
   return res.status(201).json({
     data: { receipt: result.receipt, receipts: result.receipts, payments: result.payments },
+  });
+});
+
+/* ---------------- Tap-to-pay: Stripe Terminal (F10, 2026-11-20) ----
+ * Server half of Field Pro tap-to-pay. The app connects to a reader
+ * with a short-lived connection token from here, and collects on a
+ * PaymentIntent THIS server created for the job invoice's exact
+ * balance due — the app never names an amount (server money only).
+ * Settlement lands through services/terminalPayments.js, shared with
+ * the Stripe webhook; the status endpoint below reconciles inline so
+ * a missed webhook never leaves a collected payment unrecorded.
+ * Activation is Ramone's: Stripe Terminal setup in the Stripe
+ * dashboard + the Field Pro app build (change list in
+ * ~/workspace/wave4-channels/fieldpro-taptopay-changes.md). With
+ * Stripe unconfigured every endpoint answers 503, like the rest of
+ * the payments surface.
+ */
+
+router.post('/provider/assignments/:id/terminal/connection-token', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  if (!stripeConfigured()) {
+    return res.status(503).json({ error: 'payments_not_configured' });
+  }
+  try {
+    const token = await createTerminalConnectionToken();
+    return res.json({ data: { secret: token.secret } });
+  } catch (error) {
+    return res.status(error?.code === 'stripe_error' ? 502 : 500).json({ error: 'stripe_error', message: error.message });
+  }
+});
+
+router.post('/provider/assignments/:id/terminal/payment', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { assignment, booking } = loaded;
+  if (!requireAccepted(res, assignment)) return;
+  if (!stripeConfigured()) {
+    return res.status(503).json({ error: 'payments_not_configured' });
+  }
+  const money = invoiceMoney(booking);
+  if (!money.invoice) {
+    return res.status(409).json({ error: 'no_invoice', message: 'This job has no invoice yet — generate the invoice before collecting by card.' });
+  }
+  if (money.balanceDueCents <= 0) {
+    return res.status(409).json({ error: 'nothing_due', balanceDueCents: 0, message: 'Nothing is due on this job.' });
+  }
+  let intent;
+  try {
+    intent = await createTerminalPaymentIntent({
+      amountCents: money.balanceDueCents,
+      booking,
+      assignmentId: assignment.id,
+      invoiceId: money.invoice.id,
+    });
+  } catch (error) {
+    return res.status(error?.code === 'stripe_error' ? 502 : 500).json({ error: 'stripe_error', message: error.message });
+  }
+  const now = new Date().toISOString();
+  const payment = {
+    id: createId(),
+    companyId: booking.companyId,
+    customerId: booking.customerId ?? null,
+    bookingId: booking.id,
+    amountCents: money.balanceDueCents,
+    currency: 'USD',
+    purpose: 'JOB_PAYMENT',
+    status: 'PENDING',
+    stripePaymentIntentId: intent.id,
+    stripeSessionId: null,
+    createdAt: now,
+    updatedAt: now,
+    paidAt: null,
+  };
+  store.payments.set(payment.id, payment);
+  await persistPayment(payment);
+  return res.status(201).json({
+    data: {
+      paymentId: payment.id,
+      paymentIntentId: intent.id,
+      clientSecret: intent.client_secret,
+      amountCents: payment.amountCents,
+      balanceDueCents: money.balanceDueCents,
+    },
+  });
+});
+
+router.get('/provider/assignments/:id/terminal/payment/:paymentId', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  const { booking } = loaded;
+  const payment = store.payments.get(req.params.paymentId);
+  if (!payment || payment.bookingId !== booking.id || payment.purpose !== 'JOB_PAYMENT') {
+    return res.status(404).json({ error: 'Payment not found' });
+  }
+  // Inline reconciliation: while the row is PENDING, ask Stripe for
+  // the PaymentIntent's real state and settle/fail here — the webhook
+  // remains the primary path, this makes a missed webhook harmless.
+  if (payment.status === 'PENDING' && payment.stripePaymentIntentId && stripeConfigured()) {
+    try {
+      const intent = await retrievePaymentIntent(payment.stripePaymentIntentId);
+      if (intent.status === 'succeeded') {
+        await settleTerminalPayment(payment, { via: 'status-poll' });
+      } else if (intent.status === 'canceled' || intent.status === 'requires_payment_method') {
+        await failTerminalPayment(payment, { reason: `payment_intent ${intent.status}` });
+      }
+    } catch (error) {
+      // Stripe unreachable: report the stored state, never invent one.
+      console.error(JSON.stringify({ level: 'error', message: 'terminal status poll failed', error: String(error?.message || error) }));
+    }
+  }
+  const money = invoiceMoney(booking);
+  return res.json({
+    data: {
+      paymentId: payment.id,
+      status: payment.status,
+      amountCents: payment.amountCents,
+      paidAt: payment.paidAt || null,
+      invoiceStatus: money.invoice?.status || null,
+      balanceDueCents: money.balanceDueCents,
+    },
   });
 });
 

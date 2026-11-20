@@ -186,6 +186,42 @@ export async function retrieveStripeSubscription(id) {
   return stripeApi('GET', `/v1/subscriptions/${encodeURIComponent(id)}`);
 }
 
+/* ------------------------------------------------------------------ */
+/* Stripe Terminal — tap-to-pay in Field Pro (F10, 2026-11-20).       */
+/* The mobile app connects to a reader (the phone itself on           */
+/* Tap-to-Pay-capable devices) with a connection token minted here;   */
+/* the job's PaymentIntent is created SERVER-side for the invoice's   */
+/* exact balance due — the app never names an amount. Activation is   */
+/* Ramone's: a Stripe Terminal location/readers setup in the Stripe   */
+/* dashboard plus the Field Pro app build (see the change list); the  */
+/* endpoints below answer 503 with everything else when Stripe is     */
+/* not configured, and no money moves until a reader collects.        */
+/* ------------------------------------------------------------------ */
+
+export async function createTerminalConnectionToken() {
+  return stripeApi('POST', '/v1/terminal/connection_tokens', {});
+}
+
+export async function createTerminalPaymentIntent({ amountCents, booking, assignmentId, invoiceId }) {
+  return stripeApi('POST', '/v1/payment_intents', {
+    amount: amountCents,
+    currency: 'usd',
+    payment_method_types: ['card_present'],
+    capture_method: 'automatic',
+    description: `Top Speed Appliance — job payment ${booking.referenceCode || booking.id}`,
+    metadata: {
+      purpose: 'TERMINAL_JOB_PAYMENT',
+      bookingId: booking.id,
+      assignmentId: assignmentId || '',
+      invoiceId: invoiceId || '',
+    },
+  });
+}
+
+export async function retrievePaymentIntent(id) {
+  return stripeApi('GET', `/v1/payment_intents/${encodeURIComponent(id)}`);
+}
+
 export async function updateStripeSubscription(id, params) {
   return stripeApi('POST', `/v1/subscriptions/${encodeURIComponent(id)}`, params);
 }
