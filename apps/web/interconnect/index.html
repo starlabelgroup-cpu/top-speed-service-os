@@ -101,6 +101,10 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <p class="sub" id="boardSummary"><span class="spin"></span> Reading the interconnect registry…</p>
     <div class="grid" id="boardZone"></div>
 
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5" cy="12" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M7 11l10-4M7 13l10 4" stroke="#E8322E"/></svg>Console wiring — the working chain</h2>
+    <p class="sub">The console-to-console links the departments run on: Service Setters → Dispatch → Tech App, Service Setters → Top Speed Local OS (Ad Studio), Media OS ↔ Marketing OS, and Field Operations → Finance. An edge reads <strong style="color:var(--txt)">Live</strong> only when the platform event feed holds a real signal event for that pair — otherwise it shows the data link the code proves. Nothing here is backfilled or dressed up.</p>
+    <div class="grid" id="edgeZone"></div>
+
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="#E8322E"/></svg>Latest platform events</h2>
     <p class="sub">The durable cross-platform feed — bookings, completions, referrals, reviews, advertiser and provider job events from every surface, newest first. The feed is written once per event at the flow's own success point.</p>
     <div class="console" id="feedZone"><p class="small mut"><span class="spin"></span> Loading the feed…</p></div>
@@ -205,6 +209,20 @@ function renderBoard(d){
       (s.home ? '<div class="openrow"><a class="btn ghost sm" href="' + esc(s.home) + '" target="_blank" rel="noopener">Open surface</a></div>' : '') +
       '</div>';
   }).join('');
+  var ez = document.getElementById('edgeZone');
+  if (ez) {
+    var consoleEdges = d.edges || [];
+    ez.innerHTML = consoleEdges.length ? consoleEdges.map(function(e){
+      return '<div class="card"><h3>' + esc(e.name) + ' <span class="pill ' + (e.state === 'live' ? 'ok' : '') + '">' + esc(e.label || e.state || '') + '</span></h3>' +
+        '<div class="rows">' +
+        kv('Last signal', e.lastSignal ? e.lastSignal.type + ' · ' + when(e.lastSignal.at) : 'No signal event recorded yet') +
+        kv('Console', e.url || '—') +
+        '</div>' +
+        (e.mechanism ? '<div class="note">' + esc(e.mechanism) + '</div>' : '') +
+        (e.url ? '<div class="openrow"><a class="btn ghost sm" href="' + esc(e.url) + '">Open console</a></div>' : '') +
+        '</div>';
+    }).join('') : '<div class="empty">No console wiring is registered.</div>';
+  }
 }
 
 /* ── Latest events strip ────────────────────────────────────── */

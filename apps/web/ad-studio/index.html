@@ -260,7 +260,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v10M15 9.2c-.6-1-1.7-1.4-3-1.4-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.2 0 1.3-1.3 2.2-3 2.2-1.3 0-2.4-.5-3-1.5" stroke="#E8322E"/></svg>Cost per won job</h2>
-    <p class="sub">Every campaign joined to what it actually produced: attributed leads carried through the CRM pipeline to won jobs, and the real money collected on those jobs — card payments plus recorded receipts, never an estimate dressed up as revenue. Impressions and clicks are the in-house banner counters, all time (they are running counters, not a windowed log). <b style="color:var(--txt)">Cost per won job needs a spend figure recorded on the campaign, and no campaign in this system carries one</b> — the in-house studio spends nothing outside itself, and Google / Meta / Microsoft spend lives in those platforms. Until spend is recorded on a campaign, that column says "No cost recorded" instead of dividing by a budget label.</p>
+    <p class="sub">Every campaign joined to what it actually produced: attributed leads carried through the CRM pipeline to won jobs, and the real money collected on those jobs — card payments plus recorded receipts, never an estimate dressed up as revenue. Impressions and clicks are the in-house banner counters, all time (they are running counters, not a windowed log). <b style="color:var(--txt)">Cost per won job divides only the spend a person records on the campaign</b> — record or correct it in the campaign's detail view (open the campaign, use Recorded spend). It is never estimated and never imported: Google / Meta / Microsoft spend lives in those platforms. A campaign with no recorded spend says "No cost recorded"; a campaign with recorded spend but no won jobs yet shows the spend with the per-won figure as —.</p>
     <div class="console">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
         <label class="small mut" for="cpwDays">Window</label>
@@ -272,7 +272,7 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1" stroke="#E8322E"/><path d="M21 3.5v4h-4"/></svg>The Flywheel loop</h2>
-    <p class="sub">The loop this system turns: placements served, clicks, attributed bookings — then the stages that connect as real jobs complete. A stage with no data yet says so instead of inventing a number.</p>
+    <p class="sub">The loop this system turns: placements served, clicks, attributed bookings — then completed jobs, reviews and referrals, every stage counted from the same records with the same campaign-tag join as cost per won job. A stage with nothing behind it reads 0 instead of inventing a number.</p>
     <div class="console">
       <div id="loopBody"><span class="mut small"><span class="spin"></span> Loading the loop…</span></div>
       <div class="msg" id="loopMsg"></div>
@@ -782,9 +782,14 @@ function cpwRowHtml(r){
   var reach = (r.impressions === null || r.impressions === undefined)
     ? 'No in-house banner — nothing counted'
     : r.impressions + ' impression(s) · ' + (r.clicks || 0) + ' click(s) (all time)';
-  var cost = r.cost && r.cost.perWonCents !== null && r.cost.perWonCents !== undefined
-    ? '<b style="color:var(--txt)">' + cpwMoney(r.cost.perWonCents) + '</b> per won job (recorded spend ' + cpwMoney(r.cost.recordedCents) + ')'
-    : '<span class="pill draft">No cost recorded</span>';
+  var cost;
+  if (!r.cost || r.cost.recordedCents === null || r.cost.recordedCents === undefined) {
+    cost = '<span class="pill draft">No cost recorded</span>';
+  } else if (r.cost.perWonCents !== null && r.cost.perWonCents !== undefined) {
+    cost = '<b style="color:var(--txt)">' + cpwMoney(r.cost.perWonCents) + '</b> per won job (recorded spend ' + cpwMoney(r.cost.recordedCents) + ')';
+  } else {
+    cost = 'Recorded spend <b style="color:var(--txt)">' + cpwMoney(r.cost.recordedCents) + '</b> · per won job — (no won jobs in the window yet)';
+  }
   return '<div class="crow"><div class="meta"><b>' + esc(r.name) + '</b> ' + kind +
     '<div class="desc">' + esc(reach) + ' · Tag ' + esc(r.sourceTag) + ' · ' + esc(r.status) + '</div>' +
     '<div class="desc"><b style="color:var(--txt)">' + r.leads + ' lead(s)</b> → ' + r.estimates + ' with estimate(s) → <b style="color:var(--txt)">' + r.won + ' won</b> · Collected on won jobs: <b style="color:var(--txt)">' + cpwMoney(r.wonCollectedCents) + '</b></div>' +
@@ -1387,9 +1392,12 @@ boot();
        single-campaign read (GET /ad-studio/campaigns/:id — staff),
        which also carries the campaign's attributed results; if
        that read fails, the list snapshot simply stays. House
-       campaigns store NO budget fields (the AdCampaign record has
-       none) — the detail says so plainly instead of inventing a
-       number; budgets live with the external platform campaigns.
+       campaigns store NO budget fields — the detail says so
+       plainly instead of inventing a number; budgets live with
+       the external platform campaigns. The one money figure the
+       record DOES carry is recordedSpendCents (Local OS loop
+       fix 2): spend a person records in this detail view, which
+       cost per won job divides — never estimated, never imported.
    (3) CTA BAR — inside the detail: the campaign's OWN action
        buttons, produced by the page's own actionButtons() (same
        data-act / data-id attributes, handled by the page's
@@ -1585,6 +1593,15 @@ function asWsRenderDetail(c, res){
   }
   if(c.banner) h+=asWsField('Banner', esc((c.banner.active?'Rotating in the flagship footer':'Off')+bannerStats(c.banner)));
   h+=asWsField('Results so far', esc((r.bookings||0)+' booking(s) \u00b7 '+(r.connections||0)+' lead(s) attributed'));
+  h+=asWsField('Recorded spend', (c.recordedSpendCents!=null
+    ? esc('$'+(c.recordedSpendCents/100).toFixed(2))+' <span style="color:var(--mut)">\u2014 recorded by staff; cost per won job divides this figure only</span>'
+    : 'Not recorded \u2014 cost per won job reads \u201cNo cost recorded\u201d for this campaign'));
+  h+='<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 4px">'
+    +'<label style="font-size:12.5px;color:var(--mut)">Record spend $ <input id="asWsSpendDollars" type="number" min="0" step="0.01" inputmode="decimal" style="width:110px" value="'+(c.recordedSpendCents!=null?(c.recordedSpendCents/100):'')+'"></label>'
+    +'<button class="btn ghost sm" type="button" data-asws-spend-save="'+esc(c.id)+'">Save recorded spend</button>'
+    +(c.recordedSpendCents!=null?'<button class="btn ghost sm" type="button" data-asws-spend-clear="'+esc(c.id)+'">Clear</button>':'')
+    +'</div>'
+    +'<div style="font-size:12.5px;color:var(--mut)">Recorded spend is what a person types here \u2014 never estimated, never imported from Google / Meta / Microsoft. Clear removes the figure and cost per won job goes back to \u201cNo cost recorded\u201d.</div>';
   h+=asWsField('Budget', 'None stored \u2014 house campaigns run on Top Speed\u2019s own surfaces; budgets live with the external platform campaigns');
   if(c.notes) h+=asWsField('Notes', esc(c.notes));
   h+=asWsField('Created', esc(asWsWhen(c.createdAt)));
@@ -1620,6 +1637,19 @@ function asWsOpen(c){
   }).catch(function(){});
 }
 function asWsClose(){ var b=asWsById('asWsBack'); if(b) b.style.display='none'; asWs.current=null; }
+/* Recorded spend (Local OS loop fix 2): the detail view's editor
+   saves through the staff spend route, then refreshes the local
+   record, the open detail and the cost-per-won board. */
+function asWsSaveSpend(id, cents){
+  authFetch('/ad-studio/campaigns/'+encodeURIComponent(id)+'/spend',{ method:'PATCH', body: JSON.stringify({ recordedSpendCents: cents }) })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      if(!j||!j.data) return;
+      for(var i=0;i<campaigns.length;i++){ if(campaigns[i].id===id){ campaigns[i]=Object.assign({}, campaigns[i], j.data); } }
+      if(asWs.current===id) asWsRenderDetail(j.data, null);
+      loadCostPerWon();
+    }).catch(function(){});
+}
 function asWsBackdrop(ev){ if(ev&&ev.target===asWsById('asWsBack')) asWsClose(); }
 document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'){ asWsClose(); asWsOptClose(); } });
 
@@ -1640,6 +1670,16 @@ document.addEventListener('click',function(ev){
     var d=asWsById('draftBtn'); if(d) d.focus({ preventScroll:true });
     return;
   }
+  var spendSave=t.closest('[data-asws-spend-save]');
+  if(spendSave){
+    var spendInp=asWsById('asWsSpendDollars');
+    var spendDollars=spendInp?parseFloat(spendInp.value):NaN;
+    if(!(spendDollars>=0)){ if(spendInp) spendInp.focus(); return; }
+    asWsSaveSpend(spendSave.getAttribute('data-asws-spend-save'), Math.round(spendDollars*100));
+    return;
+  }
+  var spendClear=t.closest('[data-asws-spend-clear]');
+  if(spendClear){ asWsSaveSpend(spendClear.getAttribute('data-asws-spend-clear'), null); return; }
   var back=asWsById('asWsBack');
   if(back&&back.style.display==='block'&&t.closest('#asWsBack')){
     if(t.closest('[data-act]')) asWsClose();

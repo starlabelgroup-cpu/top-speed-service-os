@@ -11,7 +11,8 @@
  * house-creative picker library; the Speedy copy drafter's honest
  * unavailable state (no OpenAI key in the test env → 503, and
  * streaming validation still runs first); the Flywheel loop view
- * (real stages + honest null placeholders); and the external
+ * (every stage counted from real records — outcome stages read
+ * honest zeros when nothing is behind them); and the external
  * readiness board (13 campaigns of record: 3 Google + 9 Meta +
  * 1 Microsoft, staff-only, read-only).
  *
@@ -315,9 +316,17 @@ async function main() {
   check('loop served stage is real', stages.served.value, 2);
   check('loop clicks stage is real', stages.clicks.value, 1);
   checkTrue('loop attributed bookings counted', stages.attributedBookings.value >= 2);
-  check('loop completed jobs honestly unconnected', stages.completedJobs.value, null);
-  check('loop reviews honestly unconnected', stages.reviews.value, null);
-  check('loop referrals honestly unconnected', stages.referrals.value, null);
+  // Loop outcome stages (Local OS loop fix 1, 2026-11-20): counted
+  // from real records with the campaign-tag join. This suite's
+  // bookings carry no campaign tag and none completed, and no
+  // reviews or referrals exist — so the stages read honest zeros,
+  // never the old null placeholders. Exact stage math against
+  // attributed fixtures is drilled in local-os-loop.test.mjs.
+  check('loop completed jobs is a counted number', stages.completedJobs.value, 0);
+  check('loop reviews is a counted number', stages.reviews.value, 0);
+  check('loop reviews asks counted', stages.reviews.asksSent, 0);
+  check('loop referrals is a counted number', stages.referrals.value, 0);
+  check('loop referrals credits counted', stages.referrals.creditsIssued, 0);
   check('loop ctr computed from real counters', loop.json.data.ctr, 0.5);
 
   // ── External readiness board ──────────────────────────────────

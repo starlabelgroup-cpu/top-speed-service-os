@@ -2,6 +2,7 @@ import { store } from '../data/store.js';
 import { leadTypeOf } from './leadBookings.js';
 import { derivePipelineStage, leadConnectionReferenceOf, leadValueCents } from './crmPipeline.js';
 import { jobReceipts, latestEstimate } from './jobMoney.js';
+import { listReviews } from '../db/reviewsRepo.js';
 
 /**
  * Top Speed Ads — cost per WON job report (2026-11-20, Ramone
@@ -44,27 +45,26 @@ import { jobReceipts, latestEstimate } from './jobMoney.js';
  * they belong to the window. A campaign with no banner carries
  * null (nothing was ever counted for it), not a dressed-up zero.
  *
- * COST — the honest center of this report. As modeled today the
- * AdCampaign record carries NO budget and NO spend field (verified
- * in prisma/schema.prisma and the create/patch schemas in
- * routes/adStudio.js): the in-house studio spends nothing outside
- * itself by design, and spend on the external platforms (Google,
- * Meta, Microsoft) lives in those platforms — their registry here
- * (data/externalAds.js) holds daily BUDGET labels, which are not
- * recorded spend, and this report never turns a budget label into
- * a cost. recordedCostCents below is the single seam: it reads a
- * recorded spend/budget figure off the campaign record if one is
- * ever modeled there, and returns null until then. Every row
- * therefore reports costPerWonCents null with status
- * NO_COST_RECORDED — "no cost recorded" — instead of a division
- * by an invented number.
+ * COST — the honest center of this report. Cost per won job
+ * divides ONLY the spend a person has recorded on the campaign
+ * record itself (AdCampaign.recordedSpendCents, set from the Ad
+ * Studio console — Local OS loop fix 2, 2026-11-20). Spend on the
+ * external platforms (Google, Meta, Microsoft) lives in those
+ * platforms — their registry here (data/externalAds.js) holds
+ * daily BUDGET labels, which are not recorded spend, and this
+ * report never turns a budget label into a cost and never imports
+ * a platform figure. recordedCostCents below is the single seam:
+ * a campaign with recorded spend divides it by its won count
+ * (per-won stays null until at least one job is won — the spend
+ * itself still shows); a campaign with NO recorded spend reports
+ * costPerWonCents null with status NO_COST_RECORDED — "no cost
+ * recorded" — instead of a division by an invented number.
  */
 
 export const COST_PER_WON_NOTE =
-  'No campaign in this system carries a recorded spend figure: the in-house Ad Studio spends nothing outside itself, '
-  + 'and spend on the external platforms (Google, Meta, Microsoft) lives in those platforms and is never imported here. '
-  + 'Until a recorded spend figure exists on a campaign record, cost per won job reads "No cost recorded" rather than '
-  + 'a number divided out of a budget label.';
+  'Cost per won job divides only the spend a person has recorded on the campaign record in Ad Studio — it is never '
+  + 'estimated and never imported from the external platforms. A campaign with no recorded spend reads "No cost '
+  + 'recorded"; a campaign with recorded spend but no won jobs yet shows the spend with no per-won figure.';
 
 /** Mirrors carriesTag in routes/adStudio.js (same test, same shapes). */
 export function carriesCampaignTag(record, sourceTag) {
@@ -76,15 +76,16 @@ export function carriesCampaignTag(record, sourceTag) {
 
 /**
  * The recorded cost of a campaign, in integer cents — or null when
- * the campaign record carries no recorded spend/budget figure. As
- * modeled on 2026-11-20 no such field exists on AdCampaign, so this
- * returns null for every real campaign; the reads below are the
- * seam a future recorded-spend field plugs into, and nothing else
- * in the report changes the day one exists.
+ * the campaign record carries no recorded spend figure. Reads
+ * recordedSpendCents first — the field staff set in Ad Studio
+ * (Local OS loop fix 2) — then the plainly-named legacy keys
+ * (spendCents / budgetCents) for older in-memory shapes. Anything
+ * absent, negative, non-finite or non-numeric is not a recorded
+ * cost and reads null: NO_COST_RECORDED, never an estimate.
  */
 export function recordedCostCents(campaign) {
   if (!campaign) return null;
-  for (const field of ['spendCents', 'budgetCents']) {
+  for (const field of ['recordedSpendCents', 'spendCents', 'budgetCents']) {
     const value = campaign[field];
     if (typeof value === 'number' && Number.isFinite(value) && value >= 0) return Math.round(value);
   }
@@ -215,7 +216,11 @@ export function campaignOutcomeReport({ days = 30 } = {}) {
       cost: {
         recordedCents: costCents,
         perWonCents: perWon,
-        status: perWon == null ? 'NO_COST_RECORDED' : 'RECORDED',
+        // RECORDED means a spend figure exists on the record — even
+        // when nothing has been won yet (perWonCents then stays null
+        // and the spend itself is what shows). NO_COST_RECORDED is
+        // reserved for "no spend figure recorded", exactly as before.
+        status: costCents == null ? 'NO_COST_RECORDED' : 'RECORDED',
       },
     };
   });
@@ -235,5 +240,76 @@ export function campaignOutcomeReport({ days = 30 } = {}) {
       won: attributedTotals.won + unattributed.won,
       wonCollectedCents: attributedTotals.wonCollectedCents + unattributed.wonCollectedCents,
     },
+  };
+}
+
+/**
+ * The Flywheel loop's outcome stages (Local OS loop fix 1,
+ * 2026-11-20): completed jobs, reviews and referrals for
+ * campaign-attributed bookings, counted from the records that
+ * already exist with the SAME attribution join as the report above
+ * (buildUnits over every campaign sourceTag; a unit counts when it
+ * carries a tag). All-time, like the loop view itself.
+ *
+ * - completedJobs: attributed bookings whose status is COMPLETED.
+ * - reviews: the F1 review funnel's own records — review ASKS are
+ *   REVIEW_REQUEST entries in the notification outbox (one entry
+ *   per channel, so asks count DISTINCT attributed bookings asked);
+ *   reviews RECEIVED are real Review rows recorded against
+ *   attributed bookings.
+ * - referrals: referral activity GENERATED BY attributed bookings —
+ *   codes issued from them (Referral.issuedFromBookingId), the
+ *   journeys opened under those codes, and the credits issued on
+ *   those journeys.
+ *
+ * A stage with nothing behind it reads an honest 0 — never null,
+ * never a placeholder claim.
+ */
+export async function flywheelLoopStages() {
+  const tags = store.adCampaigns.map((c) => c.sourceTag).filter(Boolean);
+  const units = buildUnits(tags).filter((u) => u.tag != null);
+  const bookingIds = new Set();
+  let completedJobs = 0;
+  for (const unit of units) {
+    if (!unit.booking) continue;
+    bookingIds.add(unit.booking.id);
+    if (unit.booking.status === 'COMPLETED') completedJobs += 1;
+  }
+
+  const askedBookingIds = new Set();
+  for (const entry of store.notificationOutbox || []) {
+    if (entry.template !== 'REVIEW_REQUEST') continue;
+    const bookingId = entry.payload?.bookingId;
+    if (bookingId && bookingIds.has(bookingId)) askedBookingIds.add(bookingId);
+  }
+  const reviewRows = await listReviews({});
+  const reviewsReceived = reviewRows.filter((row) => row.bookingId && bookingIds.has(row.bookingId)).length;
+
+  const issuedCodes = new Set();
+  for (const referral of store.referrals.values()) {
+    if (referral.issuedFromBookingId && bookingIds.has(referral.issuedFromBookingId)) {
+      issuedCodes.add(referral.code);
+    }
+  }
+  const journeyIds = new Set();
+  let referralJourneys = 0;
+  for (const journey of store.referralJourneys || []) {
+    if (journey.code && issuedCodes.has(journey.code)) {
+      referralJourneys += 1;
+      journeyIds.add(journey.id);
+    }
+  }
+  let referralCreditsIssued = 0;
+  for (const credit of store.referralCredits || []) {
+    if (credit.journeyId && journeyIds.has(credit.journeyId)) referralCreditsIssued += 1;
+  }
+
+  return {
+    completedJobs,
+    reviewAsksSent: askedBookingIds.size,
+    reviewsReceived,
+    referralCodesIssued: issuedCodes.size,
+    referralJourneys,
+    referralCreditsIssued,
   };
 }

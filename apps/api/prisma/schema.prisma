@@ -2076,6 +2076,12 @@ model AdCampaign {
   displayPath        String?
   longHeadline       String?
   displaySizes       String[]           @default([])
+  // Recorded spend (2026-11-20, Local OS loop fix 2): the ONLY cost
+  // figure cost-per-won ever divides. Set by staff in Ad Studio when
+  // a person records what a campaign actually cost; NULL = no spend
+  // recorded (cost-per-won reads "No cost recorded"). Never estimated,
+  // never imported from the external platforms.
+  recordedSpendCents Int?
   notes              String?
   createdById    String?          @db.Uuid
   approvedById   String?          @db.Uuid

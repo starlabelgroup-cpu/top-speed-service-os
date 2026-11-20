@@ -46,6 +46,14 @@ export const INTERCONNECT_VERIFIED_ON = '2026-11-19';
 // the provider endpoints with the Tech App web portal) carry no
 // signal types and therefore can never show 'live' from the feed —
 // their mechanism note says so, in the open.
+//
+// Console edges (2026-11-20, Local OS loop fix 4): the same contract,
+// extended beyond the CRM surface to the console-to-console wiring
+// the department interlink audit verified — Book OS ↔ Dispatch,
+// Dispatch ↔ Tech App, Service Setters → Local OS (Ad Studio),
+// Media OS ↔ Marketing OS, Field Operations → Finance. They ride
+// the payload as a top-level `edges` list (from/to console ids);
+// the per-surface edge lists above are unchanged.
 export const EDGE_LIVE_LABEL = 'Live — activity in the feed';
 export const EDGE_LINK_LABELS = {
   'shared-records': 'Linked — shared records',
@@ -118,6 +126,83 @@ const CRM_EDGES = [
     signalTypes: [],
   },
 ];
+
+const CONSOLE_EDGES = [
+  {
+    from: 'book-os',
+    to: 'dispatch',
+    name: 'Service Setters — Book OS → Dispatch',
+    url: '/dispatch-dashboard',
+    link: 'shared-records',
+    mechanism:
+      'Service Setters work the queue in Book OS; dispatch match and approve act on those same booking records — an approval lands on the very booking the setter queue shows, and the appointment set on it is the one dispatch sees.',
+    signalTypes: ['DISPATCH_MATCHED', 'DISPATCH_APPROVED', 'APPOINTMENT_SET'],
+  },
+  {
+    from: 'dispatch',
+    to: 'tech-app',
+    name: 'Dispatch → Tech App',
+    url: '/tech',
+    link: 'shared-records',
+    mechanism:
+      'Approved assignments surface on the Tech App board through the provider endpoints — the job the tech accepts, diagnoses and completes is the dispatched booking, on the same record.',
+    signalTypes: ['ASSIGNMENT_ACCEPTED', 'DIAGNOSIS_RECORDED', 'JOB_COMPLETED'],
+  },
+  {
+    from: 'book-os',
+    to: 'ad-studio',
+    name: 'Service Setters → Top Speed Local OS (Ad Studio)',
+    url: '/ad-studio',
+    link: 'shared-records',
+    mechanism:
+      'The Local OS loop and cost-per-won in Ad Studio read the setter pipeline\'s own outcomes — completed jobs, reviews and referrals on attributed bookings — over the same records the setters work. Nothing is re-entered; the loop closes on the pipeline\'s real results.',
+    signalTypes: ['JOB_COMPLETED', 'REVIEW_SUBMITTED', 'REFERRAL_COMPLETED'],
+  },
+  {
+    from: 'media-os',
+    to: 'marketing-os',
+    name: 'Media OS ↔ Top Speed Marketing OS',
+    url: '/marketing-os',
+    link: 'shared-records',
+    mechanism:
+      'One marketing pipeline: Media OS content and Marketing OS pages are created through the same marketing routes and event feed, and published media queues the network\'s social distribution from the same records.',
+    signalTypes: ['MEDIA_CONTENT_CREATED', 'MEDIA_FACEBOOK_QUEUED', 'MARKETING_PAGE_CREATED'],
+  },
+  {
+    from: 'tech-app',
+    to: 'finance',
+    name: 'Field Operations (Tech App) → Finance',
+    url: '/finance',
+    link: 'shared-records',
+    mechanism:
+      'Job completion generates the invoice on the same booking the Finance console reports; card payments and recorded receipts settle those same payment rows — field money and office money are one ledger.',
+    signalTypes: ['INVOICE_GENERATED', 'PAYMENT_RECEIVED', 'RECEIPT_RECORDED'],
+  },
+];
+
+/**
+ * One edge's state, derived per request: 'live' ONLY when the feed
+ * holds a real event of one of the edge's signal types; otherwise
+ * 'linked', labelled by the kind of data link the code proves.
+ * Edges without signal types never consult the feed at all.
+ */
+async function deriveEdgeState(edge, eventsAvailable) {
+  let lastSignal = null;
+  if (eventsAvailable && Array.isArray(edge.signalTypes) && edge.signalTypes.length) {
+    try {
+      const hit = await platformEventsRepo.lastForTypes(edge.signalTypes);
+      if (hit) lastSignal = { type: hit.type, at: hit.at };
+    } catch {
+      lastSignal = null;
+    }
+  }
+  const state = lastSignal ? 'live' : 'linked';
+  return {
+    state,
+    label: state === 'live' ? EDGE_LIVE_LABEL : EDGE_LINK_LABELS[edge.link] || 'Linked',
+    lastSignal,
+  };
+}
 
 export const INTERCONNECT_SURFACES = [
   {
@@ -422,25 +507,14 @@ export async function buildInterconnectRegistry() {
     if (Array.isArray(surface.edges) && surface.edges.length) {
       edges = [];
       for (const edge of surface.edges) {
-        let lastSignal = null;
-        if (eventsAvailable && Array.isArray(edge.signalTypes) && edge.signalTypes.length) {
-          try {
-            const hit = await platformEventsRepo.lastForTypes(edge.signalTypes);
-            if (hit) lastSignal = { type: hit.type, at: hit.at };
-          } catch {
-            lastSignal = null;
-          }
-        }
-        const state = lastSignal ? 'live' : 'linked';
+        const derived = await deriveEdgeState(edge, eventsAvailable);
         edges.push({
           to: edge.to,
           name: edge.name,
           url: edge.url,
           link: edge.link,
           mechanism: edge.mechanism,
-          state,
-          label: state === 'live' ? EDGE_LIVE_LABEL : EDGE_LINK_LABELS[edge.link] || 'Linked',
-          lastSignal,
+          ...derived,
         });
       }
     }
@@ -463,10 +537,28 @@ export async function buildInterconnectRegistry() {
     });
   }
 
+  // Console-to-console edges (fix 4): the same per-request
+  // derivation as the per-surface edges — 'live' only from a real
+  // signal event in the feed, otherwise 'linked'.
+  const edges = [];
+  for (const edge of CONSOLE_EDGES) {
+    const derived = await deriveEdgeState(edge, feed.available);
+    edges.push({
+      from: edge.from,
+      to: edge.to,
+      name: edge.name,
+      url: edge.url,
+      link: edge.link,
+      mechanism: edge.mechanism,
+      ...derived,
+    });
+  }
+
   return {
     generatedAt: new Date().toISOString(),
     verifiedOn: INTERCONNECT_VERIFIED_ON,
     feed,
     surfaces,
+    edges,
   };
 }

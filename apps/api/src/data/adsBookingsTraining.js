@@ -208,7 +208,7 @@ STEP BY STEP — READ INSIGHTS:
 4. Connections: Google Analytics, Search Console and Google Business Profile each show a connection status. Until the owner's grants and keys are in place they read NOT_CONNECTED and show NO metrics. That blank is honesty, not a broken console — never fill it in from memory or estimate numbers for anyone.
 
 THE FLYWHEEL LOOP (AD STUDIO):
-The loop view follows a campaign's work around the wheel: banner serves, then clicks, then attributed bookings are REAL numbers. Completed jobs, reviews and referrals show as placeholders that connect when jobs actually complete. Read the placeholders as "not connected yet", never as zeros you can quote.
+The loop view follows a campaign's work around the wheel: banner serves, then clicks, then attributed bookings are REAL numbers — and so are completed jobs, reviews and referrals, counted from the same records with the same campaign-tag join as cost per won job. A stage with nothing behind it reads 0: an honest zero you can quote, never a dressed-up estimate.
 
 COUNTING, HONESTLY:
 The display feed counts one raw impression per serve and counts a click when the banner's button is used. Click-through rate is shown only when there are impressions, and it is labeled "raw serves/clicks". Report it with that label, or do not report it.

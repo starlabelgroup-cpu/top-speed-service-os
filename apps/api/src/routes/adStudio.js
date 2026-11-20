@@ -20,7 +20,7 @@ import {
 } from '../data/externalAds.js';
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
 import { requirePlanFeature } from '../services/adPlans.js';
-import { campaignOutcomeReport } from '../services/adOutcomes.js';
+import { campaignOutcomeReport, flywheelLoopStages } from '../services/adOutcomes.js';
 
 /**
  * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
@@ -293,6 +293,10 @@ function publicCampaign(record) {
     banner: banner
       ? { id: banner.id, active: banner.active !== false, impressions: banner.impressions || 0, clicks: banner.clicks || 0 }
       : null,
+    // Recorded spend (Local OS loop fix 2): the figure staff record
+    // on the campaign; null = nothing recorded. Cost per won job
+    // divides this and only this.
+    recordedSpendCents: record.recordedSpendCents ?? null,
     notes: record.notes || null,
     createdById: record.createdById || null,
     approvedById: record.approvedById || null,
@@ -401,11 +405,14 @@ router.get('/ad-studio/attribution', ...staffOnly, (req, res) => {
 /**
  * The flywheel as it actually stands: placements served → clicks →
  * attributed bookings, counted from the same counters and records
- * as everything else in this studio. The stages the loop has not
- * reached yet (completed jobs, reviews, referrals) are returned as
- * explicit placeholders with value null — never invented numbers.
+ * as everything else in this studio — and, since the Local OS loop
+ * fix (2026-11-20), the outcome stages too: completed jobs, reviews
+ * and referrals counted from the real records with the same
+ * campaign-tag attribution join as cost per won job (see
+ * services/adOutcomes.js flywheelLoopStages). A stage with nothing
+ * behind it reads an honest 0 — never an invented number.
  */
-router.get('/ad-studio/loop', ...staffOnly, (req, res) => {
+router.get('/ad-studio/loop', ...staffOnly, async (req, res) => {
   let impressions = 0;
   let clicks = 0;
   for (const campaign of store.adCampaigns) {
@@ -419,15 +426,16 @@ router.get('/ad-studio/loop', ...staffOnly, (req, res) => {
   for (const booking of store.bookings.values()) {
     if (booking.attribution && Object.keys(booking.attribution).length) attributedBookings += 1;
   }
+  const outcomes = await flywheelLoopStages();
   return res.json({
     data: {
       stages: [
         { id: 'served', label: 'Placements served', value: impressions, note: 'Raw impressions counted on the in-house banner placements (one per display feed serve).' },
         { id: 'clicks', label: 'Clicks', value: clicks, note: 'Raw clicks counted on the placements, through to their destinations.' },
         { id: 'attributedBookings', label: 'Attributed bookings', value: attributedBookings, note: 'Bookings whose intake carried first-touch attribution — a source tag, UTM tags or a platform click ID (all time; the Attribution view above breaks the recent window down).' },
-        { id: 'completedJobs', label: 'Completed jobs', value: null, note: 'Connects when jobs complete — job outcomes join the loop as real jobs finish.' },
-        { id: 'reviews', label: 'Reviews', value: null, note: 'Connects when jobs complete — reviews are earned from real completed jobs only, never invented.' },
-        { id: 'referrals', label: 'Referrals', value: null, note: 'Connects when jobs complete — referral credit follows completed referred jobs.' },
+        { id: 'completedJobs', label: 'Completed jobs', value: outcomes.completedJobs, note: 'Attributed bookings that reached COMPLETED — counted with the same campaign-tag join as cost per won job (intake source, or attribution via / utm_campaign).' },
+        { id: 'reviews', label: 'Reviews', value: outcomes.reviewsReceived, asksSent: outcomes.reviewAsksSent, received: outcomes.reviewsReceived, note: 'Review asks sent for attributed bookings and the real reviews recorded against them — reviews are earned from completed jobs only, never invented.' },
+        { id: 'referrals', label: 'Referrals', value: outcomes.referralJourneys, codesIssued: outcomes.referralCodesIssued, creditsIssued: outcomes.referralCreditsIssued, note: 'Referral journeys opened under codes issued from attributed bookings, and the credits issued on them — campaign customers turning into referrers.' },
       ],
       ctr: impressions > 0 ? clicks / impressions : null,
     },
@@ -592,6 +600,7 @@ router.post('/ad-studio/draft-copy', ...staffOnly, async (req, res) => {
     ctaText: LINE_CTA[line] || 'Learn More',
     category: null,
     imageUrl: null,
+    recordedSpendCents: null,
     notes: 'Drafted by Speedy (Top Speed Ads AI copy drafter) from the topic in the objective — every word waits for the owner\'s approval; the AI never publishes.',
     createdById: actorIdOf(req),
     approvedById: null,
@@ -676,6 +685,7 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
     ctaText: parsed.data.ctaText || null,
     category: parsed.data.category || null,
     imageUrl: parsed.data.imageUrl || null,
+    recordedSpendCents: null,
     notes: parsed.data.notes || null,
     createdById: actorIdOf(req),
     approvedById: null,
@@ -708,6 +718,12 @@ const campaignPatchSchema = z.object({
   creativeId: z.string().uuid().nullable().optional(),
   destinationUrl: z.string().trim().min(1).max(1000).optional(),
   placement: z.enum(PLACEMENTS).optional(),
+  // Recorded spend (Local OS loop fix 2): integer cents ≥ 0, or null
+  // to clear. Only ever what a person records — never estimated,
+  // never imported. The dedicated /spend route below is the primary
+  // path (it works in any campaign status); this field rides the
+  // general edit for completeness.
+  recordedSpendCents: z.number().int().min(0).nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
   ...advertiserFields,
   ...streamingFields,
@@ -732,8 +748,62 @@ router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
   }
   const streamErr = streamingError({ ...record, ...parsed.data });
   if (streamErr) return res.status(400).json({ error: streamErr });
+  const previousSpendCents = record.recordedSpendCents ?? null;
   Object.assign(record, parsed.data, { updatedAt: new Date().toISOString() });
   await persistAdCampaign(record);
+  if ('recordedSpendCents' in parsed.data && (record.recordedSpendCents ?? null) !== previousSpendCents) {
+    await recordSpendEvent(req, record, previousSpendCents);
+  }
+  return res.json({ data: publicCampaign(record) });
+});
+
+// ─── recorded spend (Local OS loop fix 2, 2026-11-20) ──────────────
+
+/**
+ * Spend is recorded by a person, on the record, in the console —
+ * never estimated and never imported from the external platforms.
+ * Recording/correcting it emits AD_SPEND_RECORDED on the platform
+ * feed so the change is auditable.
+ */
+async function recordSpendEvent(req, record, previousSpendCents) {
+  await appendEvent('AD_SPEND_RECORDED', {
+    source: 'ad-studio-console',
+    actor: actorOf(req),
+    entityType: 'AD_CAMPAIGN',
+    entityId: record.id,
+    details: {
+      sourceTag: record.sourceTag,
+      recordedSpendCents: record.recordedSpendCents ?? null,
+      previousRecordedSpendCents: previousSpendCents,
+    },
+  });
+}
+
+const spendPatchSchema = z.object({
+  recordedSpendCents: z.number().int().min(0).nullable(),
+});
+
+/**
+ * Record or correct a campaign's spend. Staff-only (the same gate
+ * as campaign edit) and deliberately NOT status-locked: spend is
+ * usually known only after a campaign has run, so ACTIVE and ENDED
+ * campaigns accept it too — the general edit above keeps its
+ * pause-first rule for everything else. Advertisers never reach
+ * this route (staffOnly refuses them), and their own my-campaigns
+ * edit has no spend field.
+ */
+router.patch('/ad-studio/campaigns/:id/spend', ...staffOnly, async (req, res) => {
+  const record = findCampaign(req.params.id);
+  if (!record) return res.status(404).json({ error: 'Campaign not found' });
+  const parsed = spendPatchSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid recorded spend', details: parsed.error.flatten() });
+  const previousSpendCents = record.recordedSpendCents ?? null;
+  record.recordedSpendCents = parsed.data.recordedSpendCents;
+  record.updatedAt = new Date().toISOString();
+  await persistAdCampaign(record);
+  if (record.recordedSpendCents !== previousSpendCents) {
+    await recordSpendEvent(req, record, previousSpendCents);
+  }
   return res.json({ data: publicCampaign(record) });
 });
 
@@ -863,6 +933,7 @@ router.post('/ad-studio/streaming-pack/load', ...ownerOnly, async (req, res) => 
       copy: ad.descriptions[0] || null,
       ctaText: ad.ctaText,
       category: ad.category || null,
+      recordedSpendCents: null,
       notes: 'Flywheel Streaming Pack — loaded for owner approval. Streaming provider placement is NOT connected: approving activates the campaign in Ad Studio only; placing it on the named providers needs their ad accounts and budget (separate activation).',
       createdById: actorIdOf(req),
       approvedById: null,
@@ -1100,6 +1171,7 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('ca
     copy: parsed.data.copy || null,
     ctaText: parsed.data.ctaText || null,
     category: parsed.data.category || null,
+    recordedSpendCents: null,
     notes: parsed.data.notes || null,
     createdById: actorIdOf(req),
     approvedById: null,
