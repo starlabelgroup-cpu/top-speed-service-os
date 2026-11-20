@@ -225,6 +225,8 @@ model User {
 
   pushSubscriptions PushSubscription[]
 
+  academyCompletions AcademyCompletion[]
+
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -2421,6 +2423,43 @@ model PepperReport {
 
   @@index([createdAt])
   @@index([createdByUserId, createdAt])
+}
+
+// Academy completions (2026-11-20, recommendations D12): one row per
+// curriculum module a trainee has completed, recorded by the Academy
+// itself (POST /academy/completions) against a module that exists in
+// the live curriculum — never a self-reported skill typed into a
+// profile form. A track CERTIFICATION is derived, never stored: all
+// of a track's live modules completed (services/academyCerts.js).
+// Certifications surface on the tech's provider profile and weigh —
+// as one factor among the existing ones — in the dispatch
+// assignment-suggestion ranking. Recording a completion never
+// changes anyone's roles, credentials or access: overriding
+// technician credentials is never AI (2026-11-10 authority limits),
+// and a completion is a training record, not a credential grant.
+model AcademyCompletion {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @db.Uuid
+  userId       String   @db.Uuid
+  // The provider record the trainee works under, resolved at record
+  // time with the Tech App's own linkage (their company's provider,
+  // or the company-crew record for platform-company techs). Plain id
+  // column in the CrmNote style — null for office trainees, who hold
+  // no provider record. This is what lets dispatch weigh a provider
+  // TEAM's certifications without guessing account linkages later.
+  providerId   String?  @db.Uuid
+  moduleSlug   String
+  moduleNumber Int
+  trackName    String
+  completedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleSlug])
+  @@index([companyId, userId])
+  @@index([userId])
+  @@index([providerId])
 }
 
 // Tech App dispatch package (2026-11-19, Ramone's full-package rebuild

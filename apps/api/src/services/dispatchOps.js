@@ -1,5 +1,6 @@
 import { store } from '../data/store.js';
 import { windowById } from './bookos.js';
+import { certificationFactor } from './academyCerts.js';
 
 /**
  * Service Setters operations layer (2026-11-17, Operations Blueprint
@@ -512,9 +513,11 @@ export function deriveRecoveryQueues(bookings, { now = new Date() } = {}) {
  * Scoring keeps the matcher's long-standing base (specialty 60 /
  * service area 30 / rating ×2) so the aid and the auto-match agree,
  * then adds the operational signals: open load, van stock, completed
- * history. "Valid credentials" is the platform's real gate — a
- * provider is team-verified before activation, and only active
- * providers are ranked at all.
+ * history — and, since 2026-11-20 (D12), the team's verified Academy
+ * certifications as one more weighed factor (services/
+ * academyCerts.js). "Valid credentials" is the platform's real
+ * gate — a provider is team-verified before activation, and only
+ * active providers are ranked at all.
  */
 export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
   const area = booking.area || booking.city;
@@ -589,6 +592,27 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         reasons.push({ kind: 'info', label: 'No completed jobs on record yet' });
       }
 
+      // Academy certifications (2026-11-20, D12): verified track
+      // certifications held by the provider's own techs weigh as ONE
+      // factor among the ones above — the field certification
+      // (Technician Track) weighs on every job and extra on its
+      // specialty appliance (Refrigerator, the sealed-system end of
+      // the trade); Foundation weighs a little. The policy and the
+      // derivation live in services/academyCerts.js +
+      // data/academyTracks.js. Certifications never touch
+      // eligibility (still the base-score bar below) and never
+      // dispatch: this stays ranked advice for a human setter.
+      const certFactor = certificationFactor(provider, booking);
+      if (certFactor.points > 0) {
+        score += certFactor.points;
+        reasons.push(...certFactor.reasons);
+      } else if (certFactor.certifications.length) {
+        reasons.push({
+          kind: 'info',
+          label: `Academy certified — ${certFactor.certifications.map((c) => c.track).join(', ')} (office tracks — no field weight)`,
+        });
+      }
+
       const baseScore =
         (specialty ? 60 : 0) + (servesArea ? 30 : 0) + (rating != null ? Math.round(rating * 2) : 0);
       return {
@@ -611,6 +635,10 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         openJobs: open,
         completedJobs: done,
         vanLines,
+        // Academy certifications held by this provider's techs
+        // (D12): names + certified-tech counts, derived from real
+        // completion records — empty when none are held.
+        certifications: certFactor.certifications,
         reasons,
       };
     })

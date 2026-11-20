@@ -27,6 +27,7 @@ import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
 import { hydrateMedia } from './mediaOsRepo.js';
 import { hydrateAdCampaigns } from './adStudioRepo.js';
 import { hydrateDepartmentReports } from './managementReportsRepo.js';
+import { hydrateAcademyCompletions } from './academyRepo.js';
 import { NETWORK_PARTNER_COMPANIES, NETWORK_PARTNER_PROVIDERS } from '../data/networkPartners.js';
 
 /**
@@ -432,6 +433,14 @@ export async function hydrateStore() {
     await hydrateDepartmentReports();
   } catch (error) {
     console.error('hydrateDepartmentReports failed (management reports degraded, platform continues)', error?.message || error);
+  }
+  // Academy completions are an add-on too (2026-11-20, D12): a
+  // missing table mid-deploy degrades to no certifications, never
+  // blocks hydration.
+  try {
+    await hydrateAcademyCompletions();
+  } catch (error) {
+    console.error('hydrateAcademyCompletions failed (academy certifications degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };
