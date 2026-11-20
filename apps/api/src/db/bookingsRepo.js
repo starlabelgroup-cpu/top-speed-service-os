@@ -11,6 +11,7 @@ import { hydratePayments } from './paymentsRepo.js';
 import { hydrateConnections } from './connectionsRepo.js';
 import { hydrateAppliances } from './appliancesRepo.js';
 import { hydrateApplianceConnections } from './applianceConnectionsRepo.js';
+import { hydratePushSubscriptions } from './pushSubscriptionsRepo.js';
 import { hydrateBanners } from './bannersRepo.js';
 import { hydrateTrackingTokens } from './trackingRepo.js';
 import { hydrateMarketingOs } from './marketingOsRepo.js';
@@ -308,6 +309,14 @@ export async function hydrateStore() {
   await hydrateConnections();
   await hydrateAppliances();
   await hydrateApplianceConnections();
+  // Web Push subscriptions (2026-11-20): an add-on table — a missing
+  // table mid-deploy degrades push to "no subscriptions", never the
+  // platform hydration.
+  try {
+    await hydratePushSubscriptions();
+  } catch (error) {
+    console.error('hydratePushSubscriptions failed (push degraded, platform continues)', error?.message || error);
+  }
   await hydrateBanners();
   await hydrateTrackingTokens();
   // Marketing OS is an add-on module: if its tables are ever unavailable

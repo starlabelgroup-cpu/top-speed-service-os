@@ -13,7 +13,7 @@
  * Bump CACHE_VERSION whenever the shell changes so old caches are purged
  * on activate.
  */
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const SHELL_CACHE = `top-speed-shell-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `top-speed-runtime-${CACHE_VERSION}`;
 
@@ -128,5 +128,51 @@ self.addEventListener('fetch', (event) => {
         return response;
       });
     }),
+  );
+});
+
+/* ------------------------------------------------------------------ */
+/* Web Push (2026-11-20): booking updates for the customer app. The   */
+/* payload is composed server-side from recorded booking facts        */
+/* (services/notifications.js queueBookingPushes) and delivered to    */
+/* the subscriptions customers explicitly opted into per device.      */
+/* ------------------------------------------------------------------ */
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = {};
+  }
+  const title = data.title || 'Top Speed Appliance';
+  const options = {
+    body: data.body || '',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    tag: data.tag || data.referenceCode || 'booking-update',
+    data: {
+      url: data.url || '/app',
+      bookingId: data.bookingId || null,
+      referenceCode: data.referenceCode || null,
+    },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = (event.notification.data && event.notification.data.url) || '/app';
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windows) => {
+        for (const client of windows) {
+          if (client.url.includes('/app') && 'focus' in client) {
+            if ('navigate' in client) client.navigate(target).catch(() => {});
+            return client.focus();
+          }
+        }
+        return self.clients.openWindow(target);
+      }),
   );
 });

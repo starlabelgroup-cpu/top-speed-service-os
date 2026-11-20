@@ -1,5 +1,6 @@
 import { store } from '../data/store.js';
 import { persistNotification } from '../db/flywheelRepo.js';
+import { deliverPushEntry } from './pushNotifications.js';
 
 /**
  * Notification senders — the live drain for the notification outbox.
@@ -318,6 +319,12 @@ function isValidationFailure(error) {
 
 /** Attempt delivery of one outbox entry. Mutates the entry's status fields. */
 export async function deliverEntry(entry) {
+  // Web Push (2026-11-20): the third channel has its own delivery
+  // service (VAPID config, dead-subscription revocation); the outcome
+  // shape and status discipline are the same as email/SMS.
+  if (entry.channel === 'push') {
+    return deliverPushEntry(entry);
+  }
   const isEmail = entry.channel === 'email';
   const isSms = entry.channel === 'sms';
   if (!isEmail && !isSms) {

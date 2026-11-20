@@ -1,7 +1,10 @@
 import { waitUntil } from '@vercel/functions';
 import { appendEvent, createId, store } from '../data/store.js';
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
+import { DATABASE_ENABLED, db } from '../db/client.js';
 import { persistNotification } from '../db/flywheelRepo.js';
+import { activeSubscriptionsForUser } from '../db/pushSubscriptionsRepo.js';
+import { pushAvailable } from './pushNotifications.js';
 import { drainEntries } from './senders.js';
 import { DEPARTMENT_FOR_INTERNAL_TEMPLATE, DEPARTMENT_FOR_STAFF_KIND, emitReport } from './managementReports.js';
 
@@ -257,7 +260,7 @@ export function queueNotification({ channel, template, to, payload = {}, source 
       eventKey: eventKey || `internal:${template}:${payload?.bookingId || entry.id}`,
     });
   }
-  if ((channel === 'email' || channel === 'sms') && entry.status === 'QUEUED') {
+  if ((channel === 'email' || channel === 'sms' || channel === 'push') && entry.status === 'QUEUED') {
     scheduleEntryDrain(entry);
   }
   return entry;
@@ -273,6 +276,126 @@ function customerChannels(booking) {
   if (booking.customer?.phone) channels.push({ channel: 'sms', to: booking.customer.phone });
   if (booking.customer?.email) channels.push({ channel: 'email', to: booking.customer.email });
   return channels;
+}
+
+/**
+ * Web Push fan-out (2026-11-20, approved recommendation B1): the
+ * third channel of this same outbox. For a booking lifecycle event,
+ * queue one channel:'push' entry per ACTIVE push subscription of the
+ * booking's account, carrying the notification title/body the device
+ * will show. Delivery runs through the ordinary drain
+ * (services/senders.js → services/pushNotifications.js).
+ *
+ * Honest no-ops: no linked account on the booking (guest checkout
+ * without an account), no subscriptions, or push not configured
+ * (VAPID unset) → nothing is queued. The lifecycle callers' email/SMS
+ * entries are never affected by anything push does — this helper is
+ * wrapped so a push-side failure cannot break the booking flow.
+ */
+const digits10 = (value) => String(value || '').replace(/\D/g, '').slice(-10);
+
+/**
+ * Which account does this booking belong to? The same linkage the
+ * rest of the platform agrees on (routes/bookings.js
+ * bookingBelongsToUser): the customer record's userId when linked,
+ * else the account whose email or phone matches the booking's
+ * contact details. Synchronous over the store first; the database
+ * fallback below covers cold instances where the account record has
+ * not been mirrored into this process.
+ */
+function resolveBookingUserIdSync(booking) {
+  const customer = booking.customer || {};
+  if (customer.userId) return customer.userId;
+  const linked = booking.customerId ? store.customers.get(booking.customerId) : null;
+  if (linked?.userId) return linked.userId;
+  const email = String(customer.email || '').toLowerCase();
+  const phone = digits10(customer.phone || booking.phone || '');
+  if (email) {
+    for (const user of store.users.values()) {
+      if (String(user.email || '').toLowerCase() === email) return user.id;
+    }
+  }
+  if (phone) {
+    for (const user of store.users.values()) {
+      if (digits10(user.phone || '') === phone) return user.id;
+    }
+  }
+  for (const record of store.customers.values()) {
+    if (!record.userId) continue;
+    if (email && String(record.email || '').toLowerCase() === email) return record.userId;
+    if (phone && digits10(record.phone || '') === phone) return record.userId;
+  }
+  return null;
+}
+
+async function resolveBookingUserIdDb(booking) {
+  const customer = booking.customer || {};
+  const email = String(customer.email || '').toLowerCase();
+  const phone = digits10(customer.phone || booking.phone || '');
+  if (email) {
+    const user = await db().user.findFirst({ where: { email } });
+    if (user) return user.id;
+    const linked = await db().customer.findFirst({ where: { email, userId: { not: null } } });
+    if (linked) return linked.userId;
+  }
+  if (phone) {
+    const candidates = await db().customer.findMany({ where: { userId: { not: null } }, take: 500 });
+    const match = candidates.find((record) => digits10(record.phone || '') === phone);
+    if (match) return match.userId;
+  }
+  return null;
+}
+
+function queuePushesForUser(booking, userId, { template, title, body, source = null, eventKeyBase }) {
+  const subscriptions = activeSubscriptionsForUser(userId);
+  if (!subscriptions.length) return [];
+  const referenceCode = booking.referenceCode || null;
+  return subscriptions.map((subscription) =>
+    queueNotification({
+      channel: 'push',
+      template,
+      to: subscription.endpoint,
+      source,
+      eventKey: `${eventKeyBase}:push:${subscription.id}`,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode,
+        customerName: booking.customer?.name,
+        title,
+        body,
+        url: `/app?view=track&ref=${encodeURIComponent(referenceCode || '')}`,
+        tag: referenceCode || booking.id,
+        subscriptionId: subscription.id,
+        userId,
+      },
+    }),
+  );
+}
+
+export function queueBookingPushes(booking, { template, title, body, source = null, eventKeyBase }) {
+  try {
+    if (!pushAvailable()) return [];
+    const options = { template, title, body, source, eventKeyBase };
+    const userId = resolveBookingUserIdSync(booking);
+    if (userId) return queuePushesForUser(booking, userId, options);
+    if (DATABASE_ENABLED) {
+      // Cold-instance path: resolve against the database and queue
+      // when the account is found. Fire-and-forget by design — the
+      // booking response never waits on push bookkeeping.
+      void resolveBookingUserIdDb(booking)
+        .then((dbUserId) => {
+          if (dbUserId) queuePushesForUser(booking, dbUserId, options);
+        })
+        .catch((error) => {
+          console.error(JSON.stringify({ level: 'error', message: 'booking push account resolution failed (booking flow unaffected)', error: String(error?.message || error) }));
+        });
+    }
+    return [];
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'booking push queue failed (booking flow unaffected)', error: String(error?.message || error) }));
+    return [];
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -854,7 +977,7 @@ export function notifyBookingConfirmation(booking, source = null) {
   // or moved, so the key carries the appointment's setAt stamp; the
   // initial booking confirmation keys on the booking itself.
   const keyStamp = appointment?.setAt || 'initial';
-  return customerChannels(booking).map(({ channel, to }) =>
+  const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.BOOKING_CONFIRMATION,
@@ -878,6 +1001,16 @@ export function notifyBookingConfirmation(booking, source = null) {
       },
     }),
   );
+  // Push rides the same event (third channel): same facts as the
+  // email/SMS copy above, in notification title/body form.
+  queueBookingPushes(booking, {
+    template: NOTIFICATION_TEMPLATES.BOOKING_CONFIRMATION,
+    title: 'Booking confirmed',
+    body: `Your ${booking.appliance} service in ${booking.city} is booked.${appointmentText} Tap to track your visit.`,
+    source,
+    eventKeyBase: `booking:${booking.id}:confirmation:${keyStamp}`,
+  });
+  return entries;
 }
 
 /**
@@ -1245,7 +1378,7 @@ export function notifyTrackingUpdate(booking, stageLabel, source = null, eventKe
 
 /** Customer notice that a technician has been assigned to their job. */
 export function notifyBookingAssigned(booking, assignment, source = null) {
-  return customerChannels(booking).map(({ channel, to }) =>
+  const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
@@ -1267,6 +1400,15 @@ export function notifyBookingAssigned(booking, assignment, source = null) {
       },
     }),
   );
+  // Push rides the same event (third channel).
+  queueBookingPushes(booking, {
+    template: NOTIFICATION_TEMPLATES.DISPATCH_APPROVED,
+    title: 'Technician assigned',
+    body: `A technician has been assigned to your ${booking.appliance} service in ${booking.city} (ref ${booking.referenceCode || ''}). Tap to track your visit.`,
+    source,
+    eventKeyBase: `booking:${booking.id}:assigned:${assignment?.id || 'none'}`,
+  });
+  return entries;
 }
 
 /** Internal notice to Service Setters: a match is waiting for their approval. */
@@ -1349,7 +1491,7 @@ export function notifyCommercialWorkOrderReceived(workOrder, booking, account, f
 
 /** Sent when a job is completed — the review engine's trigger point. */
 export function notifyReviewRequest(booking, source = null) {
-  return customerChannels(booking).map(({ channel, to }) =>
+  const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
       template: NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
@@ -1369,6 +1511,17 @@ export function notifyReviewRequest(booking, source = null) {
       },
     }),
   );
+  // This fan-out fires exactly when a job completes (both completion
+  // routes call it), so the completion push rides it — third channel,
+  // same recorded facts.
+  queueBookingPushes(booking, {
+    template: NOTIFICATION_TEMPLATES.REVIEW_REQUEST,
+    title: 'Job completed',
+    body: `Your ${booking.appliance} service in ${booking.city} is complete (ref ${booking.referenceCode || ''}). Thanks for choosing Top Speed Appliance — tap to see your visit.`,
+    source,
+    eventKeyBase: `booking:${booking.id}:review`,
+  });
+  return entries;
 }
 
 /**

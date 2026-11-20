@@ -41,6 +41,12 @@ export const store = {
   // database mode uses the EmailChangeToken table). Keyed by token
   // SHA-256 hash, same discipline as passwordResetTokens.
   emailChangeTokens: new Map(),
+  // Web Push subscriptions for the customer app (2026-11-20):
+  // per-device/browser opt-ins for booking updates, keyed by
+  // subscription id; hydrated from the PushSubscription table via
+  // db/pushSubscriptionsRepo. A record with revokedAt set is never
+  // sent to again.
+  pushSubscriptions: new Map(),
   // Speedy Verify access codes (skeleton-mode fallback; the database
   // mode uses the SpeedyVerifyCode table). Keyed by userId; the record
   // holds only the scrypt hash of the code, never the plain code.

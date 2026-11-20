@@ -223,6 +223,8 @@ model User {
 
   emailChangeTokens EmailChangeToken[]
 
+  pushSubscriptions PushSubscription[]
+
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -2244,4 +2246,28 @@ model ContactEvent {
   @@index([createdAt])
   @@index([trackingNumberId, createdAt])
   @@index([surfaceKey, createdAt])
+}
+
+// Web Push subscriptions for the customer app (2026-11-20, approved
+// recommendation B1): one row per device/browser a signed-in customer
+// opted in on. The endpoint is the push service's per-device URL
+// (unique); p256dh + auth are the subscription's encryption keys as
+// issued by the browser. revokedAt is set when the customer turns
+// updates off on that device, when they unsubscribe, or when the push
+// service reports the subscription gone (404/410 at delivery) — a
+// revoked row is never sent to again. Subscriptions are per-device:
+// one account can hold several active rows.
+model PushSubscription {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  endpoint  String    @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
