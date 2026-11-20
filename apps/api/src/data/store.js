@@ -224,6 +224,11 @@ export const store = {
   // db/marketingOsRepo (loaded inside hydrateMarketingOs); degrades to
   // an empty list like the rest.
   pageExperiments: [],
+  // Academy completions (2026-11-20, D12): one record per curriculum
+  // module a trainee completed, hydrated from the AcademyCompletion
+  // table via db/academyRepo. Certifications are derived from these
+  // rows (services/academyCerts.js), never stored separately.
+  academyCompletions: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [

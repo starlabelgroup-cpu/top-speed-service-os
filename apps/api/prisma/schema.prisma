@@ -225,6 +225,8 @@ model User {
 
   pushSubscriptions PushSubscription[]
 
+  academyCompletions AcademyCompletion[]
+
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -2194,99 +2196,6 @@ model PepperListsCrossPost {
   @@index([userId, createdAt])
 }
 
-// Pepper Lists — Phase 2 syndication queue (2026-11-20, recommendations
-// program C16): the eBay + Google Shopping twin of the Facebook
-// cross-post queue above. A seller asks for one of their confirmed
-// listings (a PEPPER_LISTS_SELL Connection record) to be syndicated
-// to a channel that posts under the SELLER'S OWN account, so queueing
-// requires their Phase 1 channel connection request to be on file
-// first (PENDING or CONNECTED — routes/pepperListsGrowth.js enforces
-// it). The row is born QUEUED and reaches POSTED only when staff
-// record the real outcome (the real eBay listing URL, or the real
-// Merchant Center product id/link) after the office completes the
-// post through the seller's account — the server never writes to
-// eBay or Google itself, and no row can be born or marked CONNECTED.
-// connectionId / userId / outcomeById are plain columns (the
-// SubmissionMedia precedent) so the dual-mode repo keeps identical
-// shapes with and without a database.
-enum PepperListsSyndicationChannel {
-  EBAY
-  GOOGLE_SHOPPING
-}
-
-enum PepperListsSyndicationStatus {
-  QUEUED
-  POSTED
-  FAILED
-}
-
-model PepperListsSyndication {
-  id               String                          @id @default(uuid()) @db.Uuid
-  connectionId     String                          @db.Uuid
-  listingReference String
-  userId           String                          @db.Uuid
-  channel          PepperListsSyndicationChannel
-  status           PepperListsSyndicationStatus    @default(QUEUED)
-  externalId       String?
-  externalUrl      String?
-  error            String?
-  outcomeById      String?                         @db.Uuid
-  postedAt         DateTime?
-  createdAt        DateTime                        @default(now())
-  updatedAt        DateTime                        @updatedAt
-
-  @@index([connectionId, channel, status])
-  @@index([status, createdAt])
-  @@index([userId, createdAt])
-}
-
-// Pepper Lists — buyer–seller messaging (2026-11-20, recommendations
-// program C18): one thread per (listing, inquiring buyer), holding the
-// on-platform conversation between that buyer and the listing's
-// seller. Threads and messages are plain-column records (the
-// SubmissionMedia precedent — no FK relations) so the dual-mode repo
-// keeps identical shapes with and without a database. Privacy is a
-// route-level invariant: only the two parties can read or post in a
-// thread; staff can read a thread only through the moderation lanes
-// (a thread a party reported, or the staff thread read), and a report
-// also files a PepperReport so the thread lands in the Pepper
-// console's staff queue. A Pepper Lists message thread is about a
-// SALE item — it is never a lead and never enters dispatch.
-enum PepperListsThreadStatus {
-  OPEN
-  REPORTED
-  CLOSED
-}
-
-model PepperListsThread {
-  id               String                  @id @default(uuid()) @db.Uuid
-  connectionId     String                  @db.Uuid
-  listingReference String
-  sellerUserId     String                  @db.Uuid
-  buyerUserId      String                  @db.Uuid
-  status           PepperListsThreadStatus @default(OPEN)
-  lastMessageAt    DateTime?
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
-
-  @@unique([connectionId, buyerUserId])
-  @@index([sellerUserId, lastMessageAt])
-  @@index([buyerUserId, lastMessageAt])
-  @@index([status, updatedAt])
-}
-
-model PepperListsMessage {
-  id           String    @id @default(uuid()) @db.Uuid
-  threadId     String    @db.Uuid
-  senderUserId String    @db.Uuid
-  body         String
-  readAt       DateTime?
-  createdAt    DateTime  @default(now())
-
-  @@index([threadId, createdAt])
-  @@index([threadId, readAt])
-}
-
 // AdStream Providers (2026-11-18, Phase 1): the platform-level registry
 // of the external ad-serving providers Top Speed Ads can serve through
 // (Kevel, AdButler, Google Ad Manager, SpringServe by Magnite,
@@ -2374,6 +2283,43 @@ model PepperReport {
 
   @@index([createdAt])
   @@index([createdByUserId, createdAt])
+}
+
+// Academy completions (2026-11-20, recommendations D12): one row per
+// curriculum module a trainee has completed, recorded by the Academy
+// itself (POST /academy/completions) against a module that exists in
+// the live curriculum — never a self-reported skill typed into a
+// profile form. A track CERTIFICATION is derived, never stored: all
+// of a track's live modules completed (services/academyCerts.js).
+// Certifications surface on the tech's provider profile and weigh —
+// as one factor among the existing ones — in the dispatch
+// assignment-suggestion ranking. Recording a completion never
+// changes anyone's roles, credentials or access: overriding
+// technician credentials is never AI (2026-11-10 authority limits),
+// and a completion is a training record, not a credential grant.
+model AcademyCompletion {
+  id           String   @id @default(uuid()) @db.Uuid
+  companyId    String   @db.Uuid
+  userId       String   @db.Uuid
+  // The provider record the trainee works under, resolved at record
+  // time with the Tech App's own linkage (their company's provider,
+  // or the company-crew record for platform-company techs). Plain id
+  // column in the CrmNote style — null for office trainees, who hold
+  // no provider record. This is what lets dispatch weigh a provider
+  // TEAM's certifications without guessing account linkages later.
+  providerId   String?  @db.Uuid
+  moduleSlug   String
+  moduleNumber Int
+  trackName    String
+  completedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleSlug])
+  @@index([companyId, userId])
+  @@index([userId])
+  @@index([providerId])
 }
 
 // Tech App dispatch package (2026-11-19, Ramone's full-package rebuild

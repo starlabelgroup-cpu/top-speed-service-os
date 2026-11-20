@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { buildPepperStatus } from '../services/pepperConsole.js';
+import { buildOpsDigest, etDateString, formatDigestDraft } from '../services/opsDigest.js';
 import { pepperChat, pepperChatStatus, pepperPhoto } from '../services/pepperChat.js';
 import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReportsRepo.js';
 
@@ -23,6 +24,18 @@ import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReports
  *                                 Rule Zero.
  *   GET  /pepper-console/reports  the report log, newest first.
  *   POST /pepper-console/reports  staff file a report.
+ *   GET  /pepper-console/digest   the morning ops digest (D14,
+ *                                 2026-11-20): unassigned jobs, the
+ *                                 exception queue, parts delays and
+ *                                 yesterday's counts, computed from
+ *                                 the real sources (services/
+ *                                 opsDigest.js). A draft for the
+ *                                 office — reading it sends nothing.
+ *   POST /pepper-console/digest/draft
+ *                                 save the current digest into the
+ *                                 report log as a STATUS draft. Also
+ *                                 sends nothing — the log is the
+ *                                 delivery, by a human's choice.
  *   POST /pepper/chat             the Workstation chat bar: staff
  *                                 ask Pepper about the platform,
  *                                 their work and onboarding; live
@@ -118,6 +131,29 @@ router.post('/pepper-console/reports', ...staffGate, async (req, res, next) => {
       createdByUserId: req.user.id,
     });
     return res.status(201).json({ data: publicReport(row) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/pepper-console/digest', ...staffGate, async (req, res, next) => {
+  try {
+    return res.json({ data: await buildOpsDigest() });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.post('/pepper-console/digest/draft', ...staffGate, async (req, res, next) => {
+  try {
+    const digest = await buildOpsDigest();
+    const row = await pepperReportsRepo.create({
+      title: `Morning ops digest — ${etDateString(new Date())}`,
+      body: formatDigestDraft(digest),
+      category: 'STATUS',
+      createdByUserId: req.user.id,
+    });
+    return res.status(201).json({ data: { report: publicReport(row), digest } });
   } catch (error) {
     return next(error);
   }

@@ -2,9 +2,12 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
-import { store } from '../data/store.js';
+import { appendEvent, store } from '../data/store.js';
 import { specialistsRoster } from '../knowledge/specialists.js';
 import { academyCoachChat, coachProviderConfigured } from '../services/academyCoach.js';
+import { moduleNumberOf, trackOfModule } from '../data/academyTracks.js';
+import { recordCompletion } from '../db/academyRepo.js';
+import { progressForUser, providerRecordForTrainee } from '../services/academyCerts.js';
 import {
   captureChatExchange,
   captureSafely,
@@ -18,6 +21,8 @@ import {
  *                               read-only, scoped to the training tag)
  *   GET  /academy/specialists   the department → category → specialist roster
  *   POST /academy/coach         one coach turn with a chosen specialist
+ *   POST /academy/completions   record finishing a module (D12, 2026-11-20)
+ *   GET  /academy/progress      own completions + derived certifications
  *
  * Access — the TRAINEE gate (widened 2026-11-16 at Ramone's direction:
  * Service Setters enter the Academy as trainees, "same thing with the
@@ -111,6 +116,79 @@ router.get('/academy/specialists', ...academyTrainee, (req, res) => {
 const historyTurn = z.object({
   role: z.enum(['user', 'assistant']),
   content: z.string().trim().min(1).max(2000),
+});
+
+/* --------------------- completions (2026-11-20, D12) ---------------------
+ * POST /academy/completions — a trainee records finishing a module.
+ * The module must exist in the LIVE curriculum (the same records
+ * GET /academy/curriculum serves): a slug that is not a real module
+ * is a 404, so a completion can never be recorded against training
+ * that does not exist. Recording is idempotent — finishing the same
+ * module twice keeps the first record.
+ *
+ * GET /academy/progress — the trainee's own completions, per-track
+ * progress and derived certifications.
+ *
+ * A certification is derived from these records (services/
+ * academyCerts.js) and surfaces on the provider profile + the
+ * dispatch suggestion ranking. It grants NOTHING by itself: no
+ * role, no credential, no access changes here or anywhere —
+ * overriding technician credentials is never AI (2026-11-10).
+ */
+const completionSchema = z.object({
+  moduleSlug: z.string().trim().min(1, 'Module slug is required').max(160),
+});
+
+router.post('/academy/completions', ...academyTrainee, async (req, res) => {
+  const parsed = completionSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid completion', details: parsed.error.flatten() });
+  }
+  const record = store.mediaContent.find(
+    (c) => c.slug === parsed.data.moduleSlug && Array.isArray(c.tags) && c.tags.includes('training-academy'),
+  );
+  if (!record) {
+    return res.status(404).json({ error: 'That module is not in the Academy curriculum' });
+  }
+  const moduleNumber = moduleNumberOf(record);
+  const track = moduleNumber ? trackOfModule(moduleNumber) : null;
+  if (!track) {
+    return res.status(400).json({ error: 'That module is not part of a certification track' });
+  }
+  const provider = providerRecordForTrainee(req.user);
+  const { completion, alreadyRecorded } = await recordCompletion({
+    companyId: req.user.companyId,
+    userId: req.user.id,
+    providerId: provider?.id ?? null,
+    moduleSlug: record.slug,
+    moduleNumber,
+    trackName: track.name,
+  });
+  if (!alreadyRecorded) {
+    await appendEvent('ACADEMY_MODULE_COMPLETED', {
+      source: 'academy',
+      actor: req.user.email,
+      entityType: 'USER',
+      entityId: req.user.id,
+      details: { moduleSlug: record.slug, moduleNumber, trackName: track.name },
+    });
+  }
+  return res.status(alreadyRecorded ? 200 : 201).json({
+    data: {
+      completion: {
+        moduleSlug: completion.moduleSlug,
+        moduleNumber: completion.moduleNumber,
+        trackName: completion.trackName,
+        completedAt: completion.completedAt,
+      },
+      alreadyRecorded,
+      progress: progressForUser(req.user.id),
+    },
+  });
+});
+
+router.get('/academy/progress', ...academyTrainee, (req, res) => {
+  return res.json({ data: progressForUser(req.user.id) });
 });
 
 const coachSchema = z.object({

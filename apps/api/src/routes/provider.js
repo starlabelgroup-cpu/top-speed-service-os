@@ -37,6 +37,7 @@ import { catalogEntry, findBookingByReference, LINK_TYPES } from '../services/li
 import { jobPlugUrl, parseJobCode, qrSvg } from '../services/qrCodes.js';
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { listConnections } from '../db/applianceConnectionsRepo.js';
+import { certificationsForUser, progressForUser } from '../services/academyCerts.js';
 
 /**
  * Provider side of dispatch — the Tech App's live data.
@@ -87,7 +88,7 @@ const providerBoard = [
   ),
 ];
 
-function myProvider(req) {
+export function myProvider(req) {
   const own = store.providers.find((provider) => provider.companyId === req.user.companyId) || null;
   if (own) return own;
   // Two tech systems (2026-11-19): Top Speed's own technicians hold
@@ -229,7 +230,17 @@ router.get('/provider/me', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
   if (provider) {
     const system = techSystemFor(req, provider);
-    return res.json({ data: { provider, system, oversight: system === 'OVERSIGHT' } });
+    // Academy certifications (2026-11-20, D12): the account's own
+    // verified track certifications, derived from real completion
+    // records — Field Pro reads them from here. Additive field.
+    return res.json({
+      data: {
+        provider,
+        system,
+        oversight: system === 'OVERSIGHT',
+        certifications: certificationsForUser(req.user.id),
+      },
+    });
   }
   // No provider record of their own: an oversight viewer (owner /
   // company admin) still gets a 200 with an explicit oversight marker
@@ -384,6 +395,22 @@ function techProfileView(req, provider, user) {
     myAreas: system === 'NETWORK' ? provider?.serviceCities || [] : settings.myAreas || [],
     myAppliances: system === 'NETWORK' ? provider?.specialties || [] : settings.myAppliances || [],
     areasManagedByOffice: system === 'COMPANY',
+    // Academy (2026-11-20, D12): the tech's own verified track
+    // certifications + per-track progress, derived from their real
+    // completion records in the Academy — earned, never typed in.
+    academy: (() => {
+      const progress = progressForUser(req.user.id);
+      return {
+        completedCount: progress.completedCount,
+        certifications: progress.certifications,
+        tracks: progress.tracks.map((t) => ({
+          track: t.track,
+          completedModules: t.completedModules,
+          totalModules: t.totalModules,
+          certified: t.certified,
+        })),
+      };
+    })(),
   };
 }
 

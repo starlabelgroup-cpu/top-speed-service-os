@@ -152,6 +152,10 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
       <div class="msg" id="coachMsg"></div>
     </div>
 
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.6-3 7.7-7 9-4-1.3-7-4.4-7-9V6z"/><path d="M9 11.8l2.2 2.2 3.8-4" stroke="#E8322E"/></svg>My certifications</h2>
+    <p class="sub">Your verified Academy record. Finish every module in a track to earn its certification — certifications show on your provider profile and count in dispatch matching. Mark a module complete only when you have actually finished it.</p>
+    <div id="myCertsZone"><div class="empty">Loading your Academy record…</div></div>
+
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L2.5 9 12 14l9.5-5z"/><path d="M6 11.5V16c0 1.7 2.7 3 6 3s6-1.3 6-3v-4.5" stroke="#E8322E"/><path d="M21.5 9v5" stroke="#E8322E"/></svg>The curriculum</h2>
     <p class="sub" id="currSummary"><span class="spin"></span> Loading the Academy library from Media OS…</p>
     <div style="margin-top:10px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
@@ -182,6 +186,64 @@ function statusPill(s){
 var PLAY_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10.2 9.4l4.8 2.6-4.8 2.6z" fill="#E8322E" stroke="none"/></svg>';
 var CLOCK_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.6V12l3 2" stroke="#E8322E"/></svg>';
 var BOOK_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.4A1.6 1.6 0 0 1 5.6 3.8H20v14.4H5.6A1.6 1.6 0 0 0 4 19.8z"/><path d="M20 15.8H5.8A1.8 1.8 0 0 0 4 17.6" stroke="#E8322E"/><path d="M8 7.4h8" opacity=".85"/></svg>';
+var CHECK_ICON = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#E8322E"/></svg>';
+
+/* ── My certifications & completions (D12, 2026-11-20) ──
+   The trainee's own verified record: GET /academy/progress for the
+   strip + per-card state, POST /academy/completions to record a
+   finished module. A track certifies only when every module in it
+   is complete — the server derives it; this page only shows it. */
+var myDone = {};
+var myProgress = null;
+var lastRecords = [];
+function renderMyCerts(data){
+  var zone = document.getElementById('myCertsZone');
+  if (!zone) return;
+  if (!data){
+    zone.innerHTML = '<div class="empty">Your Academy record could not be loaded just now — refresh the page to try again.</div>';
+    return;
+  }
+  var certs = (data.certifications || []).map(function(c){
+    return '<span class="pill pub">' + CHECK_ICON + ' Certified — ' + esc(c.track) + (c.certifiedAt ? ' · ' + esc(String(c.certifiedAt).slice(0, 10)) : '') + '</span>';
+  }).join(' ');
+  var rows = (data.tracks || []).filter(function(t){ return t.totalModules > 0; }).map(function(t){
+    return '<div class="card"><h3><span>' + esc(t.track) + '</span></h3>' +
+      '<p>' + t.completedModules + ' of ' + t.totalModules + ' modules complete' +
+      (t.certified ? ' — <strong>certified</strong>.' : '.') + '</p></div>';
+  }).join('');
+  zone.innerHTML =
+    '<p class="sub">' + data.completedCount + ' module' + (data.completedCount === 1 ? '' : 's') + ' completed.' +
+    (certs ? ' Certifications earned: ' + certs : ' No certifications yet — finish a full track to earn the first one.') + '</p>' +
+    (rows ? '<div class="mgrid">' + rows + '</div>' : '');
+}
+function loadMyProgress(){
+  return authFetch('/academy/progress').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if (!j || !j.data){ renderMyCerts(null); return; }
+    myProgress = j.data;
+    myDone = {};
+    (j.data.completions || []).forEach(function(c){ myDone[c.moduleSlug] = c.completedAt; });
+    renderMyCerts(j.data);
+  }).catch(function(){ renderMyCerts(null); });
+}
+function markComplete(slug, btn){
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  authFetch('/academy/completions', { method: 'POST', body: JSON.stringify({ moduleSlug: slug }) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if ((res.status === 200 || res.status === 201) && res.j && res.j.data && res.j.data.progress){
+        myProgress = res.j.data.progress;
+        myDone = {};
+        (myProgress.completions || []).forEach(function(c){ myDone[c.moduleSlug] = c.completedAt; });
+        renderMyCerts(myProgress);
+        renderTracks(lastRecords);
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Mark complete';
+      }
+    })
+    .catch(function(){ btn.disabled = false; btn.textContent = 'Mark complete'; });
+}
 
 var TRACKS = [
   { name: 'Foundation', sub: 'Every role — start here', lo: 1, hi: 3 },
@@ -303,6 +365,7 @@ function showGate(note){
 
 /* ── Curriculum (Media OS library, via the trainee endpoint) ── */
 function renderTracks(records){
+  lastRecords = records || [];
   var mods = records.filter(function(r){
     return Array.isArray(r.tags) && r.tags.indexOf('training-academy') !== -1;
   }).map(function(r){ return { rec: r, n: moduleNum(r) }; })
@@ -333,14 +396,21 @@ function renderTracks(records){
           : '<div class="hosting">' + CLOCK_ICON + '<div>Video hosting is being set up — this module\'s video is ready to attach.</div></div>';
       var dest = r.destinationUrl
         ? '<div><a class="btn ghost sm" href="' + esc(r.destinationUrl) + '">Open the System Navigator</a></div>' : '';
+      var doneAt = myDone[r.slug];
+      var completion = doneAt
+        ? '<div style="margin-top:8px"><span class="pill pub">' + CHECK_ICON + ' Completed ' + esc(String(doneAt).slice(0, 10)) + '</span></div>'
+        : '<div style="margin-top:8px"><button class="btn sm" type="button" data-complete="' + esc(r.slug) + '">Mark complete</button></div>';
       return '<div class="card"><h3><span class="mnum">' + x.n + '</span><span>' + esc(title) + '</span></h3>' +
         '<div>' + statusPill(r.status) + ' <span class="pill">' + (isArticle ? 'Article' : 'Video') + '</span></div>' +
-        (TEACHES[x.n] ? '<p>' + esc(TEACHES[x.n]) + '</p>' : '') + media + dest + '</div>';
+        (TEACHES[x.n] ? '<p>' + esc(TEACHES[x.n]) + '</p>' : '') + media + dest + completion + '</div>';
     }).join('');
     return '<h2 class="sec">' + BOOK_ICON + esc(tr.name) + '<span class="count pill">' + inTrack.length + ' modules</span></h2>' +
       '<p class="sub">' + esc(tr.sub) + ' · Modules ' + tr.lo + '–' + tr.hi + '</p>' +
       '<div class="mgrid">' + cards + '</div>';
   }).join('');
+  zone.querySelectorAll('[data-complete]').forEach(function(btn){
+    btn.addEventListener('click', function(){ markComplete(btn.getAttribute('data-complete'), btn); });
+  });
 }
 
 /* ── Speedy Class ──────────────────────────────────────── */
@@ -611,6 +681,7 @@ function boot(){
     }
     renderTracks(j.data || []);
     loadSpecialists();
+    loadMyProgress().then(function(){ renderTracks(lastRecords); });
   }).catch(function(){ showGate('The Academy library could not be reached — check your connection and try again.'); });
 }
 document.getElementById('btnSignOut').addEventListener('click', function(){

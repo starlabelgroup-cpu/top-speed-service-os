@@ -124,6 +124,17 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <p class="sub">Derived only from the live states on the board above — nothing here is guessed.</p>
     <div id="needsZone"></div>
 
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.6V12l3 2" stroke="#E8322E"/></svg>Morning ops digest</h2>
+    <p class="sub">The day's opening picture, computed live from Book OS and the review pipeline: unassigned jobs, the exception queue, parts delays, and yesterday's counts. It is a draft for the office — reading it sends nothing, and saving it files it in the report log below, still unsent.</p>
+    <div class="console">
+      <div id="digestZone"><p class="small mut"><span class="spin"></span> Computing the digest…</p></div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <button class="btn ghost sm" id="digestRefresh" type="button">Recompute</button>
+        <button class="btn sm" id="digestSave" type="button">Save draft to report log</button>
+      </div>
+      <div class="msg" id="digestMsg"></div>
+    </div>
+
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6" stroke="#E8322E"/></svg>Pepper reports</h2>
     <p class="sub">The report log for the owner: status updates, actions taken, items that need Ramone, and incidents — filed by staff, newest first.</p>
     <div class="console">
@@ -340,6 +351,49 @@ function renderReports(rows){
       '<div class="rbody">' + esc(r.body) + '</div></div>';
   }).join('');
 }
+/* ── Morning ops digest (D14, 2026-11-20) ───────────────────
+   GET /pepper-console/digest computes it live; the save button
+   files it as a STATUS draft in the report log. Neither action
+   sends anything anywhere. */
+function digestSection(label, sec, rowsHtml){
+  if (!sec || sec.available !== true){
+    return '<div class="kv"><span class="k">' + esc(label) + '</span><span class="v">Could not be read — open its own console for the live state.</span></div>';
+  }
+  return '<div class="kv"><span class="k">' + esc(label) + '</span><span class="v">' + sec.count + '</span></div>' + (rowsHtml || '');
+}
+function renderDigest(d){
+  var z = document.getElementById('digestZone');
+  var s = (d && d.sections) || {};
+  var unRows = (s.unassigned && s.unassigned.items || []).map(function(i){
+    return '<div class="small mut">' + esc(i.referenceCode || i.bookingId) + ' · ' + esc(i.appliance) + ' · ' + esc(i.city) + ' · waiting ' + esc(i.ageMinutes == null ? '?' : i.ageMinutes) + ' min</div>';
+  }).join('');
+  var exRows = (s.exceptions && s.exceptions.items || []).map(function(i){
+    return '<div class="small mut">[' + esc(i.typeLabel) + '] ' + esc(i.referenceCode || '') + ' · ' + esc(i.appliance) + ' · ' + esc(i.city) + ' — ' + esc(i.nextAction) + '</div>';
+  }).join('');
+  var partsRows = (s.partsDelays && s.partsDelays.items || []).map(function(i){
+    return '<div class="small mut">' + esc(i.referenceCode || i.bookingId) + ' · ' + esc(i.appliance) + ' · ' + esc(i.city) + (i.overdue ? ' · OVER the 48h delay threshold' : '') + '</div>';
+  }).join('');
+  var y = s.yesterday;
+  var yHtml = (y && y.available === true)
+    ? '<div class="kv"><span class="k">Yesterday (' + esc(y.date) + ')</span><span class="v">' + y.bookingsCreated + ' created · ' + y.jobsCompleted + ' completed · ' + y.assignmentsApproved + ' assignments approved</span></div>'
+    : '<div class="kv"><span class="k">Yesterday</span><span class="v">Could not be read — open Book OS for the live state.</span></div>';
+  z.innerHTML =
+    '<p class="small mut">Computed ' + esc(d && d.generatedAt ? when(d.generatedAt) : 'just now') + ' · draft only — nothing was sent.</p>' +
+    digestSection('Unassigned jobs', s.unassigned, unRows) +
+    digestSection('Exception queue', s.exceptions, exRows) +
+    digestSection('Jobs awaiting parts', s.partsDelays, partsRows) +
+    yHtml;
+}
+function loadDigest(){
+  return authFetch('/pepper-console/digest')
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status !== 200 || !res.j || !res.j.data) throw new Error('bad');
+      renderDigest(res.j.data);
+    })
+    .catch(function(){ document.getElementById('digestZone').innerHTML = '<div class="empty">The digest could not be computed — refresh to try again.</div>'; });
+}
+
 function loadReports(){
   return authFetch('/pepper-console/reports')
     .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
@@ -370,6 +424,7 @@ function boot(){
       renderNeeds(d.sections || {});
       renderOrders(d.identity || {});
       loadReports();
+      loadDigest();
     })
     .catch(function(){ showGate('The Pepper console could not be reached — sign in again.'); });
 }
@@ -392,6 +447,25 @@ document.getElementById('reportForm').addEventListener('submit', function(ev){
       loadReports();
     })
     .catch(function(){ msg.textContent = 'The report could not be sent — check your connection and try again.'; msg.className = 'msg err'; })
+    .finally(function(){ btn.disabled = false; });
+});
+document.getElementById('digestRefresh').addEventListener('click', function(){ loadDigest(); });
+document.getElementById('digestSave').addEventListener('click', function(){
+  var msg = document.getElementById('digestMsg');
+  var btn = document.getElementById('digestSave');
+  msg.textContent = '';
+  msg.className = 'msg';
+  btn.disabled = true;
+  authFetch('/pepper-console/digest/draft', { method: 'POST', body: JSON.stringify({}) })
+    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+    .then(function(res){
+      if (res.status === 401){ showGate('Your session has expired — sign in again.'); return; }
+      if (res.status !== 201 || !res.j || !res.j.data || !res.j.data.report){ msg.textContent = 'The draft was not saved — try again.'; msg.className = 'msg err'; return; }
+      msg.textContent = 'Draft saved to the report log (report ' + res.j.data.report.id + '). Nothing was sent anywhere.';
+      renderDigest(res.j.data.digest);
+      loadReports();
+    })
+    .catch(function(){ msg.textContent = 'The draft could not be saved — check your connection and try again.'; msg.className = 'msg err'; })
     .finally(function(){ btn.disabled = false; });
 });
 document.getElementById('btnSignOut').addEventListener('click', function(){

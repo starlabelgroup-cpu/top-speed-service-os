@@ -375,6 +375,19 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
         <div class="tp-row"><input class="tp-in" id="lkJobQ" placeholder="e.g. TS-XXXXXX, refrigerator, Sunrise…" onkeydown="if(event.key==='Enter')lookupJobs()"><button class="btn navy" type="button" style="flex:0 1 110px" onclick="lookupJobs()">Search</button></div>
         <div id="lkJobResults" style="margin-top:8px"></div>
       </div>
+      <!-- ASK PEPPER — PROVIDER LANE (D13, 2026-11-20): the scoped
+           Pepper for provider accounts (POST /provider/pepper/chat).
+           It answers from YOUR board and the trade knowledge base
+           only — office data, other providers, money and access
+           questions stay with the office, and the server enforces
+           that wall, not this page. The staff Ask Pepper bar above
+           is a different lane and stays untouched. -->
+      <div class="card">
+        <h3 style="font-size:14px;color:var(--navy)">Ask Pepper — for providers</h3>
+        <p class="note" style="margin:4px 0 8px">Job help in your lane: your own jobs and offers, rating-plate and error-code lookups, and how the work flows. Try “Show my jobs” or ask about one of your job references. Office data, other providers and refunds are the office's — Pepper will point you there.</p>
+        <div id="ppProvLog" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto"></div>
+        <div class="tp-row" style="margin-top:8px"><input class="tp-in" id="ppProvInput" placeholder="Ask Pepper…" maxlength="2000" onkeydown="if(event.key==='Enter')ppProvSend()"><button class="btn navy" type="button" style="flex:0 1 110px" id="ppProvBtn" onclick="ppProvSend()">Ask</button></div>
+      </div>
     </section>
   </main>
   <nav class="tabs">
@@ -2664,6 +2677,47 @@ function lookupJobs(){
     return [b.referenceCode,b.appliance,b.issue,b.city,b.zip,cust.name].join(' ').toLowerCase().indexOf(q)>=0;
   });
   box.innerHTML=mine.length?mine.map(boardRow).join(''):'<p class="note" style="margin:4px 0">No job on your board matches that.</p>';
+}
+/* -------- Ask Pepper — provider lane (D13, 2026-11-20) --------
+   Posts to /provider/pepper/chat with the tech session token. The
+   lane is scoped server-side (own board + knowledge base + the
+   scope wall); this panel only renders what comes back, escaped. */
+var ppProvHistory=[];
+function ppProvSay(who,text,mine){
+  var log=document.getElementById('ppProvLog'); if(!log) return null;
+  var div=document.createElement('div');
+  div.style.cssText='border:1px solid var(--line,#dbe2ec);border-radius:12px;padding:8px 10px;font-size:13.5px;white-space:pre-wrap;'+(mine?'background:var(--panel2,#f2f5fa);align-self:flex-end':'align-self:flex-start');
+  var label=document.createElement('div');
+  label.style.cssText='font-size:11px;font-weight:700;letter-spacing:.04em;color:var(--mut,#5b6b82);margin-bottom:2px';
+  label.textContent=who;
+  div.appendChild(label);
+  div.appendChild(document.createTextNode(text));
+  log.appendChild(div);
+  log.scrollTop=log.scrollHeight;
+  return div;
+}
+function ppProvSend(){
+  var input=document.getElementById('ppProvInput'); var btn=document.getElementById('ppProvBtn');
+  if(!input) return;
+  var msg=input.value.trim(); if(!msg) return;
+  input.value='';
+  ppProvSay('You',msg,true);
+  ppProvHistory.push({role:'user',content:msg});
+  var pending=ppProvSay('Pepper','Thinking…',false);
+  if(btn) btn.disabled=true;
+  tFetch('/provider/pepper/chat',{method:'POST',body:JSON.stringify({message:msg,history:ppProvHistory.slice(-10)})})
+    .then(function(j){
+      var reply=(j&&j.data&&j.data.reply)||'Pepper did not answer just now — try again, or call the office.';
+      if(pending){ pending.lastChild.textContent=reply; }
+      ppProvHistory.push({role:'assistant',content:reply});
+    })
+    .catch(function(err){
+      var note=(err&&err.status===403)
+        ? 'This lane is for provider accounts. Staff use the Ask Pepper bar; if you are a provider and see this, the office can check your account.'
+        : 'Pepper could not be reached — check your connection and try again.';
+      if(pending){ pending.lastChild.textContent=note; }
+    })
+    .then(function(){ if(btn) btn.disabled=false; });
 }
 </script>
 <script>
