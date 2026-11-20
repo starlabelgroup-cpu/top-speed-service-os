@@ -9,6 +9,7 @@ import { emitReport } from '../services/managementReports.js';
 import { DIAGNOSTIC_AMOUNT_CENTS, createDiagnosticCheckout, stripeConfigured, verifyWebhookSignature, webhookConfigured } from '../services/stripe.js';
 import { handleStripePlanEvent } from '../services/adPlans.js';
 import { handleStripeCarePlanEvent } from '../services/carePlans.js';
+import { handleStripeMarketplaceEvent } from '../services/marketplacePayments.js';
 
 /**
  * Payments — the built-in checkout (Route B, approved by Ramone
@@ -189,6 +190,13 @@ router.post('/payments/webhook', async (req, res) => {
   // advertiser-plan handling, never throws, and answers only
   // purpose CARE_PLAN checkouts / its own subscription ids.
   await handleStripeCarePlanEvent(event);
+
+  // New money rails (2026-11-20): Pepper Lists Connect orders +
+  // gift cards. Runs LAST, never throws, and its sessions are told
+  // apart by metadata purpose — diagnostic sessions carry purpose
+  // DIAGNOSTIC and plan sessions AD_PLAN, so the flows share only
+  // the endpoint and the signature check.
+  await handleStripeMarketplaceEvent(event);
   return res.json({ received: true });
 });
 

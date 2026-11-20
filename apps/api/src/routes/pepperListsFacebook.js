@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { store } from '../data/store.js';
 import { countSubmissionMedia, listSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { crossPostsRepo } from '../db/pepperListsCrossPostsRepo.js';
+import { getPaymentsSetting } from '../db/paymentsRailsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import {
@@ -147,6 +148,13 @@ router.get('/pepper-lists/listings/:reference/view', async (req, res, next) => {
       listing.condition ? esc(listing.condition) : null,
       listing.category ? esc(listing.category) : null,
     ].filter(Boolean).join(' · ');
+    // C19 protected payments: honest state copy — while the owner
+    // activation flag is off the feature is announced as coming,
+    // never presented as available.
+    const setting = await getPaymentsSetting().catch(() => null);
+    const ppBlock = setting?.connectEnabled === true
+      ? `<div style="border:1.5px solid #2c4232;border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55;margin:0 0 22px"><b>Protected payment available.</b> This item can be bought with a protected payment inside Pepper Lists — payment is processed by Stripe and the seller is paid through their own connected account.</div>`
+      : `<div style="border:1.5px solid #2c4232;border-radius:14px;padding:14px 16px;font-size:14.5px;line-height:1.55;margin:0 0 22px"><b>Protected payments are coming.</b> Soon you will be able to pay for this item right inside Pepper Lists, with your payment held safely until handover. For now, contact the seller to arrange the sale.</div>`;
     res.set({ 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
     return res.send(`<!DOCTYPE html>
 <html lang="en">
@@ -174,6 +182,7 @@ router.get('/pepper-lists/listings/:reference/view', async (req, res, next) => {
     <h1 style="font-size:26px;line-height:1.25;margin:0 0 8px">${esc(listing.title)}</h1>
     <p style="font-size:17px;color:#b7e33c;margin:0 0 14px">${facts}</p>
     ${listing.description ? `<p style="font-size:15px;line-height:1.65;color:#c8d2c4;margin:0 0 22px">${esc(listing.description)}</p>` : ''}
+    ${ppBlock}
     <a href="https://pepperlists.com/" style="display:inline-block;background:#b7e33c;color:#101608;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:10px">See it on Pepper Lists</a>
     <p style="font-size:13px;color:#8fa188;margin-top:26px">Pepper Lists It by Top Speed OS — Fort Lauderdale, FL. Message the seller through Pepper Lists.</p>
   </main>

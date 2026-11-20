@@ -185,3 +185,99 @@ export function verifyWebhookSignature(rawBody, signatureHeader) {
     return false;
   }
 }
+
+// ---------------------------------------------------------------------------
+// New money rails (2026-11-20, Wave 4) — Stripe Connect for Pepper
+// Lists protected payments + gift card checkout. Same transport as
+// everything above. These functions are only ever CALLED behind the
+// owner configuration in PaymentsSetting (Connect flag + owner-set
+// fee; owner-set gift card denominations) — the routes enforce that;
+// nothing here seeds or defaults a number.
+// ---------------------------------------------------------------------------
+
+/** Create a Stripe Connect Express account for a Pepper Lists seller. */
+export async function createConnectAccount({ email, userId }) {
+  return stripeApi('POST', '/v1/accounts', {
+    type: 'express',
+    email: email || undefined,
+    metadata: { purpose: 'PEPPER_LISTS_CONNECT', userId },
+    capabilities: {
+      card_payments: { requested: true },
+      transfers: { requested: true },
+    },
+  });
+}
+
+/** One-time hosted onboarding link for a connected account. */
+export async function createConnectAccountLink({ accountId, refreshUrl, returnUrl }) {
+  return stripeApi('POST', '/v1/account_links', {
+    account: accountId,
+    refresh_url: refreshUrl,
+    return_url: returnUrl,
+    type: 'account_onboarding',
+  });
+}
+
+/** Read a connected account's live state (charges/payouts/details). */
+export async function retrieveConnectAccount(accountId) {
+  return stripeApi('GET', `/v1/accounts/${encodeURIComponent(accountId)}`);
+}
+
+/**
+ * Connect Checkout Session for one listing purchase: the buyer pays
+ * the listing price; the seller's share lands in their connected
+ * account (transfer destination) and the platform keeps the
+ * owner-set application fee. feeCents comes from the order, which
+ * computed it from the owner's fee setting — never from the client.
+ */
+export async function createConnectCheckout({ order, listingTitle, sellerAccountId, successUrl, cancelUrl }) {
+  const params = {
+    mode: 'payment',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: 'usd',
+        unit_amount: order.amountCents,
+        product_data: {
+          name: `Pepper Lists — ${listingTitle}`,
+          description: `Protected purchase on Pepper Lists It. Listing ${order.listingReference}.`,
+        },
+      },
+    }],
+    client_reference_id: order.id,
+    metadata: { purpose: 'PEPPER_LISTS_ORDER', orderId: order.id, listingReference: order.listingReference },
+    payment_intent_data: {
+      transfer_data: { destination: sellerAccountId },
+      metadata: { purpose: 'PEPPER_LISTS_ORDER', orderId: order.id },
+    },
+  };
+  if (order.feeCents > 0) params.payment_intent_data.application_fee_amount = order.feeCents;
+  if (order.buyerEmail) params.customer_email = order.buyerEmail;
+  return stripeApi('POST', '/v1/checkout/sessions', params);
+}
+
+/** Payment-mode Checkout Session for a gift card purchase. */
+export async function createGiftCardCheckout({ card, successUrl, cancelUrl }) {
+  return stripeApi('POST', '/v1/checkout/sessions', {
+    mode: 'payment',
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    line_items: [{
+      quantity: 1,
+      price_data: {
+        currency: 'usd',
+        unit_amount: card.initialAmountCents,
+        product_data: {
+          name: 'Top Speed Appliance — Gift Card',
+          description: 'Digital gift card for Top Speed Appliance diagnostic and repair services. The card code is emailed to the buyer and activates when this payment completes.',
+        },
+      },
+    }],
+    client_reference_id: card.id,
+    metadata: { purpose: 'GIFT_CARD', giftCardId: card.id },
+    payment_intent_data: { metadata: { purpose: 'GIFT_CARD', giftCardId: card.id } },
+    ...(card.purchaserEmail ? { customer_email: card.purchaserEmail } : {}),
+  });
+}

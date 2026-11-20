@@ -215,6 +215,18 @@ footer a{color:var(--lime)}
     </div>
     <p class="plb-msg" id="pleMsg" role="status"></p>
     <div style="margin-top:10px"><button class="btn" type="button" id="pleBtn" onclick="pleRequest()">Request username change</button></div>
+    <h3 style="margin-top:22px">Payments &amp; payouts</h3>
+    <p class="plb-sub" id="plpState">Checking protected payments…</p>
+    <div id="plpSeller" style="display:none">
+      <p class="plb-sub" id="plpSellerState" role="status"></p>
+      <div style="margin-top:8px"><button class="btn" type="button" id="plpOnboardBtn" onclick="plpOnboard()">Set up payouts</button></div>
+    </div>
+    <div id="plpBuyBox" style="display:none">
+      <label class="ple-lab">Listing reference (from the listing page link)<input id="plpRef" type="text" placeholder="Listing reference"></label>
+      <p class="plb-msg" id="plpMsg" role="status"></p>
+      <div style="margin-top:10px"><button class="btn" type="button" id="plpBuyBtn" onclick="plpBuy()">Buy with protected payment</button></div>
+    </div>
+    <div id="plpOrders" style="margin-top:12px"></div>
   </div>
 </section>
 <!-- THREE PURPOSES — Ramone's structure (2026-11-17, superseding the
@@ -1835,6 +1847,82 @@ function plxQueue(target){
       if(e&&e.status===409){ plxLoadStatus(); return; }
       if(box) box.innerHTML='<span style="color:#ff9c9c">'+plbEsc((e&&e.message)||'Could not queue that — try again')+'</span>';
     });
+}
+</script>
+<script>
+/* PEPPER LISTS PROTECTED PAYMENTS (C19, 2026-11-20) — Stripe Connect
+   machinery inside the account section. The feature ships behind an
+   owner activation flag: while it is off this panel says so plainly
+   ("Protected payments are coming") and shows no buy or payout
+   controls. While on: sellers set up payouts through Stripe's own
+   hosted onboarding, buyers pay for a listing by its reference, and
+   both sides see their real orders. Every state shown here comes
+   from the API — nothing is rendered that the server did not say. */
+function plpMoney(c){ return '$'+((Number(c)||0)/100).toFixed(2); }
+function plpErrText(e){
+  var code=(e&&e.message)||'';
+  if(code==='protected_payments_coming') return 'Protected payments are coming — this feature is not switched on yet.';
+  if(code==='pricing_not_set') return 'Protected payments are not priced yet — the office has not set the platform fee.';
+  if(code==='seller_not_ready') return 'This seller has not finished setting up payouts yet, so protected payment is not available for this listing.';
+  if(code==='already_sold') return 'That item has already been sold.';
+  if(code==='Listing not found') return 'We could not find a listing with that reference.';
+  return (e&&e.message)||'Something went wrong — please try again.';
+}
+function plpLoad(){
+  var state=document.getElementById('plpState'); if(!state) return;
+  plApi('/pepper-lists/protected-payments/status').then(function(j){
+    var d=(j&&j.data)||{};
+    if(!d.enabled){
+      state.textContent='Protected payments are coming. Soon you will be able to pay for items right here, with your payment held safely until handover — and sellers will get paid through their own Stripe account.';
+      return;
+    }
+    state.textContent='Protected payments are on: pay for an item by its listing reference, and sellers get paid through Stripe.';
+    var buyBox=document.getElementById('plpBuyBox'); if(buyBox) buyBox.style.display='';
+    var sellerBox=document.getElementById('plpSeller'); if(sellerBox) sellerBox.style.display='';
+    plApi('/pepper-lists/connect/status').then(function(j2){
+      var a=(j2.data&&j2.data.account)||null;
+      var line=document.getElementById('plpSellerState');
+      var btn=document.getElementById('plpOnboardBtn');
+      if(!line) return;
+      if(a&&a.status==='ACTIVE'){ line.textContent='Your payouts are on — buyers can pay you with protected payments.'; if(btn) btn.style.display='none'; }
+      else if(a){ line.textContent='Your payout setup is started but not finished — complete it with Stripe to start getting paid.'; if(btn) btn.textContent='Continue payout setup'; }
+      else { line.textContent='Selling something? Set up payouts so buyers can pay you with protected payments.'; }
+    }).catch(function(){ /* seller status is a courtesy read */ });
+    plApi('/pepper-lists/orders/mine').then(function(j3){
+      var box=document.getElementById('plpOrders'); if(!box) return;
+      var d3=(j3&&j3.data)||{asBuyer:[],asSeller:[]};
+      var h='';
+      (d3.asBuyer||[]).forEach(function(o){ h+='<p class="plb-sub">Bought · '+plbEsc(o.listingReference)+' · '+plpMoney(o.amountCents)+' · '+plbEsc(o.status)+'</p>'; });
+      (d3.asSeller||[]).forEach(function(o){ h+='<p class="plb-sub">Sold · '+plbEsc(o.listingReference)+' · '+plpMoney(o.amountCents)+' · '+plbEsc(o.status)+'</p>'; });
+      box.innerHTML=h;
+    }).catch(function(){ /* orders are a courtesy read */ });
+  }).catch(function(){ state.textContent=''; });
+}
+function plpOnboard(){
+  plApi('/pepper-lists/connect/onboard',{method:'POST',body:JSON.stringify({})}).then(function(j){
+    var url=j.data&&j.data.url;
+    if(url){ location.href=url; return; }
+    var line=document.getElementById('plpSellerState'); if(line) line.textContent='Stripe did not return a setup link — please try again.';
+  }).catch(function(e){
+    var line=document.getElementById('plpSellerState'); if(line) line.textContent=plpErrText(e);
+  });
+}
+function plpBuy(){
+  var refEl=document.getElementById('plpRef');
+  var msg=document.getElementById('plpMsg');
+  var ref=refEl?refEl.value.trim():'';
+  if(!ref){ if(msg){ msg.textContent='Enter the listing reference from the listing page link.'; msg.className='plb-msg err'; } return; }
+  plApi('/pepper-lists/listings/'+encodeURIComponent(ref)+'/buy',{method:'POST',body:JSON.stringify({})}).then(function(j){
+    var url=j.data&&j.data.url;
+    if(url){ location.href=url; return; }
+    if(msg){ msg.textContent='Stripe did not return a checkout link — please try again.'; msg.className='plb-msg err'; }
+  }).catch(function(e){
+    if(msg){ msg.textContent=plpErrText(e); msg.className='plb-msg err'; }
+  });
+}
+if(typeof plEnterApp==='function'){
+  var plpOrigEnterApp=plEnterApp;
+  plEnterApp=function(u){ plpOrigEnterApp(u); plpLoad(); };
 }
 </script>
 <script>

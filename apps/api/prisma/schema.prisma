@@ -213,7 +213,6 @@ model User {
   pepperReports PepperReport[]
 
   advertiserSubscription AdvertiserSubscription?
-  careSubscription CareSubscription?
 
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
@@ -2042,89 +2041,6 @@ model AdBillingSetting {
   updatedAt DateTime @updatedAt
 }
 
-enum CareSubscriptionStatus {
-  NONE
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  GRACE
-  SUSPENDED
-  OFFICE_GRANTED
-}
-
-// Appliance Care Plan (membership) — B4 (2026-11-20, Ramone approved
-// the recommendations program). Mirrors the Flywheel advertiser-plan
-// discipline exactly: the plan is STRUCTURE seeded with
-// annualPriceCents NULL; the price exists only because the owner set
-// it in the admin surface (routes/carePlans.js), which is also the
-// only place a Stripe Product/Price for the plan is ever created.
-// An unpriced plan refuses checkout with pricing_not_set.
-model CarePlan {
-  id               String   @id @default(uuid()) @db.Uuid
-  key              String   @unique
-  name             String
-  description      String?
-  // NULL = pricing not set by the owner yet — checkout is refused
-  // with an honest "pricing not set" state everywhere it appears.
-  annualPriceCents Int?
-  currency         String   @default("usd")
-  // Feature matrix: { <featureKey>: true|false } over the keys in
-  // services/carePlans.js CARE_FEATURES (annualCheckup,
-  // priorityBooking).
-  features         Json     @default("{}")
-  isActive         Boolean  @default(true)
-  sortOrder        Int      @default(0)
-  // Set only by the owner price flow (Stripe sync at price-set time).
-  stripeProductId  String?
-  stripePriceId    String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  subscriptions CareSubscription[]
-
-  @@index([isActive, sortOrder])
-}
-
-model CareSubscription {
-  id                   String               @id @default(uuid()) @db.Uuid
-  userId               String               @unique @db.Uuid
-  planId               String?              @db.Uuid
-  status               CareSubscriptionStatus @default(NONE)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  // When the first failed invoice landed; the grace clock starts here.
-  pastDueAt            DateTime?
-  cancelAtPeriodEnd    Boolean              @default(false)
-  // The included annual check-up: the period-end it was booked for,
-  // and the booking reference that fulfilled it. One per period.
-  checkupBookedForPeriodEnd DateTime?
-  checkupBookingRef         String?
-  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
-  grantedById          String?              @db.Uuid
-  grantedAt            DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-
-  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan CarePlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
-
-  @@index([status])
-  @@index([stripeSubscriptionId])
-}
-
-// Owner-configurable care-plan billing settings (singleton row, id
-// 'default'): the past-due grace window in days (default 7, mirroring
-// the advertiser-plan setting).
-model CareBillingSetting {
-  id        String   @id
-  graceDays Int      @default(7)
-  updatedBy String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 // Management department reports (2026-11-14): every request any platform
 // feature produces — booking, referral, subscription/offer sign-up,
 // account, job event, payment, training, publish, campaign action —
@@ -2601,4 +2517,150 @@ model CallRecording {
 
   @@index([fromNumber, createdAt])
   @@index([toNumber, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// New money rails (2026-11-20, Wave 4) — machinery built ahead of
+// activation, following the advertiser-plans honesty idiom: structure
+// ships first, money moves only after the OWNER configures it, and
+// nothing anywhere invents a price, a fee, or a denomination.
+//
+// PaymentsSetting is the owner-owned singleton (id 'default'), the
+// sibling of AdBillingSetting:
+//  - connectEnabled: the activation flag for Pepper Lists protected
+//    payments (Stripe Connect). Default FALSE — the feature ships
+//    OFF because enabling Connect on the live Stripe account is
+//    Ramone's own step in the Stripe dashboard; until he flips this
+//    flag (after that step), every Connect surface answers an honest
+//    "coming" state and checkout is refused.
+//  - connectFeeBps: the platform application fee for a protected
+//    purchase, in basis points of the listing price. NULL = the
+//    owner has not set a fee yet — checkout is refused with
+//    pricing_not_set even when the flag is on (the AdPlan rule: no
+//    owner-set number, no money movement).
+//  - giftCardDenominationsCents: the owner-set list of gift card
+//    amounts (cents) the flagship may sell. Empty = gift card sales
+//    are disabled; a purchase for any other amount is refused with
+//    pricing_not_set.
+// ---------------------------------------------------------------------------
+model PaymentsSetting {
+  id                          String   @id
+  connectEnabled              Boolean  @default(false)
+  connectFeeBps               Int?
+  giftCardDenominationsCents  Json     @default("[]")
+  updatedBy                   String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}
+
+// One Stripe Connect (Express) account per Pepper Lists seller.
+// A row is born NOT_STARTED when the seller begins onboarding; the
+// status fields mirror what Stripe reports about the account
+// (charges/payouts enabled, details submitted) and are refreshed
+// from Stripe — never assumed. A seller can only be PAID through a
+// row whose status is ACTIVE with chargesEnabled true.
+model SellerConnectAccount {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  userId           String   @unique @db.Uuid
+  stripeAccountId  String?  @unique
+  status           String   @default("NOT_STARTED") // NOT_STARTED | ONBOARDING | ACTIVE | RESTRICTED
+  chargesEnabled   Boolean  @default(false)
+  payoutsEnabled   Boolean  @default(false)
+  detailsSubmitted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([companyId, status])
+}
+
+// A protected purchase of one Pepper Lists listing through Stripe
+// Connect checkout: the buyer pays the listing price, Stripe routes
+// the seller's share to the seller's connected account and the
+// platform keeps the owner-set application fee. Born PENDING at
+// checkout creation; PAID only when Stripe's webhook confirms the
+// completed session (the diagnostic webhook discipline); EXPIRED
+// when the session lapses. A listing with a PAID order is sold —
+// the office removes/marks the listing record as it does today.
+model PepperListsOrder {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  listingConnectionId   String    @db.Uuid
+  listingReference      String
+  sellerUserId          String    @db.Uuid
+  buyerUserId           String?   @db.Uuid
+  buyerEmail            String?
+  amountCents           Int
+  feeCents              Int       @default(0)
+  currency              String    @default("usd")
+  status                String    @default("PENDING") // PENDING | PAID | EXPIRED
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  sellerStripeAccountId String?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([sellerUserId, createdAt])
+  @@index([buyerUserId, createdAt])
+  @@index([listingConnectionId, status])
+}
+
+// A digital gift card for Top Speed services (diagnostic / repair),
+// sold on the flagship through the existing Stripe checkout. The
+// card CODE is never stored: only its SHA-256 hash and last four
+// characters live here (the password-reset token discipline). The
+// raw code is shown to the buyer exactly once at purchase and
+// delivered by email; the card is redeemable only after the webhook
+// activates it (status ACTIVE with the ISSUE ledger entry), so an
+// unpaid code is worth nothing. balanceCents is the ledger's
+// running truth and can never go negative — redemptions are capped
+// at the balance and at the booking's real outstanding amount.
+model GiftCard {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  codeHash              String    @unique
+  codeLast4             String
+  initialAmountCents    Int
+  balanceCents          Int       @default(0)
+  currency              String    @default("usd")
+  status                String    @default("PENDING") // PENDING | ACTIVE | DEPLETED | VOID
+  purchaserUserId       String?   @db.Uuid
+  purchaserEmail        String?
+  recipientEmail        String?
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  issuedAt              DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  ledger GiftCardLedgerEntry[]
+
+  @@index([companyId, status])
+  @@index([purchaserUserId, createdAt])
+}
+
+// The gift card ledger: every balance movement, in order, with the
+// balance after it. ISSUE (+initial, at webhook activation) and
+// REDEEM (−applied, against a booking's outstanding diagnostic) are
+// the only kinds. The card's balanceCents always equals the last
+// entry's balanceAfterCents; drills assert the math exactly.
+model GiftCardLedgerEntry {
+  id               String   @id @default(uuid()) @db.Uuid
+  giftCardId       String   @db.Uuid
+  kind             String // ISSUE | REDEEM
+  amountCents      Int // signed: ISSUE positive, REDEEM negative
+  balanceAfterCents Int
+  bookingId        String?  @db.Uuid
+  paymentId        String?  @db.Uuid
+  note             String?
+  createdById      String?  @db.Uuid
+  createdAt        DateTime @default(now())
+
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@index([giftCardId, createdAt])
+  @@index([bookingId])
 }
