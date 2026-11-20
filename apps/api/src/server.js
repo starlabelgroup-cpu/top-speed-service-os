@@ -163,6 +163,9 @@ app.use('/api/v1/ad-studio/my-creatives', express.json({ limit: '10mb' }));
 // Twilio voice webhooks post application/x-www-form-urlencoded, which the
 // JSON parsers below would leave unparsed; give that path its own parser.
 app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));
+// Sign in with Apple (F9, 2026-11-20): Apple's callback is a form POST
+// (response_mode=form_post), so that path gets the same treatment.
+app.use('/api/v1/auth/apple', express.urlencoded({ extended: false, limit: '16kb' }));
 app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);

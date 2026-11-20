@@ -1,6 +1,7 @@
 import { store } from '../data/store.js';
 import { persistNotification } from '../db/flywheelRepo.js';
 import { deliverPushEntry } from './pushNotifications.js';
+import { whatsappConfig } from './whatsapp.js';
 
 /**
  * Notification senders — the live drain for the notification outbox.
@@ -14,6 +15,10 @@ import { deliverPushEntry } from './pushNotifications.js';
  *           fallback: SendGrid (SENDGRID_API_KEY) when Resend hard-fails
  *   sms   → Twilio   (TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER)
  *           fallback: Vonage (VONAGE_API_KEY + VONAGE_API_SECRET) when Twilio hard-fails
+ *   whatsapp → Meta WhatsApp Cloud API (WHATSAPP_PHONE_NUMBER_ID +
+ *           WHATSAPP_ACCESS_TOKEN; services/whatsapp.js) — no fallback;
+ *           the channel itself is owner-flagged off by default and
+ *           entries only exist once the flag is on.
  *
  * Each channel delivers through an ordered provider chain: when a
  * provider fails provider-side (network, 5xx, auth, rate limit), the
@@ -174,10 +179,22 @@ function smsChain() {
   ];
 }
 
+function whatsappChain() {
+  return [
+    { name: 'meta-whatsapp', configured: whatsappConfig().configured, send: sendWhatsApp },
+  ];
+}
+
+function chainFor(channel) {
+  if (channel === 'email') return emailChain();
+  if (channel === 'sms') return smsChain();
+  if (channel === 'whatsapp') return whatsappChain();
+  return [];
+}
+
 /** True when at least one provider on the channel is configured. */
 export function channelConfigured(channel) {
-  const chain = channel === 'email' ? emailChain() : channel === 'sms' ? smsChain() : [];
-  return chain.some((provider) => provider.configured);
+  return chainFor(channel).some((provider) => provider.configured);
 }
 
 /**
@@ -186,7 +203,7 @@ export function channelConfigured(channel) {
  */
 export function providersStatus() {
   const chainView = (providers) => providers.map(({ name, configured }) => ({ provider: name, configured }));
-  return { email: chainView(emailChain()), sms: chainView(smsChain()) };
+  return { email: chainView(emailChain()), sms: chainView(smsChain()), whatsapp: chainView(whatsappChain()) };
 }
 
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) for Twilio. */
@@ -246,6 +263,52 @@ async function sendSms(entry) {
     throw providerError;
   }
   return body.sid || null;
+}
+
+/**
+ * WhatsApp via the Meta Cloud API. Template entries (payload carries
+ * templateName + templateParams) send as WhatsApp utility templates —
+ * the only business-initiated shape Meta allows; plain entries send
+ * as free-form session texts, which Meta delivers only inside the
+ * 24-hour window after the customer's own message and rejects
+ * outside it (the rejection is recorded FAILED with Meta's error).
+ * The recipient is digits-only international format, per the API.
+ */
+async function sendWhatsApp(entry) {
+  const config = whatsappConfig();
+  const payload = entry.payload || {};
+  const to = normalizePhone(entry.to).replace(/\D/g, '');
+  const body = { messaging_product: 'whatsapp', recipient_type: 'individual', to };
+  if (payload.templateName) {
+    body.type = 'template';
+    body.template = { name: payload.templateName, language: { code: payload.templateLanguage || 'en_US' } };
+    const params = Array.isArray(payload.templateParams) ? payload.templateParams : [];
+    if (params.length) {
+      body.template.components = [{
+        type: 'body',
+        parameters: params.map((text) => ({ type: 'text', text: String(text) })),
+      }];
+    }
+  } else {
+    body.type = 'text';
+    body.text = { body: payload.message || '', preview_url: false };
+  }
+  const response = await fetch(`${config.base}/${config.version}/${config.phoneNumberId}/messages`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${config.accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const providerError = new Error(data?.error?.message || `WhatsApp error ${response.status}`);
+    providerError.httpStatus = response.status;
+    if (data?.error?.code) providerError.providerCode = data.error.code;
+    throw providerError;
+  }
+  return data?.messages?.[0]?.id || null;
 }
 
 async function sendEmailViaSendGrid(entry) {
@@ -329,18 +392,19 @@ export async function deliverEntry(entry) {
   }
   const isEmail = entry.channel === 'email';
   const isSms = entry.channel === 'sms';
-  if (!isEmail && !isSms) {
+  const isWhatsApp = entry.channel === 'whatsapp';
+  if (!isEmail && !isSms && !isWhatsApp) {
     // Internal feed entries (Service Setters' in-platform queue) are
     // never routed to a provider — they exist only in the outbox.
     return { result: 'skipped', reason: `channel ${entry.channel} is an internal feed entry` };
   }
-  const chain = (isEmail ? emailChain() : smsChain()).filter((provider) => provider.configured);
+  const chain = chainFor(entry.channel).filter((provider) => provider.configured);
   if (!chain.length) {
     // Truthful gating: with no provider configured on the channel, the
     // entry stays on record as GATED with the primary provider's
     // machine-readable reason — never marked sent, never dropped.
     entry.status = 'GATED';
-    entry.reason = isEmail ? 'RESEND_NOT_CONFIGURED' : 'TWILIO_NOT_CONFIGURED';
+    entry.reason = isEmail ? 'RESEND_NOT_CONFIGURED' : isSms ? 'TWILIO_NOT_CONFIGURED' : 'WHATSAPP_NOT_CONFIGURED';
     entry.error = null;
     return { result: 'gated', reason: entry.reason };
   }
@@ -423,8 +487,10 @@ export async function drainEntries(entries) {
 export function channelHealth({ smsTrial = null } = {}) {
   const email = resendConfig();
   const sms = twilioConfig();
+  const whatsapp = whatsappConfig();
   const eChain = emailChain();
   const sChain = smsChain();
+  const wChain = whatsappChain();
   const chainView = (providers) => providers.map(({ name, configured }) => ({ provider: name, configured }));
   return {
     email: {
@@ -440,6 +506,12 @@ export function channelHealth({ smsTrial = null } = {}) {
       from: sms.from || null,
       trial: smsTrial,
       chain: chainView(sChain),
+    },
+    whatsapp: {
+      provider: 'meta-whatsapp',
+      configured: wChain.some((provider) => provider.configured),
+      from: whatsapp.displayNumber || null,
+      chain: chainView(wChain),
     },
   };
 }
