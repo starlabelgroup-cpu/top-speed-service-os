@@ -206,6 +206,7 @@ footer a{color:var(--lime)}
   <div class="plb-card">
     <h2>Your <span style="color:var(--lime)">account</span></h2>
     <p class="ple-cur">Signed in as <b id="pleCurrent"></b></p>
+    <p class="plb-sub" id="plgStoreRow" style="display:none">Your public storefront — all your live listings on one shareable page: <a id="plgStoreLink" href="#" target="_blank" rel="noopener" style="color:var(--lime);font-weight:700">your storefront</a></p>
     <h3 style="margin-top:18px">Username / email</h3>
     <p class="plb-sub">Your email address is your username. To change it, enter the new address and your current password — and, if your account has 2-step sign-in on, the code we send you. We then email a confirmation link to the NEW address; the change only takes effect when you tap it, and your old address stops signing you in once it lands. Your password stays the same.</p>
     <label class="ple-lab">New email address<input id="pleNewEmail" type="email" autocomplete="email" placeholder="you@new-address.com"></label>
@@ -706,6 +707,68 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     </div>
   </div>
 </section>
+<!-- BUYER–SELLER MESSAGING (C18, 2026-11-20) — on-platform
+     conversations about listings, between the buyer who wrote and
+     the listing's seller only (the API enforces it: anyone else
+     gets a 404). Threads load from GET /pepper-lists/threads;
+     replies POST to /pepper-lists/threads/:id/messages; a party
+     can report a conversation to the Top Speed office. A listing
+     page's "Message the seller" button lands here as
+     pepperlists.com/?message=<reference> — after sign-in the
+     composer opens on that listing. Signed-in only (plmEnter /
+     plmHide, called from plEnterApp / plPublic). -->
+<style>
+.plm-item{display:block;width:100%;text-align:left;background:var(--panel2);border:1.5px solid #2c4232;border-radius:14px;padding:14px 16px;margin-bottom:10px;color:var(--ink);font:inherit;cursor:pointer}
+.plm-item:hover{border-color:rgba(183,227,60,.6)}
+.plm-item b{font-size:15.5px}
+.plm-item .plm-prev{display:block;color:var(--muted);font-size:13.5px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plm-item .plm-meta{display:block;color:var(--muted);font-size:12.5px;margin-top:4px}
+.plm-unread{display:inline-block;background:var(--lime);color:#101608;font-weight:800;font-size:11.5px;border-radius:999px;padding:1px 8px;margin-left:8px;vertical-align:2px}
+.plm-msg{border:1.5px solid #2c4232;border-radius:14px;padding:10px 14px;margin-bottom:8px;max-width:85%}
+.plm-msg.me{margin-left:auto;background:#22331f;border-color:rgba(183,227,60,.45)}
+.plm-msg p{margin:0;font-size:14.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.plm-msg .plm-when{display:block;color:var(--muted);font-size:12px;margin-top:5px}
+</style>
+<section class="plr" id="plMessages" style="display:none" aria-label="Pepper Lists messages">
+  <div class="plr-card">
+    <div class="plb-head">
+      <div class="plb-spark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 5h16v11H9l-5 4z"/></svg></div>
+      <div>
+        <h2>Your <span style="color:var(--lime)">messages</span></h2>
+        <p class="plr-sub">Conversations about Pepper Lists listings — with sellers when you're buying, with buyers when you're selling. Keep it on Pepper Lists: never pay by gift card or wire transfer, and never share payment details by message.</p>
+      </div>
+    </div>
+
+    <div class="plr-panel" id="plmComposePanel" style="display:none">
+      <h3 id="plmComposeTitle">Message the seller</h3>
+      <p class="plr-note">Write to the seller about this listing. They get an email that you wrote — the conversation itself stays here on Pepper Lists, where the office can help if anything goes wrong.</p>
+      <label class="plr-lab">Your message<textarea id="plmComposeBody" rows="3" maxlength="2000" placeholder="Hi — is this still available?"></textarea></label>
+      <p class="plr-msg" id="plmComposeMsg" role="status"></p>
+      <div class="plr-btnrow"><button class="btn" type="button" id="plmComposeBtn" onclick="plmComposeSend()">Send to seller</button></div>
+    </div>
+
+    <div class="plr-panel" id="plmListPanel">
+      <h3>Conversations</h3>
+      <div id="plmList"><p class="plr-note" style="margin:0">Loading your messages…</p></div>
+    </div>
+
+    <div class="plr-panel" id="plmThreadPanel" style="display:none">
+      <button class="btn small dark" type="button" onclick="plmBack()">&larr; All messages</button>
+      <h3 id="plmThreadTitle" style="margin-top:14px"></h3>
+      <p class="plr-note" id="plmThreadMeta"></p>
+      <div id="plmThreadMsgs"></div>
+      <div id="plmReplyBox">
+        <label class="plr-lab">Reply<textarea id="plmReplyBody" rows="3" maxlength="2000" placeholder="Write your message…"></textarea></label>
+        <p class="plr-msg" id="plmMsg" role="status"></p>
+        <div class="plr-btnrow">
+          <button class="btn" type="button" id="plmSendBtn" onclick="plmSend()">Send message</button>
+          <button class="btn small dark" type="button" id="plmReportBtn" onclick="plmReport()">Report this conversation</button>
+        </div>
+      </div>
+      <p class="plr-note" id="plmClosedNote" style="display:none">This conversation was closed by the Top Speed office.</p>
+    </div>
+  </div>
+</section>
 <!-- CHANNEL CONNECTIONS — Pepper Lists sellers connect the places
      they sell and post (Phase 1, 2026-11-17): the registry lives in
      the Service OS (GET/POST /pepper-lists/channels), scoped to the
@@ -1096,6 +1159,8 @@ function plPublic(){
   if(window.plbHide) plbHide();
   if(window.plrHide) plrHide();
   if(window.pleHide) pleHide();
+  if(window.plgHide) plgHide();
+  if(window.plmHide) plmHide();
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -1210,6 +1275,8 @@ function plEnterApp(u){
   if(window.plbEnter) plbEnter(u);
   if(window.plrEnter) plrEnter(u);
   if(window.pleEnter) pleEnter(u);
+  if(window.plgEnter) plgEnter(u);
+  if(window.plmEnter) plmEnter(u);
   if(plJustRegistered){
     /* Fresh sign-up on this page: welcome the new customer and point
        at Channel Connections + the Sell / Post entry points. Shown
@@ -1795,7 +1862,7 @@ function plsConfirm(){
     var d=j.data||{};
     var box=plsEl('plSellDone'); box.style.display='block';
     box.innerHTML='<b>Listing confirmed — it is with Pepper now.</b><br>Your reference is <b>'+plbEsc(d.reference||'')+'</b>. Pepper posts it to Facebook Marketplace from here; nothing was live before your confirm tap.';
-    if(d.reference){ PLX_REF=d.reference; box.innerHTML+=plxBlockHtml(d.reference); plxLoadStatus(); }
+    if(d.reference){ PLX_REF=d.reference; PLG_REF=d.reference; box.innerHTML+=plxBlockHtml(d.reference); plxLoadStatus(); box.innerHTML+=plgBlockHtml(d.reference); plgLoadStatus(); }
     box.scrollIntoView({behavior:'smooth',block:'nearest'});
   }).catch(function(e){
     plbMsg('plSellSummaryMsg',(e&&e.message)||'That did not post — check your connection and try again.',true);
@@ -2345,6 +2412,202 @@ function plchGrant(box,key){
       document.querySelectorAll('[data-plch-grant="'+key+'"]').forEach(function(b){ b.checked=granted; });
     })
     .catch(function(e){ box.checked=!granted; plchMsg(e.message||'Could not update the grant',true); });
+}
+</script>
+<script>
+/* ================================================================
+   PEPPER LISTS GROWTH (2026-11-20) — C16 syndication (eBay +
+   Google Shopping), the C17 storefront link, and C18 buyer–seller
+   messaging. Same honesty rules as the rest of the page: a channel
+   reads queued / posted / failed only from the server's record,
+   and a conversation is visible only to its two parties (the API
+   enforces it). plgEnter / plmEnter are called from plEnterApp;
+   plgHide / plmHide from plPublic.
+   ================================================================ */
+var PLG_REF=null, PLG_STATUS={};
+function plgEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function plgBlockHtml(ref){
+  return '<div style="margin-top:14px;border-top:1px solid rgba(183,227,60,.25);padding-top:12px">'
+    +'<p style="font-weight:700;margin:0 0 4px">Sell it in more places</p>'
+    +'<p style="color:var(--muted);font-size:13.5px;margin:0 0 10px">Send this listing to your own eBay or Google Shopping account too. The Top Speed office posts it under your account and the real result shows here — queued means waiting, posted means live with its link.</p>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +'<button class="btn small dark" type="button" onclick="plgQueue(\'EBAY\')">Send to eBay</button>'
+    +'<button class="btn small dark" type="button" onclick="plgQueue(\'GOOGLE_SHOPPING\')">Send to Google Shopping</button>'
+    +'<button class="btn small dark" type="button" onclick="plgFeedUrl()">Get my Google Shopping feed URL</button>'
+    +'</div>'
+    +'<p class="plx-line" id="plgLine-EBAY"></p>'
+    +'<p class="plx-line" id="plgLine-GOOGLE_SHOPPING"></p>'
+    +'<p class="plx-line" id="plgFeedLine"></p>'
+    +'</div>';
+}
+function plgStatusLine(ch){
+  var el=document.getElementById('plgLine-'+ch); if(!el) return;
+  var row=PLG_STATUS[ch];
+  var label=(ch==='EBAY')?'eBay':'Google Shopping';
+  if(!row){ el.textContent=''; return; }
+  if(row.status==='QUEUED'){ el.textContent=label+': queued — the office is posting it under your account.'; return; }
+  if(row.status==='POSTED'){
+    el.innerHTML='';
+    el.appendChild(document.createTextNode(label+': posted'+(row.postedAt?(' '+String(row.postedAt).slice(0,10)):'')+'. '));
+    if(row.externalUrl){ var a=document.createElement('a'); a.href=row.externalUrl; a.target='_blank'; a.rel='noopener'; a.style.color='var(--lime)'; a.style.fontWeight='700'; a.textContent='View it live'; el.appendChild(a); }
+    else if(row.externalId){ el.appendChild(document.createTextNode('Product ID: '+row.externalId)); }
+    return;
+  }
+  if(row.status==='FAILED'){ el.textContent=label+': could not post — '+(row.error||'the office will explain')+'. Fix it and send again.'; return; }
+  el.textContent='';
+}
+function plgLoadStatus(){
+  if(!PLG_REF) return;
+  plApi('/pepper-lists/listings/'+encodeURIComponent(PLG_REF)+'/syndication').then(function(j){
+    PLG_STATUS={};
+    ((j.data||{}).syndication||[]).forEach(function(r){ PLG_STATUS[r.channel]=r; });
+    plgStatusLine('EBAY'); plgStatusLine('GOOGLE_SHOPPING');
+  }).catch(function(){});
+}
+function plgQueue(ch){
+  if(!PLG_REF) return;
+  var el=document.getElementById('plgLine-'+ch);
+  plApi('/pepper-lists/listings/'+encodeURIComponent(PLG_REF)+'/syndication',{method:'POST',body:JSON.stringify({channel:ch})}).then(function(j){
+    PLG_STATUS[ch]=(j.data||{}).syndication; plgStatusLine(ch);
+  }).catch(function(e){
+    if(el) el.textContent=(e&&e.message)?e.message:'Could not queue it — try again.';
+    plgLoadStatus();
+  });
+}
+function plgFeedUrl(){
+  var el=document.getElementById('plgFeedLine'); if(!el) return;
+  el.textContent='Getting your feed URL…';
+  plApi('/pepper-lists/channels/GOOGLE_SHOPPING/feed-token',{method:'POST',body:'{}'}).then(function(j){
+    var d=j.data||{};
+    el.innerHTML='';
+    el.appendChild(document.createTextNode('Your Google Shopping feed URL (paste it into Google Merchant Center as your product feed): '));
+    var a=document.createElement('a'); a.href=d.feedUrl; a.target='_blank'; a.rel='noopener'; a.style.color='var(--lime)'; a.style.fontWeight='700'; a.textContent=d.feedUrl; el.appendChild(a);
+    el.appendChild(document.createTextNode(' Issuing a new one replaces and disables the old URL.'));
+  }).catch(function(e){ el.textContent=(e&&e.message)?e.message:'Could not get the feed URL — try again.'; });
+}
+/* The storefront link lives in the account card (plgStoreRow). */
+function plgEnter(u){
+  var row=document.getElementById('plgStoreRow'), link=document.getElementById('plgStoreLink');
+  if(row&&link&&u&&u.id){ link.href='https://pepperlists.com/seller/'+encodeURIComponent(u.id); link.textContent='pepperlists.com/seller/'+u.id; row.style.display=''; }
+}
+function plgHide(){ var row=document.getElementById('plgStoreRow'); if(row) row.style.display='none'; }
+
+/* ------------------------- C18 — messages ------------------------- */
+var PLM_OPEN=null, PLM_WANT=null;
+try{
+  var wantRef=new URLSearchParams(location.search).get('message');
+  if(wantRef){ PLM_WANT=wantRef; try{ sessionStorage.setItem('plm_want',wantRef); }catch(e){} }
+}catch(e){}
+function plmEnter(u){
+  var sec=document.getElementById('plMessages'); if(sec) sec.style.display='';
+  if(!PLM_WANT){ try{ PLM_WANT=sessionStorage.getItem('plm_want')||null; }catch(e){} }
+  if(PLM_WANT){
+    var ref=PLM_WANT; PLM_WANT=null;
+    try{ sessionStorage.removeItem('plm_want'); }catch(e){}
+    var panel=document.getElementById('plmComposePanel'); if(panel) panel.style.display='';
+    var title=document.getElementById('plmComposeTitle'); if(title) title.textContent='Message the seller — listing '+ref;
+    var secEl=document.getElementById('plMessages'); if(secEl) secEl.scrollIntoView({behavior:'smooth',block:'start'});
+    PLM_COMPOSE_REF=ref;
+  }
+  plmLoadList();
+}
+function plmHide(){ var sec=document.getElementById('plMessages'); if(sec) sec.style.display='none'; PLM_OPEN=null; }
+var PLM_COMPOSE_REF=null;
+function plmWhen(v){ if(!v) return ''; try{ return new Date(v).toLocaleString('en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }catch(e){ return ''; } }
+function plmLoadList(){
+  var box=document.getElementById('plmList'); if(!box) return;
+  plApi('/pepper-lists/threads').then(function(j){
+    var threads=(j.data||{}).threads||[];
+    if(!threads.length){ box.innerHTML='<p class="plr-note" style="margin:0">No conversations yet. When you message a seller — or a buyer writes about your listing — it shows up here.</p>'; return; }
+    box.innerHTML='';
+    threads.forEach(function(t){
+      var b=document.createElement('button'); b.type='button'; b.className='plm-item';
+      var title=(t.listing&&t.listing.title)?t.listing.title:'Listing removed';
+      var price=(t.listing&&t.listing.priceCents!=null)?(' · $'+(t.listing.priceCents/100).toFixed(2)):'';
+      var who=t.otherParty?t.otherParty.name:'';
+      var role=(t.role==='SELLER')?'Buyer: ':'Seller: ';
+      var head=document.createElement('b'); head.textContent=title+price;
+      if(t.unreadCount>0){ var un=document.createElement('span'); un.className='plm-unread'; un.textContent=t.unreadCount+' new'; head.appendChild(un); }
+      b.appendChild(head);
+      var prev=document.createElement('span'); prev.className='plm-prev';
+      prev.textContent=t.lastMessage?((t.lastMessage.senderIsMe?'You: ':'')+t.lastMessage.body):'No messages yet';
+      b.appendChild(prev);
+      var meta=document.createElement('span'); meta.className='plm-meta';
+      meta.textContent=role+who+(t.lastMessageAt?(' · '+plmWhen(t.lastMessageAt)):'')+(t.status==='REPORTED'?' · Reported to the office':(t.status==='CLOSED'?' · Closed by the office':''));
+      b.appendChild(meta);
+      b.addEventListener('click',function(){ plmOpen(t.id); });
+      box.appendChild(b);
+    });
+  }).catch(function(e){ box.innerHTML=''; var p=document.createElement('p'); p.className='plr-note'; p.style.margin='0'; p.textContent=(e&&e.message)?e.message:'Could not load your messages.'; box.appendChild(p); });
+}
+function plmRenderThread(d){
+  var t=d.thread||{}, msgs=d.messages||[];
+  PLM_OPEN=t.id;
+  var listPanel=document.getElementById('plmListPanel'); if(listPanel) listPanel.style.display='none';
+  var panel=document.getElementById('plmThreadPanel'); if(panel) panel.style.display='';
+  var title=document.getElementById('plmThreadTitle');
+  if(title) title.textContent=((t.listing&&t.listing.title)?t.listing.title:'Listing removed')+((t.listing&&t.listing.priceCents!=null)?(' — $'+(t.listing.priceCents/100).toFixed(2)):'');
+  var meta=document.getElementById('plmThreadMeta');
+  if(meta) meta.textContent='With '+(t.otherParty?t.otherParty.name:'')+(t.status==='REPORTED'?' · Reported to the office — they can review this conversation.':(t.status==='CLOSED'?' · Closed by the office.':''));
+  var box=document.getElementById('plmThreadMsgs'); if(!box) return;
+  box.innerHTML='';
+  msgs.forEach(function(m){
+    var div=document.createElement('div'); div.className='plm-msg'+(m.senderIsMe?' me':'');
+    var p=document.createElement('p'); p.textContent=m.body; div.appendChild(p);
+    var when=document.createElement('span'); when.className='plm-when';
+    when.textContent=(m.senderIsMe?'You':(m.senderName||''))+' · '+plmWhen(m.createdAt);
+    div.appendChild(when);
+    box.appendChild(div);
+  });
+  var closed=(t.status==='CLOSED');
+  var rb=document.getElementById('plmReplyBox'); if(rb) rb.style.display=closed?'none':'';
+  var cn=document.getElementById('plmClosedNote'); if(cn) cn.style.display=closed?'':'none';
+  var msg=document.getElementById('plmMsg'); if(msg) msg.textContent='';
+}
+function plmOpen(id){
+  plApi('/pepper-lists/threads/'+encodeURIComponent(id)).then(function(j){ plmRenderThread(j.data||{}); }).catch(function(e){ alert((e&&e.message)?e.message:'Could not open that conversation.'); });
+}
+function plmBack(){
+  PLM_OPEN=null;
+  var panel=document.getElementById('plmThreadPanel'); if(panel) panel.style.display='none';
+  var listPanel=document.getElementById('plmListPanel'); if(listPanel) listPanel.style.display='';
+  plmLoadList();
+}
+function plmSend(){
+  if(!PLM_OPEN) return;
+  var bodyEl=document.getElementById('plmReplyBody'); var body=bodyEl?bodyEl.value.trim():'';
+  var msg=document.getElementById('plmMsg');
+  if(!body){ if(msg) msg.textContent='Write a message first.'; return; }
+  var btn=document.getElementById('plmSendBtn'); if(btn) btn.disabled=true;
+  plApi('/pepper-lists/threads/'+encodeURIComponent(PLM_OPEN)+'/messages',{method:'POST',body:JSON.stringify({body:body})}).then(function(j){
+    if(bodyEl) bodyEl.value='';
+    plmRenderThread(j.data||{});
+  }).catch(function(e){ if(msg) msg.textContent=(e&&e.message)?e.message:'Could not send — try again.'; })
+  .finally(function(){ if(btn) btn.disabled=false; });
+}
+function plmReport(){
+  if(!PLM_OPEN) return;
+  var reason=prompt('Tell the office what is wrong with this conversation (optional):','') ;
+  if(reason===null) return;
+  plApi('/pepper-lists/threads/'+encodeURIComponent(PLM_OPEN)+'/report',{method:'POST',body:JSON.stringify({reason:reason||undefined})}).then(function(j){
+    var t=(j.data||{}).thread||{};
+    var meta=document.getElementById('plmThreadMeta');
+    if(meta) meta.textContent='Reported to the office — they can review this conversation and close it if it breaks the rules.';
+    var btn=document.getElementById('plmReportBtn'); if(btn) btn.disabled=true;
+  }).catch(function(e){ var msg=document.getElementById('plmMsg'); if(msg) msg.textContent=(e&&e.message)?e.message:'Could not file the report — try again.'; });
+}
+function plmComposeSend(){
+  if(!PLM_COMPOSE_REF) return;
+  var bodyEl=document.getElementById('plmComposeBody'); var body=bodyEl?bodyEl.value.trim():'';
+  var msg=document.getElementById('plmComposeMsg');
+  if(!body){ if(msg) msg.textContent='Write a message first.'; return; }
+  var btn=document.getElementById('plmComposeBtn'); if(btn) btn.disabled=true;
+  plApi('/pepper-lists/listings/'+encodeURIComponent(PLM_COMPOSE_REF)+'/messages',{method:'POST',body:JSON.stringify({body:body})}).then(function(j){
+    var panel=document.getElementById('plmComposePanel'); if(panel) panel.style.display='none';
+    PLM_COMPOSE_REF=null;
+    plmRenderThread(j.data||{});
+  }).catch(function(e){ if(msg) msg.textContent=(e&&e.message)?e.message:'Could not send — try again.'; })
+  .finally(function(){ if(btn) btn.disabled=false; });
 }
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>

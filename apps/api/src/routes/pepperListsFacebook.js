@@ -184,6 +184,7 @@ router.get('/pepper-lists/listings/:reference/view', async (req, res, next) => {
     ${listing.description ? `<p style="font-size:15px;line-height:1.65;color:#c8d2c4;margin:0 0 22px">${esc(listing.description)}</p>` : ''}
     ${ppBlock}
     <a href="https://pepperlists.com/" style="display:inline-block;background:#b7e33c;color:#101608;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:10px">See it on Pepper Lists</a>
+    <a href="https://pepperlists.com/?message=${encodeURIComponent(listing.reference)}" style="display:inline-block;border:1px solid #b7e33c;color:#b7e33c;font-weight:700;text-decoration:none;padding:12px 22px;border-radius:10px;margin-left:10px">Message the seller</a>
     <p style="font-size:13px;color:#8fa188;margin-top:26px">Pepper Lists It by Top Speed OS — Fort Lauderdale, FL. Message the seller through Pepper Lists.</p>
   </main>
 </body>

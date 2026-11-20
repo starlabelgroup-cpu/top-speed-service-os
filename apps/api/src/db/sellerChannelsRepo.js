@@ -109,6 +109,28 @@ const prismaRepo = {
       granted ? 'Seller granted the Pepper Lists agent access to this channel' : 'Seller revoked the Pepper Lists agent access to this channel');
     return row;
   },
+  // Phase 2 syndication support (2026-11-20, C16): read a seller's
+  // row for one channel WITHOUT creating it (the syndication gate
+  // must distinguish "no request on file" from a filed request),
+  // list a channel's rows (the Google Shopping feed-token lookup),
+  // and merge non-secret context into `meta` (the feed token's HASH
+  // — the raw token is shown to the seller once and never stored).
+  async findForUserChannel(userId, channel) {
+    return db().sellerChannelConnection.findUnique({
+      where: { userId_channel: { userId, channel } },
+    });
+  },
+  async listByChannel(channel) {
+    return db().sellerChannelConnection.findMany({ where: { channel } });
+  },
+  async setMeta(userId, channel, kind, metaPatch) {
+    const existing = await this.ensure(userId, channel, kind);
+    const meta = { ...(existing.meta && typeof existing.meta === 'object' ? existing.meta : {}), ...metaPatch };
+    return db().sellerChannelConnection.update({
+      where: { id: existing.id },
+      data: { meta },
+    });
+  },
   async listAll() {
     return db().sellerChannelConnection.findMany({
       orderBy: { updatedAt: 'desc' },
@@ -166,6 +188,19 @@ const memoryRepo = {
     memoryWriteAudit(row.id, userId,
       granted ? AUDIT.AGENT_ACCESS_GRANTED : AUDIT.AGENT_ACCESS_REVOKED,
       granted ? 'Seller granted the Pepper Lists agent access to this channel' : 'Seller revoked the Pepper Lists agent access to this channel');
+    return row;
+  },
+  // Phase 2 syndication support (2026-11-20, C16) — see prismaRepo.
+  async findForUserChannel(userId, channel) {
+    return memoryConnections.find((c) => c.userId === userId && c.channel === channel) || null;
+  },
+  async listByChannel(channel) {
+    return memoryConnections.filter((c) => c.channel === channel);
+  },
+  async setMeta(userId, channel, kind, metaPatch) {
+    const row = memoryEnsure(userId, channel, kind);
+    row.meta = { ...(row.meta && typeof row.meta === 'object' ? row.meta : {}), ...metaPatch };
+    row.updatedAt = new Date().toISOString();
     return row;
   },
   async listAll() {

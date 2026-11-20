@@ -67,6 +67,12 @@ export const INTAKE_RATE_LIMITS = {
   // for a customer on a phone (page loads, a retry or two, the
   // decision) rather than an intake form.
   estimateApproval: { limit: 60, windowMs: 60 * 60 * 1000 },
+  // Pepper Lists buyer–seller messaging (2026-11-20, C18): signed-in
+  // message sends are consumed per ACCOUNT via consumeIntakeAttempt
+  // in routes/pepperListsGrowth.js (the intake middleware skips
+  // authenticated requests, so the cap is enforced in-handler). A
+  // generous hourly cap: real conversation is fine, floods are not.
+  pepperListsMessage: { limit: 30, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */
