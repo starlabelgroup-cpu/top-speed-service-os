@@ -161,6 +161,16 @@ app.use('/api/v1/pepper-lists', express.json({ limit: '30mb' }));
 // data URL (route-capped at 6 MB decoded ≈ 8.4 MB of JSON), so that
 // path gets its own parser before the global one — same pattern.
 app.use('/api/v1/ad-studio/my-creatives', express.json({ limit: '10mb' }));
+// Appliance Plug plate reads and job repair photos carry a base64
+// photo (route schemas cap imageDataUrl/dataUrl at 12,000,000 chars)
+// under /provider/assignments, and the Pepper photo read carries the
+// same under /pepper/photo — both get their own parser before the
+// global one, same pattern. Without these, every real camera photo
+// (a device JPEG is 1-4 MB) died against the global 100kb parser and
+// surfaced as a bare 500 "Internal server error" (the 2026-11-20
+// Appliance Plug incident — the first real plate read).
+app.use('/api/v1/provider/assignments', express.json({ limit: '14mb' }));
+app.use('/api/v1/pepper/photo', express.json({ limit: '14mb' }));
 // Twilio voice webhooks post application/x-www-form-urlencoded, which the
 // JSON parsers below would leave unparsed; give that path its own parser.
 app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));
@@ -310,6 +320,15 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
+  // Body-parser failures are client errors with honest messages —
+  // never flatten them into a bare 500 (an oversized photo upload
+  // reading "Internal server error" was the 2026-11-20 Plug incident).
+  if (error?.type === 'entity.too.large') {
+    return res.status(413).json({ error: 'That upload is too large — retake the photo or pick a smaller one' });
+  }
+  if (error?.type === 'entity.parse.failed') {
+    return res.status(400).json({ error: 'That request body was not valid JSON' });
+  }
   console.error(error);
   res.status(500).json({ error: 'Internal server error' });
 });
