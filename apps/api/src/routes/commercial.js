@@ -118,7 +118,7 @@ function publicWorkOrder(workOrder) {
 /* Accounts                                                            */
 /* ------------------------------------------------------------------ */
 
-router.post('/commercial/accounts', authenticate, requireCompany, (req, res) => {
+router.post('/commercial/accounts', authenticate, requireCompany, async (req, res) => {
   const parsed = accountSchema.safeParse(req.body);
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid commercial account', details: parsed.error.flatten() });
@@ -140,7 +140,7 @@ router.post('/commercial/accounts', authenticate, requireCompany, (req, res) => 
     updatedAt: now,
   };
   store.commercialAccounts.set(account.id, account);
-  appendEvent('COMMERCIAL_ACCOUNT_CREATED', {
+  await appendEvent('COMMERCIAL_ACCOUNT_CREATED', {
     source: 'COMMERCIAL',
     actor: req.user.id,
     entityType: 'COMMERCIAL_ACCOUNT',
@@ -167,7 +167,7 @@ router.get('/commercial/accounts/:id', ...staffOnly, (req, res) => {
 /* Facilities                                                          */
 /* ------------------------------------------------------------------ */
 
-router.post('/commercial/accounts/:id/facilities', ...staffOnly, (req, res) => {
+router.post('/commercial/accounts/:id/facilities', ...staffOnly, async (req, res) => {
   const account = findAccount(req, req.params.id);
   if (!account) return res.status(404).json({ error: 'Commercial account not found' });
 
@@ -197,7 +197,7 @@ router.post('/commercial/accounts/:id/facilities', ...staffOnly, (req, res) => {
     updatedAt: now,
   };
   store.commercialFacilities.set(facility.id, facility);
-  appendEvent('COMMERCIAL_FACILITY_ADDED', {
+  await appendEvent('COMMERCIAL_FACILITY_ADDED', {
     source: 'COMMERCIAL',
     actor: req.user.id,
     entityType: 'COMMERCIAL_FACILITY',
@@ -225,7 +225,7 @@ router.get('/commercial/accounts/:id/facilities', ...staffOnly, (req, res) => {
 /* Equipment registry                                                  */
 /* ------------------------------------------------------------------ */
 
-router.post('/commercial/facilities/:facilityId/equipment', ...staffOnly, (req, res) => {
+router.post('/commercial/facilities/:facilityId/equipment', ...staffOnly, async (req, res) => {
   const facility = findFacility(req, req.params.facilityId);
   if (!facility) return res.status(404).json({ error: 'Facility not found' });
 
@@ -252,7 +252,7 @@ router.post('/commercial/facilities/:facilityId/equipment', ...staffOnly, (req, 
     updatedAt: now,
   };
   store.commercialEquipment.set(unit.id, unit);
-  appendEvent('COMMERCIAL_EQUIPMENT_REGISTERED', {
+  await appendEvent('COMMERCIAL_EQUIPMENT_REGISTERED', {
     source: 'COMMERCIAL',
     actor: req.user.id,
     entityType: 'COMMERCIAL_EQUIPMENT',
@@ -272,7 +272,7 @@ router.get('/commercial/facilities/:facilityId/equipment', ...staffOnly, (req, r
   return res.json({ data: equipment });
 });
 
-router.patch('/commercial/equipment/:id/status', ...staffOnly, (req, res) => {
+router.patch('/commercial/equipment/:id/status', ...staffOnly, async (req, res) => {
   const unit = store.commercialEquipment.get(req.params.id);
   if (!unit || (!isAdmin(req) && unit.companyId !== req.companyId)) {
     return res.status(404).json({ error: 'Equipment not found' });
@@ -287,7 +287,7 @@ router.patch('/commercial/equipment/:id/status', ...staffOnly, (req, res) => {
   unit.status = status;
   unit.updatedAt = now;
   unit.statusHistory.push({ status, at: now, changedBy, note: note || null, from: previousStatus });
-  appendEvent('EQUIPMENT_STATUS_CHANGED', {
+  await appendEvent('EQUIPMENT_STATUS_CHANGED', {
     source: 'COMMERCIAL',
     actor: changedBy,
     entityType: 'COMMERCIAL_EQUIPMENT',
@@ -352,7 +352,7 @@ router.post('/commercial/work-orders', ...staffOnly, async (req, res) => {
   workOrder.bookingReferenceCode = booking.referenceCode;
   store.commercialWorkOrders.set(workOrder.id, workOrder);
 
-  appendEvent('COMMERCIAL_WORK_ORDER_CREATED', {
+  await appendEvent('COMMERCIAL_WORK_ORDER_CREATED', {
     source: 'COMMERCIAL',
     actor: req.user.id,
     entityType: 'COMMERCIAL_WORK_ORDER',

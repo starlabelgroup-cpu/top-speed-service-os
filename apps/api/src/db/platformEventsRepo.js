@@ -17,11 +17,14 @@ import { DATABASE_ENABLED, db } from './client.js';
  * when it is not. This module deliberately does NOT import
  * data/store.js (store.js imports it — no cycles).
  *
- * Persistence is fire-and-forget from appendEvent's side: a feed
- * write must never fail or slow the business flow that produced the
- * event, so persistPlatformEvent swallows its own errors after a
- * console line. The in-memory copy is kept in BOTH modes so a reader
- * in the same process always sees the events it just wrote.
+ * Persistence is awaited from appendEvent's side (2026-11-19 race
+ * fix): when an appendEvent call completes, the event is durable, so
+ * a reader in another process — or the next request — always sees
+ * it. The write stays fail-soft: persistPlatformEvent swallows its
+ * own errors after a console line, so a feed problem can never fail
+ * the business flow that produced the event. The in-memory copy is
+ * kept in BOTH modes so a reader in the same process always sees
+ * the events it just wrote.
  *
  * Privacy: details is an operational summary, not a customer record.
  * Contact-shaped keys are scrubbed before a row is written and the
@@ -85,30 +88,36 @@ function toRow(event) {
 
 /**
  * Write one appendEvent event through to the durable feed. Never
- * throws: the business flow that produced the event has already
- * succeeded and must not learn about a feed problem.
+ * throws and never rejects: the business flow that produced the
+ * event has already succeeded and must not learn about a feed
+ * problem. Awaited by appendEvent so a completed append means the
+ * event is readable from the durable feed (the 2026-11-19 race fix
+ * — previously this insert floated un-awaited and an immediate read
+ * could miss the event).
  */
-export function persistPlatformEvent(event) {
+export async function persistPlatformEvent(event) {
   try {
     const row = toRow(event);
     memoryEvents.push({ ...row, createdAt: row.createdAt.toISOString() });
     if (memoryEvents.length > 5000) memoryEvents.splice(0, memoryEvents.length - 5000);
     if (!DATABASE_ENABLED) return;
-    db().platformEvent.create({
-      data: {
-        id: row.id,
-        type: row.type,
-        source: row.source,
-        actor: row.actor,
-        entityType: row.entityType,
-        entityId: row.entityId,
-        referenceCode: row.referenceCode,
-        details: row.details,
-        createdAt: row.createdAt,
-      },
-    }).catch((error) => {
+    try {
+      await db().platformEvent.create({
+        data: {
+          id: row.id,
+          type: row.type,
+          source: row.source,
+          actor: row.actor,
+          entityType: row.entityType,
+          entityId: row.entityId,
+          referenceCode: row.referenceCode,
+          details: row.details,
+          createdAt: row.createdAt,
+        },
+      });
+    } catch (error) {
       console.error(JSON.stringify({ level: 'error', message: 'platform event persist failed', type: row.type, error: String(error?.message || error) }));
-    });
+    }
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'platform event persist failed', error: String(error?.message || error) }));
   }

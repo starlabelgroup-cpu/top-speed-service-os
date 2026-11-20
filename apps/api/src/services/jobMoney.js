@@ -239,7 +239,7 @@ export async function saveEstimateForJob(booking, input, ctx) {
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('ESTIMATE_SAVED', {
+  await appendEvent('ESTIMATE_SAVED', {
     source: ctx.source,
     actor: ctx.actor,
     entityType: 'BOOKING',
@@ -266,7 +266,7 @@ export async function authorizeEstimateForJob(booking, input, ctx) {
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('ESTIMATE_APPROVED', {
+  await appendEvent('ESTIMATE_APPROVED', {
     source: ctx.source,
     actor: ctx.actor,
     entityType: 'BOOKING',
@@ -303,7 +303,7 @@ export async function recordEstimateDecisionForJob(booking, input, ctx) {
   }
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent(input.decision === 'APPROVED' ? 'ESTIMATE_APPROVED' : 'ESTIMATE_DECLINED', {
+  await appendEvent(input.decision === 'APPROVED' ? 'ESTIMATE_APPROVED' : 'ESTIMATE_DECLINED', {
     source: ctx.source,
     actor: ctx.actor,
     entityType: 'BOOKING',
@@ -360,7 +360,7 @@ export async function generateInvoiceForJob(booking, ctx) {
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('INVOICE_GENERATED', {
+  await appendEvent('INVOICE_GENERATED', {
     source: ctx.source,
     actor: ctx.actor,
     entityType: 'BOOKING',
@@ -403,7 +403,7 @@ export async function recordReceiptForJob(booking, input, ctx) {
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('RECEIPT_RECORDED', {
+  await appendEvent('RECEIPT_RECORDED', {
     source: ctx.source,
     actor: ctx.actor,
     entityType: 'BOOKING',

@@ -126,7 +126,7 @@ export async function createCommercialBooking({ companyId, account, facility, eq
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source: 'COMMERCIAL',
     actor: 'commercial:work-order',
     entityType: 'BOOKING',

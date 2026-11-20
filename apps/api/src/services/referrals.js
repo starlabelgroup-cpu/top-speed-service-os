@@ -216,7 +216,7 @@ export async function createInvite({ code, friendName, phone = null, email = nul
     refereeEmail: email,
     status: 'INVITED',
   });
-  appendEvent('REFERRAL_JOURNEY_CREATED', {
+  await appendEvent('REFERRAL_JOURNEY_CREATED', {
     source,
     actor: 'referral-program',
     entityType: 'REFERRAL_JOURNEY',
@@ -260,7 +260,7 @@ export async function recordReferralLead({ code, name = null, phone = null, emai
     refereeEmail: email,
     status: 'INVITED',
   });
-  appendEvent('REFERRAL_LEAD_RECORDED', {
+  await appendEvent('REFERRAL_LEAD_RECORDED', {
     source: source || 'connections',
     actor: 'referral-program',
     entityType: 'REFERRAL_JOURNEY',
@@ -350,7 +350,7 @@ export async function attachReferralToBooking({ code, booking, refereeCustomer =
   }
 
   await persistQuietly('referral booking persist failed', () => persistBooking(booking));
-  appendEvent('REFERRAL_BOOKED', {
+  await appendEvent('REFERRAL_BOOKED', {
     source: source || booking.source || null,
     actor: 'referral-program',
     entityType: 'BOOKING',
@@ -435,7 +435,7 @@ export async function advanceReferralOnCompletion(booking, source = null) {
   }
   await persistQuietly('referral journey persist failed', () => persistReferralJourney(journey));
 
-  appendEvent('REFERRAL_COMPLETED', {
+  await appendEvent('REFERRAL_COMPLETED', {
     source: source || booking.source || null,
     actor: 'referral-program',
     entityType: 'REFERRAL_JOURNEY',
@@ -541,7 +541,7 @@ export async function approveReward(journeyId, staffUser, amountCentsOverride = 
 
   const referral = resolveCode(journey.code);
   if (referral) notifyReferralRewardApproved(referral, journey, credit, bonusCredit);
-  appendEvent('REFERRAL_REWARD_APPROVED', {
+  await appendEvent('REFERRAL_REWARD_APPROVED', {
     actor: staffActor(staffUser),
     entityType: 'REFERRAL_JOURNEY',
     entityId: journey.id,
@@ -584,7 +584,7 @@ export async function rejectReward(journeyId, staffUser, note = null) {
     consolePath: '/portal',
     eventKeyBase: `referral-journey:${journey.id}:rejected`,
   });
-  appendEvent('REFERRAL_REWARD_REJECTED', {
+  await appendEvent('REFERRAL_REWARD_REJECTED', {
     actor: staffActor(staffUser),
     entityType: 'REFERRAL_JOURNEY',
     entityId: journey.id,
@@ -624,7 +624,7 @@ export async function redeemCredit(creditId, bookingReference = null, staffUser 
     journey.status = 'REDEEMED';
     await persistQuietly('referral journey persist failed', () => persistReferralJourney(journey));
   }
-  appendEvent('REFERRAL_CREDIT_REDEEMED', {
+  await appendEvent('REFERRAL_CREDIT_REDEEMED', {
     actor: staffActor(staffUser),
     entityType: 'REFERRAL_CREDIT',
     entityId: credit.id,
@@ -818,7 +818,7 @@ export async function setReferralTrack(code, track, staffUser = null) {
   }
   referral.track = next;
   await persistQuietly('referral track persist failed', () => persistReferral(referral));
-  appendEvent('REFERRAL_TRACK_SET', {
+  await appendEvent('REFERRAL_TRACK_SET', {
     actor: staffActor(staffUser),
     entityType: 'REFERRAL',
     entityId: referral.code,
@@ -956,7 +956,7 @@ export async function sweepReferralCreditExpiry() {
           await persistQuietly('referral journey expiry persist failed', () => persistReferralJourney(journey));
         }
       }
-      appendEvent('REFERRAL_CREDIT_EXPIRED', {
+      await appendEvent('REFERRAL_CREDIT_EXPIRED', {
         actor: 'referral-program',
         entityType: 'REFERRAL_CREDIT',
         entityId: credit.id,

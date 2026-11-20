@@ -364,7 +364,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source: booking.source,
     actor: booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form',
     entityType: 'BOOKING',

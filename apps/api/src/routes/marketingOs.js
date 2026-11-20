@@ -596,7 +596,7 @@ router.post('/marketing-os/admin/pages', ...marketingOnly, async (req, res) => {
   store.landingPages.push(page);
   await persistLandingPage(page);
   await addVersion(page, parsed.data.note || 'Initial draft', actorOf(req));
-  appendEvent('MARKETING_PAGE_CREATED', {
+  await appendEvent('MARKETING_PAGE_CREATED', {
     source: 'page-studio',
     actor: actorOf(req),
     entityType: 'LANDING_PAGE',
@@ -684,7 +684,7 @@ router.post('/marketing-os/admin/pages/:id/status', ...marketingOnly, async (req
   if (target === 'PUBLISHED') {
     await addVersion(page, parsed.data.note || 'Published', actorOf(req));
   }
-  appendEvent(`MARKETING_PAGE_${target}`, {
+  await appendEvent(`MARKETING_PAGE_${target}`, {
     source: 'page-studio',
     actor: actorOf(req),
     entityType: 'LANDING_PAGE',

@@ -153,7 +153,7 @@ router.post('/marketing-os/google-accounts', ...marketingOnly, async (req, res) 
   };
   store.googleAccountLinks.push(link);
   await persistGoogleAccountLink(link);
-  appendEvent('GOOGLE_ACCOUNT_ADDED', {
+  await appendEvent('GOOGLE_ACCOUNT_ADDED', {
     source: 'marketing-os-google-accounts',
     actor: req.user?.email || null,
     entityType: 'googleAccountLink',
@@ -174,7 +174,7 @@ router.patch('/marketing-os/google-accounts/:id', ...marketingOnly, async (req, 
   Object.assign(link, parsed.data, { updatedAt: new Date().toISOString() });
   await persistGoogleAccountLink(link);
   if (parsed.data.status && parsed.data.status !== previousStatus) {
-    appendEvent('GOOGLE_ACCOUNT_STATUS_CHANGED', {
+    await appendEvent('GOOGLE_ACCOUNT_STATUS_CHANGED', {
       source: 'marketing-os-google-accounts',
       actor: req.user?.email || null,
       entityType: 'googleAccountLink',
@@ -196,7 +196,7 @@ router.delete('/marketing-os/google-accounts/:id', ...marketingOnly, async (req,
     link.status = 'REVOKED';
     link.updatedAt = new Date().toISOString();
     await persistGoogleAccountLink(link);
-    appendEvent('GOOGLE_ACCOUNT_REVOKED', {
+    await appendEvent('GOOGLE_ACCOUNT_REVOKED', {
       source: 'marketing-os-google-accounts',
       actor: req.user?.email || null,
       entityType: 'googleAccountLink',

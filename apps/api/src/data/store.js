@@ -299,12 +299,21 @@ export function createWorkOrderCode() {
  * Platform Interconnect (2026-11-19): the same event is also written
  * through to the durable PlatformEvent table (db/platformEventsRepo)
  * at this — the feed's single write point — so the timeline survives
- * serverless instance turnover. Callers keep calling appendEvent
- * exactly as before, at the same success points; there is one write
- * per event, never two. The persist is fire-and-forget: it cannot
- * fail or slow the flow that produced the event.
+ * serverless instance turnover. Callers call appendEvent at the same
+ * success points; there is one write per event, never two.
+ *
+ * Race fix (2026-11-19): appendEvent is async and AWAITS the durable
+ * write, so when an appendEvent call completes the event is readable
+ * from the durable feed — an immediate GET /platform/events can no
+ * longer miss it. The persist stays fail-soft (persistPlatformEvent
+ * never rejects), so awaiting it cannot fail the flow that produced
+ * the event. The few synchronous helpers that cannot await (the
+ * notification queue, referral-code issue, Speedy governance log)
+ * still call it un-awaited: their in-memory copies update
+ * synchronously and the durable write is initiated immediately,
+ * exactly as before.
  */
-export function appendEvent(type, { source = null, actor = null, entityType = null, entityId = null, referenceCode = null, details = {} } = {}) {
+export async function appendEvent(type, { source = null, actor = null, entityType = null, entityId = null, referenceCode = null, details = {} } = {}) {
   const event = {
     id: createId(),
     type,
@@ -317,6 +326,6 @@ export function appendEvent(type, { source = null, actor = null, entityType = nu
     details,
   };
   store.events.push(event);
-  persistPlatformEvent(event);
+  await persistPlatformEvent(event);
   return event;
 }

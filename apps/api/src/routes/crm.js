@@ -404,7 +404,7 @@ router.post('/crm/customers/:id/notes', ...staffOnly, async (req, res) => {
   };
   store.crmNotes.push(note);
   await persistCrmNote(note);
-  appendEvent('CRM_NOTE_ADDED', {
+  await appendEvent('CRM_NOTE_ADDED', {
     actor: note.author,
     entityType: 'CUSTOMER',
     entityId: customer.id,
@@ -443,7 +443,7 @@ router.post('/crm/pipeline/:connectionId/stage', ...staffOnly, async (req, res) 
   }
   connection.pipelineStage = parsed.data.stage;
   await persistConnection(connection);
-  appendEvent('CRM_PIPELINE_STAGE_SET', {
+  await appendEvent('CRM_PIPELINE_STAGE_SET', {
     actor: staffName(req),
     entityType: 'CONNECTION',
     entityId: connection.id,
@@ -466,7 +466,7 @@ router.post('/crm/customers/:id/flag', ...staffOnly, async (req, res) => {
   }
   customer.crmFlag = parsed.data.flag;
   await persistCustomer(customer);
-  appendEvent('CRM_CUSTOMER_FLAG_SET', {
+  await appendEvent('CRM_CUSTOMER_FLAG_SET', {
     actor: staffName(req),
     entityType: 'CUSTOMER',
     entityId: customer.id,
@@ -514,7 +514,7 @@ const draftSchema = z.object({
   bookingId: z.string().uuid().optional(),
 });
 
-router.post('/crm/customers/:id/speedy-draft', ...staffOnly, (req, res) => {
+router.post('/crm/customers/:id/speedy-draft', ...staffOnly, async (req, res) => {
   const customer = store.customers.get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
   const parsed = draftSchema.safeParse(req.body || {});
@@ -546,7 +546,7 @@ router.post('/crm/customers/:id/speedy-draft', ...staffOnly, (req, res) => {
       draft = `Hi ${firstName}, this is Top Speed Appliance following up${booking ? ` on your ${booking.appliance} request (${booking.referenceCode})` : ''}. A Service Setter can help you from here — reply to this message or call (844) 460-7038.`;
     }
   }
-  appendEvent('SPEEDY_DRAFT_CREATED', {
+  await appendEvent('SPEEDY_DRAFT_CREATED', {
     actor: staffName(req),
     entityType: 'CUSTOMER',
     entityId: customer.id,

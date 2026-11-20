@@ -208,7 +208,7 @@ router.post('/media-os/admin/content', ...mediaOnly, async (req, res) => {
   };
   store.mediaContent.push(record);
   await persistMediaContent(record);
-  appendEvent('MEDIA_CONTENT_CREATED', {
+  await appendEvent('MEDIA_CONTENT_CREATED', {
     source: 'media-os-console',
     actor: actorOf(req),
     entityType: 'MEDIA_CONTENT',
@@ -281,7 +281,7 @@ router.post('/media-os/admin/content/:id/status', ...mediaOnly, async (req, res)
   }
   if (target === 'PUBLISHED') record.publishedAt = record.updatedAt;
   await persistMediaContent(record);
-  appendEvent(`MEDIA_CONTENT_${target}`, {
+  await appendEvent(`MEDIA_CONTENT_${target}`, {
     source: 'media-os-console',
     actor: actorOf(req),
     entityType: 'MEDIA_CONTENT',
@@ -340,7 +340,7 @@ router.post('/media-os/admin/assets', ...mediaOnly, async (req, res) => {
   };
   store.mediaAssets.push(record);
   await persistMediaAsset(record);
-  appendEvent('MEDIA_ASSET_CREATED', {
+  await appendEvent('MEDIA_ASSET_CREATED', {
     source: 'media-os-console',
     actor: actorOf(req),
     entityType: 'MEDIA_ASSET',
@@ -429,7 +429,7 @@ router.post('/media-os/creator/content', ...creatorOnly, async (req, res) => {
   };
   store.mediaContent.push(record);
   await persistMediaContent(record);
-  appendEvent('MEDIA_CONTENT_CREATED', {
+  await appendEvent('MEDIA_CONTENT_CREATED', {
     source: 'media-os-creator',
     actor: actorOf(req),
     entityType: 'MEDIA_CONTENT',
@@ -477,7 +477,7 @@ router.post('/media-os/creator/content/:id/submit', ...creatorOnly, async (req, 
   record.updatedBy = actorOf(req);
   record.updatedAt = new Date().toISOString();
   await persistMediaContent(record);
-  appendEvent('MEDIA_CONTENT_IN_REVIEW', {
+  await appendEvent('MEDIA_CONTENT_IN_REVIEW', {
     source: 'media-os-creator',
     actor: actorOf(req),
     entityType: 'MEDIA_CONTENT',
@@ -530,7 +530,7 @@ router.post('/media-os/creator/assets', ...creatorOnly, async (req, res) => {
   };
   store.mediaAssets.push(record);
   await persistMediaAsset(record);
-  appendEvent('MEDIA_ASSET_CREATED', {
+  await appendEvent('MEDIA_ASSET_CREATED', {
     source: 'media-os-creator',
     actor: actorOf(req),
     entityType: 'MEDIA_ASSET',

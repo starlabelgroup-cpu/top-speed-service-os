@@ -167,7 +167,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source: booking.source,
     actor: req.user.id,
     entityType: 'BOOKING',
@@ -277,7 +277,7 @@ router.post(
 
     const result = matchProviders(booking);
     booking.updatedAt = new Date().toISOString();
-    appendEvent('DISPATCH_MATCHED', {
+    await appendEvent('DISPATCH_MATCHED', {
       source: booking.source || null,
       actor: 'system:auto-match',
       entityType: 'BOOKING',
@@ -323,7 +323,7 @@ router.post(
     }
 
     booking.updatedAt = new Date().toISOString();
-    appendEvent('DISPATCH_APPROVED', {
+    await appendEvent('DISPATCH_APPROVED', {
       source: booking.source || null,
       actor: parsed.data.approvedBy,
       entityType: 'BOOKING',
@@ -374,7 +374,7 @@ router.post(
     addBookingEvent(booking, 'JOB_COMPLETED', parsed.data.completedBy, {
       notes: parsed.data.notes || null,
     });
-    appendEvent('JOB_COMPLETED', {
+    await appendEvent('JOB_COMPLETED', {
       source: booking.source || null,
       actor: parsed.data.completedBy,
       entityType: 'BOOKING',

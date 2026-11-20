@@ -187,7 +187,7 @@ router.post('/tracking/console/:reference/assign', ...staffOnly, async (req, res
   await persistAssignmentsForBooking(booking.id);
   notifyDispatchApproved(booking, assignment, 'TRACKING_CONSOLE');
   notifyBookingAssigned(booking, assignment, 'TRACKING_CONSOLE');
-  appendEvent('TRACKING_ASSIGN', {
+  await appendEvent('TRACKING_ASSIGN', {
     source: 'TRACKING_CONSOLE',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -287,7 +287,7 @@ router.post('/tracking/console/:reference/stage', ...staffOnly, async (req, res)
       // Referral issuance/advancement must never block a completion.
     }
   }
-  appendEvent('TRACKING_STAGE', {
+  await appendEvent('TRACKING_STAGE', {
     source: 'TRACKING_CONSOLE',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -331,7 +331,7 @@ router.post('/tracking/console/:reference/tracking-link', ...staffOnly, async (r
     createdAt: new Date().toISOString(),
   };
   await persistTrackingToken(record);
-  appendEvent('TRACKING_LINK_ISSUED', {
+  await appendEvent('TRACKING_LINK_ISSUED', {
     source: 'TRACK_CONSOLE',
     actor: req.user.email,
     entityType: 'BOOKING',

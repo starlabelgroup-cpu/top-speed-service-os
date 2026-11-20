@@ -210,7 +210,7 @@ export async function ingestReceivedEmail(data) {
   };
   store.inboxMessages.push(message);
   await persistInboxMessage(message);
-  appendEvent('INBOX_EMAIL_RECEIVED', {
+  await appendEvent('INBOX_EMAIL_RECEIVED', {
     source: 'resend-webhook',
     actor: 'resend',
     entityType: 'INBOX_MESSAGE',
@@ -299,7 +299,7 @@ export async function sendInboxReply(original, { body, author }) {
   store.inboxMessages.push(outbound);
   await persistInboxMessage(outbound);
   await updateInboxMessageStatus(original, 'REPLIED');
-  appendEvent('INBOX_EMAIL_REPLIED', {
+  await appendEvent('INBOX_EMAIL_REPLIED', {
     source: 'book-os-inbox',
     actor: author || 'staff',
     entityType: 'INBOX_MESSAGE',
@@ -344,7 +344,7 @@ export async function sendComposedEmail({ fromAddress, to, subject, body, author
   };
   store.inboxMessages.push(outbound);
   await persistInboxMessage(outbound);
-  appendEvent('INBOX_EMAIL_COMPOSED', {
+  await appendEvent('INBOX_EMAIL_COMPOSED', {
     source: 'book-os-inbox',
     actor: author || 'staff',
     entityType: 'INBOX_MESSAGE',

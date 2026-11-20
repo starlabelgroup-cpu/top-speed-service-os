@@ -414,7 +414,7 @@ router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
   };
   booking.updatedAt = booking.appointment.setAt;
   addBookingEvent(booking, 'APPOINTMENT_SET', setBy, { date, window });
-  appendEvent('APPOINTMENT_SET', {
+  await appendEvent('APPOINTMENT_SET', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
@@ -483,7 +483,7 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (r
   };
   booking.updatedAt = booking.appointment.setAt;
   addBookingEvent(booking, 'APPOINTMENT_RESCHEDULED', rescheduledBy, { from: previous, to: { date, window }, reason: reason || null });
-  appendEvent('APPOINTMENT_RESCHEDULED', {
+  await appendEvent('APPOINTMENT_RESCHEDULED', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
@@ -511,7 +511,7 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (r
  * for every booking with an appointment SET on the given date whose job
  * is not completed yet.
  */
-router.post('/bookos/reminders/run', ...staffOnly, (req, res) => {
+router.post('/bookos/reminders/run', ...staffOnly, async (req, res) => {
   const parsed = remindersSchema.safeParse(req.body || {});
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid reminder run', details: parsed.error.flatten() });
@@ -530,7 +530,7 @@ router.post('/bookos/reminders/run', ...staffOnly, (req, res) => {
       queued.push({ bookingId: booking.id, notificationId: entry.id, channel: entry.channel, to: entry.to });
     }
   }
-  appendEvent('APPOINTMENT_REMINDERS_RUN', {
+  await appendEvent('APPOINTMENT_REMINDERS_RUN', {
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
     details: { team: 'Service Setters', date, bookingsReminded: targets.length, notificationsQueued: queued.length },
@@ -715,7 +715,7 @@ router.post('/bookos/bookings/:id/resolve-area', ...staffOnly, async (req, res) 
   booking.areaStatus = 'IN_AREA';
   booking.updatedAt = new Date().toISOString();
   addBookingEvent(booking, 'AREA_RESOLVED_BY_SETTER', parsed.data.resolvedBy, { area, previousStatus: 'AREA_REVIEW' });
-  appendEvent('AREA_RESOLVED_BY_SETTER', {
+  await appendEvent('AREA_RESOLVED_BY_SETTER', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
@@ -920,7 +920,7 @@ router.post('/bookos/bookings/:id/priority', ...staffOnly, async (req, res) => {
   booking.priorityTier = parsed.data.tier;
   booking.updatedAt = new Date().toISOString();
   addBookingEvent(booking, 'PRIORITY_SET', parsed.data.setBy, { tier: parsed.data.tier, previous });
-  appendEvent('PRIORITY_SET', {
+  await appendEvent('PRIORITY_SET', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
@@ -964,7 +964,7 @@ router.post('/bookos/bookings/:id/return-visit', ...staffOnly, async (req, res) 
   addBookingEvent(booking, parsed.data.needed ? 'RETURN_VISIT_FLAGGED' : 'RETURN_VISIT_CLEARED', parsed.data.flaggedBy, {
     note: parsed.data.note || null,
   });
-  appendEvent(parsed.data.needed ? 'RETURN_VISIT_FLAGGED' : 'RETURN_VISIT_CLEARED', {
+  await appendEvent(parsed.data.needed ? 'RETURN_VISIT_FLAGGED' : 'RETURN_VISIT_CLEARED', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',
@@ -1005,7 +1005,7 @@ router.post('/bookos/bookings/:id/cancel', ...staffOnly, async (req, res) => {
   booking.status = 'CANCELLED';
   booking.updatedAt = new Date().toISOString();
   addBookingEvent(booking, 'BOOKING_CANCELLED', parsed.data.cancelledBy, { reason: parsed.data.reason || null });
-  appendEvent('BOOKING_CANCELLED', {
+  await appendEvent('BOOKING_CANCELLED', {
     source: booking.source || null,
     actor: ROLES.DISPATCHER,
     entityType: 'BOOKING',

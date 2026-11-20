@@ -228,7 +228,7 @@ router.patch('/ad-studio/plans/settings', ...ownerOnly, async (req, res, next) =
     const parsed = settingsSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error: 'graceDays must be a whole number of days between 0 and 30' });
     const setting = await updateBillingSetting(parsed.data.graceDays, actorOf(req));
-    appendEvent('AD_PLAN_SETTINGS_UPDATED', {
+    await appendEvent('AD_PLAN_SETTINGS_UPDATED', {
       source: 'ad-studio', actor: actorOf(req), entityType: 'AD_BILLING_SETTING', entityId: 'default',
       details: { graceDays: setting.graceDays },
     });
@@ -269,7 +269,7 @@ router.patch('/ad-studio/plans/:key', ...ownerOnly, async (req, res, next) => {
       data.limits = { ...plan.limits, ...data.limits };
     }
     const updated = await updatePlan(plan.id, data);
-    appendEvent('AD_PLAN_UPDATED', {
+    await appendEvent('AD_PLAN_UPDATED', {
       source: 'ad-studio', actor: actorOf(req), entityType: 'AD_PLAN', entityId: plan.id,
       details: { planKey: plan.key, fields: Object.keys(parsed.data) },
     });
@@ -291,7 +291,7 @@ router.post('/ad-studio/plans/:key/price', ...ownerOnly, async (req, res, next) 
     const amount = parsed.data.monthlyPriceCents;
     if (amount === null) {
       const updated = await updatePlan(plan.id, { monthlyPriceCents: null, stripePriceId: null });
-      appendEvent('AD_PLAN_PRICE_UNSET', {
+      await appendEvent('AD_PLAN_PRICE_UNSET', {
         source: 'ad-studio', actor: actorOf(req), entityType: 'AD_PLAN', entityId: plan.id,
         details: { planKey: plan.key },
       });
@@ -310,7 +310,7 @@ router.post('/ad-studio/plans/:key/price', ...ownerOnly, async (req, res, next) 
     }
     const price = await createStripePrice({ productId, amountCents: amount, currency: plan.currency || 'usd' });
     const updated = await updatePlan(plan.id, { monthlyPriceCents: amount, stripePriceId: price.id, stripeProductId: productId });
-    appendEvent('AD_PLAN_PRICE_SET', {
+    await appendEvent('AD_PLAN_PRICE_SET', {
       source: 'ad-studio', actor: actorOf(req), entityType: 'AD_PLAN', entityId: plan.id,
       details: { planKey: plan.key, monthlyPriceCents: amount, stripePriceId: price.id },
     });
@@ -388,7 +388,7 @@ router.post('/ad-studio/subscriptions/:userId/grant', ...ownerOnly, async (req, 
       pendingEffectiveAt: null,
       cancelAtPeriodEnd: false,
     });
-    appendEvent('AD_PLAN_OFFICE_GRANTED', {
+    await appendEvent('AD_PLAN_OFFICE_GRANTED', {
       source: 'ad-studio', actor: actorOf(req), entityType: 'ADVERTISER_SUBSCRIPTION', entityId: req.params.userId,
       details: { planKey: plan.key },
     });
@@ -423,7 +423,7 @@ router.post('/ad-studio/subscriptions/:userId/revoke', ...ownerOnly, async (req,
       status: fallback, planId: null, grantedById: null, grantedAt: null,
       pendingPlanId: null, pendingEffectiveAt: null,
     });
-    appendEvent('AD_PLAN_OFFICE_REVOKED', {
+    await appendEvent('AD_PLAN_OFFICE_REVOKED', {
       source: 'ad-studio', actor: actorOf(req), entityType: 'ADVERTISER_SUBSCRIPTION', entityId: req.params.userId,
       details: { fallbackStatus: fallback },
     });

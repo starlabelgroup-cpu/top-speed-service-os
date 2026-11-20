@@ -76,7 +76,7 @@ router.post('/video/requests', async (req, res) => {
   };
   store.videoRequests.set(request.id, request);
   await persistVideoRequest(request);
-  appendEvent('VIDEO_REQUEST_CREATED', {
+  await appendEvent('VIDEO_REQUEST_CREATED', {
     source: 'SPEEDY_LIVE_VIDEO',
     actor: 'customer:website',
     entityType: 'VIDEO_REQUEST',
@@ -143,7 +143,7 @@ router.post('/video/requests/:id/arrange', ...staffOnly, async (req, res) => {
   request.arrangedBy = req.user?.email || 'service-setters';
   request.updatedAt = new Date().toISOString();
   await persistVideoRequest(request);
-  appendEvent('VIDEO_REQUEST_ARRANGED', {
+  await appendEvent('VIDEO_REQUEST_ARRANGED', {
     source: 'BOOK_OS',
     actor: request.arrangedBy,
     entityType: 'VIDEO_REQUEST',

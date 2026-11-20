@@ -578,7 +578,7 @@ const trackDownloadSchema = z.object({
  * Record an install / download-page attribution event. Public (see the
  * header note). Appends APP_INSTALL_TRACKED to the platform event feed.
  */
-router.post('/app/track-download', (req, res) => {
+router.post('/app/track-download', async (req, res) => {
   const parsed = trackDownloadSchema.safeParse(req.body || {});
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid track-download payload', details: parsed.error.flatten() });
@@ -595,7 +595,7 @@ router.post('/app/track-download', (req, res) => {
   };
   store.appInstalls.push(record);
 
-  appendEvent('APP_INSTALL_TRACKED', {
+  await appendEvent('APP_INSTALL_TRACKED', {
     actor: 'app:track-download',
     entityType: 'APP_INSTALL',
     entityId: record.id,

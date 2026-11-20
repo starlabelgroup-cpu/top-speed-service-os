@@ -171,7 +171,7 @@ router.post('/creator/signup', intakeRateLimit('creatorSignup'), async (req, res
       throw error;
     }
 
-    appendEvent('CREATOR_APPLICATION', {
+    await appendEvent('CREATOR_APPLICATION', {
       source: 'creator-signup',
       actor: email,
       entityType: 'USER',

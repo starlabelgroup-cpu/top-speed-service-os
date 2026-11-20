@@ -81,7 +81,7 @@ router.post('/payments/diagnostic/checkout', authenticate, requireCompany, async
     };
     store.payments.set(payment.id, payment);
     await persistPayment(payment).catch((error) => console.error(JSON.stringify({ level: 'error', message: 'payment persist failed', error: String(error?.message || error) })));
-    appendEvent('PAYMENT_CHECKOUT_CREATED', {
+    await appendEvent('PAYMENT_CHECKOUT_CREATED', {
       source: booking.source || null,
       entityType: 'PAYMENT',
       entityId: payment.id,
@@ -136,7 +136,7 @@ router.post('/payments/webhook', async (req, res) => {
           const booking = store.bookings.get(payment.bookingId);
           if (booking) {
             addBookingEvent(booking, 'PAYMENT_RECEIVED', 'Stripe webhook', { amountCents: payment.amountCents, purpose: payment.purpose });
-            appendEvent('PAYMENT_RECEIVED', {
+            await appendEvent('PAYMENT_RECEIVED', {
               source: booking.source || null,
               entityType: 'PAYMENT',
               entityId: payment.id,

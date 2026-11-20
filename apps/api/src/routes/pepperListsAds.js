@@ -143,7 +143,7 @@ router.post('/pepper-lists/ads', authenticate, async (req, res) => {
   };
   store.adCampaigns.push(record);
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+  await appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
     source: 'pepper-lists-ads',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',

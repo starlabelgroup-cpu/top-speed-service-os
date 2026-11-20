@@ -580,7 +580,7 @@ router.post('/ad-studio/draft-copy', ...staffOnly, async (req, res) => {
   if (streamErr) return res.status(400).json({ error: streamErr });
   store.adCampaigns.push(record);
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+  await appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
     source: 'ad-studio-speedy-drafter',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',
@@ -662,7 +662,7 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
   };
   store.adCampaigns.push(record);
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_CREATED', {
+  await appendEvent('AD_CAMPAIGN_CREATED', {
     source: 'ad-studio-console',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',
@@ -735,7 +735,7 @@ async function transition(req, res, target, { owner = false } = {}) {
   }
   await syncBanner(record);
   await persistAdCampaign(record);
-  appendEvent(`AD_CAMPAIGN_${target}`, {
+  await appendEvent(`AD_CAMPAIGN_${target}`, {
     source: 'ad-studio-console',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',
@@ -849,7 +849,7 @@ router.post('/ad-studio/streaming-pack/load', ...ownerOnly, async (req, res) => 
     };
     store.adCampaigns.push(record);
     await persistAdCampaign(record);
-    appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+    await appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
       source: 'ad-studio-streaming-pack',
       actor: actorOf(req),
       entityType: 'AD_CAMPAIGN',
@@ -1061,7 +1061,7 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('ca
   };
   store.adCampaigns.push(record);
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_CREATED', {
+  await appendEvent('AD_CAMPAIGN_CREATED', {
     source: 'advertiser-console',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',
@@ -1101,7 +1101,7 @@ router.post('/ad-studio/my-campaigns/:id/submit', ...advertiserOnly, requirePlan
   record.status = 'PENDING_APPROVAL';
   record.updatedAt = new Date().toISOString();
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
+  await appendEvent('AD_CAMPAIGN_PENDING_APPROVAL', {
     source: 'advertiser-console',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',
@@ -1130,7 +1130,7 @@ router.post('/ad-studio/my-campaigns/:id/pause', ...advertiserOnly, async (req, 
   record.updatedAt = new Date().toISOString();
   await syncBanner(record);
   await persistAdCampaign(record);
-  appendEvent('AD_CAMPAIGN_PAUSED', {
+  await appendEvent('AD_CAMPAIGN_PAUSED', {
     source: 'advertiser-console',
     actor: actorOf(req),
     entityType: 'AD_CAMPAIGN',

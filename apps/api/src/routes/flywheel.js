@@ -146,7 +146,7 @@ router.post('/flywheel/referrals/redeem', authenticate, requireCompany, async (r
   });
   await persistReferral(referral);
 
-  appendEvent('REFERRAL_REDEEMED', {
+  await appendEvent('REFERRAL_REDEEMED', {
     source: 'REFERRAL',
     actor: 'flywheel:referral-redeem',
     entityType: 'BOOKING',
@@ -154,7 +154,7 @@ router.post('/flywheel/referrals/redeem', authenticate, requireCompany, async (r
     referenceCode: booking.referenceCode,
     details: { referralCode: referral.code, referredByCustomerId: referral.customerId, city },
   });
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source: 'REFERRAL',
     actor: 'flywheel:referral-redeem',
     entityType: 'BOOKING',

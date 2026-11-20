@@ -297,7 +297,7 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
     }
   }
 
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source,
     actor,
     entityType: 'BOOKING',
@@ -314,7 +314,7 @@ export async function createWorkOrder({ actor, source, via, input, assignProvide
     },
   });
   if (assignment) {
-    appendEvent(assignmentStatus === 'ACCEPTED' ? 'ASSIGNMENT_ACCEPTED' : 'DISPATCH_APPROVED', {
+    await appendEvent(assignmentStatus === 'ACCEPTED' ? 'ASSIGNMENT_ACCEPTED' : 'DISPATCH_APPROVED', {
       source,
       actor,
       entityType: 'BOOKING',

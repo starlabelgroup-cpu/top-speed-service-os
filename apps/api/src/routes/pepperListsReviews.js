@@ -356,7 +356,7 @@ router.post('/pepper-lists/reviews', authenticate, async (req, res) => {
   // Platform Interconnect (2026-11-19): review events join the
   // cross-platform feed at the create success point — rating and
   // publication state only, never the review text or the reviewer.
-  appendEvent('REVIEW_SUBMITTED', {
+  await appendEvent('REVIEW_SUBMITTED', {
     source: 'pepper-lists',
     actor: 'customer',
     entityType: 'REVIEW',

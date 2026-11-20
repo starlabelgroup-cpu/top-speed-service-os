@@ -169,7 +169,7 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
   const referenceCode = createReferenceCode();
   const now = new Date().toISOString();
 
-  appendEvent('INTAKE_RECEIVED', {
+  await appendEvent('INTAKE_RECEIVED', {
     source: data.source,
     actor: req.user.id,
     referenceCode,
@@ -183,7 +183,7 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
     const result = await createIntakeBooking(req, data, referenceCode);
     if (result.error) return res.status(result.error.status).json(result.error.body);
     const booking = result.record;
-    appendEvent('BOOKING_CREATED', {
+    await appendEvent('BOOKING_CREATED', {
       source: data.source,
       actor: `intake:${data.source}`,
       entityType: 'BOOKING',
@@ -226,7 +226,7 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
       updatedAt: now,
     };
     store.providerApplications.set(application.id, application);
-    appendEvent('PROVIDER_APPLICATION_RECEIVED', {
+    await appendEvent('PROVIDER_APPLICATION_RECEIVED', {
       source: data.source,
       actor: `intake:${data.source}`,
       entityType: 'PROVIDER_APPLICATION',
@@ -278,7 +278,7 @@ router.post('/intake/webhook', authenticate, requireCompany, async (req, res) =>
     updatedAt: now,
   };
   store.pmLeads.set(lead.id, lead);
-  appendEvent('PM_LEAD_RECEIVED', {
+  await appendEvent('PM_LEAD_RECEIVED', {
     source: data.source,
     actor: `intake:${data.source}`,
     entityType: 'PM_LEAD',

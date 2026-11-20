@@ -334,7 +334,7 @@ async function activateFromCheckout(session) {
     grantedById: null,
     grantedAt: null,
   });
-  appendEvent('AD_PLAN_SUBSCRIBED', {
+  await appendEvent('AD_PLAN_SUBSCRIBED', {
     source: 'stripe-webhook', entityType: 'ADVERTISER_SUBSCRIPTION', entityId: userId,
     details: { planKey: plan.key, stripeSubscriptionId },
   });
@@ -364,7 +364,7 @@ async function onSubscriptionDeleted(sub) {
     status: 'NONE', planId: null, stripeSubscriptionId: null, currentPeriodEnd: null,
     pastDueAt: null, pendingPlanId: null, pendingEffectiveAt: null, cancelAtPeriodEnd: false,
   });
-  appendEvent('AD_PLAN_SUBSCRIPTION_ENDED', {
+  await appendEvent('AD_PLAN_SUBSCRIPTION_ENDED', {
     source: 'stripe-webhook', entityType: 'ADVERTISER_SUBSCRIPTION', entityId: row.userId,
     details: { stripeSubscriptionId: sub.id },
   });
@@ -377,7 +377,7 @@ async function onInvoicePaymentFailed(invoice) {
   if (!row) return;
   if (row.status === 'ACTIVE' || row.status === 'TRIALING') {
     await upsertSubscription(row.userId, { status: 'PAST_DUE', pastDueAt: new Date().toISOString() });
-    appendEvent('AD_PLAN_PAYMENT_FAILED', {
+    await appendEvent('AD_PLAN_PAYMENT_FAILED', {
       source: 'stripe-webhook', entityType: 'ADVERTISER_SUBSCRIPTION', entityId: row.userId,
       details: { stripeSubscriptionId },
     });

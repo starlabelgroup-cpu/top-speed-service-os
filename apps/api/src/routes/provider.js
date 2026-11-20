@@ -440,7 +440,7 @@ router.patch('/provider/profile', ...providerOnly, async (req, res) => {
     if (data.myAppliances !== undefined) { provider.specialties = data.myAppliances; providerChanged = true; changed.push('specialties'); }
     if (providerChanged) await persistProvider(provider);
   }
-  appendEvent('TECH_PROFILE_UPDATED', {
+  await appendEvent('TECH_PROFILE_UPDATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'USER',
@@ -508,7 +508,7 @@ router.post('/provider/assignments/:id/accept', ...providerOnly, async (req, res
       assignmentId: assignment.id,
       providerId: provider.id,
     });
-    appendEvent('ASSIGNMENT_ACCEPTED', {
+    await appendEvent('ASSIGNMENT_ACCEPTED', {
       source: booking.source || null,
       actor: req.user.email,
       entityType: 'BOOKING',
@@ -558,7 +558,7 @@ router.post('/provider/assignments/:id/decline', ...providerOnly, async (req, re
       providerId: provider.id,
       note: parsed.data.note || null,
     });
-    appendEvent('ASSIGNMENT_DECLINED', {
+    await appendEvent('ASSIGNMENT_DECLINED', {
       source: booking.source || null,
       actor: req.user.email,
       entityType: 'BOOKING',
@@ -636,7 +636,7 @@ router.post('/provider/assignments/:id/ai-note', ...providerOnly, async (req, re
   });
   booking.updatedAt = new Date().toISOString();
   await persistBooking(booking);
-  appendEvent('TECH_NOTE', {
+  await appendEvent('TECH_NOTE', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -720,7 +720,7 @@ router.post('/provider/assignments/:id/job-status', ...providerOnly, async (req,
     reference: booking.referenceCode || null,
     eventKey: `booking:${booking.id}:stage:${type}:${booking.updatedAt}:report`,
   });
-  appendEvent(type, {
+  await appendEvent(type, {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1066,7 +1066,7 @@ router.put('/provider/assignments/:id/checklist', ...providerOnly, async (req, r
   });
   booking.updatedAt = new Date().toISOString();
   await persistBooking(booking);
-  appendEvent('FIELD_CHECKLIST_UPDATED', {
+  await appendEvent('FIELD_CHECKLIST_UPDATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1103,7 +1103,7 @@ router.post('/provider/assignments/:id/notes', ...providerOnly, async (req, res)
   });
   booking.updatedAt = new Date().toISOString();
   await persistBooking(booking);
-  appendEvent('TECH_NOTE', {
+  await appendEvent('TECH_NOTE', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1263,7 +1263,7 @@ router.post('/provider/assignments/:id/parts-orders', ...providerOnly, async (re
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('PLUG_ORDER_CREATED', {
+  await appendEvent('PLUG_ORDER_CREATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1306,7 +1306,7 @@ router.post('/provider/assignments/:id/parts-orders/:orderId/status', ...provide
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('PLUG_ORDER_STATUS', {
+  await appendEvent('PLUG_ORDER_STATUS', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1420,7 +1420,7 @@ router.post('/provider/assignments/:id/diagnosis', ...providerOnly, async (req, 
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('DIAGNOSIS_RECORDED', {
+  await appendEvent('DIAGNOSIS_RECORDED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1515,7 +1515,7 @@ router.post('/provider/assignments/:id/photos', ...providerOnly, async (req, res
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('JOB_PHOTO_ADDED', {
+  await appendEvent('JOB_PHOTO_ADDED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1616,7 +1616,7 @@ router.post('/provider/van-stock', ...providerOnly, async (req, res) => {
   entry.qty = parsed.data.qty;
   entry.updatedAt = t;
   await persistVanStock(entry);
-  appendEvent('VAN_STOCK_UPDATED', {
+  await appendEvent('VAN_STOCK_UPDATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'PROVIDER',
@@ -1673,7 +1673,7 @@ router.post('/provider/assignments/:id/parts-used', ...providerOnly, async (req,
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('PART_USED_FROM_VAN', {
+  await appendEvent('PART_USED_FROM_VAN', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -1761,7 +1761,7 @@ router.post('/provider/assignments/:id/complete', ...providerOnly, async (req, r
     gate: { diagnosis: true, authorization: true },
     confirmedBy: 'TECHNICIAN',
   });
-  appendEvent('JOB_COMPLETED', {
+  await appendEvent('JOB_COMPLETED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2127,7 +2127,7 @@ router.post('/provider/assignments/:id/warranty', ...providerOnly, async (req, r
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('WARRANTY_RECORDED', {
+  await appendEvent('WARRANTY_RECORDED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2188,7 +2188,7 @@ router.post('/provider/assignments/:id/warranty-claims', ...providerOnly, async 
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('WARRANTY_CLAIM_FILED', {
+  await appendEvent('WARRANTY_CLAIM_FILED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2232,7 +2232,7 @@ router.post('/provider/warranty-claims/:claimId/status', ...providerOnly, async 
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('WARRANTY_CLAIM_STATUS', {
+  await appendEvent('WARRANTY_CLAIM_STATUS', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2327,7 +2327,7 @@ router.post('/provider/assignments/:id/property', ...providerOnly, async (req, r
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('PROPERTY_UPDATED', {
+  await appendEvent('PROPERTY_UPDATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2525,7 +2525,7 @@ async function applyJobDetails(req, booking, data, scope) {
   });
   booking.updatedAt = t;
   await persistBooking(booking);
-  appendEvent('JOB_DETAILS_UPDATED', {
+  await appendEvent('JOB_DETAILS_UPDATED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',
@@ -2621,7 +2621,7 @@ router.post('/provider/assignments/:id/review-request', ...providerOnly, async (
     booking.updatedAt = t;
     await persistBooking(booking);
   }
-  appendEvent('REVIEW_REQUEST_TRIGGERED', {
+  await appendEvent('REVIEW_REQUEST_TRIGGERED', {
     source: 'TECH_APP',
     actor: req.user.email,
     entityType: 'BOOKING',

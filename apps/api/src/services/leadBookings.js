@@ -132,7 +132,7 @@ export async function createLeadBooking(record) {
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);
-  appendEvent('BOOKING_CREATED', {
+  await appendEvent('BOOKING_CREATED', {
     source: booking.source,
     actor: 'lead-intake',
     entityType: 'BOOKING',

@@ -124,7 +124,7 @@ export async function diagnosticCheckoutUrl(booking) {
   };
   store.payments.set(payment.id, payment);
   await persistPayment(payment).catch((error) => console.error(JSON.stringify({ level: 'error', message: 'payment persist failed', error: String(error?.message || error) })));
-  appendEvent('PAYMENT_CHECKOUT_CREATED', {
+  await appendEvent('PAYMENT_CHECKOUT_CREATED', {
     source: 'link-center',
     entityType: 'PAYMENT',
     entityId: payment.id,

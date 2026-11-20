@@ -83,7 +83,7 @@ export async function createConnectionRecord({ name, phone, email = null, type, 
   } catch (error) {
     console.error('createLeadBooking failed', error?.message || error);
   }
-  appendEvent('CONNECTION_CREATED', {
+  await appendEvent('CONNECTION_CREATED', {
     source: record.source,
     actor: 'public-web',
     entityType: 'CONNECTION',
