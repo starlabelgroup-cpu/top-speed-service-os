@@ -81,6 +81,7 @@ export const NOTIFICATION_TEMPLATES = {
   GIFT_CARD_ACTIVE: 'GIFT_CARD_ACTIVE',
   PEPPER_LISTS_ORDER_PAID: 'PEPPER_LISTS_ORDER_PAID',
   STAFF_MESSAGE: 'STAFF_MESSAGE',
+  WINBACK_OFFER: 'WINBACK_OFFER',
   OFFICE_MESSAGE: 'OFFICE_MESSAGE',
 };
 
@@ -153,6 +154,7 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   // customer-facing email too: they carry the same Book / Call /
   // Tell Speedy footer as every other customer touch.
   NOTIFICATION_TEMPLATES.STAFF_MESSAGE,
+  NOTIFICATION_TEMPLATES.WINBACK_OFFER,
   'SIGNIN_LINK', // composed in routes/handoff.js with a literal template name
 ]);
 
@@ -1241,6 +1243,71 @@ export function notifyAppointmentReminderWithReply(booking, kind, source = null)
     });
     return { channel, to, entry, created };
   });
+}
+
+/**
+ * Win-back offer (2026-11-20, D6): ONE campaign message to ONE lapsed
+ * customer, queued only because a Service Setter pressed send on the
+ * CRM win-back tool for a segment this customer was evaluated into.
+ * The segment evaluation (services/winback.js) has already excluded
+ * opted-out, open-complaint, no-contact and recently-contacted
+ * customers before this is ever called — this function composes and
+ * queues; it never decides recipients.
+ *
+ * Copy discipline: the offer text is the PUBLISHED benefit string
+ * from the offers catalog, verbatim — no discount or term is
+ * invented here. The elapsed time is the customer's real months
+ * since their last completed job. Every message carries its opt-out
+ * path (SMS: reply STOP — the inbound handler records it; email:
+ * call the business number and staff record it).
+ *
+ * Channel toggles: the customer email/SMS settings gate marketing
+ * sends exactly like other customer messages — a disabled channel
+ * records an honest GATED (SETTING_DISABLED) entry instead of
+ * sending. The campaign eventKey makes a re-send of the same
+ * campaign to the same customer a no-op.
+ */
+export function notifyWinbackOffer({ customer, offer, campaignId, segment, monthsSince = null, lastAppliance = null, sentBy = null, source = null }) {
+  const settings = getNotificationSettings();
+  const first = firstNameOf(customer?.name);
+  const appliance = lastAppliance || 'appliance';
+  const elapsed = monthsSince ? ` It has been about ${monthsSince} months since we serviced your ${appliance}.` : '';
+  const offerLine = `${offer.title} — ${offer.benefit}`;
+  const entries = [];
+  const channels = [];
+  if (customer?.phone) channels.push({ channel: 'sms', to: customer.phone, enabled: settings.customerSmsConfirmations });
+  if (customer?.email) channels.push({ channel: 'email', to: customer.email, enabled: settings.customerEmailConfirmations });
+  for (const { channel, to, enabled } of channels) {
+    const message =
+      channel === 'sms'
+        ? `Top Speed Appliance: Hi ${first}, we miss you!${elapsed} ${offerLine} Book your visit: ${REACH_LINKS.book} Reply STOP to opt out of offers.`
+        : `Hi ${first},\n\nThis is Top Speed Appliance — thanks again for trusting us with your ${appliance}.${elapsed}\n\nWe would love to earn your business again: ${offerLine}\n\nBook your visit any time: ${REACH_LINKS.book}\nOr call us at ${PLATFORM_CONSTANTS.phoneDisplay}.\n\nDon't want offers like this? Call ${PLATFORM_CONSTANTS.phoneDisplay} and we will take you off the list — no hard feelings.`;
+    entries.push(
+      queueNotification({
+        channel,
+        template: NOTIFICATION_TEMPLATES.WINBACK_OFFER,
+        to,
+        source,
+        eventKey: `winback:${campaignId}:${customer.id}:${channel}`,
+        eventType: 'WINBACK',
+        status: enabled ? undefined : 'GATED',
+        reason: enabled ? undefined : 'SETTING_DISABLED',
+        payload: {
+          customerId: customer.id,
+          customerName: customer.name || null,
+          campaignId,
+          segment,
+          offerSlug: offer.slug,
+          sentBy,
+          monthsSince,
+          lastAppliance: appliance,
+          subject: `We miss you, ${first} — ${offer.title} at Top Speed Appliance`,
+          message,
+        },
+      }),
+    );
+  }
+  return entries;
 }
 
 /**
