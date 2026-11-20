@@ -1,6 +1,7 @@
 import { buildSitePack } from './site.js';
 import { GLOSSARY_PACK } from './glossary.js';
 import { INDUSTRY_PACK } from './industry.js';
+import { augmentSpanishQuery, detectSpanish } from '../services/speedyLanguage.js';
 
 /**
  * Speedy's learning system — the retrieval layer over the three
@@ -185,6 +186,14 @@ const NEXT_STEP =
 
 const GREETING_PATTERN = /^\s*(hi|hello|hey|good (morning|afternoon|evening)|yo|hiya)\b[^.!?]*[.!?]?\s*$/i;
 const THANKS_PATTERN = /\b(thank(s| you)|thanks|thx|appreciate it)\b/i;
+// Spanish smalltalk + next-step framing (2026-11-20, A5): the fallback
+// greets and thanks in the customer's language too. Knowledge ENTRIES
+// stay in their published English; the composer's own framing and its
+// canned answers are what translate.
+const NEXT_STEP_ES =
+  '\n\nSi quieres seguir adelante: puedo reservar la visita de diagnóstico de $99 (que se acredita completo a tu reparación) — solo dime tu ciudad y código postal — o puedes comunicarte con el equipo al (844) 460-7038, de lunes a viernes, de 8 a. m. a 7 p. m.';
+const GREETING_PATTERN_ES = /^\s*(hola|buenas|buenos días|buenas tardes|buenas noches|qué tal)\b[^.!?]*[.!?]?\s*$/i;
+const THANKS_PATTERN_ES = /\b(gracias|muchas gracias|te agradezco|se agradece)\b/i;
 
 /**
  * Compose a complete, grounded answer WITHOUT the AI provider.
@@ -194,6 +203,12 @@ const THANKS_PATTERN = /\b(thank(s| you)|thanks|thx|appreciate it)\b/i;
  */
 export function composeFallbackAnswer(message) {
   const text = String(message || '').trim();
+  // Spanish (2026-11-20, A5): the composer's canned answers and
+  // framing are given in Spanish when the customer writes Spanish.
+  // Grounded entry text is quoted as published (English) under a
+  // Spanish lead-in that says exactly that — never machine-passed-off
+  // as an official translation.
+  const es = detectSpanish(text);
 
   if (GREETING_PATTERN.test(text)) {
     return {
@@ -203,12 +218,28 @@ export function composeFallbackAnswer(message) {
         'Hi, I\'m Speedy — Top Speed Appliance\'s assistant. I can answer questions about our services, pricing, and coverage, help with an appliance problem (including a photo read), or book a visit. What can I do for you?',
     };
   }
+  if (GREETING_PATTERN_ES.test(text)) {
+    return {
+      kind: 'smalltalk',
+      entryId: null,
+      reply:
+        'Hola, soy Speedy — el asistente de Top Speed Appliance. Puedo responder preguntas sobre nuestros servicios, precios y cobertura, ayudarte con un problema de un electrodoméstico (incluso con una foto), o reservar una visita. ¿En qué te puedo ayudar?',
+    };
+  }
   if (THANKS_PATTERN.test(text) && text.length < 80) {
     return {
       kind: 'smalltalk',
       entryId: null,
       reply:
         'You\'re welcome. If anything else comes up — a question, a photo of a problem, or booking a visit — I\'m right here. The team is also at (844) 460-7038, Monday–Friday, 8 AM–7 PM.',
+    };
+  }
+  if (THANKS_PATTERN_ES.test(text) && text.length < 80) {
+    return {
+      kind: 'smalltalk',
+      entryId: null,
+      reply:
+        'De nada. Si surge algo más — una pregunta, una foto de un problema, o reservar una visita — aquí estoy. El equipo también está al (844) 460-7038, de lunes a viernes, de 8 a. m. a 7 p. m.',
     };
   }
 
@@ -220,8 +251,16 @@ export function composeFallbackAnswer(message) {
     return { kind: 'safety', entryId: safety.entry.id, reply: safety.entry.answer };
   }
 
-  const [top] = searchKnowledge(text, 1);
+  const [top] = searchKnowledge(es ? augmentSpanishQuery(text) : text, 1);
   if (top && top.score >= GOOD_MATCH_SCORE) {
+    if (es) {
+      let reply =
+        'Esto es lo que puedo confirmarte de la información publicada de Top Speed (te la muestro tal como está publicada, en inglés):\n\n' +
+        top.entry.answer;
+      if (top.entry.link && !reply.includes('http')) reply += `\n\nMás información: ${top.entry.link}`;
+      reply += NEXT_STEP_ES;
+      return { kind: 'match', entryId: top.entry.id, reply };
+    }
     let reply = top.entry.answer;
     if (top.entry.link && !reply.includes('http')) reply += `\n\nMore here: ${top.entry.link}`;
     reply += NEXT_STEP;
@@ -232,6 +271,17 @@ export function composeFallbackAnswer(message) {
   // confirmed, offer the closest grounded guidance if there is any,
   // and give the paths that resolve the question. Never invent a
   // Top Speed fact to fill the gap.
+  if (es) {
+    let replyEs =
+      'Buena pregunta — ese detalle específico no es algo que pueda confirmar de la información publicada de Top Speed, y no quiero adivinarlo. ';
+    if (top && top.score >= GOOD_MATCH_SCORE - 1) {
+      replyEs += `Lo más cercano que sí puedo confirmar es esto (tal como está publicado, en inglés): ${top.entry.answer} `;
+    }
+    replyEs +=
+      'Para una respuesta confirmada sobre tu electrodoméstico, la visita de diagnóstico de $99 (que se acredita completo a la reparación) pone a un técnico en tu caso — puedo reservarla si me dices tu ciudad y código postal, o puedes enviar una foto del problema para una lectura preliminar. ' +
+      'El equipo también puede confirmar detalles directamente al (844) 460-7038, de lunes a viernes, de 8 a. m. a 7 p. m.';
+    return { kind: 'general', entryId: top?.entry.id || null, reply: replyEs };
+  }
   let reply =
     'Good question — that specific detail isn\'t one I can confirm from Top Speed\'s published information, and I don\'t want to guess at it. ';
   // Only offer the closest entry when it is genuinely close (just

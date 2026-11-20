@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="es">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light dark"/>
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0A265C" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Appliance Pro" />
+<title>Red de Servicio Top Speed — Proveedores y Despacho | Top Speed Service OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/es/service">
+<link rel="alternate" hreflang="en" href="https://topspeedserviceos.com/service">
+<link rel="alternate" hreflang="es" href="https://topspeedserviceos.com/es/service">
+<link rel="alternate" hreflang="x-default" href="https://topspeedserviceos.com/service">
+<link rel="alternate" hreflang="en" href="https://topspeedserviceos.com/service">
+<link rel="alternate" hreflang="es" href="https://topspeedserviceos.com/es/service">
+<link rel="alternate" hreflang="x-default" href="https://topspeedserviceos.com/service">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0A265C; --navy2:#06173A; --navy3:#0E357F;
+  --blue:#0B84FF; --electric:#19B5FF; --sky:#EAF4FF;
+  --red:#E30613; --red-dark:#B90510;
+  --ink:#0F1D33; --muted:#5B6B82; --line:#DCE6F2;
+  --bg:#F5F7FB; --card:#FFFFFF; --card2:#EEF3FA;
+  --green:#0E9F6E; --amber:#D97706; --radius:18px;
+  --shadow:0 18px 40px rgba(10,38,92,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#07122B; --card:#0D214E; --card2:#0A265C; --ink:#EDF3FF; --muted:#A9BCD9; --line:#1E3A6B; --sky:#0E2E63; --shadow:0 18px 40px rgba(0,0,0,.35);}
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;font-family:"Barlow",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55}
+a{color:inherit} img{max-width:100%;display:block}
+h1,h2,h3,.cond{font-family:"Barlow Condensed",sans-serif;letter-spacing:.02em;text-transform:uppercase;line-height:.95}
+.checker{height:14px;background:repeating-conic-gradient(#111 0% 25%, #fff 0% 50%);background-size:22px 22px;border-top:2px solid #111;border-bottom:2px solid #111}
+.checker-blue{height:10px;background:repeating-conic-gradient(var(--navy) 0% 25%, #fff 0% 50%);background-size:18px 18px;opacity:.95}
+.topbar{background:var(--navy2);color:#fff;font-size:13px}
+.topbar .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;padding:8px 20px;max-width:1240px;margin:auto}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--navy);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border-radius:999px}
+.badge.red{background:var(--red);color:#fff}.badge.blue{background:var(--electric);color:#04203F}.badge.outline{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+header.main{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+@media(prefers-color-scheme:dark){header.main{background:rgba(7,18,43,.96)}}
+.nav{max-width:1240px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 20px}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-mark{width:46px;height:46px;background:var(--navy);color:#fff;display:grid;place-items:center;border-radius:10px;font-family:"Barlow Condensed";font-weight:800;font-size:22px;line-height:1;position:relative;overflow:hidden}
+.logo-mark:after{content:"";position:absolute;bottom:0;left:0;right:0;height:7px;background:repeating-conic-gradient(#111 0% 25%, #fff 0% 50%);background-size:10px 10px}
+.logo b{font-family:"Barlow Condensed";font-size:26px;letter-spacing:.03em;line-height:1;color:var(--navy)}
+@media(prefers-color-scheme:dark){.logo b{color:#fff}}
+.logo span{display:block;font-family:"Barlow";font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.navlinks{display:flex;gap:18px;flex-wrap:wrap;font-weight:700;font-size:14px}
+.navlinks a{text-decoration:none}
+.navlinks a:hover{color:var(--blue)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:999px;font-weight:800;text-decoration:none;border:1px solid transparent;cursor:pointer;font-size:15px}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red-dark)}
+.btn-navy{background:var(--navy);color:#fff}.btn-blue{background:var(--blue);color:#fff}
+.btn-white{background:#fff;color:var(--navy)}.btn-outline{background:transparent;border-color:var(--line);color:var(--ink)}.btn-ghostw{background:transparent;border-color:rgba(255,255,255,.4);color:#fff}
+.btn-sm{padding:9px 14px;font-size:13px}
+header.main .header-actions .btn-outline{color:#fff;border-color:rgba(255,255,255,.55)}
+header.main .header-actions .btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+.wrap{max-width:1240px;margin:auto;padding:0 20px}
+.hero{background:radial-gradient(900px 500px at 85% -10%, rgba(25,181,255,.45), transparent 60%), radial-gradient(700px 400px at 0% 0%, rgba(227,6,19,.28), transparent 55%), linear-gradient(180deg, var(--navy) 0%, var(--navy2) 100%);color:#fff;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:36px;padding:44px 0 0;align-items:start}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr} .navlinks{display:none}}
+.hero h1{font-size:clamp(52px,7vw,88px);margin:14px 0 10px}
+.hero h1 em{font-style:normal;color:var(--electric)}
+.hero h1 .red{color:#FF3B47}
+.hero p.lead{font-size:19px;color:#D6E6FF;max-width:620px;margin:0}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:22px 0}
+@media(max-width:640px){.hero-stats{grid-template-columns:1fr 1fr}}
+.stat{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:14px}
+.stat b{font-size:24px;display:block;line-height:1}.stat span{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#BFD6F5;font-weight:700}
+.hero-img{border-radius:20px 20px 0 0;overflow:hidden;border:1px solid rgba(255,255,255,.2);border-bottom:none;box-shadow:var(--shadow)}
+.hero-img img{height:340px;width:100%;object-fit:cover}
+.mini-card{background:#fff;color:var(--ink);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.hero-form{background:#fff;color:var(--ink);border-radius:20px;padding:20px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.hero-form h3{font-size:28px;margin:0;color:var(--navy)}
+@media(prefers-color-scheme:dark){.hero-form,.mini-card{background:#0D214E;color:#EDF3FF} .hero-form h3{color:#fff}}
+label{font-size:13px;font-weight:700;display:block;margin:0 0 6px}
+input,select,textarea{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit;font-size:15px}
+textarea{resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:560px){.grid2{grid-template-columns:1fr}}
+.field{margin-bottom:12px}
+.toggle{display:flex;background:var(--card2);border-radius:999px;padding:4px;gap:4px}
+.toggle button{flex:1;border:0;padding:10px;border-radius:999px;font-weight:800;cursor:pointer;background:transparent;color:var(--muted)}
+.toggle button.active{background:var(--navy);color:#fff}
+.section{padding:64px 0}
+.section.alt{background:var(--card)}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:800;color:var(--red)}
+.eyebrow.blue{color:var(--blue)}
+h2.title{font-size:clamp(36px,4.5vw,54px);margin:8px 0 10px;color:var(--navy)}
+@media(prefers-color-scheme:dark){h2.title{color:#fff}}
+.sub{color:var(--muted);max-width:760px;font-size:17px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.cards{grid-template-columns:1fr 1fr}} @media(max-width:560px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+.card h3{font-size:24px;margin:6px 0 6px;color:var(--navy)} @media(prefers-color-scheme:dark){.card h3{color:#fff}}
+.icon{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--sky);font-size:22px}
+.triage{background:linear-gradient(135deg, var(--navy), var(--navy3));color:#fff;border-radius:20px;padding:22px}
+.triage h3{color:#fff;font-size:30px;margin:0 0 8px}
+.pill{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em}
+.pill.green{background:#DCFCE7;color:#065F46}.pill.amber{background:#FEF3C7;color:#92400E}.pill.redp{background:#FEE2E2;color:#991B1B}.pill.bluep{background:#DBEAFE;color:#1E40AF}
+.upload{border:2px dashed var(--line);border-radius:14px;padding:16px;text-align:center;background:var(--card2)}
+.upload img{max-height:180px;margin:10px auto;border-radius:12px;object-fit:cover;width:100%}
+/* Dispatch */
+.dispatch{background:#071A42;color:#fff;border-radius:24px;padding:22px;overflow:hidden}
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
+@media(max-width:1000px){.board{grid-template-columns:1fr 1fr}} @media(max-width:560px){.board{grid-template-columns:1fr}}
+.col{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:12px;min-height:220px}
+.col h4{margin:0 0 10px;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#9CC6FF;display:flex;justify-content:space-between}
+.job{background:#fff;color:#0F1D33;border-radius:12px;padding:12px;margin-bottom:10px;font-size:14px}
+.job b{display:block}.job small{color:#5B6B82}
+.job .row{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:8px}
+/* Provider phone */
+.phone{max-width:380px;margin:auto;background:#0B1220;border-radius:36px;padding:12px;box-shadow:var(--shadow)}
+.phone-screen{background:#F6F8FC;border-radius:28px;overflow:hidden;color:#0F1D33;min-height:560px}
+.phone-head{background:var(--navy);color:#fff;padding:18px}
+.tabs{display:flex;gap:6px;padding:10px;background:#fff;border-bottom:1px solid #E2E8F0;overflow:auto}
+.tabs button{border:0;padding:8px 12px;border-radius:999px;font-weight:800;cursor:pointer;background:#EEF3FA;white-space:nowrap}
+.tabs button.active{background:var(--navy);color:#fff}
+.tabpane{padding:14px;display:none}.tabpane.active{display:block}
+.offer{background:#fff;border:1px solid #E2E8F0;border-radius:14px;padding:14px;margin-bottom:10px}
+/* Coverage */
+.city-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.city-chip{border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:999px;font-weight:700;cursor:pointer}
+.city-chip.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.city-chip.miami{border-color:var(--red);color:var(--red)} .city-chip.miami.active{background:var(--red);color:#fff}
+.city-link{display:inline-block;border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:999px;font-weight:700;color:inherit;text-decoration:none;font-size:14px}
+.city-link:hover{border-color:var(--red)}
+.city-link.core{border-color:var(--red)}
+.city-link .cdot{color:var(--red);font-weight:800}
+.mapbox{background:radial-gradient(circle at 30% 30%, rgba(25,181,255,.25), transparent 40%), linear-gradient(180deg,#0A265C,#06173A);color:#fff;border-radius:22px;padding:22px;position:relative;overflow:hidden;min-height:320px}
+.pin{position:absolute;background:#fff;color:var(--navy);font-weight:800;font-size:12px;padding:6px 9px;border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.25);transform:translate(-50%,-50%)}
+.pin:after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid #fff}
+table{width:100%;border-collapse:collapse;font-size:15px} th,td{padding:12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top} th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.brands{display:flex;flex-wrap:wrap;gap:8px}.brand{padding:9px 13px;border:1px solid var(--line);border-radius:999px;background:var(--card);font-weight:700;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-weight:700;font-size:14px}.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+details{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card)} details+details{margin-top:10px} summary{font-weight:800;cursor:pointer}
+footer{background:var(--navy2);color:#CBDDF7;padding:44px 0 28px} footer a{color:#fff}
+.notice{background:#FFF7ED;border:1px solid #FDBA74;color:#7C2D12;border-radius:12px;padding:12px 14px;font-size:14px}
+@media(prefers-color-scheme:dark){.notice{background:#2A1600;color:#FED7AA}}
+.success{display:none;background:#ECFDF5;border:1px solid #6EE7B7;color:#065F46;border-radius:14px;padding:16px;margin-top:14px}
+@media(prefers-color-scheme:dark){.success{background:#052E22;color:#A7F3D0}}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:800px){.kpi{grid-template-columns:1fr 1fr}}
+.floatcall{position:fixed;left:16px;bottom:16px;z-index:60;display:flex;gap:8px}
+@media(max-width:700px){.floatcall{left:12px;right:12px}.floatcall .btn{flex:1;font-size:14px;padding:12px 8px}
+header.main .nav{flex-wrap:wrap} .nav .header-actions{display:flex;gap:8px;width:100%} .nav .header-actions .btn{flex:1}
+.logo b{font-size:22px} .logo span{font-size:10px}
+.tabs{flex-wrap:wrap;overflow:visible} .tabs button{font-size:13px;padding:7px 10px}
+}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}@media(max-width:900px){.steps{grid-template-columns:1fr 1fr}}@media(max-width:520px){.steps{grid-template-columns:1fr}}
+.stepnum{width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;font-weight:800}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style><script src="/google-tag.js"></script><style>@media(max-width:700px){#providerGrid,#commGrid,.cards-2col{grid-template-columns:1fr !important}}</style>
+<link rel="stylesheet" href="/fonts.css">
+<style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.rt-herorow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.rt-lights{display:inline-flex;gap:7px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:7px 12px}
+.rt-lights i{width:13px;height:13px;border-radius:50%;background:#40202B;display:block}
+.rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 9px rgba(233,78,92,.85)}
+.rt-lights i.on-g{background:#22C55E;box-shadow:0 0 9px rgba(34,197,94,.85)}
+.rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77}
+.rt-tele{position:relative}
+.rt-tele .rtc{position:absolute;width:26px;height:26px;border:3px solid #E94E5C;z-index:3;pointer-events:none}
+.rt-tele .rtc.tl{top:10px;left:10px;border-right:none;border-bottom:none;border-top-left-radius:8px}
+.rt-tele .rtc.tr{top:10px;right:10px;border-left:none;border-bottom:none;border-top-right-radius:8px}
+.rt-tele .rtc.bl{bottom:10px;left:10px;border-right:none;border-top:none;border-bottom-left-radius:8px}
+.rt-tele .rtc.br{bottom:10px;right:10px;border-left:none;border-top:none;border-bottom-right-radius:8px}
+.rt-chips{position:absolute;top:14px;left:46px;right:46px;display:flex;gap:8px;flex-wrap:wrap;z-index:2}
+.rt-chip{background:rgba(6,13,26,.85);color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:6px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.25)}
+.rt-chip-go{position:absolute;left:46px;bottom:14px;z-index:2;background:#E94E5C;color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;padding:7px 12px;border-radius:8px}
+.rt-tracklabel{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0 8px}
+.toggle{border:1.5px solid var(--line)}
+#tgRes.active{background:#E30613;color:#fff}
+.rt-lap{display:block;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12px;letter-spacing:.1em;color:#E94E5C;margin-bottom:6px}
+.eyebrow::before{content:"";display:inline-block;width:17px;height:12px;background:repeating-conic-gradient(#0C162B 0 25%,#fff 0 50%);background-size:8.5px 8.5px;border:1px solid rgba(12,22,43,.3);border-radius:2px;margin-right:8px;vertical-align:-1px}
+@media(prefers-color-scheme:dark){.eyebrow::before{border-color:rgba(255,255,255,.35)}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap" style="padding-left:0;padding-right:0">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="badge red">Red de Servicio Top Speed — En vivo</span><span class="badge outline">Impulsado por Top Speed Service OS</span><span style="opacity:.85">La puerta de proveedores de la plataforma en vivo</span></div>
+  <div><strong>844-460-7038</strong> &nbsp;• Servicio el mismo día • Broward + Miami</div>
+</div></div>
+
+<header class="main"><div class="nav">
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — inicio"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav class="navlinks"><a href="#request">Solicitar</a><a href="#providers">Proveedores</a><a href="#commercial">Comercial</a><a href="#coverage">Cobertura</a><a href="#pricing">Precios</a></nav>
+  <div class="header-actions" style="display:flex;gap:8px"><a class="btn btn-outline btn-sm" href="/" target="_blank" rel="noopener">Sitio del cliente ↗</a><a class="btn btn-outline btn-sm" href="/download">Descargar la app</a><a class="btn btn-red btn-sm" href="tel:+18444607038">Llamar al 844-460-7038</a></div>
+</div><div class="checker-blue"></div><div data-lang-toggle style="margin-left:10px"></div><div data-lang-toggle style="margin-left:10px"></div></header>
+
+<!-- HERO -->
+<section class="hero" id="top"><div class="wrap">
+  <div class="hero-grid">
+    <div><div class="rt-herorow"><span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span><span class="rt-kicker">Servicio · Reparación e instalación</span></div><span class="badge blue">● Service OS en línea — Despacho híbrido</span>
+      <h1>¿Electrodoméstico dañado?<br><em>Top Speed</em> <span class="red">Listo.</span></h1>
+      <p class="lead">El hogar de nueva generación de solicitudes de servicio y red de proveedores de <strong style="color:#fff">topspeedapplianceservice.com</strong> — solicitudes de 60 segundos con triaje por foto, despacho híbrido de Service Setters y proveedores locales calificados. Una sola plataforma detrás de ambas puertas, propiedad de Top Speed Appliance LLC.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+        <a href="#request" class="btn btn-red">Iniciar solicitud de 60 segundos →</a>
+        <a href="#providers" class="btn btn-white">Unirse a la red de proveedores</a>
+        <a href="#commercial" class="btn btn-ghostw">Orden de trabajo comercial</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>EPA</b><span>Técnicos certificados</span></div>
+        <div class="stat"><b>5</b><span>Ventanas de reserva todos los días</span></div>
+        <div class="stat"><b>$99</b><span>Diagnóstico • Acreditado</span></div>
+        <div class="stat"><b>90-Day</b><span>Garantía de repuestos y mano de obra</span></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700">
+        <span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Ventanas el mismo día</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Triaje por foto</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Textos de estado en vivo</span><span class="badge outline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Trabajos, no prospectos</span>
+      </div>
+      <div class="hero-img" style="margin-top:22px"><div class="rt-tele"><span class="rtc tl" aria-hidden="true"></span><span class="rtc tr" aria-hidden="true"></span><span class="rtc bl" aria-hidden="true"></span><span class="rtc br" aria-hidden="true"></span><span class="rt-chips" aria-hidden="true"><span class="rt-chip"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px" aria-hidden="true"><g transform="translate(1.25 4.28) scale(0.5513)"><path d="M2.5 25.4161C1.55602 22.7035 1.27484 19.8044 1.67997 16.961C2.0851 14.1176 3.16477 11.4124 4.82878 9.07142C6.4928 6.73044 8.69284 4.82163 11.2451 3.50446C13.7974 2.18729 16.6279 1.5 19.5 1.5C22.3721 1.5 25.2026 2.18729 27.7549 3.50446C30.3072 4.82163 32.5072 6.73044 34.1712 9.07142C35.8352 11.4124 36.9149 14.1176 37.32 16.961C37.7252 19.8044 37.444 22.7035 36.5 25.4161" stroke-width="3.3"/><path d="M2.5 25.4161H6.5" stroke-width="3.3"/><path d="M8 13.9161L10.5 16.4161" stroke-width="3.3"/><path d="M19.5 7.41608V11.4161" stroke-width="3.3"/><path d="M31 13.9161L28.5 16.4161" stroke-width="3.3"/><path d="M36.5 25.4161H32.5" stroke-width="3.3"/><path d="M19.5 25.4161L27.5 16.4161" stroke="#E94E5C" stroke-width="3.5"/><circle cx="19.5" cy="25.4161" r="2.6" fill="currentColor" stroke="none"/></g></svg> Estado · Despacho en vivo</span><span class="rt-chip">Cobertura · 104 ciudades</span></span><span class="rt-chip-go" aria-hidden="true">Espacios el mismo día · lun–vie 8–7</span><img data-tsheal src="/api/v1/app/service-images/hero-tech.webp" alt="Técnico de Top Speed Appliance con uniforme de la marca reparando un compresor de refrigerador"/></div><div style="background:#fff;color:#0A265C;padding:10px 14px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b>Residencial • Comercial • Red de proveedores</b><span>Sede en Lauderhill — atendemos 104 ciudades en Broward, Palm Beach y Miami-Dade</span></div></div>
+    </div>
+
+    <!-- QUICK REQUEST MINI -->
+    <div class="hero-form" id="quick">
+      <div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3>Solicita servicio en 60 segundos</h3><p style="margin:4px 0 0;color:var(--muted);font-size:14px">Residencial o comercial: agrega una foto y recibe orientación de triaje al instante.</p></div><span class="pill bluep">EN VIVO</span></div>
+      <div class="rt-tracklabel"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="color:var(--red);flex:none" aria-hidden="true"><g transform="translate(4.32 1.5) scale(0.5122)"><path d="M1.5 1.5V39.5" stroke-width="3.5"/><path d="M1.5 3.5H28.5V20.5H1.5V3.5Z" stroke-width="3.5"/><path d="M10.5 3.5H1.5V12H10.5V3.5Z" fill="currentColor" stroke="none"/><path d="M28.5 3.5H19.5V12H28.5V3.5Z" fill="currentColor" stroke="none"/><path d="M19.5 12H10.5V20.5H19.5V12Z" fill="currentColor" stroke="none"/></g></svg><span class="rt-kicker" style="color:var(--red)">Elige tu vía</span><span style="font-size:13px;font-weight:700;color:var(--muted)">Vía residencial: propietarios e inquilinos · Vía comercial: negocios y administradores de propiedades</span></div>
+      <div class="toggle" style="margin:0 0 16px" role="tablist"><button class="active" id="tgRes" onclick="setTrack('res')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Residencial</button><button id="tgCom" onclick="setTrack('com')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg> Commercial</button></div>
+      <form id="quickForm" onsubmit="submitQuick(event)">
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Sitio web de la empresa<input id="qWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+        <div class="grid2"><div class="field"><label>Tu nombre</label><input id="qName" placeholder="Nombre completo" required></div><div class="field"><label>Teléfono *</label><input id="qPhone" placeholder="(954) 000-0000" required></div></div>
+        <div class="field" id="bizField" style="display:none"><label>Nombre del negocio / propiedad</label><input id="qBiz" placeholder="ej. Sunrise Plaza — Edificio B"></div>
+        <div class="grid2"><div class="field"><label>Electrodoméstico</label><select id="qAppliance" onchange="runTriage()"><option>Refrigerador</option><option>Lavadora</option><option>Secadora</option><option>Horno / Estufa</option><option>Lavavajillas</option><option>Microondas</option><option>Congelador</option><option>Máquina de hielo</option><option>Estufa de cubierta</option></select></div><div class="field"><label>Ciudad / Código postal</label><select id="qCity"><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Miami</option></select></div></div>
+        <div class="field"><label>¿Qué está pasando?</label><textarea id="qIssue" rows="2" placeholder="ej. El refrigerador no enfría, la máquina de hielo se detuvo, código de error F8E1…" oninput="runTriage()"></textarea></div>
+        <div class="upload"><strong><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Agrega una foto: el electrodoméstico o el código de error</strong><p style="margin:4px 0 10px;color:var(--muted);font-size:13px">Ayuda al triaje a precargar los repuestos correctos. En este formulario rápido tu foto se queda en tu dispositivo; para un diagnóstico completo por foto con IA, usa el Laboratorio de Diagnóstico en nuestro sitio del cliente.</p><input type="file" id="qPhoto" accept="image/*" onchange="previewPhoto(event)"><div id="photoPreview"></div></div>
+        <button class="btn btn-red" style="width:100%;margin-top:14px">Obtener mi triaje + solicitar llamada →</button>
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin:10px 0 0">Toda solicitud llega al equipo de Service Setters y se confirma por teléfono. Diagnóstico de $99 cobrado en la reserva, acreditado a la reparación.</p>
+      </form>
+      <div class="success" id="quickSuccess"></div>
+      <div class="triage" style="margin-top:16px" id="triageBox">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="8.5" width="15" height="11" rx="3"/><path d="M12 8.5V4.8M12 4.8h.01" stroke="#E8322E"/><path d="M8.8 13.4h.01M15.2 13.4h.01" stroke-width="2.6"/><path d="M9.4 16.6h5.2M2.8 12.5v3M21.2 12.5v3"/></svg> Triaje con IA</h3><span class="pill amber" id="triageUrgency">Urgencia: estándar</span></div>
+        <p id="triageIssue" style="margin:0;color:#D6E6FF">Elige un electrodoméstico y describe el problema: el triaje estimará la causa probable, la urgencia y los repuestos a llevar.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px"><small style="letter-spacing:.08em;text-transform:uppercase;opacity:.8">Repuestos probables a llevar</small><div id="triageParts" style="font-weight:700;margin-top:4px">—</div></div>
+          <div style="background:rgba(255,255,255,.1);border-radius:12px;padding:12px"><small style="letter-spacing:.08em;text-transform:uppercase;opacity:.8">Siguiente paso</small><div style="font-weight:700;margin-top:4px">Revisión de Service Setters → asignación de proveedor → actualizaciones por texto</div></div>
+        </div>
+        <p style="font-size:12px;opacity:.75;margin:10px 0 0">Un técnico confirma el diagnóstico en el lugar. Ningún precio es final hasta la inspección.</p>
+      </div>
+    </div>
+  </div>
+</div><div class="checker" style="margin-top:0"></div></section>
+
+<!-- PHOTO DIAGNOSIS BANNER -->
+<section style="padding:28px 0 4px"><div class="wrap">
+  <a href="/speedy" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy(); return false;}" style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;text-decoration:none;color:inherit">
+    <img src="/api/v1/app/platform-images/speedy-diagnosis.webp" alt="Ilustración: un cliente fotografiando el interior de una lavadora para un diagnóstico por foto con la IA de Speedy" style="width:min(300px,100%);height:auto;border-radius:12px;display:block" loading="lazy">
+    <span style="flex:1;min-width:min(260px,100%)"><b style="font-size:20px;display:block;margin-bottom:6px">¿No sabes qué falla? Toma una foto.</b><span style="color:var(--muted);font-size:14.5px;line-height:1.55;display:block">Envíale a Speedy una foto del electrodoméstico o de su código de error y recibe orientación de triaje antes de reservar; un técnico siempre confirma el diagnóstico en el lugar.</span><span style="font-weight:800;color:var(--red);display:block;margin-top:10px">Prueba un diagnóstico por foto con Speedy →</span></span>
+  </a>
+</div></section>
+
+<!-- TRUST BAND -->
+<div style="background:#fff;border-bottom:1px solid var(--line)"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:space-between;padding-top:16px;padding-bottom:16px">
+  <b>Técnicos con licencia y certificación EPA</b><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg> Servicio el mismo día</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.2 2.6v5.6c0 4.6-3 7.9-7.2 9.8-4.2-1.9-7.2-5.2-7.2-9.8V5.6z"/><path d="M8.8 11.8l2.3 2.3 4.2-4.4" stroke="#E8322E"/></svg> Garantía de 90 días</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg> Diagnóstico de $99 acreditado a la reparación</span><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> 104 ciudades • Cobertura en tres condados</span><a href="/" target="_blank" rel="noopener" style="font-weight:800;color:var(--blue)">Sitio del cliente: topspeedappliance.net ↗</a>
+</div></div>
+
+<!-- SERVICES -->
+<section class="section" id="request" style="padding-bottom:20px"><div class="wrap">
+  <div class="eyebrow">Qué reparamos • Toca un servicio para prellenar tu solicitud</div><h2 class="title">9 servicios. Un solo sistema de despacho.</h2><p class="sub">Toda solicitud — hogar o negocio — fluye por el mismo Service OS: triaje, aprobación de Service Setters, asignación de proveedor, seguimiento en vivo, factura y garantía.</p>
+  <div class="cards" style="margin-top:22px" id="serviceCards"></div>
+  <div class="eyebrow" style="margin-top:32px">Vía residencial • Reparación a domicilio</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Reparaciones del hogar, en fotos</h3>
+  <p class="sub" style="margin-bottom:16px">Cada servicio del hogar que hacemos, en fotos: toca una foto para abrir el formulario de reserva y un Service Setter confirma tu ventana.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px">
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-fridge.webp" alt="Ilustración: un técnico de Top Speed revisando un refrigerador durante una visita de reparación a domicilio" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de refrigeradores →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-laundry.webp" alt="Ilustración: un cliente doblando ropa junto a una lavadora y una secadora: reparación de lavadoras y secadoras" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de lavadoras y secadoras →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/residential-oven.webp" alt="Ilustración: un cocinero casero sacando una bandeja de un horno que funciona: reparación de hornos y estufas" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de hornos y estufas →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-dishwasher.webp" alt="Ilustración: un técnico reparando un lavavajillas abierto en una cocina luminosa: reparación de lavavajillas" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de lavavajillas →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-dryer.webp" alt="Ilustración: un técnico dando servicio a una secadora con el tambor abierto en un cuarto de lavado: reparación de secadoras" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de secadoras →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-microwave.webp" alt="Ilustración: un técnico revisando un microondas montado en una cocina: reparación de microondas" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de microondas →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-freezer.webp" alt="Ilustración: un técnico frente a un congelador abierto con aire helado saliendo: reparación de congeladores y máquinas de hielo" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de congeladores y máquinas de hielo →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-disposal.webp" alt="Ilustración: un técnico instalando un triturador bajo el fregadero mientras el propietario le pasa una herramienta: reparación de trituradores" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Triturador de basura →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-range.webp" alt="Ilustración: un técnico reparando la cubierta de una estufa de gas: reparación de cubiertas y estufas" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de cubiertas y estufas →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/service-ice-maker.webp" alt="Ilustración: un técnico reparando una máquina de hielo independiente con aire frío saliendo: reparación de máquinas de hielo" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Reparación de máquinas de hielo →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/install-day.webp" alt="Ilustración: dos técnicos colocando una lavadora y una secadora nuevas el día de la instalación: instalación de electrodomésticos" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Instalación de electrodomésticos →</span></a>
+  </div>
+  <div class="eyebrow" style="margin-top:32px">En el trabajo • Diagnóstico e instalación</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">La visita, en fotos</h3>
+  <p class="sub" style="margin-bottom:16px">Un diagnóstico de refrigerador en persona, y un electrodoméstico nuevo llegando el día de la instalación. El mismo equipo, la misma cotización escrita antes de empezar cualquier trabajo.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(320px,100%),1fr));gap:16px">
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-fridge-diagnosis.webp" alt="Ilustración: un técnico de Top Speed diagnosticando un refrigerador en una cocina, revisando los controles y los serpentines: diagnóstico de refrigerador" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Diagnóstico de refrigerador →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-delivery-arrival.webp" alt="Ilustración: un electrodoméstico nuevo llegando a la puerta de un cliente el día de la instalación, cargado por el equipo de entrega: instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Llegada el día de la instalación →</span></a>
+  </div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Refrigerador</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Refrigerador: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-thermostat-test.webp" alt="Ilustración: un técnico probando el termostato de un refrigerador con un medidor durante una visita: prueba de termostato" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Prueba de termostato →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-fridge-fan.webp" alt="Ilustración: un técnico reemplazando el motor del ventilador de un refrigerador detrás del panel trasero: reparación del ventilador" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación del ventilador →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-control-board.webp" alt="Ilustración: un técnico probando la tarjeta de control de un electrodoméstico con herramientas de diagnóstico" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Diagnóstico de la tarjeta de control →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Lavadora</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Lavadora: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-washer-wont-drain.webp" alt="Ilustración: una lavadora llena de agua estancada que no drena, con ropa mojada dentro: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">La lavadora no drena →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-washer-belt.webp" alt="Ilustración: un técnico instalando una correa nueva en una lavadora durante una visita: reparación de la correa" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de la correa →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-washer-pump.webp" alt="Ilustración: un técnico reemplazando la bomba de drenaje de una lavadora durante una visita: reparación de la bomba" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de la bomba →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-leak-hunt.webp" alt="Ilustración: un técnico rastreando el origen de una fuga de la lavadora con una linterna y toallas en el piso: diagnóstico de fugas" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Búsqueda de fugas →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-washer-hookup.webp" alt="Ilustración: un técnico conectando las mangueras de agua y la línea de drenaje al instalar una lavadora: conexión" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Conexión de la lavadora →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Secadora</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Secadora: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-dryer-heating.webp" alt="Ilustración: un técnico probando la resistencia de una secadora durante una visita: reparación de calefacción" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de calefacción →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-dryer-rollers.webp" alt="Ilustración: un técnico reemplazando los rodillos del tambor de una secadora durante una visita: reparación de rodillos" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de rodillos →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-dryer-vent-hookup.webp" alt="Ilustración: un técnico conectando el ducto de ventilación de una secadora durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Conexión del ducto de la secadora →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Horno / Estufa</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Horno y estufa: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-oven-dead-dinner.webp" alt="Ilustración: un propietario descubriendo que el horno no calienta con la cena en marcha: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Horno muerto antes de la cena →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-oven-igniter.webp" alt="Ilustración: un técnico reemplazando el encendedor de un horno durante una visita: reparación del encendedor" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación del encendedor →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-range-burner.webp" alt="Ilustración: un técnico reparando un quemador de estufa durante una visita: reparación de quemadores" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de quemadores →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-range-gas.webp" alt="Ilustración: un técnico conectando y probando una estufa de gas durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Instalación de estufa de gas →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Lavavajillas</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Lavavajillas: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-first-homeowner-dishwasher.webp" alt="Ilustración: un propietario primerizo frente a un lavavajillas que no funciona en su cocina nueva: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Lavavajillas del primer propietario →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-dishwasher-seal.webp" alt="Ilustración: un técnico reemplazando el sello de la puerta de un lavavajillas durante una visita: reparación del sello" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación del sello →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-dishwasher-slide.webp" alt="Ilustración: un técnico deslizando un lavavajillas nuevo bajo la encimera durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Instalación de lavavajillas →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Congelador / Máquina de hielo</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Congelador y máquina de hielo: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-freezer-thaw.webp" alt="Ilustración: un propietario encontrando un congelador descongelándose con la comida ablandándose dentro: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Congelador descongelándose →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-freezer-thaw.webp" alt="Ilustración: un técnico descongelando y reparando un congelador durante una visita: reparación del deshielo" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación del deshielo →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-ice-maker-swap.webp" alt="Ilustración: un técnico cambiando la unidad de la máquina de hielo dentro de un congelador durante una visita: reemplazo" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Cambio de la máquina de hielo →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-ice-maker-line.webp" alt="Ilustración: un técnico conectando la línea de agua de una máquina de hielo nueva durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Instalación de la línea de la máquina de hielo →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Microondas</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Microondas: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-microwave-dead.webp" alt="Ilustración: un propietario presionando los botones de un microondas que no arranca: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Microondas muerto →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-microwave-door.webp" alt="Ilustración: un técnico reparando el pestillo de la puerta de un microondas durante una visita: reparación de la puerta" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de la puerta →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-microwave-mount.webp" alt="Ilustración: un técnico montando un microondas sobre la estufa durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Montaje del microondas →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Triturador</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Triturador de basura: reparaciones en detalle</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/need-disposal-clog.webp" alt="Ilustración: un propietario mirando un fregadero tapado alrededor de un triturador atascado: el momento en que se necesita la reparación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Triturador tapado →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/repair-disposal-jam.webp" alt="Ilustración: un técnico destapando un triturador atascado bajo el fregadero: reparación de atasco" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Reparación de atasco →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-disposal-new.webp" alt="Ilustración: un técnico instalando un triturador nuevo bajo el fregadero durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">Instalación de triturador nuevo →</span></a></div>
+  <div class="eyebrow" style="margin-top:32px">Biblioteca de escenarios • Instalación</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Instalación: el flujo completo, en orden</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(180px,100%),1fr));gap:12px"><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-door-measure.webp" alt="Ilustración: un técnico midiendo una puerta antes de entrar un electrodoméstico nuevo: medición de la puerta" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">1 · Medir la puerta →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-fridge-level.webp" alt="Ilustración: un técnico nivelando un refrigerador nuevo en una cocina durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">2 · Nivelar el refrigerador →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-water-line.webp" alt="Ilustración: un técnico conectando la línea de agua de un refrigerador durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">3 · Línea de agua →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-first-run-washer.webp" alt="Ilustración: un técnico corriendo el primer ciclo de prueba de una lavadora nueva durante la instalación" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">4 · Primera prueba de la lavadora →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-walkthrough.webp" alt="Ilustración: un técnico explicando los controles del electrodoméstico nuevo al propietario después de la instalación: recorrido final" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">5 · Recorrido final →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-clean-finish.webp" alt="Ilustración: un técnico limpiando y terminando un electrodoméstico recién instalado: acabado limpio" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">6 · Acabado limpio →</span></a><a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/scenario-images/install-haul-away-old.webp" alt="Ilustración: un equipo retirando un electrodoméstico viejo después de instalar el nuevo: retiro del viejo" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:10px 12px;font-weight:800;font-size:14px">7 · Retiro del viejo →</span></a></div>
+</div></section>
+
+<!-- HOW SERVICE OS WORKS -->
+<section class="section" style="padding-top:20px"><div class="wrap">
+  <div class="eyebrow blue">Top Speed Service OS • El motor detrás de ambos dominios</div><h2 class="title">De la solicitud a la reparación: en 8 pasos</h2>
+  <div class="steps" style="margin-top:20px">
+    <div class="card"><div class="stepnum">1</div><h3>Solicitud de 60 segundos</h3><p style="color:var(--muted);margin:0">Foto + problema + código postal en .net o .com. Sin formularios largos.</p></div>
+    <div class="card"><div class="stepnum">2</div><h3>Triaje con IA</h3><p style="color:var(--muted);margin:0">Causa probable, urgencia y lista corta de repuestos, generados al instante.</p></div>
+    <div class="card"><div class="stepnum">3</div><h3>Revisión de Service Setters</h3><p style="color:var(--muted);margin:0">Una persona confirma los detalles y el diagnóstico de $99 antes del despacho.</p></div>
+    <div class="card"><div class="stepnum">4</div><h3>Asignación de proveedor</h3><p style="color:var(--muted);margin:0">Asignado por electrodoméstico, zona, calificación y disponibilidad; no se vende como prospecto.</p></div>
+    <div class="card"><div class="stepnum">5</div><h3>Seguimiento en vivo</h3><p style="color:var(--muted);margin:0">Textos en cada paso: Reservado → Despachado → En camino → Llegó.</p></div>
+    <div class="card"><div class="stepnum">6</div><h3>Reparación en el lugar</h3><p style="color:var(--muted);margin:0">El técnico confirma el diagnóstico, cotiza antes de trabajar y repara con repuestos a la mano.</p></div>
+    <div class="card"><div class="stepnum">7</div><h3>Factura + garantía</h3><p style="color:var(--muted);margin:0">$99 acreditados a la reparación. Garantía de 90 días en repuestos y mano de obra en la factura.</p></div>
+    <div class="card"><div class="stepnum">8</div><h3>Motor de reseñas</h3><p style="color:var(--muted);margin:0">Los trabajos completados activan una solicitud de reseña en el mejor momento.</p></div>
+  </div>
+  <div style="margin-top:18px;border-radius:22px;border:1px solid var(--line);padding:10px;background:#fff"><img data-tsheal src="/api/v1/app/service-images/van-banner.webp" alt="Banner de la furgoneta de servicio de Top Speed Appliance: Get Top Speed" style="width:100%;height:auto;display:block;border-radius:14px"></div>
+</div></section>
+
+<section class="section" id="providers"><div class="wrap">
+  <div class="grid2" style="grid-template-columns:1.05fr .95fr;gap:28px" id="providerGrid">
+    <div><div class="eyebrow">Para técnicos y talleres locales • topspeedapplianceservice.com</div>
+      <h2 class="title">Consigue trabajos.<br>No prospectos.</h2>
+      <p class="sub">Los mercados de prospectos venden el mismo prospecto a cinco técnicos. Top Speed trabaja distinto: Service Setters califica la solicitud, cobra el diagnóstico de $99 en la reserva y asigna <b>one</b> proveedor al trabajo. Llegas donde un cliente real que ya pagó para demostrar seriedad.</p>
+      <div class="cards cards-2col" style="grid-template-columns:1fr 1fr;margin-top:18px">
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M15.8 6.2A4.4 4.4 0 0 0 12 4.6c-2 0-3.6 1.3-3.6 3 0 4.3 7.4 2.4 7.4 6.6 0 1.8-1.7 3-3.8 3a4.6 4.6 0 0 1-3.9-1.8" stroke="#E8322E"/></svg></div><h3>$99 ya cobrados</h3><p style="color:var(--muted);margin:0">Diagnóstico asegurado antes del despacho: muchos menos clientes que no aparecen o que solo curiosean.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg></div><h3>Míralo antes de salir</h3><p style="color:var(--muted);margin:0">Foto del cliente, código de error, marca y notas de triaje en cada oferta.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 4L3 6v14l5.5-2 6.5 2 5.5-2V4L15 6 8.5 4zm0 0v14M15 6v14" stroke="#E8322E"/><circle cx="11.8" cy="10" r="1.2" fill="#E8322E" stroke="none"/></svg></div><h3>Tus zonas, tus habilidades</h3><p style="color:var(--muted);margin:0">Solo trabajos en las ciudades y electrodomésticos que eliges, en 12 zonas de Broward + Miami.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.8" width="10" height="18.4" rx="2.6"/><path d="M10.8 18.4h2.4" stroke="#E8322E"/></svg></div><h3>Una sola app para el día</h3><p style="color:var(--muted);margin:0">Ofertas, ruta, chat con el cliente, facturación y calificaciones, sin perseguir papeleo.</p></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin-top:0">La red vs. los mercados de prospectos</h3>
+        <div style="overflow:auto"><table><tr><th></th><th>Red Top Speed</th><th>Mercados por prospecto</th></tr>
+        <tr><td><b>Qué recibes</b></td><td>Trabajo asignado y calificado</td><td>Un prospecto compartido con la competencia</td></tr>
+        <tr><td><b>Diagnóstico</b></td><td>$99 cobrados en la reserva, acreditados a la reparación</td><td>Normalmente sin cobrar</td></tr>
+        <tr><td><b>Despacho</b></td><td>Aprobación humana de Service Setters</td><td>Automatizado, sin revisión</td></tr>
+        <tr><td><b>Información del cliente</b></td><td>Foto, problema, marca y triaje</td><td>Solo nombre y teléfono</td></tr>
+        <tr><td><b>Términos</b></td><td>Términos claros compartidos antes del lanzamiento, sin % inventados aquí</td><td>Pagas por prospecto, ganes o pierdas</td></tr></table></div>
+      </div>
+      <!-- Join form -->
+      <form class="card" style="margin-top:16px" onsubmit="submitProvider(event)">
+        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Sitio web de la empresa<input id="pWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+        <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0">Solicita unirte a la red</h3><span class="pill bluep">Revisado por Service Setters</span></div>
+        <p style="color:var(--muted);font-size:14px">Las solicitudes las revisa el equipo de Service Setters y se confirman por teléfono antes de la activación.</p>
+        <div class="grid2"><div class="field"><label>Tu nombre *</label><input id="pName" required placeholder="Nombre completo"></div><div class="field"><label>Teléfono *</label><input id="pPhone" required placeholder="(954) 000-0000"></div></div>
+        <div class="grid2"><div class="field"><label>Nombre del negocio</label><input id="pBiz" placeholder="Tu taller / LLC"></div><div class="field"><label>Años de experiencia</label><select id="pExp"><option>1–3 años</option><option>3–5 años</option><option>5–10 años</option><option>10+ años</option></select></div></div>
+        <label>Zonas que cubres (toca para seleccionar)</label><div class="chips" id="areaChips"></div>
+        <label style="margin-top:14px">Electrodomésticos que atiendes</label><div class="chips" id="appChips"></div>
+        <button class="btn btn-navy" style="width:100%;margin-top:16px">Enviar solicitud →</button>
+        <div class="success" id="providerSuccess"></div>
+      </form>
+    </div>
+    <div><div class="card" style="padding:22px"><h3 style="margin:0 0 8px">La app del proveedor: Tech App</h3><p style="color:var(--muted);margin:0 0 10px">Las ofertas reales del despacho de Service Setters llegan a la Tech App: trabajos asignados con las fotos del diagnóstico adjuntas, tu ruta del día, actualizaciones de estado y ubicación en vivo para Track My Tech. Los términos de pago, los requisitos de incorporación (verificación de licencia/seguro) y los tiempos de lanzamiento se confirman directamente con el equipo de Top Speed; nada aquí es un trabajo de muestra.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-red" href="/tech">Abrir la Tech App</a><a class="btn btn-outline" href="/network">Red de proveedores</a></div></div></div>
+    <div>
+      <div class="notice" style="margin-top:14px">Vista previa para proveedores: los términos de pago, los requisitos de incorporación (verificación de licencia/seguro) y los tiempos de lanzamiento se confirman directamente con los solicitantes; en esta página no se promete nada más allá del modelo descrito.</div>
+      <div class="rt-tele" style="margin-top:14px"><span class="rtc tl" aria-hidden="true"></span><span class="rtc tr" aria-hidden="true"></span><span class="rtc bl" aria-hidden="true"></span><span class="rtc br" aria-hidden="true"></span><img data-tsheal src="/api/v1/app/service-images/commercial.webp" alt="Técnico de Top Speed Appliance con uniforme de la marca reparando la parte trasera de una estufa comercial" style="border-radius:18px;height:220px;width:100%;object-fit:cover"></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- COMMERCIAL -->
+<section class="section alt" id="commercial"><div class="wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:28px" id="commGrid">
+    <div><div class="eyebrow">Vía comercial • Instalaciones y propiedades</div><h2 class="title">Órdenes de trabajo sin el juego de llamadas</h2><p class="sub">Restaurantes, lavanderías, administradores de propiedades, hoteles, oficinas y edificios de varias unidades: envía una vez, sigue todo y recibe una sola factura consolidada.</p>
+      <div class="cards cards-2col" style="grid-template-columns:1fr 1fr;margin-top:18px">
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2.8L4.8 13.4h5.4L9.4 21.2l8.4-10.8h-5.5z"/><circle cx="18.6" cy="18.8" r="1" fill="#E8322E" stroke="none"/></svg></div><h3>Respuesta prioritaria</h3><p style="color:var(--muted);margin:0">Las solicitudes comerciales se marcan para revisión prioritaria de Service Setters: el tiempo detenido te cuesta dinero, y lo tratamos así.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12V20l-2-1.4L14 20l-2-1.4L10 20l-2-1.4L6 20z"/><path d="M9 8h6M9 11.4h6" stroke="#E8322E"/></svg></div><h3>Facturación consolidada</h3><p style="color:var(--muted);margin:0">Varias unidades, varias visitas: un solo estado de cuenta mensual claro en vez de una pila de tickets.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg></div><h3>Recepción multilocalización</h3><p style="color:var(--muted);margin:0">Edificio, unidad, contacto del inquilino y notas de acceso capturados desde el inicio para que los técnicos lleguen listos.</p></div>
+        <div class="card"><div class="icon"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5.5" y="4.5" width="13" height="17" rx="2"/><path d="M9.5 4.5a2.5 2.5 0 0 1 5 0" stroke="#E8322E"/><path d="M9 10.5h6M9 14h6M9 17.5h3.6"/></svg></div><h3>Reportes con fotos</h3><p style="color:var(--muted);margin:0">Fotos de antes/después y notas de finalización en cada orden de trabajo para tus registros.</p></div>
+      </div>
+      <div class="card" style="margin-top:14px"><h3 style="margin-top:0">Para quién es</h3><div class="brands"><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5v6M4.2 3.5v3.4a2.3 2.3 0 0 0 4.6 0V3.5M6.5 9.5V20.5" transform="translate(.4 0)"/><path d="M17.2 3.5c1.8 1.4 2.6 3.8 2.6 6 0 2-1 3-2.6 3v8" stroke="#E8322E"/></svg> Restaurantes y cafés</span><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 10.5h15l-1.4 8.2a2 2 0 0 1-2 1.6H7.9a2 2 0 0 1-2-1.6z"/><path d="M7.5 10.5L12 4l4.5 6.5M9 14.2v3M12 14.2v3M15 14.2v3" stroke="#E8322E"/></svg> Lavanderías</span><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12.5L9 7.5l5.5 5M6 10.4V19h9v-8.6"/><path d="M13.5 11.5L19 6.8l5 4.7M17.4 9.6V19h-3" stroke="#E8322E"/></svg> Administradores de propiedades</span><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M12 6v5M9.5 8.5h5" stroke="#E8322E"/><path d="M9.3 14.4h1.6M13.1 14.4h1.6M10.4 20.5v-2.8h3.2v2.8"/></svg> Hoteles y alquileres</span><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="3.5" width="12" height="17" rx="1"/><path d="M9.3 7h1.6M13.1 7h1.6M9.3 10.4h1.6M13.1 10.4h1.6M9.3 13.8h1.6M13.1 13.8h1.6" stroke="#E8322E"/><path d="M10.4 20.5v-3h3.2v3"/></svg> Oficinas y comercios</span><span class="brand"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> HOA y multiunidad</span></div><p style="color:var(--muted);font-size:14px;margin:12px 0 0">Administradores de propiedades: combinen esto con el portal del cliente en <a href="/" target="_blank" rel="noopener" style="color:var(--blue);font-weight:700">topspeedappliance.net</a> para la recepción de inquilinos en todas sus unidades.</p></div>
+    </div>
+    <form class="card" onsubmit="submitCommercial(event)" style="align-self:start">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Sitio web de la empresa<input id="cWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+      <div style="display:flex;justify-content:space-between;gap:10px"><h3 style="margin:0;font-size:28px">Orden de trabajo comercial</h3><span class="pill redp">PRIORIDAD</span></div>
+      <p style="color:var(--muted);font-size:14px">Las solicitudes comerciales se confirman por teléfono y se delimitan antes del despacho. Pueden aplicar términos escritos separados para equipos comerciales.</p>
+      <div class="grid2"><div class="field"><label>Negocio / Propiedad *</label><input id="cBiz" required placeholder="Nombre del negocio"></div><div class="field"><label>Contacto + Teléfono *</label><input id="cContact" required placeholder="Nombre — (954) 000-0000"></div></div>
+      <div class="grid2"><div class="field"><label>Tipo de propiedad</label><select id="cType"><option>Restaurante / Servicio de alimentos</option><option>Lavandería</option><option>Administración de propiedades</option><option>Hotel / Alquiler a corto plazo</option><option>Oficina / Comercio</option><option>Residencial de varias unidades</option><option>Otro comercial</option></select></div><div class="field"><label>Ciudad</label><select id="cCity"><option>Fort Lauderdale</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Miami</option><option>Otro Broward</option></select></div></div>
+      <div class="grid2"><div class="field"><label>Equipo</label><select id="cEquip"><option>Refrigeración comercial</option><option>Horno / Estufa comercial</option><option>Lavadora / Secadora comercial</option><option>Lavavajillas / Sanitización</option><option>Máquina de hielo comercial</option><option>Electrodoméstico residencial (en la unidad)</option><option>Varios / No estoy seguro</option></select></div><div class="field"><label>Urgencia</label><select id="cUrg"><option>Detenido: perdiendo negocio ahora</option><option>Urgente: hoy si es posible</option><option>Estándar: esta semana</option><option>Planificado / Preventivo</option></select></div></div>
+      <div class="field"><label>Notas de unidad / acceso</label><textarea id="cNotes" rows="2" placeholder="Edificio, n.º de unidad, instrucciones del código de la puerta, contacto del inquilino, estacionamiento…"></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px"><label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" style="width:auto" id="cConsol"> Quiero facturación mensual consolidada</label><label style="display:flex;gap:6px;align-items:center;font-weight:600"><input type="checkbox" style="width:auto" id="cRecur"> Visitas recurrentes / preventivas</label></div>
+      <button class="btn btn-red" style="width:100%">Enviar orden de trabajo →</button>
+      <p style="font-size:12px;color:var(--muted);text-align:center">O llama a la línea comercial: <a href="tel:+18444607038" style="font-weight:800;color:var(--navy)">844-460-7038</a></p>
+      <div class="success" id="commSuccess"></div>
+      <div style="margin-top:14px;background:var(--card2);border-radius:12px;padding:12px"><b style="font-size:13px;letter-spacing:.06em;text-transform:uppercase">Flujo reciente de órdenes (vista previa)</b><div style="font-size:14px;margin-top:8px;display:grid;gap:8px"><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#22C55E" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#22C55E" opacity=".45"/></svg> <b>OT — Refrigeración</b> • Fort Lauderdale • Recibida → Triaje → Aprobada</div><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#EAB308" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#EAB308" opacity=".45"/></svg> <b>OT — Lavandería</b> • Lauderhill • Esperando confirmación del contacto del sitio</div><div><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="6.4" fill="#3B82F6" stroke="none"/><circle cx="12" cy="12" r="9" stroke="#3B82F6" opacity=".45"/></svg> <b>OT — Horno / Estufa</b> • Miami • Proveedor en camino</div></div></div>
+    </form>
+  </div>
+  <div class="eyebrow" style="margin-top:30px">Vía comercial • A quiénes mantenemos funcionando</div>
+  <h3 style="font-size:24px;margin:4px 0 6px">Negocios que mantenemos funcionando</h3>
+  <p class="sub" style="margin-bottom:16px">Restaurantes, lavanderías, hoteles y las propiedades detrás de ellos: toca una foto para empezar una reserva o usa el formulario de orden de trabajo de arriba.</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(230px,100%),1fr));gap:16px">
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-restaurant.webp" alt="Ilustración: un chef dando el pulgar arriba junto a una estufa comercial mientras un técnico termina la reparación: servicio de equipos de restaurante" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Equipos de restaurante →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-laundromat.webp" alt="Ilustración: un encargado caminando junto a una fila de lavadoras comerciales con una tableta: servicio de equipos de lavandería" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Equipos de lavandería →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-hotel.webp" alt="Ilustración: un jefe de mantenimiento con un carrito de servicio en un pasillo de hotel: servicio de hoteles y propiedades" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Hoteles y mantenimiento de propiedades →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-fridge-pro.webp" alt="Ilustración: un técnico dando servicio a un refrigerador comercial grande en la cocina de un restaurante: refrigeración comercial" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Refrigeración comercial →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-oven-pro.webp" alt="Ilustración: un técnico frente a una batería de hornos comerciales en la cocina de un hotel: líneas de cocción comerciales" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Líneas de cocción comerciales →</span></a>
+    <a class="card" href="/es/book" style="padding:0;overflow:hidden;text-decoration:none;display:block"><img src="/api/v1/app/platform-images/commercial-ice-machine.webp" alt="Ilustración: un técnico dando servicio a una máquina de hielo comercial en el cuarto trasero de un restaurante" style="width:100%;height:auto;display:block" loading="lazy"><span style="display:block;padding:13px 16px;font-weight:800">Máquinas de hielo comerciales →</span></a>
+  </div>
+</div></section>
+
+<!-- COVERAGE -->
+<section class="section" id="coverage"><div class="wrap">
+  <div class="eyebrow blue">Cobertura de la red</div><h2 class="title">104 ciudades: cobertura en tres condados</h2><p class="sub">Toca una ciudad del Núcleo 12 para ver el detalle de su cobertura. La red completa ahora cubre 104 ciudades en Broward, Palm Beach y Miami-Dade; cada ciudad aparece abajo con un enlace a su propia página.</p>
+  <div style="display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:20px" id="covGrid">
+    <div class="mapbox" id="mapBox">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px"><b style="letter-spacing:.1em">TRES CONDADOS • MAPA DE COBERTURA DE SERVICE OS</b><span class="badge">No es un mapa en vivo: diseño ilustrativo</span></div>
+      <p style="color:#BFD6F5;font-size:14px;max-width:520px">Los pines muestran zonas relativas de cobertura, no límites exactos. El despacho asigna por código postal, tiempo de manejo y habilidades del proveedor en producción.</p>
+      <!-- pins positioned approximately NW->SE -->
+      <span class="pin" style="left:22%;top:32%">Coral Springs</span><span class="pin" style="left:38%;top:28%">Margate</span><span class="pin" style="left:58%;top:24%">Pompano Beach</span>
+      <span class="pin" style="left:30%;top:50%">Tamarac</span><span class="pin" style="left:48%;top:46%">N. Lauderdale</span><span class="pin" style="left:70%;top:44%">Oakland Park</span>
+      <span class="pin" style="left:24%;top:68%">Sunrise</span><span class="pin" style="left:44%;top:66%">Lauderhill</span><span class="pin" style="left:64%;top:64%">Lauderdale Lakes</span><span class="pin" style="left:82%;top:62%">Fort Lauderdale</span>
+      <span class="pin" style="left:36%;top:86%">Plantation</span><span class="pin" style="left:56%;top:88%">Davie</span>
+      <span class="pin" style="left:84%;top:88%;background:var(--red);color:#fff">Miami-Dade ↓</span>
+    </div>
+    <div><div class="card" id="cityDetail"><h3 id="cityName" style="margin-top:0">Fort Lauderdale</h3><p id="cityDesc" style="color:var(--muted)">Cobertura núcleo de Broward: despacho residencial y comercial, ventanas el mismo día, catálogo completo de 9 servicios y asignación de proveedores.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill green">Ventanas el mismo día</span><span class="pill bluep">Residencial + Comercial</span><span class="pill bluep" id="cityTag">Red núcleo</span></div><a href="#request" class="btn btn-navy btn-sm" style="margin-top:14px">Solicita servicio aquí →</a></div>
+      <div class="city-grid" id="cityGrid"></div>
+    </div>
+  </div>
+  <div style="margin-top:30px">
+    <h3 style="font-family:'Barlow Condensed';font-size:32px;margin:0">Red completa: las 104 ciudades</h3>
+    <p class="sub" style="margin-top:6px">El Núcleo 12 de arriba es nuestra red original de Broward. La red completa cubre 104 ciudades en Broward, Palm Beach y Miami-Dade; cada ciudad de abajo enlaza a su propia página, parte de 131 páginas publicadas en la red. Las ciudades del Núcleo 12 están marcadas en rojo.</p>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Condado de Broward <span style="color:var(--muted);font-size:16px">31 ciudades</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/coconut-creek/">Coconut Creek</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/cooper-city/">Cooper City</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/coral-springs/">Coral Springs <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/dania-beach/">Dania Beach</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/davie/">Davie <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/deerfield-beach/">Deerfield Beach</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/fort-lauderdale/">Fort Lauderdale <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hallandale-beach/">Hallandale Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hillsboro-beach/">Hillsboro Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hollywood/">Hollywood</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/lauderdale-lakes/">Lauderdale Lakes <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lauderdale-by-the-sea/">Lauderdale-by-the-Sea</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/lauderhill/">Lauderhill <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lazy-lake/">Lazy Lake</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lighthouse-point/">Lighthouse Point</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/margate/">Margate <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miramar/">Miramar</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/north-lauderdale/">North Lauderdale <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/oakland-park/">Oakland Park <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/parkland/">Parkland</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/pembroke-park/">Pembroke Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/pembroke-pines/">Pembroke Pines</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/plantation/">Plantation <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/pompano-beach/">Pompano Beach <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sea-ranch-lakes/">Sea Ranch Lakes</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/southwest-ranches/">Southwest Ranches</a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/sunrise/">Sunrise <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link core" href="https://www.topspeedappliance.net/service-areas/tamarac/">Tamarac <span class="cdot">• Núcleo 12</span></a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/west-park/">West Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/weston/">Weston</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/wilton-manors/">Wilton Manors</a>
+    </div>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Condado de Palm Beach <span style="color:var(--muted);font-size:16px">16 ciudades</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/belle-glade/">Belle Glade</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/boca-raton/">Boca Raton</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/boynton-beach/">Boynton Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/delray-beach/">Delray Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/greenacres/">Greenacres</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/jupiter/">Jupiter</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lake-park/">Lake Park</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/lake-worth-beach/">Lake Worth Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-palm-beach/">North Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-beach/">Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-beach-gardens/">Palm Beach Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/palm-springs/">Palm Springs</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/riviera-beach/">Riviera Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/royal-palm-beach/">Royal Palm Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/wellington/">Wellington</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/west-palm-beach/">West Palm Beach</a>
+    </div>
+    <h4 style="font-family:'Barlow Condensed';font-size:24px;margin:24px 0 10px">Condado de Miami-Dade <span style="color:var(--muted);font-size:16px">18 ciudades</span></h4>
+    <div class="city-grid" style="margin-top:0">
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/aventura/">Aventura</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/bal-harbour/">Bal Harbour</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/coral-gables/">Coral Gables</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/cutler-bay/">Cutler Bay</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/doral/">Doral</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/florida-city/">Florida City</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hialeah/">Hialeah</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/hialeah-gardens/">Hialeah Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/homestead/">Homestead</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/key-biscayne/">Key Biscayne</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami/">Miami</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami-beach/">Miami Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/miami-gardens/">Miami Gardens</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-miami/">North Miami</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/north-miami-beach/">North Miami Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sunny-isles-beach/">Sunny Isles Beach</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/surfside/">Surfside</a>
+      <a class="city-link" href="https://www.topspeedappliance.net/service-areas/sweetwater/">Sweetwater</a>
+    </div>
+    <p style="margin-top:20px"><a href="/service-areas-directory" style="font-weight:800">Explora el directorio completo de áreas de servicio →</a></p>
+  </div>
+</div></section>
+
+<!-- PRICING + BRANDS -->
+<section class="section alt" id="pricing"><div class="wrap">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px" id="priceGrid">
+    <div><div class="eyebrow">Precios y garantía • Traído del sitio en vivo</div><h2 class="title">Diagnóstico de $99.<br>Acreditado. Garantizado.</h2>
+      <div class="card" style="margin-top:14px"><div style="display:flex;gap:16px;align-items:center"><div style="background:var(--red);color:#fff;border-radius:16px;padding:16px;text-align:center;min-width:110px"><div style="font-family:'Barlow Condensed';font-size:42px;line-height:1">$99</div><small style="font-weight:800;letter-spacing:.06em">DIAGNÓSTICO</small></div><div><b>Cobrado en la reserva. Acreditado a tu reparación.</b><p style="color:var(--muted);margin:6px 0 0">Aplica a refrigerador, lavadora, secadora, horno, lavavajillas, microondas y todo el catálogo, hogar y comercial. El estimado de reparación y los precios de repuestos se cotizan por separado antes de empezar el trabajo.</p></div></div></div>
+      <div class="card" style="margin-top:12px"><h3 style="margin-top:0"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.2 2.6v5.6c0 4.6-3 7.9-7.2 9.8-4.2-1.9-7.2-5.2-7.2-9.8V5.6z"/><path d="M8.8 11.8l2.3 2.3 4.2-4.4" stroke="#E8322E"/></svg> Garantía de 90 días: repuestos y mano de obra</h3><ul style="color:var(--muted);margin:0;padding-left:18px"><li>Cubre los repuestos que instalamos y la mano de obra de la reparación específica de tu factura, por 90 días desde la fecha del servicio.</li><li>Si la misma falla vuelve dentro de la garantía, regresamos y la reparamos sin cargo adicional de mano de obra.</li><li>No cubre mal uso, subidas de voltaje, daños por agua o plagas, instalación incorrecta, desgaste normal ni trabajo de terceros.</li><li>Los equipos comerciales pueden tener términos escritos adicionales acordados antes de empezar el trabajo.</li></ul><p style="font-size:13px;color:var(--muted)">Los términos completos de la garantía están en tu factura y en la página en vivo de precios y garantía.</p></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px"><div class="card" style="text-align:center"><b>1 — Reserva</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">$99 asegurados en la reserva</p></div><div class="card" style="text-align:center"><b>2 — Diagnóstico</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">Cotización antes de cualquier reparación</p></div><div class="card" style="text-align:center"><b>3 — Reparación</b><p style="color:var(--muted);font-size:14px;margin:4px 0 0">$99 acreditados al total</p></div></div>
+    </div>
+    <div><div class="eyebrow blue">Cobertura de marcas</div><h2 class="title" style="font-size:42px">40 marcas atendidas</h2><p class="sub" style="font-size:15px">Desde los caballos de batalla de todos los días hasta líneas premium y comerciales: si calienta, enfría, lava o gira, la red probablemente lo cubre.</p>
+      <div class="brands" id="brandGrid" style="margin-top:14px"></div>
+      <div class="card" style="margin-top:16px"><h3 style="margin-top:0">Problemas comunes que triajamos a diario</h3><div style="display:grid;gap:10px"><div><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg> El refrigerador no enfría</b> <span style="color:var(--muted)">— serpentines, ventiladores, señales del sistema sellado</span></div><div><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z"/><path d="M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z" stroke="#E8322E"/></svg> La secadora no calienta</b> <span style="color:var(--muted)">— resistencia, fusible térmico, flujo de aire</span></div><div><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2s6 6.6 6 10.6a6 6 0 0 1-12 0c0-4 6-10.6 6-10.6z"/><path d="M9.2 13.8a3 3 0 0 0 2 3.4" stroke="#E8322E"/></svg> La lavadora no drena</b> <span style="color:var(--muted)">— bomba, manguera, tarjeta de control</span></div><div><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 4a2.2 2.2 0 0 1 4 0v8.3a4.4 4.4 0 1 1-4 0z"/><circle cx="12" cy="17.3" r="1.7" fill="#E8322E" stroke="none"/><path d="M12 15.6V8" stroke="#E8322E"/></svg> El horno se sobrecalienta</b> <span style="color:var(--muted)">— sensor, relé, termostato</span></div><div><b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg> La máquina de hielo no funciona</b> <span style="color:var(--muted)">— tubo de llenado, válvula de entrada, sensor</span></div></div><a href="#request" class="btn btn-red btn-sm" style="margin-top:12px">Describe tu problema →</a></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- OPS / ADMIN -->
+<section style="background:linear-gradient(135deg,var(--navy),#123A7A);color:#fff;padding:52px 0"><div class="wrap" style="text-align:center">
+  <h2 style="font-size:clamp(38px,5vw,60px);margin:0">ENTRE MÁS RÁPIDO, MEJOR.</h2><p style="color:#CBDDF7;max-width:620px;margin:10px auto 20px">Un solo Service OS. Dos puertas. Los clientes reservan en 60 segundos, los proveedores reciben trabajos reales y Service Setters mantiene cada reparación en curso.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a href="#request" class="btn btn-red">Solicitar servicio</a><a href="tel:+18444607038" class="btn btn-white">Llamar al 844-460-7038</a><a href="#providers" class="btn btn-ghostw">Unirse a la red</a></div>
+</div></section>
+<div class="checker"></div>
+<footer><div class="wrap">
+  <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr;gap:22px" id="footGrid">
+    <div><div style="font-family:'Barlow Condensed';font-size:30px;color:#fff">TOP SPEED APPLIANCE</div><p style="font-size:14px;max-width:340px">Top Speed Appliance LLC: propietario de la plataforma Top Speed Service OS. El hogar de la red de servicio de la plataforma en vivo.</p><p><b style="color:#fff">844-460-7038</b><br>Servicio el mismo día • Condado de Broward + alcance en Miami</p></div>
+    <div><b style="color:#fff">Este sitio (.com)</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li><a href="#request">Solicitud de servicio</a></li><li></li><li><a href="#providers">Red de proveedores</a></li><li><a href="#commercial">Comercial</a></li></ul></div>
+    <div><b style="color:#fff">Sitio del cliente</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li><a href="/" target="_blank" rel="noopener">topspeedappliance.net ↗</a></li><li><a href="#pricing">Precios y garantía</a></li><li><a href="#coverage">Áreas de servicio</a></li><li></li></ul></div>
+    <div><b style="color:#fff">Confianza</b><ul style="list-style:none;padding:0;line-height:2;font-size:14px"><li>Técnicos con licencia y certificación EPA</li><li>Diagnóstico de $99 acreditado a la reparación</li><li>Garantía de 90 días en repuestos y mano de obra</li><li>“Entre más rápido, mejor.”</li></ul></div>
+  </div>
+  <div style="text-align:center;margin-top:26px"><img src="/api/v1/app/logo-images/lockup-b" alt="Logo de Top Speed Appliance: el caballo de carreras de Top Speed con Top Speed Appliance, The Faster The Better" loading="lazy" style="width:min(300px,100%);height:auto;display:block;margin:0 auto;border-radius:16px"></div>
+  <div style="border-top:1px solid rgba(255,255,255,.15);margin-top:22px;padding-top:16px;font-size:13px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px"><span>© Top Speed Appliance LLC • Red de proveedores de Top Speed Service OS.</span><span>Las solicitudes y aplicaciones de este sitio se envían de verdad y las revisa Service Setters.</span></div>
+<div data-google-reviews></div>
+</div></footer>
+
+<div class="floatcall" id="floatCall"><a class="btn btn-red" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> 844-460-7038</a><a class="btn btn-navy" href="#request">Reserva en 60 s</a></div>
+
+<style>@media(max-width:900px){#providerGrid,#commGrid,#covGrid,#priceGrid,#footGrid{grid-template-columns:1fr !important}}
+@media(max-width:700px){.ops-table{font-size:13px}.ops-table th,.ops-table td{padding:8px 6px;word-break:break-word}.ops-table th:nth-child(2),.ops-table td:nth-child(2){display:none}}
+body{padding-bottom:72px}</style>
+<script>
+// DATA
+var SERVICES=[
+ {n:"Refrigerator",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='5' y='3' width='14' height='18' rx='2'/><path d='M5 9.5h14' stroke='#E8322E'/><path d='M8 6.2v1M8 12.6v3.2' stroke-width='2.2'/></svg>",d:"No enfría, fugas, máquina de hielo, compresor ruidoso.",issues:["No enfría","La máquina de hielo falló","Leak"]},
+ {n:"Washer",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 12a2 2 0 1 1 2 2 4 4 0 1 1-4-4 6.2 6.2 0 1 1 6.2 6.2' stroke='#E8322E'/><circle cx='12' cy='12' r='.9' fill='#E8322E' stroke='none'/></svg>",d:"No drena/centrifuga, fugas, vibración, códigos de error.",issues:["No drena","No centrifuga","Leaks"]},
+ {n:"Dryer",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z'/><path d='M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z' stroke='#E8322E'/></svg>",d:"Sin calor, secado lento, el tambor no gira, problemas de ventilación.",issues:["No heat","Secado lento","No gira"]},
+ {n:"Horno / Estufa",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><circle cx='10' cy='13.5' r='6.5'/><path d='M15 9.5L21 3.8M10 13.5h.01' stroke='#E8322E'/><circle cx='10' cy='13.5' r='2.2' fill='#E8322E' stroke='none' opacity='.85'/></svg>",d:"No calienta, quemadores, encendedores, control de temperatura.",issues:["No calienta","Quemador apagado","Temp off"]},
+ {n:"Dishwasher",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M6.5 3.5v6M4.2 3.5v3.4a2.3 2.3 0 0 0 4.6 0V3.5M6.5 9.5V20.5' transform='translate(.4 0)'/><path d='M17.2 3.5c1.8 1.4 2.6 3.8 2.6 6 0 2-1 3-2.6 3v8' stroke='#E8322E'/></svg>",d:"Lavado deficiente, drenaje, fugas, fallas de control.",issues:["No lava bien","No drena","Leaking"]},
+ {n:"Microwave",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 12.8L6 21h12z' transform='translate(0 -1.4)'/><circle cx='12' cy='11' r='1.3' fill='#E8322E' stroke='none'/><path d='M8.6 7.6a4.8 4.8 0 0 0 0 4.8M15.4 7.6a4.8 4.8 0 0 1 0 4.8M6.4 5.2a8.4 8.4 0 0 0 0 9.6M17.6 5.2a8.4 8.4 0 0 1 0 9.6' stroke='#E8322E'/></svg>",d:"No calienta, chispas, plato giratorio, interruptor de la puerta.",issues:["No calienta","Sparking","No power"]},
+ {n:"Freezer",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M12 3l-2 2.2M12 3l2 2.2M12 21l-2-2.2M12 21l2-2.2' stroke='#E8322E'/></svg>",d:"No congela, acumulación de escarcha, variaciones de temperatura.",issues:["No congela","Acumulación de escarcha"]},
+ {n:"Máquina de hielo",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><rect x='5' y='3' width='14' height='18' rx='2'/><path d='M5 9.5h14' stroke='#E8322E'/><path d='M8 6.2v1M8 12.6v3.2' stroke-width='2.2'/></svg>",d:"Sin hielo, cubos pequeños, tubo de llenado congelado, válvula.",issues:["No ice","Leaking","Slow"]},
+ {n:"Cooktop",e:"<svg class='fxi' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z'/><path d='M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z' stroke='#E8322E'/></svg>",d:"Fallas de quemadores, vidrio roto, problemas de encendido.",issues:["Quemador apagado","No enciende"]}
+];
+var BRANDS=["AGA","Amana","ASKO","Avanti","Azure","Blomberg","Bosch","Broan","Café","Coyote","Danby","Electrolux","Elica","Forté","Franke","Friedrich","Frigidaire","Fulgor Milano","GE Appliances","Haier","Hotpoint","InSinkErator","KitchenAid","LG","Marvel","Maytag","Monogram","Premier","Samsung","Sharp","Silhouette","Sirius","Smeg","Speed Queen","Summit Appliance","Thor Kitchen","Verona","Weber","Whirlpool","Whirlpool Commercial Laundry"];
+var CITIES=[
+ {n:"Lauderhill",t:"Red núcleo",d:"Cobertura de la sede: despacho residencial y comercial, ventanas el mismo día, catálogo completo."},
+ {n:"Plantation",t:"Red núcleo",d:"Cobertura núcleo de Broward: ventanas el mismo día, residencial y comercial, asignación de proveedores por electrodoméstico."},
+ {n:"Sunrise",t:"Red núcleo",d:"Cobertura núcleo de Broward: alta disponibilidad el mismo día y rutas por triaje con foto."},
+ {n:"Tamarac",t:"Red núcleo",d:"Cobertura núcleo de Broward: despacho residencial más órdenes de trabajo multiunidad y de propiedades."},
+ {n:"Fort Lauderdale",t:"Red núcleo",d:"Cobertura núcleo de Broward: despacho residencial y comercial, ventanas el mismo día, catálogo completo de 9 servicios."},
+ {n:"Lauderdale Lakes",t:"Red núcleo",d:"Cobertura núcleo de Broward: rutas rápidas del centro de Broward para hogares y negocios."},
+ {n:"North Lauderdale",t:"Red núcleo",d:"Cobertura núcleo de Broward: ventanas el mismo día y asignación de proveedores para todos los electrodomésticos."},
+ {n:"Davie",t:"Red núcleo",d:"Cobertura núcleo de Broward: residencial y comercial, incluyendo casas grandes y trabajos de varios electrodomésticos."},
+ {n:"Coral Springs",t:"Red núcleo",d:"Cobertura del noroeste de Broward: rutas planificadas + ventanas el mismo día cuando hay disponibilidad."},
+ {n:"Pompano Beach",t:"Red núcleo",d:"Cobertura del noreste de Broward: casas costeras, alquileres y cuentas comerciales."},
+ {n:"Oakland Park",t:"Red núcleo",d:"Cobertura del centro-este de Broward: rutas rápidas hacia trabajos en Fort Lauderdale."},
+ {n:"Margate",t:"Red núcleo",d:"Cobertura del noroeste de Broward: despacho residencial y órdenes de trabajo de propiedades."},
+ {n:"Miami",t:"Red de Miami-Dade",d:"Cobertura completa de Miami-Dade: despacho residencial y comercial y asignación de proveedores en las 18 ciudades de Miami-Dade de la red."}
+];
+// Service cards
+document.getElementById('serviceCards').innerHTML=SERVICES.map(function(s,i){return '<div class="card" style="cursor:pointer" onclick="prefillService(\''+s.n+'\')"><span class="rt-lap" aria-hidden="true">LAP '+(i+1)+'</span><div class="icon">'+s.e+'</div><h3>'+s.n+' — Reparación</h3><p style="color:var(--muted);margin:0 0 10px">'+s.d+'</p><div style="display:flex;gap:6px;flex-wrap:wrap">'+s.issues.map(function(i){return '<span class="pill bluep">'+i+'</span>'}).join('')+'</div><div style="margin-top:12px;font-weight:800;color:var(--blue)">Solicitar esta reparación →</div></div>'}).join('');
+document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<span class="brand">'+b+'</span>'}).join('');
+// City chips
+document.getElementById('cityGrid').innerHTML=CITIES.map(function(c,i){return '<button class="city-chip '+(c.n==='Miami'?'miami ':'')+(i===4?'active':'')+'" onclick="selectCity('+i+',this)">'+c.n+'</button>'}).join('');
+function selectCity(i,el){document.querySelectorAll('.city-chip').forEach(function(x){x.classList.remove('active')});el.classList.add('active');var c=CITIES[i];document.getElementById('cityName').textContent=c.n;document.getElementById('cityDesc').textContent=c.d;document.getElementById('cityTag').textContent=c.t;document.getElementById('qCity').value=c.n;}
+function prefillService(name){document.getElementById('qAppliance').value=name==='Horno / Estufa'?'Horno / Estufa':name;runTriage();document.getElementById('quick').scrollIntoView({behavior:'smooth',block:'center'});}
+// Track toggle
+var track='res';
+function setTrack(t){track=t;document.getElementById('tgRes').classList.toggle('active',t==='res');document.getElementById('tgCom').classList.toggle('active',t==='com');document.getElementById('bizField').style.display=t==='com'?'block':'none';}
+// Photo preview
+function previewPhoto(e){var f=e.target.files&&e.target.files[0];if(!f)return;var url=URL.createObjectURL(f);document.getElementById('photoPreview').innerHTML='<img src="'+url+'" alt="Vista previa de la foto de tu electrodoméstico"><div style="font-size:12px;color:var(--muted)">Foto adjunta para el triaje preview: '+f.name+'</div>';runTriage(true);}
+// Triage logic
+function runTriage(hasPhoto){
+ var app=document.getElementById('qAppliance').value; var txt=(document.getElementById('qIssue').value||'').toLowerCase();
+ var issue='Se necesita un diagnóstico general: el técnico inspeccionará en el lugar, confirmará la falla y cotizará antes de reparar.', parts='Kit de diagnóstico + repuestos comunes de desgaste para '+app, urg='Standard', pill='amber';
+ var map=[
+  {k:['not cool','warm','not freez','58','temperature'],i:'Falla probable del sistema de enfriamiento: el ventilador del condensador, los serpentines sucios o un problema del evaporador son las causas principales cuando un refrigerador no enfría.',p:'Motor del ventilador del condensador, cepillo para serpentines, sensor de temperatura',u:'Prioridad: riesgo de que se dañen los alimentos',cls:'redp'},
+  {k:['ice'],i:'Falla probable de la máquina de hielo: tubo de llenado congelado, válvula de entrada o falla del módulo.',p:'Válvula de entrada, tubo de llenado, módulo de la máquina de hielo',u:'Standard',cls:'amber'},
+  {k:['leak','water'],i:'Origen probable de la fuga: línea de drenaje, válvula de entrada, manguera o sello, según dónde esté el agua.',p:'Mangueras, abrazaderas, válvula de entrada, kit de drenaje',u:'Prioridad: riesgo de daños por agua',cls:'redp'},
+  {k:['no heat','not heat','cold'],i:'Falla probable de calefacción: la resistencia o el fusible térmico son el patrón más común.',p:'Resistencia, fusible térmico, termostato',u:'Standard',cls:'amber'},
+  {k:['not drain','drain','standing water'],i:'Falla probable de drenaje: bomba tapada, manguera atascada o problema de control que retiene el agua.',p:'Bomba de drenaje, kit de mangueras, abrazaderas',u:'Priority',cls:'amber'},
+  {k:['spin','shak','noise','loud'],i:'Falla probable mecánica: correa, rodamiento, suspensión o acople del motor, según el patrón de ruido/centrifugado.',p:'Correa, kit de suspensión, repuestos del motor',u:'Standard',cls:'amber'},
+  {k:['spark'],i:'Posible falla de seguridad del microondas: deja de usarlo hasta que lo inspeccionen. Probable problema de la guía de ondas, el diodo o el magnetrón.',p:'Primero la inspección del técnico: repuestos de seguridad al confirmar',u:'Urgente: no lo uses',cls:'redp'},
+  {k:['error','code','f8','e1'],i:'Patrón de código de error anotado: el triaje marca primero las fallas de tarjeta/sensor. Una foto del código ayuda al técnico a precargar repuestos.',p:'Kit de sensores + herramientas de diagnóstico de tarjeta',u:'Priority',cls:'amber'},
+  {k:['not clean','dirty'],i:'Falla probable de rendimiento de lavado: brazo rociador, filtro, bomba o entrada reduciendo la presión de lavado.',p:'Brazo rociador, filtro, válvula de entrada',u:'Standard',cls:'amber'}
+ ];
+ for(var i=0;i<map.length;i++){var hit=map[i].k.some(function(k){return txt.indexOf(k)>-1});if(hit){issue=map[i].i;parts=map[i].p;urg=map[i].u;pill=map[i].cls;break;}}
+ if(hasPhoto){issue+=' Foto recibida: el proveedor puede revisarla antes de llegar.';}
+ document.getElementById('triageIssue').textContent=app+': '+issue;
+ document.getElementById('triageParts').textContent=parts;
+ var uEl=document.getElementById('triageUrgency');uEl.textContent='Urgencia: '+urg;uEl.className='pill '+pill;
+}
+runTriage();
+// Forms
+function refCode(){return 'TS-'+Math.random().toString(36).slice(2,7).toUpperCase();}
+
+function postConnection(payload, box, okHtml){
+  box.style.display='block'; box.innerHTML='Sending…';
+  fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})
+    .then(function(x){
+      if(x.s!==201&&x.s!==200){box.innerHTML='<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Something went wrong sending that.</b><br>Call <a href="tel:+18444607038"><b>844-460-7038</b></a> and Service Setters will take it by phone.';return;}
+      var ref=(x.j.data&&(x.j.data.reference||x.j.data.id))||'received';
+      box.innerHTML=okHtml(ref);
+    })
+    .catch(function(){box.innerHTML='<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Something went wrong sending that.</b><br>Call <a href="tel:+18444607038"><b>844-460-7038</b></a> and Service Setters will take it by phone.';});
+}
+function submitQuick(e){e.preventDefault();var box=document.getElementById('quickSuccess');
+  var payload={name:document.getElementById('qName').value.trim(),phone:document.getElementById('qPhone').value.trim(),type:'SERVICE_REQUEST',source:'service-page-quick', companyWebsite:document.getElementById('qWebsite').value,
+    message:['Electrodoméstico: '+document.getElementById('qAppliance').value,'City: '+document.getElementById('qCity').value,'Negocio/Propiedad: '+(document.getElementById('qBiz')?document.getElementById('qBiz').value:'—'),'Issue: '+document.getElementById('qIssue').value].join('\n')};
+  postConnection(payload, box, function(ref){return '<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Request received — Ref '+ref+'</b><br>Service Setters llamará a <b>'+payload.phone+'</b> para confirmar los detalles y cobrar el diagnóstico de $99 (acreditado a la reparación). Ten tu foto a la mano: tu matched provider reviews it before arrival.<br><span style="font-size:13px">Need it faster? Call <a href="tel:+18444607038"><b>844-460-7038</b></a></span>';});
+  addDispatchJob(document.getElementById('qAppliance').value, document.getElementById('qCity').value);
+  box.scrollIntoView({behavior:'smooth',block:'center'});}
+function submitProvider(e){e.preventDefault();var box=document.getElementById('providerSuccess');
+  var payload={name:document.getElementById('pName').value.trim(),phone:document.getElementById('pPhone').value.trim(),type:'PROVIDER_APPLICATION',source:'service-page', companyWebsite:document.getElementById('pWebsite').value,
+    message:['Negocio: '+(document.getElementById('pBiz')?document.getElementById('pBiz').value:'—'),'Experiencia: '+(document.getElementById('pExp')?document.getElementById('pExp').value:'—')].join('\n')};
+  postConnection(payload, box, function(ref){return '<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Application received — Ref '+ref+'</b><br>El equipo de Service Setters revisa cada solicitud y llamará a <b>'+payload.phone+'</b> para verificar los detalles, las zonas y los requisitos de incorporación antes de la activación.';});}
+function submitCommercial(e){e.preventDefault();var box=document.getElementById('commSuccess');
+  var cContactVal=document.getElementById('cContact').value.trim(); var cDigits=cContactVal.replace(/\D/g,'');
+  var payload={name:document.getElementById('cBiz').value.trim(),phone:cDigits.length>=7?cDigits:cContactVal,type:'COMMERCIAL_WORK_ORDER',source:'service-page', companyWebsite:document.getElementById('cWebsite').value,
+    message:['Contacto: '+cContactVal,'City: '+document.getElementById('cCity').value,'Tipo de instalación: '+document.getElementById('cType').value,'Equipo: '+document.getElementById('cEquip').value,'Urgencia: '+document.getElementById('cUrg').value,'Recurrente: '+document.getElementById('cRecur').value,'Facturación: '+(document.getElementById('cConsol').checked?'Mensual consolidada':'Per-visit'),'Notes: '+document.getElementById('cNotes').value].join('\n')};
+  postConnection(payload, box, function(ref){return '<b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Work order received — Ref '+ref+'</b><br>Las solicitudes comerciales reciben revisión prioritaria. Service Setters llamará para confirmar el alcance, el acceso y '+(document.getElementById('cConsol').checked?'la configuración de facturación consolidada':'la facturación por visita')+' antes del despacho.';});}
+// Chips
+var areas=CITIES.map(function(c){return c.n});
+document.getElementById('areaChips').innerHTML=areas.map(function(a){return '<button type="button" class="chip" onclick="this.classList.toggle(\'on\')">'+a+'</button>'}).join('');
+document.getElementById('appChips').innerHTML=SERVICES.map(function(s){return '<button type="button" class="chip" onclick="this.classList.toggle(\'on\')">'+s.n+'</button>'}).join('');
+
+</script>
+<script src="/install.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function (err) {
+            console.warn('Appliance Pro service worker registration failed:', err);
+          });
+        });
+      }
+    </script>
+  
+<!-- TOP SPEED TYPE SYSTEM (per Ramone font map 2026-11-10) -->
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
+<script>
+/* Self-healing service images (Ramone, 2026-11-16): the /service photos are served by the
+   Service OS API. If a load fails (e.g. the API is mid-redeploy), retry with backoff instead
+   of leaving a broken-image placeholder. Bounded: 4 retries (1.5s, 4s, 10s, 20s), then the
+   alt text stands. All three images have fixed heights, so retrying never shifts layout. */
+(function(){
+  var DELAYS=[1500,4000,10000,20000,45000,90000];
+  var revivers=[];
+  function heal(img){
+    var original=img.getAttribute('src');
+    if(!original)return;
+    var tries=0,done=false,timer=null;
+    function finish(){done=true;if(timer){clearTimeout(timer);timer=null;}img.removeEventListener('load',onLoad);img.removeEventListener('error',onError);}
+    function attempt(){
+      img.src=original+(original.indexOf('?')===-1?'?':'&')+'tsheal='+tries+'-'+Date.now();
+    }
+    function onLoad(){finish();}
+    function onError(){
+      if(done)return;
+      if(tries>=DELAYS.length){return;}
+      var wait=DELAYS[tries];tries++;
+      if(timer)clearTimeout(timer);
+      timer=setTimeout(function(){if(!done)attempt();},wait);
+    }
+    img.addEventListener('load',onLoad);
+    img.addEventListener('error',onError);
+    revivers.push(function(){
+      if(done)return;
+      if(img.complete&&img.naturalWidth>0){finish();return;}
+      tries=0;if(timer){clearTimeout(timer);timer=null;}
+      attempt();
+    });
+    if(img.complete&&img.naturalWidth===0){onError();}
+    else if(img.complete&&img.naturalWidth>0){finish();}
+  }
+  var imgs=document.querySelectorAll('img[data-tsheal]');
+  for(var i=0;i<imgs.length;i++){heal(imgs[i]);}
+  function reviveAll(){for(var i=0;i<revivers.length;i++){revivers[i]();}}
+  window.addEventListener('online',reviveAll);
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)reviveAll();});
+})();
+</script>
+<script src="/shared/page-slider.js" defer></script>
+<script src="/shared/google-reviews.js" defer></script>
+<script src="/shared/language-toggle.js" defer></script>
+<script src="/shared/language-toggle.js" defer></script>
+</body>
+</html>

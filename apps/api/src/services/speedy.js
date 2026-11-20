@@ -7,6 +7,8 @@ import {
   requestRefundApproval,
 } from './speedyPolicy.js';
 import { speedyKnowledgeSections } from './speedyKnowledge.js';
+import { PUBLISHED_CITY_NAMES } from '../config/serviceAreas.js';
+import { augmentSpanishQuery, resolveChatLanguage, SPANISH_SYSTEM_DIRECTIVE } from './speedyLanguage.js';
 import { formatKnowledgeForPrompt, knowledgeStats, searchKnowledge } from '../knowledge/index.js';
 import { createInvite, getReferralStatusForCode, resolveCode } from './referrals.js';
 import { buildOrderTrail } from './superapp.js';
@@ -36,9 +38,12 @@ import { store } from '../data/store.js';
  * and neither exposes a program reward amount.
  *
  * Everything Speedy is allowed to state as fact comes from the platform
- * config (phone, the $99 diagnostic terms, the 12 service areas) and the
- * grounded knowledge base in services/speedyKnowledge.js — nothing else.
- * It never invents repair prices or arrival-time promises.
+ * config (phone, the $99 diagnostic terms, the 65 published service
+ * cities) and the grounded knowledge base in services/speedyKnowledge.js
+ * — nothing else. It never invents repair prices or arrival-time
+ * promises. Spanish conversations (2026-11-20, A5) are detected in
+ * services/speedyLanguage.js and answered in Spanish under the same
+ * rules — the language changes, the facts and gates never do.
  */
 
 const SERVICES = [
@@ -67,15 +72,16 @@ export function speedyStatus() {
     model: configured ? model : null,
     governance: SPEEDY_GOVERNANCE,
     knowledge: knowledgeStats(),
+    languages: ['en', 'es'],
   };
 }
 
 export function speedySystemPrompt() {
-  const areas = PLATFORM_CONSTANTS.serviceCities.join(', ');
+  const areas = PUBLISHED_CITY_NAMES.join(', ');
   return [
     `You are Speedy, the Assistant Manager of the Top Speed Service OS for ${PLATFORM_CONSTANTS.platformOwner} ("Top Speed Appliance"), an appliance repair company in Fort Lauderdale and Broward County, Florida. Slogan: "${PLATFORM_CONSTANTS.slogan}"`,
     `Services: ${SERVICES.join(', ')}.`,
-    `Service areas (the only cities served): ${areas}.`,
+    `Service areas (the only cities served — the 65 published cities across Broward, Palm Beach and Miami-Dade): ${areas}.`,
     `Pricing facts: ${PLATFORM_CONSTANTS.feeTerms} That residential diagnostic is how every repair starts. Never quote a repair price — only a technician who has run the diagnostic can. Commercial accounts are priced by custom quote per facility, never the $99 diagnostic.`,
     `Bookings: the ${PLATFORM_CONSTANTS.dispatchTeam} team confirms every booking. To book, collect step by step: name, phone, city, ZIP, appliance, and what is wrong. When you have all of them, summarize them back clearly and say the team will confirm the appointment. Never promise a specific arrival time or same-day completion.`,
     `Phone: ${PLATFORM_CONSTANTS.phoneDisplay}. If someone is outside the service areas, or asks for something Top Speed does not do, say so kindly and give the phone number.`,
@@ -413,6 +419,17 @@ const ACTION_INTENT_PATTERNS = [
   /\bi (need|want|'d like|would like)\b[^.?!]{0,30}\b(repair|service|technician|appointment|visit|someone)\b/i,
   /\bfix (my|this|the)\b/i,
   /\b(come out|send someone)\b/i,
+  // Spanish (2026-11-20, A5): the same action signals in Spanish, so a
+  // Spanish booking conversation takes the full tool loop exactly like
+  // an English one — booking words, their appliance/symptom, photos,
+  // receipts, tracking, and first-person service requests.
+  /\b(reservar|reserva|agendar|cita|reprogramar|cancelar la cita)\b/i,
+  /\bmi (refrigerador|nevera|lavadora|secadora|horno|estufa|lavavajillas|lavaplatos|congelador|microondas|triturador|electrodoméstico)\b/i,
+  /\b(no (enfría|congela|calienta|drena|centrifuga|funciona|enciende|prende)|dejó de funcionar|hace (mucho )?ruido|está goteando|tiene una fuga|código de error)\b/i,
+  /\b(enviar|mandar|mostrar|ver) (una |la |esta )?(foto|imagen|video)\b/i,
+  /\b(recibo|factura)\b/i,
+  /\b(quiero|necesito|quisiera)\b[^.?!]{0,30}\b(reparación|reparar|arreglar|servicio|técnico|cita|visita)\b/i,
+  /\b(dónde está mi|estado de mi)\b[^.?!]{0,20}\b(reparación|reserva|cita|visita|trabajo)\b/i,
 ];
 
 // A bare ZIP is usually a booking detail being collected — except when
@@ -425,7 +442,7 @@ const BOOKING_WORD_PATTERN = /\b(book|booking|schedule|scheduling|reschedule|app
 // The assistant's last turn was collecting booking details or asking
 // for a booking confirmation — a short reply is a continuation of
 // that flow, not a fresh knowledge question.
-const COLLECTION_CUE_PATTERN = /(your (phone|name|city|zip|address)|what('s| is) your|may i have|can i get your|want me to book|shall i book|should i book|confirm)/i;
+const COLLECTION_CUE_PATTERN = /(your (phone|name|city|zip|address)|what('s| is) your|may i have|can i get your|want me to book|shall i book|should i book|confirm|tu (teléfono|nombre|ciudad|dirección)|cuál es tu|me das tu|quieres que (reserve|agende)|deseas que (reserve|agende)|confirmas|confirmar)/i;
 
 function messageHasActionIntent(text) {
   const value = String(text || '');
@@ -469,7 +486,7 @@ function logChatTiming(path, rounds, startedAt) {
 /* --------------------------------- chat ---------------------------------- */
 
 /** history: prior turns [{ role: 'user'|'assistant', content }], oldest first. */
-export async function speedyChat({ message, history = [] }) {
+export async function speedyChat({ message, history = [], language } = {}) {
   const startedAt = Date.now();
   // Governance layer 1: the deterministic pre-screen. A matched category
   // is answered by policy (and its action performed) without the model.
@@ -479,6 +496,14 @@ export async function speedyChat({ message, history = [] }) {
     return gated;
   }
 
+  // Language (2026-11-20, A5): Spanish conversations are answered in
+  // Spanish — the directive is appended to the same standing prompt,
+  // and retrieval runs on a term-augmented query so Spanish questions
+  // still land on the grounded English entries. The summary-confirm
+  // gate is structural (extractor + customer confirm tap) and does
+  // not depend on the reply language.
+  const chatLanguage = resolveChatLanguage({ message, history, language });
+
   const input = [
     ...history.slice(-10).map((turn) => ({ role: turn.role, content: String(turn.content) })),
     { role: 'user', content: message },
@@ -486,10 +511,15 @@ export async function speedyChat({ message, history = [] }) {
   // Learning system: retrieve the knowledge entries this question
   // matches and put them in front of the model for THIS turn (bounded
   // — see formatKnowledgeForPrompt), on top of the standing prompt KB.
-  const knowledgeSection = formatKnowledgeForPrompt(searchKnowledge(message, 3));
-  const instructions = knowledgeSection
+  const knowledgeSection = formatKnowledgeForPrompt(
+    searchKnowledge(chatLanguage === 'es' ? augmentSpanishQuery(message) : message, 3),
+  );
+  const baseInstructions = knowledgeSection
     ? `${speedySystemPrompt()}\n${knowledgeSection}`
     : speedySystemPrompt();
+  const instructions = chatLanguage === 'es'
+    ? `${baseInstructions}\n${SPANISH_SYSTEM_DIRECTIVE}`
+    : baseInstructions;
 
   // Fast path: informational questions are answered from the knowledge
   // base in the system prompt — one Responses call, NO tools attached,
@@ -720,7 +750,8 @@ export async function speedyExtractBooking(text) {
   const body = await responsesRequest({
     instructions:
       speedySystemPrompt() +
-      '\nExtraction mode: read the conversation and extract the booking details into the required structured format. Copy values exactly as the customer stated them — never invent a name, phone, city, ZIP, appliance or issue that is not there. Set ready=true only when every required field is present.',
+      '\nExtraction mode: read the conversation and extract the booking details into the required structured format. Copy values exactly as the customer stated them — never invent a name, phone, city, ZIP, appliance or issue that is not there. Set ready=true only when every required field is present.' +
+      '\nThe conversation may be in Spanish (2026-11-20): extract the same fields — keep the name, phone, city and ZIP exactly as the customer stated them, normalize the appliance to the canonical English service name, and write the issue as a brief English summary for the office record.',
     input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 8000) }] }],
     text: { format: BOOKING_EXTRACT_FORMAT },
     max_output_tokens: 400,

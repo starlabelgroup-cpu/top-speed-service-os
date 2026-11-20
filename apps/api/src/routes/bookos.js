@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
-import { areasForZip, effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/serviceAreas.js';
+import { areasForZip, effectiveArea, effectiveAreaStatus, normalizePublishedCityName, PUBLISHED_CITY_NAMES, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { addBookingEvent, appendEvent, store } from '../data/store.js';
 import { persistAssignment, persistBooking } from '../db/bookingsRepo.js';
 import {
@@ -699,9 +699,12 @@ router.get('/bookos/area-day', ...staffOnly, (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: 'Query ?date=YYYY-MM-DD and ?area=<covered city> are required', details: parsed.error.flatten() });
   }
-  const { date, area } = parsed.data;
-  if (!SERVICE_CITIES.includes(area)) {
-    return res.status(422).json({ error: 'Unknown service area', serviceAreas: SERVICE_CITIES });
+  const { date } = parsed.data;
+  // Widened 2026-11-20 (A6): the day view accepts any of the 65
+  // published cities, canonicalized — not just the 12 core crew areas.
+  const area = normalizePublishedCityName(parsed.data.area);
+  if (!area) {
+    return res.status(422).json({ error: 'Unknown service area', serviceAreas: PUBLISHED_CITY_NAMES });
   }
   const inArea = visibleBookings(req).filter(
     (booking) => effectiveArea(booking) === area && effectiveAreaStatus(booking) === 'IN_AREA' && booking.status !== 'CANCELLED',
@@ -790,9 +793,9 @@ router.post('/bookos/bookings/:id/resolve-area', ...staffOnly, async (req, res) 
   }
   const booking = store.bookings.get(req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
-  const area = SERVICE_CITIES.find((c) => c.toLowerCase() === parsed.data.area.toLowerCase());
+  const area = normalizePublishedCityName(parsed.data.area);
   if (!area) {
-    return res.status(422).json({ error: 'Area must be one of the covered service areas', serviceAreas: SERVICE_CITIES });
+    return res.status(422).json({ error: 'Area must be one of the covered service areas', serviceAreas: PUBLISHED_CITY_NAMES });
   }
   if (effectiveAreaStatus(booking) === 'OUT_OF_AREA') {
     return res.status(409).json({ error: 'This request is outside the service footprint entirely — it stays on the expansion waitlist' });

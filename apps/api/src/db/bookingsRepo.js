@@ -1,6 +1,6 @@
 import { DATABASE_ENABLED, db } from './client.js';
 import { store } from '../data/store.js';
-import { SERVICE_CITIES } from '../config/serviceAreas.js';
+import { normalizePublishedCityName } from '../config/serviceAreas.js';
 import { hydrateCrmNotes } from './crmRepo.js';
 import { hydrateInboxMessages } from './inboxRepo.js';
 import { hydrateBookingMessages } from './bookingMessagesRepo.js';
@@ -146,8 +146,8 @@ function bookingFromRow(row, customerRecord) {
     // Service Book area model: rows written before the area columns
     // existed carry no area — derive it from the city so every surface
     // (queue, board, capacity) sees one consistent area per booking.
-    area: row.area ?? (SERVICE_CITIES.includes(row.city) ? row.city : null),
-    areaStatus: row.areaStatus ?? (SERVICE_CITIES.includes(row.city) ? 'IN_AREA' : 'OUT_OF_AREA'),
+    area: row.area ?? normalizePublishedCityName(row.city),
+    areaStatus: row.areaStatus ?? (normalizePublishedCityName(row.city) ? 'IN_AREA' : 'OUT_OF_AREA'),
     serviceAddress: row.serviceAddress ?? null,
     city: row.city,
     zip: row.zip,

@@ -1,6 +1,6 @@
 import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { OFFERS } from '../config/offers.js';
-import { SERVICE_CITIES } from '../config/serviceAreas.js';
+import { PUBLISHED_CITY_NAMES, SERVICE_CITIES } from '../config/serviceAreas.js';
 import {
   MARKETING_BRANDS,
   MARKETING_CITIES,
@@ -30,8 +30,10 @@ const SITE = 'https://topspeedserviceos.com';
 // Tri-county anchor cities with published Top Speed landing pages
 // (beyond the taxonomy seed list), used only as extra search keywords
 // for the coverage entry — the coverage ANSWER is built from the live
-// city data, and any address outside the 12 core booking cities is
-// confirmed by a Service Setter, never promised by the entry.
+// city data. Since the 2026-11-20 auto-match widening (A6), bookings
+// in all 65 published cities are confirmed automatically; an address
+// outside the 65 is never promised by the entry — it lands on the
+// expansion list / setter review instead.
 const TRI_COUNTY_ANCHORS = [
   'Miami', 'Miami Beach', 'Hialeah', 'Coral Gables', 'Doral', 'Aventura',
   'Boca Raton', 'Delray Beach', 'Boynton Beach', 'Lake Worth',
@@ -138,9 +140,9 @@ export function buildSitePack() {
         ...cityNames.map((name) => `do you serve ${name.toLowerCase()}`),
       ],
       answer:
-        `Top Speed books and dispatches across ${cities.length} published service cities in Broward, Palm Beach, and Miami-Dade counties. ` +
-        `Bookings are confirmed automatically for the 12 core Broward cities — ${SERVICE_CITIES.join(', ')} — and for other tri-county cities a Service Setter confirms coverage for your exact address when your booking is reviewed, so you always get a straight answer before anything is charged. ` +
-        `If an address is outside the service area, the request is saved on the expansion list and the team reaches out if coverage opens there — it is never promised service it can't get.`,
+        `Top Speed books and dispatches across ${PUBLISHED_CITY_NAMES.length} published service cities in Broward, Palm Beach, and Miami-Dade counties. ` +
+        `Bookings are confirmed automatically for every published city — the 12 core Broward cities (${SERVICE_CITIES.join(', ')}) and every other city in the Service Areas directory, from Hollywood and Weston to Boca Raton, West Palm Beach, Miami and Homestead — so a booking in any of the ${PUBLISHED_CITY_NAMES.length} goes straight to the Service Setters for scheduling, with nothing extra to confirm first. ` +
+        `If an address is outside the published cities, the request is saved on the expansion list and the team reaches out if coverage opens there — it is never promised service it can't get.`,
       link: `${SITE}/service-areas-directory`,
     },
     {

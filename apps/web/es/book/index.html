@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reserva tu reparación de electrodomésticos — Top Speed Appliance · Reserva en Service OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/es/book">
+<link rel="alternate" hreflang="en" href="https://topspeedserviceos.com/book">
+<link rel="alternate" hreflang="es" href="https://topspeedserviceos.com/es/book">
+<link rel="alternate" hreflang="x-default" href="https://topspeedserviceos.com/book">
+<link rel="alternate" hreflang="en" href="https://topspeedserviceos.com/book">
+<link rel="alternate" hreflang="es" href="https://topspeedserviceos.com/es/book">
+<link rel="alternate" hreflang="x-default" href="https://topspeedserviceos.com/book">
+<meta name="description" content="Reserva la reparación de tus electrodomésticos en cinco pasos rápidos. Tu solicitud entra directo al CRM de Top Speed y a la cola de despacho de Service Setters: confirmación por texto y correo, y seguimiento en vivo después.">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--red:#ff3b47;--red2:#E8322E;--ink:#101828;--mut:#667085;--line:#d7dee9;--panel:#10254d}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;background:radial-gradient(1200px 700px at 50% -10%,#12294f 0%,#0a1628 55%,#070f1d 100%);color:#fff;min-height:100vh}
+  .col{max-width:430px;margin:0 auto;padding:26px 18px 44px}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .brand{color:var(--red);font-weight:800;letter-spacing:1.6px;font-size:15px}
+  .brandSub{color:#9db6dd;font-size:14px;margin-top:3px}
+  .menuBtn{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#fff;width:42px;height:42px;border-radius:12px;font-size:19px;cursor:pointer;flex:none}
+  .menu{display:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;margin-top:12px}
+  .menu a{display:block;color:#dce8fb;text-decoration:none;font-weight:600;padding:9px 10px;border-radius:9px;font-size:15px}
+  .menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+  h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:31px;line-height:1.16;margin:26px 0 8px}
+  .tagline{text-align:center;color:#aebfe0;font-size:15px;font-weight:500}
+  .segs{display:flex;gap:7px;margin:24px 0 7px}
+  .segs i{flex:1;height:6px;border-radius:99px;background:#33475f}
+  .segs i.done,.segs i.now{background:var(--red2)}
+  .segLabels{display:flex;gap:7px}
+  .segLabels span{flex:1;text-align:center;font-size:12.5px;color:#7e93b5;font-weight:600}
+  .segLabels span.now{color:#fff}
+  .segLabels span.done{color:#c7d6f2}
+  .card{background:#fff;color:var(--ink);border-radius:22px;padding:26px 24px;margin-top:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+  .card h2{font-size:24px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;color:var(--ink)}
+  .card h2 small{color:#98a2b3;font-size:13.5px;font-weight:600}
+  label{font-size:14.5px;font-weight:600;color:#344054;display:block;margin:18px 0 7px}
+  input,select,textarea{width:100%;padding:15px 20px;border:1.5px solid var(--line);border-radius:999px;font:inherit;font-size:15.5px;background:#fff;color:var(--ink)}
+  textarea{border-radius:18px;min-height:96px;resize:vertical}
+  input::placeholder,textarea::placeholder{color:#98a2b3}
+  input:focus,select:focus,textarea:focus{outline:2px solid #1280FF;border-color:#1280FF}
+  .nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px}
+  .back{padding:14px 30px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font:inherit;font-weight:600;cursor:pointer;color:var(--ink);font-size:15.5px}
+  .next{padding:14px 30px;border-radius:999px;border:none;background:#0b0f14;color:#fff;font:inherit;font-weight:600;cursor:pointer;font-size:15.5px}
+  .next:disabled{opacity:.55;cursor:wait}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:14px;padding:12px 14px;font-size:14px;margin-top:16px}
+  .winGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:9px;margin-top:8px}
+  .winGrid label{margin:0}
+  .winGrid input{position:absolute;opacity:0;pointer-events:none;width:auto}
+  .winGrid .wc{display:block;text-align:center;padding:13px 6px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#344054}
+  .winGrid input:checked + .wc{background:#0A265C;color:#fff;border-color:#0A265C}
+  .winGrid input:disabled + .wc{opacity:.45;cursor:not-allowed;background:#F2F4F7}
+  .review{display:grid;gap:7px;font-size:15px}
+  .review .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #e2e8f0;padding:7px 0}
+  .review .r span{color:var(--mut)} .review .r b{color:var(--ink);text-align:right}
+  .speedy{display:flex;align-items:center;gap:12px;background:var(--panel);border-radius:18px;padding:20px 22px;margin-top:18px;text-decoration:none;color:#fff}
+  .speedy b{font-size:18.5px;display:block}
+  .speedy small{color:#b9cff2;font-size:13.5px;font-weight:500}
+  .speedy .bub{margin-left:auto;font-size:24px;background:rgba(255,255,255,.1);width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .fine{color:#7e93b5;font-size:12.5px;text-align:center;margin-top:18px;line-height:1.6}
+  .fine a{color:#c7d6f2;font-weight:600}
+  .doneBox{text-align:center}
+  .doneBox .ref{font-family:'Rajdhani',sans-serif;font-size:29px;font-weight:700;color:#0A265C;letter-spacing:1px;margin:6px 0}
+  .doneBtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+  .doneBtns a{padding:13px 20px;border-radius:999px;font-weight:700;text-decoration:none;font-size:15px}
+
+.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.atile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px;border:1.5px solid #dbe4f0;border-radius:13px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#0A265C;cursor:pointer}
+.atile span{font-size:24px;line-height:1}
+.atile.on{border-color:#E8322E;background:#fdf0ef;box-shadow:0 0 0 1px #E8322E inset}
+.locBtn{margin-top:10px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.locBtn:disabled{opacity:.6;cursor:wait}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}div.top{background:#000!important}.menuBtn{color:#fff!important}</style><script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+<style>
+/* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
+.rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77;text-align:center;margin-top:24px}
+.rt-checker{height:10px;margin:16px 0 2px;background:repeating-conic-gradient(#fff 0 25%,transparent 0 50%);background-size:16px 16px;opacity:.85;border-radius:2px}
+.segLabels{counter-reset:cp;margin-top:12px}
+.segLabels span{counter-increment:cp;display:flex;flex-direction:column;align-items:center;gap:6px}
+.segLabels span::before{content:counter(cp);width:27px;height:27px;border-radius:50%;border:2px solid #7e93b5;color:#7e93b5;background:#0A1628;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none}
+.segLabels span.now::before{background:#E8322E;border-color:#E8322E;color:#fff;box-shadow:0 0 12px rgba(232,50,46,.55)}
+.segLabels span.done::before{content:"✓";background:#22C55E;border-color:#22C55E;color:#fff}
+.rt-lights{display:inline-flex;gap:6px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:6px 10px;vertical-align:middle;margin-right:9px}
+.rt-lights i{width:11px;height:11px;border-radius:50%;background:#40202B;display:block}
+.rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 8px rgba(233,78,92,.85)}
+.rt-lights i.on-g{background:#22C55E;box-shadow:0 0 8px rgba(34,197,94,.85)}
+</style>
+</head>
+<body>
+<div class="col">
+  <div class="top">
+    <a class="tse-brand" href="/es/" aria-label="Top Speed Appliance Repair — inicio"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Sirviendo al sur de la Florida</small></span></a>
+    <div data-lang-toggle></div>
+    <div data-lang-toggle style="margin-left:auto"></div>
+    <button class="menuBtn" id="menuBtn" aria-label="Menú"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6.5h16M4 12h16M4 17.5h16"/><circle cx="18.2" cy="6.5" r="1.1" fill="#E8322E" stroke="none"/><circle cx="5.8" cy="17.5" r="1.1" fill="#E8322E" stroke="none"/></svg></button>
+  </div>
+  <nav class="menu" id="menu">
+    <a href="/es/"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6.8L20 11M6.2 9.4V20h11.6V9.4"/><path d="M10 20v-4.4h4V20" stroke="#E8322E"/></svg> Inicio</a>
+    <a href="/track"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Sigue a tu técnico</a>
+    <a href="/garage"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="10.5" rx="2"/><path d="M9 9V6.8A2.3 2.3 0 0 1 11.3 4.5h1.4A2.3 2.3 0 0 1 15 6.8V9M3 13.5h18" stroke="#E8322E"/><path d="M10.2 13.5h3.6v2.4h-3.6z"/></svg> Mis electrodomésticos</a>
+    <a href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Llama al 844-460-7038</a>
+  </nav>
+
+  <div class="rt-kicker">Reserva exprés</div>
+  <h1>Reserva tu reparación de electrodomésticos</h1>
+  <div class="tagline">Rápido • Confiable • Servicio local</div>
+  <div class="rt-checker" aria-hidden="true"></div>
+
+  <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="segLabels" id="segLabels"><span>Contacto</span><span>Ubicación</span><span>Electrodoméstico</span><span>Horario</span><span>Revisar</span></div>
+
+  <div class="card" id="formCard">
+    <div class="pane" data-pane="1">
+      <h2>Datos de contacto <small>1 de 5</small></h2>
+      <label for="wName">Nombre completo</label><input id="wName" autocomplete="name" placeholder="Tu nombre">
+      <label for="wPhone">Teléfono móvil</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
+      <label for="wEmail">Correo electrónico (para tu confirmación)</label><input id="wEmail" type="email" autocomplete="email" placeholder="tu@ejemplo.com">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="wWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+    </div>
+    <div class="pane" data-pane="2" hidden>
+      <h2>Ubicación del servicio <small>2 de 5</small></h2>
+      <label for="wAddress">Dirección</label><input id="wAddress" autocomplete="street-address" placeholder="Dirección del servicio">
+      <label for="wCity">Ciudad</label>
+      <select id="wCity"><option value="">Ciudad</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option><option>Hollywood</option><option>Pembroke Pines</option><option>Miramar</option><option>Deerfield Beach</option><option>Coconut Creek</option><option>Dania Beach</option><option>Cooper City</option><option>Weston</option><option>Parkland</option><option>Hallandale Beach</option><option>Wilton Manors</option><option>Lighthouse Point</option><option>Lauderdale-by-the-Sea</option><option>Southwest Ranches</option><option>West Park</option><option>Pembroke Park</option><option>Hillsboro Beach</option><option>Sea Ranch Lakes</option><option>Lazy Lake</option><option>West Palm Beach</option><option>Boca Raton</option><option>Boynton Beach</option><option>Delray Beach</option><option>Wellington</option><option>Jupiter</option><option>Palm Beach Gardens</option><option>Lake Worth Beach</option><option>Riviera Beach</option><option>Greenacres</option><option>Royal Palm Beach</option><option>Palm Beach</option><option>Belle Glade</option><option>Palm Springs</option><option>North Palm Beach</option><option>Lake Park</option><option>Miami</option><option>Hialeah</option><option>Miami Gardens</option><option>Miami Beach</option><option>North Miami</option><option>Homestead</option><option>Doral</option><option>Coral Gables</option><option>Aventura</option><option>Cutler Bay</option><option>Hialeah Gardens</option><option>Sunny Isles Beach</option><option>North Miami Beach</option><option>Sweetwater</option><option>Florida City</option><option>Key Biscayne</option><option>Surfside</option><option>Bal Harbour</option></select>
+      <label for="wZip">Código postal</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="Código postal">
+      <button type="button" class="locBtn" id="wLocBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Usar mi ubicación</button>
+    </div>
+    <div class="pane" data-pane="3" hidden>
+      <h2>¿Qué hay que reparar? <small>3 de 5</small></h2>
+      <label for="wAppliance">Electrodoméstico</label>
+      <input type="hidden" id="wAppliance" value="">
+            <div class="tileGrid">
+              <button type="button" class="atile" data-v="Refrigerator"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg></span>Refrigerador</button>
+              <button type="button" class="atile" data-v="Washer"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a2 2 0 1 1 2 2 4 4 0 1 1-4-4 6.2 6.2 0 1 1 6.2 6.2" stroke="#E8322E"/><circle cx="12" cy="12" r=".9" fill="#E8322E" stroke="none"/></svg></span>Lavadora</button>
+              <button type="button" class="atile" data-v="Dryer"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 4L3.8 7l1.7 3.2 2-1v11h9v-11l2 1L20.2 7 15.5 4a3.5 3.5 0 0 1-7 0z"/><path d="M9.8 13.2h4.4" stroke="#E8322E"/></svg></span>Secadora</button>
+              <button type="button" class="atile" data-v="Oven / Range"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z"/><path d="M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z" stroke="#E8322E"/></svg></span>Horno / Estufa</button>
+              <button type="button" class="atile" data-v="Dishwasher"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5v6M4.2 3.5v3.4a2.3 2.3 0 0 0 4.6 0V3.5M6.5 9.5V20.5" transform="translate(.4 0)"/><path d="M17.2 3.5c1.8 1.4 2.6 3.8 2.6 6 0 2-1 3-2.6 3v8" stroke="#E8322E"/></svg></span>Lavavajillas</button>
+              <button type="button" class="atile" data-v="Freezer / Ice Maker"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M12 3l-2 2.2M12 3l2 2.2M12 21l-2-2.2M12 21l2-2.2" stroke="#E8322E"/></svg></span>Congelador / Fábrica de hielo</button>
+              <button type="button" class="atile" data-v="Microwave"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20.5c-1.4-2.3 1.4-3.6 0-5.9M12 20.5c-1.4-2.3 1.4-3.6 0-5.9M17 20.5c-1.4-2.3 1.4-3.6 0-5.9" stroke="#E8322E"/><path d="M8.2 9.6c-1-1.8.8-2.8.4-4.6M12.4 9.6c-1-1.8.8-2.8.4-4.6M16.6 9.6c-1-1.8.8-2.8.4-4.6" opacity=".75"/></svg></span>Microondas</button>
+              <button type="button" class="atile" data-v="Garbage Disposal"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 6.5l1 13a2 2 0 0 0 2 1.8h5a2 2 0 0 0 2-1.8l1-13"/><path d="M10 10.5v6M14 10.5v6" stroke="#E8322E"/></svg></span>Triturador de basura</button>
+              <button type="button" class="atile" data-v="Installation"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg></span>Instalación</button>
+            </div>
+      <label for="wIssue">¿Qué está haciendo (o qué dejó de hacer)?</label><textarea id="wIssue" placeholder="ej. El refrigerador está tibio y la fábrica de hielo dejó de funcionar, empezó hace dos días…"></textarea>
+    </div>
+    <div class="pane" data-pane="4" hidden>
+      <h2>Elige un horario <small>4 de 5</small></h2>
+      <p style="color:var(--mut);font-size:14px;margin-top:10px">Ventanas de llegada de dos horas. Tu Service Setter confirma la cita exacta por texto antes del despacho.</p>
+      <label for="wDate">Preferred day</label><input type="date" id="wDate">
+      <p id="wAvailNote" style="color:var(--mut);font-size:13px;margin:6px 0 0"></p>
+      <div class="winGrid">
+        <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 a. m.</span></label>
+        <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 a. m.–12 p. m.</span></label>
+        <label><input type="radio" name="wwin" value="12-14"><span class="wc">12–2 p. m.</span></label>
+        <label><input type="radio" name="wwin" value="14-16"><span class="wc">2–4 p. m.</span></label>
+        <label><input type="radio" name="wwin" value="16-18"><span class="wc">4–6 p. m.</span></label>
+      </div>
+      <img src="/api/v1/app/scenario-images/book-calendar-pick.webp" alt="Ilustración: un cliente eligiendo el día de su cita en un calendario al reservar una reparación" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
+      <img src="/api/v1/app/scenario-images/book-window-choice.webp" alt="Ilustración: un cliente eligiendo su ventana de llegada de dos horas al reservar una reparación" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
+      <label for="wNote">¿Algo más? (opcional)</label><input id="wNote" placeholder="Código de la puerta, estacionamiento, mascotas…">
+    </div>
+    <div class="pane" data-pane="5" hidden>
+      <h2>Revisa y reserva <small>5 de 5</small></h2>
+      <div class="review" id="review" style="margin-top:12px"></div>
+      <p style="font-size:13.5px;color:var(--mut);margin-top:14px">El <b>diagnóstico de $99</b> se cobra al reservar y se <b>acredita completo a tu reparación</b>. Un Service Setter revisa cada solicitud y confirma por teléfono o texto; después puedes seguir la visita en vivo en Track My Tech.</p>
+      <img src="/api/v1/app/scenario-images/pay-quote-tablet.webp" alt="Ilustración: un cliente revisando el presupuesto escrito en una tableta antes de aprobar la reparación: ningún trabajo empieza sin un presupuesto aprobado" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:14px" loading="lazy">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-approve-tap.webp" alt="Ilustración: un cliente tocando para aprobar el presupuesto escrito antes de que empiece cualquier reparación" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Aprueba el presupuesto</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-phone-tap.webp" alt="Ilustración: un cliente pagando la reparación con un toque de su teléfono" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Paga con un toque</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-card-reader.webp" alt="Ilustración: un cliente pagando con tarjeta en el lector del técnico" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">O paga con tarjeta</figcaption></figure>
+        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-no-surprise.webp" alt="Ilustración: un cliente revisando con calma la factura final: el presupuesto aprobado, sin cargos sorpresa" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Sin sorpresas: el precio que aprobaste</figcaption></figure>
+      </div>
+    </div>
+    <div class="err" id="err"></div>
+    <div class="nav">
+      <button class="back" id="backBtn" type="button" style="visibility:hidden">Atrás</button>
+      <button class="next" id="nextBtn" type="button">Continuar&nbsp;&nbsp;→</button>
+    </div>
+  </div>
+
+  <img src="/api/v1/app/platform-images/booking-form-classic.webp" alt="Ilustración: un cliente completando con calma el formulario clásico de reserva en una tableta en la mesa de la cocina" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:16px" loading="lazy">
+
+  <div class="card doneBox" id="doneCard" hidden>
+    <div style="font-size:42px"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg></div>
+    <h2 style="justify-content:center">¡Ya estás en la lista!</h2>
+    <p style="color:var(--mut);margin-top:8px">Tu referencia de reserva:</p>
+    <div class="ref" id="doneRef">TS-XXXXXX</div>
+    <p style="color:var(--mut)">Tu solicitud está en la cola de despacho de Service Setters y tu confirmación viene en camino por texto y correo. Un setter confirmará tu horario en breve.</p>
+    <img src="/api/v1/app/platform-images/booking-dispatch.webp" alt="Ilustración: una despachadora de Service Setters con audífonos entregando una tarjeta de trabajo hacia una furgoneta de servicio: tu solicitud entra a la cola de despacho" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
+    <img src="/api/v1/app/scenario-images/book-confirmation.webp" alt="Ilustración: un cliente recibiendo su confirmación de reserva por texto y correo después de reservar una reparación" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
+    <div class="doneBtns">
+      <a href="/track" style="background:var(--red2);color:#fff"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Sigue este trabajo</a>
+      <a href="/garage" style="background:#0A265C;color:#fff">Mis electrodomésticos</a>
+    </div>
+  </div>
+
+  <style>
+    .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.5);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(18,128,255,.16);margin-top:20px;text-align:left;}
+    .sbpromo-top{display:flex;gap:14px;align-items:flex-start;}
+    .sbpromo-mark{flex:none;width:58px;height:58px;}
+    .sbpromo-mark svg{width:58px;height:58px;display:block;filter:drop-shadow(0 0 9px rgba(18,128,255,.65));}
+    .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#9FD0FF;background:rgba(18,128,255,.16);border:1px solid rgba(25,167,255,.45);padding:3px 9px;border-radius:99px;}
+    .sbpromo-h{font-size:21px;line-height:1.2;font-weight:800;margin:8px 0 5px;color:#fff;font-family:'Poppins',sans-serif;}
+    .sbpromo-p{font-size:14px;line-height:1.5;color:#C7D8F5;margin:0;}
+    .sbpromo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+    .sbpromo-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;color:#EAF3FF;}
+    .sbpromo-chip svg{width:17px;height:17px;flex:none;filter:drop-shadow(0 0 3px rgba(25,167,255,.65));}
+    .sbpromo-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px;}
+    .sbpromo-cta{display:inline-flex;align-items:center;gap:9px;background:#E8322E;color:#fff;border:none;border-radius:999px;padding:13px 22px;font:inherit;font-weight:800;font-size:15.5px;cursor:pointer;box-shadow:0 8px 20px rgba(232,50,46,.35);}
+    .sbpromo-cta svg{width:19px;height:19px;flex:none;}
+    .sbpromo-note{font-size:12.5px;color:#9DB6DD;line-height:1.45;}
+    @media(max-width:480px){.sbpromo{padding:16px;}.sbpromo-h{font-size:19px;}.sbpromo-cta{width:100%;justify-content:center;}}
+  </style>
+  <div class="sbpromo">
+    <div class="sbpromo-top">
+      <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
+      <div>
+        <span class="rt-lights" aria-hidden="true"><i></i><i></i><i class="on-r"></i><i class="on-g"></i></span><span class="sbpromo-tag">RESERVA INTELIGENTE · SPEEDY AI</span>
+        <h3 class="sbpromo-h">Reserva de la forma inteligente, con Speedy AI</h3>
+        <p class="sbpromo-p">¿Prefieres la forma tecnológica? Solo dile a Speedy qué pasa: escríbelo, dilo o toma una foto. Speedy te hace un par de preguntas rápidas y reserva tu visita ahí mismo en el chat.</p>
+      </div>
+    </div>
+    <div class="sbpromo-chips">
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16v10.2h-9.2l-4.4 3.9v-3.9H4z"/><circle cx="8.4" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.2" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.6" r="1.2" fill="currentColor" stroke="none"/></svg>Escríbelo, dilo o toma una foto</span>
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3.5 3.5H11L20.5 13 13 20.5 3.5 11z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 13.4l1.9 1.9 3.5-3.8"/></svg>Diagnóstico de $99, acreditado a tu reparación</span>
+      <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21L6.6 11.6a5.4 5.4 0 1 1 10.8 0z"/><circle cx="12" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg>Seguimiento en vivo en 8 etapas después de reservar</span>
+    </div>
+    <img src="/api/v1/app/scenario-images/book-speedy-chat.webp" alt="Ilustración: un cliente reservando una reparación chateando con Speedy AI: escribiendo, hablando o enviando una foto del problema" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:16px" loading="lazy">
+    <div class="sbpromo-row">
+      <button type="button" class="sbpromo-cta" onclick="location.href='/es/'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#fff" stroke="none"/></svg>Reservar con Speedy</button>
+      <span class="sbpromo-note">El formulario clásico de arriba es como reserva la mayoría de los clientes: la misma cola y la misma confirmación de cualquier forma.</span>
+    </div>
+  </div>
+  <a class="speedy" href="/es/">
+    <span><b>¿Necesitas ayuda? Pregúntale a Speedy AI</b><small>¿Prefieres hablarlo? Speedy lo reserva en el chat: la misma cola, la misma confirmación.</small></span>
+    <span class="bub"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg></span>
+  </a>
+
+  <p class="fine">Diagnóstico de $99 cobrado al reservar, acreditado a tu reparación.<br>Sirviendo a 65 ciudades en Broward, Palm Beach y Miami-Dade · <a href="tel:+18444607038">844-460-7038</a><br>Con la tecnología de Top Speed CRM: reservas, CRM y despacho en un solo sistema.</p>
+</div>
+
+<script>
+(function(){
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var step=1, busy=false;
+  var $=function(id){return document.getElementById(id)};
+  var panes=[].slice.call(document.querySelectorAll('.pane'));
+  var segs=[].slice.call(document.querySelectorAll('#segs i'));
+  var labels=[].slice.call(document.querySelectorAll('#segLabels span'));
+  $('menuBtn').addEventListener('click',function(){var m=$('menu');m.style.display=m.style.display==='block'?'none':'block';});
+  function show(n){
+    step=n;
+    panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
+    segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
+    var NAMES=['Contacto','Ubicación','Electrodoméstico','Horario','Revisar'];
+    labels.forEach(function(l,i){l.className=i<n-1?'done':(i===n-1?'now':'');l.textContent=(i<n-1?'':'')+NAMES[i];});
+    $('backBtn').style.visibility=n===1?'hidden':'visible';
+    $('nextBtn').innerHTML=n===5?'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirmar reserva':'Continuar&nbsp;&nbsp;→';
+    $('err').style.display='none';
+    if(n===5) fillReview();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function err(m){var e=$('err');e.textContent=m;e.style.display='block';}
+  function val(id){return $(id).value.trim()}
+          var atiles=[].slice.call(document.querySelectorAll('.atile'));
+          atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
+
+          var locBtn=document.getElementById('wLocBtn');
+          if(locBtn) locBtn.addEventListener('click',function(){
+            if(!navigator.geolocation){err('La ubicación no está disponible en este dispositivo: escribe el código postal.');return;}
+            locBtn.disabled=true; var old=locBtn.innerHTML; locBtn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Buscándote…';
+            function done(){locBtn.disabled=false;locBtn.innerHTML=old;}
+            navigator.geolocation.getCurrentPosition(function(p){
+              fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+p.coords.latitude+'&lon='+p.coords.longitude)
+              .then(function(r){return r.json()}).then(function(j){
+                var a=(j&&j.address)||{}; var zip=(a.postcode||'').slice(0,5);
+                if(/^\d{5}$/.test(zip)) document.getElementById('wZip').value=zip;
+                var city=a.city||a.town||a.village||a.suburb||'';
+                var sel=document.getElementById('wCity');
+                if(city&&sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===city.toLowerCase()){sel.selectedIndex=i;break;}}}
+                done(); if(!zip) err('Encontramos tu ubicación pero no un código postal: escríbelo y continúa.');
+              }).catch(function(){done();err('No pudimos leer tu ubicación: escribe el código postal.');});
+            },function(){done();err('No se dio permiso de ubicación: escribe el código postal.');},{timeout:10000});
+          });
+
+  function valid(n){
+    if(n===1){
+      if(val('wName').length<2) return 'Agrega tu nombre para que el setter sepa por quién preguntar.';
+      if(val('wPhone').replace(/\D/g,'').length<7) return 'Agrega un número de móvil: ahí llegan tu confirmación y las actualizaciones.';
+      var em=val('wEmail'); if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return 'Ese correo no parece completo: corrígelo o déjalo en blanco.';
+    }
+    if(n===2){
+      if(val('wAddress').length<5) return 'Agrega la dirección de la calle para la visita.';
+      if(!val('wCity')) return 'Elige tu ciudad: servimos 65 ciudades en Broward, Palm Beach y Miami-Dade.';
+      if(!/^\d{5}$/.test(val('wZip'))) return 'Agrega el código postal de 5 dígitos.';
+    }
+    if(n===3){
+      if(!val('wAppliance')) return 'Elige el electrodoméstico.';
+      if(val('wIssue').length<3) return 'Una frase sobre el problema ayuda al técnico a traer los repuestos correctos.';
+    }
+    if(n===4){
+      if(!document.querySelector('input[name="wwin"]:checked')) return 'Elige una ventana de llegada.';
+    }
+    return '';
+  }
+  function esc(s){return s.replace(/</g,'&lt;')}
+  /* Live arrival-window picker (2026-11-20, A1): the day's windows
+     come from GET /speedy/availability — a closed window (full, or
+     already past today) renders visibly closed and cannot be picked.
+     If the read fails, every window stays pickable and the office
+     confirms by text as before: the picker never blocks a booking. */
+  function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate());}
+  function dayLabel(v){ try{ return new Date(v+'T12:00:00').toLocaleDateString('es-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return v; } }
+  function applyAvail(j){
+    var byId={}; (j.data.windows||[]).forEach(function(w){byId[w.id]=w;});
+    document.querySelectorAll('input[name="wwin"]').forEach(function(inp){
+      var w=byId[inp.value]; if(!w) return;
+      var card=inp.nextElementSibling;
+      if(w.status==='CLOSED'){
+        inp.disabled=true; if(inp.checked) inp.checked=false;
+        card.textContent=w.label+(w.reason==='FULL'?' \u2014 Full':' \u2014 Passed');
+      } else {
+        inp.disabled=false; card.textContent=w.label;
+      }
+    });
+    var note=$('wAvailNote');
+    if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked \u2014 full and passed windows are closed.':'Pick a day and window \u2014 your Service Setter confirms the exact appointment by text.';
+  }
+  function loadAvail(){
+    var d=$('wDate'); if(!d||!d.value) return;
+    fetch(API+'/speedy/availability?date='+encodeURIComponent(d.value))
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j&&j.data&&j.data.windows) applyAvail(j); })
+      .catch(function(){ /* leave every window pickable */ });
+  }
+  (function initAvail(){
+    var d=$('wDate'); if(!d) return;
+    var today=dstr(new Date());
+    d.min=today; if(!d.value) d.value=today;
+    d.addEventListener('change',loadAvail);
+    loadAvail();
+  })();
+  function fillReview(){
+    var win=document.querySelector('input[name="wwin"]:checked');
+    var rows=[['Nombre',val('wName')],['Teléfono',val('wPhone')],['Correo',val('wEmail')||'—'],['Dirección',val('wAddress')],['Ciudad / Cód. postal',val('wCity')+' '+val('wZip')],['Electrodoméstico',val('wAppliance')],['Problema',val('wIssue')],['Día preferido',dayLabel(val('wDate'))],['Ventana',win?win.nextElementSibling.textContent:'—']];
+    $('review').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+esc(r[1])+'</b></div>'}).join('');
+  }
+  function submit(){
+    var win=document.querySelector('input[name="wwin"]:checked').value;
+    var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
+    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,preferredDate:val('wDate')||undefined,source:'WEB_FORM',companyWebsite:val('wWebsite')};
+    try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
+    try{
+      var q=new URLSearchParams(location.search);
+      var src=q.get('source'); if(src==='FLAGSHIP_NET'||src==='SPEEDY_CHAT') payload.source=src;
+      var via=q.get('via'); if(via) payload.via=via;
+      var sc=q.get('src'); if(sc && !payload.via) payload.via=sc;
+      var pg=q.get('page'); if(pg) payload.page=pg;
+      var us=q.get('utm_source'); if(us) payload.utmSource=us;
+      var um=q.get('utm_medium'); if(um) payload.utmMedium=um;
+      var uc=q.get('utm_campaign'); if(uc) payload.utmCampaign=uc;
+    }catch(e){}
+    try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
+    var em=val('wEmail'); if(em) payload.customer.email=em;
+    busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Reservando…';
+    fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(!x.ok){
+        if(x.j && x.j.serviceCities) throw new Error('Esa dirección está fuera de nuestra área de servicio actual. Servimos: '+x.j.serviceCities.join(', ')+'. Llama al 844-460-7038 y te diremos con honestidad si podemos hacer una excepción.');
+        throw new Error((x.j&&x.j.error)||'La reserva no se completó.');
+      }
+      $('doneRef').textContent=x.j.data.referenceCode;
+      $('formCard').hidden=true; $('doneCard').hidden=false;
+      segs.forEach(function(s){s.className='done'}); labels.forEach(function(l){l.className='done'});
+      window.scrollTo({top:0,behavior:'smooth'});
+    })
+    .catch(function(e){ err(e.message+' También puedes reservar con Speedy aquí abajo, o llamar al 844-460-7038.'); })
+    .finally(function(){ busy=false; btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirmar reserva'; });
+  }
+  $('backBtn').addEventListener('click',function(){ if(step>1) show(step-1); });
+  $('nextBtn').addEventListener('click',function(){
+    if(busy) return;
+    var v=valid(step); if(v){ err(v); return; }
+    if(step<5) show(step+1); else submit();
+  });
+  show(1);
+})();
+</script>
+<!-- TSE-PANEL v1 -->
+<section class="tse-panel" aria-label="The Top Speed Ecosystem">
+<style>
+.tse-panel{max-width:1100px;margin:34px auto;padding:26px 22px;background:#fff;border:1px solid #dfe7f5;border-radius:18px;box-shadow:0 12px 32px rgba(10,38,92,.08)}
+.tse-head{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.tse-title{margin:0;font-size:24px;line-height:1.2;color:#0A265C}
+.tse-intro{margin:6px 0 0;color:#43536e;font-size:14.5px;line-height:1.55;max-width:640px}
+.tse-tell{display:inline-flex;align-items:center;gap:9px;background:#0A265C;color:#fff;border:0;border-radius:999px;padding:9px 18px 9px 11px;font-weight:800;font-size:14.5px;cursor:pointer;box-shadow:0 8px 20px rgba(10,38,92,.25);flex:none}
+.tse-tell svg{width:26px;height:26px;display:block}
+.tse-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin-top:18px}
+.tse-item{display:flex;flex-direction:column;gap:3px;padding:13px;background:#f4f7ff;border:1px solid #e1e9f8;border-radius:13px;text-decoration:none;color:#12264f;position:relative}
+.tse-item:hover{box-shadow:0 10px 22px rgba(10,38,92,.12)}
+.tse-item svg{width:22px;height:22px;color:#0A265C;margin-bottom:5px}
+.tse-name{font-weight:800;font-size:14px}
+.tse-desc{font-size:12px;line-height:1.45;color:#54678a}
+.tse-here{border-color:#E8322E;background:#fff5f5}
+.tse-badge{align-self:flex-start;background:#E8322E;color:#fff;font-size:10px;font-weight:800;letter-spacing:.6px;padding:3px 8px;border-radius:999px;text-transform:uppercase;margin-bottom:5px}
+.tse-insight{margin:16px 0 0;padding:12px 14px;background:#0A265C;color:#dbe7ff;border-radius:12px;font-size:13.5px;line-height:1.55}
+.tse-insight b{color:#fff}
+@media(max-width:480px){.tse-grid{grid-template-columns:1fr 1fr}.tse-title{font-size:21px}.tse-panel{margin:26px 12px;padding:20px 14px}}
+</style>
+<div class="tse-head"><div><h2 class="tse-title">El ecosistema Top Speed</h2><p class="tse-intro">Todo funciona en una sola plataforma conectada con Speedy AI en el centro: reservas, seguimiento en vivo, repuestos, referidos y servicio para hogares, administradores de propiedades y negocios.</p></div><button type="button" class="tse-tell" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}else{var b=document.querySelector('.tsw-btn');if(b){b.click();}else if(window.toggleSpeedy){window.toggleSpeedy();}else{window.location.href='/speedy';}}"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg>Dile a Speedy</button></div>
+<div class="tse-grid"><a class="tse-item tse-here" href="/es/book"><span class="tse-badge">Estás aquí</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/><circle cx="18.6" cy="5.4" r="1.1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Reserva una reparación</span><span class="tse-desc">Reserva una reparación o instalación en línea en un par de minutos.</span></a><a class="tse-item" href="/app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M7.5 3.5h9V20.5h-9z"/><path d="M10.8 17.8h2.4"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg><span class="tse-name">Appliance Connect</span><span class="tse-desc">La app del cliente: reserva, sigue tu servicio y guarda tus electrodomésticos en Mi Garaje.</span></a><a class="tse-item" href="/track"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21.2S5.8 15.6 5.8 10.6a6.2 6.2 0 1 1 12.4 0c0 5-6.2 10.6-6.2 10.6z"/><circle cx="12" cy="10.4" r="1.7" fill="currentColor" stroke="none"/></svg><span class="tse-name">Track My Tech</span><span class="tse-desc">Seguimiento en vivo en 8 etapas para cada trabajo reservado.</span></a><a class="tse-item" href="/refer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11h16v9.5H4z"/><path d="M3 6.8h18V11H3z"/><path d="M12 6.8V20.5"/><path d="M12 6.8C8.6 6.8 7.8 3.4 10 3.4c1.9 0 2 3.4 2 3.4zM12 6.8c3.4 0 4.2-3.4 2-3.4-1.9 0-2 3.4-2 3.4z"/></svg><span class="tse-name">Refiere y gana</span><span class="tse-desc">Gana un crédito de $25 por cada referido completado.</span></a><a class="tse-item" href="/offers-rewards"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4h7.2L20 12.8 12.8 20 4 11.2z"/><circle cx="8.4" cy="8.4" r="1.4" fill="currentColor" stroke="none"/></svg><span class="tse-name">Ofertas y recompensas</span><span class="tse-desc">Ofertas actuales, ahorros de bienvenida y recompensas de lealtad.</span></a><a class="tse-item" href="/connect-pro-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 11.2 12 4l8 7.2"/><path d="M6.2 9.6V20h11.6V9.6"/><path d="M10 20v-5.2h4V20"/><circle cx="12" cy="4" r="1.1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Appliance Connect Pro</span><span class="tse-desc">Centro de servicio para propietarios y administradores de propiedades.</span></a><a class="tse-item" href="/appliance-pro-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M5 20.5v-15L12 3.5v17"/><path d="M12 9.5l7 2v9"/><path d="M8 8.2h1.6M8 12h1.6M8 15.8h1.6M15.4 14.8h1.6M15.4 17.8h1.6"/></svg><span class="tse-name">Appliance Pro</span><span class="tse-desc">Servicio comercial de electrodomésticos para negocios.</span></a><a class="tse-item" href="/cleanout-vents-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><circle cx="12" cy="12" r="8.6"/><path d="M12 12l.4-5.2M12 12l4.9 1.8M12 12l-4.2 3.4"/><circle cx="12" cy="12" r="1.3" fill="currentColor" stroke="none"/></svg><span class="tse-name">Cleanout Vents</span><span class="tse-desc">Nuestro socio de limpieza de conductos de secadora en la red.</span></a><a class="tse-item" href="/pepper-lists-site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 8h2.8l1.8-2.8h6.8L17.2 8H20v11.5H4z"/><circle cx="12" cy="13.4" r="3.1"/><circle cx="17.6" cy="10.6" r="1" fill="#E8322E" stroke="none"/></svg><span class="tse-name">Pepper Lists It</span><span class="tse-desc">Toma una foto y Pepper publica tus artículos en venta.</span></a><a class="tse-item" href="/group"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z"/><path d="M12 8.2l3.8 2.2v4.2L12 16.8l-3.8-2.2v-4.2z"/><circle cx="12" cy="12.5" r="1.1" fill="currentColor" stroke="none"/></svg><span class="tse-name">Top Speed Group</span><span class="tse-desc">Toda la familia, incluyendo Speedy Pro para técnicos y la Academia de Entrenamiento.</span></a></div>
+<p class="tse-insight"><b>Es bueno saberlo:</b> el diagnóstico de $99 se cobra al reservar y se acredita completo a tu reparación aprobada; ningún trabajo empieza sin tu presupuesto escrito aprobado.</p>
+</section>
+<!-- /TSE-PANEL -->
+<footer style="padding:10px 16px 30px;text-align:center">
+  <img src="/api/v1/app/logo-images/lockup-b" alt="Logotipo de Top Speed Appliance: el caballo de carreras de Top Speed con Top Speed Appliance, The Faster The Better" loading="lazy" style="width:min(300px,100%);height:auto;display:block;margin:0 auto;border-radius:16px">
+  <p style="font-size:12.5px;color:#9db6dd;margin:12px 0 0">Top Speed Appliance LLC — The Faster, The Better.</p>
+</footer>
+
+<script src="/shared/attribution-capture.js" defer></script>
+
+<script src="/shared/page-slider.js" defer></script>
+<script src="/shared/language-toggle.js" defer></script>
+<script src="/shared/language-toggle.js" defer></script>
+</body>
+</html>

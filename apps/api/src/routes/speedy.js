@@ -44,6 +44,10 @@ const historyTurn = z.object({
 const chatSchema = z.object({
   message: z.string().trim().min(1, 'Message is required').max(2000),
   history: z.array(historyTurn).max(10).optional(),
+  // Language hint (2026-11-20, A5): the /es/ pages pass 'es'. Optional —
+  // Speedy also detects Spanish from the message itself, and English
+  // stays the default when neither signal is present.
+  language: z.enum(['en', 'es']).optional(),
   // Chat capture (services/chatCapture.js): a client-issued session id
   // + surface tag so the conversation lands in the database for staff
   // analysis. Both optional — a chat is never rejected over them.
