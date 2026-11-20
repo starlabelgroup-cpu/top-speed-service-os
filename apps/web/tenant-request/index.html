@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tenant Service Request — Top Speed Appliance Repair</title>
+<meta name="description" content="Tenants: send a service request to your property manager. They review it and, once approved, it goes straight to the Top Speed Service Setters.">
+<meta name="robots" content="noindex">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#dbe6f3}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3f9;min-height:100vh}
+.topbar{background:#000;color:#fff;display:flex;align-items:center;gap:14px;padding:10px 20px;flex-wrap:wrap;border-bottom:3px solid #E8322E}
+.topbar img{height:44px;width:auto;border-radius:7px;display:block}
+.topbar .lock{display:flex;flex-direction:column;line-height:1.15}
+.topbar .lock b{color:#fff;font-size:16.5px}
+.topbar .lock small{color:#B9CFF2;font-size:12px}
+.topbar a.call{margin-left:auto;background:#E8322E;color:#fff;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none}
+.wrap{max-width:680px;margin:0 auto;padding:28px 18px 60px}
+.hero-card{background:linear-gradient(160deg,#071a3d,#0a265c);color:#fff;border-radius:18px;padding:26px 24px;margin-bottom:18px}
+.hero-card h1{font-size:clamp(24px,4.5vw,32px);margin-bottom:8px}
+.hero-card p{color:#b9cdf0;line-height:1.55;font-size:15.5px}
+.card{background:#fff;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 2px 10px rgba(10,38,92,.06)}
+.card h2{color:var(--navy);font-size:20px;margin-bottom:8px}
+.card p{color:var(--muted);line-height:1.55;font-size:15px}
+label{font-weight:700;color:var(--navy);font-size:13.5px;display:block;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:10px;font:inherit;font-size:15.5px;background:#fff}
+.btn{background:var(--red);color:#fff;padding:13px 22px;border-radius:9px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15.5px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.msg{font-size:14.5px;margin-top:10px;min-height:20px}
+.msg.err{color:var(--red)} .msg.ok{color:var(--green)}
+.pill{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:12px;border-radius:99px;padding:4px 11px}
+.pill.wait{background:#fff3d6;color:#7a5200}
+.pill.good{background:#dcf5e5;color:#0f7a3d}
+.pill.bad{background:#ffe1e1;color:#a1141a}
+.item{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px;font-size:14.5px}
+.item b{color:var(--navy)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.row2{grid-template-columns:1fr}}
+</style>
+<script src="/google-tag.js"></script>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div class="topbar">
+  <img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217">
+  <span class="lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span>
+  <a class="call" href="tel:+18444607038">844-460-7038</a>
+</div>
+<div class="wrap">
+  <div class="hero-card">
+    <h1 id="heroTitle">Tenant service request</h1>
+    <p id="heroText">This is your property's service request page. Tell us what needs fixing — your property manager reviews every request, and once they approve it, it goes straight to the Top Speed Service Setters who schedule your visit.</p>
+  </div>
+
+  <div id="formMode" style="display:none;">
+    <div class="card">
+      <h2 id="propName">Your property</h2>
+      <p id="propAddr"></p>
+      <label for="tUnit">Your unit</label>
+      <select id="tUnit"><option value="">Choose your unit…</option></select>
+      <div class="row2">
+        <div><label for="tName">Your name</label><input id="tName" type="text" autocomplete="name" placeholder="Full name"></div>
+        <div><label for="tPhone">Your phone</label><input id="tPhone" type="tel" autocomplete="tel" placeholder="954-555-0100"></div>
+      </div>
+      <label for="tEmail">Email (optional)</label><input id="tEmail" type="email" autocomplete="email" placeholder="you@email.com">
+      <div class="row2">
+        <div><label for="tAppliance">Appliance</label><select id="tAppliance"><option>Refrigerator</option><option>Washer</option><option>Dryer</option><option>Oven / Range</option><option>Dishwasher</option><option>Freezer / Ice Maker</option><option>Microwave</option><option>Garbage Disposal</option><option>Other</option></select></div>
+        <div><label for="tUrgency">Urgency</label><select id="tUrgency"><option value="standard">Standard</option><option value="urgent">Urgent — no cooling, leak, or no power</option></select></div>
+      </div>
+      <label for="tIssue">What is happening?</label>
+      <textarea id="tIssue" rows="4" placeholder="e.g. The fridge runs but nothing stays cold, and it started two days ago."></textarea>
+      <label for="tAccess">Access notes (optional)</label>
+      <input id="tAccess" type="text" placeholder="Gate code, dog on site, best hours to reach you…">
+      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="tWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+      <div style="margin-top:16px;"><button class="btn" onclick="submitRequest()">Send to my property manager</button></div>
+      <div class="msg" id="formMsg"></div>
+    </div>
+    <div class="card" id="doneCard" style="display:none;">
+      <h2>Request sent</h2>
+      <p>Your request reference is <b id="doneRef"></b>. Your property manager reviews it next. Bookmark your private status page to follow it — it shows only your request:</p>
+      <p style="margin-top:10px;"><a class="btn blue" id="doneLink" href="#" style="text-decoration:none;">Check my request status</a></p>
+    </div>
+  </div>
+
+  <div id="statusMode" style="display:none;">
+    <div class="card">
+      <h2>Your request</h2>
+      <div id="statusBody"><p>Loading…</p></div>
+    </div>
+  </div>
+
+  <div id="badMode" style="display:none;">
+    <div class="card">
+      <h2 id="badTitle">This link is not active</h2>
+      <p id="badText">Ask your property manager for a current request link, or call us at <a href="tel:+18444607038">844-460-7038</a> (Mon–Fri 8am–7pm) and we will help you reach them.</p>
+    </div>
+  </div>
+</div>
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;'); }
+function qs(name){ return new URLSearchParams(location.search).get(name)||''; }
+function fetchJson(path, opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+  return fetch(API+path, opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.status=r.status; throw e; } return j; }); });
+}
+var linkToken=qs('t');
+var statusToken=qs('s');
+function showBad(title, text){
+  document.getElementById('formMode').style.display='none';
+  document.getElementById('statusMode').style.display='none';
+  document.getElementById('badMode').style.display='';
+  if(title) document.getElementById('badTitle').textContent=title;
+  if(text) document.getElementById('badText').innerHTML=text;
+}
+function loadForm(){
+  fetchJson('/tenant-link/'+encodeURIComponent(linkToken)).then(function(j){
+    var d=j.data||{};
+    document.getElementById('propName').textContent=d.property.name;
+    document.getElementById('propAddr').textContent=[d.property.address, d.property.city, d.property.zip].filter(Boolean).join(', ');
+    var sel=document.getElementById('tUnit');
+    sel.innerHTML='<option value="">Choose your unit…</option>'+(d.units||[]).map(function(u){ return '<option value="'+esc(u.id)+'">'+esc(u.label)+'</option>'; }).join('');
+    if(!d.units || !d.units.length){ sel.innerHTML='<option value="">No unit list — describe your unit in the notes</option>'; }
+    document.getElementById('formMode').style.display='';
+  }).catch(function(e){ showBad(); });
+}
+function submitRequest(){
+  var m=document.getElementById('formMsg');
+  var payload={
+    unitId: document.getElementById('tUnit').value || undefined,
+    tenantName: document.getElementById('tName').value.trim(),
+    tenantPhone: document.getElementById('tPhone').value.trim(),
+    tenantEmail: document.getElementById('tEmail').value.trim() || undefined,
+    appliance: document.getElementById('tAppliance').value,
+    issue: document.getElementById('tIssue').value.trim(),
+    urgency: document.getElementById('tUrgency').value,
+    accessNotes: document.getElementById('tAccess').value.trim() || undefined,
+    companyWebsite: document.getElementById('tWebsite').value
+  };
+  if(payload.tenantName.length<2 || payload.tenantPhone.length<7 || payload.issue.length<3){
+    m.textContent='Add your name, a phone we can reach, and a few words about the problem.';
+    m.className='msg err'; return;
+  }
+  m.textContent='Sending…'; m.className='msg';
+  fetchJson('/tenant-link/'+encodeURIComponent(linkToken)+'/requests', {method:'POST', body:JSON.stringify(payload)})
+    .then(function(j){
+      var d=j.data||{};
+      m.textContent='Sent — your property manager has it now.'; m.className='msg ok';
+      document.getElementById('doneRef').textContent=d.reference||'';
+      var link=document.getElementById('doneLink');
+      link.href='/tenant-request?s='+encodeURIComponent(d.statusToken||'');
+      if(!d.statusToken){ document.getElementById('doneCard').querySelector('p').textContent='Your request reference is shown above — quote it any time you call us.'; }
+      document.getElementById('doneCard').style.display='';
+      document.getElementById('doneCard').scrollIntoView({behavior:'smooth', block:'start'});
+    })
+    .catch(function(e){ m.textContent=''+e.message; m.className='msg err'; });
+}
+function statusPill(status){
+  if(status==='PENDING_APPROVAL') return '<span class="pill wait">Waiting for your property manager</span>';
+  if(status==='APPROVED') return '<span class="pill good">Approved — with the Service Setters</span>';
+  if(status==='REJECTED') return '<span class="pill bad">Not approved</span>';
+  return '<span class="pill">'+esc(status)+'</span>';
+}
+function loadStatus(){
+  fetchJson('/tenant-request-status/'+encodeURIComponent(statusToken)).then(function(j){
+    var d=j.data||{};
+    var html='<div class="item"><b>'+esc(d.reference)+'</b> '+statusPill(d.status)
+      +'<br>'+esc(d.appliance)+' — '+esc(d.issue)
+      +'<br><span style="color:var(--muted)">'+esc(d.propertyName||'')+(d.unitLabel?' · '+esc(d.unitLabel):'')+' · sent '+esc(String(d.createdAt||'').slice(0,10))+'</span></div>';
+    if(d.status==='APPROVED'){
+      html+='<p style="margin-top:12px;">Your property manager approved this request'+(d.bookingReference?' (service reference <b>'+esc(d.bookingReference)+'</b>)':'')+'. The Service Setters will contact you at the phone you gave us to schedule the visit.</p>';
+    } else if(d.status==='REJECTED'){
+      html+='<p style="margin-top:12px;">Your property manager did not approve this request.'+(d.decisionNote?' Their note: <b>'+esc(d.decisionNote)+'</b>':'')+' If you think this is a mistake, contact your property manager, or call us at <a href="tel:+18444607038">844-460-7038</a>.</p>';
+    } else {
+      html+='<p style="margin-top:12px;">Your property manager has not decided yet. This page updates the moment they do — check back any time.</p>';
+    }
+    document.getElementById('statusBody').innerHTML=html;
+    document.getElementById('statusMode').style.display='';
+    document.getElementById('heroTitle').textContent='Your request status';
+    document.getElementById('heroText').textContent='This page shows only your request — nobody else can see it without your private link.';
+  }).catch(function(){ showBad('Request not found', 'That status link does not match a request. Check the link from your confirmation, or call us at <a href="tel:+18444607038">844-460-7038</a>.'); });
+}
+if(statusToken){ loadStatus(); }
+else if(linkToken){ loadForm(); }
+else { showBad(); }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>body{font-family:'Plus Jakarta Sans','Inter',Arial,sans-serif} h1{font-family:'Orbitron','Rajdhani',sans-serif} h2,h3{font-family:'Plus Jakarta Sans','Inter',sans-serif} body{font-weight:500} h1,h2,h3{font-weight:800}</style>
+</body>
+</html>

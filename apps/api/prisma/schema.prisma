@@ -2519,148 +2519,102 @@ model CallRecording {
   @@index([toNumber, createdAt])
 }
 
-// ---------------------------------------------------------------------------
-// New money rails (2026-11-20, Wave 4) — machinery built ahead of
-// activation, following the advertiser-plans honesty idiom: structure
-// ships first, money moves only after the OWNER configures it, and
-// nothing anywhere invents a price, a fee, or a denomination.
+// Connect Pro — PM Portfolio + Tenant Request Links (2026-11-20,
+// Ramone's approved recommendations B5 + B6). A property manager's
+// portfolio lives here: properties and their units, owned by the PM's
+// account (User.signupAudience 'property-manager'). Plain reference
+// columns in the PlatformEvent style — ownerId is the PM's User id,
+// no relations, so the portfolio never entangles the account tables.
 //
-// PaymentsSetting is the owner-owned singleton (id 'default'), the
-// sibling of AdBillingSetting:
-//  - connectEnabled: the activation flag for Pepper Lists protected
-//    payments (Stripe Connect). Default FALSE — the feature ships
-//    OFF because enabling Connect on the live Stripe account is
-//    Ramone's own step in the Stripe dashboard; until he flips this
-//    flag (after that step), every Connect surface answers an honest
-//    "coming" state and checkout is refused.
-//  - connectFeeBps: the platform application fee for a protected
-//    purchase, in basis points of the listing price. NULL = the
-//    owner has not set a fee yet — checkout is refused with
-//    pricing_not_set even when the flag is on (the AdPlan rule: no
-//    owner-set number, no money movement).
-//  - giftCardDenominationsCents: the owner-set list of gift card
-//    amounts (cents) the flagship may sell. Empty = gift card sales
-//    are disabled; a purchase for any other amount is refused with
-//    pricing_not_set.
-// ---------------------------------------------------------------------------
-model PaymentsSetting {
-  id                          String   @id
-  connectEnabled              Boolean  @default(false)
-  connectFeeBps               Int?
-  giftCardDenominationsCents  Json     @default("[]")
-  updatedBy                   String?
-  createdAt                   DateTime @default(now())
-  updatedAt                   DateTime @updatedAt
+// Tenant links: ONE active link per property. The link token itself
+// is never stored — only its SHA-256 hash (the tracking-token
+// discipline) — so a database read can never reproduce a live link.
+// The PM can rotate (new token, old hash replaced) or revoke.
+//
+// PmServiceRequest is the PM pipeline's record of record for BOTH
+// origins: CONSOLE requests the PM submits (born SENT — each one also
+// creates a PM_SERVICE_REQUEST connection record, whose lead booking
+// is the setter-queue entry, exactly like the bulk Speedy intake) and
+// TENANT_LINK requests a tenant files through the property link
+// (born PENDING_APPROVAL; ONLY a PM approval creates the connection +
+// lead booking — no auto-dispatch, ever). Rejection closes the
+// request with the PM's note, which the tenant reads on their private
+// status view (statusTokenHash — same hash-at-rest discipline; the
+// status view shows that one request and nothing else).
+model PmProperty {
+  id        String   @id @default(uuid()) @db.Uuid
+  companyId String   @db.Uuid
+  ownerId   String   @db.Uuid
+  name      String
+  address   String
+  city      String
+  zip       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId, ownerId])
 }
 
-// One Stripe Connect (Express) account per Pepper Lists seller.
-// A row is born NOT_STARTED when the seller begins onboarding; the
-// status fields mirror what Stripe reports about the account
-// (charges/payouts enabled, details submitted) and are refreshed
-// from Stripe — never assumed. A seller can only be PAID through a
-// row whose status is ACTIVE with chargesEnabled true.
-model SellerConnectAccount {
-  id               String   @id @default(uuid()) @db.Uuid
-  companyId        String   @db.Uuid
-  userId           String   @unique @db.Uuid
-  stripeAccountId  String?  @unique
-  status           String   @default("NOT_STARTED") // NOT_STARTED | ONBOARDING | ACTIVE | RESTRICTED
-  chargesEnabled   Boolean  @default(false)
-  payoutsEnabled   Boolean  @default(false)
-  detailsSubmitted Boolean  @default(false)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+model PmUnit {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyId   String   @db.Uuid
+  propertyId  String   @db.Uuid
+  ownerId     String   @db.Uuid
+  label       String
+  tenantName  String?
+  tenantPhone String?
+  tenantEmail String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@index([companyId, status])
+  @@index([propertyId])
+  @@index([companyId, ownerId])
 }
 
-// A protected purchase of one Pepper Lists listing through Stripe
-// Connect checkout: the buyer pays the listing price, Stripe routes
-// the seller's share to the seller's connected account and the
-// platform keeps the owner-set application fee. Born PENDING at
-// checkout creation; PAID only when Stripe's webhook confirms the
-// completed session (the diagnostic webhook discipline); EXPIRED
-// when the session lapses. A listing with a PAID order is sold —
-// the office removes/marks the listing record as it does today.
-model PepperListsOrder {
-  id                    String    @id @default(uuid()) @db.Uuid
-  companyId             String    @db.Uuid
-  listingConnectionId   String    @db.Uuid
-  listingReference      String
-  sellerUserId          String    @db.Uuid
-  buyerUserId           String?   @db.Uuid
-  buyerEmail            String?
-  amountCents           Int
-  feeCents              Int       @default(0)
-  currency              String    @default("usd")
-  status                String    @default("PENDING") // PENDING | PAID | EXPIRED
-  stripeSessionId       String?   @unique
-  stripePaymentIntentId String?
-  checkoutUrl           String?
-  sellerStripeAccountId String?
-  paidAt                DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+model PmTenantLink {
+  id         String    @id @default(uuid()) @db.Uuid
+  companyId  String    @db.Uuid
+  propertyId String    @unique @db.Uuid
+  ownerId    String    @db.Uuid
+  tokenHash  String    @unique
+  status     String    @default("ACTIVE")
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
-  @@index([sellerUserId, createdAt])
-  @@index([buyerUserId, createdAt])
-  @@index([listingConnectionId, status])
+  @@index([companyId, ownerId])
 }
 
-// A digital gift card for Top Speed services (diagnostic / repair),
-// sold on the flagship through the existing Stripe checkout. The
-// card CODE is never stored: only its SHA-256 hash and last four
-// characters live here (the password-reset token discipline). The
-// raw code is shown to the buyer exactly once at purchase and
-// delivered by email; the card is redeemable only after the webhook
-// activates it (status ACTIVE with the ISSUE ledger entry), so an
-// unpaid code is worth nothing. balanceCents is the ledger's
-// running truth and can never go negative — redemptions are capped
-// at the balance and at the booking's real outstanding amount.
-model GiftCard {
-  id                    String    @id @default(uuid()) @db.Uuid
-  companyId             String    @db.Uuid
-  codeHash              String    @unique
-  codeLast4             String
-  initialAmountCents    Int
-  balanceCents          Int       @default(0)
-  currency              String    @default("usd")
-  status                String    @default("PENDING") // PENDING | ACTIVE | DEPLETED | VOID
-  purchaserUserId       String?   @db.Uuid
-  purchaserEmail        String?
-  recipientEmail        String?
-  stripeSessionId       String?   @unique
-  stripePaymentIntentId String?
-  checkoutUrl           String?
-  issuedAt              DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+model PmServiceRequest {
+  id                  String    @id @default(uuid()) @db.Uuid
+  companyId           String    @db.Uuid
+  ownerId             String    @db.Uuid
+  propertyId          String    @db.Uuid
+  unitId              String?   @db.Uuid
+  origin              String // CONSOLE | TENANT_LINK
+  batchReference      String?
+  reference           String    @unique
+  tenantName          String?
+  tenantPhone         String?
+  tenantEmail         String?
+  contactName         String
+  contactPhone        String
+  appliance           String
+  issue               String
+  urgency             String    @default("standard")
+  accessNotes         String?
+  status              String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | SENT | APPROVED | REJECTED
+  decisionNote        String?
+  decidedAt           DateTime?
+  statusTokenHash     String?   @unique
+  connectionId        String?   @db.Uuid
+  connectionReference String?
+  bookingId           String?   @db.Uuid
+  bookingReference    String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  ledger GiftCardLedgerEntry[]
-
-  @@index([companyId, status])
-  @@index([purchaserUserId, createdAt])
-}
-
-// The gift card ledger: every balance movement, in order, with the
-// balance after it. ISSUE (+initial, at webhook activation) and
-// REDEEM (−applied, against a booking's outstanding diagnostic) are
-// the only kinds. The card's balanceCents always equals the last
-// entry's balanceAfterCents; drills assert the math exactly.
-model GiftCardLedgerEntry {
-  id               String   @id @default(uuid()) @db.Uuid
-  giftCardId       String   @db.Uuid
-  kind             String // ISSUE | REDEEM
-  amountCents      Int // signed: ISSUE positive, REDEEM negative
-  balanceAfterCents Int
-  bookingId        String?  @db.Uuid
-  paymentId        String?  @db.Uuid
-  note             String?
-  createdById      String?  @db.Uuid
-  createdAt        DateTime @default(now())
-
-  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
-
-  @@index([giftCardId, createdAt])
-  @@index([bookingId])
+  @@index([companyId, ownerId, status])
+  @@index([propertyId])
+  @@index([unitId])
 }
