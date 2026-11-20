@@ -4,6 +4,7 @@ import { voiceConfig } from '../config/platform.js';
 import { queueNotification, NOTIFICATION_TEMPLATES } from '../services/notifications.js';
 import { drainEntries, normalizePhone } from '../services/senders.js';
 import { logInboundContact } from '../services/trackingNumbers.js';
+import { recordInboundSms } from '../services/messageThreads.js';
 
 /**
  * Twilio SMS — inbound text forwarder for the toll-free business line.
@@ -112,6 +113,22 @@ async function handleIncomingSms(req, res) {
   if (from === forwardTo || from === tollFreeNumber) {
     trackInbound();
     return emptyTwiml(res);
+  }
+
+  // Setter–customer threads (2026-11-20, Wave 1 D2): file the text
+  // on the customer's message thread and act on a reminder reply
+  // (C confirms the appointment, R flags a reschedule request for
+  // the setters). ADDITIVE ONLY — fully guarded, and the forward +
+  // TwiML reply below proceed exactly as before whatever happens
+  // here.
+  try {
+    await recordInboundSms({
+      from,
+      text,
+      externalId: body.MessageSid ? String(body.MessageSid) : null,
+    });
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'inbound SMS thread filing failed', error: String(error?.message || error) }));
   }
 
   const forwardText =

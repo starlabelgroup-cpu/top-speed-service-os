@@ -11,6 +11,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { notifyBookingConfirmation, notifyNewBooking, notifySubmission } from '../services/notifications.js';
 import { drainOutbox, providersStatus } from '../services/senders.js';
 import { sweepReferralCreditExpiry } from '../services/referrals.js';
+import { runReminderSweep } from '../services/reminders.js';
 
 /**
  * Referral credit expiry enforcement rides the outbox drains (Phase 2):
@@ -426,6 +427,27 @@ router.get('/notifications/cron-drain', async (req, res) => {
   const referralExpiry = await sweepReferralExpiryQuietly();
   const summary = await drainOutbox();
   return res.json({ data: { ...summary, referralExpiry } });
+});
+
+/**
+ * Cron reminder sweep (2026-11-20, Wave 1 setter comms D2) — the
+ * scheduled trigger for the automated appointment reminders, guarded
+ * exactly like the cron drain above: CRON_SECRET as a Bearer token,
+ * refused outright when the secret is not set. Runs the same sweep a
+ * setter can run by hand (POST /bookos/reminders/sweep) across every
+ * company. NOTE: no scheduler is configured in vercel.json today —
+ * this endpoint is the ready-made target for Vercel Cron or any
+ * external scheduler, and until one calls it the reminders run when
+ * a setter runs the sweep from Book OS.
+ */
+router.get('/bookos/reminders/cron-sweep', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return res.status(403).json({ error: 'Cron reminder sweep is not enabled' });
+  if (req.get('authorization') !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'Invalid cron secret' });
+  }
+  const summary = await runReminderSweep({ source: 'cron-sweep' });
+  return res.json({ data: summary });
 });
 
 export default router;

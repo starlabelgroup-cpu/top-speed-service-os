@@ -1,6 +1,5 @@
 import { store } from '../data/store.js';
 import { windowById } from './bookos.js';
-import { certificationFactor } from './academyCerts.js';
 
 /**
  * Service Setters operations layer (2026-11-17, Operations Blueprint
@@ -97,6 +96,12 @@ export function foldJobState(booking) {
     returnVisitNote: null,
     cancelledAt: null,
     cancelReason: null,
+    // Setter comms (2026-11-20, Wave 1 D2): the customer's reminder
+    // replies and the office's no-show mark, folded from history —
+    // a later appointment set/reschedule clears both (the job was
+    // rebooked, so the office task is done).
+    rescheduleRequestedAt: null,
+    noShowAt: null,
   };
   for (const event of booking?.history || []) {
     switch (event.type) {
@@ -153,6 +158,17 @@ export function foldJobState(booking) {
       case 'BOOKING_CANCELLED':
         state.cancelledAt = event.at || null;
         state.cancelReason = event.reason || null;
+        break;
+      case 'RESCHEDULE_REQUESTED_BY_CUSTOMER':
+        state.rescheduleRequestedAt = event.at || null;
+        break;
+      case 'CUSTOMER_NO_SHOW':
+        state.noShowAt = event.at || null;
+        break;
+      case 'APPOINTMENT_SET':
+      case 'APPOINTMENT_RESCHEDULED':
+        state.rescheduleRequestedAt = null;
+        state.noShowAt = null;
         break;
       default:
         break;
@@ -250,6 +266,8 @@ export const EXCEPTION_TYPES = {
   PARTS_DELAY: 'Parts delay',
   UNRESOLVED_ESTIMATE: 'Unresolved estimate',
   COMPLAINT: 'Complaint',
+  RESCHEDULE_REQUESTED: 'Reschedule requested',
+  NO_SHOW: 'Customer no-show',
 };
 
 /**
@@ -350,6 +368,35 @@ export function deriveExceptions(bookings, { complaints = [], now = new Date() }
         sinceAt: state.latestEstimateAt,
         dueAt: new Date(Date.parse(state.latestEstimateAt) + OPS_THRESHOLDS.ESTIMATE_UNRESOLVED_HOURS * 3600000).toISOString(),
         detail: { estimateTotalCents: state.latestEstimate.totalCents ?? null },
+      });
+    }
+
+    // Reschedule requested (2026-11-20, Wave 1 D2) — the customer
+    // texted R to their appointment reminder. A setter task: call
+    // them and move the appointment through the normal reschedule
+    // endpoint (which is what clears this). The appointment itself
+    // is never moved by the text.
+    if (booking.status !== 'COMPLETED' && state.rescheduleRequestedAt) {
+      push(booking, state, 'RESCHEDULE_REQUESTED', {
+        owner: { providerId: null, providerName: null, setterName },
+        nextAction: 'Call the customer to pick a new appointment time, then reschedule the booking — the customer asked by text.',
+        sinceAt: state.rescheduleRequestedAt,
+        dueAt: state.rescheduleRequestedAt,
+        detail: { appointmentDate: booking.appointment?.date || null, window: booking.appointment?.window || null },
+      });
+    }
+
+    // Customer no-show (2026-11-20, Wave 1 D2) — a setter marked
+    // that the customer did not answer for a set appointment. The
+    // office task is the rebook call; setting a new appointment
+    // clears it.
+    if (booking.status !== 'COMPLETED' && state.noShowAt) {
+      push(booking, state, 'NO_SHOW', {
+        owner: { providerId: null, providerName: null, setterName },
+        nextAction: 'Call the customer to rebook — they were a no-show for this appointment.',
+        sinceAt: state.noShowAt,
+        dueAt: state.noShowAt,
+        detail: { appointmentDate: booking.appointment?.date || null, window: booking.appointment?.window || null },
       });
     }
   }
@@ -465,11 +512,9 @@ export function deriveRecoveryQueues(bookings, { now = new Date() } = {}) {
  * Scoring keeps the matcher's long-standing base (specialty 60 /
  * service area 30 / rating ×2) so the aid and the auto-match agree,
  * then adds the operational signals: open load, van stock, completed
- * history — and, since 2026-11-20 (D12), the team's verified Academy
- * certifications as one more weighed factor (services/
- * academyCerts.js). "Valid credentials" is the platform's real
- * gate — a provider is team-verified before activation, and only
- * active providers are ranked at all.
+ * history. "Valid credentials" is the platform's real gate — a
+ * provider is team-verified before activation, and only active
+ * providers are ranked at all.
  */
 export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
   const area = booking.area || booking.city;
@@ -544,27 +589,6 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         reasons.push({ kind: 'info', label: 'No completed jobs on record yet' });
       }
 
-      // Academy certifications (2026-11-20, D12): verified track
-      // certifications held by the provider's own techs weigh as ONE
-      // factor among the ones above — the field certification
-      // (Technician Track) weighs on every job and extra on its
-      // specialty appliance (Refrigerator, the sealed-system end of
-      // the trade); Foundation weighs a little. The policy and the
-      // derivation live in services/academyCerts.js +
-      // data/academyTracks.js. Certifications never touch
-      // eligibility (still the base-score bar below) and never
-      // dispatch: this stays ranked advice for a human setter.
-      const certFactor = certificationFactor(provider, booking);
-      if (certFactor.points > 0) {
-        score += certFactor.points;
-        reasons.push(...certFactor.reasons);
-      } else if (certFactor.certifications.length) {
-        reasons.push({
-          kind: 'info',
-          label: `Academy certified — ${certFactor.certifications.map((c) => c.track).join(', ')} (office tracks — no field weight)`,
-        });
-      }
-
       const baseScore =
         (specialty ? 60 : 0) + (servesArea ? 30 : 0) + (rating != null ? Math.round(rating * 2) : 0);
       return {
@@ -587,10 +611,6 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         openJobs: open,
         completedJobs: done,
         vanLines,
-        // Academy certifications held by this provider's techs
-        // (D12): names + certified-tech counts, derived from real
-        // completion records — empty when none are held.
-        certifications: certFactor.certifications,
         reasons,
       };
     })

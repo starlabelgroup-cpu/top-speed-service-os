@@ -28,6 +28,8 @@ import {
 } from '../services/bookos.js';
 import { notifyAppointmentReminder, notifyBookingConfirmation } from '../services/notifications.js';
 import { clearAvailabilityCache } from '../services/availability.js';
+import { runReminderSweep } from '../services/reminders.js';
+import { bookingCommsFlags } from '../services/messageThreads.js';
 import { countSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { emitReport } from '../services/managementReports.js';
 import {
@@ -549,6 +551,84 @@ router.post('/bookos/reminders/run', ...staffOnly, async (req, res) => {
       bookingIds: targets.map((booking) => booking.id),
       notificationsQueued: queued,
     },
+  });
+});
+
+const sweepSchema = z.object({
+  today: dateParam.optional(),
+});
+
+/**
+ * Automated reminder sweep (2026-11-20, Wave 1 setter comms D2):
+ * queues the reply-able day-before + morning-of reminders for every
+ * appointment due relative to the business day (or the given `today`
+ * for a catch-up run) and records them on each booking's message
+ * thread. Idempotent — re-running sends nothing twice. The same
+ * sweep is reachable by an external scheduler through
+ * GET /bookos/reminders/cron-sweep (CRON_SECRET-guarded).
+ */
+router.post('/bookos/reminders/sweep', ...staffOnly, async (req, res) => {
+  const parsed = sweepSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid reminder sweep', details: parsed.error.flatten() });
+  }
+  const summary = await runReminderSweep({
+    today: parsed.data.today || null,
+    companyId: req.companyId,
+    source: 'bookos-sweep',
+  });
+  return res.json({ data: summary });
+});
+
+const noShowSchema = z.object({
+  note: z.string().trim().max(500).optional(),
+  markedBy: z.string().trim().min(2).default('Service Setters'),
+});
+
+/**
+ * Mark a booking as a customer no-show (2026-11-20, Wave 1 setter
+ * comms D2): the customer did not answer the door for a set
+ * appointment. The mark is a booking history event; it derives into
+ * the Book OS exception queue (type NO_SHOW) until the job is
+ * rebooked (a later appointment set / reschedule clears it) or
+ * completed.
+ */
+router.post('/bookos/bookings/:id/no-show', ...staffOnly, async (req, res) => {
+  const parsed = noShowSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid no-show request', details: parsed.error.flatten() });
+  }
+  const booking = loadVisibleBooking(req, res);
+  if (!booking) return;
+  if (booking.status === 'COMPLETED') {
+    return res.status(409).json({ error: 'A completed job cannot be marked as a no-show' });
+  }
+  if (booking.status === 'CANCELLED') {
+    return res.status(409).json({ error: 'A cancelled booking cannot be marked as a no-show' });
+  }
+  if (booking.appointment?.status !== 'SET') {
+    return res.status(409).json({ error: 'No appointment is set on this booking — a no-show needs a set appointment' });
+  }
+  if (bookingCommsFlags(booking).noShowAt) {
+    return res.status(409).json({ error: 'This booking is already marked as a no-show' });
+  }
+  booking.updatedAt = new Date().toISOString();
+  addBookingEvent(booking, 'CUSTOMER_NO_SHOW', parsed.data.markedBy, {
+    note: parsed.data.note || null,
+    date: booking.appointment.date,
+    window: booking.appointment.window,
+  });
+  await appendEvent('CUSTOMER_NO_SHOW', {
+    source: booking.source || null,
+    actor: ROLES.DISPATCHER,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode || null,
+    details: { team: 'Service Setters', markedBy: parsed.data.markedBy, note: parsed.data.note || null, date: booking.appointment.date, window: booking.appointment.window },
+  });
+  await persistBooking(booking);
+  return res.json({
+    data: { bookingId: booking.id, referenceCode: booking.referenceCode || null, noShowAt: bookingCommsFlags(booking).noShowAt },
   });
 });
 

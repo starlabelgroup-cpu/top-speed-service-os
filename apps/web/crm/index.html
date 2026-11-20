@@ -370,6 +370,15 @@ function crmDetail(id){
         '<div class="section"><h3>Referrals</h3>'+refHtml+'</div>' +
         '<div class="section"><h3>Communications log — true outbox statuses</h3>'+comms+'</div>' +
         '<div class="section"><h3>Call recordings</h3>'+recs+'</div>' +
+        '<div class="section"><h3>Messages — two-way thread</h3>' +
+        '<p class="mut" style="margin:0 0 10px;">Text or email this customer right from the record. Your messages, the automated appointment reminders, and the customer\u2019s replies all live on this one thread (shared with Book OS). Delivery states are the providers\u2019 own — a message reads Sent only when the provider accepted it.</p>' +
+        '<div id="crmMsgFlags"></div><div id="crmMsgThread"><p class="mut">Loading the conversation\u2026</p></div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 8px"><span style="font-size:13px;font-weight:700">Send by:</span>' +
+        '<button class="btn blue small" id="crmMsgChSms" onclick="crmSetMsgChannel(\'SMS\')">Text</button>' +
+        '<button class="btn ghost small" id="crmMsgChEmail" onclick="crmSetMsgChannel(\'EMAIL\')">Email</button></div>' +
+        '<div id="crmMsgSubjectWrap" style="display:none;margin-bottom:8px"><input id="crmMsgSubject" type="text" placeholder="Subject (optional)" style="width:100%"></div>' +
+        '<textarea id="crmMsgBody" rows="3" placeholder="Type a message to the customer\u2026" style="width:100%"></textarea>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn blue" onclick="crmMsgSend(\''+c.id+'\')">Send message</button></div><div class="msg" id="crmMsgMsg"></div></div>' +
         '<div class="section"><h3>Intake history</h3>'+intake+'</div>' +
         '<div class="section"><h3>Notes</h3>'+notes+
         '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><input id="crmNoteBody" type="text" placeholder="Add a note for the team…" style="flex:1;min-width:220px;width:auto;"><button class="btn blue" onclick="crmAddNote(\''+c.id+'\')">Add note</button></div><div class="msg" id="crmNoteMsg"></div></div>' +
@@ -381,6 +390,7 @@ function crmDetail(id){
         '<div class="speedyBody" id="speedyOut"><p class="mut">Speedy output appears here.</p></div></div>' +
         '</div>';
       window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
+      crmMsgLoad(c.id);
     })
     .catch(function(e){ document.getElementById('crmMsg').textContent=' '+e.message; });
 }
@@ -400,6 +410,63 @@ function crmAddNote(id){
   if(!body){ msg.textContent='Write the note first.'; msg.className='msg err'; return; }
   crmFetch('/crm/customers/'+id+'/notes',{method:'POST',body:{body:body}})
     .then(function(){ msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Note saved.'; msg.className='msg ok'; crmDetail(id); })
+    .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
+}
+/* ---- Messages — two-way thread (Wave 1 setter comms, 2026-11-20) ---- */
+var crmMsgChannel='SMS';
+function crmSetMsgChannel(ch){
+  crmMsgChannel=(ch==='EMAIL')?'EMAIL':'SMS';
+  var s=document.getElementById('crmMsgChSms'), e=document.getElementById('crmMsgChEmail'), w=document.getElementById('crmMsgSubjectWrap');
+  if(s) s.className='btn small '+(crmMsgChannel==='SMS'?'blue':'ghost');
+  if(e) e.className='btn small '+(crmMsgChannel==='EMAIL'?'blue':'ghost');
+  if(w) w.style.display=crmMsgChannel==='EMAIL'?'block':'none';
+}
+function crmMsgWhen(iso){ if(!iso) return ''; var d=new Date(iso); return isNaN(d.getTime())?'':d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function crmMsgState(m){
+  if(m.direction==='INBOUND') return 'Received';
+  if(m.deliveryStatus==='SENT') return 'Sent';
+  if(m.deliveryStatus==='FAILED') return 'Failed'+(m.deliveryError?' — '+m.deliveryError:'');
+  if(m.deliveryStatus==='GATED') return 'Not sent'+(m.deliveryError?' — '+m.deliveryError:'');
+  return m.deliveryStatus||'Queued';
+}
+function crmMsgLoad(id){
+  var box=document.getElementById('crmMsgThread'); if(!box) return;
+  crmFetch('/messages/thread?customerId='+encodeURIComponent(id)).then(function(j){
+    var box2=document.getElementById('crmMsgThread'); if(!box2) return;
+    var flags=document.getElementById('crmMsgFlags');
+    var t=(j.data&&j.data.thread)||null;
+    if(flags){
+      var f=(t&&t.flags)||{}, fh='';
+      if(f.customerConfirmedAt) fh+='<p style="color:#0f7a3d;margin:0 0 6px;">Customer confirmed their appointment by text ('+crmEsc(crmMsgWhen(f.customerConfirmedAt))+').</p>';
+      if(f.rescheduleRequestedAt) fh+='<p style="color:#c2262e;margin:0 0 6px;">Customer asked to reschedule by text ('+crmEsc(crmMsgWhen(f.rescheduleRequestedAt))+') — it is waiting in the Book OS exception queue until a setter moves the appointment.</p>';
+      if(f.noShowAt) fh+='<p style="color:#c2262e;margin:0 0 6px;">Marked as a customer no-show ('+crmEsc(crmMsgWhen(f.noShowAt))+').</p>';
+      flags.innerHTML=fh;
+    }
+    if(!t||!t.messages||!t.messages.length){ box2.innerHTML='<p class="mut">No messages yet — send the first one below.</p>'; return; }
+    box2.innerHTML=t.messages.map(function(m){
+      var who=m.direction==='INBOUND'?'Customer':(m.author==='system-reminder'?'Reminder':'You');
+      var kind=m.kind==='REMINDER'?' · reminder':(m.kind==='CONFIRM'?' · confirmed the appointment':(m.kind==='RESCHEDULE_REQUEST'?' · asked to reschedule':''));
+      return '<div class="line"><b>'+crmEsc(who)+'</b> <span class="mut">'+(m.channel==='EMAIL'?'Email':'Text')+kind+' · '+crmEsc(crmMsgWhen(m.createdAt))+' · '+crmEsc(crmMsgState(m))+'</span>'
+        +(m.subject?'<br><b>'+crmEsc(m.subject)+'</b>':'')
+        +'<br>'+crmEsc(m.body)+'</div>';
+    }).join('');
+  }).catch(function(){ var b3=document.getElementById('crmMsgThread'); if(b3) b3.innerHTML='<p class="mut">Could not load the conversation.</p>'; });
+}
+function crmMsgSend(id){
+  var bodyEl=document.getElementById('crmMsgBody'), msg=document.getElementById('crmMsgMsg');
+  var body=bodyEl?bodyEl.value.trim():'';
+  if(!body){ msg.textContent=' Type a message first.'; msg.className='msg err'; return; }
+  var payload={customerId:id,channel:crmMsgChannel,body:body};
+  if(crmMsgChannel==='EMAIL'){ var sEl=document.getElementById('crmMsgSubject'); if(sEl&&sEl.value.trim()) payload.subject=sEl.value.trim(); }
+  msg.textContent=' Sending…'; msg.className='msg';
+  crmFetch('/messages/send',{method:'POST',body:payload})
+    .then(function(j){
+      var d=(j.data&&j.data.delivery)||{};
+      if(d.status==='SENT'){ msg.textContent=' Sent by '+(crmMsgChannel==='EMAIL'?'email':'text')+' to '+(d.to||'')+'.'; msg.className='msg ok'; }
+      else { msg.textContent=' Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')); msg.className='msg err'; }
+      if(bodyEl) bodyEl.value='';
+      crmMsgLoad(id);
+    })
     .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
 }
 function speedyRender(html){

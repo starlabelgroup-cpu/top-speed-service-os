@@ -4,6 +4,7 @@ import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { hydrateCrmNotes } from './crmRepo.js';
 import { hydrateInboxMessages } from './inboxRepo.js';
 import { hydrateBookingMessages } from './bookingMessagesRepo.js';
+import { hydrateMessageThreads } from './messageThreadsRepo.js';
 import { hydrateChatSessions } from './chatsRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
@@ -26,7 +27,6 @@ import { hydrateGoogleAccounts } from './googleAccountsRepo.js';
 import { hydrateMedia } from './mediaOsRepo.js';
 import { hydrateAdCampaigns } from './adStudioRepo.js';
 import { hydrateDepartmentReports } from './managementReportsRepo.js';
-import { hydrateAcademyCompletions } from './academyRepo.js';
 import { NETWORK_PARTNER_COMPANIES, NETWORK_PARTNER_PROVIDERS } from '../data/networkPartners.js';
 
 /**
@@ -397,6 +397,14 @@ export async function hydrateStore() {
   } catch (error) {
     console.error('hydrateBookingMessages failed (office threads degraded, platform continues)', error?.message || error);
   }
+  // Setter–customer message threads are an add-on too: a missing
+  // MessageThread table mid-deploy degrades to no threads, never
+  // blocks hydration.
+  try {
+    await hydrateMessageThreads();
+  } catch (error) {
+    console.error('hydrateMessageThreads failed (message threads degraded, platform continues)', error?.message || error);
+  }
   // The Google account registry is an add-on too: a missing table
   // mid-deploy degrades to an empty registry, never blocks hydration.
   try {
@@ -424,14 +432,6 @@ export async function hydrateStore() {
     await hydrateDepartmentReports();
   } catch (error) {
     console.error('hydrateDepartmentReports failed (management reports degraded, platform continues)', error?.message || error);
-  }
-  // Academy completions are an add-on too (2026-11-20, D12): a
-  // missing table mid-deploy degrades to no certifications, never
-  // blocks hydration.
-  try {
-    await hydrateAcademyCompletions();
-  } catch (error) {
-    console.error('hydrateAcademyCompletions failed (academy certifications degraded, platform continues)', error?.message || error);
   }
 
   return { providers: providerRows.length, customers: customerRows.length, bookings: bookingRows.length, assignments: assignmentRows.length, referrals: flywheel.referrals ?? 0, notifications: flywheel.notifications ?? 0, videoRequests: video.videoRequests ?? 0, referralJourneys: referralProgram.journeys ?? 0, referralCredits: referralProgram.credits ?? 0 };

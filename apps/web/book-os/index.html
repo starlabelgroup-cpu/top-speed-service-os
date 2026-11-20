@@ -1770,6 +1770,8 @@ function wsCtaRender(){
   var host=wsById('wsCta'); if(!host||!wsCtx) return;
   var dEl=wsById('wsApptDate'), wEl=wsById('wsApptWindow');
   if(dEl) wsCtx.formDate=dEl.value; if(wEl) wsCtx.formWin=wEl.value;
+  var mbEl=wsById('wsMsgBody'); if(mbEl) wsCtx.msgDraft=mbEl.value;
+  var msEl=wsById('wsMsgSubject'); if(msEl) wsCtx.msgSubject=msEl.value;
   var st=wsStatus(), appt=wsAppt(), cust=wsCust();
   var digits=(''+(cust.phone||'')).replace(/\D/g,'');
   var h='<div class="jd-sec">Actions \u2014 workstation standard</div>';
@@ -1794,7 +1796,7 @@ function wsCtaRender(){
       +'</select></label></div>';
     h+='<div id="wsApptMsg" style="font-size:13.5px;margin:8px 0"></div>';
     h+='<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="button" onclick="wsApptSave()">'+(isSet?'Reschedule appointment':'Set appointment')+'</button>'
-      +(isSet?'<button class="btn ghost" type="button" onclick="wsApptTomorrow()">\u21bb Move to Tomorrow</button>':'')
+      +(isSet?'<button class="btn ghost" type="button" onclick="wsApptTomorrow()">\u21bb Move to Tomorrow</button><button class="btn ghost" type="button" onclick="wsNoShow()">Mark no-show</button>':'')
       +'</div>';
   }
   /* Send links — real Link Center sends against this booking. */
@@ -1813,6 +1815,24 @@ function wsCtaRender(){
     +wsEstLinkBtn()
     +'</div>';
   h+='<div id="wsLinkMsg" style="font-size:13.5px;margin-top:8px"></div>';
+  /* Message the customer — the two-way thread (Wave 1 setter comms):
+     staff-composed texts/emails, the automated reminders, and the
+     customer's replies, all on this booking's record. Delivery
+     states shown are the providers' own — a text is only "Sent"
+     when the carrier accepted it. */
+  h+='<div class="jd-sec">Message the customer</div>';
+  h+='<div id="wsMsgFlags" style="font-size:13.5px;margin-bottom:6px"></div>';
+  h+='<div id="wsMsgThread" style="font-size:13.5px;color:var(--mut)">Loading the conversation\u2026</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 8px"><span style="font-size:13px;font-weight:700">Send by:</span>'
+    +'<button class="btn '+(wsMsgChannel==='SMS'?'navy':'ghost')+'" type="button" onclick="wsSetMsgChannel(\'SMS\')">Text</button>'
+    +'<button class="btn '+(wsMsgChannel==='EMAIL'?'navy':'ghost')+'" type="button" onclick="wsSetMsgChannel(\'EMAIL\')">Email</button>'
+    +(wsMsgChannel==='SMS'&&!cust.phone?'<span style="font-size:12.5px;color:#c2262e">No phone on this booking \u2014 email instead.</span>':'')
+    +(wsMsgChannel==='EMAIL'&&!cust.email?'<span style="font-size:12.5px;color:#c2262e">No email on this booking \u2014 text instead.</span>':'')
+    +'</div>';
+  if(wsMsgChannel==='EMAIL'){ h+='<input id="wsMsgSubject" type="text" placeholder="Subject (optional)" value="'+escH(wsCtx.msgSubject||'')+'" style="width:100%;padding:10px;margin-bottom:8px;border:1px solid var(--line);border-radius:10px;font-size:15px">'; }
+  h+='<textarea id="wsMsgBody" rows="3" placeholder="Type a message to the customer\u2026" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px">'+escH(wsCtx.msgDraft||'')+'</textarea>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn primary" type="button" onclick="wsMsgSend()">Send message</button></div>';
+  h+='<div id="wsMsgMsg" style="font-size:13.5px;margin-top:8px"></div>';
   /* Dispatch — only while the job is undispatched. */
   if(st==='PENDING_DISPATCH'||st==='MATCH_PENDING_APPROVAL'){
     h+='<div class="jd-sec">Dispatch</div>';
@@ -1827,6 +1847,7 @@ function wsCtaRender(){
     h+='<div id="wsCandBox" style="margin-top:6px"></div>';
   }
   host.innerHTML=h;
+  wsMsgLoad();
   if(st==='PENDING_DISPATCH'||st==='MATCH_PENDING_APPROVAL'){ wsLoadRosterIntoPicker(); if(st==='MATCH_PENDING_APPROVAL') wsRenderCandidatesFromBk(); }
 }
 
@@ -1917,6 +1938,80 @@ function wsSendLink(linkType){
       else { m2.textContent='Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')); m2.style.color='#c2262e'; }
     })
     .catch(function(e){ var m3=wsById('wsLinkMsg'); if(m3){ m3.textContent='Send failed: '+e.message; m3.style.color='#c2262e'; } });
+}
+
+/* ---- Message the customer (Wave 1 setter comms, 2026-11-20) ----
+   The two-way thread on this booking: staff texts/emails sent
+   through the outbox, the automated C/R reminders, and the
+   customer's replies. Delivery states are the providers' own —
+   SENT only on acceptance; a blocked text reads FAILED with the
+   carrier's reason, never "sent". */
+var wsMsgChannel='SMS';
+function wsSetMsgChannel(ch){ wsMsgChannel=(ch==='EMAIL')?'EMAIL':'SMS'; wsCtaRender(); }
+function wsMsgWhen(iso){ if(!iso) return ''; var d=new Date(iso); return isNaN(d.getTime())?'':d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}); }
+function wsMsgStateHtml(m){
+  if(m.direction==='INBOUND') return '<span style="color:var(--mut)">Received</span>';
+  if(m.deliveryStatus==='SENT') return '<span style="color:#0f7a3d">Sent</span>';
+  if(m.deliveryStatus==='FAILED') return '<span style="color:#c2262e">Failed'+(m.deliveryError?' \u2014 '+escH(m.deliveryError):'')+'</span>';
+  if(m.deliveryStatus==='GATED') return '<span style="color:#c2262e">Not sent'+(m.deliveryError?' \u2014 '+escH(m.deliveryError):'')+'</span>';
+  return '<span style="color:#9a6a00">'+escH(m.deliveryStatus||'Queued')+'</span>';
+}
+function wsMsgKindLabel(m){
+  if(m.kind==='REMINDER') return ' \u00b7 reminder';
+  if(m.kind==='CONFIRM') return ' \u00b7 confirmed the appointment';
+  if(m.kind==='RESCHEDULE_REQUEST') return ' \u00b7 asked to reschedule';
+  return '';
+}
+function wsMsgLoad(){
+  var box=wsById('wsMsgThread'); if(!box||!wsCtx) return;
+  var id=wsCtx.bookingId;
+  apiFetch('/messages/thread?bookingId='+encodeURIComponent(id)).then(function(j){
+    if(!wsCtx||wsCtx.bookingId!==id) return;
+    var box2=wsById('wsMsgThread'); if(!box2) return;
+    var flags=wsById('wsMsgFlags');
+    var t=(j.data&&j.data.thread)||null;
+    if(flags){
+      var f=(t&&t.flags)||{}, fh='';
+      if(f.customerConfirmedAt) fh+='<div style="color:#0f7a3d;margin-bottom:4px">\u2713 Customer confirmed this appointment by text ('+escH(wsMsgWhen(f.customerConfirmedAt))+').</div>';
+      if(f.rescheduleRequestedAt) fh+='<div style="color:#c2262e;margin-bottom:4px">Customer asked to reschedule by text ('+escH(wsMsgWhen(f.rescheduleRequestedAt))+') \u2014 call them, then move the appointment above. It stays in the exception queue until you do.</div>';
+      if(f.noShowAt) fh+='<div style="color:#c2262e;margin-bottom:4px">Marked as a customer no-show ('+escH(wsMsgWhen(f.noShowAt))+') \u2014 it stays in the exception queue until the job is rebooked.</div>';
+      flags.innerHTML=fh;
+    }
+    if(!t||!t.messages||!t.messages.length){ box2.innerHTML='<span style="color:var(--mut)">No messages yet \u2014 send the first one below.</span>'; return; }
+    box2.innerHTML=t.messages.map(function(m){
+      var who=m.direction==='INBOUND'?'Customer':(m.author==='system-reminder'?'Reminder':'You');
+      return '<div style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:6px">'
+        +'<div style="font-size:12.5px;color:var(--mut)"><b>'+escH(who)+'</b> \u00b7 '+(m.channel==='EMAIL'?'Email':'Text')+wsMsgKindLabel(m)+' \u00b7 '+escH(wsMsgWhen(m.createdAt))+' \u00b7 '+wsMsgStateHtml(m)+'</div>'
+        +(m.subject?'<div style="font-weight:700;margin-top:2px">'+escH(m.subject)+'</div>':'')
+        +'<div style="white-space:pre-wrap;margin-top:2px;color:var(--ink)">'+escH(m.body)+'</div></div>';
+    }).join('');
+  }).catch(function(){ var b3=wsById('wsMsgThread'); if(b3) b3.innerHTML='<span style="color:#c2262e">Could not load the conversation.</span>'; });
+}
+function wsMsgSend(){
+  if(!wsCtx) return;
+  var bodyEl=wsById('wsMsgBody'), msg=wsById('wsMsgMsg');
+  var body=bodyEl?bodyEl.value.trim():'';
+  if(!body){ if(msg){ msg.textContent='Type a message first.'; msg.style.color='#c2262e'; } return; }
+  var payload={bookingId:wsCtx.bookingId,channel:wsMsgChannel,body:body};
+  if(wsMsgChannel==='EMAIL'){ var sEl=wsById('wsMsgSubject'); if(sEl&&sEl.value.trim()) payload.subject=sEl.value.trim(); }
+  if(msg){ msg.textContent='Sending\u2026'; msg.style.color='var(--mut)'; }
+  apiFetch('/messages/send',{method:'POST',body:JSON.stringify(payload)})
+    .then(function(j){
+      var d=(j.data&&j.data.delivery)||{};
+      if(msg){
+        if(d.status==='SENT'){ msg.textContent='\u2713 Sent by '+(wsMsgChannel==='EMAIL'?'email':'text')+' to '+(d.to||''); msg.style.color='#0f7a3d'; }
+        else { msg.textContent='Not sent ('+(d.status||'unknown')+')'+(d.error?': '+d.error:(d.reason?': '+d.reason:'')); msg.style.color='#c2262e'; }
+      }
+      wsCtx.msgDraft=''; wsCtx.msgSubject='';
+      wsMsgLoad();
+    })
+    .catch(function(e){ if(msg){ msg.textContent='Send failed: '+e.message; msg.style.color='#c2262e'; } });
+}
+function wsNoShow(){
+  if(!wsCtx) return;
+  apiFetch('/bookos/bookings/'+encodeURIComponent(wsCtx.bookingId)+'/no-show',{method:'POST',body:JSON.stringify({markedBy:wsActor()})})
+    .then(function(){ toast('\u2713 Marked as a customer no-show \u2014 it is in the exception queue until rebooked'); loadLive(); wsReloadPopup(); })
+    .catch(function(e){ toast('Could not mark the no-show: '+e.message); });
 }
 
 /* ---- Money: the existing per-booking money panel flow ---- */

@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import { appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistInboxMessage, updateInboxMessageStatus } from '../db/inboxRepo.js';
 import { identityForAddress, isSendableAddress, mailboxForAddress } from '../config/mailboxes.js';
+import { recordInboundEmail } from './messageThreads.js';
 
 /**
  * Book OS Inbox / Email Manager — inbound email for Top Speed OS.
@@ -210,6 +211,24 @@ export async function ingestReceivedEmail(data) {
   };
   store.inboxMessages.push(message);
   await persistInboxMessage(message);
+  // Setter–customer threads (2026-11-20, Wave 1 D1): when the sender
+  // is a CRM customer who already has an open composer thread,
+  // mirror the reply into that thread so the Book OS / CRM
+  // conversation reads two-way. ADDITIVE ONLY — the Inbox above
+  // stays the system of record for email; a mirror failure changes
+  // nothing about the filing.
+  if (customerId) {
+    try {
+      await recordInboundEmail({
+        customerId,
+        subject,
+        body: textBody || '',
+        externalId: emailId ? `email:${emailId}` : null,
+      });
+    } catch (error) {
+      console.error(JSON.stringify({ level: 'error', message: 'inbox thread mirror failed', error: String(error?.message || error) }));
+    }
+  }
   await appendEvent('INBOX_EMAIL_RECEIVED', {
     source: 'resend-webhook',
     actor: 'resend',

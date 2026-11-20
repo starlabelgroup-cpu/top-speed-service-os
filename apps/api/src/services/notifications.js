@@ -78,6 +78,7 @@ export const NOTIFICATION_TEMPLATES = {
   GIFT_CARD_ISSUED: 'GIFT_CARD_ISSUED',
   GIFT_CARD_ACTIVE: 'GIFT_CARD_ACTIVE',
   PEPPER_LISTS_ORDER_PAID: 'PEPPER_LISTS_ORDER_PAID',
+  STAFF_MESSAGE: 'STAFF_MESSAGE',
 };
 
 /* ------------------------------------------------------------------ */
@@ -144,6 +145,10 @@ const CUSTOMER_EMAIL_TEMPLATES = new Set([
   NOTIFICATION_TEMPLATES.GIFT_CARD_ACTIVE,
   NOTIFICATION_TEMPLATES.PEPPER_LISTS_ORDER_PAID,
   NOTIFICATION_TEMPLATES.PEPPER_LISTS_MESSAGE,
+  // Staff-composed messages (Book OS + CRM composer, 2026-11-20) are
+  // customer-facing email too: they carry the same Book / Call /
+  // Tell Speedy footer as every other customer touch.
+  NOTIFICATION_TEMPLATES.STAFF_MESSAGE,
   'SIGNIN_LINK', // composed in routes/handoff.js with a literal template name
 ]);
 
@@ -1092,6 +1097,66 @@ export function notifyAppointmentReminder(booking, source = null) {
       },
     }),
   );
+}
+
+/**
+ * Reply-able appointment reminders (2026-11-20, Wave 1 setter comms
+ * D2): the day-before and morning-of reminders run by the reminder
+ * sweep (services/reminders.js). Same APPOINTMENT_REMINDER template
+ * as the original Book OS reminder run, but the copy asks the
+ * customer to text back — "Reply C to confirm or R to reschedule" —
+ * and the inbound SMS path acts on that reply (routes/twilioSms.js →
+ * services/messageThreads.js). The event key carries the reminder
+ * KIND, so a booking can receive its day-before AND its morning-of
+ * reminder, each exactly once, and re-running the sweep never
+ * duplicates either (queueNotification dedupes on the key; `created`
+ * tells the caller whether this call actually queued a new entry,
+ * so the thread record is appended once too). The legacy run's keys
+ * (`booking:<id>:reminder:<channel>:<date>`) are untouched.
+ */
+export function notifyAppointmentReminderWithReply(booking, kind, source = null) {
+  const appointment = booking.appointment || {};
+  const whenText = kind === 'MORNING_OF'
+    ? `today, ${appointment.date}`
+    : `tomorrow, ${appointment.date}`;
+  const windowText = appointment.windowLabel || appointment.window || '';
+  return customerChannels(booking).map(({ channel, to }) => {
+    const eventKey = `booking:${booking.id}:reminder:${kind}:${channel}:${appointment.date || 'unset'}`;
+    const created = !store.notificationOutbox.some((entry) => entry.eventKey === eventKey);
+    const message = channel === 'sms'
+      ? `Top Speed Appliance reminder: your ${booking.appliance} appointment in ${booking.city} is ${whenText}, ${windowText}. ` +
+        `Reply C to confirm or R to reschedule. Track your visit: ${REACH_LINKS.track}`
+      : `Hi ${booking.customer?.name || 'there'},\n\n` +
+        `A reminder from Top Speed Appliance: your ${booking.appliance} appointment in ${booking.city} is ${whenText}, ${windowText}.\n\n` +
+        `Everything set? Just text us back C to confirm. Need a different time? Text back R and a ` +
+        `Service Setter will call you to reschedule — your appointment stays as it is until you ` +
+        `agree on a new time with us. You can also call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+        `Track your visit: ${REACH_LINKS.track}\n\n` +
+        `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
+    const entry = queueNotification({
+      channel,
+      template: NOTIFICATION_TEMPLATES.APPOINTMENT_REMINDER,
+      to,
+      source,
+      eventKey,
+      eventType: 'BOOKING',
+      payload: {
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        customerName: booking.customer?.name,
+        appliance: booking.appliance,
+        city: booking.city,
+        appointment: { date: appointment.date || null, window: appointment.window || null },
+        reminderKind: kind,
+        businessPhone: PLATFORM_CONSTANTS.phone,
+        subject: kind === 'MORNING_OF'
+          ? 'Reminder: your Top Speed appointment is today'
+          : 'Reminder: your Top Speed appointment is tomorrow',
+        message,
+      },
+    });
+    return { channel, to, entry, created };
+  });
 }
 
 /**

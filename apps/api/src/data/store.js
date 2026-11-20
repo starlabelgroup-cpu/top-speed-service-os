@@ -41,6 +41,12 @@ export const store = {
   // database mode uses the EmailChangeToken table). Keyed by token
   // SHA-256 hash, same discipline as passwordResetTokens.
   emailChangeTokens: new Map(),
+  // Web Push subscriptions for the customer app (2026-11-20):
+  // per-device/browser opt-ins for booking updates, keyed by
+  // subscription id; hydrated from the PushSubscription table via
+  // db/pushSubscriptionsRepo. A record with revokedAt set is never
+  // sent to again.
+  pushSubscriptions: new Map(),
   // Estimate approval link tokens (skeleton-mode fallback; the
   // database mode uses the EstimateApprovalToken table). Keyed by
   // token SHA-256 hash, same discipline as emailChangeTokens.
@@ -126,6 +132,12 @@ export const store = {
   // staff replies sent back out (InboxMessage table), oldest appended
   // first; the inbox queue and the CRM 360 sort when they render.
   inboxMessages: [],
+  // Setter–customer message threads (MessageThread / ThreadMessage
+  // tables): the two-way conversation behind the Book OS + CRM
+  // composer — staff SMS/email, appointment reminders, and customer
+  // replies. Oldest appended first; the consoles sort when rendering.
+  messageThreads: [],
+  threadMessages: [],
   // Speedy chat capture: every customer conversation with Speedy,
   // keyed by session id; messages ride inside the session record
   // (oldest first), mirroring the booking-history pattern. Hydrated
@@ -224,11 +236,6 @@ export const store = {
   // db/marketingOsRepo (loaded inside hydrateMarketingOs); degrades to
   // an empty list like the rest.
   pageExperiments: [],
-  // Academy completions (2026-11-20, D12): one record per curriculum
-  // module a trainee completed, hydrated from the AcademyCompletion
-  // table via db/academyRepo. Certifications are derived from these
-  // rows (services/academyCerts.js), never stored separately.
-  academyCompletions: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [
