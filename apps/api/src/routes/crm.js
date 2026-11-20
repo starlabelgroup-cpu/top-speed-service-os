@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { store, appendEvent, createId } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { STAFF_ROLES } from '../config/security.js';
+import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { effectiveArea, effectiveAreaStatus, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { slotForArea, todayDateString, APPOINTMENT_WINDOWS, CREWS_PER_AREA_WINDOW } from '../services/bookos.js';
 import { suggestProviders } from '../services/dispatch.js';
@@ -18,6 +18,18 @@ import { leadTypeOf } from '../services/leadBookings.js';
 import { listConnections } from '../db/applianceConnectionsRepo.js';
 import { callRecordingsForPhone } from '../db/callRecordingsRepo.js';
 import { voiceConfig } from '../config/platform.js';
+import { listReviewComments, listReviews } from '../db/reviewsRepo.js';
+import { notifyWinbackOffer } from '../services/notifications.js';
+import { getOffer } from '../config/offers.js';
+import {
+  WINBACK_SEGMENTS,
+  evaluateWinbackSegment,
+  groupWinbackCampaigns,
+  lastWinbackSentByCustomer,
+  winbackSegment,
+} from '../services/winback.js';
+import { buildCustomerTimeline, mergedRecordsOf } from '../services/crmTimeline.js';
+import { mergePlan, resolveMergeGuards, executeMerge } from '../services/crmMerge.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -130,6 +142,11 @@ function customerSummary(customer, paidMap = paidCentsByBooking()) {
     // flag (null = Active) and lifetime value in integer cents.
     // Every pre-existing field above is unchanged.
     crmFlag: customer.crmFlag || null,
+    // Win-back (2026-11-20, D6): ADDED field — the customer's
+    // marketing opt-out state, or null when they have not opted out.
+    marketingOptOut: customer.marketingOptOutAt
+      ? { at: customer.marketingOptOutAt, source: customer.marketingOptOutSource || null }
+      : null,
     lifetimeValueCents: customerLifetimeValueCents(customer.id, paidMap),
     bookingsCount: bookings.length,
     lastBooking: last
@@ -177,14 +194,38 @@ router.get('/crm/home', ...staffOnly, (req, res) => {
 router.get('/crm/customers', ...staffOnly, (req, res) => {
   const q = String(req.query.q || '').trim().toLowerCase();
   const paidMap = paidCentsByBooking();
-  let customers = [...store.customers.values()].map((c) => customerSummary(c, paidMap));
+  // Duplicate merge (D5): tombstones never list as customers, but
+  // their identifiers are aliases — a search on a merged record's
+  // name / phone / email finds the survivor, marked as such.
+  const aliasesBySurvivor = new Map();
+  for (const record of store.customers.values()) {
+    if (!record.mergedIntoId) continue;
+    if (!aliasesBySurvivor.has(record.mergedIntoId)) aliasesBySurvivor.set(record.mergedIntoId, []);
+    aliasesBySurvivor.get(record.mergedIntoId).push(record);
+  }
+  let customers = [...store.customers.values()]
+    .filter((c) => !c.mergedIntoId)
+    .map((c) => {
+      const summary = customerSummary(c, paidMap);
+      if (q) {
+        const alias = (aliasesBySurvivor.get(c.id) || []).find(
+          (t) =>
+            (t.name || '').toLowerCase().includes(q) ||
+            (t.phone || '').includes(q) ||
+            (t.email || '').toLowerCase().includes(q),
+        );
+        if (alias) summary.matchedViaMergedRecord = { name: alias.name, phone: alias.phone, email: alias.email || null };
+      }
+      return summary;
+    });
   if (q) {
     customers = customers.filter(
       (c) =>
         (c.name || '').toLowerCase().includes(q) ||
         (c.phone || '').includes(q) ||
         (c.email || '').toLowerCase().includes(q) ||
-        (c.city || '').toLowerCase().includes(q),
+        (c.city || '').toLowerCase().includes(q) ||
+        Boolean(c.matchedViaMergedRecord),
     );
   }
   customers.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
@@ -194,6 +235,36 @@ router.get('/crm/customers', ...staffOnly, (req, res) => {
 router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   const customer = store.customers.get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  // Duplicate merge (D5): a merged record's detail is a signpost to
+  // the survivor — its bookings, money, and history live there now.
+  if (customer.mergedIntoId) {
+    const survivor = store.customers.get(customer.mergedIntoId) || null;
+    return res.json({
+      data: {
+        customer: {
+          ...customer,
+          leadSource: customer.source || null,
+          referredByCode: customer.referredByCode || null,
+          crmFlag: customer.crmFlag || null,
+          lifetimeValueCents: 0,
+        },
+        mergedInto: survivor ? { id: survivor.id, name: survivor.name, phone: survivor.phone, email: survivor.email || null } : null,
+        account: null,
+        properties: [],
+        appliances: [],
+        bookings: [],
+        intake: [],
+        communications: [],
+        emails: [],
+        referrals: { ownCode: null, journeys: [] },
+        notes: [],
+        timeline: [],
+        timelineTotal: 0,
+        mergedRecords: [],
+      },
+    });
+  }
+  const aliases = mergedRecordsOf(customer.id);
   const bookings = customerBookings(customer.id).map(bookingBrief);
 
   // Properties: every distinct address this customer has been served at
@@ -245,8 +316,15 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   }
 
   const phone = digits(customer.phone);
+  // Merged duplicates' identifiers are this customer's aliases (D5):
+  // intake and outbox addressed to an old phone/email belong to the
+  // survivor's story too.
+  const aliasPhones = new Set([phone, ...aliases.map((a) => digits(a.phone))].filter(Boolean));
+  const aliasEmails = new Set(
+    [customer.email, ...aliases.map((a) => a.email)].filter(Boolean).map((e) => String(e).toLowerCase()),
+  );
   const intake = [...store.connections]
-    .filter((c) => digits(c.phone) === phone && phone)
+    .filter((c) => aliasPhones.has(digits(c.phone)))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((c) => ({ reference: c.reference, type: c.type, source: c.source, message: c.message, createdAt: c.createdAt }));
 
@@ -259,8 +337,8 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
       // Internal staff alerts are not communications with the customer.
       if (entry.template === 'STAFF_SUBMISSION_ALERT') return false;
       if (entry.payload?.bookingId && bookingIds.has(entry.payload.bookingId)) return true;
-      if (phone && digits(entry.to) === phone) return true;
-      if (customer.email && String(entry.to || '').toLowerCase() === customer.email.toLowerCase()) return true;
+      if (entry.to && aliasPhones.has(digits(entry.to))) return true;
+      if (entry.to && aliasEmails.has(String(entry.to).toLowerCase())) return true;
       return false;
     })
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
@@ -332,6 +410,11 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
     }
   }
 
+  // CRM depth (2026-11-20): D4 one timeline — every real record for
+  // this customer in one chronological feed (services/crmTimeline.js
+  // documents the honesty rules; kinds with no records never appear).
+  const timeline = await buildCustomerTimeline(customer);
+
   return res.json({
     data: {
       customer: {
@@ -341,6 +424,11 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
         // CRM upgrade (2026-11-19): ADDED fields, same pair the list
         // summaries carry — staff status flag + lifetime value.
         crmFlag: customer.crmFlag || null,
+        // Win-back (2026-11-20, D6): ADDED field — marketing opt-out
+        // state, same shape the list summaries carry.
+        marketingOptOut: customer.marketingOptOutAt
+          ? { at: customer.marketingOptOutAt, source: customer.marketingOptOutSource || null }
+          : null,
         lifetimeValueCents: customerLifetimeValueCents(customer.id),
       },
       account,
@@ -372,6 +460,11 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
         createdAt: r.createdAt,
       })),
       callRecordingEnabled: voiceConfig().callRecordingEnabled,
+      // CRM depth (2026-11-20): ADDED fields — the D4 timeline and
+      // the D5 merged-duplicate aliases pointing at this record.
+      timeline: timeline.entries,
+      timelineTotal: timeline.total,
+      mergedRecords: aliases.map((t) => ({ id: t.id, name: t.name, phone: t.phone, email: t.email || null })),
     },
   });
 });
@@ -503,6 +596,334 @@ router.post('/crm/customers/:id/flag', ...staffOnly, async (req, res) => {
     details: { flag: parsed.data.flag },
   });
   return res.json({ data: { customer: customerSummary(customer) } });
+});
+
+/* ================= Win-back campaigns (2026-11-20, D6) =================
+ * Staff-triggered offers to lapsed customers, on the segment math in
+ * services/winback.js. A setter picks a segment, previews exactly
+ * who would be contacted and who is excluded (opted out, open
+ * complaint, no contact on file, contacted within 90 days), picks a
+ * published offer, and presses send. Sends ride the notification
+ * outbox; the campaign log is the outbox itself. NOTHING here is
+ * scheduled or automatic — no campaign exists until a setter sends
+ * it, and the send re-evaluates the segment from live records so an
+ * opt-out or complaint recorded after the preview still protects
+ * the customer.
+ */
+
+const WINBACK_OFFER_SLUGS = ['seasonal-checkup', 'maintenance-rewards', 'multi-appliance-service-savings'];
+const WINBACK_DEFAULT_OFFER = 'seasonal-checkup';
+
+function winbackScope(req) {
+  const all = req.user.roles.includes(ROLES.PLATFORM_ADMIN);
+  return {
+    // Merged-away tombstones (D5) never list as customers anywhere,
+    // win-back included — their history lives on the survivor.
+    customers: [...store.customers.values()].filter((c) => !c.mergedIntoId && (all || c.companyId === req.companyId)),
+    bookings: [...store.bookings.values()].filter((b) => all || b.companyId === req.companyId),
+  };
+}
+
+/** The platform's complaint signal, by customer: an escalated review
+ *  the office has not answered (a STAFF comment is the answer). */
+async function openComplaintCustomerIds(req) {
+  const escalated = await listReviews({ escalatedOnly: true });
+  const mine = escalated.filter(
+    (review) => review.customerId && (req.user.roles.includes(ROLES.PLATFORM_ADMIN) || review.companyId === req.companyId),
+  );
+  const ids = new Set();
+  for (const review of mine) {
+    const comments = await listReviewComments(review.id);
+    if (comments.some((comment) => comment.authorKind === 'STAFF')) continue;
+    ids.add(review.customerId);
+  }
+  return ids;
+}
+
+async function evaluateWinback(req, segment) {
+  const { customers, bookings } = winbackScope(req);
+  return evaluateWinbackSegment({
+    customers,
+    bookings,
+    openComplaintCustomerIds: await openComplaintCustomerIds(req),
+    lastWinbackSentAtByCustomer: lastWinbackSentByCustomer(store.notificationOutbox),
+    segment,
+    now: new Date(),
+  });
+}
+
+function excludedByReason(excluded) {
+  return excluded.reduce((acc, row) => {
+    acc[row.reason] = (acc[row.reason] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+router.get('/crm/winback/segments', ...staffOnly, async (req, res) => {
+  const segments = [];
+  for (const segment of WINBACK_SEGMENTS) {
+    const evaluation = await evaluateWinback(req, segment);
+    segments.push({
+      id: segment.id,
+      months: segment.months,
+      label: segment.label,
+      blurb: segment.blurb,
+      eligible: evaluation.members.length,
+      excluded: evaluation.excluded.length,
+      counts: evaluation.counts,
+    });
+  }
+  return res.json({
+    data: {
+      segments,
+      offers: WINBACK_OFFER_SLUGS.map((slug) => {
+        const offer = getOffer(slug);
+        return offer ? { slug: offer.slug, title: offer.title, benefit: offer.benefit } : null;
+      }).filter(Boolean),
+      defaultOffer: WINBACK_DEFAULT_OFFER,
+      note: 'Counts are live. Opted-out and open-complaint customers are always excluded; sends are staff-triggered only — nothing is scheduled or automatic.',
+    },
+  });
+});
+
+router.get('/crm/winback/preview', ...staffOnly, async (req, res) => {
+  const segment = winbackSegment(String(req.query.segment || ''));
+  if (!segment) {
+    return res.status(400).json({ error: 'Unknown segment', segments: WINBACK_SEGMENTS.map((s) => s.id) });
+  }
+  const evaluation = await evaluateWinback(req, segment);
+  return res.json({
+    data: {
+      segment: { id: segment.id, months: segment.months, label: segment.label, blurb: segment.blurb },
+      members: evaluation.members,
+      excluded: evaluation.excluded,
+      counts: evaluation.counts,
+    },
+  });
+});
+
+const winbackSendSchema = z.object({
+  segment: z.string().trim().min(1),
+  offerSlug: z.string().trim().min(1).optional(),
+});
+
+router.post('/crm/winback/send', ...staffOnly, async (req, res) => {
+  const parsed = winbackSendSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid win-back send', details: parsed.error.flatten() });
+  }
+  const segment = winbackSegment(parsed.data.segment);
+  if (!segment) {
+    return res.status(400).json({ error: 'Unknown segment', segments: WINBACK_SEGMENTS.map((s) => s.id) });
+  }
+  const offerSlug = parsed.data.offerSlug || WINBACK_DEFAULT_OFFER;
+  if (!WINBACK_OFFER_SLUGS.includes(offerSlug)) {
+    return res.status(400).json({ error: 'That offer is not a win-back offer', offers: WINBACK_OFFER_SLUGS });
+  }
+  const offer = getOffer(offerSlug);
+  if (!offer) return res.status(400).json({ error: 'Offer not found in the catalog', offers: WINBACK_OFFER_SLUGS });
+
+  // Re-evaluated from live records at send time — never the preview's
+  // snapshot — so an opt-out or complaint recorded since the preview
+  // still excludes the customer.
+  const evaluation = await evaluateWinback(req, segment);
+  const campaignId = createId();
+  const sentBy = staffName(req);
+  let queued = 0;
+  let gated = 0;
+  for (const member of evaluation.members) {
+    const customer = store.customers.get(member.customerId);
+    if (!customer) continue;
+    const entries = notifyWinbackOffer({
+      customer,
+      offer,
+      campaignId,
+      segment: segment.id,
+      monthsSince: member.monthsSince,
+      lastAppliance: member.lastAppliance,
+      sentBy,
+      source: 'crm-winback',
+    });
+    for (const entry of entries) {
+      if (entry.status === 'QUEUED') queued += 1;
+      else if (entry.status === 'GATED') gated += 1;
+    }
+  }
+  await appendEvent('WINBACK_CAMPAIGN_SENT', {
+    actor: sentBy,
+    entityType: 'WINBACK_CAMPAIGN',
+    entityId: campaignId,
+    details: {
+      companyId: req.companyId,
+      segment: segment.id,
+      offerSlug,
+      recipients: evaluation.members.length,
+      queuedEntries: queued,
+      gatedEntries: gated,
+      excluded: evaluation.excluded.length,
+      excludedByReason: excludedByReason(evaluation.excluded),
+    },
+  });
+  return res.json({
+    data: {
+      campaignId,
+      segment: segment.id,
+      offerSlug,
+      recipients: evaluation.members.length,
+      queuedEntries: queued,
+      gatedEntries: gated,
+      excluded: evaluation.excluded.length,
+      excludedByReason: excludedByReason(evaluation.excluded),
+    },
+  });
+});
+
+router.get('/crm/winback/campaigns', ...staffOnly, (req, res) => {
+  const { customers } = winbackScope(req);
+  const mine = new Set(customers.map((c) => c.id));
+  const outbox = (store.notificationOutbox || []).filter((e) => mine.has(e.payload?.customerId));
+  const campaigns = groupWinbackCampaigns(outbox, store.events || []);
+  return res.json({ data: { campaigns } });
+});
+
+router.get('/crm/winback/replies', ...staffOnly, (req, res) => {
+  const all = req.user.roles.includes(ROLES.PLATFORM_ADMIN);
+  const replies = (store.events || [])
+    .filter((e) => e.type === 'WINBACK_REPLY' && (all || e.details?.companyId === req.companyId))
+    .slice(-100)
+    .reverse()
+    .map((e) => ({
+      id: e.id,
+      at: e.at,
+      customerId: e.details?.customerId || null,
+      customerName: e.details?.customerName || null,
+      from: e.details?.from || null,
+      body: e.details?.body || null,
+      campaignId: e.details?.campaignId || null,
+    }));
+  return res.json({ data: { replies } });
+});
+
+const marketingOptOutSchema = z.object({ optedOut: z.boolean() });
+
+/** Staff record/clear a customer's marketing opt-out (the CRM side of
+ *  the STOP text a customer can send the business line). */
+router.post('/crm/customers/:id/marketing-opt-out', ...staffOnly, async (req, res) => {
+  const customer = store.customers.get(req.params.id);
+  if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  const parsed = marketingOptOutSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid opt-out change', details: parsed.error.flatten() });
+  }
+  if (parsed.data.optedOut) {
+    customer.marketingOptOutAt = new Date().toISOString();
+    customer.marketingOptOutSource = 'STAFF';
+  } else {
+    customer.marketingOptOutAt = null;
+    customer.marketingOptOutSource = null;
+  }
+  await persistCustomer(customer);
+  await appendEvent(parsed.data.optedOut ? 'WINBACK_OPT_OUT_SET' : 'WINBACK_OPT_OUT_CLEARED', {
+    actor: staffName(req),
+    entityType: 'CUSTOMER',
+    entityId: customer.id,
+    details: { companyId: customer.companyId, source: 'STAFF' },
+  });
+  return res.json({ data: { customer: customerSummary(customer) } });
+});
+
+/* ---------------- CRM depth (2026-11-20): duplicate merge (D5) ----------------
+ * Guided merge of a duplicate customer record into a survivor. The
+ * preview shows EXACTLY what will move (the same mergePlan the
+ * execute runs) plus the guard state; the execute refuses the
+ * Master/owner's records in either direction (Rule Zero) and
+ * requires an explicit confirmAccountConflict when both records are
+ * linked to different signed-in accounts. The duplicate is never
+ * deleted — it becomes a tombstone whose identifiers keep resolving
+ * to the survivor. Full rules: services/crmMerge.js. */
+
+const mergePairSchema = z.object({ survivorId: z.string().uuid(), duplicateId: z.string().uuid() });
+const mergeExecuteSchema = mergePairSchema.extend({ confirmAccountConflict: z.boolean().optional() });
+
+function mergePairError(survivorId, duplicateId, survivor, duplicate) {
+  if (survivorId === duplicateId) {
+    return { status: 400, body: { error: 'A record cannot be merged into itself', code: 'SAME_RECORD' } };
+  }
+  if (!survivor || !duplicate) return { status: 404, body: { error: 'Customer not found' } };
+  if (survivor.mergedIntoId || duplicate.mergedIntoId) {
+    return { status: 400, body: { error: 'One of these records has already been merged', code: 'ALREADY_MERGED' } };
+  }
+  if (survivor.companyId !== duplicate.companyId) {
+    return { status: 400, body: { error: 'These records belong to different companies', code: 'CROSS_COMPANY' } };
+  }
+  return null;
+}
+
+router.post('/crm/customers/merge/preview', ...staffOnly, async (req, res) => {
+  const parsed = mergePairSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'survivorId and duplicateId are required', details: parsed.error.flatten() });
+  }
+  const survivor = store.customers.get(parsed.data.survivorId);
+  const duplicate = store.customers.get(parsed.data.duplicateId);
+  const err = mergePairError(parsed.data.survivorId, parsed.data.duplicateId, survivor, duplicate);
+  if (err) return res.status(err.status).json(err.body);
+  const guards = await resolveMergeGuards(survivor, duplicate);
+  const survivorLtv = customerLifetimeValueCents(survivor.id);
+  const duplicateLtv = customerLifetimeValueCents(duplicate.id);
+  return res.json({
+    data: {
+      survivor: { id: survivor.id, name: survivor.name, phone: survivor.phone, email: survivor.email || null },
+      duplicate: { id: duplicate.id, name: duplicate.name, phone: duplicate.phone, email: duplicate.email || null },
+      moves: mergePlan(survivor, duplicate),
+      guards: {
+        ownerInvolved: guards.ownerInvolved,
+        accountConflict: guards.accountConflict,
+        survivorHasAccount: guards.survivorHasAccount,
+        duplicateHasAccount: guards.duplicateHasAccount,
+      },
+      lifetimeValueCents: {
+        survivor: survivorLtv,
+        duplicate: duplicateLtv,
+        combinedAfterMerge: survivorLtv + duplicateLtv,
+      },
+    },
+  });
+});
+
+router.post('/crm/customers/merge', ...staffOnly, async (req, res) => {
+  const parsed = mergeExecuteSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'survivorId and duplicateId are required', details: parsed.error.flatten() });
+  }
+  const survivor = store.customers.get(parsed.data.survivorId);
+  const duplicate = store.customers.get(parsed.data.duplicateId);
+  const err = mergePairError(parsed.data.survivorId, parsed.data.duplicateId, survivor, duplicate);
+  if (err) return res.status(err.status).json(err.body);
+  const guards = await resolveMergeGuards(survivor, duplicate);
+  if (guards.ownerInvolved) {
+    return res.status(403).json({ error: "The Master/owner's records are never merged", code: 'OWNER_RECORD' });
+  }
+  if (guards.accountConflict && !parsed.data.confirmAccountConflict) {
+    return res.status(409).json({
+      error:
+        'Both records are linked to different signed-in accounts. Confirm the merge explicitly to proceed — the accounts themselves are never merged; the duplicate account link stays on the merged record as an alias.',
+      code: 'ACCOUNT_CONFLICT',
+    });
+  }
+  const { moved, note } = await executeMerge({
+    survivor,
+    duplicate,
+    actor: staffName(req),
+    confirmAccountConflict: Boolean(parsed.data.confirmAccountConflict),
+  });
+  return res.json({
+    data: {
+      survivor: customerSummary(survivor),
+      moved,
+      note: { id: note.id, body: note.body },
+    },
+  });
 });
 
 /* ---------------- Speedy assist (drafts & suggestions only) ---------------- */

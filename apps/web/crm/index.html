@@ -113,6 +113,7 @@ footer strong{color:#fff}
       <button class="tab" id="tab-customers" onclick="crmTab('customers')">Customers</button>
       <button class="tab" id="tab-waitlist" onclick="crmTab('waitlist')">Expansion Waitlist</button>
       <button class="tab" id="tab-pipeline" onclick="crmTab('pipeline')">Leads &amp; Pipeline</button>
+      <button class="tab" id="tab-winback" onclick="crmTab('winback')">Win-back</button>
       <button class="tab" id="tab-tools" onclick="crmTab('tools')">Business Tools</button>
     </div>
 
@@ -159,6 +160,30 @@ footer strong{color:#fff}
       <p class="sub" style="margin-top:0;">Every lead from the platform's intake in one pipeline — the same records the setter queue works. A lead whose job completed, or whose invoice is fully paid, reads as <b>Won</b> on its own; an estimate on the job moves it to <b>Estimate</b>. Setters can set any stage by hand, and a hand-set stage always wins. Values are the linked job's real estimate or invoice total only — a dash means no figure exists yet.</p>
       <div class="msg" id="pipeMsg"></div>
       <div class="sx"><div id="pipeBoard" style="display:flex;gap:12px;align-items:flex-start;min-width:1118px;padding-bottom:6px;"><p class="mut">Loading the pipeline…</p></div></div>
+    </section>
+
+    <section id="pane-winback" style="display:none;">
+      <p class="sub" style="margin-top:0;">Bring past customers back: pick a lapsed segment, preview exactly who would be contacted — and who is excluded and why — then send a published offer through the normal message system. <b>Opted-out customers and customers with an open complaint are always excluded.</b> One offer per customer per 90 days. Sends happen only when you press send — nothing here is scheduled or automatic.</p>
+      <div class="msg" id="wbMsg"></div>
+      <div class="card">
+        <h3 style="color:var(--navy);margin-bottom:10px;">1 · Pick a segment &amp; an offer</h3>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+          <label style="flex:1;min-width:220px;">Segment<select id="wbSegment" onchange="crmWbPreview()"></select></label>
+          <label style="flex:1;min-width:220px;">Offer<select id="wbOffer"></select></label>
+          <button class="btn blue" type="button" onclick="crmWbPreview()">Preview</button>
+        </div>
+        <div id="wbPreview" style="margin-top:14px;"><p class="mut">Loading segments…</p></div>
+        <div id="wbSendRow" style="margin-top:12px;"></div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <h3 style="color:var(--navy);margin-bottom:10px;">2 · Campaign history</h3>
+        <div id="wbCampaigns"><p class="mut">Loading…</p></div>
+      </div>
+      <div class="card" style="margin-top:14px;">
+        <h3 style="color:var(--navy);margin-bottom:10px;">3 · Replies from win-back customers</h3>
+        <p class="mut" style="margin-top:0;">Texts from customers who got a win-back offer in the last 30 days land here for a setter to work. A customer who texts STOP is opted out on the spot and never contacted again.</p>
+        <div id="wbReplies"><p class="mut">Loading…</p></div>
+      </div>
     </section>
 
     <section id="pane-tools" style="display:none;">
@@ -300,17 +325,27 @@ function crmLoad(){
       document.getElementById('crmMsg').textContent=rows.length+' customer'+(rows.length===1?'':'s');
       document.getElementById('crmRows').innerHTML=rows.length?rows.map(function(c){
         var last=c.lastBooking?(crmEsc(c.lastBooking.appliance)+' · '+crmEsc(c.lastBooking.referenceCode)+' · <span class="pill">'+crmEsc(c.lastBooking.status)+'</span>'):'—';
-        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td><td>'+crmUpMoney(c.lifetimeValueCents)+'</td><td>'+crmUpFlagPill(c.crmFlag)+'</td></tr>';
+        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b>'+(c.matchedViaMergedRecord?'<br><span class="mut">matched via merged record: '+crmEsc(c.matchedViaMergedRecord.name)+'</span>':'')+'</td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td><td>'+crmUpMoney(c.lifetimeValueCents)+'</td><td>'+crmUpFlagPill(c.crmFlag)+'</td></tr>';
       }).join(''):'<tr><td colspan="7">No customers match.</td></tr>';
     })
     .catch(function(e){
       document.getElementById('crmRows').innerHTML='<tr><td colspan="7"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
     });
 }
+var crmCurrentId=null;
+var crmMergedIntoId=null;
+function crmOpenSurvivor(){ if(crmMergedIntoId) crmDetail(crmMergedIntoId); }
 function crmDetail(id){
   crmFetch('/crm/customers/'+id)
     .then(function(j){
       var d=j.data, c=d.customer;
+      crmCurrentId=c.id;
+      crmMergedIntoId=d.mergedInto?d.mergedInto.id:null;
+      if(d.mergedInto){
+        document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2><p class="mut" style="margin:6px 0 4px;">This record was merged into <b>'+crmEsc(d.mergedInto.name)+'</b> ('+crmEsc(d.mergedInto.phone||'')+') — its bookings, payments and history live on the surviving record now, and this record stays as an alias so its phone and email keep finding the customer.</p><p style="margin-top:10px;"><button class="btn blue" onclick="crmOpenSurvivor()">Open the surviving record</button></p></div>';
+        window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
+        return;
+      }
       var props=(d.properties||[]).map(function(p){
         return '<div class="line"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+crmEsc(p.address||'')+(p.city?' · '+crmEsc(p.city):'')+(p.zip?' '+crmEsc(p.zip):'')+(p.area?' · <span class="pill">'+crmEsc(p.area)+'</span>':'')+'</div>';
       }).join('')||'<p class="mut">No service address on file.</p>';
@@ -348,6 +383,11 @@ function crmDetail(id){
       var notes=(d.notes||[]).map(function(n){
         return '<div class="line"><b>'+crmEsc(n.author)+'</b> <span class="mut">'+crmEsc(String(n.createdAt||'').replace('T',' ').slice(0,16))+'</span><br>'+crmEsc(n.body)+'</div>';
       }).join('')||'<p class="mut">No CRM notes yet.</p>';
+      var tlKinds={BOOKING:'Booking',BOOKING_COMPLETED:'Completed',PAYMENT:'Payment',RECEIPT:'Receipt',CALL:'Call',MESSAGE:'Message',EMAIL:'Email',REVIEW:'Review'};
+      var tl=(d.timeline||[]).map(function(e){
+        return '<div class="line"><span class="pill">'+crmEsc(tlKinds[e.kind]||e.kind)+'</span> <b>'+crmEsc(e.title)+'</b>'+(e.detail?'<br><span class="mut">'+crmEsc(e.detail)+'</span>':'')+'<br><span class="mut">'+crmEsc(String(e.at||'').replace('T',' ').slice(0,16))+' · '+crmEsc(e.source||'')+'</span></div>';
+      }).join('')||'<p class="mut">No records yet — bookings, tracked calls, messages, payments and reviews appear here as they happen.</p>';
+      var mergedHtml=(d.mergedRecords||[]).length?'<div class="section"><h3>Merged duplicate records</h3>'+(d.mergedRecords||[]).map(function(t){ return '<div class="line"><b>'+crmEsc(t.name)+'</b> · '+crmEsc(t.phone||'')+(t.email?' · '+crmEsc(t.email):'')+' <span class="mut">(merged into this record — its phone/email still find this customer)</span></div>'; }).join('')+'</div>':'';
       document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
         '<p class="mut" style="margin:6px 0 4px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
         '<p class="mut">Lead source: <b>'+crmEsc(c.leadSource||'—')+'</b>'+(c.referredByCode?' · referred by code <b>'+crmEsc(c.referredByCode)+'</b>':'')+' · customer since '+crmEsc(String(c.createdAt||'').slice(0,10))+'</p>' +
@@ -366,6 +406,8 @@ function crmDetail(id){
         '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Service address<br><input id="crmWoAddress" value="'+crmEsc(c.address||'')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>' +
         '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Issue<br><textarea id="crmWoIssue" rows="2" placeholder="What is the appliance doing (or not doing)?" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></textarea></label>' +
         '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn blue" onclick="crmCreateWo(\''+c.id+'\')">Create work order</button></div><div class="msg" id="crmWoMsg"></div></div>' +
+        mergedHtml +
+        '<div class="section"><h3>Timeline — everything on record, newest first</h3>'+tl+'</div>' +
         '<div class="section"><h3>Job history</h3>'+bk+'</div>' +
         '<div class="section"><h3>Referrals</h3>'+refHtml+'</div>' +
         '<div class="section"><h3>Communications log — true outbox statuses</h3>'+comms+'</div>' +
@@ -382,6 +424,9 @@ function crmDetail(id){
         '<div class="section"><h3>Intake history</h3>'+intake+'</div>' +
         '<div class="section"><h3>Notes</h3>'+notes+
         '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><input id="crmNoteBody" type="text" placeholder="Add a note for the team…" style="flex:1;min-width:220px;width:auto;"><button class="btn blue" onclick="crmAddNote(\''+c.id+'\')">Add note</button></div><div class="msg" id="crmNoteMsg"></div></div>' +
+        '<div class="section"><h3>Merge a duplicate record</h3>' +
+        '<p class="mut" style="margin:0 0 10px;">If this customer exists twice, merge the duplicate INTO this record: its bookings, payments, invoices, notes, referrals and garage move here, and its phone/email keep finding this record. This record\'s ID: <b>'+crmEsc(c.id)+'</b> \u2014 open the duplicate and copy its ID from the same place.</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;"><input id="crmMergeDupId" type="text" placeholder="Duplicate record ID\u2026" style="flex:1;min-width:260px;width:auto;"><button class="btn ghost" onclick="crmMergePreview()">Preview merge</button></div><div id="crmMergeOut" style="margin-top:10px;"></div></div>' +
         '<div class="speedy"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy assist — drafts &amp; suggestions only</h3>' +
         '<p class="mut" style="margin:6px 0 12px;">Speedy assembles these from this customer\'s real records. Nothing is sent and nothing is dispatched from here — you approve every send and every dispatch. Speedy never issues refunds, certifies repair safety, or overrides a technician credential.</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><button class="btn blue" onclick="crmBrief(\''+c.id+'\')">Summarize this customer</button>' +
@@ -393,6 +438,35 @@ function crmDetail(id){
       crmMsgLoad(c.id);
     })
     .catch(function(e){ document.getElementById('crmMsg').textContent=' '+e.message; });
+}
+function crmMergePreview(){
+  var out=document.getElementById('crmMergeOut');
+  var dupId=(document.getElementById('crmMergeDupId').value||'').trim();
+  if(!dupId){ out.innerHTML='<p class="msg err">Paste the duplicate record ID first.</p>'; return; }
+  out.innerHTML='<p class="mut">Reading both records…</p>';
+  crmFetch('/crm/customers/merge/preview',{method:'POST',body:{survivorId:crmCurrentId,duplicateId:dupId}})
+    .then(function(j){
+      var d=j.data, m=d.moves||{}, g=d.guards||{};
+      var rows=[['Bookings',m.bookings],['Referred bookings',m.referredBookings],['Payment records',m.payments],['Invoices',m.invoices],['Notes',m.notes],['Inbox messages',m.inboxMessages],['Referral codes',m.referralCodes],['Referral journeys',m.referralJourneys],['Referral credits',m.referralCredits],['Garage appliances',m.garageAppliances]].map(function(r){ return '<div class="line">'+crmEsc(r[0])+': <b>'+(r[1]||0)+'</b></div>'; }).join('');
+      var warn='';
+      if(g.ownerInvolved){ warn='<p class="msg err">One of these records is linked to the Master/owner account — merges are refused for those records.</p>'; }
+      else if(g.accountConflict){ warn='<p class="msg err">Both records are linked to DIFFERENT signed-in accounts. The accounts themselves are never merged — the garage moves to this account and the duplicate account link stays on the merged record as an alias.</p><label style="display:block;margin:8px 0;"><input type="checkbox" id="crmMergeConfirmAcct"> I confirm merging two records linked to different accounts</label>'; }
+      out.innerHTML='<p style="margin:6px 0;"><b>'+crmEsc(d.duplicate.name)+'</b> ('+crmEsc(d.duplicate.phone||'')+') merges into <b>'+crmEsc(d.survivor.name)+'</b>. Lifetime value after the merge: <b>'+crmUpMoney(d.lifetimeValueCents.combinedAfterMerge)+'</b> ('+crmUpMoney(d.lifetimeValueCents.survivor)+' + '+crmUpMoney(d.lifetimeValueCents.duplicate)+').</p>'+rows+warn+(g.ownerInvolved?'':'<div style="margin-top:10px;"><button class="btn blue" onclick="crmMergeExecute()">Confirm merge</button></div>');
+    })
+    .catch(function(e){ out.innerHTML='<p class="msg err">'+crmEsc(e.message)+'</p>'; });
+}
+function crmMergeExecute(){
+  var out=document.getElementById('crmMergeOut');
+  var dupId=(document.getElementById('crmMergeDupId').value||'').trim();
+  var chk=document.getElementById('crmMergeConfirmAcct');
+  var body={survivorId:crmCurrentId,duplicateId:dupId};
+  if(chk){
+    if(!chk.checked){ out.innerHTML='<p class="msg err">Tick the confirmation box first — these records are linked to different accounts.</p>'; return; }
+    body.confirmAccountConflict=true;
+  }
+  crmFetch('/crm/customers/merge',{method:'POST',body:body})
+    .then(function(){ out.innerHTML='<p class="msg ok">Merged — the surviving record now holds everything.</p>'; setTimeout(function(){ crmDetail(crmCurrentId); crmLoad(); }, 900); })
+    .catch(function(e){ out.innerHTML='<p class="msg err">'+crmEsc(e.message)+'</p>'; });
 }
 function crmWoVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
 function crmCreateWo(id){
@@ -1045,6 +1119,171 @@ if(window.MutationObserver){ crmUpObserver=new MutationObserver(function(){ crmU
 (function crmUpInit(){
   var d=document.getElementById('crmDetail');
   if(d&&crmUpObserver) crmUpObserver.observe(d,{childList:true});
+})();
+</script>
+<script>
+/* ================= WIN-BACK CAMPAIGNS (2026-11-20, D6) =================
+   Ramone approved the win-back tool from the recommendations list,
+   built onto the live CRM the same additive way as the pipeline tab
+   above: this block (a) wraps crmTab so the Win-back tab shows its
+   own pane alongside the existing five, (b) drives the staff
+   endpoints GET /crm/winback/segments, GET /crm/winback/preview,
+   POST /crm/winback/send, GET /crm/winback/campaigns and
+   GET /crm/winback/replies, and (c) injects ONE marketing opt-out
+   section into the customer record (the same MutationObserver idiom
+   as the status section) driving POST
+   /crm/customers/:id/marketing-opt-out. Sends are staff-triggered
+   only; the preview's exclusions are the send's exclusions because
+   the server re-evaluates the segment at send time. */
+var crmWbOrigTab=crmTab;
+crmTab=function(name){
+  crmWbOrigTab(name);
+  var pane=document.getElementById('pane-winback');
+  var tab=document.getElementById('tab-winback');
+  if(name==='winback'){
+    if(pane) pane.style.display='';
+    if(tab) tab.className='tab on';
+    crmWbLoad();
+  } else {
+    if(pane) pane.style.display='none';
+    if(tab) tab.className='tab';
+  }
+};
+var crmWbState={segment:null,confirming:false};
+function crmWbMsg(text,ok){
+  var m=document.getElementById('wbMsg'); if(!m) return;
+  m.textContent=text||''; m.className='msg'+(text?(ok?' ok':' err'):'');
+}
+function crmWbLoad(){
+  crmWbMsg('');
+  crmFetch('/crm/winback/segments').then(function(j){
+    var d=j.data||{};
+    var segSel=document.getElementById('wbSegment');
+    var offSel=document.getElementById('wbOffer');
+    if(segSel){
+      segSel.innerHTML=(d.segments||[]).map(function(s){
+        return '<option value="'+crmEsc(s.id)+'">'+crmEsc(s.label)+' \u2014 '+s.eligible+' eligible, '+s.excluded+' excluded</option>';
+      }).join('');
+    }
+    if(offSel){
+      offSel.innerHTML=(d.offers||[]).map(function(o){
+        return '<option value="'+crmEsc(o.slug)+'"'+(o.slug===d.defaultOffer?' selected':'')+'>'+crmEsc(o.title)+'</option>';
+      }).join('');
+    }
+    crmWbPreview();
+    crmWbCampaigns();
+    crmWbReplies();
+  }).catch(function(e){ crmWbMsg('Could not load win-back: '+e.message,false); });
+}
+function crmWbPreview(){
+  var segSel=document.getElementById('wbSegment'); if(!segSel) return;
+  var segment=segSel.value; crmWbState.segment=segment; crmWbState.confirming=false;
+  var host=document.getElementById('wbPreview'); if(host) host.innerHTML='<p class="mut">Loading preview\u2026</p>';
+  var sendRow=document.getElementById('wbSendRow'); if(sendRow) sendRow.innerHTML='';
+  crmFetch('/crm/winback/preview?segment='+encodeURIComponent(segment)).then(function(j){
+    var d=j.data||{};
+    var members=d.members||[], excluded=d.excluded||[];
+    var mrows=members.map(function(m){
+      return '<tr><td>'+crmEsc(m.name||'')+'</td><td>'+crmEsc(m.lastAppliance||'')+' \u00b7 '+crmEsc(String(m.lastCompletedAt||'').slice(0,10))+' ('+m.monthsSince+' mo ago)</td><td>'+crmEsc(m.email||'')+(m.email&&m.phone?'<br>':'')+crmEsc(m.phone||'')+'</td></tr>';
+    }).join('');
+    var xrows=excluded.map(function(m){
+      return '<tr><td>'+crmEsc(m.name||'')+'</td><td>'+crmEsc(m.reasonLabel||m.reason||'')+'</td></tr>';
+    }).join('');
+    if(host) host.innerHTML=
+      '<p style="margin:0 0 8px;"><b>'+members.length+'</b> customer'+(members.length===1?'':'s')+' would be contacted \u00b7 <b>'+excluded.length+'</b> excluded</p>'
+      +(members.length?'<div class="sx"><table><thead><tr><th>Customer</th><th>Last job</th><th>Contact</th></tr></thead><tbody>'+mrows+'</tbody></table></div>':'<p class="mut">No eligible customers in this segment right now.</p>')
+      +(excluded.length?'<p style="margin:12px 0 6px;"><b>Excluded \u2014 never contacted by this send:</b></p><div class="sx"><table><thead><tr><th>Customer</th><th>Why</th></tr></thead><tbody>'+xrows+'</tbody></table></div>':'');
+    if(sendRow){
+      sendRow.innerHTML=members.length
+        ? '<button class="btn blue" type="button" onclick="crmWbSend()">Send the offer to '+members.length+' customer'+(members.length===1?'':'s')+'</button>'
+        : '';
+    }
+  }).catch(function(e){ if(host) host.innerHTML='<p class="mut">Could not load the preview ('+crmEsc(e.message)+').</p>'; });
+}
+function crmWbSend(){
+  var segment=crmWbState.segment; if(!segment) return;
+  var offSel=document.getElementById('wbOffer');
+  var offerSlug=offSel?offSel.value:undefined;
+  var sendRow=document.getElementById('wbSendRow');
+  if(!crmWbState.confirming){
+    crmWbState.confirming=true;
+    if(sendRow) sendRow.innerHTML='<span style="margin-right:10px;">Send for real? The segment is re-checked at send time \u2014 anyone who opted out or complained since this preview is still excluded.</span><button class="btn blue" type="button" onclick="crmWbSend()">Confirm send</button> <button class="btn ghost" type="button" onclick="crmWbPreview()">Cancel</button>';
+    return;
+  }
+  crmWbState.confirming=false;
+  if(sendRow) sendRow.innerHTML='<p class="mut">Sending\u2026</p>';
+  crmFetch('/crm/winback/send',{method:'POST',body:{segment:segment,offerSlug:offerSlug}}).then(function(j){
+    var d=j.data||{};
+    crmWbMsg('Campaign sent: '+d.recipients+' recipient(s), '+d.queuedEntries+' message(s) queued, '+d.gatedEntries+' gated by channel settings, '+d.excluded+' excluded.',true);
+    crmWbPreview(); crmWbCampaigns(); crmWbReplies();
+  }).catch(function(e){ crmWbMsg('Send failed: '+e.message,false); crmWbPreview(); });
+}
+function crmWbCampaigns(){
+  var host=document.getElementById('wbCampaigns'); if(!host) return;
+  crmFetch('/crm/winback/campaigns').then(function(j){
+    var rows=(j.data||{}).campaigns||[];
+    if(!rows.length){ host.innerHTML='<p class="mut">No campaigns sent yet. Campaigns appear here from the real send log \u2014 nothing is scheduled or automatic.</p>'; return; }
+    host.innerHTML='<div class="sx"><table><thead><tr><th>Sent</th><th>Segment</th><th>Offer</th><th>By</th><th>Recipients</th><th>Queued / Sent / Failed / Gated</th><th>Replies</th></tr></thead><tbody>'
+      +rows.map(function(c){
+        return '<tr><td>'+crmEsc(String(c.at||'').slice(0,16).replace('T',' '))+'</td><td>'+crmEsc(c.segment||'')+'</td><td>'+crmEsc(c.offerSlug||'')+'</td><td>'+crmEsc(c.sentBy||'')+'</td><td>'+c.recipientCount+'</td><td>'+c.queued+' / '+c.sent+' / '+c.failed+' / '+c.gated+'</td><td>'+c.replyCount+'</td></tr>';
+      }).join('')+'</tbody></table></div>';
+  }).catch(function(e){ host.innerHTML='<p class="mut">Could not load campaign history ('+crmEsc(e.message)+').</p>'; });
+}
+function crmWbReplies(){
+  var host=document.getElementById('wbReplies'); if(!host) return;
+  crmFetch('/crm/winback/replies').then(function(j){
+    var rows=(j.data||{}).replies||[];
+    if(!rows.length){ host.innerHTML='<p class="mut">No win-back replies yet.</p>'; return; }
+    host.innerHTML=rows.map(function(r){
+      var open=r.customerId?' <a href="#" onclick="crmUpOpenLead(\''+r.customerId+'\');return false;" style="color:var(--blue);font-weight:700;">Open customer record \u2192</a>':'';
+      return '<div style="border-top:1px solid #e6ebf2;padding:8px 0;"><b>'+crmEsc(r.customerName||r.from||'Customer')+'</b> <span class="mut">'+crmEsc(String(r.at||'').slice(0,16).replace('T',' '))+'</span><div>'+crmEsc(r.body||'')+'</div>'+open+'</div>';
+    }).join('');
+  }).catch(function(e){ host.innerHTML='<p class="mut">Could not load replies ('+crmEsc(e.message)+').</p>'; });
+}
+
+/* ---- Marketing opt-out inside the customer record ---- */
+var crmWb={customerId:null};
+var crmWbOrigDetail=crmDetail;
+crmDetail=function(id){ crmWb.customerId=id; crmWbOrigDetail(id); };
+function crmWbMaybeInjectOptOut(){
+  var host=document.getElementById('crmDetail'); if(!host) return;
+  if(document.getElementById('crmWbOptSec')) return;
+  var card=host.querySelector('.card'); if(!card||!crmWb.customerId) return;
+  var sec=document.createElement('div');
+  sec.className='section'; sec.id='crmWbOptSec';
+  sec.innerHTML='<h3>Marketing opt-out</h3><p class="mut">Loading\u2026</p>';
+  var first=card.querySelector('.section');
+  if(first) card.insertBefore(sec,first); else card.appendChild(sec);
+  crmFetch('/crm/customers/'+encodeURIComponent(crmWb.customerId)).then(function(j){
+    if(!document.getElementById('crmWbOptSec')) return;
+    crmWbRenderOptOut((j.data||{}).customer||{});
+  }).catch(function(){ var el=document.getElementById('crmWbOptSec'); if(el) el.innerHTML='<h3>Marketing opt-out</h3><p class="mut">Could not load the opt-out state. The record above is unaffected.</p>'; });
+}
+function crmWbRenderOptOut(c){
+  var sec=document.getElementById('crmWbOptSec'); if(!sec) return;
+  var oo=c.marketingOptOut;
+  sec.innerHTML='<h3>Marketing opt-out</h3>'
+    +(oo
+      ? '<p class="mut">This customer opted out on '+crmEsc(String(oo.at||'').slice(0,10))+' ('+crmEsc(oo.source==='SMS_STOP'?'texted STOP':'recorded by staff')+'). They are excluded from every win-back campaign.</p><div style="margin-top:8px;"><button class="btn small ghost" type="button" onclick="crmWbSetOptOut(false)">Clear opt-out</button></div>'
+      : '<p class="mut">Not opted out \u2014 eligible for win-back campaigns when they match a lapsed segment.</p><div style="margin-top:8px;"><button class="btn small ghost" type="button" onclick="crmWbSetOptOut(true)">Record opt-out</button></div>')
+    +'<div class="msg" id="crmWbOptMsg"></div>';
+}
+function crmWbSetOptOut(optedOut){
+  var id=crmWb.customerId; if(!id) return;
+  var msg=document.getElementById('crmWbOptMsg');
+  if(msg){ msg.textContent='Saving\u2026'; msg.className='msg'; }
+  crmFetch('/crm/customers/'+encodeURIComponent(id)+'/marketing-opt-out',{method:'POST',body:{optedOut:optedOut}})
+    .then(function(j){
+      crmWbRenderOptOut((j.data||{}).customer||{});
+      var m2=document.getElementById('crmWbOptMsg'); if(m2){ m2.textContent='Opt-out state saved.'; m2.className='msg ok'; }
+    })
+    .catch(function(e){ var m3=document.getElementById('crmWbOptMsg'); if(m3){ m3.textContent='Could not save: '+e.message; m3.className='msg err'; } });
+}
+var crmWbObserver=null;
+if(window.MutationObserver){ crmWbObserver=new MutationObserver(function(){ crmWbMaybeInjectOptOut(); }); }
+(function crmWbInit(){
+  var d=document.getElementById('crmDetail');
+  if(d&&crmWbObserver) crmWbObserver.observe(d,{childList:true});
 })();
 </script>
 <script src="/layer2.js"></script><script src="/temp-password.js" defer></script>

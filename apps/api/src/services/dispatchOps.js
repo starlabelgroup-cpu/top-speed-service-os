@@ -1,6 +1,7 @@
 import { store } from '../data/store.js';
 import { windowById } from './bookos.js';
 import { certificationFactor } from './academyCerts.js';
+import { distanceToJob } from './dispatchMap.js';
 
 /**
  * Service Setters operations layer (2026-11-17, Operations Blueprint
@@ -615,6 +616,17 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
 
       const baseScore =
         (specialty ? 60 : 0) + (servesArea ? 30 : 0) + (rating != null ? Math.round(rating * 2) : 0);
+      // Distance ordering (2026-11-20, D7): straight-line miles from
+      // the tech's latest known position to this job's area center —
+      // additive advice beside the score, labeled by the evidence it
+      // came from. Never a drive time; never changes the ranking.
+      const distance = distanceToJob(provider.id, booking);
+      if (distance.miles != null) {
+        reasons.push({
+          kind: 'info',
+          label: `About ${distance.miles} mi away (straight-line, ${distance.basis === 'GPS' ? 'live GPS' : 'current job\u2019s area'})`,
+        });
+      }
       return {
         providerId: provider.id,
         providerCompanyId: provider.companyId,
@@ -639,6 +651,11 @@ export function rankAssignmentCandidates(booking, { limit = 8 } = {}) {
         // (D12): names + certified-tech counts, derived from real
         // completion records — empty when none are held.
         certifications: certFactor.certifications,
+        // D7 distance advice (additive): straight-line miles + the
+        // basis of the tech's position, or nulls when no position
+        // evidence exists. See services/dispatchMap.js.
+        distanceMiles: distance.miles,
+        distanceBasis: distance.basis,
         reasons,
       };
     })

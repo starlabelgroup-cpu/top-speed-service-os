@@ -78,6 +78,8 @@ function customerToRow(record) {
     city: record.city ?? '',
     zip: record.zip ?? '',
     crmFlag: record.crmFlag ?? null,
+    marketingOptOutAt: record.marketingOptOutAt ? new Date(record.marketingOptOutAt) : null,
+    marketingOptOutSource: record.marketingOptOutSource ?? null,
   };
 }
 
@@ -95,6 +97,10 @@ function customerFromRow(row) {
     city: row.city,
     zip: row.zip,
     crmFlag: row.crmFlag ?? undefined,
+    marketingOptOutAt: row.marketingOptOutAt
+      ? (row.marketingOptOutAt?.toISOString?.() ?? row.marketingOptOutAt)
+      : undefined,
+    marketingOptOutSource: row.marketingOptOutSource ?? undefined,
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
   };
 }

@@ -14,6 +14,7 @@ import {
   rankAssignmentCandidates,
 } from '../services/dispatchOps.js';
 import { loadDispatchSettings, saveDispatchSettings } from '../db/dispatchOpsRepo.js';
+import { DISTANCE_NOTE, byDistanceAsc, jobPosition, providerPosition } from '../services/dispatchMap.js';
 import { listReviewComments, listReviews } from '../db/reviewsRepo.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import { stripeConfigured } from '../services/stripe.js';
@@ -1127,6 +1128,7 @@ router.post('/bookos/bookings/:id/cancel', ...staffOnly, async (req, res) => {
 router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, res) => {
   const booking = store.bookings.get(req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const candidates = rankAssignmentCandidates(booking);
   return res.json({
     data: {
       bookingId: booking.id,
@@ -1134,8 +1136,79 @@ router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, re
       appliance: booking.appliance,
       area: booking.area || booking.city,
       priorityTier: priorityTierOf(booking),
-      candidates: rankAssignmentCandidates(booking),
+      candidates,
+      // D7 (2026-11-20): the same candidates ordered by straight-line
+      // distance instead of score — a second lens for the setter, not
+      // a second ranking of record. Candidates with no position
+      // evidence sort last. Still advice only.
+      candidatesByDistance: [...candidates].sort(byDistanceAsc),
+      distanceNote: DISTANCE_NOTE,
       note: 'Suggestions only — a Service Setter still picks the provider and confirms the assignment. Nothing here dispatches on its own.',
+    },
+  });
+});
+
+/**
+ * Dispatch map (2026-11-20, D7): today's board as positions. Jobs are
+ * placed at their service-area center (jobs carry no coordinates —
+ * the area is the honest placement, and the response says so); techs
+ * are placed at their latest device-reported GPS when one exists,
+ * else at the area of the job they are on, else listed as
+ * unpositioned. Jobs whose area is unresolved are listed as
+ * unpositioned rather than pinned anywhere invented. READ-ONLY —
+ * nothing here assigns or dispatches.
+ */
+router.get('/bookos/dispatch-map', ...staffOnly, (req, res) => {
+  const date = todayDateString();
+  const areaFilter = String(req.query.area || '').trim();
+  const windowFilter = String(req.query.window || '').trim();
+  const todays = visibleBookings(req).filter(
+    (booking) =>
+      BOARD_STATUSES.includes(booking.status) &&
+      effectiveAreaStatus(booking) !== 'OUT_OF_AREA' &&
+      (booking.createdAt.slice(0, 10) === date || booking.appointment?.date === date) &&
+      (!areaFilter || effectiveArea(booking) === areaFilter) &&
+      (!windowFilter || booking.appointment?.window === windowFilter || (!booking.appointment && booking.preferredWindow === windowFilter)),
+  );
+  const jobs = [];
+  const unpositionedJobs = [];
+  for (const booking of todays) {
+    const brief = {
+      bookingId: booking.id,
+      referenceCode: booking.referenceCode || null,
+      status: booking.status,
+      city: booking.city,
+      area: effectiveArea(booking),
+      areaStatus: effectiveAreaStatus(booking),
+      appliance: booking.appliance,
+      priorityTier: priorityTierOf(booking),
+      customerName: booking.customer?.name || null,
+      appointment: appointmentSummary(booking),
+      providerId: booking.dispatch?.providerId || null,
+    };
+    const position = jobPosition(booking);
+    if (position) jobs.push({ ...brief, position });
+    else unpositionedJobs.push(brief);
+  }
+  const techs = (store.providers || [])
+    .filter((provider) => provider.active)
+    .map((provider) => ({
+      providerId: provider.id,
+      businessName: provider.businessName,
+      system: provider.companyCrew ? 'COMPANY' : 'NETWORK',
+      type: provider.type,
+      position: providerPosition(provider.id),
+    }));
+  return res.json({
+    data: {
+      date,
+      filters: { area: areaFilter || null, window: windowFilter || null },
+      jobs,
+      unpositionedJobs,
+      techs,
+      positionedTechs: techs.filter((t) => t.position).length,
+      note:
+        'Jobs are placed at their service-area center, not the customer\u2019s address \u2014 jobs carry no stored coordinates. Verified centers exist for the 12 core crew areas; jobs in the other published cities (auto-match widened 2026-11-20, A6) are listed below the map until a verified center is recorded for their city \u2014 never pinned at a guessed point. Tech pins show live GPS only when a device has reported a position; otherwise the area of the job the tech is on. Distances on this board are straight-line miles, not drive time.',
     },
   });
 });

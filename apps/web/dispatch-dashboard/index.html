@@ -171,6 +171,7 @@
         <a class="cc-nav-link" href="#sec-capacity"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5h16.5"/><path d="M6.5 15.5v-3M11 15.5V6.5M15.5 15.5v-5M20 15.5V4"/></svg><span>Capacity</span></a>
         <a class="cc-nav-link" href="#sec-assign"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14"/><path d="M21 3l-7 18-4-7-7-4z"/></svg><span>Assignment</span></a>
         <a class="cc-nav-link" href="#sec-board"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="4.6" height="16" rx="1.4"/><rect x="9.7" y="4" width="4.6" height="11" rx="1.4"/><rect x="15.9" y="4" width="4.6" height="14" rx="1.4"/></svg><span>Today's Board</span></a>
+        <a class="cc-nav-link" href="#sec-map"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z"/><path d="M9 4v14M15 6v14"/></svg><span>Map — Jobs &amp; Techs</span></a>
         <a class="cc-nav-link" href="#sec-roster"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>Provider Roster</span></a>
         <a class="cc-nav-link" href="#sec-detail"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 3.5H14L19 8.5V20l-1.5 1.5h-11L5 20V5z"/><path d="M13.5 3.5v5.5H19M8.5 13h7M8.5 16.4h7"/></svg><span>Job Detail</span></a>
       </div>
@@ -317,6 +318,26 @@
         <div class="strip" id="boardStrip"></div>
         <div class="board-wrap"><div class="board" id="boardCols"></div></div>
         <div id="boardErr"></div>
+      </section>
+
+      <!-- MAP (2026-11-20, D7): today's jobs + techs, plotted from the
+           dispatch-map endpoint. Jobs sit at their service-area center
+           (the platform stores a service area, not a street-address
+           pin); techs sit at their live GPS when reported, else their
+           current job's area. Distances are straight-line, never
+           drive time. -->
+      <section class="dd-section" id="sec-map">
+        <div class="dd-sec-head"><h2>Map — today's jobs &amp; techs</h2><p id="mapNote">Loading the map…</p></div>
+        <div class="dd-card">
+          <div id="mapPlot"><p class="empty">Loading…</p></div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12.5px;color:#4a5a75;">
+            <span><span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:#e94e5c;vertical-align:-1px;"></span> Job (at its service-area center)</span>
+            <span><span style="display:inline-block;width:11px;height:11px;background:#0f6b4f;vertical-align:-1px;"></span> Tech — live GPS</span>
+            <span><span style="display:inline-block;width:11px;height:11px;background:#7a8aa5;vertical-align:-1px;"></span> Tech — current job's area</span>
+          </div>
+          <div id="mapLists" style="margin-top:12px;"></div>
+          <div id="mapErr"></div>
+        </div>
       </section>
 
       <!-- RECOVERY -->
@@ -548,19 +569,46 @@ function loadSuggestions(bookingId){
     var d = data(res.j) || {};
     var cands = d.candidates || [];
     if(!cands.length){ el.innerHTML = '<p class="empty">No active providers to rank yet — pick from the full list below.</p>'; return; }
-    el.innerHTML = '<h4 style="margin:2px 0 8px;color:#182742;font-size:13px">Ranked suggestions — advice only; you still assign</h4>' + cands.map(function(c, i){
-      var reasons = (c.reasons || []).map(function(r){
-        var mark = r.kind === 'pro' ? '✓ ' : (r.kind === 'con' ? '— ' : '· ');
-        return '<span class="' + esc(r.kind) + '">' + mark + esc(r.label) + '</span>';
-      }).join('<br>');
-      return '<div class="sug"><div class="stop"><b>' + (i + 1) + '. ' + esc(c.businessName || 'Provider') + '</b>'
-        + '<span class="pill">Score ' + c.score + '</span>'
-        + (c.eligible ? '<span class="pill res">Matcher-eligible</span>' : '<span class="pill p2">Long shot</span>')
-        + '<span style="flex:1"></span>'
-        + '<button class="btn2 ghost" type="button" onclick="ddPickProvider(\'' + esc(c.providerId) + '\')">Use this provider</button></div>'
-        + '<div class="reasons">' + reasons + '</div></div>';
-    }).join('');
+    // D7 (2026-11-20): keep the payload so the same list can be
+    // re-ordered by straight-line distance (the server's
+    // candidatesByDistance) without a second fetch. Ordering is a
+    // view choice only — "Use this provider" + Assign stays the one
+    // and only assignment path.
+    DD.lastSuggest = { data: d, mode: 'rank' };
+    ddRenderSuggest();
   });
+}
+function ddSuggestMode(mode){
+  if(!DD.lastSuggest) return;
+  DD.lastSuggest.mode = mode;
+  ddRenderSuggest();
+}
+function ddRenderSuggest(){
+  var el = document.getElementById('assignSuggest');
+  var s = DD.lastSuggest; if(!s || !el) return;
+  var d = s.data || {};
+  var byDist = s.mode === 'dist';
+  var cands = byDist ? (d.candidatesByDistance || d.candidates || []) : (d.candidates || []);
+  var toggle = '<div style="display:flex;gap:8px;align-items:center;margin:0 0 8px;flex-wrap:wrap;">'
+    + '<button class="btn2' + (byDist ? ' ghost' : '') + '" type="button" onclick="ddSuggestMode(\'rank\')">Ranked</button>'
+    + '<button class="btn2' + (byDist ? '' : ' ghost') + '" type="button" onclick="ddSuggestMode(\'dist\')">By distance</button>'
+    + '<span style="font-size:12px;color:#4a5a75;">' + (byDist ? 'Nearest first — straight-line miles, not drive time.' : 'Matcher score order.') + '</span></div>';
+  el.innerHTML = '<h4 style="margin:2px 0 8px;color:#182742;font-size:13px">Ranked suggestions — advice only; you still assign</h4>' + toggle + cands.map(function(c, i){
+    var reasons = (c.reasons || []).map(function(r){
+      var mark = r.kind === 'pro' ? '✓ ' : (r.kind === 'con' ? '— ' : '· ');
+      return '<span class="' + esc(r.kind) + '">' + mark + esc(r.label) + '</span>';
+    }).join('<br>');
+    var distPill = (c.distanceMiles != null)
+      ? '<span class="pill">≈ ' + c.distanceMiles + ' mi · straight-line' + (c.distanceBasis === 'GPS' ? ' · live GPS' : ' · current job area') + '</span>'
+      : '<span class="pill p2">No position yet</span>';
+    return '<div class="sug"><div class="stop"><b>' + (i + 1) + '. ' + esc(c.businessName || 'Provider') + '</b>'
+      + '<span class="pill">Score ' + c.score + '</span>'
+      + distPill
+      + (c.eligible ? '<span class="pill res">Matcher-eligible</span>' : '<span class="pill p2">Long shot</span>')
+      + '<span style="flex:1"></span>'
+      + '<button class="btn2 ghost" type="button" onclick="ddPickProvider(\'' + esc(c.providerId) + '\')">Use this provider</button></div>'
+      + '<div class="reasons">' + reasons + '</div></div>';
+  }).join('');
 }
 function syncAssignBtn(){
   var b = document.getElementById('assignBtn');
@@ -920,12 +968,86 @@ function loadAll(){
     if(!res.ok){ return; }
     DD.capacity = data(res.j) || null;
   });
-  return Promise.all([p1, p2, p3, p4, p5, p6]).then(function(){
+  var p7 = get('/bookos/dispatch-map', true).then(function(res){
+    if(!res.ok){ document.getElementById('mapErr').innerHTML = '<div class="note-err">Map failed to load: ' + esc(errText(res, 'request failed.')) + '</div>'; DD.dispatchMap = null; return; }
+    DD.dispatchMap = data(res.j) || null;
+  });
+  return Promise.all([p1, p2, p3, p4, p5, p6, p7]).then(function(){
     populateFilters();
     renderStats(); renderQueue(); renderAssignProviders(); renderBoard(); renderRoster(); syncAssignBtn();
-    renderExceptions(); renderRecovery(); renderCapacity();
+    renderExceptions(); renderRecovery(); renderCapacity(); renderDispatchMap();
     document.getElementById('liveTxt').textContent = failed.length ? 'PARTIAL DATA' : 'LIVE DATA';
   });
+}
+
+/* ---------- D7 map (2026-11-20): today's jobs + techs ----------
+   Data: GET /bookos/dispatch-map (staff). Jobs are plotted at their
+   service-area center — the platform stores a service area for each
+   job, not a street-address pin — and techs at their live GPS when
+   the device has reported one, else their current job's area. The
+   plot is a plain SVG projection (no map tiles, no external calls);
+   distances anywhere on this console are straight-line miles and
+   are never labeled drive time. */
+function renderDispatchMap(){
+  var noteEl = document.getElementById('mapNote');
+  var plotEl = document.getElementById('mapPlot');
+  var listEl = document.getElementById('mapLists');
+  if(!plotEl) return;
+  var m = DD.dispatchMap;
+  if(!m){
+    if(noteEl) noteEl.textContent = 'Map data did not load — the board above is unaffected.';
+    plotEl.innerHTML = '<p class="empty">No map data.</p>';
+    if(listEl) listEl.innerHTML = '';
+    return;
+  }
+  if(noteEl) noteEl.textContent = m.note || '';
+  var jobs = m.jobs || [];
+  var techs = (m.techs || []).filter(function(t){ return t.position; });
+  var unplaced = m.unpositionedJobs || [];
+  var pts = [];
+  jobs.forEach(function(j){ pts.push(j.position); });
+  techs.forEach(function(t){ pts.push(t.position); });
+  if(!pts.length){
+    plotEl.innerHTML = '<p class="empty">Nothing to plot yet — no jobs on today\'s board and no tech positions.</p>';
+  } else {
+    var minLat = Math.min.apply(null, pts.map(function(p){ return p.lat; })) - 0.03;
+    var maxLat = Math.max.apply(null, pts.map(function(p){ return p.lat; })) + 0.03;
+    var minLng = Math.min.apply(null, pts.map(function(p){ return p.lng; })) - 0.03;
+    var maxLng = Math.max.apply(null, pts.map(function(p){ return p.lng; })) + 0.03;
+    var W = 640, H = 420;
+    var px = function(p){ return ((p.lng - minLng) / (maxLng - minLng)) * (W - 40) + 20; };
+    var py = function(p){ return H - 20 - ((p.lat - minLat) / (maxLat - minLat)) * (H - 40); };
+    var seen = {};
+    var jobPins = jobs.map(function(j){
+      var key = j.position.lat + ',' + j.position.lng;
+      var n = seen[key] || 0; seen[key] = n + 1;
+      var ang = n * 2.4, rad = n === 0 ? 0 : 11 + 5 * Math.floor(n / 6);
+      var x = px(j.position) + Math.cos(ang) * rad, y = py(j.position) + Math.sin(ang) * rad;
+      return '<g><circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="7" fill="#e94e5c" stroke="#fff" stroke-width="2"><title>' + esc(j.referenceCode + ' · ' + (j.appliance || 'Job') + ' · ' + (j.area || '')) + '</title></circle>'
+        + '<text x="' + (x + 10).toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" font-size="11" fill="#182742" font-weight="700">' + esc(j.referenceCode) + '</text></g>';
+    }).join('');
+    var techPins = techs.map(function(t){
+      var x = px(t.position), y = py(t.position);
+      var fill = t.position.basis === 'GPS' ? '#0f6b4f' : '#7a8aa5';
+      return '<g><rect x="' + (x - 6).toFixed(1) + '" y="' + (y - 6).toFixed(1) + '" width="12" height="12" rx="3" fill="' + fill + '" stroke="#fff" stroke-width="2"><title>' + esc(t.businessName + ' · ' + (t.position.basis === 'GPS' ? 'live GPS' : 'current job area')) + '</title></rect>'
+        + '<text x="' + (x + 10).toFixed(1) + '" y="' + (y + 4).toFixed(1) + '" font-size="11" fill="#182742">' + esc(t.businessName) + '</text></g>';
+    }).join('');
+    plotEl.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:auto;background:#eef3fa;border-radius:12px;" role="img" aria-label="Plot of today\'s jobs and techs by service area">' + jobPins + techPins + '</svg>';
+  }
+  var byArea = {};
+  jobs.forEach(function(j){ var a = j.area || 'Unknown area'; (byArea[a] = byArea[a] || []).push(j); });
+  var areaRows = Object.keys(byArea).sort().map(function(a){
+    return '<div style="padding:3px 0;"><b>' + esc(a) + '</b> — ' + byArea[a].length + ' job' + (byArea[a].length === 1 ? '' : 's') + ': ' + byArea[a].map(function(j){ return esc(j.referenceCode); }).join(', ') + '</div>';
+  }).join('');
+  var techRows = (m.techs || []).map(function(t){
+    if(!t.position) return '<div style="padding:3px 0;"><b>' + esc(t.businessName) + '</b> — no position yet (no GPS report, no open job)</div>';
+    var when = t.position.at ? ' · reported ' + esc(String(t.position.at).slice(11, 16)) : '';
+    return '<div style="padding:3px 0;"><b>' + esc(t.businessName) + '</b> — ' + (t.position.basis === 'GPS' ? 'live GPS' : 'at current job\'s area (' + esc(t.position.area || '') + ')') + when + ' · ' + t.activeAssignments + ' active</div>';
+  }).join('');
+  var unplacedRows = unplaced.length ? '<div style="margin-top:8px;"><b>Not plotted</b> (no verified area center for the job\u2019s city yet, or the area is still in review): ' + unplaced.map(function(j){ return esc(j.referenceCode); }).join(', ') + '</div>' : '';
+  if(listEl) listEl.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;">'
+    + '<div><h4 style="margin:0 0 6px;color:#182742;font-size:13px;">Jobs by area</h4>' + (areaRows || '<p class="empty">No jobs on today\'s board.</p>') + unplacedRows + '</div>'
+    + '<div><h4 style="margin:0 0 6px;color:#182742;font-size:13px;">Techs</h4>' + (techRows || '<p class="empty">No active techs.</p>') + '</div></div>';
 }
 
 /* ---------- gate & boot (same pattern as ApplianceMan) ---------- */

@@ -5,6 +5,9 @@ import { queueNotification, NOTIFICATION_TEMPLATES } from '../services/notificat
 import { drainEntries, normalizePhone } from '../services/senders.js';
 import { logInboundContact } from '../services/trackingNumbers.js';
 import { recordInboundSms } from '../services/messageThreads.js';
+import { appendEvent, store } from '../data/store.js';
+import { persistCustomer } from '../db/bookingsRepo.js';
+import { findWinbackRecipient, isStopText } from '../services/winback.js';
 
 /**
  * Twilio SMS — inbound text forwarder for the toll-free business line.
@@ -130,6 +133,61 @@ async function handleIncomingSms(req, res) {
   } catch (error) {
     console.error(JSON.stringify({ level: 'error', message: 'inbound SMS thread filing failed', error: String(error?.message || error) }));
   }
+  // Win-back side effects (2026-11-20, D6) — fire-and-forget, exactly
+  // like the tracking log above: the forward and the auto-reply below
+  // are untouched whether these writes succeed, fail, or the database
+  // is down.
+  //  - A STOP text from a customer records their marketing opt-out
+  //    (Customer.marketingOptOutAt, source SMS_STOP) — the exclusion
+  //    every win-back segment honors absolutely.
+  //  - Any other text from a recent win-back recipient is recorded
+  //    as a campaign reply (WINBACK_REPLY platform event), which is
+  //    what routes it to the setters' win-back worklist in the CRM.
+  const recordWinback = () => {
+    void (async () => {
+      try {
+        const customers = [...store.customers.values()];
+        const digitsOf = (phone) => String(phone || '').replace(/\D/g, '').slice(-10);
+        const mine = customers.filter((c) => digitsOf(c.phone) === digitsOf(from));
+        if (!mine.length) return;
+        if (isStopText(text)) {
+          for (const customer of mine) {
+            if (customer.marketingOptOutAt) continue;
+            customer.marketingOptOutAt = new Date().toISOString();
+            customer.marketingOptOutSource = 'SMS_STOP';
+            await persistCustomer(customer);
+            await appendEvent('WINBACK_OPT_OUT_SET', {
+              source: 'TWILIO_SMS',
+              actor: 'customer',
+              entityType: 'CUSTOMER',
+              entityId: customer.id,
+              details: { companyId: customer.companyId, source: 'SMS_STOP' },
+            });
+          }
+          return;
+        }
+        const hit = findWinbackRecipient({ customers, outbox: store.notificationOutbox, fromPhone: from, now: new Date() });
+        if (hit) {
+          await appendEvent('WINBACK_REPLY', {
+            source: 'TWILIO_SMS',
+            actor: 'customer',
+            entityType: 'CUSTOMER',
+            entityId: hit.customer.id,
+            details: {
+              companyId: hit.customer.companyId,
+              customerId: hit.customer.id,
+              customerName: hit.customer.name || null,
+              from,
+              body: text,
+              campaignId: hit.campaignId,
+            },
+          });
+        }
+      } catch (error) {
+        console.error(JSON.stringify({ level: 'error', message: 'win-back inbound SMS recording failed', error: String(error?.message || error) }));
+      }
+    })();
+  };
 
   const forwardText =
     `New text to Top Speed (${tollFreeNumber}) from ${from}:\n${text}`;
@@ -152,6 +210,7 @@ async function handleIncomingSms(req, res) {
     console.error(JSON.stringify({ level: 'error', message: 'inbound SMS forward failed', error: String(error?.message || error) }));
   }
   trackInbound();
+  recordWinback();
   return res.type('text/xml').send(twiml(`<Message>${xmlEscape(REPLY_TEXT)}</Message>`));
 }
 
