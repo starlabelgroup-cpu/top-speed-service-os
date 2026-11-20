@@ -178,6 +178,7 @@
   <button class="plg-item" type="button" onclick="plgGo('snap')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5.5 8h13v10.5h-13z"/><path d="M9.5 8L11 5.8h2L14.5 8"/><circle cx="12" cy="13.2" r="2.8"/></svg><span class="grow">New Plate Read</span></button>
   <button class="plg-item" type="button" onclick="plgGo('parts')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7 4.3v8.4l-7 4.3-7-4.3V7.8z"/><circle cx="12" cy="12" r="3.1"/></svg><span class="grow">Parts Finder</span></button>
   <button class="plg-item" type="button" onclick="plgGo('orders')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/></svg><span class="grow">Order Queue</span></button>
+  <button class="plg-item" type="button" onclick="plgGo('job')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h2.8v2.8H14zM17.8 17.8h2.7v2.7h-2.7z"/></svg><span class="grow">Job Photos</span></button>
   <button class="plg-item" type="button" onclick="plgGo('speedy')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M13 3L5.5 13.2h4.6L9.2 21l7.5-10.2h-4.6z"/></svg><span class="grow">Ask Speedy</span></button>
   <div class="plg-sec">APP</div>
   <button class="plg-item" type="button" onclick="plgGo('settings')"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span class="grow">Settings</span></button>
@@ -210,6 +211,11 @@
     <a class="tool" href="#" onclick="go('orders');return false;">
       <span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z"/><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="12" cy="3.5" r="1.2" fill="currentColor" stroke="none"/></svg></span>
       <span><b>Orders</b><small>Your parts queue into Parts Supply OS — Appliance Plus Parts Supply first, other distributors second.</small></span>
+      <span class="go">›</span>
+    </a>
+    <a class="tool" href="#" onclick="go('job');return false;">
+      <span class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3.5" y="3.5" width="6.5" height="6.5"/><rect x="14" y="3.5" width="6.5" height="6.5"/><rect x="3.5" y="14" width="6.5" height="6.5"/><path d="M14 14h2.8v2.8H14zM20.5 14v.01M14 20.5v.01M17.8 17.8h2.7v2.7h-2.7z"/></svg></span>
+      <span><b>Job Photos</b><small>Scan the job’s QR code — every photo you take lands on that job’s record.</small></span>
       <span class="go">›</span>
     </a>
     <a class="tool" href="#" onclick="go('speedy');return false;">
@@ -283,6 +289,35 @@
       <img src="/api/v1/app/platform-images/parts-delivery.webp" alt="Illustration: a courier handing a sealed parts box to a technician at a front door — parts delivery for the job" style="width:min(300px,100%);height:auto;border-radius:14px;display:block;margin-top:12px" loading="lazy">
       <a class="btn btn-amber" href="https://topspeedserviceos.com/parts">Open Parts Supply OS</a>
       <p class="note">Staff sign-in required — Parts Supply OS is a staff console.</p>
+    </div>
+  </section>
+
+  <!-- JOB PHOTOS (D11) -->
+  <section id="v-job" class="view">
+    <div class="card">
+      <b class="t">Attach photos to a job</b>
+      <p>Scan the job’s QR code — printed from the job in the Tech App, or from the Link Center — and every photo you take here lands on that job’s record. No QR handy? Type the booking reference instead. A code that doesn’t match one of your jobs stops right here with the reason — nothing is ever attached by a guess.</p>
+      <button class="btn btn-amber" type="button" onclick="jobScan()">Scan the job QR</button>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="jobRefIn" type="text" placeholder="Booking reference — TS-XXXXXX" autocomplete="off" style="flex:1;min-width:0;padding:12px 13px;border:1.5px solid #232B36;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px">
+        <button class="btn" type="button" onclick="jobFind()">Find job</button>
+      </div>
+      <p class="apg-msg" id="jobMsg" role="status"></p>
+      <div id="jobCard"></div>
+    </div>
+    <div class="card" id="jobAttachCard" style="display:none">
+      <b class="t">Photos for <span id="jobAttachRef"></span></b>
+      <label class="apg-lab" style="margin-top:12px">Photo type
+        <select id="jobCat" style="padding:12px 13px;border:1.5px solid #232B36;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;width:100%">
+          <option value="BEFORE">Before</option>
+          <option value="DURING">During</option>
+          <option value="AFTER">After</option>
+        </select>
+      </label>
+      <label class="apg-lab">Caption (optional)<input id="jobCap" type="text" maxlength="200" placeholder="e.g. Rating plate, drain pump"></label>
+      <button class="btn btn-amber" type="button" onclick="jobSnapPhotos()">Take photos</button>
+      <label class="btn btn-ghost" style="display:block;text-align:center;cursor:pointer;margin-top:8px">Or choose a photo from this device<input id="jobFile" type="file" accept="image/*" style="display:none" onchange="jobFilePick(this)"></label>
+      <p class="apg-msg" id="jobUpMsg" role="status"></p>
     </div>
   </section>
 
@@ -426,6 +461,7 @@ function pgEnterApp(u){
   document.getElementById('pgGate').style.display='none';
   document.getElementById('pgApp').style.display='';
   var who=document.getElementById('pgWho'); if(who) who.textContent=(u&&u.email)||'';
+  if(window.plugJobFromUrl) plugJobFromUrl();
 }
 function pgBoot(){
   if(!pgTok()){ document.getElementById('pgGate').style.display=''; return; }
@@ -449,6 +485,7 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+<script src="/pepper-lists-site/pl-camera.js"></script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PARTS_SUPPLY" defer></script>
 <script>
 function plgToggle(open){
@@ -464,6 +501,91 @@ function go(v){
   window.scrollTo(0,0);
 }
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+<script>
+/* Job QR attach (D11, 2026-11-20). The scan rides PLCamera v2's scan
+   mode where the browser exposes BarcodeDetector; the typed reference
+   is the always-available path. Either way the server resolves the
+   code against THIS tech's own assignments before a single photo can
+   be attached, and its error is shown verbatim — a wrong code fails
+   cleanly and attaches nothing. */
+var plugJob=null;
+function jobEsc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function jobScan(){
+  if(!(window.PLCamera&&PLCamera.open)){ pgMsg('jobMsg','The camera is not available here — type the booking reference instead.',true); return; }
+  PLCamera.open({ title:'Scan the job QR', allowVideo:false, scan:true,
+    onBarcode:function(text){ try{ PLCamera.close(); }catch(e){} jobResolve(text); },
+    onPhoto:function(){} });
+  pgMsg('jobMsg','Camera open — tap Scan in the camera and hold the job QR in the frame. No scanner on this browser? Close the camera and type the reference.');
+}
+function jobFind(){
+  var v=(document.getElementById('jobRefIn').value||'').trim();
+  if(!v){ pgMsg('jobMsg','Type the booking reference from the job first (e.g. TS-XXXXXX).',true); return; }
+  jobResolve(v);
+}
+function jobResolve(code){
+  pgMsg('jobMsg','Finding the job…');
+  pgApi('/provider/jobs/resolve',{ method:'POST', body:JSON.stringify({ code:String(code||'') }) }).then(function(j){
+    plugJob=j.data||null;
+    renderJobCard();
+    pgMsg('jobMsg', plugJob ? 'Job found — photos you take now go on this job.' : 'That code did not resolve to a job.', !plugJob);
+  }).catch(function(e){
+    plugJob=null; renderJobCard();
+    pgMsg('jobMsg', e.message||'Could not find that job.', true);
+  });
+}
+function renderJobCard(){
+  var card=document.getElementById('jobCard');
+  var attach=document.getElementById('jobAttachCard');
+  if(!plugJob){ card.innerHTML=''; attach.style.display='none'; return; }
+  var b=plugJob.booking||{};
+  card.innerHTML='<div style="border:1.5px solid #232B36;border-radius:12px;padding:12px 14px;margin-top:6px">'
+    +'<b style="font-size:17px">'+jobEsc(plugJob.referenceCode)+'</b>'
+    +'<div style="color:var(--dim);font-size:13.5px;margin-top:3px">'+jobEsc([b.appliance,b.issue,b.city].filter(Boolean).join(' · '))+'</div>'
+    +'<div style="font-size:13.5px;margin-top:5px">'+(plugJob.photoCount||0)+' photo'+(plugJob.photoCount===1?'':'s')+' on this job · status '+jobEsc(plugJob.assignmentStatus)+'</div>'
+    +(plugJob.canAttachPhotos ? '' : '<div style="font-size:13.5px;margin-top:5px;color:var(--amber)">This job is offered, not accepted yet — accept it in the Tech App before adding photos.</div>')
+    +'</div>';
+  document.getElementById('jobAttachRef').textContent=plugJob.referenceCode||'';
+  attach.style.display=plugJob.canAttachPhotos ? '' : 'none';
+}
+function jobBlobToDataUrl(blob){
+  return new Promise(function(res,rej){ var r=new FileReader(); r.onload=function(){ res(r.result); }; r.onerror=function(){ rej(new Error('Could not read that photo')); }; r.readAsDataURL(blob); });
+}
+function jobUpload(dataUrl){
+  if(!plugJob) return;
+  pgApi('/provider/assignments/'+encodeURIComponent(plugJob.assignmentId)+'/photos',{ method:'POST', body:JSON.stringify({ category:document.getElementById('jobCat').value, dataUrl:dataUrl, caption:(document.getElementById('jobCap').value||'').trim()||null }) }).then(function(j){
+    var photos=(j.data&&j.data.photos)||[];
+    plugJob.photoCount=photos.length;
+    renderJobCard();
+    pgMsg('jobUpMsg','Photo saved to '+plugJob.referenceCode+' — '+plugJob.photoCount+' on the job.');
+  }).catch(function(e){
+    pgMsg('jobUpMsg', navigator.onLine ? ('Could not save the photo: '+(e.message||'error')) : 'You are offline — this photo was NOT saved. Reconnect and take it again; Plug does not hold unsent job photos.', true);
+  });
+}
+function jobSnapPhotos(){
+  if(!plugJob){ pgMsg('jobMsg','Find the job first.',true); return; }
+  if(window.PLCamera&&PLCamera.open){
+    PLCamera.open({ title:'Photos — '+plugJob.referenceCode, allowVideo:false, stayOpenAfterUse:true,
+      onPhoto:function(blob){ jobBlobToDataUrl(blob).then(jobUpload).catch(function(e){ pgMsg('jobUpMsg', e.message, true); }); } });
+    return;
+  }
+  document.getElementById('jobFile').click();
+}
+function jobFilePick(input){
+  var f=input.files&&input.files[0]; input.value='';
+  if(!f) return;
+  jobBlobToDataUrl(f).then(jobUpload).catch(function(e){ pgMsg('jobUpMsg', e.message, true); });
+}
+window.plugJobFromUrl=function(){
+  try{
+    var ref=new URLSearchParams(location.search).get('job');
+    if(!ref||window._plugJobFromUrlDone) return;
+    window._plugJobFromUrlDone=true;
+    go('job');
+    var inp=document.getElementById('jobRefIn'); if(inp) inp.value=ref;
+    jobResolve(ref);
+  }catch(e){}
+};
 </script>
 <!-- TOP SPEED TYPE SYSTEM (Futuristic Font System 2026-11-16) -->
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1,h2,h3{font-family:'Manrope','Inter',sans-serif} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>

@@ -33,7 +33,8 @@ import {
 } from '../services/jobMoney.js';
 import { createWorkOrder, findCustomersForCreate, workOrderCreateSchema } from '../services/workOrders.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
-import { catalogEntry, LINK_TYPES } from '../services/linkCenter.js';
+import { catalogEntry, findBookingByReference, LINK_TYPES } from '../services/linkCenter.js';
+import { jobPlugUrl, parseJobCode, qrSvg } from '../services/qrCodes.js';
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { listConnections } from '../db/applianceConnectionsRepo.js';
 
@@ -2031,6 +2032,218 @@ router.get('/provider/assignments/:id/full', ...providerBoard, (req, res) => {
         ? searchKnowledge(knowledgeQuery, 4).map((hit) => ({ topic: hit.entry.topic, answer: hit.entry.answer, pack: hit.entry.pack }))
         : [],
       review: reviewState(booking),
+    },
+  });
+});
+
+/* ---------------- Earnings — job-value statements (D9, 2026-11-20) ----
+ * Ramone's approved recommendations: a per-tech earnings view in the
+ * Tech App. GROUNDED LIMIT: the platform records what each JOB billed
+ * and collected (invoice / estimate / receipts / Stripe payments) but
+ * it records NO tech pay rate, split, or commission anywhere — so this
+ * statement is a JOB VALUE statement and says so on its face. Nothing
+ * here invents a pay figure: a job with neither invoice nor estimate
+ * carries jobValueCents null and is counted in jobsWithoutValue.
+ * Periods are America/New_York calendar periods (the business's day),
+ * matched on the booking's NY calendar date — the same convention the
+ * overview's "completed today" uses.
+ */
+const EARNINGS_NY_TZ = 'America/New_York';
+
+function nyDateStr(iso) {
+  if (!iso) return null;
+  const t = new Date(iso);
+  if (Number.isNaN(t.getTime())) return null;
+  return t.toLocaleDateString('en-CA', { timeZone: EARNINGS_NY_TZ });
+}
+
+function earningsPeriod(periodKey) {
+  const todayStr = nyDateStr(new Date().toISOString());
+  const [yy, mm, dd] = todayStr.split('-').map(Number);
+  const todayUtc = Date.UTC(yy, mm - 1, dd);
+  const monday = new Date(todayUtc - ((new Date(todayUtc).getUTCDay() + 6) % 7) * 86400000);
+  const mondayStr = monday.toISOString().slice(0, 10);
+  const monthPrefix = todayStr.slice(0, 7);
+  const lastPrefix = new Date(Date.UTC(yy, mm - 2, 1)).toISOString().slice(0, 7);
+  switch (periodKey) {
+    case 'week':
+      return { key: 'week', label: 'This week', test: (s) => Boolean(s) && s >= mondayStr && s <= todayStr };
+    case 'lastMonth':
+      return { key: 'lastMonth', label: 'Last month', test: (s) => Boolean(s) && s.slice(0, 7) === lastPrefix };
+    case 'all':
+      return { key: 'all', label: 'All time', test: () => true };
+    default:
+      return { key: 'month', label: 'This month', test: (s) => Boolean(s) && s.slice(0, 7) === monthPrefix };
+  }
+}
+
+function jobValueFor(booking) {
+  const money = invoiceMoney(booking);
+  const estimate = latestEstimate(booking);
+  const stripePaidCents = jobStripePayments(booking)
+    .filter((p) => p.status === 'PAID')
+    .reduce((sum, p) => sum + (p.amountCents || 0), 0);
+  const collectedCents = money.receiptsTotalCents + stripePaidCents;
+  const jobValueCents = money.invoiceTotalCents != null ? money.invoiceTotalCents : estimate ? estimate.totalCents : null;
+  return {
+    jobValueCents,
+    valueBasis: money.invoiceTotalCents != null ? 'INVOICE' : estimate ? 'ESTIMATE' : null,
+    collectedCents,
+    balanceCents: jobValueCents == null ? null : Math.max(0, jobValueCents - collectedCents),
+  };
+}
+
+function providerStatement(provider, periodKey) {
+  const period = earningsPeriod(periodKey);
+  const week = earningsPeriod('week');
+  const todayStr = nyDateStr(new Date().toISOString());
+  const completed = [];
+  for (const assignment of store.dispatchAssignments.values()) {
+    if (assignment.providerId !== provider.id) continue;
+    const booking = store.bookings.get(assignment.bookingId);
+    if (!booking || booking.status !== 'COMPLETED') continue;
+    completed.push({ assignment, booking, dateStr: nyDateStr(booking.completedAt) });
+  }
+  const counts = {
+    completedToday: completed.filter((r) => r.dateStr === todayStr).length,
+    completedThisWeek: completed.filter((r) => week.test(r.dateStr)).length,
+  };
+  const rows = completed
+    .filter((r) => (r.dateStr ? period.test(r.dateStr) : period.key === 'all'))
+    .sort((a, b) => String(b.booking.completedAt || '').localeCompare(String(a.booking.completedAt || '')))
+    .map(({ assignment, booking }) => {
+      const value = jobValueFor(booking);
+      return {
+        assignmentId: assignment.id,
+        bookingId: booking.id,
+        referenceCode: booking.referenceCode || null,
+        appliance: booking.appliance || null,
+        city: booking.city || null,
+        completedAt: booking.completedAt || null,
+        ...value,
+      };
+    });
+  const totals = {
+    jobs: rows.length,
+    jobValueCents: rows.reduce((sum, r) => sum + (r.jobValueCents || 0), 0),
+    collectedCents: rows.reduce((sum, r) => sum + r.collectedCents, 0),
+    balanceCents: rows.reduce((sum, r) => sum + (r.balanceCents || 0), 0),
+    jobsWithoutValue: rows.filter((r) => r.jobValueCents == null).length,
+  };
+  return {
+    provider: {
+      id: provider.id,
+      businessName: provider.businessName,
+      system: provider.companyCrew ? 'COMPANY' : 'NETWORK',
+    },
+    period: { key: period.key, label: period.label, timeZone: EARNINGS_NY_TZ },
+    basis: 'JOB_VALUE',
+    payDataAvailable: false,
+    note: 'Amounts are job values — what each completed job billed (invoice, else the approved estimate) and what was collected on it. The platform does not record tech pay rates or splits, so this is not a pay statement; pay follows your provider agreement.',
+    counts,
+    totals,
+    jobs: rows,
+  };
+}
+
+router.get('/provider/earnings', ...providerBoard, (req, res) => {
+  const periodKey = ['week', 'month', 'lastMonth', 'all'].includes(String(req.query.period))
+    ? String(req.query.period)
+    : 'month';
+  const own = myProvider(req);
+  if (own) return res.json({ data: providerStatement(own, periodKey) });
+  if (!isOversightViewer(req)) return noProvider(res);
+  const wanted = String(req.query.providerId || '');
+  if (wanted) {
+    const provider = store.providers.find((p) => p.id === wanted);
+    if (!provider) return res.status(404).json({ error: 'Provider not found' });
+    return res.json({ data: providerStatement(provider, periodKey) });
+  }
+  const period = earningsPeriod(periodKey);
+  return res.json({
+    data: {
+      oversight: true,
+      period: { key: period.key, label: period.label, timeZone: EARNINGS_NY_TZ },
+      basis: 'JOB_VALUE',
+      payDataAvailable: false,
+      note: 'Per-provider job-value totals for the period. Open a provider (providerId) for its full statement. The platform does not record tech pay rates or splits.',
+      perProvider: store.providers.map((p) => {
+        const statement = providerStatement(p, periodKey);
+        return {
+          providerId: p.id,
+          businessName: p.businessName,
+          system: p.companyCrew ? 'COMPANY' : 'NETWORK',
+          totals: statement.totals,
+        };
+      }),
+    },
+  });
+});
+
+/* ---------------- Job QR + Plug resolve (D11, 2026-11-20) -------------
+ * Every job carries a QR that encodes its Appliance Plug deep link
+ * (https://applianceplug.app/?job=TS-XXXXXX). The tech prints or shows
+ * it from the job workspace; in Plug, PLCamera's scan mode decodes it
+ * and POST /provider/jobs/resolve turns the scanned text back into
+ * the tech's OWN assignment — photos then attach through the existing
+ * POST /provider/assignments/:id/photos door, with its assignment
+ * binding unchanged. A code that is not a job reference, a job that
+ * does not exist, and a job assigned to someone else each fail with
+ * their own clean error — nothing is ever attached by a guess.
+ */
+router.get('/provider/assignments/:id/qr', ...providerBoard, (req, res) => {
+  const loaded = loadAssignmentForView(req, res);
+  if (!loaded) return;
+  const { booking } = loaded;
+  if (!booking.referenceCode) {
+    return res.status(404).json({ error: 'This job has no reference code yet' });
+  }
+  const url = jobPlugUrl(booking.referenceCode);
+  return res.json({ data: { referenceCode: booking.referenceCode, url, svg: qrSvg(url) } });
+});
+
+const jobResolveSchema = z.object({ code: z.string().trim().min(1).max(400) });
+
+router.post('/provider/jobs/resolve', ...providerOnly, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = jobResolveSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid resolve request', details: parsed.error.flatten() });
+  }
+  const ref = parseJobCode(parsed.data.code);
+  if (!ref) {
+    return res.status(400).json({
+      error: 'That code does not look like a job reference — scan the job QR or type the TS reference.',
+      code: 'JOB_CODE_UNRECOGNIZED',
+    });
+  }
+  const booking = findBookingByReference(ref);
+  if (!booking) {
+    return res.status(404).json({ error: 'No job matches that code.', code: 'JOB_NOT_FOUND' });
+  }
+  const assignment = [...store.dispatchAssignments.values()].find(
+    (a) => a.bookingId === booking.id && a.providerId === provider.id,
+  );
+  if (!assignment) {
+    return res.status(403).json({ error: 'That job is not assigned to your provider account.', code: 'JOB_NOT_YOURS' });
+  }
+  if (!['APPROVED', 'ACCEPTED'].includes(assignment.status)) {
+    return res.status(409).json({ error: 'That job is not active on your board right now.', code: 'JOB_NOT_ACTIVE' });
+  }
+  return res.json({
+    data: {
+      assignmentId: assignment.id,
+      referenceCode: booking.referenceCode || ref,
+      assignmentStatus: assignment.status,
+      canAttachPhotos: assignment.status === 'ACCEPTED',
+      photoCount: jobPhotos(booking).length,
+      booking: {
+        appliance: booking.appliance || null,
+        issue: booking.issue || null,
+        city: booking.city || null,
+        status: booking.status,
+      },
     },
   });
 });

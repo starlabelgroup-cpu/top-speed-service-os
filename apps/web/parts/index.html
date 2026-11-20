@@ -183,6 +183,9 @@ footer strong{color:#fff}
       <h2>Low Stock</h2>
       <p class="note">Parts at or below their reorder point — the reorder list.</p>
       <div id="lowTable"></div>
+      <h2 style="margin-top:22px;">Reorder list — tied to job usage</h2>
+      <p class="note">Every low part with the jobs that actually consumed it. The suggested quantity restocks the part to its reorder point plus the last 30 days of job usage — a starting point from real usage; the actual purchase order is still yours to place.</p>
+      <div id="reorderTable"></div>
     </section>
   </div>
 </div>
@@ -237,7 +240,8 @@ function loadAll(){
     apiFetch('/parts/suppliers').then(function(j){ suppliers=j.data||[]; renderSuppliers(); fillSupplierSelects(); }),
     apiFetch('/parts/parts').then(function(j){ parts=j.data||[]; renderParts(); renderLow(); fillPartSelects(); }),
     apiFetch('/parts/purchase-orders').then(function(j){ pos=j.data||[]; renderPOs(); }),
-    apiFetch('/parts/usage').then(function(j){ usages=j.data||[]; renderUsage(); })
+    apiFetch('/parts/usage').then(function(j){ usages=j.data||[]; renderUsage(); }),
+    apiFetch('/parts/reorder-list').then(function(j){ renderReorder(j.data||[]); }).catch(function(){ var el=document.getElementById('reorderTable'); if(el) el.innerHTML='<div class="empty">The reorder list could not be loaded.</div>'; })
   ]).catch(function(e){ toast('Load failed: '+e.message); });
 }
 
@@ -279,6 +283,15 @@ function renderLow(){
   if(!low.length){ el.innerHTML='<div class="empty">Nothing is at its reorder point. Good shelf.</div>'; return; }
   el.innerHTML='<table><thead><tr><th>SKU</th><th>Part</th><th>On hand</th><th>Reorder point</th><th>Supplier</th></tr></thead><tbody>'+low.map(function(p){
     return '<tr class="low"><td class="num">'+esc(p.sku)+'</td><td>'+esc(p.name)+'</td><td class="num">'+p.stockOnHand+'</td><td class="num">'+p.reorderPoint+'</td><td>'+esc(p.supplierName||'—')+'</td></tr>';
+  }).join('')+'</tbody></table>';
+}
+function renderReorder(rows){
+  var el=document.getElementById('reorderTable');
+  if(!el) return;
+  if(!rows.length){ el.innerHTML='<div class="empty">Nothing needs reordering right now.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>SKU</th><th>Part</th><th>On hand</th><th>Reorder point</th><th>Used · 30d</th><th>Used · 90d</th><th>Recent jobs that used it</th><th>Suggested reorder</th><th>Supplier</th></tr></thead><tbody>'+rows.map(function(p){
+    var jobs=(p.recentJobs||[]).map(function(u){ return esc(u.bookingReference)+' ×'+u.qty; }).join('<br>');
+    return '<tr class="low"><td class="num">'+esc(p.sku)+'</td><td>'+esc(p.name)+'</td><td class="num">'+p.stockOnHand+'</td><td class="num">'+p.reorderPoint+'</td><td class="num">'+p.usedLast30Days+'</td><td class="num">'+p.usedLast90Days+'</td><td>'+(jobs||'—')+'</td><td class="num"><b>'+p.suggestedReorderQty+'</b></td><td>'+esc(p.supplierName||'—')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
 function renderSuppliers(){

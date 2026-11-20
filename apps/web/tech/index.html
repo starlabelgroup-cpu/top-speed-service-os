@@ -261,7 +261,7 @@ button.tile.tap{background:var(--card,#fff);border:1px solid var(--line,#e3e9f2)
       <div id="companyBody"><div class="card"><p class="note" style="margin:0">Sign in to load the company card — business info, pricing structure, warranty terms and partners, from the platform's own records.</p></div></div>
     </section>
     <!-- EARNINGS -->
-    <section class="screen" id="s-earn"><h2 class="sec">My week</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n">—</div><div class="l">Jobs this week</div></div></div><div class="card" style="margin-top:12px"><p class="note" style="margin:0">Payout amounts follow your provider agreement. Your live statement appears here when you are signed in with your provider account.</p></div></section>
+    <section class="screen" id="s-earn"><h2 class="sec">My earnings — job value</h2><div class="tiles"><div class="tile"><div class="n" id="jobsToday">—</div><div class="l">Jobs done today</div></div><div class="tile"><div class="n" id="jobsWeek">—</div><div class="l">Jobs done this week</div></div><div class="tile"><div class="n" id="earnJobs">—</div><div class="l">Jobs in period</div></div><div class="tile"><div class="n" id="earnValue">—</div><div class="l">Job value in period</div></div><div class="tile"><div class="n" id="earnCollected">—</div><div class="l">Collected in period</div></div></div><div class="card" style="margin-top:12px"><div class="btnrow" role="group" aria-label="Statement period"><button class="btn no" type="button" id="earnP-week" onclick="earnSetPeriod('week')">This week</button><button class="btn no" type="button" id="earnP-month" onclick="earnSetPeriod('month')">This month</button><button class="btn no" type="button" id="earnP-lastMonth" onclick="earnSetPeriod('lastMonth')">Last month</button><button class="btn no" type="button" id="earnP-all" onclick="earnSetPeriod('all')">All time</button><button class="btn navy" type="button" onclick="window.print()">Print statement</button></div><div id="earnBody" style="margin-top:10px"><p class="note" style="margin:0">Your statement appears here when you are signed in with your provider account.</p></div><p class="note" style="margin:10px 0 0">Amounts are <b>job values</b> — what each completed job billed (its invoice, else the approved estimate) and what was collected on it. The platform does not record tech pay rates or splits, so this is not a pay statement; your pay follows your provider agreement, and the office can confirm anything about it.</p></div></section>
     <!-- SETTINGS (2026-11-19, Directive 6): a real editor over the
          account's own records — profile on the User record, a network
          provider's areas/appliances/business name on their Provider
@@ -509,6 +509,7 @@ function go(tab){
   // Full-package hooks (2026-11-19): every destination is a working
   // screen that loads its real data on entry — no landing pages.
   if(tab==='plug'&&window.plugAutoCam) plugAutoCam();
+  if(tab==='earn'&&window.earnLoad) earnLoad();
   if(tab==='parts'&&window.partsScreenLoad) partsScreenLoad();
   if(tab==='company'&&window.companyLoad) companyLoad();
   if(tab==='claims'&&window.claimsLoad&&tTok()) claimsLoad();
@@ -1035,7 +1036,27 @@ function tpPhotosPane(view, id){
   '<label class="btn no" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;cursor:pointer">'+ICO_CAM+' Or choose from this device<input id="ph-file" type="file" accept="image/*" capture="environment" style="display:none" onchange="tpPhotoPick(this)"></label>'+
   '<img id="ph-prev" alt="Selected job photo preview" style="display:none;width:100%;border-radius:10px;margin-top:8px">'
   +'<div class="btnrow" style="margin-top:8px"><button class="btn navy" type="button" id="ph-save" disabled onclick="tpPhotoSave(\''+id+'\')">Save photo to job</button></div>'
-  +'<div id="ph-msg" style="margin-top:7px; font-size:13.5px;"></div>'+groups+'</div>';
+  +'<div id="ph-msg" style="margin-top:7px; font-size:13.5px;"></div>'+groups
+  +'<div style="border-top:1px dashed #D5E2F4;margin-top:12px;padding-top:10px"><span class="tp-lab">Job QR — attach photos from Appliance Plug</span>'
+  +'<p class="note" style="margin:4px 0 8px">Print this job’s QR code, or keep it on screen: scanning it with Appliance Plug opens this job, so photos taken in the field land on this record.</p>'
+  +'<div class="btnrow"><button class="btn navy" type="button" onclick="tpJobQr(\''+id+'\')">Show job QR</button></div>'
+  +'<div id="ws-qr-'+id+'"></div></div></div>';
+}
+function tpJobQr(id){
+  var box=document.getElementById('ws-qr-'+id); if(!box) return;
+  box.innerHTML='<p class="note" style="margin:8px 0 0">Loading the job QR…</p>';
+  tFetch('/provider/assignments/'+encodeURIComponent(id)+'/qr').then(function(j){
+    var d=j.data||{};
+    window._jobQr={ svg:d.svg||'', ref:d.referenceCode||'', url:d.url||'' };
+    box.innerHTML='<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:10px"><div style="width:150px;height:150px;background:#fff;border:1px solid #D5E2F4;border-radius:10px;padding:6px;box-sizing:border-box">'+(d.svg||'')+'</div><div><div style="font-weight:800;font-size:17px">'+escT(d.referenceCode||'')+'</div><p class="note" style="margin:4px 0 8px">Scan with Appliance Plug to attach<br>photos to this job.</p><button class="btn red" type="button" onclick="tpJobQrPrint()">Print this QR</button></div></div>';
+    var svgEl=box.querySelector('svg'); if(svgEl){ svgEl.style.width='100%'; svgEl.style.height='100%'; svgEl.style.display='block'; }
+  }).catch(function(e){ box.innerHTML='<p class="note" style="margin:8px 0 0;color:#C2262E">'+escT(e.message||'Could not load the job QR')+'</p>'; });
+}
+function tpJobQrPrint(){
+  var q=window._jobQr||{}; if(!q.svg){ return; }
+  var w=window.open('','_blank','width=520,height=640'); if(!w){ return; }
+  w.document.write('<!doctype html><html><head><title>Job QR '+q.ref+'</title></head><body style="font-family:Arial,sans-serif;text-align:center;padding:28px;color:#0B1B34"><h1 style="font-size:20px;margin:0 0 4px">Top Speed Appliance</h1><p style="margin:0 0 16px;color:#43536B">Scan with Appliance Plug to attach photos to this job</p><div style="width:320px;height:320px;margin:0 auto">'+q.svg+'</div><h2 style="font-size:24px;margin:16px 0 0;letter-spacing:1px">'+q.ref+'</h2><p style="color:#43536B;font-size:13px">'+q.url+'</p><scr'+'ipt>window.onload=function(){setTimeout(function(){window.print()},250)}</scr'+'ipt></body></html>');
+  w.document.close();
 }
 function tpPhotoSet(dataUrl){
   var img=new Image();
@@ -2306,6 +2327,37 @@ function companyLoad(){
   }).catch(function(e){ host.innerHTML='<div class="card"><p class="note" style="margin:0">Company info unavailable: '+escT(e.message)+'</p></div>'; });
 }
 /* ---------------- Warranty claims lookup (More) ---------------- */
+/* Earnings — job-value statements (D9). The API records what each job
+   billed and collected, never a tech pay rate or split, so the screen
+   labels everything "job value" and prints the honest note. */
+var _earnPeriod='month';
+function earnSetPeriod(p){ _earnPeriod=p; earnLoad(); }
+function earnTile(id,v){ var el=document.getElementById(id); if(el) el.textContent=(v==null?'—':v); }
+function earnLoad(){
+  var body=document.getElementById('earnBody'); if(!body) return;
+  ['week','month','lastMonth','all'].forEach(function(k){ var b=document.getElementById('earnP-'+k); if(b) b.className='btn '+(_earnPeriod===k?'red':'no'); });
+  if(!tTok()){ body.innerHTML='<p class="note" style="margin:0">Sign in with your provider account to see your statement.</p>'; return; }
+  body.innerHTML='<p class="note" style="margin:0">Loading your statement…</p>';
+  tFetch('/provider/earnings?period='+encodeURIComponent(_earnPeriod)).then(function(j){
+    var d=j.data||{};
+    if(d.counts){ earnTile('jobsToday', d.counts.completedToday); earnTile('jobsWeek', d.counts.completedThisWeek); }
+    if(d.oversight){
+      var pr=(d.perProvider||[]);
+      earnTile('earnJobs','—'); earnTile('earnValue','—'); earnTile('earnCollected','—');
+      body.innerHTML='<p class="note" style="margin:0 0 8px">Oversight view — per-provider job values for '+(d.period?escT(d.period.label):'the period')+'. This account has no provider statement of its own.</p>'
+        +(pr.length? '<table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr><th style="text-align:left;padding:6px 4px;border-bottom:2px solid #D5E2F4">Provider</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Jobs</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Job value</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Collected</th></tr>'
+          +pr.map(function(p){ return '<tr><td style="padding:6px 4px;border-bottom:1px solid #E7EEF8">'+escT(p.businessName||'')+' <span style="color:#5A6B84">('+escT(p.system||'')+')</span></td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+(p.totals?p.totals.jobs:0)+'</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+tpMoney(p.totals?p.totals.jobValueCents:0)+'</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+tpMoney(p.totals?p.totals.collectedCents:0)+'</td></tr>'; }).join('')+'</table>'
+          : '<p class="note" style="margin:0">No providers on the platform yet.</p>');
+      return;
+    }
+    var t=d.totals||{jobs:0,jobValueCents:0,collectedCents:0,balanceCents:0,jobsWithoutValue:0};
+    earnTile('earnJobs', t.jobs); earnTile('earnValue', tpMoney(t.jobValueCents)); earnTile('earnCollected', tpMoney(t.collectedCents));
+    var head='<p class="note" style="margin:0 0 8px"><b>'+escT(d.provider?d.provider.businessName:'')+'</b> · '+escT(d.period?d.period.label:'')+' · Job value '+tpMoney(t.jobValueCents)+' · Collected '+tpMoney(t.collectedCents)+' · Open balance '+tpMoney(t.balanceCents)+(t.jobsWithoutValue? ' · '+t.jobsWithoutValue+' job(s) had no invoice or estimate on record, so no value is shown for them':'')+'</p>';
+    if(!d.jobs||!d.jobs.length){ body.innerHTML=head+'<p class="note" style="margin:0">No completed jobs in this period yet. Finished jobs appear here with the value they billed.</p>'; return; }
+    body.innerHTML=head+'<table style="width:100%;border-collapse:collapse;font-size:13.5px"><tr><th style="text-align:left;padding:6px 4px;border-bottom:2px solid #D5E2F4">Job</th><th style="text-align:left;padding:6px 4px;border-bottom:2px solid #D5E2F4">Completed</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Job value</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Collected</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #D5E2F4">Balance</th></tr>'
+      +d.jobs.map(function(r){ return '<tr><td style="padding:6px 4px;border-bottom:1px solid #E7EEF8"><b>'+escT(r.referenceCode||'—')+'</b><br><span style="color:#5A6B84">'+escT([r.appliance,r.city].filter(Boolean).join(' · '))+'</span></td><td style="padding:6px 4px;border-bottom:1px solid #E7EEF8">'+escT(r.completedAt?String(r.completedAt).slice(0,10):'—')+'</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+(r.jobValueCents==null?'—':tpMoney(r.jobValueCents))+(r.valueBasis==='ESTIMATE'?' <span style="color:#5A6B84">(estimate)</span>':'')+'</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+tpMoney(r.collectedCents||0)+'</td><td style="text-align:right;padding:6px 4px;border-bottom:1px solid #E7EEF8">'+(r.balanceCents==null?'—':tpMoney(r.balanceCents))+'</td></tr>'; }).join('')+'</table>';
+  }).catch(function(e){ body.innerHTML='<p class="note" style="margin:0;color:#C2262E">'+escT(e.message||'Could not load your statement')+'</p>'; });
+}
 function claimsLoad(){
   var host=document.getElementById('claimsList'); if(!host||!tTok()) return;
   var q=fpVal('claimsQ');

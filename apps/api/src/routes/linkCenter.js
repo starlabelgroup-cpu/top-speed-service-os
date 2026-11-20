@@ -5,7 +5,8 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { STAFF_ROLES } from '../config/security.js';
 import { NOTIFICATION_TEMPLATES, queueNotification } from '../services/notifications.js';
 import { channelHealth, drainEntries, twilioTrialState } from '../services/senders.js';
-import { LINK_CATALOG, LINK_TYPES, composeLinkMessage, resolveLinkUrl } from '../services/linkCenter.js';
+import { LINK_CATALOG, LINK_TYPES, composeLinkMessage, findBookingByReference, resolveLinkUrl } from '../services/linkCenter.js';
+import { jobPlugUrl, qrSvg, referralUrl } from '../services/qrCodes.js';
 
 /**
  * Link Center API (Ramone, 2026-11-18: "send links to SMS, email for
@@ -83,7 +84,7 @@ router.post('/link-center/send', ...staffOnly, async (req, res, next) => {
       throw error;
     }
     if (resolved.booking && resolved.booking.companyId !== req.companyId) {
-      return res.status(404).json({ error: 'booking_not_found', message: 'No booking found with that reference.' });
+      return res.status(404).json({ error: 'No booking found with that reference.', code: 'booking_not_found' });
     }
 
     const outChannel = channel === 'EMAIL' ? 'email' : 'sms';
@@ -144,6 +145,68 @@ router.post('/link-center/send', ...staffOnly, async (req, res, next) => {
   } catch (error) {
     return next(error);
   }
+});
+
+/**
+ * Print QR codes (D15, 2026-11-20 — Ramone's approved recommendations:
+ * "QR generator in Link Center"). Staff generate a print-ready QR for
+ * the links this console already stands behind:
+ *  - BOOKING / ACCOUNT / REVIEW — the catalog URLs, resolved through
+ *    the same resolveLinkUrl the send flow uses;
+ *  - REFERRAL — the customer's own /refer link (their code, required);
+ *  - JOB — the job's Appliance Plug deep link (D11); the booking must
+ *    exist, so a printed job QR always points at a real job.
+ * PAYMENT is deliberately NOT printable: a payment URL is a Stripe
+ * checkout minted per booking that expires — it is sent, never
+ * printed. The response carries the resolved URL plus an SVG QR the
+ * console drops into its print sheet.
+ */
+const qrQuerySchema = z.object({
+  type: z.enum([LINK_TYPES.BOOKING, LINK_TYPES.PAYMENT, LINK_TYPES.ACCOUNT, LINK_TYPES.REVIEW, 'REFERRAL', 'JOB']),
+  code: z.string().trim().max(40).optional().nullable(),
+  ref: z.string().trim().max(40).optional().nullable(),
+});
+
+router.get('/link-center/qr', ...staffOnly, async (req, res) => {
+  const parsed = qrQuerySchema.safeParse(req.query || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid QR request', details: parsed.error.flatten() });
+  }
+  const { type, code, ref } = parsed.data;
+  if (type === LINK_TYPES.PAYMENT) {
+    return res.status(400).json({
+      error: 'Payment links are minted per booking from Stripe checkout and expire — send them from this console instead of printing them.',
+      code: 'payment_qr_not_printable',
+    });
+  }
+  let url = null;
+  let label = null;
+  if (type === 'REFERRAL') {
+    if (!code || !/^[A-Za-z0-9_-]{3,40}$/.test(code)) {
+      return res.status(400).json({ error: 'A referral QR needs the customer’s referral code (letters, numbers, dashes).', code: 'referral_code_required' });
+    }
+    url = referralUrl(code);
+    label = `Refer & Earn — code ${code.toUpperCase()}`;
+  } else if (type === 'JOB') {
+    if (!ref) {
+      return res.status(400).json({ error: 'A job QR needs the booking reference (e.g. TS-XXXXXX).', code: 'booking_ref_required' });
+    }
+    const booking = findBookingByReference(ref);
+    if (!booking) {
+      return res.status(404).json({ error: 'No booking found with that reference.', code: 'booking_not_found' });
+    }
+    if (booking.companyId !== req.companyId) {
+      return res.status(404).json({ error: 'No booking found with that reference.', code: 'booking_not_found' });
+    }
+    url = jobPlugUrl(booking.referenceCode);
+    label = `Job ${booking.referenceCode} — scan with Appliance Plug to attach photos`;
+  } else {
+    const entry = LINK_CATALOG.find((e) => e.type === type);
+    const resolved = await resolveLinkUrl(type, {});
+    url = resolved.url;
+    label = entry ? entry.name : type;
+  }
+  return res.json({ data: { type, url, label, svg: qrSvg(url) } });
 });
 
 function maskRecipient(entry) {

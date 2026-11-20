@@ -56,6 +56,19 @@ td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
 .empty{color:var(--muted);padding:18px 4px;font-size:15px}
 .warnbox{border:1px solid #ecd9a0;background:#fdf6dd;border-radius:10px;padding:12px 14px;font-size:14px;line-height:1.55;margin-top:14px;color:#6b5200}
 #toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:99px;font-weight:700;font-size:14.5px;display:none;z-index:50;max-width:92vw;text-align:center}
+#qrPreview svg{width:170px;height:170px;display:block}
+#qrSheet{display:none}
+@media print{
+  body>*:not(#qrSheet){display:none !important}
+  #qrSheet{display:block;text-align:center;padding:40px 20px;font-family:Arial,sans-serif;color:#0C162B}
+  #qrSheet .qs-brand{font-size:26px;font-weight:900;letter-spacing:.4px}
+  #qrSheet .qs-slogan{color:#C2262E;font-weight:700;margin-top:2px}
+  #qrSheet .qs-label{font-size:19px;font-weight:700;margin-top:26px}
+  #qrSheet .qs-code{width:340px;height:340px;margin:14px auto 0}
+  #qrSheet .qs-code svg{width:100%;height:100%;display:block}
+  #qrSheet .qs-url{font-size:13px;color:#43536B;margin-top:12px;word-break:break-all}
+  #qrSheet .qs-foot{font-size:13px;color:#43536B;margin-top:6px}
+}
 footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
 footer strong{color:#fff}
 .mono{font-family:'Space Mono',monospace;font-size:13px}
@@ -129,6 +142,26 @@ footer strong{color:#fff}
     </section>
 
     <section class="panel">
+      <h2>3 · Print a QR code</h2>
+      <p class="note" style="margin-top:0">Print-ready QR codes for the fridge door, the truck, or the counter. Booking, account and review codes carry the same links this console sends. A referral code needs the customer’s own referral code; a job code opens that job in Appliance Plug so field photos attach to it. Payment links are never printed — Stripe checkout links expire, so those are sent instead.</p>
+      <div class="seg" role="group" aria-label="QR type" id="qrSeg">
+        <button type="button" data-qr="BOOKING" class="on">Book a repair</button>
+        <button type="button" data-qr="ACCOUNT">Customer App account</button>
+        <button type="button" data-qr="REVIEW">Leave a review</button>
+        <button type="button" data-qr="REFERRAL">Refer a friend</button>
+        <button type="button" data-qr="JOB">Job photos (Plug)</button>
+      </div>
+      <div id="qrCodeRow" style="display:none;margin-top:10px"><label>Referral code<input id="qrCode" placeholder="The customer’s referral code" autocomplete="off"></label></div>
+      <div id="qrRefRow" style="display:none;margin-top:10px"><label>Booking reference<input id="qrRef" placeholder="e.g. TS-XXXXXX" autocomplete="off"></label></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn red" id="qrGenBtn" type="button">Generate QR</button>
+        <button class="btn navy" id="qrPrintBtn" type="button" disabled>Print</button>
+      </div>
+      <p class="msg" id="qrMsg" role="status"></p>
+      <div id="qrPreview" style="margin-top:10px"></div>
+    </section>
+
+    <section class="panel">
       <h2>Recent sends</h2>
       <p class="note">Every link sent from this console, newest first — recipients are masked. The full delivery record also lives in the Notifications console outbox.</p>
       <div id="logTable" style="margin-top:14px;"></div>
@@ -136,6 +169,14 @@ footer strong{color:#fff}
   </div>
 </div>
 
+<div id="qrSheet" aria-hidden="true">
+  <div class="qs-brand">Top Speed Appliance LLC</div>
+  <div class="qs-slogan">The Faster, The Better.</div>
+  <div class="qs-label" id="qsLabel"></div>
+  <div class="qs-code" id="qsCode"></div>
+  <div class="qs-url" id="qsUrl"></div>
+  <div class="qs-foot">(844) 460-7038 · topspeedserviceos.com</div>
+</div>
 <footer>
   <strong>Top Speed Appliance LLC</strong> · Fort Lauderdale &amp; Broward County · <strong>844-460-7038</strong><br>
   Top Speed Service OS — Link Center. The Faster, The Better.
@@ -302,6 +343,34 @@ function loadLog(){
     box.innerHTML=html;
   }).catch(function(e){ toast('Could not load recent sends: '+e.message); });
 }
+
+/* ---- Print QR codes (D15) ---- */
+var qrType='BOOKING';
+document.querySelectorAll('#qrSeg button').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('#qrSeg button').forEach(function(x){ x.classList.remove('on'); });
+    b.classList.add('on'); qrType=b.getAttribute('data-qr');
+    document.getElementById('qrCodeRow').style.display = qrType==='REFERRAL' ? 'block' : 'none';
+    document.getElementById('qrRefRow').style.display = qrType==='JOB' ? 'block' : 'none';
+  });
+});
+function qrMsg(t, err){ var m=document.getElementById('qrMsg'); m.textContent=t||''; m.className='msg '+(err?'err':'ok'); }
+document.getElementById('qrGenBtn').addEventListener('click', function(){
+  var qs=['type='+encodeURIComponent(qrType)];
+  if(qrType==='REFERRAL'){ var c=document.getElementById('qrCode').value.trim(); if(!c){ qrMsg('Enter the customer’s referral code first.', true); return; } qs.push('code='+encodeURIComponent(c)); }
+  if(qrType==='JOB'){ var r=document.getElementById('qrRef').value.trim(); if(!r){ qrMsg('Enter the booking reference first (e.g. TS-XXXXXX).', true); return; } qs.push('ref='+encodeURIComponent(r)); }
+  qrMsg('Generating…');
+  apiFetch('/link-center/qr?'+qs.join('&')).then(function(j){
+    var d=j.data||{};
+    document.getElementById('qrPreview').innerHTML='<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="width:170px;height:170px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px;box-sizing:border-box">'+(d.svg||'')+'</div><div><div style="font-weight:800">'+esc(d.label||'')+'</div><div class="note" style="word-break:break-all;max-width:340px">'+esc(d.url||'')+'</div></div></div>';
+    document.getElementById('qsLabel').textContent=d.label||'';
+    document.getElementById('qsCode').innerHTML=d.svg||'';
+    document.getElementById('qsUrl').textContent=d.url||'';
+    document.getElementById('qrPrintBtn').disabled=false;
+    qrMsg('QR ready — print it, or leave this preview on screen for a customer to scan.');
+  }).catch(function(e){ qrMsg(e.message, true); });
+});
+document.getElementById('qrPrintBtn').addEventListener('click', function(){ window.print(); });
 
 if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });

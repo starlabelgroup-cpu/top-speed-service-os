@@ -35,6 +35,28 @@ function partView(part) {
   };
 }
 
+/**
+ * Low-stock alert (D10, 2026-11-20): when a stock door takes a part
+ * from above its reorder point to at/below it, the crossing is filed
+ * as a Parts Supply department report — the same report stream the
+ * Pepper console and management boards read — so staff see the alert
+ * without opening this console. One alert per part per day (the
+ * eventKey dedupes); a part already low does not re-alert on every
+ * further decrement.
+ */
+function lowStockAlertIfCrossed(part, wasLow, source) {
+  if (wasLow || part.stockOnHand > part.reorderPoint) return;
+  emitReport({
+    department: 'parts',
+    type: 'LOW_STOCK',
+    title: `Low stock: ${part.sku} — ${part.name} (${part.stockOnHand} on hand, reorder at ${part.reorderPoint})`,
+    detail: { partId: part.id, sku: part.sku, stockOnHand: part.stockOnHand, reorderPoint: part.reorderPoint },
+    source,
+    reference: part.sku,
+    eventKey: `low-stock:${part.id}:${new Date().toISOString().slice(0, 10)}`,
+  });
+}
+
 function poView(po) {
   const supplier = store.suppliers.find((s) => s.id === po.supplierId);
   return {
@@ -176,9 +198,11 @@ router.post('/parts/parts/:id/adjust-stock', ...staff, async (req, res) => {
   if (next < 0) {
     return res.status(422).json({ error: `Adjustment would take stock below zero (${part.stockOnHand} on hand)` });
   }
+  const wasLow = part.stockOnHand <= part.reorderPoint;
   part.stockOnHand = next;
   part.updatedAt = now();
   await persistPart(part);
+  lowStockAlertIfCrossed(part, wasLow, 'parts-adjust');
   return res.json({ data: partView(part), reason: parsed.data.reason || null });
 });
 
@@ -318,11 +342,13 @@ router.post('/parts/usage', ...staff, async (req, res) => {
     recordedBy: req.user?.id || null,
     createdAt: now(),
   };
+  const wasLow = part.stockOnHand <= part.reorderPoint;
   part.stockOnHand -= parsed.data.qty;
   part.updatedAt = usage.createdAt;
   store.partUsages.push(usage);
   await persistPartUsage(usage);
   await persistPart(part);
+  lowStockAlertIfCrossed(part, wasLow, 'parts-usage');
   return res.status(201).json({ data: usage });
 });
 
@@ -333,6 +359,47 @@ router.get('/parts/low-stock', ...staff, (req, res) => {
     .filter((p) => p.active && p.stockOnHand <= p.reorderPoint)
     .map(partView);
   return res.json({ data });
+});
+
+/* -------------------- Reorder list (D10, 2026-11-20) -------------------
+ * The company shelf's reorder list: every active part at or below its
+ * reorder point, tied to the jobs that consumed it — usage in the
+ * last 30 / 90 days, the most recent consuming jobs, and a suggested
+ * reorder quantity whose formula is stated on the row (restock to the
+ * reorder point plus the last 30 days of job usage). A suggestion
+ * computed from real usage only; staff place the actual PO.
+ */
+router.get('/parts/reorder-list', ...staff, (req, res) => {
+  const nowMs = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const rows = [];
+  for (const part of store.parts) {
+    if (!part.active || part.stockOnHand > part.reorderPoint) continue;
+    const usages = store.partUsages
+      .filter((u) => u.partId === part.id)
+      .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+    const usedIn = (days) =>
+      usages
+        .filter((u) => nowMs - new Date(u.createdAt).getTime() < days * dayMs)
+        .reduce((sum, u) => sum + u.qty, 0);
+    const usedLast30Days = usedIn(30);
+    rows.push({
+      ...partView(part),
+      deficit: Math.max(0, part.reorderPoint - part.stockOnHand),
+      usedLast30Days,
+      usedLast90Days: usedIn(90),
+      lastUsedAt: usages.length ? usages[0].createdAt : null,
+      recentJobs: usages.slice(0, 5).map((u) => ({
+        bookingReference: u.bookingReference,
+        qty: u.qty,
+        at: u.createdAt,
+      })),
+      suggestedReorderQty: Math.max(0, part.reorderPoint + usedLast30Days - part.stockOnHand),
+      suggestedBasis: 'Restock to the reorder point plus the last 30 days of job usage',
+    });
+  }
+  rows.sort((a, b) => b.deficit - a.deficit || b.usedLast30Days - a.usedLast30Days);
+  return res.json({ data: rows, generatedAt: new Date().toISOString() });
 });
 
 /* ------------------------------- Summary -------------------------------- */
