@@ -300,17 +300,27 @@ function crmLoad(){
       document.getElementById('crmMsg').textContent=rows.length+' customer'+(rows.length===1?'':'s');
       document.getElementById('crmRows').innerHTML=rows.length?rows.map(function(c){
         var last=c.lastBooking?(crmEsc(c.lastBooking.appliance)+' · '+crmEsc(c.lastBooking.referenceCode)+' · <span class="pill">'+crmEsc(c.lastBooking.status)+'</span>'):'—';
-        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b></td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td><td>'+crmUpMoney(c.lifetimeValueCents)+'</td><td>'+crmUpFlagPill(c.crmFlag)+'</td></tr>';
+        return '<tr class="cust" onclick="crmDetail(\''+c.id+'\')"><td><b>'+crmEsc(c.name)+'</b>'+(c.matchedViaMergedRecord?'<br><span class="mut">matched via merged record: '+crmEsc(c.matchedViaMergedRecord.name)+'</span>':'')+'</td><td>'+crmEsc(c.phone)+(c.email?'<br>'+crmEsc(c.email):'')+'</td><td>'+crmEsc(c.area||c.city||'—')+'</td><td>'+c.bookingsCount+'</td><td>'+last+'</td><td>'+crmUpMoney(c.lifetimeValueCents)+'</td><td>'+crmUpFlagPill(c.crmFlag)+'</td></tr>';
       }).join(''):'<tr><td colspan="7">No customers match.</td></tr>';
     })
     .catch(function(e){
       document.getElementById('crmRows').innerHTML='<tr><td colspan="7"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> '+crmEsc(e.message)+' — staff accounts only.</td></tr>';
     });
 }
+var crmCurrentId=null;
+var crmMergedIntoId=null;
+function crmOpenSurvivor(){ if(crmMergedIntoId) crmDetail(crmMergedIntoId); }
 function crmDetail(id){
   crmFetch('/crm/customers/'+id)
     .then(function(j){
       var d=j.data, c=d.customer;
+      crmCurrentId=c.id;
+      crmMergedIntoId=d.mergedInto?d.mergedInto.id:null;
+      if(d.mergedInto){
+        document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2><p class="mut" style="margin:6px 0 4px;">This record was merged into <b>'+crmEsc(d.mergedInto.name)+'</b> ('+crmEsc(d.mergedInto.phone||'')+') — its bookings, payments and history live on the surviving record now, and this record stays as an alias so its phone and email keep finding the customer.</p><p style="margin-top:10px;"><button class="btn blue" onclick="crmOpenSurvivor()">Open the surviving record</button></p></div>';
+        window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
+        return;
+      }
       var props=(d.properties||[]).map(function(p){
         return '<div class="line"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+crmEsc(p.address||'')+(p.city?' · '+crmEsc(p.city):'')+(p.zip?' '+crmEsc(p.zip):'')+(p.area?' · <span class="pill">'+crmEsc(p.area)+'</span>':'')+'</div>';
       }).join('')||'<p class="mut">No service address on file.</p>';
@@ -343,6 +353,11 @@ function crmDetail(id){
       var notes=(d.notes||[]).map(function(n){
         return '<div class="line"><b>'+crmEsc(n.author)+'</b> <span class="mut">'+crmEsc(String(n.createdAt||'').replace('T',' ').slice(0,16))+'</span><br>'+crmEsc(n.body)+'</div>';
       }).join('')||'<p class="mut">No CRM notes yet.</p>';
+      var tlKinds={BOOKING:'Booking',BOOKING_COMPLETED:'Completed',PAYMENT:'Payment',RECEIPT:'Receipt',CALL:'Call',MESSAGE:'Message',EMAIL:'Email',REVIEW:'Review'};
+      var tl=(d.timeline||[]).map(function(e){
+        return '<div class="line"><span class="pill">'+crmEsc(tlKinds[e.kind]||e.kind)+'</span> <b>'+crmEsc(e.title)+'</b>'+(e.detail?'<br><span class="mut">'+crmEsc(e.detail)+'</span>':'')+'<br><span class="mut">'+crmEsc(String(e.at||'').replace('T',' ').slice(0,16))+' · '+crmEsc(e.source||'')+'</span></div>';
+      }).join('')||'<p class="mut">No records yet — bookings, tracked calls, messages, payments and reviews appear here as they happen.</p>';
+      var mergedHtml=(d.mergedRecords||[]).length?'<div class="section"><h3>Merged duplicate records</h3>'+(d.mergedRecords||[]).map(function(t){ return '<div class="line"><b>'+crmEsc(t.name)+'</b> · '+crmEsc(t.phone||'')+(t.email?' · '+crmEsc(t.email):'')+' <span class="mut">(merged into this record — its phone/email still find this customer)</span></div>'; }).join('')+'</div>':'';
       document.getElementById('crmDetail').innerHTML='<div class="card"><h2 style="font-size:22px; color:var(--navy);">'+crmEsc(c.name)+'</h2>' +
         '<p class="mut" style="margin:6px 0 4px;">'+crmEsc(c.phone)+(c.email?' · '+crmEsc(c.email):'')+' · '+crmEsc(c.city||'')+' '+crmEsc(c.zip||'')+'</p>' +
         '<p class="mut">Lead source: <b>'+crmEsc(c.leadSource||'—')+'</b>'+(c.referredByCode?' · referred by code <b>'+crmEsc(c.referredByCode)+'</b>':'')+' · customer since '+crmEsc(String(c.createdAt||'').slice(0,10))+'</p>' +
@@ -361,12 +376,17 @@ function crmDetail(id){
         '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Service address<br><input id="crmWoAddress" value="'+crmEsc(c.address||'')+'" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></label>' +
         '<label style="display:block;font-size:12.5px;font-weight:700;margin-top:8px">Issue<br><textarea id="crmWoIssue" rows="2" placeholder="What is the appliance doing (or not doing)?" style="width:100%;padding:9px;border:1px solid var(--line);border-radius:10px"></textarea></label>' +
         '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;"><button class="btn blue" onclick="crmCreateWo(\''+c.id+'\')">Create work order</button></div><div class="msg" id="crmWoMsg"></div></div>' +
+        mergedHtml +
+        '<div class="section"><h3>Timeline — everything on record, newest first</h3>'+tl+'</div>' +
         '<div class="section"><h3>Job history</h3>'+bk+'</div>' +
         '<div class="section"><h3>Referrals</h3>'+refHtml+'</div>' +
         '<div class="section"><h3>Communications log — true outbox statuses</h3>'+comms+'</div>' +
         '<div class="section"><h3>Intake history</h3>'+intake+'</div>' +
         '<div class="section"><h3>Notes</h3>'+notes+
         '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;"><input id="crmNoteBody" type="text" placeholder="Add a note for the team…" style="flex:1;min-width:220px;width:auto;"><button class="btn blue" onclick="crmAddNote(\''+c.id+'\')">Add note</button></div><div class="msg" id="crmNoteMsg"></div></div>' +
+        '<div class="section"><h3>Merge a duplicate record</h3>' +
+        '<p class="mut" style="margin:0 0 10px;">If this customer exists twice, merge the duplicate INTO this record: its bookings, payments, invoices, notes, referrals and garage move here, and its phone/email keep finding this record. This record\'s ID: <b>'+crmEsc(c.id)+'</b> \u2014 open the duplicate and copy its ID from the same place.</p>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;"><input id="crmMergeDupId" type="text" placeholder="Duplicate record ID\u2026" style="flex:1;min-width:260px;width:auto;"><button class="btn ghost" onclick="crmMergePreview()">Preview merge</button></div><div id="crmMergeOut" style="margin-top:10px;"></div></div>' +
         '<div class="speedy"><h3><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 6.1L20 11l-6.1 1.9L12 19l-1.9-6.1L4 11l6.1-1.9z"/><circle cx="12" cy="11" r="1" fill="#E8322E" stroke="none"/></svg> Speedy assist — drafts &amp; suggestions only</h3>' +
         '<p class="mut" style="margin:6px 0 12px;">Speedy assembles these from this customer\'s real records. Nothing is sent and nothing is dispatched from here — you approve every send and every dispatch. Speedy never issues refunds, certifies repair safety, or overrides a technician credential.</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;"><button class="btn blue" onclick="crmBrief(\''+c.id+'\')">Summarize this customer</button>' +
@@ -377,6 +397,35 @@ function crmDetail(id){
       window.scrollTo({top: document.getElementById('crmDetail').offsetTop-20, behavior:'smooth'});
     })
     .catch(function(e){ document.getElementById('crmMsg').textContent=' '+e.message; });
+}
+function crmMergePreview(){
+  var out=document.getElementById('crmMergeOut');
+  var dupId=(document.getElementById('crmMergeDupId').value||'').trim();
+  if(!dupId){ out.innerHTML='<p class="msg err">Paste the duplicate record ID first.</p>'; return; }
+  out.innerHTML='<p class="mut">Reading both records…</p>';
+  crmFetch('/crm/customers/merge/preview',{method:'POST',body:{survivorId:crmCurrentId,duplicateId:dupId}})
+    .then(function(j){
+      var d=j.data, m=d.moves||{}, g=d.guards||{};
+      var rows=[['Bookings',m.bookings],['Referred bookings',m.referredBookings],['Payment records',m.payments],['Invoices',m.invoices],['Notes',m.notes],['Inbox messages',m.inboxMessages],['Referral codes',m.referralCodes],['Referral journeys',m.referralJourneys],['Referral credits',m.referralCredits],['Garage appliances',m.garageAppliances]].map(function(r){ return '<div class="line">'+crmEsc(r[0])+': <b>'+(r[1]||0)+'</b></div>'; }).join('');
+      var warn='';
+      if(g.ownerInvolved){ warn='<p class="msg err">One of these records is linked to the Master/owner account — merges are refused for those records.</p>'; }
+      else if(g.accountConflict){ warn='<p class="msg err">Both records are linked to DIFFERENT signed-in accounts. The accounts themselves are never merged — the garage moves to this account and the duplicate account link stays on the merged record as an alias.</p><label style="display:block;margin:8px 0;"><input type="checkbox" id="crmMergeConfirmAcct"> I confirm merging two records linked to different accounts</label>'; }
+      out.innerHTML='<p style="margin:6px 0;"><b>'+crmEsc(d.duplicate.name)+'</b> ('+crmEsc(d.duplicate.phone||'')+') merges into <b>'+crmEsc(d.survivor.name)+'</b>. Lifetime value after the merge: <b>'+crmUpMoney(d.lifetimeValueCents.combinedAfterMerge)+'</b> ('+crmUpMoney(d.lifetimeValueCents.survivor)+' + '+crmUpMoney(d.lifetimeValueCents.duplicate)+').</p>'+rows+warn+(g.ownerInvolved?'':'<div style="margin-top:10px;"><button class="btn blue" onclick="crmMergeExecute()">Confirm merge</button></div>');
+    })
+    .catch(function(e){ out.innerHTML='<p class="msg err">'+crmEsc(e.message)+'</p>'; });
+}
+function crmMergeExecute(){
+  var out=document.getElementById('crmMergeOut');
+  var dupId=(document.getElementById('crmMergeDupId').value||'').trim();
+  var chk=document.getElementById('crmMergeConfirmAcct');
+  var body={survivorId:crmCurrentId,duplicateId:dupId};
+  if(chk){
+    if(!chk.checked){ out.innerHTML='<p class="msg err">Tick the confirmation box first — these records are linked to different accounts.</p>'; return; }
+    body.confirmAccountConflict=true;
+  }
+  crmFetch('/crm/customers/merge',{method:'POST',body:body})
+    .then(function(){ out.innerHTML='<p class="msg ok">Merged — the surviving record now holds everything.</p>'; setTimeout(function(){ crmDetail(crmCurrentId); crmLoad(); }, 900); })
+    .catch(function(e){ out.innerHTML='<p class="msg err">'+crmEsc(e.message)+'</p>'; });
 }
 function crmWoVal(id){ var el=document.getElementById(id); return el?el.value.trim():''; }
 function crmCreateWo(id){

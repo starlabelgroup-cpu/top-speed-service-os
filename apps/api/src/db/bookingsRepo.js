@@ -75,6 +75,7 @@ function customerToRow(record) {
     city: record.city ?? '',
     zip: record.zip ?? '',
     crmFlag: record.crmFlag ?? null,
+    mergedIntoId: record.mergedIntoId ?? null,
   };
 }
 
@@ -92,6 +93,7 @@ function customerFromRow(row) {
     city: row.city,
     zip: row.zip,
     crmFlag: row.crmFlag ?? undefined,
+    mergedIntoId: row.mergedIntoId ?? undefined,
     createdAt: row.createdAt?.toISOString?.() ?? row.createdAt,
   };
 }

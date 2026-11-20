@@ -256,6 +256,13 @@ model Customer {
   // writes it. Lifetime value is NOT stored — it is computed at read
   // time from real money (PAID Payment rows + recorded receipts).
   crmFlag        String?
+  // Duplicate merge (2026-11-20, CRM depth D5): when staff merge this
+  // record into a survivor, this points at the survivor's id and the
+  // row becomes a tombstone — excluded from customer lists, kept so
+  // its phone / email / name still resolve to the survivor (alias
+  // lookup) and the merge history is never lost. Null on every live
+  // record. Set only by POST /crm/customers/merge.
+  mergedIntoId   String?  @db.Uuid
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -265,6 +272,7 @@ model Customer {
 
   @@index([companyId])
   @@index([companyId, phone])
+  @@index([mergedIntoId])
 }
 
 // The booking record exposed by the API as /bookings.

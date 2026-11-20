@@ -16,6 +16,8 @@ import { PIPELINE_STAGES, leadConnectionReferenceOf, pipelineBoard, pipelineRow 
 import { surfaceOfBooking, leadConnectionOf } from '../services/trackingNumbers.js';
 import { leadTypeOf } from '../services/leadBookings.js';
 import { listConnections } from '../db/applianceConnectionsRepo.js';
+import { buildCustomerTimeline, mergedRecordsOf } from '../services/crmTimeline.js';
+import { mergePlan, resolveMergeGuards, executeMerge } from '../services/crmMerge.js';
 
 /**
  * Top Speed CRM — the team's single home for the business (2026-11-12).
@@ -175,14 +177,38 @@ router.get('/crm/home', ...staffOnly, (req, res) => {
 router.get('/crm/customers', ...staffOnly, (req, res) => {
   const q = String(req.query.q || '').trim().toLowerCase();
   const paidMap = paidCentsByBooking();
-  let customers = [...store.customers.values()].map((c) => customerSummary(c, paidMap));
+  // Duplicate merge (D5): tombstones never list as customers, but
+  // their identifiers are aliases — a search on a merged record's
+  // name / phone / email finds the survivor, marked as such.
+  const aliasesBySurvivor = new Map();
+  for (const record of store.customers.values()) {
+    if (!record.mergedIntoId) continue;
+    if (!aliasesBySurvivor.has(record.mergedIntoId)) aliasesBySurvivor.set(record.mergedIntoId, []);
+    aliasesBySurvivor.get(record.mergedIntoId).push(record);
+  }
+  let customers = [...store.customers.values()]
+    .filter((c) => !c.mergedIntoId)
+    .map((c) => {
+      const summary = customerSummary(c, paidMap);
+      if (q) {
+        const alias = (aliasesBySurvivor.get(c.id) || []).find(
+          (t) =>
+            (t.name || '').toLowerCase().includes(q) ||
+            (t.phone || '').includes(q) ||
+            (t.email || '').toLowerCase().includes(q),
+        );
+        if (alias) summary.matchedViaMergedRecord = { name: alias.name, phone: alias.phone, email: alias.email || null };
+      }
+      return summary;
+    });
   if (q) {
     customers = customers.filter(
       (c) =>
         (c.name || '').toLowerCase().includes(q) ||
         (c.phone || '').includes(q) ||
         (c.email || '').toLowerCase().includes(q) ||
-        (c.city || '').toLowerCase().includes(q),
+        (c.city || '').toLowerCase().includes(q) ||
+        Boolean(c.matchedViaMergedRecord),
     );
   }
   customers.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
@@ -192,6 +218,36 @@ router.get('/crm/customers', ...staffOnly, (req, res) => {
 router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   const customer = store.customers.get(req.params.id);
   if (!customer) return res.status(404).json({ error: 'Customer not found' });
+  // Duplicate merge (D5): a merged record's detail is a signpost to
+  // the survivor — its bookings, money, and history live there now.
+  if (customer.mergedIntoId) {
+    const survivor = store.customers.get(customer.mergedIntoId) || null;
+    return res.json({
+      data: {
+        customer: {
+          ...customer,
+          leadSource: customer.source || null,
+          referredByCode: customer.referredByCode || null,
+          crmFlag: customer.crmFlag || null,
+          lifetimeValueCents: 0,
+        },
+        mergedInto: survivor ? { id: survivor.id, name: survivor.name, phone: survivor.phone, email: survivor.email || null } : null,
+        account: null,
+        properties: [],
+        appliances: [],
+        bookings: [],
+        intake: [],
+        communications: [],
+        emails: [],
+        referrals: { ownCode: null, journeys: [] },
+        notes: [],
+        timeline: [],
+        timelineTotal: 0,
+        mergedRecords: [],
+      },
+    });
+  }
+  const aliases = mergedRecordsOf(customer.id);
   const bookings = customerBookings(customer.id).map(bookingBrief);
 
   // Properties: every distinct address this customer has been served at
@@ -243,8 +299,15 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
   }
 
   const phone = digits(customer.phone);
+  // Merged duplicates' identifiers are this customer's aliases (D5):
+  // intake and outbox addressed to an old phone/email belong to the
+  // survivor's story too.
+  const aliasPhones = new Set([phone, ...aliases.map((a) => digits(a.phone))].filter(Boolean));
+  const aliasEmails = new Set(
+    [customer.email, ...aliases.map((a) => a.email)].filter(Boolean).map((e) => String(e).toLowerCase()),
+  );
   const intake = [...store.connections]
-    .filter((c) => digits(c.phone) === phone && phone)
+    .filter((c) => aliasPhones.has(digits(c.phone)))
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .map((c) => ({ reference: c.reference, type: c.type, source: c.source, message: c.message, createdAt: c.createdAt }));
 
@@ -257,8 +320,8 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
       // Internal staff alerts are not communications with the customer.
       if (entry.template === 'STAFF_SUBMISSION_ALERT') return false;
       if (entry.payload?.bookingId && bookingIds.has(entry.payload.bookingId)) return true;
-      if (phone && digits(entry.to) === phone) return true;
-      if (customer.email && String(entry.to || '').toLowerCase() === customer.email.toLowerCase()) return true;
+      if (entry.to && aliasPhones.has(digits(entry.to))) return true;
+      if (entry.to && aliasEmails.has(String(entry.to).toLowerCase())) return true;
       return false;
     })
     .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)))
@@ -330,6 +393,11 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
     }
   }
 
+  // CRM depth (2026-11-20): D4 one timeline — every real record for
+  // this customer in one chronological feed (services/crmTimeline.js
+  // documents the honesty rules; kinds with no records never appear).
+  const timeline = await buildCustomerTimeline(customer);
+
   return res.json({
     data: {
       customer: {
@@ -353,6 +421,11 @@ router.get('/crm/customers/:id', ...staffOnly, async (req, res) => {
         journeys: journeys.map((j) => ({ id: j.id, status: j.status, code: j.code || null, createdAt: j.createdAt })),
       },
       notes,
+      // CRM depth (2026-11-20): ADDED fields — the D4 timeline and
+      // the D5 merged-duplicate aliases pointing at this record.
+      timeline: timeline.entries,
+      timelineTotal: timeline.total,
+      mergedRecords: aliases.map((t) => ({ id: t.id, name: t.name, phone: t.phone, email: t.email || null })),
     },
   });
 });
@@ -484,6 +557,100 @@ router.post('/crm/customers/:id/flag', ...staffOnly, async (req, res) => {
     details: { flag: parsed.data.flag },
   });
   return res.json({ data: { customer: customerSummary(customer) } });
+});
+
+/* ---------------- CRM depth (2026-11-20): duplicate merge (D5) ----------------
+ * Guided merge of a duplicate customer record into a survivor. The
+ * preview shows EXACTLY what will move (the same mergePlan the
+ * execute runs) plus the guard state; the execute refuses the
+ * Master/owner's records in either direction (Rule Zero) and
+ * requires an explicit confirmAccountConflict when both records are
+ * linked to different signed-in accounts. The duplicate is never
+ * deleted — it becomes a tombstone whose identifiers keep resolving
+ * to the survivor. Full rules: services/crmMerge.js. */
+
+const mergePairSchema = z.object({ survivorId: z.string().uuid(), duplicateId: z.string().uuid() });
+const mergeExecuteSchema = mergePairSchema.extend({ confirmAccountConflict: z.boolean().optional() });
+
+function mergePairError(survivorId, duplicateId, survivor, duplicate) {
+  if (survivorId === duplicateId) {
+    return { status: 400, body: { error: 'A record cannot be merged into itself', code: 'SAME_RECORD' } };
+  }
+  if (!survivor || !duplicate) return { status: 404, body: { error: 'Customer not found' } };
+  if (survivor.mergedIntoId || duplicate.mergedIntoId) {
+    return { status: 400, body: { error: 'One of these records has already been merged', code: 'ALREADY_MERGED' } };
+  }
+  if (survivor.companyId !== duplicate.companyId) {
+    return { status: 400, body: { error: 'These records belong to different companies', code: 'CROSS_COMPANY' } };
+  }
+  return null;
+}
+
+router.post('/crm/customers/merge/preview', ...staffOnly, async (req, res) => {
+  const parsed = mergePairSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'survivorId and duplicateId are required', details: parsed.error.flatten() });
+  }
+  const survivor = store.customers.get(parsed.data.survivorId);
+  const duplicate = store.customers.get(parsed.data.duplicateId);
+  const err = mergePairError(parsed.data.survivorId, parsed.data.duplicateId, survivor, duplicate);
+  if (err) return res.status(err.status).json(err.body);
+  const guards = await resolveMergeGuards(survivor, duplicate);
+  const survivorLtv = customerLifetimeValueCents(survivor.id);
+  const duplicateLtv = customerLifetimeValueCents(duplicate.id);
+  return res.json({
+    data: {
+      survivor: { id: survivor.id, name: survivor.name, phone: survivor.phone, email: survivor.email || null },
+      duplicate: { id: duplicate.id, name: duplicate.name, phone: duplicate.phone, email: duplicate.email || null },
+      moves: mergePlan(survivor, duplicate),
+      guards: {
+        ownerInvolved: guards.ownerInvolved,
+        accountConflict: guards.accountConflict,
+        survivorHasAccount: guards.survivorHasAccount,
+        duplicateHasAccount: guards.duplicateHasAccount,
+      },
+      lifetimeValueCents: {
+        survivor: survivorLtv,
+        duplicate: duplicateLtv,
+        combinedAfterMerge: survivorLtv + duplicateLtv,
+      },
+    },
+  });
+});
+
+router.post('/crm/customers/merge', ...staffOnly, async (req, res) => {
+  const parsed = mergeExecuteSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'survivorId and duplicateId are required', details: parsed.error.flatten() });
+  }
+  const survivor = store.customers.get(parsed.data.survivorId);
+  const duplicate = store.customers.get(parsed.data.duplicateId);
+  const err = mergePairError(parsed.data.survivorId, parsed.data.duplicateId, survivor, duplicate);
+  if (err) return res.status(err.status).json(err.body);
+  const guards = await resolveMergeGuards(survivor, duplicate);
+  if (guards.ownerInvolved) {
+    return res.status(403).json({ error: "The Master/owner's records are never merged", code: 'OWNER_RECORD' });
+  }
+  if (guards.accountConflict && !parsed.data.confirmAccountConflict) {
+    return res.status(409).json({
+      error:
+        'Both records are linked to different signed-in accounts. Confirm the merge explicitly to proceed — the accounts themselves are never merged; the duplicate account link stays on the merged record as an alias.',
+      code: 'ACCOUNT_CONFLICT',
+    });
+  }
+  const { moved, note } = await executeMerge({
+    survivor,
+    duplicate,
+    actor: staffName(req),
+    confirmAccountConflict: Boolean(parsed.data.confirmAccountConflict),
+  });
+  return res.json({
+    data: {
+      survivor: customerSummary(survivor),
+      moved,
+      note: { id: note.id, body: note.body },
+    },
+  });
 });
 
 /* ---------------- Speedy assist (drafts & suggestions only) ---------------- */
