@@ -162,7 +162,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
   </div>
 
   <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M3.5 19.5c.6-2.9 2.7-4.4 5.5-4.4s4.9 1.5 5.5 4.4"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.3M18.5 15.4c1.2.7 1.9 1.9 2.1 4.1"/></svg>Accounts — passwords, codes &amp; 2-step</h2>
-  <p class="note" style="margin:0 0 12px">Every account — employees, contractors, customers and vendors — is monitored here. <b>Temporary passwords:</b> issue one on any account below and hand it to the holder. They sign in with it, pass the same Speedy Verify and Layer 2 steps as always, and must set their own password before anything opens — the temporary password then stops working. It expires 72 hours after issue; reissuing replaces it. This console is office-only: holders never see it.</p>
+  <p class="note" style="margin:0 0 12px">Every account — employees, contractors, customers and vendors — is monitored here. <b>Temporary passwords:</b> issue one on any account below and hand it to the holder. They sign in with it, pass the same Speedy Verify and Layer 2 steps as always, and must set their own password before anything opens — the temporary password then stops working. It expires 72 hours after issue; reissuing replaces it. This console is office-only: holders never see it. <b>Removing an account:</b> Remove on any row below deletes that account permanently — its sign-in, sessions, access codes and passkeys go with it, and it cannot be undone. An account that still holds business records (bookings, listings, properties…) is refused, with the blocking records named, so those can be cleared first. The Master account never shows Remove and can never be removed.</p>
   <input class="search" id="aSearch" type="search" placeholder="Search by name, email, employee number (TS-1001), group or access point…">
   <div id="aList" style="margin-top:14px"><p class="note"><span class="spin"></span> Loading accounts…</p></div>
   <div class="codebanner" id="aBanner"></div>
@@ -384,12 +384,16 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
       if(u.verify&&u.verify.hasActiveCode) h+='<button class="btn ghost small" data-act="revoke" type="button">Revoke code</button>';
       h+='<button class="btn ghost small" data-act="vtoggle" type="button">Speedy Verify: '+((u.verify&&u.verify.required)?'on → turn off':'off → turn on')+'</button>';
       h+='<button class="btn ghost small" data-act="ltoggle" type="button">Layer 2: '+((u.layer2&&u.layer2.flagOn)?'on → turn off':'off → turn on')+'</button>';
+      h+='<button class="btn ghost small" data-act="remove" type="button">Remove account</button>';
     }
     h+='</div>';
     h+='<div class="resetbox" data-resetbox><div class="grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">';
     if(u.master) h+='<div><label class="fl">YOUR CURRENT PASSWORD (REQUIRED FOR THE MASTER)</label><input class="fi" type="password" data-cur autocomplete="current-password"></div>';
     h+='<div><label class="fl">NEW PASSWORD — YOU CHOOSE IT (10+)</label><div class="pwrow"><input class="fi" type="password" data-newp autocomplete="new-password"><button class="btn ghost small" type="button" data-showpw>Show</button></div></div>';
     h+='</div><div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-doreset>Set new password</button><button class="btn ghost small" type="button" data-cancelreset>Cancel</button></div><div class="msg" data-resetmsg></div></div>';
+    if(!u.master){
+      h+='<div class="resetbox" data-removebox><p class="note" style="margin:0 0 8px"><b>Permanently remove '+esc(u.email)+'?</b> The account, its sign-in, sessions, access codes and passkeys are deleted and cannot be brought back. If the account still holds business records (bookings, listings, properties and the like), the removal is refused and names what blocks it. The Master account can never be removed.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn small" type="button" data-doremove>Yes — remove '+esc(u.email)+' permanently</button><button class="btn ghost small" type="button" data-cancelremove>Cancel</button></div><div class="msg" data-removemsg></div></div>';
+    }
     h+='</div>';
     return h;
   }
@@ -436,6 +440,18 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
       inp.type=show?'text':'password'; t.textContent=show?'Hide':'Show'; return;
     }
     if(t.hasAttribute('data-cancelreset')){ acctEl.querySelector('[data-resetbox]').classList.remove('show'); return; }
+    if(t.hasAttribute('data-cancelremove')){ acctEl.querySelector('[data-removebox]').classList.remove('show'); return; }
+    if(t.hasAttribute('data-doremove')){
+      var rmsg=acctEl.querySelector('[data-removemsg]'); rmsg.className='msg'; rmsg.textContent='';
+      t.disabled=true;
+      api('POST','/access-control/accounts/'+uid+'/remove',{}).then(function(res){
+        t.disabled=false;
+        if(res.status!==200){ rmsg.className='msg err'; rmsg.textContent='Could not remove: '+((res.j&&res.j.error)||('status '+res.status)); return; }
+        banner('Account removed permanently: <b>'+esc(u.email)+'</b>. Its sign-in, sessions, access codes and passkeys are gone.');
+        loadAccounts(document.getElementById('aSearch').value.trim());
+      }).catch(function(){ t.disabled=false; rmsg.className='msg err'; rmsg.textContent='Could not reach the Service OS.'; });
+      return;
+    }
     if(t.hasAttribute('data-doreset')){
       var msg=acctEl.querySelector('[data-resetmsg]'); msg.className='msg'; msg.textContent='';
       var body={ userId: uid, newPassword: acctEl.querySelector('[data-newp]').value };
@@ -454,6 +470,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:24px 2px 6px}
     var act=t.getAttribute('data-act');
     if(!act) return;
     if(act==='reset'){ acctEl.querySelector('[data-resetbox]').classList.toggle('show'); return; }
+    if(act==='remove'){ acctEl.querySelector('[data-removebox]').classList.toggle('show'); return; }
     if(act==='tissue'){
       t.disabled=true;
       api('POST','/access-control/temp-password/issue',{ userId: uid }).then(function(res){

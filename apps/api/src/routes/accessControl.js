@@ -19,6 +19,7 @@ import {
   tempStatusView,
 } from '../services/tempPasswords.js';
 import { assignEmployeeNumber, isEmployeeAccount } from '../services/employeeNumbers.js';
+import { removeAccount } from '../services/accountRemoval.js';
 import { publicUser } from './auth.js';
 
 /**
@@ -38,9 +39,16 @@ import { publicUser } from './auth.js';
  *   single-holder (Ramone alone), so no surface maps to it and an
  *   explicit role request is refused with 403.
  * - The owner account can never be deactivated, demoted, or deleted
- *   through these endpoints — no such endpoint exists. The only
- *   owner-affecting action is resetting the Master's OWN password,
- *   which additionally requires his current password in the request.
+ *   through these endpoints. The only owner-affecting action is
+ *   resetting the Master's OWN password, which additionally requires
+ *   his current password in the request.
+ * - Account REMOVAL (added 2026-11-20, Ramone's directive) is the one
+ *   delete in the platform, and it is Master-only like everything
+ *   here. Its hard locks live in services/accountRemoval.js: a
+ *   COMPANY_OWNER account can never be removed (checked on the
+ *   target's roles, server-side), the caller can never remove
+ *   himself, and an account that still holds business records is
+ *   refused with 409 naming them — nothing is deleted in that case.
  * - Passwords are scrypt-hashed server-side (services/passwords) and
  *   are never logged or returned.
  */
@@ -451,6 +459,43 @@ router.post('/access-control/accounts', async (req, res, next) => {
         : 'Account created. The holder signs in with the email and the password you set.',
     });
   } catch (error) {
+    return next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Remove an account permanently (2026-11-20, Ramone's directive) —
+// the removal tool he asked for so test and fake accounts can be
+// cleared the same way he clears test bookings. Master-only (the
+// router gate above), hard locks + blocker rules in
+// services/accountRemoval.js. A removed account is fully dead: its
+// sessions, codes, passkeys and tokens are deleted with it, its
+// sign-in is refused, and its old tokens fail /auth/me.
+// ---------------------------------------------------------------------------
+const removeParamsSchema = z.object({
+  id: z.string().uuid(),
+});
+
+router.post('/access-control/accounts/:id/remove', async (req, res, next) => {
+  try {
+    const parsed = removeParamsSchema.safeParse({ id: req.params.id });
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid account id' });
+    }
+    const result = await removeAccount(req.user, parsed.data.id);
+    return res.json({
+      ok: true,
+      ...result,
+      note: 'Account removed permanently. Its sign-in, sessions and codes are gone.',
+    });
+  } catch (error) {
+    if (error?.status) {
+      return res.status(error.status).json({
+        error: error.message,
+        ...(error.code ? { code: error.code } : {}),
+        ...(error.blockers ? { blockers: error.blockers } : {}),
+      });
+    }
     return next(error);
   }
 });

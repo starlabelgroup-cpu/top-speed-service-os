@@ -988,6 +988,15 @@ router.post('/auth/set-password', async (req, res, next) => {
 router.get('/auth/me', authenticate, async (req, res, next) => {
   try {
     const user = await usersRepo.findById(req.user.id);
+    if (!user && DATABASE_ENABLED) {
+      // The token is well-formed but the account row is gone. In
+      // database mode that means the account was REMOVED by the
+      // Master (Work Time Account Access, 2026-11-20): a removed
+      // account's old tokens die here — every console boots on
+      // /auth/me, so this ends the session everywhere. Skeleton
+      // mode keeps the demo fallthrough below.
+      return res.status(401).json({ error: 'This account no longer exists.', code: 'ACCOUNT_NOT_FOUND' });
+    }
     if (user) {
       // Speedy Verify session enforcement: every console loads /auth/me
       // at boot, so this is where a revocation (or a fresh activation)
