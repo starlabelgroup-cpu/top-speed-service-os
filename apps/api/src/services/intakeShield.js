@@ -54,6 +54,13 @@ export const INTAKE_RATE_LIMITS = {
   // same posture as register — a public account-creating door gets
   // the hourly per-IP cap plus the honeypot + NANP phone checks.
   creatorSignup: { limit: 10, windowMs: 60 * 60 * 1000 },
+  // Username (email) change requests (POST /auth/email-change/request,
+  // 2026-11-20): an authenticated door that sends real email to a
+  // NEW address, so it gets the same hourly per-IP cap as register.
+  // Enforced inside the handler via consumeIntakeAttempt (the route
+  // requires a session, so the anonymous-skip middleware does not
+  // apply); on limit the route answers 429 RATE_LIMITED.
+  emailChange: { limit: 10, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */

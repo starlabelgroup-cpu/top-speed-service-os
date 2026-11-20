@@ -221,6 +221,8 @@ model User {
 
   passwordResetTokens PasswordResetToken[]
 
+  emailChangeTokens EmailChangeToken[]
+
   termsAcceptances TermsAcceptance[]
 
   speedyVerifyCode SpeedyVerifyCode?
@@ -1050,6 +1052,29 @@ model PasswordResetToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
   userId    String    @db.Uuid
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Username (email) change tokens (2026-11-20): the self-serve
+// email-change flow. Only the SHA-256 hash of the emailed token is
+// stored; the raw token travels only in the confirmation link sent
+// to the NEW address. The row records the requested newEmail so the
+// exchange can re-check it is still free at confirm time. Tokens
+// live 30 minutes, are single-use, and issuing a new one supersedes
+// every still-unused token for the account (the PasswordResetToken
+// discipline).
+model EmailChangeToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  tokenHash String    @unique
+  userId    String    @db.Uuid
+  newEmail  String
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())

@@ -37,6 +37,10 @@ export const store = {
   // uses the PasswordResetToken table). Keyed by token SHA-256 hash,
   // same discipline as emailVerificationTokens.
   passwordResetTokens: new Map(),
+  // Username (email) change tokens (skeleton-mode fallback; the
+  // database mode uses the EmailChangeToken table). Keyed by token
+  // SHA-256 hash, same discipline as passwordResetTokens.
+  emailChangeTokens: new Map(),
   // Speedy Verify access codes (skeleton-mode fallback; the database
   // mode uses the SpeedyVerifyCode table). Keyed by userId; the record
   // holds only the scrypt hash of the code, never the plain code.

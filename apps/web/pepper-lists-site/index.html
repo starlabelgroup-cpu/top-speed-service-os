@@ -149,6 +149,18 @@ footer a{color:var(--lime)}
 </section>
 <div id="plApp">
 <div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
+<!-- EMAIL CHANGE RESULT — the confirmation link emailed to the NEW
+     address lands here (pepperlists.com/?mode=email-change&token=…).
+     On load the page exchanges the token at POST
+     /auth/email-change/confirm and reports the outcome plainly,
+     signed in or out. Hidden unless that mode is in the URL. -->
+<section class="plb" id="plEmailChangeResult" style="display:none" aria-label="Username change result">
+  <div class="plb-card">
+    <h2 id="pleResultTitle">Username change</h2>
+    <p class="plb-sub" id="pleResultMsg" role="status">Finishing your username change…</p>
+    <div id="pleResultBtns" style="display:none;margin-top:10px"><button class="btn" type="button" onclick="plOpenGate('in')">Sign in</button></div>
+  </div>
+</section>
 <!-- WELCOME — shown once, right after a NEW account finishes signing
      up on this page (plRegister sets plJustRegistered; plEnterApp
      reveals this panel). It points the new customer at the things
@@ -171,6 +183,38 @@ footer a{color:var(--lime)}
       <button class="btn dark" type="button" onclick="plWelcomeHide()">Skip for now</button>
     </div>
     <p class="plb-note" style="margin-top:12px">Channel Connections lives right in this account, below — scroll down any time. Connections belong to your account, not to this browser: sign in anywhere and they are yours.</p>
+  </div>
+</section>
+<!-- YOUR ACCOUNT — signed-in account settings (2026-11-20). Carries
+     the username / email change: the email IS the sign-in name, and
+     this is the self-serve move — new address + current password,
+     plus the 2-step code when the account's Layer 2 is on, then a
+     confirmation link emailed to the NEW inbox finishes it (the old
+     address gets a security notice, and stops signing in once the
+     change lands). Talks to POST /auth/email-change/request; the
+     confirm side lives in the result panel by the account bar.
+     Signed-in only, shown and hidden with the app sections
+     (pleEnter / pleHide). -->
+<style>
+.ple-cur{font-size:14.5px;color:var(--muted);margin-bottom:6px}
+.ple-cur b{color:var(--ink)}
+.ple-lab{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin:12px 0 0;text-align:left}
+.ple-lab input{display:block;width:100%;margin-top:5px;padding:11px 13px;border:1.5px solid #2c4232;border-radius:11px;background:var(--bg);color:var(--ink);font:inherit;font-size:14.5px;font-weight:500}
+.ple-lab input:focus{outline:none;border-color:var(--lime)}
+</style>
+<section class="plb" id="plAccount" style="display:none" aria-label="Your account">
+  <div class="plb-card">
+    <h2>Your <span style="color:var(--lime)">account</span></h2>
+    <p class="ple-cur">Signed in as <b id="pleCurrent"></b></p>
+    <h3 style="margin-top:18px">Username / email</h3>
+    <p class="plb-sub">Your email address is your username. To change it, enter the new address and your current password — and, if your account has 2-step sign-in on, the code we send you. We then email a confirmation link to the NEW address; the change only takes effect when you tap it, and your old address stops signing you in once it lands. Your password stays the same.</p>
+    <label class="ple-lab">New email address<input id="pleNewEmail" type="email" autocomplete="email" placeholder="you@new-address.com"></label>
+    <label class="ple-lab">Current password<input id="pleCurrentPass" type="password" autocomplete="current-password" placeholder="Your current password"></label>
+    <div id="pleL2Row" style="display:none">
+      <label class="ple-lab">2-step code<input id="pleL2Code" inputmode="numeric" autocomplete="one-time-code" placeholder="6-digit code"></label>
+    </div>
+    <p class="plb-msg" id="pleMsg" role="status"></p>
+    <div style="margin-top:10px"><button class="btn" type="button" id="pleBtn" onclick="pleRequest()">Request username change</button></div>
   </div>
 </section>
 <!-- THREE PURPOSES — Ramone's structure (2026-11-17, superseding the
@@ -1039,6 +1083,7 @@ function plPublic(){
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='none';
   if(window.plbHide) plbHide();
   if(window.plrHide) plrHide();
+  if(window.pleHide) pleHide();
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -1147,6 +1192,7 @@ function plEnterApp(u){
   var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
   if(window.plbEnter) plbEnter(u);
   if(window.plrEnter) plrEnter(u);
+  if(window.pleEnter) pleEnter(u);
   if(plJustRegistered){
     /* Fresh sign-up on this page: welcome the new customer and point
        at Channel Connections + the Sell / Post entry points. Shown
@@ -1199,6 +1245,92 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 </script>
 
+<script>
+/* Username (email) change — Pepper Lists account settings
+   (2026-11-20). pleEnter / pleHide are called from the account
+   gate's plEnterApp / plPublic, like the other app sections.
+   pleRequest posts to /auth/email-change/request; when the account
+   has Layer 2 on, the API answers { layer2Required, challenge }
+   after sending the code — the code field appears and the resubmit
+   carries the code + challenge. The emailed confirmation link
+   lands back here as ?mode=email-change&token=… and is exchanged
+   at /auth/email-change/confirm on load, signed in or out. */
+var pleL2Challenge=null;
+function pleMsg(text,isErr){ var m=document.getElementById('pleMsg'); if(!m) return; m.textContent=text||''; m.className='plb-msg'+(isErr?' err':''); }
+function pleEnter(u){
+  var sec=document.getElementById('plAccount'); if(sec) sec.style.display='';
+  var cur=document.getElementById('pleCurrent'); if(cur) cur.textContent=(u&&u.email)||'';
+}
+function pleHide(){ var sec=document.getElementById('plAccount'); if(sec) sec.style.display='none'; }
+function pleRequest(){
+  var emailEl=document.getElementById('pleNewEmail');
+  var passEl=document.getElementById('pleCurrentPass');
+  var codeEl=document.getElementById('pleL2Code');
+  var email=emailEl?emailEl.value.trim():'';
+  var pass=passEl?passEl.value:'';
+  if(!email||email.indexOf('@')<1){ pleMsg('Please add a valid new email address.',true); return; }
+  if(!pass){ pleMsg('Enter your current password to continue.',true); return; }
+  var body={newEmail:email,currentPassword:pass};
+  if(pleL2Challenge){
+    var code=codeEl?codeEl.value.trim():'';
+    if(!code){ pleMsg('Enter the 6-digit code we sent you.',true); return; }
+    body.layer2Challenge=pleL2Challenge;
+    body.layer2Code=code;
+  }
+  var btn=document.getElementById('pleBtn'); if(btn) btn.disabled=true;
+  pleMsg('Working…');
+  plApi('/auth/email-change/request',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){
+      if(btn) btn.disabled=false;
+      if(j && j.layer2Required){
+        pleL2Challenge=j.challenge||null;
+        var row=document.getElementById('pleL2Row'); if(row) row.style.display='';
+        pleMsg('We sent a 6-digit code'+(j.destination?(' to '+j.destination):'')+' — enter it above and tap the button again.');
+        if(codeEl) codeEl.focus();
+        return;
+      }
+      pleL2Challenge=null;
+      var row2=document.getElementById('pleL2Row'); if(row2) row2.style.display='none';
+      if(passEl) passEl.value='';
+      if(codeEl) codeEl.value='';
+      pleMsg((j&&j.message)||'Check your new inbox for the confirmation link.');
+    })
+    .catch(function(e){
+      if(btn) btn.disabled=false;
+      pleMsg((e&&e.message)||'The change did not go through.',true);
+    });
+}
+function pleShowResult(title,text,offerSignIn){
+  var sec=document.getElementById('plEmailChangeResult'); if(sec) sec.style.display='';
+  var t=document.getElementById('pleResultTitle'); if(t) t.textContent=title;
+  var m=document.getElementById('pleResultMsg'); if(m) m.textContent=text;
+  var b=document.getElementById('pleResultBtns'); if(b) b.style.display=offerSignIn?'':'none';
+  if(sec) sec.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function pleConfirm(token){
+  if(!token){
+    pleShowResult('That link is incomplete','This confirmation link is missing its code — request a new change from your account settings and use the fresh link from your new inbox.',!plTok());
+    return;
+  }
+  plApi('/auth/email-change/confirm',{method:'POST',body:JSON.stringify({token:token})})
+    .then(function(j){
+      pleShowResult('Username changed','Your username is now '+((j&&j.email)||'your new email')+' — sign in with it next time. Your password is unchanged.',!plTok());
+      if(plTok() && window.plBoot) plBoot();
+    })
+    .catch(function(e){
+      if(e && e.status===409){
+        pleShowResult('That email is taken now',(e.message||'That email now belongs to another account.'),!plTok());
+        return;
+      }
+      pleShowResult('That link did not work','That link is invalid or expired — request a new change from your account settings and use the fresh link from your new inbox.',!plTok());
+    });
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var mode=null,token=null;
+  try{ var q=new URLSearchParams(location.search); mode=q.get('mode'); token=q.get('token'); }catch(e){}
+  if(mode==='email-change') pleConfirm(token||'');
+});
+</script>
 <script src="/pepper-lists-site/pl-camera.js"></script>
 <script>
 /* SPEEDY BRAIN — Speedy AI as commander inside Pepper Lists.

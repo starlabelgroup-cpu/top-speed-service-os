@@ -62,6 +62,9 @@ export const NOTIFICATION_TEMPLATES = {
   SIGNIN_LINK: 'SIGNIN_LINK',
   EMAIL_VERIFICATION: 'EMAIL_VERIFICATION',
   PASSWORD_RESET: 'PASSWORD_RESET',
+  EMAIL_CHANGE_CONFIRM: 'EMAIL_CHANGE_CONFIRM',
+  EMAIL_CHANGE_REQUESTED: 'EMAIL_CHANGE_REQUESTED',
+  EMAIL_CHANGE_COMPLETE: 'EMAIL_CHANGE_COMPLETE',
   PHOTO_DIAGNOSIS: 'PHOTO_DIAGNOSIS',
   LINK_SEND: 'LINK_SEND',
 };
@@ -614,6 +617,127 @@ export function notifyPasswordReset(user, { tokenId, resetUrl, expiresAt }, sour
     entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
   } else {
     entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.PASSWORD_RESET, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/**
+ * Username (email) change — the confirmation email to the NEW
+ * address (2026-11-20). The link carries the one-time token; tapping
+ * it proves the holder controls the new inbox and completes the
+ * change. Sent by services/emailChange.js, which drains this batch
+ * awaited inside the request lifecycle (the password-reset lesson:
+ * an opportunistic drain can die with the response on serverless).
+ * eventKey is unique per issuance (the token record id).
+ */
+export function notifyEmailChangeConfirm(user, { tokenId, newEmail, confirmUrl, expiresAt }, source = null) {
+  const entries = [];
+  if (!user?.id || !newEmail) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const payload = {
+    userId: user.id,
+    customerName: name,
+    confirmUrl,
+    newEmail,
+    message:
+      `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+      `You asked to make this email address the username for your Top Speed Appliance account. ` +
+      `Confirm the change here:\n\n` +
+      `${confirmUrl}\n\n` +
+      `The link works once and expires in 30 minutes. After you tap it, sign in with this ` +
+      `email address — your old one will no longer sign you in. If you did not request this ` +
+      `change, you can ignore this email — nothing will change.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Confirm your new Top Speed Appliance username',
+  };
+  const eventKey = `account:${user.id}:email-change-confirm:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_CONFIRM, to: newEmail, payload, source, eventKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_CONFIRM, to: newEmail, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/**
+ * Username (email) change — the security notice to the OLD address
+ * (2026-11-20), queued alongside the confirmation email. The holder
+ * learns immediately that a change away from this address was
+ * requested, with the support path if it was not them. Carries no
+ * token and no link that changes anything.
+ */
+export function notifyEmailChangeRequested(user, { tokenId, newEmail }, source = null) {
+  const entries = [];
+  if (!user?.email || !newEmail) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const payload = {
+    userId: user.id,
+    customerName: name,
+    newEmail,
+    message:
+      `Hi ${name ? name.split(' ')[0] : 'there'},\n\n` +
+      `A request was made to change the username (email) on your Top Speed Appliance account ` +
+      `from this address to ${newEmail}. The change only takes effect when the confirmation ` +
+      `link sent to the new address is tapped, and that link expires in 30 minutes.\n\n` +
+      `If this was you, no action is needed here. If it was NOT you, your account password ` +
+      `may have been used by someone else — change your password right away and call us at ` +
+      `${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'A username change was requested for your Top Speed Appliance account',
+  };
+  const eventKey = `account:${user.id}:email-change-requested:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_REQUESTED, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_REQUESTED, to: user.email, payload, source, eventKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+  }
+  return entries;
+}
+
+/**
+ * Username (email) change — completion notices (2026-11-20): one to
+ * the OLD address (this address no longer signs you in) and one to
+ * the NEW address (this is now your username), queued after the swap
+ * lands in services/emailChange.js. Neither carries a token.
+ */
+export function notifyEmailChangeComplete(user, { tokenId, oldEmail, newEmail }, source = null) {
+  const entries = [];
+  if (!user?.id || !oldEmail || !newEmail) return entries;
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+  const settings = getNotificationSettings();
+  const first = name ? name.split(' ')[0] : 'there';
+  const base = { userId: user.id, customerName: name, oldEmail, newEmail };
+  const oldPayload = {
+    ...base,
+    message:
+      `Hi ${first},\n\n` +
+      `The username (email) on your Top Speed Appliance account was changed from this address ` +
+      `to ${newEmail}. This address no longer signs you in — use ${newEmail} from now on.\n\n` +
+      `If you did not make this change, call us right away at ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Your Top Speed Appliance username was changed',
+  };
+  const newPayload = {
+    ...base,
+    message:
+      `Hi ${first},\n\n` +
+      `Your Top Speed Appliance username is now this email address (${newEmail}). Sign in with ` +
+      `it from now on — your password and everything on your account are unchanged.\n\n` +
+      `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
+      `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`,
+    subject: 'Your Top Speed Appliance username is now this address',
+  };
+  const oldKey = `account:${user.id}:email-change-complete:old:${tokenId}`;
+  const newKey = `account:${user.id}:email-change-complete:new:${tokenId}`;
+  if (settings.customerEmailConfirmations) {
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_COMPLETE, to: oldEmail, payload: oldPayload, source, eventKey: oldKey, eventType: 'ACCOUNT' }));
+    entries.push(queueNotification({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_COMPLETE, to: newEmail, payload: newPayload, source, eventKey: newKey, eventType: 'ACCOUNT' }));
+  } else {
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_COMPLETE, to: oldEmail, payload: oldPayload, source, eventKey: oldKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
+    entries.push(queueGated({ channel: 'email', template: NOTIFICATION_TEMPLATES.EMAIL_CHANGE_COMPLETE, to: newEmail, payload: newPayload, source, eventKey: newKey, eventType: 'ACCOUNT', reason: 'SETTING_DISABLED' }));
   }
   return entries;
 }
