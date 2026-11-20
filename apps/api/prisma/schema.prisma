@@ -214,6 +214,8 @@ model User {
 
   advertiserSubscription AdvertiserSubscription?
 
+  sellerSubscription SellerSubscription?
+
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
 
@@ -2104,6 +2106,178 @@ model AdBillingSetting {
   updatedBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Pepper Lists Trust & Growth (2026-11-20, Ramone's direction: customers
+// must feel safe and secure while selling or booking). Like the Review
+// tables above, the id columns on the trust tables are PLAIN references
+// (no FK relations): a listing IS a Connection record (PEPPER_LISTS_SELL)
+// and the working set is the in-memory store with write-through
+// persistence — a trust record must never fail to save because a
+// referenced row lives only in memory. SellerSubscription is the one
+// exception: it mirrors AdvertiserSubscription exactly, FKs included.
+// ---------------------------------------------------------------------------
+
+// Per-listing state that does not belong on the intake record itself:
+// lifecycle (ACTIVE/SOLD), featured placement, bump freshness and the
+// REAL public view counter the seller analytics panel reads. Listing
+// facts (title, price, category, condition, description) stay on the
+// Connection record's message, exactly as the seller confirmed them.
+model ListingProfile {
+  id           String    @id @default(uuid()) @db.Uuid
+  connectionId String    @unique
+  sellerUserId String?   @db.Uuid
+  status       String    @default("ACTIVE")
+  featured     Boolean   @default(false)
+  bumpedAt     DateTime?
+  viewCount    Int       @default(0)
+  soldAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([sellerUserId, status])
+  @@index([featured, bumpedAt])
+}
+
+// One comment on a listing's public detail view. authorKind is SELLER
+// when the listing's own seller wrote it (their reply), USER for any
+// other signed-in account. hidden = the listing owner hid it on their
+// own listing; removed = staff moderation took it down. Hidden and
+// removed comments never render publicly and never count.
+model ListingComment {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String
+  authorId   String   @db.Uuid
+  authorKind String
+  body       String
+  hidden     Boolean  @default(false)
+  removed    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([listingId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+// A signed-in user's report of a listing (scam, prohibited item, …).
+// The staff queue reads these rows; the same filing also lands in the
+// Pepper Reports log the office already watches. status: NEW →
+// REVIEWED | DISMISSED by staff.
+model ListingReport {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String
+  reporterId String   @db.Uuid
+  reason     String
+  details    String?
+  status     String   @default("NEW")
+  createdAt  DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([listingId])
+}
+
+// The completed-sale record: created ONLY when the seller marks their
+// own listing sold. It is the sole key that unlocks a seller review —
+// buyerId is set when the buyer email the seller recorded belongs to
+// a Pepper Lists account; without a matched buyer no review can exist.
+model SellerSale {
+  id          String   @id @default(uuid()) @db.Uuid
+  listingId   String   @unique
+  sellerId    String   @db.Uuid
+  buyerId     String?  @db.Uuid
+  buyerEmail  String?
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([sellerId, completedAt])
+  @@index([buyerId, completedAt])
+}
+
+// One buyer's review of a seller, tied to exactly one completed sale
+// (saleId unique — one review per sale). Mirrors the service-review
+// moderation posture: ratings of 3 or below wait PENDING for the
+// office; staff can publish or hide from the moderation queue.
+model SellerReview {
+  id        String   @id @default(uuid()) @db.Uuid
+  saleId    String   @unique
+  sellerId  String   @db.Uuid
+  buyerId   String   @db.Uuid
+  rating    Int
+  title     String
+  body      String
+  status    String   @default("PUBLISHED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sellerId, status, createdAt])
+  @@index([buyerId, createdAt])
+}
+
+// One listing bump (refresh) spent by a seller — the monthly-credit
+// ledger for the seller plans' bump feature.
+model ListingBump {
+  id        String   @id @default(uuid()) @db.Uuid
+  listingId String
+  sellerId  String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@index([sellerId, createdAt])
+}
+
+// Pepper Lists Seller Plans — the structural mirror of AdPlan above
+// (2026-11-20). monthlyPriceCents NULL = pricing not set by the owner
+// yet — checkout is refused with an honest pricing_not_set. Feature
+// matrix keys live in services/sellerPlans.js SELLER_PLAN_FEATURES;
+// limits: { maxPhotos, bumpsPerMonth, featuredListings } (null =
+// unlimited). Prices are ONLY ever written by the owner's price route
+// (routes/sellerPlans.js), synced to Stripe at that moment.
+model SellerPlan {
+  id                String   @id @default(uuid()) @db.Uuid
+  key               String   @unique
+  name              String
+  description       String?
+  monthlyPriceCents Int?
+  currency          String   @default("usd")
+  features          Json     @default("{}")
+  limits            Json     @default("{}")
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  stripeProductId   String?
+  stripePriceId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions SellerSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+// The mirror of AdvertiserSubscription for Pepper Lists sellers —
+// same lifecycle (NONE / GRANDFATHERED / ACTIVE / TRIALING / PAST_DUE
+// → GRACE → SUSPENDED computed at read, OFFICE_GRANTED), sharing the
+// AdBillingSetting grace window with the advertiser plans.
+model SellerSubscription {
+  id                   String             @id @default(uuid()) @db.Uuid
+  userId               String             @unique @db.Uuid
+  planId               String?            @db.Uuid
+  status               AdSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  pastDueAt            DateTime?
+  pendingPlanId        String?            @db.Uuid
+  pendingEffectiveAt   DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  grantedById          String?            @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SellerPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
 }
 
 // Management department reports (2026-11-14): every request any platform

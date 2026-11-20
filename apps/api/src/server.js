@@ -46,6 +46,8 @@ import adStudioRouter from './routes/adStudio.js';
 import adProvidersRouter from './routes/adProviders.js';
 import adPlansRouter from './routes/adPlans.js';
 import carePlansRouter from './routes/carePlans.js';
+import pepperListsTrustRouter from './routes/pepperListsTrust.js';
+import sellerPlansRouter from './routes/sellerPlans.js';
 import insightsRouter from './routes/insights.js';
 import helpCenterRouter from './routes/helpCenter.js';
 import academyRouter from './routes/academy.js';
@@ -158,9 +160,6 @@ app.use('/api/v1/ad-studio/my-creatives', express.json({ limit: '10mb' }));
 // Twilio voice webhooks post application/x-www-form-urlencoded, which the
 // JSON parsers below would leave unparsed; give that path its own parser.
 app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));
-// Sign in with Apple (F9, 2026-11-20): Apple's callback is a form POST
-// (response_mode=form_post), so that path gets the same treatment.
-app.use('/api/v1/auth/apple', express.urlencoded({ extended: false, limit: '16kb' }));
 app.use(express.json({ limit: '100kb' }));
 app.use('/api/v1', generalRateLimit);
 app.use('/api/v1/auth', authRateLimit);
@@ -266,6 +265,8 @@ app.use('/api/v1', adStudioRouter);
 app.use('/api/v1', adProvidersRouter);
 app.use('/api/v1', adPlansRouter);
 app.use('/api/v1', carePlansRouter);
+app.use('/api/v1', pepperListsTrustRouter);
+app.use('/api/v1', sellerPlansRouter);
 app.use('/api/v1', insightsRouter);
 app.use('/api/v1', helpCenterRouter);
 app.use('/api/v1', academyRouter);
