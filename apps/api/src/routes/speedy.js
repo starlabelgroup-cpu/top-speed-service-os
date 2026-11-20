@@ -9,11 +9,12 @@ import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
 import { attachReferralToBooking } from '../services/referrals.js';
-import { applyCarePriority } from '../services/carePlans.js';
 import { channelConfigured, twilioTrialState } from '../services/senders.js';
 import { optionalAuthenticate } from '../middleware/auth.js';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
 import { honeypotTripped } from '../services/intakeShield.js';
+import { getWindowAvailability, newYorkNow } from '../services/availability.js';
+import { isValidDateString } from '../services/bookos.js';
 import {
   captureBookingConversion,
   captureChatDiagnosis,
@@ -80,6 +81,25 @@ function notConfigured(res) {
 
 router.get('/speedy/status', (req, res) => {
   return res.json({ data: speedyStatus() });
+});
+
+/**
+ * Live arrival-window availability (2026-11-20, recommendation A1):
+ * the public read behind every customer window picker — the booking
+ * form, the homepage wizard, the /app Book step, and Speedy's
+ * post-summary window offer. ?date=YYYY-MM-DD (default: today on the
+ * business clock). Per-window OPEN/CLOSED only — see
+ * services/availability.js for the capacity semantics; nothing here
+ * ever blocks a booking.
+ */
+router.get('/speedy/availability', async (req, res) => {
+  const raw = typeof req.query.date === 'string' ? req.query.date : '';
+  const date = raw || newYorkNow().date;
+  if (!isValidDateString(date)) {
+    return res.status(400).json({ error: 'A valid date query (?date=YYYY-MM-DD) is required' });
+  }
+  const availability = await getWindowAvailability(date);
+  return res.json({ data: availability });
 });
 
 router.post('/speedy/chat', optionalAuthenticate, async (req, res) => {
@@ -242,6 +262,11 @@ const guestBookingSchema = z.object({
   appliance: z.string().trim().min(2),
   issue: z.string().trim().min(3),
   preferredWindow: z.string().trim().optional(),
+  // Live arrival-window picker (2026-11-20, A1): the service day the
+  // customer picked with their window (YYYY-MM-DD). A stated
+  // preference beside preferredWindow — never an appointment; the
+  // office still sets the appointment through Book OS.
+  preferredDate: z.string().refine(isValidDateString, { message: 'preferredDate must be a valid YYYY-MM-DD date' }).optional(),
   // Which coordinated booking surface created this: the Speedy chat or
   // the five-step Smart Booking form. Attribution only — same pipeline.
   source: z.enum(['SPEEDY_CHAT', 'WEB_FORM', 'FLAGSHIP_NET']).optional(),
@@ -265,7 +290,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
   }
-  const { customer, city, zip, appliance, issue, preferredWindow, source } = parsed.data;
+  const { customer, city, zip, appliance, issue, preferredWindow, preferredDate, source } = parsed.data;
   const attribution = normalizeAttribution(parsed.data);
   // The success body, shared by the real booking at the bottom of
   // this handler and the intake shield's honeypot discard below —
@@ -278,6 +303,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     areaStatus: b.areaStatus,
     appliance: b.appliance,
     preferredWindow: b.preferredWindow,
+    preferredDate: b.preferredDate ?? null,
     diagnosticFee: 99,
     ...(b.areaStatus === 'OUT_OF_AREA'
       ? {
@@ -314,6 +340,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
         areaStatus: resolution.areaStatus,
         appliance,
         preferredWindow: preferredWindow || null,
+        preferredDate: preferredDate || null,
       }),
     });
   }
@@ -345,6 +372,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
+    preferredDate: preferredDate || null,
     diagnosticFee: 99,
     diagnosticFeeCurrency: 'USD',
     diagnosticFeeCreditedTowardRepair: true,
@@ -355,11 +383,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
-  // Care Plan priority (2026-11-20): a member's booking is stamped
-  // priority before it is stored, so the setter queue shows the flag
-  // from the first read. Fail-soft by design (the referral idiom).
-  await applyCarePriority(booking);
-  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus, priority: booking.priority || false });
+  addBookingEvent(booking, 'BOOKING_CREATED', booking.source === 'SPEEDY_CHAT' ? 'speedy-chat' : 'web-form', { diagnosticFee: 99, feeStatus: booking.feeStatus });
   addBookingEvent(booking, 'AREA_RESOLVED', 'service-book', {
     area: resolution.area,
     areaStatus: resolution.areaStatus,

@@ -27,6 +27,7 @@ import {
   windowById,
 } from '../services/bookos.js';
 import { notifyAppointmentReminder, notifyBookingConfirmation } from '../services/notifications.js';
+import { clearAvailabilityCache } from '../services/availability.js';
 import { countSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { emitReport } from '../services/managementReports.js';
 import {
@@ -362,6 +363,7 @@ router.get('/bookos/setter-queue', ...staffOnly, async (req, res) => {
       priority: booking.priority || false,
       priorityTier: priorityTierOf(booking),
       preferredWindow: booking.preferredWindow || null,
+      preferredDate: booking.preferredDate || null,
       appointment: appointmentSummary(booking),
       lead,
       mediaCount,
@@ -433,6 +435,8 @@ router.post('/bookos/appointments', ...staffOnly, async (req, res) => {
     eventKey: `booking:${booking.id}:appointment-set:${booking.appointment.setAt}:report`,
   });
   await persistBooking(booking);
+  // A SET appointment moves the public window-availability counts.
+  clearAvailabilityCache();
 
   return res.status(201).json({
     data: {
@@ -493,6 +497,8 @@ router.post('/bookos/appointments/:bookingId/reschedule', ...staffOnly, async (r
   });
   const confirmations = notifyBookingConfirmation(booking, booking.source || null);
   await persistBooking(booking);
+  // A SET appointment moves the public window-availability counts.
+  clearAvailabilityCache();
 
   return res.json({
     data: {
@@ -1096,6 +1102,8 @@ router.put('/bookos/capacity-settings', ...staffOnly, async (req, res) => {
     return res.status(400).json({ error: 'Invalid capacity settings', details: parsed.error.flatten() });
   }
   const settings = await saveDispatchSettings(req.companyId, parsed.data, req.user.email);
+  // New planning inputs re-size every public window picker at once.
+  clearAvailabilityCache();
   return res.json({ data: { settings } });
 });
 

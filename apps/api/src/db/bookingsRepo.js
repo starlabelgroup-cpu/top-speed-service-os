@@ -3,7 +3,6 @@ import { store } from '../data/store.js';
 import { SERVICE_CITIES } from '../config/serviceAreas.js';
 import { hydrateCrmNotes } from './crmRepo.js';
 import { hydrateInboxMessages } from './inboxRepo.js';
-import { hydrateBookingMessages } from './bookingMessagesRepo.js';
 import { hydrateChatSessions } from './chatsRepo.js';
 import { attributionFromColumns, attributionToColumns } from '../services/attribution.js';
 import { hydrateFlywheel } from './flywheelRepo.js';
@@ -106,6 +105,7 @@ function bookingToRow(booking) {
     appliance: booking.appliance,
     issue: booking.issue,
     preferredWindow: booking.preferredWindow ?? null,
+    preferredDate: booking.preferredDate ?? null,
     referenceCode: booking.referenceCode ?? null,
     source: booking.source ?? 'WEBSITE',
     ...attributionToColumns(booking.attribution),
@@ -150,6 +150,7 @@ function bookingFromRow(row, customerRecord) {
     appliance: row.appliance,
     issue: row.issue,
     preferredWindow: row.preferredWindow ?? null,
+    preferredDate: row.preferredDate ?? null,
     diagnosticFee: num(row.diagnosticFee) ?? 99,
     diagnosticFeeCurrency: 'USD',
     diagnosticFeeCreditedTowardRepair: row.diagnosticFeeCreditedTowardRepair,
@@ -383,14 +384,6 @@ export async function hydrateStore() {
     await hydrateInboxMessages();
   } catch (error) {
     console.error('hydrateInboxMessages failed (inbox degraded, platform continues)', error?.message || error);
-  }
-  // Message-the-office threads are an add-on too: a missing
-  // BookingMessage table mid-deploy degrades to empty threads,
-  // never blocks hydration.
-  try {
-    await hydrateBookingMessages();
-  } catch (error) {
-    console.error('hydrateBookingMessages failed (office threads degraded, platform continues)', error?.message || error);
   }
   // The Google account registry is an add-on too: a missing table
   // mid-deploy degrades to an empty registry, never blocks hydration.

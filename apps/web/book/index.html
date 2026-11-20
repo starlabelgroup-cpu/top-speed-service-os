@@ -47,6 +47,7 @@
   .winGrid input{position:absolute;opacity:0;pointer-events:none;width:auto}
   .winGrid .wc{display:block;text-align:center;padding:13px 6px;border:1.5px solid var(--line);border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#344054}
   .winGrid input:checked + .wc{background:#0A265C;color:#fff;border-color:#0A265C}
+  .winGrid input:disabled + .wc{opacity:.45;cursor:not-allowed;background:#F2F4F7}
   .review{display:grid;gap:7px;font-size:15px}
   .review .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #e2e8f0;padding:7px 0}
   .review .r span{color:var(--mut)} .review .r b{color:var(--ink);text-align:right}
@@ -142,6 +143,8 @@
     <div class="pane" data-pane="4" hidden>
       <h2>Pick a window <small>4 of 5</small></h2>
       <p style="color:var(--mut);font-size:14px;margin-top:10px">Two-hour arrival windows. Your Service Setter confirms the exact appointment by text before dispatch.</p>
+      <label for="wDate">Preferred day</label><input type="date" id="wDate">
+      <p id="wAvailNote" style="color:var(--mut);font-size:13px;margin:6px 0 0"></p>
       <div class="winGrid">
         <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 AM</span></label>
         <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 AM–12 PM</span></label>
@@ -298,15 +301,51 @@
     return '';
   }
   function esc(s){return s.replace(/</g,'&lt;')}
+  /* Live arrival-window picker (2026-11-20, A1): the day's windows
+     come from GET /speedy/availability — a closed window (full, or
+     already past today) renders visibly closed and cannot be picked.
+     If the read fails, every window stays pickable and the office
+     confirms by text as before: the picker never blocks a booking. */
+  function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate());}
+  function dayLabel(v){ try{ return new Date(v+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return v; } }
+  function applyAvail(j){
+    var byId={}; (j.data.windows||[]).forEach(function(w){byId[w.id]=w;});
+    document.querySelectorAll('input[name="wwin"]').forEach(function(inp){
+      var w=byId[inp.value]; if(!w) return;
+      var card=inp.nextElementSibling;
+      if(w.status==='CLOSED'){
+        inp.disabled=true; if(inp.checked) inp.checked=false;
+        card.textContent=w.label+(w.reason==='FULL'?' \u2014 Full':' \u2014 Passed');
+      } else {
+        inp.disabled=false; card.textContent=w.label;
+      }
+    });
+    var note=$('wAvailNote');
+    if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked \u2014 full and passed windows are closed.':'Pick a day and window \u2014 your Service Setter confirms the exact appointment by text.';
+  }
+  function loadAvail(){
+    var d=$('wDate'); if(!d||!d.value) return;
+    fetch(API+'/speedy/availability?date='+encodeURIComponent(d.value))
+      .then(function(r){return r.json();})
+      .then(function(j){ if(j&&j.data&&j.data.windows) applyAvail(j); })
+      .catch(function(){ /* leave every window pickable */ });
+  }
+  (function initAvail(){
+    var d=$('wDate'); if(!d) return;
+    var today=dstr(new Date());
+    d.min=today; if(!d.value) d.value=today;
+    d.addEventListener('change',loadAvail);
+    loadAvail();
+  })();
   function fillReview(){
     var win=document.querySelector('input[name="wwin"]:checked');
-    var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Window',win?win.nextElementSibling.textContent:'—']];
+    var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Preferred day',dayLabel(val('wDate'))],['Window',win?win.nextElementSibling.textContent:'—']];
     $('review').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+esc(r[1])+'</b></div>'}).join('');
   }
   function submit(){
     var win=document.querySelector('input[name="wwin"]:checked').value;
     var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
-    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM',companyWebsite:val('wWebsite')};
+    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,preferredDate:val('wDate')||undefined,source:'WEB_FORM',companyWebsite:val('wWebsite')};
     try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
     try{
       var q=new URLSearchParams(location.search);

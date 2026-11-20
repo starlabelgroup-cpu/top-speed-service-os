@@ -1170,6 +1170,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           .winGrid input{position:absolute;opacity:0;pointer-events:none}
           .winGrid .wc{display:block;text-align:center;padding:12px 6px;border:1.5px solid #ccd8ec;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#42557a}
           .winGrid input:checked + .wc{background:var(--navy);color:#fff;border-color:var(--navy)}
+          .winGrid input:disabled + .wc{opacity:.45;cursor:not-allowed;background:#eef2f8}
           #wizReview{display:grid;gap:8px;font-size:15px}
           #wizReview .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #dbe4f0;padding:7px 0}
           #wizReview .r b{color:var(--navy);text-align:right}
@@ -1255,6 +1256,8 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           <div class="wizPane" data-pane="4" hidden>
             <h4>Pick a window <small>4 of 5</small></h4>
             <p style="color:#5a6b84;font-size:14px">Two-hour arrival windows, confirmed by your Service Setter. Same-day windows show when the board allows.</p>
+            <label for="wDate">Preferred day</label><input type="date" id="wDate">
+            <p id="wAvailNote" style="color:#5a6b84;font-size:13px;margin:6px 0 0"></p>
             <div class="winGrid" id="wWins">
               <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 AM</span></label>
               <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 AM–12 PM</span></label>
@@ -1357,6 +1360,43 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           }
           function err(msg){var e=$('wizErr');e.textContent=msg;e.style.display='block';}
           function val(id){return $(id).value.trim()}
+          /* Live arrival-window picker (2026-11-20, A1): the day's
+             windows come from GET /speedy/availability — a closed
+             window (full, or already past today) renders visibly
+             closed and cannot be picked. If the read fails, every
+             window stays pickable and the office confirms by text
+             as before: the picker never blocks a booking. */
+          function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate());}
+          function dayLabel(v){ try{ return new Date(v+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return v; } }
+          function applyAvail(j){
+            var byId={}; (j.data.windows||[]).forEach(function(w){byId[w.id]=w;});
+            document.querySelectorAll('input[name="wwin"]').forEach(function(inp){
+              var w=byId[inp.value]; if(!w) return;
+              var card=inp.nextElementSibling;
+              if(w.status==='CLOSED'){
+                inp.disabled=true; if(inp.checked) inp.checked=false;
+                card.textContent=w.label+(w.reason==='FULL'?' \u2014 Full':' \u2014 Passed');
+              } else {
+                inp.disabled=false; card.textContent=w.label;
+              }
+            });
+            var note=$('wAvailNote');
+            if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked \u2014 full and passed windows are closed.':'Pick a day and window \u2014 your Service Setter confirms the exact appointment by text.';
+          }
+          function loadAvail(){
+            var d=$('wDate'); if(!d||!d.value) return;
+            fetch(API+'/speedy/availability?date='+encodeURIComponent(d.value))
+              .then(function(r){return r.json();})
+              .then(function(j){ if(j&&j.data&&j.data.windows) applyAvail(j); })
+              .catch(function(){ /* leave every window pickable */ });
+          }
+          (function initAvail(){
+            var d=$('wDate'); if(!d) return;
+            var today=dstr(new Date());
+            d.min=today; if(!d.value) d.value=today;
+            d.addEventListener('change',loadAvail);
+            loadAvail();
+          })();
           var atiles=[].slice.call(document.querySelectorAll('.atile'));
           atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
 
@@ -1457,7 +1497,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           }
           function fillReview(){
             var win=document.querySelector('input[name="wwin"]:checked');
-            var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Window',win?win.nextElementSibling.textContent:'—']];
+            var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Preferred day',dayLabel(val('wDate'))],['Window',win?win.nextElementSibling.textContent:'—']];
             if(wizDiag) rows.push(['Photo diagnosis','Speedy\u2019s read is attached to your booking notes']);
             $('wizReview').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+r[1].replace(/</g,'&lt;')+'</b></div>'}).join('');
           }
@@ -1465,7 +1505,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             var win=document.querySelector('input[name="wwin"]:checked').value;
             var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
             if(wizDiag) issue+='\n[Speedy photo diagnosis: '+wizDiag+']';
-            var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,source:'WEB_FORM',companyWebsite:val('wWebsite')};
+            var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,preferredDate:val('wDate')||undefined,source:'WEB_FORM',companyWebsite:val('wWebsite')};
             var em=val('wEmail'); if(em) payload.customer.email=em;
             try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
             busy=true; var btn=$('wizNextBtn'); btn.disabled=true; btn.textContent='Booking…';
@@ -2200,9 +2240,74 @@ function spFixCard(){
   var inp=document.getElementById('spText'); if(inp) inp.focus();
 }
 function spBookIt(btn){
+  // Live arrival-window picker (2026-11-20, A1): the summary above is
+  // confirmed — before anything is sent, Speedy offers the LIVE
+  // windows for the chosen day (the same availability read as the
+  // booking form) instead of sending the free-text preference. The
+  // booking goes out only when the customer taps "Book this window"
+  // (or "First available instead", which sends exactly what the
+  // summary showed). The summary gate is unchanged: no tap, no send.
   var d=window._spBook; if(!d)return;
-  btn.disabled=true; btn.textContent='Booking\u2026';
-  var bp={customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,sessionId:spSessionId()};
+  window._spPick={date:spDayStr(0),win:null};
+  window._spAvail=null;
+  spRenderPicker();
+}
+function spDayStr(off){ var dt=new Date(); dt.setDate(dt.getDate()+off); return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()); }
+function spDayLabel(off,ds){ if(off===0) return 'Today'; if(off===1) return 'Tomorrow'; try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+var SP_CHIP='border-radius:99px;font:inherit;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;';
+var SP_CHIP_ON='background:#0A265C;color:#fff;border:1.5px solid #0A265C;';
+var SP_CHIP_OFF='background:#eef3fb;color:#0C162B;border:1.5px solid #A9BEE0;';
+function spRenderPicker(){
+  var card=document.getElementById('spBookCard'); if(!card) return;
+  var days='';
+  for(var off=0; off<4; off++){
+    var ds=spDayStr(off);
+    days+='<button type="button" onclick="spPickDay(\''+ds+'\')" style="'+SP_CHIP+(window._spPick.date===ds?SP_CHIP_ON:SP_CHIP_OFF)+'">'+spDayLabel(off,ds)+'</button>';
+  }
+  card.innerHTML='<b>One more tap \u2014 pick your arrival window</b><br><span style="font-size:12.5px;">Live windows for the day you choose. Full and passed windows are closed \u2014 nothing is booked until you tap \u201cBook this window\u201d.</span><div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+days+'</div><div id="spWinRow" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px"><span style="font-size:12.5px;">Loading live windows\u2026</span></div><div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap"><button type="button" id="spWinSend" onclick="spSendPick(this)" disabled style="background:var(--blue,#1280FF);color:#fff;border:none;border-radius:99px;font:inherit;font-weight:800;padding:9px 16px;cursor:pointer;">Book this window</button><button type="button" onclick="spSendFirst(this)" style="background:#fff;color:#0C162B;border:1.5px solid #A9BEE0;border-radius:99px;font:inherit;font-weight:800;padding:9px 16px;cursor:pointer;">First available instead</button><button type="button" onclick="spFixCard()" style="background:none;border:none;color:#0C162B;font:inherit;font-weight:700;font-size:13px;cursor:pointer;text-decoration:underline;">Change details</button></div>';
+  spLoadWins();
+}
+function spPickDay(ds){ window._spPick.date=ds; window._spPick.win=null; window._spAvail=null; spRenderPicker(); }
+function spLoadWins(){
+  fetch(SP_API+'/speedy/availability?date='+encodeURIComponent(window._spPick.date))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j||!j.data||!j.data.windows) throw new Error('no windows');
+      window._spAvail=j.data;
+      var d=window._spBook;
+      if(!window._spPick.win && d && d.preferred_window){
+        j.data.windows.forEach(function(w){ if(w.id===d.preferred_window && w.status!=='CLOSED') window._spPick.win=w.id; });
+      }
+      spRenderWins();
+    })
+    .catch(function(){
+      var row=document.getElementById('spWinRow');
+      if(row) row.innerHTML='<span style="font-size:12.5px;">Live windows are unavailable right now \u2014 tap \u201cFirst available instead\u201d and your Service Setter will confirm a window by text.</span>';
+    });
+}
+function spRenderWins(){
+  var row=document.getElementById('spWinRow'); if(!row||!window._spAvail) return;
+  var html='';
+  window._spAvail.windows.forEach(function(w){
+    var closed=w.status==='CLOSED';
+    var on=window._spPick.win===w.id;
+    html+='<button type="button" '+(closed?'disabled style="'+SP_CHIP+SP_CHIP_OFF+'opacity:.45;cursor:not-allowed;"':'onclick="spPickWin(\''+w.id+'\')" style="'+SP_CHIP+(on?SP_CHIP_ON:SP_CHIP_OFF)+'"')+'>'+spEsc(w.label)+(closed?(w.reason==='FULL'?' \u00b7 Full':' \u00b7 Passed'):'')+'</button>';
+  });
+  row.innerHTML=html;
+  var send=document.getElementById('spWinSend'); if(send) send.disabled=!window._spPick.win;
+}
+function spPickWin(id){ window._spPick.win=id; spRenderWins(); }
+function spSendPick(btn){
+  var d=window._spBook; if(!d||!window._spPick||!window._spPick.win) return;
+  spPostBooking({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:window._spPick.win,preferredDate:window._spPick.date,sessionId:spSessionId()},btn);
+}
+function spSendFirst(btn){
+  var d=window._spBook; if(!d) return;
+  spPostBooking({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,sessionId:spSessionId()},btn);
+}
+function spPostBooking(bp,btn){
+  var d=window._spBook; if(!d) return;
+  if(btn){ btn.disabled=true; btn.textContent='Booking\u2026'; }
   bp.companyWebsite=document.getElementById('spWebsite').value;
   try{ if(window.TSOSAttribution) TSOSAttribution.attach(bp); }catch(e){}
   fetch(SP_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bp)})
@@ -2213,17 +2318,10 @@ function spBookIt(btn){
       document.getElementById('spBookCard').insertAdjacentHTML('beforeend','<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" onclick="spReceipt(\'email\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="12.5" rx="2.2"/><path d="M3.8 7.4L12 13l8.2-5.6" stroke="#E8322E"/></svg> Email me my receipt</button><button type="button" onclick="spReceipt(\'sms\')" style="background:#0A265C;color:#fff;border:none;border-radius:99px;padding:9px 15px;font:inherit;font-weight:800;font-size:13.5px;cursor:pointer"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Text me my tracking link</button></div>');
     })
     .catch(function(e){
-      btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Looks right \u2014 send it';
+      if(btn){ btn.disabled=false; btn.textContent='Try again'; }
       addMsg('That booking did not go through ('+e.message+'). You can use the Smart Booking form on this page, or call 844-460-7038.',false);
     });
 }
-
-/* ---------- Speedy recommends + updates ----------
-   Signed-in visitors: derived ONLY from their real records —
-   /tracking/mine (live job stages), /connect/promotions (the offers
-   the API returns for THIS account), /connect/summary (registered
-   appliances + service history). Guests: the platform's standing
-   recommendations, labeled as suggestions/tips. Nothing invented. */
 function spEsc(s){ return String(s==null?'':s).replace(/</g,'&lt;'); }
 function spLoadRecs(){
   var box=document.getElementById('spRecs'); if(!box) return;

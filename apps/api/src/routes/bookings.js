@@ -8,6 +8,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
 import { computeTracking, photoReportOf } from '../services/tracking.js';
+import { isValidDateString } from '../services/bookos.js';
 import {
   notifyBookingAssigned,
   notifyBookingConfirmation,
@@ -35,6 +36,10 @@ const bookingSchema = z.object({
   appliance: z.string().trim().min(2),
   issue: z.string().trim().min(3),
   preferredWindow: z.string().trim().optional(),
+  // Live arrival-window picker (2026-11-20, A1): the service day the
+  // customer picked with their window (YYYY-MM-DD) — a stated
+  // preference beside preferredWindow, never an appointment.
+  preferredDate: z.string().refine(isValidDateString, { message: 'preferredDate must be a valid YYYY-MM-DD date' }).optional(),
   // Top Speed Ads attribution (2026-11-17): the same optional
   // first-touch capture the guest twin (POST /speedy/book) accepts —
   // landing page, UTM fields and the platform click IDs. Absent or
@@ -102,7 +107,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     return res.status(400).json({ error: 'Invalid booking', details: parsed.error.flatten() });
   }
 
-  const { customer, city, zip, appliance, issue, preferredWindow } = parsed.data;
+  const { customer, city, zip, appliance, issue, preferredWindow, preferredDate } = parsed.data;
   const attribution = normalizeAttribution(parsed.data);
   // Service Book book-by-area: the address resolves into the area model
   // instead of being rejected at the border. Covered addresses book as
@@ -139,6 +144,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
+    preferredDate: preferredDate || null,
     diagnosticFee: 99,
     diagnosticFeeCurrency: 'USD',
     diagnosticFeeCreditedTowardRepair: true,

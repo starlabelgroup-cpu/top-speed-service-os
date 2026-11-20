@@ -287,17 +287,115 @@
     }).catch(function () {});
   }
 
+  var pickState = null;
+  var pickAvail = null;
+
   function bookIt() {
     var d = pendingBook;
     if (!d) return;
+    /* Live arrival-window picker (2026-11-20, A1): the summary is
+       confirmed — before anything is sent, Speedy offers the LIVE
+       windows for the chosen day (the same availability read as the
+       booking form) instead of sending the free-text preference.
+       The booking goes out only when the customer taps "Book this
+       window" (or "First available instead", which sends exactly
+       what the summary showed). The summary gate is unchanged:
+       no tap, no send. */
+    pickState = { date: pickDayStr(0), win: null };
+    pickAvail = null;
+    renderPickCard(d);
+  }
+
+  function pickDayStr(off) {
+    var dt = new Date(); dt.setDate(dt.getDate() + off);
+    return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+  }
+  function pickDayLabel(off, ds) {
+    if (off === 0) return 'Today';
+    if (off === 1) return 'Tomorrow';
+    try { return new Date(ds + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) { return ds; }
+  }
+  function pickChipStyle(on) {
+    return 'border-radius:99px;font:700 13px Inter,system-ui,sans-serif;padding:7px 12px;cursor:pointer;border:1.5px solid #A9BEE0;margin:6px 6px 0 0;' + (on ? 'background:#0A265C;color:#fff;border-color:#0A265C;' : 'background:#eef3fb;color:#0C162B;');
+  }
+
+  function renderPickCard(d) {
+    var card = document.createElement('div');
+    card.className = 'tsw-msg bot tsw-book';
+    card.id = 'tswPickCard';
+    var daysHtml = '';
+    for (var off = 0; off < 4; off++) {
+      var ds = pickDayStr(off);
+      daysHtml += '<button type="button" data-day="' + ds + '" style="' + pickChipStyle(pickState.date === ds) + '">' + esc(pickDayLabel(off, ds)) + '</button>';
+    }
+    card.innerHTML = '<b>One more tap — pick your arrival window</b><br><span style="font-size:12.5px">Live windows for the day you choose. Full and passed windows are closed — nothing is booked until you tap “Book this window”.</span>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' + daysHtml + '</div>' +
+      '<div id="tswWinRow" style="display:flex;gap:6px;flex-wrap:wrap"><span style="font-size:12.5px">Loading live windows…</span></div>' +
+      '<div><button type="button" id="tswWinSend" disabled>Book this window</button><button type="button" class="tsw-fix" id="tswFirstBtn">First available instead</button></div>';
+    body.appendChild(card);
+    body.scrollTop = body.scrollHeight;
+    card.querySelectorAll('[data-day]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        pickState.date = b.getAttribute('data-day'); pickState.win = null; pickAvail = null;
+        card.remove();
+        renderPickCard(d);
+      });
+    });
+    card.querySelector('#tswWinSend').addEventListener('click', function () {
+      if (!pickState.win) return;
+      var win = pickState.win, date = pickState.date;
+      card.remove();
+      sendBooking(d, win, date);
+    });
+    card.querySelector('#tswFirstBtn').addEventListener('click', function () {
+      card.remove();
+      sendBooking(d, d.preferred_window || undefined, undefined);
+    });
+    loadPickWindows(d, card);
+  }
+
+  function loadPickWindows(d, card) {
+    get('/speedy/availability?date=' + encodeURIComponent(pickState.date)).then(function (j) {
+      pickAvail = (j && j.data) || null;
+      if (!pickAvail || !pickAvail.windows) throw new Error('no windows');
+      if (!pickState.win && d.preferred_window) {
+        pickAvail.windows.forEach(function (w) { if (w.id === d.preferred_window && w.status !== 'CLOSED') pickState.win = w.id; });
+      }
+      drawPickWins(card);
+    }).catch(function () {
+      var row = card.querySelector('#tswWinRow');
+      if (row) row.innerHTML = '<span style="font-size:12.5px">Live windows are unavailable right now — tap “First available instead” and your Service Setter will confirm a window by text.</span>';
+    });
+  }
+
+  function drawPickWins(card) {
+    var row = card.querySelector('#tswWinRow');
+    if (!row || !pickAvail) return;
+    row.innerHTML = '';
+    pickAvail.windows.forEach(function (w) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      var closed = w.status === 'CLOSED';
+      b.textContent = w.label + (closed ? (w.reason === 'FULL' ? ' · Full' : ' · Passed') : '');
+      b.setAttribute('style', pickChipStyle(pickState.win === w.id) + (closed ? 'opacity:.45;cursor:not-allowed;' : ''));
+      if (closed) b.disabled = true;
+      else b.addEventListener('click', function () { pickState.win = w.id; drawPickWins(card); });
+      row.appendChild(b);
+    });
+    var send = card.querySelector('#tswWinSend');
+    if (send) send.disabled = !pickState.win;
+  }
+
+  function sendBooking(d, winId, dateStr) {
     pendingBook = null;
     addMsg('Booking your visit…', false);
     var bookPayload = {
       customer: { name: d.name, phone: d.phone },
       city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue,
-      preferredWindow: d.preferred_window || undefined, source: 'SPEEDY_CHAT',
+      preferredWindow: winId || undefined, source: 'SPEEDY_CHAT',
       sessionId: chatSessionId()
     };
+    if (dateStr) bookPayload.preferredDate = dateStr;
     try { var refCode = sessionStorage.getItem('tsos_referral_code'); if (refCode) bookPayload.referralCode = refCode; } catch (e) {}
     try {
       var atStored = (window.TSOSAttribution && TSOSAttribution.get()) || JSON.parse(localStorage.getItem('tsos_attribution') || 'null');
@@ -328,7 +426,6 @@
       addMsg('That booking did not go through (' + esc(e.message) + '). You can use the booking form on this site, or call 844-460-7038.', false);
     });
   }
-
   function sendReceipt(channel) {
     if (!bookedRef || !bookedPhone) return;
     post('/speedy/send-receipt', { reference: bookedRef, phone: bookedPhone, channel: channel }).then(function (j) {

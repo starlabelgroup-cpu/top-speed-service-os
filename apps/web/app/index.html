@@ -508,7 +508,6 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
           <h3 class="sec">Your next visit</h3>
           <div id="activeJobSlot"></div>
           <div id="payBar"></div>
-          <div id="carePlanSlot"></div>
 
                     <div class="card eco-teaser" onclick="showTab('more'); setTimeout(function(){ var p=document.getElementById('tsePanel'); if(p){ p.scrollIntoView({behavior:'smooth', block:'start'}); } },80);">
             <span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#E94E5C" stroke="none"/></svg></span>
@@ -586,12 +585,13 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
             <div class="chips" id="dayChips"></div>
             <label class="fl">Pick a window</label>
             <div class="chips" id="windowChips">
-              <button class="chip" onclick="pickWindow(this)">8–10 AM</button>
-              <button class="chip" onclick="pickWindow(this)">10 AM–12 PM</button>
-              <button class="chip" onclick="pickWindow(this)">12–2 PM</button>
-              <button class="chip" onclick="pickWindow(this)">2–4 PM</button>
-              <button class="chip" onclick="pickWindow(this)">4–6 PM</button>
+              <button class="chip" data-win="08-10" onclick="pickWindow(this)">8–10 AM</button>
+              <button class="chip" data-win="10-12" onclick="pickWindow(this)">10 AM–12 PM</button>
+              <button class="chip" data-win="12-14" onclick="pickWindow(this)">12–2 PM</button>
+              <button class="chip" data-win="14-16" onclick="pickWindow(this)">2–4 PM</button>
+              <button class="chip" data-win="16-18" onclick="pickWindow(this)">4–6 PM</button>
             </div>
+            <p class="sub" id="winAvailNote" style="margin-top:8px;"></p>
             <p class="sub" style="margin-top:12px;">Your tech texts when they're on the way — no waiting around all day.</p>
             <div class="btnrow">
               <button class="btn ghost" onclick="bookGo(2)">Back</button>
@@ -1131,8 +1131,8 @@ function buildGarage(){
 function buildDays(){
   var days = [], names = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var now = new Date();
-  for(var i=0;i<5;i++){ var d = new Date(now.getTime() + (i+1)*864e5); days.push((i===0?"Tomorrow · ":"")+names[d.getDay()]+" "+months[d.getMonth()]+" "+d.getDate()); }
-  document.getElementById('dayChips').innerHTML = days.map(function(d){ return '<button class="chip" onclick="pickDay(this)">'+d+'</button>'; }).join('');
+  for(var i=0;i<5;i++){ var d = new Date(now.getTime() + (i+1)*864e5); var iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); days.push({ label: (i===0?"Tomorrow · ":"")+names[d.getDay()]+" "+months[d.getMonth()]+" "+d.getDate(), iso: iso }); }
+  document.getElementById('dayChips').innerHTML = days.map(function(d){ return '<button class="chip" data-date="'+d.iso+'" onclick="pickDay(this)">'+d.label+'</button>'; }).join('');
 }
 
 /* ============ home active job ============ */
@@ -1209,11 +1209,40 @@ function pickIssue(el){
 }
 function pickDay(el){
   document.querySelectorAll('#dayChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  el.classList.add('on'); booking.day = el.textContent.trim(); validateTime();
+  el.classList.add('on'); booking.day = el.textContent.trim(); booking.date = el.getAttribute('data-date'); validateTime(); loadAppAvail();
 }
 function pickWindow(el){
   document.querySelectorAll('#windowChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  el.classList.add('on'); booking.window = el.textContent.trim(); validateTime();
+  el.classList.add('on'); booking.window = el.textContent.trim(); booking.windowId = el.getAttribute('data-win'); validateTime();
+}
+/* Live arrival-window picker (2026-11-20, A1): when a day is picked,
+   its windows come from GET /speedy/availability — a closed window
+   (full, or already past) is disabled and labeled, and a picked
+   window that closes is unpicked. If the read fails, every window
+   stays pickable: the picker never blocks a booking. */
+var APP_WIN_LABELS = { '08-10': '8–10 AM', '10-12': '10 AM–12 PM', '12-14': '12–2 PM', '14-16': '2–4 PM', '16-18': '4–6 PM' };
+function loadAppAvail(){
+  if(!booking.date) return;
+  fetch(C_API+'/speedy/availability?date='+encodeURIComponent(booking.date))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.data || !j.data.windows) return;
+      var byId={}; j.data.windows.forEach(function(w){ byId[w.id]=w; });
+      document.querySelectorAll('#windowChips .chip').forEach(function(chip){
+        var id=chip.getAttribute('data-win'); var w=byId[id]; if(!w) return;
+        var base=APP_WIN_LABELS[id]||chip.textContent;
+        if(w.status==='CLOSED'){
+          chip.disabled=true; chip.style.opacity='.45'; chip.textContent=base+(w.reason==='FULL'?' · Full':' · Passed');
+          if(booking.windowId===id){ chip.classList.remove('on'); booking.window=null; booking.windowId=null; }
+        } else {
+          chip.disabled=false; chip.style.opacity=''; chip.textContent=base;
+        }
+      });
+      var note=document.getElementById('winAvailNote');
+      if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked — full and passed windows are closed.':'';
+      validateTime();
+    })
+    .catch(function(){ /* leave every window pickable */ });
 }
 function validateTime(){ document.getElementById('toConfirm').disabled = !(booking.day && booking.window); }
 function showPhoto(src){
@@ -1409,7 +1438,7 @@ function confirmBooking(){
   var btn=document.getElementById('confirmBtn');
   function setBtn(t,en){ if(btn){ btn.textContent=t; btn.disabled=!en; } }
   setBtn('Booking\u2026',false);
-  var payload={customer:{name:name,phone:phone,address:addr||undefined},city:city,zip:zip,appliance:booking.appliance||'Refrigerator',issue:issue,preferredWindow:((booking.day||'')+' \u00b7 '+(booking.window||'')).trim()||undefined};
+  var payload={customer:{name:name,phone:phone,address:addr||undefined},city:city,zip:zip,appliance:booking.appliance||'Refrigerator',issue:issue,preferredWindow:((booking.day||'')+' \u00b7 '+(booking.window||'')).trim()||undefined,preferredDate:booking.date||undefined};
   try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   function doBook(){
     payload.customer.email=cUser?cUser.email:payload.customer.email;
@@ -1570,7 +1599,7 @@ function aspMaybeCard(){
         rows.map(function(r){ return '<div style="display:flex; justify-content:space-between; gap:10px; padding:5px 0; border-bottom:1px solid var(--line); font-size:14px;"><span style="color:#8496B3; font-weight:700;">' + r[0] + '</span><b>' + escC(r[1]) + '</b></div>'; }).join('') +
         '<p class="sub" style="margin:9px 0;">$99 diagnostic, collected at booking and credited toward your repair. A Service Setter confirms by text.</p>' +
         '<div style="display:flex; gap:8px;">' +
-        '<button class="btn blue" id="aspBookBtn" style="width:auto; flex:1;" onclick="aspBook()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Looks right \u2014 send it</button>' +
+        '<button class="btn blue" id="aspBookBtn" style="width:auto; flex:1;" onclick="aspOfferWindows()"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Looks right \u2014 send it</button>' +
         '<button class="btn ghost" id="aspFixBtn" style="width:auto; flex:1;" onclick="aspFix()">Fix something</button>' +
         '</div>' +
         '<div id="aspBookMsg" style="margin-top:8px; font-size:14px;"></div></div>';
@@ -1587,23 +1616,104 @@ function aspFix(){
   var inp = document.getElementById('aspInput');
   if(inp) inp.focus();
 }
-function aspBook(){
+function aspDayStr(off){ var dt=new Date(); dt.setDate(dt.getDate()+off); return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+function aspDayLabel(off,ds){ if(off===0) return 'Today'; if(off===1) return 'Tomorrow'; try{ return new Date(ds+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return ds; } }
+var ASP_CHIP='border-radius:99px;font:inherit;font-weight:700;font-size:13px;padding:7px 12px;cursor:pointer;';
+var ASP_CHIP_ON='background:#0A265C;color:#fff;border:1.5px solid #0A265C;';
+var ASP_CHIP_OFF='background:#eef3fb;color:#0C162B;border:1.5px solid #A9BEE0;';
+function aspOfferWindows(){
+  // Live arrival-window picker (2026-11-20, A1): the summary is
+  // confirmed — before anything is sent, Speedy offers the LIVE
+  // windows for the chosen day (the same availability read as the
+  // booking form) instead of sending the free-text preference. The
+  // booking goes out only when the customer taps "Book this window"
+  // (or "First available instead", which sends exactly what the
+  // summary showed). The summary gate is unchanged: no tap, no send.
   var d = window._aspData;
   if(!d) return;
-  var btn = document.getElementById('aspBookBtn');
-  btn.disabled = true; btn.textContent = 'Booking…';
-  var payload = { customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined };
+  window._aspPick = { date: aspDayStr(0), win: null };
+  window._aspAvail = null;
+  aspRenderPicker();
+}
+function aspRenderPicker(){
+  var slot = document.getElementById('aspCard');
+  if(!slot) return;
+  var days = '';
+  for(var off=0; off<4; off++){
+    var ds = aspDayStr(off);
+    days += '<button type="button" onclick="aspPickDay(\''+ds+'\')" style="'+ASP_CHIP+(window._aspPick.date===ds?ASP_CHIP_ON:ASP_CHIP_OFF)+'">'+aspDayLabel(off,ds)+'</button>';
+  }
+  slot.innerHTML = '<div class="card" style="border:2px solid var(--blue);">' +
+    '<b style="font-size:15.5px; color:var(--navy);">One more tap — pick your arrival window</b>' +
+    '<p class="sub" style="margin:6px 0 4px;">Live windows for the day you choose. Full and passed windows are closed — nothing is booked until you tap \u201cBook this window\u201d.</p>' +
+    '<div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">'+days+'</div>' +
+    '<div id="aspWinRow" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;"><span style="font-size:12.5px;">Loading live windows\u2026</span></div>' +
+    '<div style="display:flex; gap:8px; margin-top:10px;">' +
+    '<button class="btn blue" id="aspWinSend" style="width:auto; flex:1;" onclick="aspSendPick(this)" disabled>Book this window</button>' +
+    '<button class="btn ghost" style="width:auto; flex:1;" onclick="aspSendFirst(this)">First available instead</button>' +
+    '</div>' +
+    '<button type="button" onclick="aspFix()" style="background:none; border:none; color:var(--navy); font:inherit; font-weight:700; font-size:13px; cursor:pointer; text-decoration:underline; margin-top:8px; padding:0;">Change details</button>' +
+    '<div id="aspBookMsg" style="margin-top:8px; font-size:14px;"></div></div>';
+  document.getElementById('screens').scrollTop = 99999;
+  aspLoadWins();
+}
+function aspPickDay(ds){ window._aspPick.date = ds; window._aspPick.win = null; window._aspAvail = null; aspRenderPicker(); }
+function aspLoadWins(){
+  fetch(C_API + '/speedy/availability?date=' + encodeURIComponent(window._aspPick.date))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j || !j.data || !j.data.windows) throw new Error('no windows');
+      window._aspAvail = j.data;
+      var d = window._aspData;
+      if(!window._aspPick.win && d && d.preferred_window){
+        j.data.windows.forEach(function(w){ if(w.id===d.preferred_window && w.status!=='CLOSED') window._aspPick.win = w.id; });
+      }
+      aspRenderWins();
+    })
+    .catch(function(){
+      var row = document.getElementById('aspWinRow');
+      if(row) row.innerHTML = '<span style="font-size:12.5px;">Live windows are unavailable right now — tap \u201cFirst available instead\u201d and your Service Setter will confirm a window by text.</span>';
+    });
+}
+function aspRenderWins(){
+  var row = document.getElementById('aspWinRow');
+  if(!row || !window._aspAvail) return;
+  var html = '';
+  window._aspAvail.windows.forEach(function(w){
+    var closed = w.status==='CLOSED';
+    var on = window._aspPick.win===w.id;
+    html += '<button type="button" '+(closed?'disabled style="'+ASP_CHIP+ASP_CHIP_OFF+'opacity:.45;cursor:not-allowed;"':'onclick="aspPickWin(\''+w.id+'\')" style="'+ASP_CHIP+(on?ASP_CHIP_ON:ASP_CHIP_OFF)+'"')+'>'+escC(w.label)+(closed?(w.reason==='FULL'?' \u00b7 Full':' \u00b7 Passed'):'')+'</button>';
+  });
+  row.innerHTML = html;
+  var send = document.getElementById('aspWinSend');
+  if(send) send.disabled = !window._aspPick.win;
+}
+function aspPickWin(id){ window._aspPick.win = id; aspRenderWins(); }
+function aspSendPick(btn){
+  var d = window._aspData;
+  if(!d || !window._aspPick || !window._aspPick.win) return;
+  aspPost({ customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: window._aspPick.win, preferredDate: window._aspPick.date }, btn);
+}
+function aspSendFirst(btn){
+  var d = window._aspData;
+  if(!d) return;
+  aspPost({ customer: { name: d.name, phone: d.phone }, city: d.city, zip: d.zip, appliance: d.appliance, issue: d.issue, preferredWindow: d.preferred_window || undefined }, btn);
+}
+function aspPost(payload, btn){
+  var d = window._aspData;
+  if(!d) return;
+  if(btn){ btn.disabled = true; btn.textContent = 'Booking\u2026'; }
   try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   var done = function(ref){
     window._aspRef = ref;
     window._aspBookedRef = ref;
-    document.getElementById('aspBookMsg').innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E94E5C"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns();
-    btn.style.display = 'none';
-    var fixBtn = document.getElementById('aspFixBtn'); if(fixBtn) fixBtn.style.display = 'none';
+    var slot = document.getElementById('aspCard');
+    if(slot) slot.innerHTML = '<div class="card" style="border:2px solid var(--blue); font-size:14px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E94E5C"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns() + '</div>';
   };
   var fail = function(msg){
-    document.getElementById('aspBookMsg').textContent = ' '+ msg;
-    btn.disabled = false; btn.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E94E5C" stroke="none"/></svg> Looks right \u2014 send it';
+    var m = document.getElementById('aspBookMsg');
+    if(m) m.textContent = ' ' + msg;
+    if(btn){ btn.disabled = false; btn.textContent = 'Try again'; }
   };
   if(cTok()){
     if(cUser && cUser.email) payload.customer.email = cUser.email;
@@ -2184,103 +2294,6 @@ try {
   </div>
   <p style="font-size:12.5px;opacity:.75;margin:12px 0 0">Top Speed Appliance LLC — The Faster, The Better.</p>
 </footer>
-<script>
-/* Appliance Care Plan panel (2026-11-20, B4). Renders only for a
-   signed-in customer. The price shown is the office-set price from
-   the API — when no price is set the panel says so plainly and
-   offers no checkout (the API refuses an unpriced checkout anyway). */
-(function(){
-  var API='https://top-speed-service-os.vercel.app/api/v1';
-  function tok(){ try{ return localStorage.getItem('tsos_cust_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
-  function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-  function money(c){ var v=Number(c||0)/100; return '$'+(v%1===0? String(v) : v.toFixed(2)); }
-  function day(iso){ if(!iso) return ''; try{ return new Date(iso).toLocaleDateString(); }catch(e){ return ''; } }
-  function api(path, opts){
-    opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()}, opts.headers||{});
-    return fetch(API+path, opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok){ var err=new Error(j.error||('Request failed ('+r.status+')')); err.body=j; throw err; } return j; }); });
-  }
-  var slot=document.getElementById('carePlanSlot');
-  if(!slot || !tok()) return;
-  var state=null;
-  function featureList(plan){
-    var f=(plan&&plan.features)||{};
-    var items=[];
-    if(f.annualCheckup) items.push('One annual appliance check-up visit, included');
-    if(f.priorityBooking) items.push('Priority booking — your jobs jump the setter queue');
-    return items;
-  }
-  function render(){
-    if(!state) { slot.innerHTML=''; return; }
-    var plan=(state.plans&&state.plans[0])||null, access=state.access||{};
-    var feats=featureList(plan).map(function(x){ return '<div style="display:flex;gap:8px;font-size:13.5px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2fbf71" stroke-width="2.4" style="flex:none;margin-top:2px;"><path d="M4.5 12.5l5 5L19.5 7"/></svg><span>'+esc(x)+'</span></div>'; }).join('');
-    var head='<div style="display:flex;align-items:center;gap:10px;"><b style="font-size:15.5px;">Appliance Care Plan</b>'+(access.isMember?'<span class="pill green">MEMBER</span>':'')+'</div>';
-    var body='';
-    if(access.isMember){
-      var statusLine = access.effectiveStatus==='GRACE'
-        ? 'Your last payment needs attention — you are in the grace period. Update your card with Stripe to keep your plan active.'
-        : (access.cancelAtPeriodEnd ? 'Your membership stays active through '+esc(day(access.currentPeriodEnd))+', then ends (you asked to cancel).'
-          : 'Your membership is active'+(access.currentPeriodEnd? ' through '+esc(day(access.currentPeriodEnd)) : '')+'.');
-      body='<p class="sub" style="margin:6px 0 10px;">'+statusLine+'</p>'+feats;
-      if(access.checkupAvailable){
-        body+='<div style="margin-top:12px;border-top:1px solid rgba(255,255,255,.12);padding-top:12px;"><b style="font-size:14px;">Book this year\'s check-up</b>'
-          +'<div style="display:grid;gap:8px;margin-top:8px;">'
-          +'<input id="cpCity" placeholder="City" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;">'
-          +'<input id="cpZip" placeholder="ZIP code" inputmode="numeric" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;">'
-          +'<input id="cpAddr" placeholder="Street address" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;">'
-          +'<select id="cpWin" style="padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.06);color:inherit;"><option value="08-10">8–10 AM</option><option value="10-12">10 AM–12 PM</option><option value="12-14">12–2 PM</option><option value="14-16">2–4 PM</option><option value="16-18">4–6 PM</option></select>'
-          +'<button class="btn blue small" id="cpBook">Book my check-up</button><span id="cpMsg" style="font-size:13px;"></span></div></div>';
-      } else if(access.checkupBookingRef){
-        body+='<p class="sub" style="margin:10px 0 0;">Your annual check-up is booked — reference '+esc(access.checkupBookingRef)+'. A Service Setter confirms every visit by text.</p>';
-      }
-      if(!access.cancelAtPeriodEnd && access.status!=='OFFICE_GRANTED'){
-        body+='<div style="margin-top:12px;"><button class="btn ghost small" id="cpCancel">Cancel membership</button></div>';
-      }
-      if(access.status==='OFFICE_GRANTED'){
-        body+='<p class="sub" style="margin:10px 0 0;">This membership was granted by our office.</p>';
-      }
-    } else {
-      var price = plan && plan.annualPriceCents!=null ? plan.annualPriceCents : null;
-      body='<p class="sub" style="margin:6px 0 10px;">One membership for the whole home — an annual check-up plus priority booking, on a yearly plan.</p>'+feats;
-      if(/care=success/.test(location.search)){
-        body+='<p style="font-size:13.5px;margin:10px 0 0;">Payment received — your membership activates as soon as Stripe confirms it (usually a few seconds). Refresh in a moment.</p>';
-      }
-      if(price!=null){
-        body+='<div style="display:flex;align-items:center;gap:12px;margin-top:12px;"><b style="font-size:17px;">'+esc(money(price))+' / year</b><button class="btn" style="background:var(--red);color:#fff;border-radius:99px;" id="cpJoin">Join the Care Plan</button></div><span id="cpMsg" style="font-size:13px;"></span>';
-      } else {
-        body+='<p class="sub" style="margin:10px 0 0;">Membership pricing is being set by our office — check back soon, or call (844) 460-7038 and we will set you up.</p>';
-      }
-    }
-    slot.innerHTML='<div class="card" style="margin-top:12px;">'+head+body+'</div>';
-    var join=document.getElementById('cpJoin');
-    if(join) join.onclick=function(){
-      join.disabled=true;
-      api('/care/plans/checkout',{method:'POST',body:JSON.stringify({planKey:(plan&&plan.key)||'care-plan'})}).then(function(j){ if(j.data&&j.data.url){ location.href=j.data.url; } })
-        .catch(function(e){ var m=document.getElementById('cpMsg'); if(m) m.textContent=(e.body&&e.body.error==='pricing_not_set')?'Pricing is not set yet — please check back soon.':(e.message||'Could not start checkout'); join.disabled=false; });
-    };
-    var book=document.getElementById('cpBook');
-    if(book) book.onclick=function(){
-      var msg=document.getElementById('cpMsg');
-      var body2={ city:document.getElementById('cpCity').value.trim(), zip:document.getElementById('cpZip').value.trim(), address:document.getElementById('cpAddr').value.trim(), appointmentWindow:document.getElementById('cpWin').value };
-      if(!body2.city||!body2.zip){ if(msg) msg.textContent='City and ZIP are needed to book your check-up.'; return; }
-      book.disabled=true;
-      api('/care/checkup/book',{method:'POST',body:JSON.stringify(body2)}).then(function(j){
-        if(msg) msg.textContent='Booked — reference '+(j.data&&j.data.referenceCode||'')+'. A Service Setter will confirm by text.';
-        load();
-      }).catch(function(e){ if(msg) msg.textContent=e.message||'Could not book — try again'; book.disabled=false; });
-    };
-    var cancel=document.getElementById('cpCancel');
-    if(cancel) cancel.onclick=function(){
-      if(!confirm('Cancel your Care Plan at the end of the current period?')) return;
-      cancel.disabled=true;
-      api('/care/plans/cancel',{method:'POST',body:'{}'}).then(function(){ load(); }).catch(function(e){ alert(e.message||'Could not cancel — try again'); cancel.disabled=false; });
-    };
-  }
-  function load(){
-    api('/care/plans').then(function(j){ state=j.data||null; render(); }).catch(function(){ state=null; render(); });
-  }
-  load();
-})();
-</script>
 <script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
