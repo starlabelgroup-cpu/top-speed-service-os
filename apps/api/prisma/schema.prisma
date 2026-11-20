@@ -213,6 +213,7 @@ model User {
   pepperReports PepperReport[]
 
   advertiserSubscription AdvertiserSubscription?
+  careSubscription CareSubscription?
 
   sellerSubscription SellerSubscription?
 
@@ -3093,3 +3094,181 @@ model PmServiceRequest {
   @@index([propertyId])
   @@index([unitId])
 }
+
+
+// ---------------------------------------------------------------------------
+// Restored 2026-11-20 (concurrent-build repair): B4 care-plan models and
+// C19/F6 money-rail models, spliced back additively after a stale-tree
+// push dropped them from this schema while their migrations
+// (20261120020000_care_plans, 20261120020000_payments_rails_connect_gift_cards)
+// and their routes/services/repos stayed on main. Blocks are verbatim
+// from the last schemas that carried them (251942b / 9db6cf3).
+// ---------------------------------------------------------------------------
+
+enum CareSubscriptionStatus {
+  NONE
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  OFFICE_GRANTED
+}
+
+model CarePlan {
+  id               String   @id @default(uuid()) @db.Uuid
+  key              String   @unique
+  name             String
+  description      String?
+  // NULL = pricing not set by the owner yet — checkout is refused
+  // with an honest "pricing not set" state everywhere it appears.
+  annualPriceCents Int?
+  currency         String   @default("usd")
+  // Feature matrix: { <featureKey>: true|false } over the keys in
+  // services/carePlans.js CARE_FEATURES (annualCheckup,
+  // priorityBooking).
+  features         Json     @default("{}")
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  // Set only by the owner price flow (Stripe sync at price-set time).
+  stripeProductId  String?
+  stripePriceId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions CareSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CareSubscription {
+  id                   String               @id @default(uuid()) @db.Uuid
+  userId               String               @unique @db.Uuid
+  planId               String?              @db.Uuid
+  status               CareSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  // When the first failed invoice landed; the grace clock starts here.
+  pastDueAt            DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  // The included annual check-up: the period-end it was booked for,
+  // and the booking reference that fulfilled it. One per period.
+  checkupBookedForPeriodEnd DateTime?
+  checkupBookingRef         String?
+  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
+  grantedById          String?              @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan CarePlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+model CareBillingSetting {
+  id        String   @id
+  graceDays Int      @default(7)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PepperListsOrder {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  listingConnectionId   String    @db.Uuid
+  listingReference      String
+  sellerUserId          String    @db.Uuid
+  buyerUserId           String?   @db.Uuid
+  buyerEmail            String?
+  amountCents           Int
+  feeCents              Int       @default(0)
+  currency              String    @default("usd")
+  status                String    @default("PENDING") // PENDING | PAID | EXPIRED
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  sellerStripeAccountId String?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([sellerUserId, createdAt])
+  @@index([buyerUserId, createdAt])
+  @@index([listingConnectionId, status])
+}
+
+model SellerConnectAccount {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  userId           String   @unique @db.Uuid
+  stripeAccountId  String?  @unique
+  status           String   @default("NOT_STARTED") // NOT_STARTED | ONBOARDING | ACTIVE | RESTRICTED
+  chargesEnabled   Boolean  @default(false)
+  payoutsEnabled   Boolean  @default(false)
+  detailsSubmitted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([companyId, status])
+}
+
+model PaymentsSetting {
+  id                          String   @id
+  connectEnabled              Boolean  @default(false)
+  connectFeeBps               Int?
+  giftCardDenominationsCents  Json     @default("[]")
+  updatedBy                   String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+}
+
+model GiftCard {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  codeHash              String    @unique
+  codeLast4             String
+  initialAmountCents    Int
+  balanceCents          Int       @default(0)
+  currency              String    @default("usd")
+  status                String    @default("PENDING") // PENDING | ACTIVE | DEPLETED | VOID
+  purchaserUserId       String?   @db.Uuid
+  purchaserEmail        String?
+  recipientEmail        String?
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  issuedAt              DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  ledger GiftCardLedgerEntry[]
+
+  @@index([companyId, status])
+  @@index([purchaserUserId, createdAt])
+}
+
+model GiftCardLedgerEntry {
+  id               String   @id @default(uuid()) @db.Uuid
+  giftCardId       String   @db.Uuid
+  kind             String // ISSUE | REDEEM
+  amountCents      Int // signed: ISSUE positive, REDEEM negative
+  balanceAfterCents Int
+  bookingId        String?  @db.Uuid
+  paymentId        String?  @db.Uuid
+  note             String?
+  createdById      String?  @db.Uuid
+  createdAt        DateTime @default(now())
+
+  giftCard GiftCard @relation(fields: [giftCardId], references: [id], onDelete: Cascade)
+
+  @@index([giftCardId, createdAt])
+  @@index([bookingId])
+}
+
+
