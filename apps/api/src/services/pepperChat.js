@@ -10,7 +10,7 @@ import {
   PEPPER_STANDING_DUTIES,
   buildPepperStatus,
 } from './pepperConsole.js';
-import { speedyStatus } from './speedy.js';
+import { assertImageDataUrl, speedyStatus } from './speedy.js';
 
 /**
  * Pepper Chat — the staff-facing chat behind the Workstation chat
@@ -328,4 +328,123 @@ export async function pepperChat({ message, history = [], user = null, surface =
     answeredBy: 'knowledge-pack',
     model: null,
   };
+}
+
+/* ------------------------------- photo ----------------------------------
+ * Pepper photo channel (camera upgrade, 2026-11-20; Ramone: a camera
+ * that "connects to Muse AI" for the team). POST /api/v1/pepper/photo
+ * is staff-gated exactly like the chat, and the vision path is the
+ * SAME provider this service already runs on — grounded in the code
+ * above: the OpenAI Responses API (key OPENAI_API_KEY_V2 ||
+ * OPENAI_API_KEY, model OPENAI_MODEL || 'gpt-4o-mini'), extended with
+ * an input_image part, the same shape services/speedy.js uses for
+ * photo diagnosis. No second provider was introduced.
+ *
+ * Hard rules, same as everywhere in this platform:
+ *  - DRAFT ONLY. This function reads a photo and answers. It writes
+ *    NOTHING — no job, booking, customer or report record is created
+ *    or mutated by a photo read (the drill suite proves the counts).
+ *  - A rating plate is transcribed character for character; anything
+ *    not legible comes back null, never completed or guessed.
+ *  - The 2026-11-10 authority limits bind here too: Pepper never
+ *    certifies a repair is safe and never quotes a price from a photo.
+ */
+
+const PEPPER_PHOTO_FORMAT = {
+  type: 'json_schema',
+  name: 'pepper_photo_read',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      read: { type: 'string', description: 'Plain-language read of what the photo shows, written for the staff member who sent it. Only what is visible — never an invented detail, price or safety certification.' },
+      plate_detected: { type: 'boolean', description: 'True only when the photo clearly shows an appliance model/serial rating plate.' },
+      brand: { type: ['string', 'null'], description: 'Brand exactly as printed on the plate, or null if there is no plate or it is not legible.' },
+      model: { type: ['string', 'null'], description: 'Model number exactly as printed, character for character, or null if not legible.' },
+      serial: { type: ['string', 'null'], description: 'Serial number exactly as printed, character for character, or null if not legible.' },
+      appliance_type: { type: ['string', 'null'], description: 'Appliance type shown on the plate or unmistakable from the photo, or null.' },
+      confidence: { type: 'number', description: '0 to 1 — how legible and complete the plate transcription is. 0 when no plate is detected.' },
+    },
+    required: ['read', 'plate_detected', 'brand', 'model', 'serial', 'appliance_type', 'confidence'],
+  },
+};
+
+function pepperPhotoInstructions() {
+  return [
+    `You are Pepper — ${PEPPER_IDENTITY.title} of the Top Speed Service OS, the staff-facing operations agent. A signed-in staff member has sent you a photo from the field or the office and wants your read on it. This channel is staff-only; you are not talking to a customer.`,
+    'Describe ONLY what is visibly in the photo. If the photo shows an appliance rating (model/serial) plate, transcribe brand, model and serial character for character and set plate_detected true; return null for any field you cannot read exactly — never guess, complete or tidy a number.',
+    'Your read is a DRAFT for the staff member to confirm — nothing is saved to any job, booking or customer record from this photo, and your answer must not claim otherwise.',
+    `Authority limits that bind you: ${PEPPER_AUTHORITY_LIMITS.join(' ')} Never certify that a repair or an appliance is safe, and never quote a price from a photo. If something in the photo looks safety-critical (scorching, sparking damage, a gas line concern), say so plainly and tell the staff member to keep people clear and escalate to Ramone Williams.`,
+    'Style: direct, brief, plain language — a competent duty officer looking at the same photo.',
+  ].join('\n');
+}
+
+export async function pepperPhoto({ imageDataUrl, question = '', context = '' }) {
+  // Magic-byte validation first (the security pass's upload check,
+  // shared with Speedy diagnose): non-image bytes never reach the
+  // model. Throws — the route maps the throw to a 400.
+  assertImageDataUrl(imageDataUrl);
+  const config = openAiConfig();
+  if (!config.configured) {
+    const error = new Error('Pepper photo reading is not configured');
+    error.code = 'PEPPER_PHOTO_UNCONFIGURED';
+    throw error;
+  }
+  const promptText =
+    'Read this photo for me.' +
+    (question ? ` My question: ${String(question).slice(0, 500)}` : '') +
+    (context ? ` Context: ${String(context).slice(0, 120)}.` : '') +
+    ' If it shows an appliance rating plate, transcribe it into the structured fields exactly as printed.';
+  const input = [
+    {
+      role: 'user',
+      content: [
+        { type: 'input_text', text: promptText },
+        { type: 'input_image', image_url: imageDataUrl },
+      ],
+    },
+  ];
+  try {
+    const body = await responsesRequest({
+      instructions: pepperPhotoInstructions(),
+      input,
+      text: { format: PEPPER_PHOTO_FORMAT },
+      max_output_tokens: 700,
+    });
+    const parsed = JSON.parse(extractText(body));
+    const plate = parsed.plate_detected
+      ? {
+          brand: parsed.brand ?? null,
+          model: parsed.model ?? null,
+          serial: parsed.serial ?? null,
+          applianceType: parsed.appliance_type ?? null,
+          confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
+          status: 'DRAFT',
+        }
+      : null;
+    const reply = String(parsed.read || '').trim();
+    if (!reply) throw new Error('OpenAI returned an empty read');
+    return { reply, plate, model: body.model || config.model, provider: 'openai', answeredBy: 'ai-vision' };
+  } catch (error) {
+    // Structured output is the reliable path, not the only one
+    // (mirrors speedyDiagnose): fall back to a plain read so the
+    // staff member still gets an answer, with plate honestly null.
+    const body = await responsesRequest({
+      instructions: pepperPhotoInstructions(),
+      input: [
+        {
+          role: 'user',
+          content: [
+            { type: 'input_text', text: promptText + ' Answer in plain text.' },
+            { type: 'input_image', image_url: imageDataUrl },
+          ],
+        },
+      ],
+      max_output_tokens: 700,
+    });
+    const reply = extractText(body);
+    if (!reply) throw new Error('OpenAI returned an empty reply');
+    return { reply, plate: null, model: body.model || config.model, provider: 'openai', answeredBy: 'ai-vision' };
+  }
 }

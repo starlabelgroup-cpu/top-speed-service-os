@@ -1076,7 +1076,7 @@ function tpPhotosPane(view, id){
   '<p class="note" style="margin:4px 0 8px">Before, during and after — they save to the job record with the time and your name.</p>'+
   '<div class="tp-row"><select class="tp-in" id="ph-cat" style="flex:0 1 40%"><option value="BEFORE">Before</option><option value="DURING">During</option><option value="AFTER">After</option></select>'+
   '<input class="tp-in" id="ph-cap" placeholder="Caption (optional)"></div>'+
-  '<div class="btnrow" style="margin-top:8px"><button class="btn red" type="button" onclick="tpPhotoCam()">'+ICO_CAM+' Take photo — camera</button></div>'+
+  '<div class="btnrow" style="margin-top:8px"><button class="btn red" type="button" onclick="tpPhotoCam()">'+ICO_CAM+' Take photo — camera</button><button class="btn navy" type="button" onclick="if(window.PepperChatPhoto)window.PepperChatPhoto();">'+ICO_CAM+' Ask Pepper with a photo</button></div>'+
   '<label class="btn no" style="display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px;cursor:pointer">'+ICO_CAM+' Or choose from this device<input id="ph-file" type="file" accept="image/*" capture="environment" style="display:none" onchange="tpPhotoPick(this)"></label>'+
   '<img id="ph-prev" alt="Selected job photo preview" style="display:none;width:100%;border-radius:10px;margin-top:8px">'
   +'<div class="btnrow" style="margin-top:8px"><button class="btn navy" type="button" id="ph-save" disabled onclick="tpPhotoSave(\''+id+'\')">Save photo to job</button></div>'
@@ -1113,7 +1113,24 @@ function tpPhotoSave(id){
   var body={ category:document.getElementById('ph-cat').value, dataUrl:window._tpPhotoData, caption:document.getElementById('ph-cap').value.trim()||null };
   tFetch('/provider/assignments/'+id+'/photos',{method:'POST',body:JSON.stringify(body)})
     .then(function(){ window._tpPhotoData=null; toast('Photo saved to the job record', ICO_CHECK); wsReload(id,'photos'); })
-    .catch(function(e){ if(m){ m.textContent=''+(e.message||'Could not save the photo'); m.style.color='#c2262e'; } });
+    .catch(function(e){
+      // PLCamera v2 offline queue (2026-11-20): a job photo taken in a
+      // dead zone is held on the device and flushed to this job's
+      // record by the registered uploader when connectivity returns.
+      if(!navigator.onLine && window.PLCamera && PLCamera.queueAdd){
+        PLCamera.queueAdd(body.dataUrl, { kind:'job-photo', jobId:id, category:body.category, caption:body.caption }).then(function(r){
+          if(m){
+            m.textContent = r.queued
+              ? 'You are offline — this photo is in the upload queue and will be saved to the job when you reconnect.'
+              : 'Could not save the photo, and the upload queue is full — keep this screen open and retry when you reconnect.';
+            m.style.color = r.queued ? '#0f7a3d' : '#c2262e';
+          }
+          if(r.queued){ window._tpPhotoData=null; }
+        });
+        return;
+      }
+      if(m){ m.textContent=''+(e.message||'Could not save the photo'); m.style.color='#c2262e'; }
+    });
 }
 function tpPhotoRemove(id, photoId){
   tFetch('/provider/assignments/'+id+'/photos/'+photoId+'/remove',{method:'POST',body:JSON.stringify({})})
@@ -2154,6 +2171,7 @@ function plugCamOpen(jobId){
     PLCamera.open({
       title: jobId?'Appliance Plug — rating plate':'Appliance Plug — snap the plate',
       allowVideo:false,
+      guide:'plate',
       onPhoto:function(blob){
         blobToDataUrl(blob).then(function(dataUrl){
           if(jobId) plugReadDataUrl(dataUrl, jobId);
@@ -2171,6 +2189,21 @@ function plugAutoCam(){
   window._plugCamAuto=true;
   setTimeout(function(){ plugCamOpen(); }, 400);
 }
+
+/* PLCamera v2 offline queue sink (2026-11-20): job photos queued
+   while offline (see tpPhotoSave) flush to their job record through
+   this uploader on reconnect; an item leaves the queue only when
+   the save actually succeeds. */
+if(window.PLCamera && PLCamera.setUploader){
+  PLCamera.setUploader(function(item){
+    var meta=(item&&item.meta)||{};
+    if(meta.kind!=='job-photo'||!meta.jobId||!item.dataUrl) return Promise.resolve(false);
+    return tFetch('/provider/assignments/'+meta.jobId+'/photos',{method:'POST',body:JSON.stringify({ category:meta.category||'DURING', dataUrl:item.dataUrl, caption:meta.caption||null })})
+      .then(function(){ toast('Queued job photo uploaded', ICO_CHECK); return true; })
+      .catch(function(){ return false; });
+  });
+}
+
 function plugReadDataUrl(dataUrl, id){
   plugMsg('Reading the plate…');
   tFetch('/provider/assignments/'+id+'/plate-read', {method:'POST', body:JSON.stringify({imageDataUrl:dataUrl})})

@@ -952,6 +952,29 @@ export async function speedyExtractModelPlate(imageUrl) {
   return JSON.parse(extractText(body));
 }
 
+/**
+ * The normalized plate DRAFT envelope (camera upgrade, 2026-11-20):
+ * the same transcription speedyExtractModelPlate returns, reshaped
+ * once so every consumer (Pepper Lists plate lane, Appliance Plug,
+ * Field Pro) pre-fills from ONE camelCase draft shape. Additive —
+ * the original `plate` payload is unchanged everywhere it is served.
+ * A draft is all this ever is: the human confirms every field
+ * against the physical plate before anything is saved.
+ */
+export function plateDraft(plate) {
+  const p = plate || {};
+  return {
+    brand: p.brand ?? null,
+    model: p.model ?? null,
+    serial: p.serial ?? null,
+    applianceType: p.appliance_type ?? null,
+    fuel: p.fuel ?? null,
+    confidence: typeof p.confidence === 'number' ? p.confidence : null,
+    status: 'DRAFT',
+    source: 'speedy-plate-read',
+  };
+}
+
 const PARTS_FINDER_FORMAT = {
   type: 'json_schema',
   name: 'speedy_parts_finder',

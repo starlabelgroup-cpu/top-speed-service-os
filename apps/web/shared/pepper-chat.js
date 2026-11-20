@@ -62,6 +62,8 @@
     '.pcb-input input[type=text]{flex:1;border:1.5px solid #D8E1F0;border-radius:12px;padding:11px 12px;font:400 14.5px Inter,system-ui,sans-serif;min-width:0}',
     '.pcb-input .send{background:#E94E5C;color:#fff;border:none;border-radius:12px;padding:0 15px;font:800 14px Inter,system-ui,sans-serif;cursor:pointer;display:flex;align-items:center}',
     '.pcb-input .send svg{width:18px;height:18px;display:block}',
+    '.pcb-input .cam{background:#fff;color:#0C162B;border:1.5px solid #D8E1F0;border-radius:12px;padding:0 11px;cursor:pointer;display:none;align-items:center;flex:none}',
+    '.pcb-input .cam svg{width:19px;height:19px;display:block}',
     '.pcb-fine{padding:0 14px 11px;margin:0;font-size:11.3px;color:#5A6B87;flex:none}',
     '@media(max-width:640px){.pcb-panel{left:0;right:0;bottom:0;width:auto;height:min(620px,calc(100vh - 40px));height:min(620px,calc(100dvh - 40px));max-height:calc(100vh - 40px);max-height:calc(100dvh - 40px);border-radius:24px 24px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}.pcb-bar{right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px))}}',
     '@media(prefers-reduced-motion:reduce){.pcb-panel,.pcb-bar{transition:none}}'
@@ -78,6 +80,7 @@
 
   var ICON_CHAT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E94E5C"/></svg>';
   var ICON_SEND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12h14M13 5.5 19.5 12 13 18.5"/></svg>';
+  var ICON_CAM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h1.6l1.7-2.4A1 1 0 0 1 8.6 4h6.8a1 1 0 0 1 .8.6L17.9 7h1.6A1.5 1.5 0 0 1 21 8.5V18a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/><circle cx="12" cy="13" r="3.4"/></svg>';
 
   var bar = document.createElement('button');
   bar.className = 'pcb-bar';
@@ -101,7 +104,7 @@
     '<button type="button" data-q="What are the pricing rules?">Pricing rules</button>' +
     '<button type="button" data-q="__report__">Report a problem</button>' +
     '</div>' +
-    '<div class="pcb-input" style="display:none"><input type="text" placeholder="Ask Pepper about the platform or your work" aria-label="Message Pepper" maxlength="2000"><button class="send" type="button" aria-label="Send message">' + ICON_SEND + '</button></div>' +
+    '<div class="pcb-input" style="display:none"><input type="text" placeholder="Ask Pepper about the platform or your work" aria-label="Message Pepper" maxlength="2000"><button class="cam" type="button" aria-label="Ask Pepper with a photo" title="Ask Pepper with a photo">' + ICON_CAM + '</button><button class="send" type="button" aria-label="Send message">' + ICON_SEND + '</button></div>' +
     '<p class="pcb-fine">Staff only. Problems reported here are filed to Ramone Williams.</p>';
 
   document.body.appendChild(bar);
@@ -192,6 +195,7 @@
   var quick = panel.querySelector('.pcb-quick');
   var inputRow = panel.querySelector('.pcb-input');
   var input = panel.querySelector('.pcb-input input');
+  var camBtn = panel.querySelector('.pcb-input .cam');
   var history = [];
   var greeted = false;
   var mode = null; // 'chat' | 'guest'
@@ -263,6 +267,10 @@
     mode = 'chat';
     quick.style.display = 'flex';
     inputRow.style.display = 'flex';
+    // The photo button exists only where the shared camera platform
+    // (PLCamera v2) is loaded on the console — feature-detected,
+    // never rendered where the camera is not.
+    if (camBtn) camBtn.style.display = (window.PLCamera && typeof window.PLCamera.open === 'function') ? 'flex' : 'none';
     if (!greeted) {
       greeted = true;
       addLine('On duty. Ask me about the platform, the work rules, where a console lives, or how accounts work — or say "system status" for the live board. If something is a problem, report it here and I will file it for Ramone.', false);
@@ -312,6 +320,86 @@
     });
   }
 
+  /* Pepper photo channel (camera upgrade, 2026-11-20): the camera
+     button opens PLCamera; the captured photo goes to
+     POST /api/v1/pepper/photo (staff-gated server-side, same gate as
+     this chat). Pepper's read renders as a chat line; a rating-plate
+     extraction renders as a labeled DRAFT line — the endpoint saves
+     nothing, and the line says so. All rendering is textContent,
+     same discipline as the rest of this bar. */
+  function postPhoto(dataUrl, question) {
+    addLine(question ? 'Photo sent to Pepper: ' + question : 'Photo sent to Pepper', true);
+    history.push({ role: 'user', content: '[photo] ' + (question || 'Photo for Pepper — read it for me') });
+    var pending = addLine('Pepper is reading the photo…', false);
+    fetch(API + '/pepper/photo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() },
+      body: JSON.stringify({ imageDataUrl: dataUrl, question: question || undefined, context: window.location.pathname }),
+    }).then(function (res) {
+      if (res.status === 401) {
+        pending.remove();
+        showGuestCard('Your session has ended — sign in again to keep chatting.');
+        return null;
+      }
+      if (res.status === 403) {
+        pending.textContent = 'Photo reads are for staff accounts (Service Setters, managers, the Master). This sign-in does not carry a staff role — if that is wrong, it goes to Ramone Williams.';
+        return null;
+      }
+      return res.json().catch(function () { return null; });
+    }).then(function (json) {
+      if (!json) return;
+      if (json.error) {
+        pending.textContent = json.error;
+        return;
+      }
+      var d = json.data || {};
+      var reply = d.reply || 'No read came back — try again, and if it keeps happening, file it in the Pepper console report log (/pepper).';
+      pending.textContent = reply;
+      history.push({ role: 'assistant', content: reply });
+      if (d.plate) {
+        var p = d.plate;
+        var line = 'Plate draft — nothing was saved to any record. Brand: ' + (p.brand || '—') +
+          ' · Model: ' + (p.model || '—') +
+          ' · Serial: ' + (p.serial || '—') +
+          ' · Type: ' + (p.applianceType || '—') +
+          ' · Read confidence: ' + Math.round((typeof p.confidence === 'number' ? p.confidence : 0) * 100) +
+          '%. Check every character against the plate before using it.';
+        addLine(line, false);
+        history.push({ role: 'assistant', content: line });
+      }
+      if (history.length > 20) history = history.slice(-20);
+      body.scrollTop = body.scrollHeight;
+    }).catch(function () {
+      pending.textContent = 'That photo never reached the server — check your connection and try again. Nothing was sent or saved.';
+    });
+  }
+
+  function sendPhoto() {
+    if (!window.PLCamera || typeof window.PLCamera.open !== 'function') return;
+    var question = input.value.trim();
+    input.value = '';
+    window.PLCamera.open({
+      title: 'Ask Pepper — show me the photo',
+      allowVideo: false,
+      guide: 'plate',
+      onPhoto: function (blob) {
+        var reader = new FileReader();
+        reader.onload = function () { postPhoto(String(reader.result || ''), question); };
+        reader.onerror = function () { addLine('That photo could not be read from the camera — try again.', false); };
+        reader.readAsDataURL(blob);
+      },
+    });
+  }
+
+  // Console-side entry point (e.g. the Tech App job workspace's
+  // "Ask Pepper with a photo" button): opens the panel, then the
+  // camera, when this bar is in staff chat mode.
+  window.PepperChatPhoto = function () {
+    panel.classList.add('open');
+    refreshMode(null);
+    if (mode === 'chat') sendPhoto();
+  };
+
   bar.addEventListener('click', function () {
     if (pcbSuppressClick) return;
     panel.classList.add('open');
@@ -319,6 +407,7 @@
   });
   panel.querySelector('.x').addEventListener('click', function () { panel.classList.remove('open'); });
   panel.querySelector('.send').addEventListener('click', function () { send(input.value); });
+  if (camBtn) camBtn.addEventListener('click', function () { sendPhoto(); });
   input.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') send(input.value); });
   quick.addEventListener('click', function (ev) {
     var b = ev.target.closest('button[data-q]');

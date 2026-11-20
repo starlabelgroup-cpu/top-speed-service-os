@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { buildPepperStatus } from '../services/pepperConsole.js';
-import { pepperChat, pepperChatStatus } from '../services/pepperChat.js';
+import { pepperChat, pepperChatStatus, pepperPhoto } from '../services/pepperChat.js';
 import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReportsRepo.js';
 
 /**
@@ -30,6 +30,17 @@ import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReports
  *                                 real board payload; problem
  *                                 reports file a NEEDS_OWNER report
  *                                 (services/pepperChat.js).
+ *   POST /pepper/photo            the Pepper photo channel (camera
+ *                                 upgrade, 2026-11-20): staff send a
+ *                                 photo (job site, rating plate, a
+ *                                 part) and get Pepper's read plus,
+ *                                 for a plate, a structured DRAFT
+ *                                 extraction. Same staff gate, same
+ *                                 provider as the chat (OpenAI
+ *                                 Responses API with image input).
+ *                                 The read is a draft only — this
+ *                                 endpoint writes NOTHING to any
+ *                                 record.
  *
  * Gate: the staff set exactly (STAFF_ROLES — Service Setters,
  * managers, the Master, platform admin), carried PER ROUTE. This
@@ -140,6 +151,40 @@ router.post('/pepper/chat', ...staffGate, async (req, res, next) => {
     return res.json({ data: { ...result, chat: pepperChatStatus() } });
   } catch (error) {
     return next(error);
+  }
+});
+
+const photoSchema = z.object({
+  imageDataUrl: z.string().trim().min(32).max(12_000_000),
+  question: z.string().trim().max(500).optional(),
+  // Which console/surface the photo came from (e.g. "/tech") — carried
+  // into the model's context only; nothing is filed under it.
+  context: z.string().trim().max(120).optional(),
+});
+
+router.post('/pepper/photo', ...staffGate, async (req, res) => {
+  if (!pepperChatStatus().configured) {
+    return res.status(503).json({ error: 'Pepper photo reading is unavailable right now — the vision provider is not configured on this server. Describe the photo in the chat instead.' });
+  }
+  const parsed = photoSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid photo', details: parsed.error.flatten() });
+  }
+  try {
+    const result = await pepperPhoto({
+      imageDataUrl: parsed.data.imageDataUrl,
+      question: parsed.data.question || '',
+      context: parsed.data.context || '',
+    });
+    return res.json({ data: result });
+  } catch (error) {
+    if (error?.code === 'PEPPER_PHOTO_UNCONFIGURED') {
+      return res.status(503).json({ error: 'Pepper photo reading is unavailable right now — the vision provider is not configured on this server. Describe the photo in the chat instead.' });
+    }
+    if (/not a real photo/i.test(String(error?.message || ''))) {
+      return res.status(400).json({ error: 'That file is not a real photo — its contents do not match an image format' });
+    }
+    return res.status(502).json({ error: 'Pepper could not read that photo just now — try again, or describe it in the chat', detail: String(error?.message || error) });
   }
 });
 

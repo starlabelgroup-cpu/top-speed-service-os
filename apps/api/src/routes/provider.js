@@ -15,7 +15,7 @@ import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
-import { speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
 import {
   authorizeEstimateForJob,
   authorizeSchema,
@@ -1171,7 +1171,9 @@ router.post('/provider/assignments/:id/plate-read', ...providerOnly, async (req,
   }
   try {
     const plate = await speedyExtractModelPlate(parsed.data.imageDataUrl);
-    return res.json({ data: { plate } });
+    // `draft` is the normalized camelCase envelope (camera upgrade,
+    // 2026-11-20) — additive; `plate` is byte-for-byte what it was.
+    return res.json({ data: { plate, draft: plateDraft(plate) } });
   } catch (error) {
     return res.status(502).json({ error: 'Speedy could not read that plate — retake the photo or enter the details by hand', detail: String(error?.message || error) });
   }

@@ -5,7 +5,7 @@ import { createConnectionRecord } from '../db/connectionsRepo.js';
 import { getSubmissionMediaItem, listSubmissionMedia, saveSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
-import { assertImageDataUrl, LISTING_CATEGORIES, LISTING_CONDITIONS, speedyDiagnose, speedyDraftListing, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
+import { assertImageDataUrl, LISTING_CATEGORIES, LISTING_CONDITIONS, plateDraft, speedyDiagnose, speedyDraftListing, speedyExtractModelPlate, speedyStatus } from '../services/speedy.js';
 import { notifySubmission } from '../services/notifications.js';
 
 /**
@@ -68,7 +68,9 @@ router.post('/pepper-lists/plate-read', authenticate, async (req, res) => {
   }
   try {
     const plate = await speedyExtractModelPlate(parsed.data.imageDataUrl);
-    return res.json({ data: { plate } });
+    // `draft` is the normalized camelCase envelope (camera upgrade,
+    // 2026-11-20) — additive; `plate` is byte-for-byte what it was.
+    return res.json({ data: { plate, draft: plateDraft(plate) } });
   } catch (error) {
     return res.status(502).json({ error: 'Speedy could not read that plate — retake the photo or enter the details by hand', detail: String(error?.message || error) });
   }

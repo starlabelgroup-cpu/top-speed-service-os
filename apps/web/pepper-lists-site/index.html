@@ -1447,7 +1447,7 @@ function plScanCamOpen(){
 }
 function plPlateCamOpen(){
   if(!window.PLCamera){ plbMsg('plbPlateMsg','Camera is still loading — try again in a moment, or use the upload button; it works on every device.',true); return; }
-  PLCamera.open({ title:'Plate scan — camera', allowVideo:false, accept:'image/*',
+  PLCamera.open({ title:'Plate scan — camera', allowVideo:false, accept:'image/*', guide:'plate',
     onPhoto:function(b){ plbPlateSetPhoto(b); } });
 }
 function plbDownscalePhoto(file){
@@ -1495,7 +1495,7 @@ function plbPlateRead(){
   if(!plbPlateBlob){ plbMsg('plbPlateMsg','Add a plate photo first — camera or upload.',true); return; }
   plbMsg('plbPlateMsg','Speedy is reading the plate…');
   plbBlobToB64(plbPlateBlob).then(function(b64){
-    return plApi('/pepper-lists/plate-read',{method:'POST',body:JSON.stringify({imageDataUrl:'data:image/jpeg;base64,'+b64})});
+    return plApi('/pepper-lists/plate-read',{method:'POST',body:JSON.stringify({imageDataUrl:'data:'+(plbPlateBlob.type||'image/jpeg')+';base64,'+b64})});
   }).then(function(j){
     var p=(j.data&&j.data.plate)||{};
     if(p.appliance_type) plbEl('plbPlateType').value=p.appliance_type;
