@@ -226,6 +226,8 @@ model User {
 
   emailSignInTokens EmailSignInToken[]
 
+  adsOsConnectCodes AdsOsConnectCode[]
+
   emailChangeTokens EmailChangeToken[]
 
   pushSubscriptions PushSubscription[]
@@ -1266,6 +1268,30 @@ model PasswordResetToken {
 model EmailSignInToken {
   id        String    @id @default(uuid()) @db.Uuid
   tokenHash String    @unique
+  userId    String    @db.Uuid
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// Ads OS connect codes (2026-11-20): the "Sign in with Top Speed
+// Service OS" door for the Top Speed Ads OS console. A signed-in
+// user mints a one-time code for their OWN account (the mint takes
+// no account parameter); the console exchanges it for the account
+// identity (email, display name, role) and nothing else. Only the
+// SHA-256 hash of the code is stored; the raw code is returned
+// once by the mint response and never logged. Codes live 10
+// minutes, are single-use, and issuing a new one supersedes every
+// still-unused code for the account (the EmailSignInToken
+// discipline).
+model AdsOsConnectCode {
+  id        String    @id @default(uuid()) @db.Uuid
+  codeHash  String    @unique
   userId    String    @db.Uuid
   expiresAt DateTime
   usedAt    DateTime?

@@ -50,6 +50,10 @@ export const store = {
   // mode uses the EmailSignInToken table). Keyed by token SHA-256
   // hash, same discipline as passwordResetTokens.
   emailSignInTokens: new Map(),
+  // Ads OS connect codes (skeleton-mode fallback; the database
+  // mode uses the AdsOsConnectCode table). Keyed by code SHA-256
+  // hash, same discipline as emailSignInTokens.
+  adsOsConnectCodes: new Map(),
   // Username (email) change tokens (skeleton-mode fallback; the
   // database mode uses the EmailChangeToken table). Keyed by token
   // SHA-256 hash, same discipline as passwordResetTokens.

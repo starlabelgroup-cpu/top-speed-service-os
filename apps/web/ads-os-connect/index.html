@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Connect Top Speed Ads OS — Top Speed Service OS</title>
+<meta name="description" content="Generate a one-time connect code to sign in to Top Speed Ads OS with your Top Speed Service OS account.">
+<link rel="canonical" href="https://topspeedserviceos.com/ads-os-connect">
+<meta name="theme-color" content="#060B18">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<script src="/google-tag.js"></script>
+<style>
+:root{--red:#e94e5c;--navy:#1c2b46;--ink:#1b2840;--mut:#8591a4;--line:#e7ecf3;--bg:#f5f7fb}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none}
+.hero{background:#0c162b;color:#fff;padding:26px 16px 30px;text-align:center}
+.hero .mark{display:inline-flex;align-items:center;gap:9px;font-family:'Rajdhani',sans-serif;font-weight:800;letter-spacing:2.5px;font-size:12px;color:#f3b7bd;text-transform:uppercase}
+.hero h1{font-family:'Rajdhani',sans-serif;font-size:clamp(26px,5vw,36px);font-weight:800;letter-spacing:-.5px;margin-top:10px}
+.hero p{color:#b9c4d6;font-size:14px;line-height:1.6;max-width:520px;margin:8px auto 0}
+.wrap{width:100%;max-width:460px;margin:-16px auto 40px;padding:0 16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;box-shadow:0 10px 30px rgba(12,22,43,.08)}
+.card h2{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:9px}
+.card .who{font-size:13px;color:#52647c;margin-top:6px;line-height:1.55}
+.card .who strong{color:var(--navy)}
+.btn{background:var(--red);border:1px solid var(--red);color:#fff;border-radius:8px;padding:12px 16px;font-size:13.5px;font-weight:800;cursor:pointer;font-family:inherit;text-align:center;text-decoration:none;display:inline-block}
+.btn:hover{background:#d83d4d}
+.btn.block{width:100%;margin-top:20px}
+.btn.ghost{background:#fff;color:var(--navy);border-color:#dfe7f0}
+.btn.ghost:hover{background:#f5f7fb}
+.btn:disabled{opacity:.55;cursor:wait}
+.policy{font-size:12.5px;color:#52647c;background:#fbfcfe;border:1px solid var(--line);border-radius:10px;padding:11px 13px;line-height:1.6;margin-top:16px}
+.msg{font-size:13px;line-height:1.55;margin-top:14px;display:none}
+.msg.ok{display:block;background:#eefaf3;border:1px solid #cdeeda;color:#0f6a38;border-radius:10px;padding:12px 14px}
+.msg.err{display:block;background:#fff1f2;border:1px solid #fad7dc;color:#9e3e4b;border-radius:10px;padding:12px 14px}
+.codebox{margin-top:16px;background:#0c162b;color:#fff;border-radius:10px;padding:16px;text-align:center}
+.codebox .code{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:15px;line-height:1.5;word-break:break-all;user-select:all}
+.codebox .exp{font-size:12px;color:#b9c4d6;margin-top:10px;line-height:1.55}
+.steps{margin-top:16px;font-size:13px;color:#52647c;line-height:1.65}
+.steps li{margin-left:18px;margin-top:4px}
+.foot{margin-top:auto;text-align:center;padding:18px 16px 26px;font-size:12px;color:var(--mut);line-height:1.6}
+.foot a{color:var(--navy);font-weight:700}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<div class="hero">
+  <span class="mark"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Top Speed Service OS</span>
+  <h1>Connect Top Speed Ads OS</h1>
+  <p>Sign in to the Top Speed Ads OS console with this Service OS account — no second password. Generate a one-time code here and paste it into Ads OS.</p>
+</div>
+
+<main class="wrap">
+  <div class="card">
+    <!-- SIGNED IN: show the account and the generate button. -->
+    <div id="mainState" hidden>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Ads OS connect code</h2>
+      <p class="who">You are signed in as <strong id="whoEmail">your account</strong>. The code is minted for this account only — it tells Ads OS who you are, and nothing else crosses over.</p>
+      <div class="msg" id="mainMsg" role="alert"></div>
+      <button class="btn block" type="button" id="genBtn">Generate Ads OS connect code</button>
+
+      <!-- CODE: shown once — copy it into Ads OS right away. -->
+      <div id="codeState" hidden>
+        <div class="codebox">
+          <div class="code" id="codeText"></div>
+          <div class="exp" id="codeExp"></div>
+        </div>
+        <button class="btn ghost block" type="button" id="copyBtn">Copy the code</button>
+        <ol class="steps">
+          <li>Open <strong>Top Speed Ads OS</strong>.</li>
+          <li>Choose <strong>Sign in with Service OS</strong>.</li>
+          <li>Paste this code in and continue.</li>
+        </ol>
+        <div class="policy">This code works <strong>once</strong> and expires in <strong>10 minutes</strong>. Generating a new code replaces this one. Treat it like a password while it is live — anyone who pastes it first signs in as you.</div>
+      </div>
+    </div>
+
+    <!-- WORKING: checking the session. -->
+    <div id="workingState" hidden>
+      <h2><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-6.2-8.56"/></svg>Checking your sign-in…</h2>
+      <p class="who">One moment.</p>
+    </div>
+  </div>
+</main>
+
+<p class="foot">Trouble? Call the office at <a href="tel:+18444607038">844-460-7038</a>.<br>Top Speed Appliance LLC — The Faster, The Better.</p>
+
+<script>
+(function () {
+  'use strict';
+  var API = 'https://top-speed-service-os.vercel.app/api/v1';
+  var SIGN_IN_URL = '/sign-in?next=/ads-os-connect';
+
+  function $(id) { return document.getElementById(id); }
+  function show(id) {
+    var ids = ['mainState', 'workingState'];
+    for (var i = 0; i < ids.length; i++) { $(ids[i]).hidden = ids[i] !== id; }
+  }
+  function msg(el, kind, text) {
+    el.className = 'msg ' + kind;
+    el.textContent = text;
+  }
+  function sessionToken() {
+    try { return localStorage.getItem('tsos_token') || ''; } catch (e) { return ''; }
+  }
+  function clearSession() {
+    try {
+      localStorage.removeItem('tsos_token');
+      localStorage.removeItem('tsos_cust_token');
+    } catch (e) {}
+  }
+  function goSignIn() {
+    clearSession();
+    location.replace(SIGN_IN_URL);
+  }
+  // Display-only: the account email rides in the session token.
+  // The server stays the authority — the mint call decides.
+  function emailFromToken(jwt) {
+    try {
+      var segment = String(jwt).split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (segment.length % 4) segment += '=';
+      var payload = JSON.parse(atob(segment));
+      return payload && payload.email ? String(payload.email) : '';
+    } catch (e) { return ''; }
+  }
+  function call(path, options) {
+    return fetch(API + path, options).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; });
+    });
+  }
+
+  var session = sessionToken();
+  if (!session) { goSignIn(); return; }
+
+  show('workingState');
+  var shownEmail = emailFromToken(session);
+  if (shownEmail) $('whoEmail').textContent = shownEmail;
+
+  // Confirm the session is alive and prefer the server's email.
+  call('/auth/me', { headers: { Authorization: 'Bearer ' + session } }).then(function (res) {
+    if (res.status === 401) { goSignIn(); return; }
+    if (res.ok && res.j && res.j.user && res.j.user.email) {
+      $('whoEmail').textContent = res.j.user.email;
+    }
+    show('mainState');
+  }).catch(function () {
+    // Offline or unreachable: the mint call below is the real
+    // check, so let the user try it rather than dead-ending here.
+    show('mainState');
+  });
+
+  $('genBtn').addEventListener('click', function () {
+    var btn = $('genBtn');
+    btn.disabled = true;
+    btn.textContent = 'Generating…';
+    call('/integrations/ads-os/sso/code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session },
+      body: '{}',
+    }).then(function (res) {
+      btn.disabled = false;
+      btn.textContent = 'Generate Ads OS connect code';
+      if (res.status === 401) { goSignIn(); return; }
+      if (!res.ok || !res.j || !res.j.data || !res.j.data.code) {
+        msg($('mainMsg'), 'err', (res.j && res.j.error) || 'Something went wrong — please try again.');
+        return;
+      }
+      $('mainMsg').className = 'msg';
+      $('codeText').textContent = res.j.data.code;
+      var exp = res.j.data.expiresAt ? new Date(res.j.data.expiresAt) : null;
+      $('codeExp').textContent = exp && !isNaN(exp.getTime())
+        ? 'Expires at ' + exp.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) + ' — works once.'
+        : 'Expires in 10 minutes — works once.';
+      $('codeState').hidden = false;
+      btn.textContent = 'Generate a new code (replaces this one)';
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Generate Ads OS connect code';
+      msg($('mainMsg'), 'err', 'Could not reach Service OS — check your connection and try again.');
+    });
+  });
+
+  $('copyBtn').addEventListener('click', function () {
+    var text = $('codeText').textContent || '';
+    var btn = $('copyBtn');
+    function done() {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy the code'; }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { done(); });
+    } else {
+      var range = document.createRange();
+      range.selectNodeContents($('codeText'));
+      var sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try { document.execCommand('copy'); } catch (e) {}
+      done();
+    }
+  });
+})();
+</script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>
