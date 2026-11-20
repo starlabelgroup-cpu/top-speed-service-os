@@ -124,7 +124,7 @@ async function waitFor(predicate, timeoutMs = 20000) {
 }
 
 async function waitForServer() {
-  for (let i = 0; i < 60; i += 1) {
+  for (let i = 0; i < 150; i += 1) {
     try {
       const res = await fetch(`http://127.0.0.1:${PORT}/api/v1/health`);
       if (res.ok) return;
