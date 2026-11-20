@@ -170,6 +170,7 @@ footer strong{color:#fff}
         <div class="g-railbrand"><div class="g-mark">F</div><div><b>Flywheel</b><small>ADVERTISING</small></div></div>
         <button class="g-nav on" data-nav="overview" onclick="showView('overview')">Overview</button>
         <button class="g-nav" data-nav="campaigns" id="navCampaigns" onclick="showView('campaigns')">My Campaigns</button>
+        <button class="g-nav" data-nav="results" id="navResults" onclick="showView('results')">Results</button>
         <button class="g-nav" data-nav="editor" id="navEditor" onclick="newCampaign()">Create Campaign</button>
         <button class="g-nav" data-nav="channels" onclick="showView('channels')">Channel Connections</button>
         <button class="g-nav" data-nav="plans" id="navPlans" onclick="showView('plans')">Plans &amp; Billing</button>
@@ -225,6 +226,21 @@ footer strong{color:#fff}
           </div>
         </section>
 
+        <!-- RESULTS (E2) -->
+        <section class="g-view hidden" id="view-results">
+          <div class="g-stats" id="resStats"></div>
+          <div class="g-card">
+            <h3>Results by campaign</h3>
+            <p class="g-sub">Only your campaigns, only recorded counts — impressions and clicks counted by the banner system, leads from bookings and enquiries that carried your campaign's tag. All time.</p>
+            <div id="resTable" style="margin-top:8px"></div>
+            <div id="resMsg" class="g-msg"></div>
+          </div>
+          <div class="g-card">
+            <h3>How counting works</h3>
+            <div id="resCounting" class="g-sub" style="margin-top:6px;line-height:1.7"></div>
+          </div>
+        </section>
+
         <!-- EDITOR -->
         <section class="g-view hidden" id="view-editor">
           <div id="edLock"></div>
@@ -258,6 +274,18 @@ footer strong{color:#fff}
                 <h3>Mini banner preview</h3>
                 <div id="edPreview" style="margin-top:12px"></div>
                 <p class="g-sub" style="margin-top:10px">This is how your ad appears across Top Speed surfaces once approved. The preview updates from the real campaign fields — business, product or service, and button.</p>
+              </div>
+              <div class="g-card">
+                <h3>Your creative image</h3>
+                <p class="g-sub" style="margin-top:6px">Upload your own image — JPEG, PNG or WebP, up to 6 MB. It reaches an audience only when the owner approves a campaign using it; uploading never publishes anything.</p>
+                <div id="crCurrent" style="margin-top:10px"></div>
+                <label>Image name</label><input id="crName" maxlength="120" placeholder="e.g. Fall special banner">
+                <label>Image file</label><input id="crFile" type="file" accept="image/jpeg,image/png,image/webp">
+                <div style="margin-top:12px"><button class="g-btn ghost" id="crUploadBtn" onclick="uploadCreative()">Upload image</button></div>
+                <div id="crMsg" class="g-msg"></div>
+                <div id="crPreview" style="margin-top:12px"></div>
+                <h4 style="margin:18px 0 6px">Your library</h4>
+                <div id="crList"><p class="g-sub">Loading your images…</p></div>
               </div>
               <div class="g-card">
                 <h3>Before you submit</h3>
@@ -415,13 +443,14 @@ function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Market
 function isAdvertiser(){ return !!currentUser&&(currentUser.roles||[]).indexOf('ADVERTISER')>=0; }
 
 /* ── Console shell ── */
-var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],plans:['Plans & Billing','Your Flywheel plan — what it opens, what it costs, when it renews'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard']};
+var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],results:['Results','Your recorded impressions, clicks and leads — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],plans:['Plans & Billing','Your Flywheel plan — what it opens, what it costs, when it renews'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard']};
 function showView(name){
-  ['overview','campaigns','editor','channels','plans','tools'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
+  ['overview','campaigns','results','editor','channels','plans','tools'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
   document.querySelectorAll('.g-nav').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-nav')===name); });
   var t=VIEW_TITLES[name]; document.getElementById('topTitle').textContent=t[0]; document.getElementById('topSub').textContent=t[1];
   document.getElementById('topNewBtn').style.display=(name==='editor'||!isAdvertiser())?'none':'';
   if(name==='campaigns') renderCampaigns();
+  if(name==='results') renderResults();
   if(name==='overview') renderOverview();
   if(name==='plans') loadPlans();
 }
@@ -437,6 +466,7 @@ function showConsole(user){
   var staffish=!!currentUser&&(currentUser.roles||[]).some(function(r){return ['COMPANY_OWNER','COMPANY_ADMIN','PLATFORM_ADMIN','DISPATCHER','MARKETING_MANAGER'].indexOf(r)>=0;});
   document.getElementById('navPlans').style.display=(adv||staffish)?'':'none';
   document.getElementById('navCampaigns').style.display=adv?'':'none';
+  document.getElementById('navResults').style.display=adv?'':'none';
   document.getElementById('navEditor').style.display=adv?'':'none';
   document.getElementById('topNewBtn').style.display=adv?'':'none';
   loadChannels();
@@ -498,6 +528,29 @@ function pauseCampaign(id){
     else msg('campMsg',(x.j&&x.j.error)||'Pause failed.'); });
 }
 
+/* ── Results (E2): the advertiser's own recorded numbers ── */
+function renderResults(){
+  api('/ad-studio/my-results').then(function(x){
+    if(x.status===403&&x.j&&x.j.error==='plan_upgrade_required'){
+      document.getElementById('resStats').innerHTML='';
+      document.getElementById('resCounting').innerHTML='';
+      document.getElementById('resTable').innerHTML='<div class="g-banner-note"><b>Results live in the Attribution view.</b> '+esc(x.j.message||'')+' <button class="g-link" onclick="showView(\'plans\')">See Plans &amp; Billing</button></div>';
+      return;
+    }
+    if(x.status!==200){ msg('resMsg','Could not load results ('+x.status+').'); return; }
+    var d=x.j.data||{}; var t=d.totals||{campaigns:0,active:0,impressions:0,clicks:0,leads:{bookings:0,connections:0,total:0}};
+    var stats=[['CAMPAIGNS',t.campaigns,t.active+' active now'],['IMPRESSIONS',(t.impressions||0).toLocaleString(),'Counted per banner serve'],['CLICKS',(t.clicks||0).toLocaleString(),'Real clicks, no estimates'],['LEADS',(t.leads.total||0).toLocaleString(),(t.leads.bookings||0)+' bookings · '+(t.leads.connections||0)+' enquiries']];
+    document.getElementById('resStats').innerHTML=stats.map(function(s){ return '<div class="g-stat"><div class="k">'+s[0]+'</div><div class="v">'+s[1]+'</div><div class="d">'+s[2]+'</div></div>'; }).join('');
+    var rows=(d.campaigns||[]).map(function(c){
+      var ctr=c.ctr==null?'—':(c.ctr*100).toFixed(1)+'%';
+      return '<tr><td><b style="font-weight:500">'+esc(c.name)+'</b></td><td>'+chipForStatus(c)+'</td><td>'+(c.impressions||0).toLocaleString()+'</td><td>'+(c.clicks||0).toLocaleString()+'</td><td>'+ctr+'</td><td>'+(c.leads.bookings||0)+'</td><td>'+(c.leads.connections||0)+'</td><td><b>'+(c.leads.total||0)+'</b></td></tr>';
+    }).join('');
+    document.getElementById('resTable').innerHTML=rows?'<table class="g-table"><thead><tr><th>CAMPAIGN</th><th>STATUS</th><th>IMPR.</th><th>CLICKS</th><th>CTR</th><th>BOOKINGS</th><th>ENQUIRIES</th><th>LEADS</th></tr></thead><tbody>'+rows+'</tbody></table>':'<p class="g-sub">No campaigns yet — results appear here once your campaigns exist. Counts stay at zero until the banner system records real serves, clicks and tagged bookings.</p>';
+    var cn=d.counting||{};
+    document.getElementById('resCounting').innerHTML='<b>Impressions:</b> '+esc(cn.impressions||'')+'<br><b>Clicks:</b> '+esc(cn.clicks||'')+'<br><b>Leads:</b> '+esc(cn.leads||'');
+  });
+}
+
 /* ── Editor ── */
 function edGet(id){ return document.getElementById(id); }
 function previewFromForm(){
@@ -506,7 +559,7 @@ function previewFromForm(){
 function refreshEdPreview(){ edGet('edPreview').innerHTML=previewFromForm(); }
 ['edBiz','edOffering','edHeadline','edCta'].forEach(function(id){ edGet(id).addEventListener('input', refreshEdPreview); });
 function setEdLocked(locked, campaign){
-  ['edName','edBiz','edOffering','edHeadline','edCopy','edCta','edUrl','edCategory'].forEach(function(id){ edGet(id).disabled=locked; });
+  ['edName','edBiz','edOffering','edHeadline','edCopy','edCta','edUrl','edCategory','crName','crFile','crUploadBtn'].forEach(function(id){ var el=document.getElementById(id); if(el) el.disabled=locked; });
   edGet('edSaveBtn').style.display=locked?'none':''; edGet('edSubmitBtn').style.display=locked?'none':'';
   if(locked&&campaign){
     var steps='';
@@ -529,6 +582,8 @@ function fillEditor(c){
   edGet('edOffering').value=c?(c.offering||''):''; edGet('edHeadline').value=c?(c.headline||''):'';
   edGet('edCopy').value=c?(c.copy||''):''; edGet('edCta').value=c?(c.ctaText||''):'';
   edGet('edUrl').value=c?(c.destinationUrl||''):''; edGet('edCategory').value=c?(c.category||''):'';
+  edCreativeId=(c&&c.creativeUploadId)||'';
+  msg('crMsg',''); document.getElementById('crPreview').innerHTML=''; loadCreatives();
   edGet('edTitle').textContent=c?('Campaign — '+c.name):'Campaign details';
   msg('edMsg',''); refreshEdPreview();
   setEdLocked(!!(c&&(c.status==='PENDING_APPROVAL'||c.status==='ACTIVE'||c.status==='ENDED')), c);
@@ -540,7 +595,7 @@ function saveCampaign(submit){
   var body={ name:edGet('edName').value.trim(), advertiserName:edGet('edBiz').value.trim(), offering:edGet('edOffering').value.trim(),
     headline:edGet('edHeadline').value.trim()||undefined, copy:edGet('edCopy').value.trim()||null,
     ctaText:edGet('edCta').value.trim()||undefined, destinationUrl:edGet('edUrl').value.trim(),
-    category:edGet('edCategory').value||null };
+    category:edGet('edCategory').value||null, creativeUploadId:edCreativeId||null };
   if(!body.name||!body.advertiserName||!body.offering||!body.destinationUrl) return msg('edMsg','Campaign name, business name, product or service, and destination URL are required.');
   var save=id?api('/ad-studio/my-campaigns/'+id,{method:'PATCH',body:JSON.stringify(body)}):api('/ad-studio/my-campaigns',{method:'POST',body:JSON.stringify(body)});
   save.then(function(x){
@@ -551,6 +606,82 @@ function saveCampaign(submit){
       if(y.status===200){ loadMyCampaigns(function(){ showView('campaigns'); msg('campMsg','Submitted for approval — the Top Speed team reviews every campaign before it runs.',true); }); }
       else msg('edMsg',(y.j&&(y.j.message||y.j.error))||'Submit failed.'); });
   });
+}
+
+/* ── Creative uploads (E3): the advertiser's own image library ── */
+var edCreativeId='', myCreatives=[];
+var CR_SIZES=[['300x250','Medium Rectangle'],['728x90','Leaderboard'],['160x600','Wide Skyscraper'],['320x50','Mobile Leaderboard'],['970x250','Billboard'],['336x280','Large Rectangle']];
+function crDims(c){ return (c.width&&c.height)?(c.width+' × '+c.height+' px'):'dimensions not read from the file'; }
+function crSizeKb(c){ return c.sizeBytes>=1024*1024?(c.sizeBytes/1024/1024).toFixed(1)+' MB':Math.max(1,Math.round(c.sizeBytes/1024))+' KB'; }
+function crFetchImage(id){ return fetch(API+'/ad-studio/my-creatives/'+id+'/image',{headers:tok()?{Authorization:'Bearer '+tok()}:{}}).then(function(r){ return r.ok?r.blob():null; }).then(function(b){ return b?URL.createObjectURL(b):null; }).catch(function(){ return null; }); }
+function loadCreatives(){
+  api('/ad-studio/my-creatives').then(function(x){
+    if(x.status!==200){ document.getElementById('crList').innerHTML='<p class="g-sub">Could not load your images ('+x.status+').</p>'; return; }
+    myCreatives=x.j.data||[];
+    renderCrList(); refreshCrCurrent();
+  });
+}
+function renderCrList(){
+  var el=document.getElementById('crList');
+  if(!myCreatives.length){ el.innerHTML='<p class="g-sub">No uploaded images yet.</p>'; return; }
+  el.innerHTML=myCreatives.map(function(c){
+    var att=c.attachedCampaigns&&c.attachedCampaigns.length?c.attachedCampaigns.map(function(a){ return esc(a.name)+' ('+esc(a.status)+')'; }).join(', '):'not attached';
+    return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #e3e9f2">'
+      +'<div id="crThumb-'+c.id+'" style="width:84px;height:64px;flex:0 0 auto;background:#eef2f8;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden"><span class="g-sub">…</span></div>'
+      +'<div style="flex:1 1 auto;min-width:0"><b style="font-weight:500">'+esc(c.name)+'</b><div class="g-sub">'+crDims(c)+' · '+crSizeKb(c)+'<br>Used by: '+att+'</div>'
+      +'<div style="margin-top:6px;display:flex;gap:10px;flex-wrap:wrap"><button class="g-link" onclick="useCreative(\''+c.id+'\')">Use on this campaign</button><button class="g-link" onclick="previewCreative(\''+c.id+'\',null)">Preview sizes</button><button class="g-link" onclick="deleteCreative(\''+c.id+'\')">Delete</button></div></div></div>';
+  }).join('');
+  myCreatives.forEach(function(c){ crFetchImage(c.id).then(function(url){ var el=document.getElementById('crThumb-'+c.id); if(el&&url) el.innerHTML='<img src="'+url+'" alt="" style="width:100%;height:100%;object-fit:cover">'; }); });
+}
+function refreshCrCurrent(){
+  var el=document.getElementById('crCurrent'); if(!el) return;
+  var c=myCreatives.filter(function(x){ return x.id===edCreativeId; })[0];
+  if(c){ el.innerHTML='<div class="g-banner-note"><b>Image attached to this campaign:</b> '+esc(c.name)+' ('+crDims(c)+'). It goes public only if the owner approves the campaign. <button class="g-link" onclick="useCreative(\'\')">Remove</button></div>'; }
+  else el.innerHTML='<p class="g-sub">No uploaded image attached — this campaign runs as a text banner. Upload one below or pick from your library.</p>';
+}
+function useCreative(id){ edCreativeId=id||''; refreshCrCurrent(); if(id) previewCreative(id,null); }
+function uploadCreative(){
+  var input=document.getElementById('crFile'); var f=input.files&&input.files[0];
+  if(!f) return msg('crMsg','Choose an image file first.');
+  if(f.size>6*1024*1024) return msg('crMsg','That file is over the 6 MB cap — export a smaller image.');
+  var reader=new FileReader();
+  reader.onload=function(){
+    var dataUrl=String(reader.result||'');
+    api('/ad-studio/my-creatives',{method:'POST',body:JSON.stringify({name:document.getElementById('crName').value.trim()||undefined,imageDataUrl:dataUrl})}).then(function(x){
+      if(x.status!==201){ msg('crMsg',(x.j&&(x.j.message||x.j.error))||'Upload failed.'); return; }
+      var c=x.j.data; edCreativeId=c.id;
+      msg('crMsg','Image saved to your library and attached to this campaign.',true);
+      loadCreatives(); previewCreative(c.id,dataUrl);
+    });
+  };
+  reader.onerror=function(){ msg('crMsg','Could not read that file.'); };
+  reader.readAsDataURL(f);
+}
+function previewCreative(id,dataUrl){
+  var c=myCreatives.filter(function(x){ return x.id===id; })[0];
+  var box=document.getElementById('crPreview');
+  var draw=function(url){
+    if(!url){ box.innerHTML='<p class="g-sub">Preview unavailable for this image.</p>'; return; }
+    var frames=CR_SIZES.map(function(s){
+      var wh=s[0].split('x'); var w=Number(wh[0]), h=Number(wh[1]);
+      var scale=Math.min(1,330/w); var fw=Math.round(w*scale), fh=Math.round(h*scale);
+      return '<div style="margin:0 0 12px"><div style="width:'+fw+'px;height:'+fh+'px;position:relative;overflow:hidden;border:1px solid #c9d4e4;border-radius:4px;background:#0C162B">'
+        +'<img src="'+url+'" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">'
+        +'<span style="position:absolute;left:6px;bottom:5px;background:#E94E5C;color:#fff;font-weight:800;font-size:'+Math.max(9,Math.round(12*scale))+'px;padding:3px 8px;border-radius:999px">'+esc(edGet('edCta').value||'Learn More')+'</span></div>'
+        +'<div class="g-sub" style="margin-top:4px">'+s[0]+' — '+s[1]+(scale<1?' (shown at '+Math.round(scale*100)+'% to fit this card)':'')+'</div></div>';
+    }).join('');
+    box.innerHTML='<h4 style="margin:6px 0 8px">Placement previews — '+(c?esc(c.name):'your image')+'</h4>'
+      +'<p class="g-sub" style="margin-bottom:8px">The mini banner itself is the text bar in the preview above; these frames show how your image composes at the standard display sizes, cropped to fill, with the campaign button overlaid.</p>'+frames;
+  };
+  if(dataUrl){ draw(dataUrl); return; }
+  crFetchImage(id).then(draw);
+}
+function deleteCreative(id){
+  if(!confirm('Delete this image from your library? Draft or paused campaigns using it will detach.')) return;
+  fetch(API+'/ad-studio/my-creatives/'+id,{method:'DELETE',headers:tok()?{Authorization:'Bearer '+tok()}:{}}).then(function(r){
+    if(r.status===204){ if(edCreativeId===id) edCreativeId=''; document.getElementById('crPreview').innerHTML=''; msg('crMsg','Image deleted.',true); loadCreatives(); return null; }
+    return r.json();
+  }).then(function(j){ if(j) msg('crMsg',j.message||j.error||'Delete failed.'); }).catch(function(){ msg('crMsg','Delete failed.'); });
 }
 
 /* ── Channels (existing Advertiser Console system) ── */

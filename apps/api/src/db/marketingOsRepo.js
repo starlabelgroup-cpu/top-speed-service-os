@@ -251,6 +251,57 @@ export async function deleteLandingPage(id) {
   }
 }
 
+// ─── Page Studio A/B tests (2026-11-20, E4) ─────────────────────────
+
+function toStoreExperiment(row) {
+  return {
+    id: row.id,
+    pageId: row.pageId,
+    status: row.status || 'DRAFT',
+    splitB: row.splitB ?? 50,
+    sectionsB: Array.isArray(row.sectionsB) ? row.sectionsB : [],
+    viewsA: row.viewsA || 0,
+    viewsB: row.viewsB || 0,
+    winner: row.winner || null,
+    createdBy: row.createdBy || null,
+    endedAt: iso(row.endedAt),
+    createdAt: iso(row.createdAt),
+    updatedAt: iso(row.updatedAt),
+  };
+}
+
+export async function persistPageExperiment(record) {
+  if (!DATABASE_ENABLED || !record?.id) return;
+  try {
+    const row = {
+      id: record.id,
+      pageId: record.pageId,
+      status: record.status || 'DRAFT',
+      splitB: record.splitB ?? 50,
+      sectionsB: Array.isArray(record.sectionsB) ? record.sectionsB : [],
+      viewsA: record.viewsA || 0,
+      viewsB: record.viewsB || 0,
+      winner: record.winner || null,
+      createdBy: record.createdBy || null,
+      endedAt: record.endedAt ? new Date(record.endedAt) : null,
+      createdAt: new Date(record.createdAt),
+      updatedAt: new Date(record.updatedAt || record.createdAt),
+    };
+    await db().pageExperiment.upsert({ where: { id: row.id }, update: row, create: row });
+  } catch (error) {
+    console.error('persistPageExperiment failed', error?.message || error);
+  }
+}
+
+export async function deletePageExperimentsForPage(pageId) {
+  if (!DATABASE_ENABLED || !pageId) return;
+  try {
+    await db().pageExperiment.deleteMany({ where: { pageId } });
+  } catch (error) {
+    console.error('deletePageExperimentsForPage failed', error?.message || error);
+  }
+}
+
 export async function hydrateMarketingOs() {
   if (!DATABASE_ENABLED) {
     seedTaxonomyIntoStore();
@@ -280,6 +331,14 @@ export async function hydrateMarketingOs() {
   store.landingPages = pageRows.map(toStorePage);
   const versionRows = await prisma.pageVersion.findMany({ orderBy: [{ pageId: 'asc' }, { version: 'asc' }] });
   store.pageVersions = versionRows.map(toStoreVersion);
+  // A/B tests ride the same cold start; a missing table mid-deploy
+  // degrades to no experiments (pages render variant A), never blocks.
+  try {
+    const experimentRows = await prisma.pageExperiment.findMany({ orderBy: { createdAt: 'asc' } });
+    store.pageExperiments = experimentRows.map(toStoreExperiment);
+  } catch (error) {
+    console.error('hydrateMarketingOs pageExperiments degraded', error?.message || error);
+  }
   return {
     cities: store.marketingCities.length,
     brands: store.marketingBrands.length,

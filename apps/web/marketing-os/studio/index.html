@@ -135,6 +135,7 @@ footer strong{color:#fff}
       <label for="edTitle">Title</label><input id="edTitle" type="text">
       <label for="edMeta" style="margin-top:12px;">Meta description</label><textarea id="edMeta" rows="2"></textarea>
       <label style="margin-top:14px;">Sections</label>
+      <div id="edModeBanner"></div>
       <div id="edSections"></div>
       <label for="edNote">Version note</label><input id="edNote" type="text" placeholder="What changed in this save?">
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
@@ -142,6 +143,13 @@ footer strong{color:#fff}
         <button class="btn ghost" onclick="document.getElementById('edCard').style.display='none';">Close</button>
       </div>
       <div class="msg" id="edMsg"></div>
+    </div>
+
+    <div class="card" id="abCard" style="display:none;">
+      <h2>A/B test</h2>
+      <p class="sub" style="margin:0 0 12px;">Variant A is this page's live content. Variant B is an alternate set of sections. While a test runs, identified visitors are split deterministically — the same visitor always sees the same variant — and bookings carry the variant's tag, so the results below are real bookings and enquiries, counted raw. Staff pick the winner; nothing promotes itself.</p>
+      <div id="abBody"></div>
+      <div class="msg" id="abMsg"></div>
     </div>
 
     <div class="card" id="verCard" style="display:none;">
@@ -185,7 +193,7 @@ var API='https://top-speed-service-os.vercel.app/api/v1';
 var SITE='https://topspeedappliance.net';
 var TRANSITIONS={DRAFT:['IN_REVIEW'],IN_REVIEW:['PUBLISHED','DRAFT'],PUBLISHED:['UNPUBLISHED'],UNPUBLISHED:['IN_REVIEW','DRAFT']};
 var TAX={cities:[],brands:[],services:[],symptoms:[]};
-var txKind='cities', txEditId=null, edPage=null, edSections=[];
+var txKind='cities', txEditId=null, edPage=null, edSections=[], abExp=null, abMode='A';
 
 function tok(){ try{ return localStorage.getItem('tsos_studio_token')||localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function esc(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
@@ -382,7 +390,9 @@ function pgEdit(id){
     document.getElementById('edMeta').value=edPage.metaDescription||'';
     document.getElementById('edNote').value='';
     document.getElementById('edMsg').textContent='';
+    abMode='A'; renderEdModeBanner();
     edRenderSections();
+    abLoad(id);
     document.getElementById('edCard').scrollIntoView({behavior:'smooth'});
   }).catch(function(e){ document.getElementById('pgMsg').textContent=' '+e.message; });
 }
@@ -411,6 +421,15 @@ function edSave(){
   if(!edPage) return;
   edCollect();
   var msg=document.getElementById('edMsg');
+  if(abMode==='B'&&abExp){
+    var splitEl=document.getElementById('abSplit');
+    var patch={sectionsB:edSections};
+    if(splitEl) patch.splitB=Number(splitEl.value)||abExp.splitB;
+    mf('PATCH','/marketing-os/admin/experiments/'+abExp.id,patch)
+      .then(function(j){ abExp=j.data; msg.textContent='Variant B saved to the test — the live page is unchanged.'; msg.className='msg ok'; renderAb(); })
+      .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
+    return;
+  }
   var body={title:document.getElementById('edTitle').value.trim(),metaDescription:document.getElementById('edMeta').value.trim()||null,sections:edSections,note:document.getElementById('edNote').value.trim()||undefined};
   mf('PATCH','/marketing-os/admin/pages/'+edPage.id,body)
     .then(function(j){ msg.textContent='Saved as version '+(j.data.latestVersion||'')+'.'; msg.className='msg ok'; edPage=j.data; pgLoad(); })
@@ -428,6 +447,99 @@ function pgVersions(id){
     }).join(''):'<p class="sub">No versions yet.</p>';
     document.getElementById('verCard').scrollIntoView({behavior:'smooth'});
   }).catch(function(e){ document.getElementById('pgMsg').textContent=' '+e.message; });
+}
+
+/* ---------- A/B tests (E4) ---------- */
+function abMsg(t,ok){ var m=document.getElementById('abMsg'); m.textContent=t; m.className='msg '+(ok?'ok':'err'); }
+function abLoad(pageId){
+  document.getElementById('abCard').style.display='';
+  document.getElementById('abBody').innerHTML='<p class="sub">Loading…</p>';
+  mf('GET','/marketing-os/admin/pages/'+pageId+'/experiments').then(function(j){
+    var rows=j.data||[];
+    abExp=rows.filter(function(e){ return e.status!=='ENDED'; })[0]||rows[0]||null;
+    renderAb();
+  }).catch(function(e){ document.getElementById('abBody').innerHTML='<p class="sub">Could not load A/B tests: '+esc(e.message)+'</p>'; });
+}
+function abResultsTable(e){
+  var r=e.results||{a:{},b:{}};
+  function row(name,v){ return '<tr><td><b>'+name+'</b></td><td>'+(v.serves||0)+'</td><td>'+(v.bookings||0)+'</td><td>'+(v.connections||0)+'</td><td><b>'+(v.total||0)+'</b></td></tr>'; }
+  return '<div style="overflow-x:auto;"><table><thead><tr><th>Variant</th><th>Serves</th><th>Bookings</th><th>Enquiries</th><th>Leads</th></tr></thead><tbody>'
+    +row('A — live page',r.a)+row('B — challenger',r.b)+'</tbody></table></div>'
+    +'<p class="sub">Raw counts from real recorded bookings and enquiries carrying each variant\'s tag (A: '+esc(e.tags.a)+' · B: '+esc(e.tags.b)+'). No significance estimate is shown — the call is yours.</p>';
+}
+function renderAb(){
+  var body=document.getElementById('abBody'); if(!edPage) return;
+  var e=abExp;
+  if(!e||e.status==='ENDED'){
+    var last='';
+    if(e&&e.status==='ENDED') last='<p class="sub">Last test ended — winner: <b>'+(e.winner?('Variant '+e.winner):'none picked')+'</b>.</p>'+abResultsTable(e);
+    body.innerHTML=last+'<div class="row"><div><label for="abSplitNew">Traffic to variant B (%)</label><input id="abSplitNew" type="number" min="1" max="99" value="50"></div>'
+      +'<div style="align-self:end"><button class="btn" onclick="abCreate()">Start an A/B test</button></div></div>'
+      +'<p class="sub">Creates a draft test. Variant B starts as a copy of the live page — edit it, then start the test. A test only runs while the page is published.</p>';
+    return;
+  }
+  var locked=e.status==='RUNNING';
+  var h='<p class="sub">Status: <span class="pill">'+e.status+'</span> · Variant B gets <b>'+e.splitB+'%</b> of identified visitors.</p>';
+  h+='<div class="row"><div><label for="abSplit">Traffic to variant B (%)</label><input id="abSplit" type="number" min="1" max="99" value="'+e.splitB+'"'+(locked?' disabled':'')+'></div>'
+    +'<div style="align-self:end;display:flex;gap:8px;flex-wrap:wrap">'
+    +(locked?'<button class="btn ghost" onclick="abStatus(\'PAUSED\')">Pause</button>':'<button class="btn" onclick="abStatus(\'RUNNING\')">'+(e.status==='PAUSED'?'Resume test':'Start test')+'</button>')
+    +(!locked?'<button class="btn ghost" onclick="abEditB()">'+(abMode==='B'?'Editing variant B':'Edit variant B sections')+'</button><button class="btn ghost" onclick="abSaveSplit()">Save split</button>':'')
+    +'<button class="btn warn" onclick="abStatus(\'ENDED\')">End test</button></div></div>';
+  if(locked) h+='<p class="sub">Variant B and the split are locked while the test runs — pause to change them. Note: editing the page itself mid-test changes variant A.</p>';
+  h+=abResultsTable(e);
+  if(e.status==='RUNNING'||e.status==='PAUSED'){
+    h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn ghost" onclick="abWinner(\'A\')">Variant A wins — keep the live page</button><button class="btn" onclick="abWinner(\'B\')">Variant B wins — promote B to the live page</button></div>'
+      +'<p class="sub">Picking a winner ends the test. Promoting B replaces the page\'s sections with variant B and snapshots a new page version — the same record a normal Studio save makes.</p>';
+  }
+  body.innerHTML=h;
+}
+function renderEdModeBanner(){
+  var b=document.getElementById('edModeBanner');
+  if(abMode==='B'&&abExp){
+    b.innerHTML='<div style="padding:10px 12px;margin-bottom:10px;border-radius:8px;background:#fff4e0;color:#7a5200;font-size:13.5px;">You are editing <b>variant B</b> of the A/B test — “Save” writes to the test only; the live page is unchanged. Title and meta stay page-level. <button class="btn ghost small" onclick="abEditA()">Back to the live page (variant A)</button></div>';
+  } else b.innerHTML='';
+}
+function abEditB(){
+  if(!abExp) return;
+  abMode='B'; edSections=JSON.parse(JSON.stringify(abExp.sectionsB||[]));
+  edRenderSections(); renderEdModeBanner(); renderAb();
+  document.getElementById('edCard').scrollIntoView({behavior:'smooth'});
+}
+function abEditA(){
+  abMode='A'; edSections=JSON.parse(JSON.stringify((edPage&&edPage.sections)||[]));
+  edRenderSections(); renderEdModeBanner(); renderAb();
+}
+function abCreate(){
+  if(!edPage) return;
+  var v=Number(document.getElementById('abSplitNew').value)||50;
+  mf('POST','/marketing-os/admin/pages/'+edPage.id+'/experiments',{splitB:v}).then(function(j){
+    abExp=j.data; abMsg('Test created as a draft — variant B starts as a copy of the live page. Edit variant B, then start the test.',true); renderAb();
+  }).catch(function(e){ abMsg(e.message,false); });
+}
+function abSaveSplit(){
+  if(!abExp) return;
+  var v=Number(document.getElementById('abSplit').value);
+  if(!(v>=1&&v<=99)) return abMsg('Split must be between 1 and 99.',false);
+  mf('PATCH','/marketing-os/admin/experiments/'+abExp.id,{splitB:v}).then(function(j){
+    abExp=j.data; abMsg('Split saved.',true); renderAb();
+  }).catch(function(e){ abMsg(e.message,false); });
+}
+function abStatus(target){
+  if(!abExp) return;
+  if(target==='ENDED'&&!confirm('End this test without picking a winner? The page keeps serving variant A.')) return;
+  mf('POST','/marketing-os/admin/experiments/'+abExp.id+'/status',{status:target}).then(function(j){
+    abExp=j.data; abMsg('Test is now '+target+'.',true); renderAb();
+  }).catch(function(e){ abMsg(e.message,false); });
+}
+function abWinner(variant){
+  if(!abExp) return;
+  if(variant==='B'&&!confirm('Promote variant B to the live page? This replaces the page sections and ends the test.')) return;
+  mf('POST','/marketing-os/admin/experiments/'+abExp.id+'/winner',{variant:variant}).then(function(j){
+    abExp=j.data;
+    abMsg('Variant '+variant+' picked — test ended.'+(variant==='B'?' The live page now serves variant B (saved as version '+j.data.promotedVersion+').':''),true);
+    if(variant==='B'){ abMode='A'; pgEdit(edPage.id); } else renderAb();
+    pgLoad();
+  }).catch(function(e){ abMsg(e.message,false); });
 }
 
 if(tok()){ mf('GET','/marketing-os/admin/taxonomy').then(function(){ mosShow(); }).catch(function(){}); }

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -6,8 +7,10 @@ import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import {
   deleteLandingPage,
+  deletePageExperimentsForPage,
   deleteTaxonomyRecord,
   persistLandingPage,
+  persistPageExperiment,
   persistPageVersion,
   persistTaxonomyRecord,
 } from '../db/marketingOsRepo.js';
@@ -97,6 +100,90 @@ function pageAdmin(page) {
     updatedBy: page.updatedBy || null,
     createdAt: page.createdAt,
     versionCount: store.pageVersions.filter((v) => v.pageId === page.id).length,
+  };
+}
+
+// ─── A/B tests (E4, 2026-11-20) ────────────────────────────────────
+//
+// An experiment pits the page's live sections (variant A — always the
+// LandingPage record itself) against a variant B sections array.
+// Results are RAW COUNTS ONLY: identified serves per variant, and the
+// bookings + enquiries whose intake attribution carries the variant's
+// via tag (counted with the same carries-the-tag rule Ad Studio uses
+// for campaign sourceTags). No significance estimate is computed or
+// implied anywhere — staff read the counts and pick the winner; the
+// system never promotes a variant on its own.
+
+const EXPERIMENT_STATUSES = ['DRAFT', 'RUNNING', 'PAUSED', 'ENDED'];
+const EXPERIMENT_TRANSITIONS = {
+  DRAFT: ['RUNNING', 'ENDED'],
+  RUNNING: ['PAUSED', 'ENDED'],
+  PAUSED: ['RUNNING', 'ENDED'],
+  ENDED: [],
+};
+
+function experimentTag(exp, variant) {
+  return `abtest-${String(exp.id).slice(0, 8)}-${String(variant).toLowerCase()}`;
+}
+
+function findExperiment(id) {
+  return store.pageExperiments.find((e) => e.id === id) || null;
+}
+
+function openExperimentFor(pageId) {
+  return store.pageExperiments.find((e) => e.pageId === pageId && e.status !== 'ENDED') || null;
+}
+
+function runningExperimentFor(pageId) {
+  return store.pageExperiments.find((e) => e.pageId === pageId && e.status === 'RUNNING') || null;
+}
+
+/** Deterministic bucket 0–99 for a visitor key on a page — a hash, never random. */
+function variantBucket(pageId, visitor) {
+  const digest = createHash('sha256').update(`${pageId}:${visitor}`).digest();
+  return digest.readUInt32BE(0) % 100;
+}
+
+function carriesAbTag(record, tag) {
+  if (!record) return false;
+  if (record.source === tag) return true;
+  const attribution = record.attribution;
+  return Boolean(attribution && (attribution.via === tag || attribution.utmCampaign === tag));
+}
+
+function abCounts(tag) {
+  let bookings = 0;
+  for (const booking of store.bookings.values()) {
+    if (carriesAbTag(booking, tag)) bookings += 1;
+  }
+  let connections = 0;
+  for (const connection of store.connections || []) {
+    if (carriesAbTag(connection, tag)) connections += 1;
+  }
+  return { bookings, connections, total: bookings + connections };
+}
+
+function experimentView(exp) {
+  const tagA = experimentTag(exp, 'A');
+  const tagB = experimentTag(exp, 'B');
+  return {
+    id: exp.id,
+    pageId: exp.pageId,
+    status: exp.status,
+    splitB: exp.splitB,
+    sectionsB: exp.sectionsB || [],
+    viewsA: exp.viewsA || 0,
+    viewsB: exp.viewsB || 0,
+    winner: exp.winner || null,
+    createdBy: exp.createdBy || null,
+    endedAt: exp.endedAt || null,
+    createdAt: exp.createdAt,
+    updatedAt: exp.updatedAt,
+    tags: { a: tagA, b: tagB },
+    results: {
+      a: { serves: exp.viewsA || 0, ...abCounts(tagA) },
+      b: { serves: exp.viewsB || 0, ...abCounts(tagB) },
+    },
   };
 }
 
@@ -273,7 +360,40 @@ router.get('/marketing-os/pages/by-url', (req, res) => {
     (p) => p.status === 'PUBLISHED' && p.canonicalUrl === `${SITE_BASE}${normalized}`,
   );
   if (!page) return res.status(404).json({ error: 'Published page not found for that URL' });
-  return res.json({ data: pagePublic(page) });
+  const data = pagePublic(page);
+  // A/B tests (E4, 2026-11-20): while an experiment is RUNNING, an
+  // identified visitor is assigned a variant DETERMINISTICALLY (a
+  // hash of page + visitor key — the same visitor always sees the
+  // same variant; never a per-request coin flip). Variant B swaps in
+  // the experiment's sections; the payload's abTest block names the
+  // variant and the attribution via-tag the renderer stamps on the
+  // page's booking form, which is how real bookings judge the test.
+  // No running experiment (or an anonymous read with no visitor key)
+  // serves variant A — the page exactly as before, abTest null/A.
+  let abTest = null;
+  const exp = runningExperimentFor(page.id);
+  if (exp) {
+    let variant = 'A';
+    let identified = false;
+    const explicit = String(req.query.variant || '').trim().toLowerCase();
+    const visitor = String(req.query.visitor || '').trim().slice(0, 200);
+    if (explicit === 'a' || explicit === 'b') {
+      variant = explicit.toUpperCase();
+      identified = true;
+    } else if (visitor) {
+      variant = variantBucket(page.id, visitor) < exp.splitB ? 'B' : 'A';
+      identified = true;
+    }
+    if (variant === 'B') data.sections = Array.isArray(exp.sectionsB) ? exp.sectionsB : [];
+    abTest = { experimentId: exp.id, variant, viaTag: experimentTag(exp, variant), splitB: exp.splitB };
+    if (identified) {
+      if (variant === 'B') exp.viewsB = (exp.viewsB || 0) + 1;
+      else exp.viewsA = (exp.viewsA || 0) + 1;
+      exp.updatedAt = new Date().toISOString();
+      void persistPageExperiment(exp);
+    }
+  }
+  return res.json({ data: { ...data, abTest } });
 });
 
 // Publish feed — the Service OS database published outward to other
@@ -724,8 +844,170 @@ router.delete('/marketing-os/admin/pages/:id', ...marketingOnly, async (req, res
   if (idx === -1) return res.status(404).json({ error: 'Page not found' });
   const [removed] = store.landingPages.splice(idx, 1);
   store.pageVersions = store.pageVersions.filter((v) => v.pageId !== removed.id);
+  store.pageExperiments = store.pageExperiments.filter((e) => e.pageId !== removed.id);
+  await deletePageExperimentsForPage(removed.id);
   await deleteLandingPage(removed.id);
   return res.status(204).end();
+});
+
+// ─── A/B test admin (Page Studio, E4) ───────────────────────────────
+
+router.get('/marketing-os/admin/pages/:id/experiments', ...marketingOnly, (req, res) => {
+  const page = store.landingPages.find((p) => p.id === req.params.id);
+  if (!page) return res.status(404).json({ error: 'Page not found' });
+  const rows = store.pageExperiments
+    .filter((e) => e.pageId === page.id)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return res.json({ data: rows.map(experimentView) });
+});
+
+const experimentCreateSchema = z.object({
+  splitB: z.number().int().min(1).max(99).optional(),
+  sectionsB: z.array(sectionSchema).max(30).optional(),
+});
+
+router.post('/marketing-os/admin/pages/:id/experiments', ...marketingOnly, async (req, res) => {
+  const page = store.landingPages.find((p) => p.id === req.params.id);
+  if (!page) return res.status(404).json({ error: 'Page not found' });
+  const parsed = experimentCreateSchema.safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid experiment', details: parsed.error.flatten() });
+  if (openExperimentFor(page.id)) {
+    return res.status(409).json({ error: 'This page already has an open A/B test — end it before starting another' });
+  }
+  const now = new Date().toISOString();
+  const exp = {
+    id: createId(),
+    pageId: page.id,
+    status: 'DRAFT',
+    splitB: parsed.data.splitB ?? 50,
+    // Variant B starts as a copy of the live page unless the Studio
+    // sends its own sections — staff edit it from there.
+    sectionsB: JSON.parse(JSON.stringify(parsed.data.sectionsB ?? page.sections ?? [])),
+    viewsA: 0,
+    viewsB: 0,
+    winner: null,
+    createdBy: actorOf(req),
+    endedAt: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  store.pageExperiments.push(exp);
+  await persistPageExperiment(exp);
+  await appendEvent('MARKETING_PAGE_EXPERIMENT_CREATED', {
+    source: 'page-studio',
+    actor: actorOf(req),
+    entityType: 'LANDING_PAGE',
+    entityId: page.id,
+    details: { experimentId: exp.id, canonicalUrl: page.canonicalUrl, splitB: exp.splitB },
+  });
+  return res.status(201).json({ data: experimentView(exp) });
+});
+
+const experimentPatchSchema = z.object({
+  splitB: z.number().int().min(1).max(99).optional(),
+  sectionsB: z.array(sectionSchema).max(30).optional(),
+});
+
+router.patch('/marketing-os/admin/experiments/:id', ...marketingOnly, async (req, res) => {
+  const exp = findExperiment(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'Experiment not found' });
+  if (exp.status !== 'DRAFT' && exp.status !== 'PAUSED') {
+    return res.status(422).json({ error: `A ${exp.status} test is locked — pause it to change variant B or the split` });
+  }
+  const parsed = experimentPatchSchema.safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid experiment update', details: parsed.error.flatten() });
+  if (parsed.data.splitB !== undefined) exp.splitB = parsed.data.splitB;
+  if (parsed.data.sectionsB !== undefined) exp.sectionsB = JSON.parse(JSON.stringify(parsed.data.sectionsB));
+  exp.updatedAt = new Date().toISOString();
+  await persistPageExperiment(exp);
+  return res.json({ data: experimentView(exp) });
+});
+
+const experimentStatusSchema = z.object({ status: z.enum(EXPERIMENT_STATUSES) });
+
+router.post('/marketing-os/admin/experiments/:id/status', ...marketingOnly, async (req, res) => {
+  const exp = findExperiment(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'Experiment not found' });
+  const parsed = experimentStatusSchema.safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid status change', details: parsed.error.flatten() });
+  const target = parsed.data.status;
+  if (target === exp.status) return res.json({ data: experimentView(exp) });
+  const allowed = EXPERIMENT_TRANSITIONS[exp.status] || [];
+  if (!allowed.includes(target)) {
+    return res.status(422).json({ error: `Cannot move a test from ${exp.status} to ${target}`, allowedTransitions: allowed });
+  }
+  if (target === 'RUNNING') {
+    const page = store.landingPages.find((p) => p.id === exp.pageId);
+    if (!page) return res.status(404).json({ error: 'Page not found' });
+    if (page.status !== 'PUBLISHED') {
+      return res.status(422).json({ error: 'Publish the page before starting the test — variants only serve on the live page' });
+    }
+  }
+  exp.status = target;
+  if (target === 'ENDED') exp.endedAt = new Date().toISOString();
+  exp.updatedAt = new Date().toISOString();
+  await persistPageExperiment(exp);
+  await appendEvent(`MARKETING_PAGE_EXPERIMENT_${target}`, {
+    source: 'page-studio',
+    actor: actorOf(req),
+    entityType: 'LANDING_PAGE',
+    entityId: exp.pageId,
+    details: { experimentId: exp.id },
+  });
+  return res.json({ data: experimentView(exp) });
+});
+
+const experimentWinnerSchema = z.object({ variant: z.enum(['A', 'B']) });
+
+router.post('/marketing-os/admin/experiments/:id/winner', ...marketingOnly, async (req, res) => {
+  const exp = findExperiment(req.params.id);
+  if (!exp) return res.status(404).json({ error: 'Experiment not found' });
+  const parsed = experimentWinnerSchema.safeParse(req.body || {});
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid winner', details: parsed.error.flatten() });
+  if (exp.status !== 'RUNNING' && exp.status !== 'PAUSED') {
+    return res.status(422).json({ error: `Only a running or paused test can be decided — this one is ${exp.status}. Nothing was promoted.` });
+  }
+  const page = store.landingPages.find((p) => p.id === exp.pageId);
+  if (!page) return res.status(404).json({ error: 'Page not found' });
+  const variant = parsed.data.variant;
+  const now = new Date().toISOString();
+  let promotedVersion = null;
+  if (variant === 'B') {
+    // Promote through the normal page flow: new sections on the page
+    // record, written through, with a PageVersion snapshot — the
+    // exact discipline of a Studio content save.
+    page.sections = JSON.parse(JSON.stringify(exp.sectionsB || []));
+    page.updatedBy = actorOf(req);
+    page.updatedAt = now;
+    await persistLandingPage(page);
+    const version = await addVersion(page, `A/B test winner — variant B promoted (test ${exp.id.slice(0, 8)})`, actorOf(req));
+    promotedVersion = version.version;
+  }
+  exp.winner = variant;
+  exp.status = 'ENDED';
+  exp.endedAt = now;
+  exp.updatedAt = now;
+  await persistPageExperiment(exp);
+  await appendEvent('MARKETING_PAGE_EXPERIMENT_WINNER', {
+    source: 'page-studio',
+    actor: actorOf(req),
+    entityType: 'LANDING_PAGE',
+    entityId: page.id,
+    details: { experimentId: exp.id, variant, canonicalUrl: page.canonicalUrl, promotedVersion },
+  });
+  emitReport({
+    department: 'marketing',
+    type: 'MARKETING_PAGE_EXPERIMENT_DECIDED',
+    title: `A/B test decided — variant ${variant} wins on ${page.title || page.canonicalUrl}`,
+    detail: {
+      experimentId: exp.id, pageId: page.id, canonicalUrl: page.canonicalUrl, variant,
+      results: experimentView(exp).results, actor: actorOf(req),
+    },
+    source: 'page-studio',
+    reference: page.canonicalUrl,
+    eventKey: `page-experiment:${exp.id}:winner:${variant}`,
+  });
+  return res.json({ data: { ...experimentView(exp), promotedVersion } });
 });
 
 export default router;

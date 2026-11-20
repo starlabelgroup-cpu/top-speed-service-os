@@ -204,6 +204,11 @@ export const store = {
   // approved by the owner. Hydrated from the AdCampaign table via
   // db/adStudioRepo; degrades to an empty list like the Media OS.
   adCampaigns: [],
+  // Advertiser creative uploads (2026-11-20, E3): metadata working
+  // set for the AdvertiserCreative table via db/advertiserCreativesRepo
+  // (bytes are fetched through the repo, never held in the list rows);
+  // degrades to an empty list like the rest.
+  advertiserCreatives: [],
   // Management department reports (2026-11-14): every feature request
   // on every platform, routed to its head department for management to
   // read + acknowledge. Hydrated from the DepartmentReport table via
@@ -215,6 +220,10 @@ export const store = {
   marketingSymptoms: [],
   landingPages: [],
   pageVersions: [],
+  // Page Studio A/B tests (2026-11-20, E4): PageExperiment rows via
+  // db/marketingOsRepo (loaded inside hydrateMarketingOs); degrades to
+  // an empty list like the rest.
+  pageExperiments: [],
   // Single operational event feed connecting every surface.
   events: [],
   providers: [

@@ -213,7 +213,6 @@ model User {
   pepperReports PepperReport[]
 
   advertiserSubscription AdvertiserSubscription?
-  careSubscription CareSubscription?
 
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
@@ -1380,6 +1379,37 @@ model PageVersion {
   @@index([pageId])
 }
 
+// Page Studio A/B tests (2026-11-20, E4): one experiment pits the
+// page's live sections (variant A — always the LandingPage record
+// itself, never copied) against a variant B sections array held here.
+// pageId is a plain reference (no FK — the store-first pattern).
+// Traffic splits deterministically: the public by-url render assigns
+// a visitor key by hash, never at random per request, and counts one
+// "serve" per identified assignment in viewsA/viewsB. Bookings and
+// enquiries judge the test through the existing intake attribution:
+// each variant carries a via tag (abtest-<id8>-a / -b) the renderer
+// stamps on the booking form, counted exactly like Ad Studio counts
+// campaign sourceTags. NOTHING auto-promotes: a staffer picks the
+// winner (winner 'A' | 'B'); promoting B copies sectionsB onto the
+// page with a PageVersion snapshot, through the normal page flow.
+// At most one non-ENDED experiment exists per page (route-enforced).
+model PageExperiment {
+  id        String    @id @default(uuid()) @db.Uuid
+  pageId    String    @db.Uuid
+  status    String    @default("DRAFT")
+  splitB    Int       @default(50)
+  sectionsB Json      @default("[]")
+  viewsA    Int       @default(0)
+  viewsB    Int       @default(0)
+  winner    String?
+  createdBy String?
+  endedAt   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([pageId, status])
+}
+
 // Parts Supply OS (2026-11-11): suppliers, parts inventory, purchase
 // orders and per-job parts usage. Operations data — staff only at the
 // API. Usage snapshots the part's unit cost at the moment of use so job
@@ -1836,6 +1866,12 @@ model AdCampaign {
   objective      String
   status         AdCampaignStatus @default(DRAFT)
   creativeId     String?          @db.Uuid
+  // Advertiser creative upload (2026-11-20, E3): the advertiser's own
+  // uploaded image attached to this campaign. Plain reference to an
+  // AdvertiserCreative row (no FK — the store-first pattern, like
+  // ReviewMedia's references); imageUrl above carries the served URL
+  // (/api/v1/ad-studio/creatives/<id>/image) when this is set.
+  creativeUploadId String?        @db.Uuid
   destinationUrl String
   sourceTag      String           @unique
   placement      AdPlacement      @default(NONE)
@@ -1882,6 +1918,32 @@ model AdCampaign {
 
   @@index([status])
   @@index([businessLine, status])
+}
+
+// Advertiser creative uploads (2026-11-20, E3 — Advertiser creative
+// upload + preview): an advertiser's OWN image, uploaded from the
+// Advertiser Console editor, magic-byte validated at the route
+// (JPEG/PNG/WebP, 6 MB cap — the ReviewMedia discipline) and stored
+// raw (Bytes). ownerId is a plain reference to the advertiser's User
+// id (no FK relation: the working set is the in-memory store with
+// write-through persistence, and a creative must never fail to save
+// because a referenced row lives only in memory — the ReviewMedia
+// precedent). Public serving is restricted to creatives attached to
+// an ACTIVE campaign; the owner reads their own bytes through the
+// gated console route. width/height are read from the file header at
+// upload (null when the header cannot be parsed — never invented).
+model AdvertiserCreative {
+  id        String   @id @default(uuid()) @db.Uuid
+  ownerId   String   @db.Uuid
+  name      String
+  mimeType  String
+  sizeBytes Int
+  width     Int?
+  height    Int?
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  @@index([ownerId, createdAt])
 }
 
 // Flywheel Advertiser Plans (2026-11-17): the paid-plan layer of the
@@ -1972,89 +2034,6 @@ model AdvertiserSubscription {
 // Owner-configurable billing settings (singleton row, id 'default'):
 // the past-due grace window in days (default 7, per the plan spec).
 model AdBillingSetting {
-  id        String   @id
-  graceDays Int      @default(7)
-  updatedBy String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-enum CareSubscriptionStatus {
-  NONE
-  ACTIVE
-  TRIALING
-  PAST_DUE
-  GRACE
-  SUSPENDED
-  OFFICE_GRANTED
-}
-
-// Appliance Care Plan (membership) — B4 (2026-11-20, Ramone approved
-// the recommendations program). Mirrors the Flywheel advertiser-plan
-// discipline exactly: the plan is STRUCTURE seeded with
-// annualPriceCents NULL; the price exists only because the owner set
-// it in the admin surface (routes/carePlans.js), which is also the
-// only place a Stripe Product/Price for the plan is ever created.
-// An unpriced plan refuses checkout with pricing_not_set.
-model CarePlan {
-  id               String   @id @default(uuid()) @db.Uuid
-  key              String   @unique
-  name             String
-  description      String?
-  // NULL = pricing not set by the owner yet — checkout is refused
-  // with an honest "pricing not set" state everywhere it appears.
-  annualPriceCents Int?
-  currency         String   @default("usd")
-  // Feature matrix: { <featureKey>: true|false } over the keys in
-  // services/carePlans.js CARE_FEATURES (annualCheckup,
-  // priorityBooking).
-  features         Json     @default("{}")
-  isActive         Boolean  @default(true)
-  sortOrder        Int      @default(0)
-  // Set only by the owner price flow (Stripe sync at price-set time).
-  stripeProductId  String?
-  stripePriceId    String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  subscriptions CareSubscription[]
-
-  @@index([isActive, sortOrder])
-}
-
-model CareSubscription {
-  id                   String               @id @default(uuid()) @db.Uuid
-  userId               String               @unique @db.Uuid
-  planId               String?              @db.Uuid
-  status               CareSubscriptionStatus @default(NONE)
-  stripeCustomerId     String?
-  stripeSubscriptionId String?
-  currentPeriodStart   DateTime?
-  currentPeriodEnd     DateTime?
-  // When the first failed invoice landed; the grace clock starts here.
-  pastDueAt            DateTime?
-  cancelAtPeriodEnd    Boolean              @default(false)
-  // The included annual check-up: the period-end it was booked for,
-  // and the booking reference that fulfilled it. One per period.
-  checkupBookedForPeriodEnd DateTime?
-  checkupBookingRef         String?
-  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
-  grantedById          String?              @db.Uuid
-  grantedAt            DateTime?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
-
-  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan CarePlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
-
-  @@index([status])
-  @@index([stripeSubscriptionId])
-}
-
-// Owner-configurable care-plan billing settings (singleton row, id
-// 'default'): the past-due grace window in days (default 7, mirroring
-// the advertiser-plan setting).
-model CareBillingSetting {
   id        String   @id
   graceDays Int      @default(7)
   updatedBy String?

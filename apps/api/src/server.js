@@ -145,6 +145,10 @@ app.use('/api/v1/speedy/diagnose', express.json({ limit: '6mb' }));
 // the Service Setters (route-capped: photos 6 MB, videos 15 MB, 18 MB
 // total), so that path gets its own larger parser, before the global one.
 app.use('/api/v1/pepper-lists', express.json({ limit: '30mb' }));
+// Advertiser creative uploads (E3, 2026-11-20) carry a base64 image
+// data URL (route-capped at 6 MB decoded ≈ 8.4 MB of JSON), so that
+// path gets its own parser before the global one — same pattern.
+app.use('/api/v1/ad-studio/my-creatives', express.json({ limit: '10mb' }));
 // Twilio voice webhooks post application/x-www-form-urlencoded, which the
 // JSON parsers below would leave unparsed; give that path its own parser.
 app.use('/api/v1/twilio', express.urlencoded({ extended: false, limit: '16kb' }));

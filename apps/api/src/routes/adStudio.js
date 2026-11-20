@@ -8,7 +8,12 @@ import { persistAdCampaign } from '../db/adStudioRepo.js';
 import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS } from '../data/streamingPack.js';
 import { emitReport } from '../services/managementReports.js';
 import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
-import { speedyDraftAdCopy, speedyStatus } from '../services/speedy.js';
+import { assertImageDataUrl, speedyDraftAdCopy, speedyStatus } from '../services/speedy.js';
+import {
+  deleteAdvertiserCreative as removeAdvertiserCreative,
+  getAdvertiserCreativeBytes,
+  persistAdvertiserCreative,
+} from '../db/advertiserCreativesRepo.js';
 import {
   EXTERNAL_ADS, EXTERNAL_ADS_BOARD_LABEL, EXTERNAL_ADS_VERIFIED_ON,
   AD_SERVING_PROVIDER_ENTRIES, AD_SERVING_PROVIDERS_LABEL, AD_SERVING_PROVIDERS_VERIFIED_ON,
@@ -270,6 +275,7 @@ function publicCampaign(record) {
     objective: record.objective,
     status: record.status,
     creativeId: record.creativeId || null,
+    creativeUploadId: record.creativeUploadId || null,
     creative: creative ? { id: creative.id, slug: creative.slug, title: creative.title, status: creative.status } : null,
     destinationUrl: record.destinationUrl,
     trackedUrl: taggedUrl(record.destinationUrl, record.sourceTag),
@@ -1029,7 +1035,24 @@ const advertiserCreateSchema = z.object({
   destinationUrl: z.string().trim().min(1).max(1000),
   category: z.enum(AD_CATEGORIES).nullable().optional(),
   notes: z.string().trim().max(2000).nullable().optional(),
+  // E3 (2026-11-20): one of the advertiser's own uploaded creatives
+  // (AdvertiserCreative id). Ownership is checked in the handlers —
+  // another advertiser's upload id is a 400, never attached.
+  creativeUploadId: z.string().uuid().nullable().optional(),
 });
+
+/** The served URL of an uploaded creative (public only while ACTIVE). */
+function creativeImageUrl(id) {
+  return `/api/v1/ad-studio/creatives/${id}/image`;
+}
+
+/** Resolve an advertiser's own uploaded creative, or null. */
+function findOwnCreative(req, id) {
+  if (!id) return null;
+  const ownerId = actorIdOf(req);
+  if (!ownerId) return null;
+  return store.advertiserCreatives.find((c) => c.id === id && c.ownerId === ownerId) || null;
+}
 
 router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
   const parsed = advertiserCreateSchema.safeParse(req.body);
@@ -1050,6 +1073,12 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('ca
       });
     }
   }
+  // E3: an attached upload must be the advertiser's own.
+  let creativeUpload = null;
+  if (parsed.data.creativeUploadId) {
+    creativeUpload = findOwnCreative(req, parsed.data.creativeUploadId);
+    if (!creativeUpload) return res.status(400).json({ error: 'That creative image is not in your library' });
+  }
   const now = new Date().toISOString();
   const record = {
     id: createId(),
@@ -1059,6 +1088,8 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('ca
     objective: parsed.data.offering,
     status: 'DRAFT',
     creativeId: null,
+    creativeUploadId: creativeUpload ? creativeUpload.id : null,
+    imageUrl: creativeUpload ? creativeImageUrl(creativeUpload.id) : null,
     destinationUrl: parsed.data.destinationUrl,
     sourceTag: generateSourceTag(parsed.data.name),
     placement: 'BANNER',
@@ -1103,8 +1134,26 @@ router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, requirePlanFeatur
   }
   const parsed = advertiserPatchSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign update', details: parsed.error.flatten() });
+  // E3: a creative change must reference the advertiser's own upload.
+  let patchCreative;
+  if (parsed.data.creativeUploadId) {
+    patchCreative = findOwnCreative(req, parsed.data.creativeUploadId);
+    if (!patchCreative) return res.status(400).json({ error: 'That creative image is not in your library' });
+  }
   Object.assign(record, parsed.data, { updatedAt: new Date().toISOString() });
   if (parsed.data.offering) record.objective = parsed.data.offering;
+  if ('creativeUploadId' in parsed.data) {
+    if (patchCreative) {
+      record.creativeUploadId = patchCreative.id;
+      record.imageUrl = creativeImageUrl(patchCreative.id);
+    } else {
+      // Explicit detach: clear the upload and its served URL (an
+      // imageUrl the office set any other way is never touched —
+      // advertiser records only ever carry creative URLs here).
+      record.creativeUploadId = null;
+      if (record.imageUrl && record.imageUrl.startsWith('/api/v1/ad-studio/creatives/')) record.imageUrl = null;
+    }
+  }
   await persistAdCampaign(record);
   return res.json({ data: myCampaignView(record) });
 });
@@ -1155,6 +1204,259 @@ router.post('/ad-studio/my-campaigns/:id/pause', ...advertiserOnly, async (req, 
     details: { sourceTag: record.sourceTag, ownerAction: false },
   });
   return res.json({ data: myCampaignView(record) });
+});
+
+// ─── Advertiser results dashboard (E2, 2026-11-20) ──────────────────
+
+/**
+ * The advertiser-facing twin of the staff results view: an advertiser
+ * sees ONLY their own campaigns (createdById === their account id —
+ * the same ownership rule as my-campaigns; another advertiser's
+ * campaign never appears, not even as an aggregate). Every number is
+ * a raw recorded count: impressions and clicks from the linked
+ * banner's counters, leads from the same first-touch attribution the
+ * staff Attribution view counts (bookings + enquiries carrying the
+ * campaign's sourceTag). Nothing is estimated, projected or compared
+ * against anyone else. Gated by the plan system's 'attribution'
+ * feature — the Flywheel feature whose label is exactly this view
+ * ("Attribution view — which ads bring bookings").
+ */
+router.get('/ad-studio/my-results', ...advertiserOnly, requirePlanFeature('attribution'), (req, res) => {
+  const ownerId = actorIdOf(req);
+  const rows = store.adCampaigns
+    .filter((c) => ownerId && c.createdById === ownerId)
+    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))
+    .map((record) => {
+      const banner = record.bannerId ? store.banners.find((b) => b.id === record.bannerId) : null;
+      const impressions = banner ? banner.impressions || 0 : 0;
+      const clicks = banner ? banner.clicks || 0 : 0;
+      return {
+        id: record.id,
+        name: record.name,
+        status: record.status,
+        sourceTag: record.sourceTag,
+        impressions,
+        clicks,
+        ctr: impressions > 0 ? clicks / impressions : null,
+        leads: attributedCounts(record.sourceTag),
+        wasApproved: Boolean(record.approvedAt),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      };
+    });
+  const totals = rows.reduce(
+    (acc, row) => ({
+      campaigns: acc.campaigns + 1,
+      active: acc.active + (row.status === 'ACTIVE' ? 1 : 0),
+      impressions: acc.impressions + row.impressions,
+      clicks: acc.clicks + row.clicks,
+      leads: {
+        bookings: acc.leads.bookings + row.leads.bookings,
+        connections: acc.leads.connections + row.leads.connections,
+        total: acc.leads.total + row.leads.total,
+      },
+    }),
+    { campaigns: 0, active: 0, impressions: 0, clicks: 0, leads: { bookings: 0, connections: 0, total: 0 } },
+  );
+  return res.json({
+    data: {
+      campaigns: rows,
+      totals,
+      counting: {
+        impressions: 'Counted by the banner system each time the display feed serves the campaign — one per serve, the same counters the team sees.',
+        clicks: 'Real clicks on the banner, counted before the redirect to the campaign destination.',
+        leads: 'Bookings and enquiries whose intake carried this campaign\u2019s tag (utm_campaign / via) — first-touch attribution, all time. Zero until a tagged visit turns into a booking or enquiry.',
+      },
+    },
+  });
+});
+
+// ─── Advertiser creative uploads (E3, 2026-11-20) ───────────────────
+
+/**
+ * An advertiser's own creative library. Uploads arrive as data URLs
+ * and pass the platform's image discipline: JPEG/PNG/WebP only, the
+ * declared type must match the file's magic bytes (assertImageDataUrl
+ * — the same check Speedy photo diagnosis uses), 6 MB cap (the
+ * ReviewMedia photo cap). Bytes are stored raw on the
+ * AdvertiserCreative row; the owner reads them back through the gated
+ * route below, and the public route serves a creative ONLY while it
+ * is attached to an ACTIVE campaign (the ReviewMedia public rule:
+ * bytes are public only for live content). Uploading never publishes
+ * anything: the image reaches an audience only when a campaign using
+ * it is approved by the owner and goes ACTIVE, through the existing
+ * approval flow.
+ */
+const CREATIVE_MAX_BYTES = 6 * 1024 * 1024;
+
+/** Width/height from the file header; nulls when unparseable — never invented. */
+function imageDimensions(bytes, mimeType) {
+  try {
+    if (mimeType === 'image/png' && bytes.length >= 24) {
+      return { width: bytes.readUInt32BE(16), height: bytes.readUInt32BE(20) };
+    }
+    if (mimeType === 'image/webp' && bytes.length >= 21) {
+      const form = bytes.toString('ascii', 12, 16);
+      if (form === 'VP8 ' && bytes.length >= 30) {
+        return { width: bytes.readUInt16LE(26) & 0x3fff, height: bytes.readUInt16LE(28) & 0x3fff };
+      }
+      if (form === 'VP8L' && bytes.length >= 25) {
+        const bits = bytes.readUInt32LE(21);
+        return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+      }
+      if (form === 'VP8X' && bytes.length >= 30) {
+        return { width: bytes.readUIntLE(24, 3) + 1, height: bytes.readUIntLE(27, 3) + 1 };
+      }
+      return { width: null, height: null };
+    }
+    if (mimeType === 'image/jpeg') {
+      let off = 2;
+      while (off + 9 < bytes.length) {
+        if (bytes[off] !== 0xff) { off += 1; continue; }
+        const marker = bytes[off + 1];
+        if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { off += 2; continue; }
+        const len = bytes.readUInt16BE(off + 2);
+        if (len < 2) break;
+        const isSof = marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+        if (isSof) return { height: bytes.readUInt16BE(off + 5), width: bytes.readUInt16BE(off + 7) };
+        off += 2 + len;
+      }
+    }
+  } catch { /* a header we cannot read simply has no dimensions */ }
+  return { width: null, height: null };
+}
+
+function creativeView(record) {
+  const attached = store.adCampaigns
+    .filter((c) => c.creativeUploadId === record.id && c.createdById === record.ownerId)
+    .map((c) => ({ id: c.id, name: c.name, status: c.status }));
+  return {
+    id: record.id,
+    name: record.name,
+    mimeType: record.mimeType,
+    sizeBytes: record.sizeBytes,
+    width: record.width ?? null,
+    height: record.height ?? null,
+    createdAt: record.createdAt,
+    imagePath: `/ad-studio/my-creatives/${record.id}/image`,
+    attachedCampaigns: attached,
+  };
+}
+
+const creativeUploadSchema = z.object({
+  name: z.string().trim().min(1).max(120).optional(),
+  imageDataUrl: z.string().min(32).max(9_000_000),
+});
+
+router.post('/ad-studio/my-creatives', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
+  const parsed = creativeUploadSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Invalid creative upload', details: parsed.error.flatten() });
+  const match = /^data:image\/(jpeg|jpg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(parsed.data.imageDataUrl.trim());
+  if (!match) return res.status(400).json({ error: 'Send the image as a JPEG, PNG or WebP data URL' });
+  try {
+    assertImageDataUrl(parsed.data.imageDataUrl);
+  } catch (error) {
+    return res.status(400).json({ error: String(error?.message || error) });
+  }
+  const bytes = Buffer.from(match[2], 'base64');
+  if (!bytes.length) return res.status(400).json({ error: 'That file was empty — pick another image' });
+  if (bytes.length > CREATIVE_MAX_BYTES) {
+    return res.status(400).json({ error: 'Creative images are capped at 6 MB — export a smaller file and try again' });
+  }
+  const mimeType = match[1] === 'jpg' ? 'image/jpeg' : `image/${match[1]}`;
+  const dims = imageDimensions(bytes, mimeType);
+  const record = {
+    id: createId(),
+    ownerId: actorIdOf(req),
+    name: parsed.data.name || 'Uploaded creative',
+    mimeType,
+    sizeBytes: bytes.length,
+    width: dims.width,
+    height: dims.height,
+    createdAt: new Date().toISOString(),
+  };
+  store.advertiserCreatives.push(record);
+  await persistAdvertiserCreative(record, bytes);
+  await appendEvent('AD_CREATIVE_UPLOADED', {
+    source: 'advertiser-console',
+    actor: actorOf(req),
+    entityType: 'AD_CREATIVE',
+    entityId: record.id,
+    details: { mimeType, sizeBytes: bytes.length, width: dims.width, height: dims.height },
+  });
+  return res.status(201).json({ data: creativeView(record) });
+});
+
+router.get('/ad-studio/my-creatives', ...advertiserOnly, (req, res) => {
+  const ownerId = actorIdOf(req);
+  const items = store.advertiserCreatives
+    .filter((c) => ownerId && c.ownerId === ownerId)
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return res.json({ data: items.map(creativeView) });
+});
+
+function serveCreativeBytes(res, record, bytes, cacheControl) {
+  res.set({
+    'Content-Type': record.mimeType || 'application/octet-stream',
+    'Cache-Control': cacheControl,
+    'Content-Length': bytes.length,
+    'Content-Disposition': `inline; filename="creative-${record.id.slice(0, 8)}"`,
+  });
+  return res.end(bytes);
+}
+
+router.get('/ad-studio/my-creatives/:id/image', ...advertiserOnly, async (req, res) => {
+  const record = findOwnCreative(req, req.params.id);
+  if (!record) return res.status(404).json({ error: 'Creative not found' });
+  const bytes = await getAdvertiserCreativeBytes(record.id);
+  if (!bytes) return res.status(404).json({ error: 'Creative image not found' });
+  return serveCreativeBytes(res, record, bytes, 'private, max-age=300');
+});
+
+/**
+ * Public bytes for a creative attached to an ACTIVE campaign — the
+ * display feed's image URL points here. Anything else (draft,
+ * paused, unattached, another advertiser's) is a 404: an upload is
+ * never public on its own.
+ */
+router.get('/ad-studio/creatives/:id/image', async (req, res) => {
+  const record = store.advertiserCreatives.find((c) => c.id === req.params.id) || null;
+  if (!record) return res.status(404).json({ error: 'Creative not found' });
+  const live = store.adCampaigns.some((c) => c.creativeUploadId === record.id && c.status === 'ACTIVE');
+  if (!live) return res.status(404).json({ error: 'Creative not found' });
+  const bytes = await getAdvertiserCreativeBytes(record.id);
+  if (!bytes) return res.status(404).json({ error: 'Creative image not found' });
+  return serveCreativeBytes(res, record, bytes, 'public, max-age=300');
+});
+
+router.delete('/ad-studio/my-creatives/:id', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
+  const record = findOwnCreative(req, req.params.id);
+  if (!record) return res.status(404).json({ error: 'Creative not found' });
+  const ownerId = actorIdOf(req);
+  const mine = store.adCampaigns.filter((c) => c.createdById === ownerId && c.creativeUploadId === record.id);
+  const blocking = mine.find((c) => c.status === 'ACTIVE' || c.status === 'PENDING_APPROVAL');
+  if (blocking) {
+    return res.status(409).json({
+      error: `That image is attached to \u201C${blocking.name}\u201D, which is ${blocking.status === 'ACTIVE' ? 'live' : 'in review'} — pause or end the campaign, or swap its image, before deleting.`,
+    });
+  }
+  // Drafts and paused campaigns simply detach.
+  for (const campaign of mine) {
+    campaign.creativeUploadId = null;
+    if (campaign.imageUrl === creativeImageUrl(record.id)) campaign.imageUrl = null;
+    campaign.updatedAt = new Date().toISOString();
+    await persistAdCampaign(campaign);
+  }
+  store.advertiserCreatives = store.advertiserCreatives.filter((c) => c.id !== record.id);
+  await removeAdvertiserCreative(record.id);
+  await appendEvent('AD_CREATIVE_DELETED', {
+    source: 'advertiser-console',
+    actor: actorOf(req),
+    entityType: 'AD_CREATIVE',
+    entityId: record.id,
+    details: { detachedFrom: mine.map((c) => c.id) },
+  });
+  return res.status(204).end();
 });
 
 export default router;

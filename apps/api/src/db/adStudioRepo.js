@@ -1,5 +1,6 @@
 import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
+import { hydrateAdvertiserCreatives } from './advertiserCreativesRepo.js';
 
 /**
  * Ad Studio persistence (2026-11-14) — same pattern as the Media OS
@@ -25,6 +26,7 @@ function toStoreCampaign(row) {
     objective: row.objective,
     status: row.status || 'DRAFT',
     creativeId: row.creativeId || null,
+    creativeUploadId: row.creativeUploadId || null,
     destinationUrl: row.destinationUrl,
     sourceTag: row.sourceTag,
     placement: row.placement || 'NONE',
@@ -57,6 +59,8 @@ export async function hydrateAdCampaigns() {
   try {
     const rows = await db().adCampaign.findMany({ orderBy: [{ createdAt: 'asc' }] });
     store.adCampaigns = rows.map(toStoreCampaign);
+    // Advertiser creative uploads (E3) ride the same cold start.
+    await hydrateAdvertiserCreatives();
     return rows.length;
   } catch (error) {
     // A missing table mid-deploy degrades to an empty studio, exactly
@@ -76,6 +80,7 @@ export async function persistAdCampaign(record) {
       objective: record.objective,
       status: record.status || 'DRAFT',
       creativeId: record.creativeId || null,
+      creativeUploadId: record.creativeUploadId || null,
       destinationUrl: record.destinationUrl,
       sourceTag: record.sourceTag,
       placement: record.placement || 'NONE',
