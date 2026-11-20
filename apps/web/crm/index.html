@@ -102,6 +102,7 @@ footer strong{color:#fff}
       <div><label for="crmEmail">Team email</label><input id="crmEmail" type="email" placeholder="you@topspeedappliance.net"></div>
       <div><label for="crmPass">Password</label><input id="crmPass" type="password" placeholder="••••••••"></div>
     </div>
+    <div id="crmSvRow" style="display:none;margin-top:12px;"><label for="crmSvCode">Speedy Verify access code</label><input id="crmSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"> <button class="btn" type="button" onclick="crmVerify()">Verify &amp; sign in</button></div>
     <div style="margin-top:14px;"><button class="btn blue" onclick="crmSignIn()">Sign in to Top Speed CRM</button></div>
     <div style="margin-top:10px;font-size:13.5px"><a href="/reset-password">Forgot password?</a></div>
     <div class="msg" id="crmLoginMsg"></div>
@@ -263,6 +264,7 @@ function crmSignIn(){
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
     .then(function(j){
       if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/crm'); return; }
+      if(j && j.verifyRequired && j.challenge){ crmChallenge=j.challenge; document.getElementById('crmSvRow').style.display=''; msg.textContent=' Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.'; msg.className='msg'; var svci=document.getElementById('crmSvCode'); if(svci) svci.focus(); return; }
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
         TSOSLayer2.run(j, { api: CRM_API, onSession: function(s){ try{ localStorage.setItem('tsos_crm_token', s.token); }catch(e){} crmShow(); }, onCancel: function(){ msg.textContent=' Sign-in cancelled — the 2-step code is required to finish.'; msg.className='msg err'; } });
         return;
@@ -271,6 +273,30 @@ function crmSignIn(){
       crmShow();
     })
     .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
+}
+/* Speedy Verify code step (2026-11-20): a flagged account's password
+   sign-in returns a challenge instead of a session — collect the
+   office-issued access code, exchange it at /speedy-verify/verify,
+   then continue through the same temp-password / Layer 2 / session
+   path as a normal sign-in (same pattern as Book OS). */
+var crmChallenge=null;
+function crmVerify(){
+  var code=document.getElementById('crmSvCode').value.trim();
+  var msg=document.getElementById('crmLoginMsg');
+  if(!crmChallenge){ msg.textContent=' Sign in with your password first, then enter your code.'; msg.className='msg err'; return; }
+  if(!code){ msg.textContent=' Enter your access code.'; msg.className='msg err'; return; }
+  fetch(CRM_API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:crmChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/crm'); return; }
+      if(j && j.mustChangePassword){ msg.textContent=' This account uses a temporary password — set your own password first (sign in on Book OS), then return here.'; msg.className='msg err'; return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ crmChallenge=null; document.getElementById('crmSvRow').style.display='none'; TSOSLayer2.run(j,{api:CRM_API,onSession:function(s){ try{ localStorage.setItem('tsos_crm_token', s.token); }catch(e){} crmShow(); },onCancel:function(){ msg.textContent=' Sign-in cancelled — the 2-step code is required to finish.'; msg.className='msg err'; }}); return; }
+      crmChallenge=null;
+      var t=j.token||(j.data&&j.data.token); if(!t){ msg.textContent=' Speedy Verify: no session was returned — sign in again.'; msg.className='msg err'; return; }
+      try{ localStorage.setItem('tsos_crm_token', t); }catch(e){}
+      crmShow();
+    })
+    .catch(function(e){ msg.textContent=' Speedy Verify: '+e.message; msg.className='msg err'; });
 }
 function crmSignOut(){ try{ localStorage.removeItem('tsos_crm_token'); }catch(e){} location.reload(); }
 function crmShow(){

@@ -354,6 +354,8 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
         <form id="laInForm">
           <label for="laInEmail">Email</label><input id="laInEmail" type="email" autocomplete="email" placeholder="you@example.com">
           <label for="laInPw">Password</label><input id="laInPw" type="password" autocomplete="current-password" placeholder="Your password">
+          <div id="laSvRow" style="display:none"><label for="laSvCode">Speedy Verify access code</label><input id="laSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">
+          <button class="acct-go" id="laSvBtn" type="button">Verify &amp; sign in</button></div>
           <button class="acct-go" id="laInBtn" type="submit">Sign in</button>
         </form>
         <p class="acct-note" style="margin-top:8px"><a href="/reset-password" style="color:var(--blue);font-weight:700">Forgot password?</a></p>
@@ -400,14 +402,27 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
       function save(j){ try{ localStorage.setItem('tsos_cust_token',j.token); try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} location.reload(); }
       function post(path,body){
         return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-        .then(function(r){ return r.json().then(function(j){ if(j&&j.layer2Required&&j.challenge) return j; if(j&&j.mustChangePassword&&j.changeToken) return j; if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; throw e; } return j; }); });
+        .then(function(r){ return r.json().then(function(j){ if(j&&j.layer2Required&&j.challenge) return j; if(j&&j.verifyRequired&&j.challenge) return j; if(j&&j.mustChangePassword&&j.changeToken) return j; if(!r.ok||!j.token){ var e=new Error(j.error||'Something went wrong'); e.details=j.details; throw e; } return j; }); });
       }
       $('laInForm').addEventListener('submit',function(e){
         e.preventDefault();
         var em=$('laInEmail').value.trim(), pw=$('laInPw').value;
         if(!em||!pw) return fail('Enter your email and password.');
         var b=$('laInBtn'); b.disabled=true; b.textContent='Signing in…';
-        post('/auth/login',{email:em,password:pw}).then(function(j){ if(window.TSOSTempPassword&&TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/app'); return; } if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }}); return; } save(j); }).catch(function(x){ fail('Sign-in failed: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Sign in'; });
+        post('/auth/login',{email:em,password:pw}).then(function(j){ if(window.TSOSTempPassword&&TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/app'); return; } if(j&&j.verifyRequired&&j.challenge){ laChallenge=j.challenge; $('laSvRow').style.display=''; fail('Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.'); $('laSvCode').focus(); return; } if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }}); return; } save(j); }).catch(function(x){ fail('Sign-in failed: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Sign in'; });
+      });
+      /* Speedy Verify code step (2026-11-20): a flagged account's
+         password sign-in returns a challenge instead of a session —
+         collect the office-issued access code, exchange it, then
+         continue through the same Layer 2 / session path (same
+         pattern as Book OS). */
+      var laChallenge=null;
+      $('laSvBtn').addEventListener('click',function(){
+        var code=$('laSvCode').value.trim();
+        if(!laChallenge) return fail('Sign in with your password first, then enter your code.');
+        if(!code) return fail('Enter your access code.');
+        var b=$('laSvBtn'); b.disabled=true; b.textContent='Verifying…';
+        post('/speedy-verify/verify',{challenge:laChallenge,code:code}).then(function(j){ if(window.TSOSTempPassword&&TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/app'); return; } if(window.TSOSLayer2&&TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:save,onCancel:function(){ fail('Sign-in cancelled — the 2-step code is required to finish.'); }}); return; } laChallenge=null; save(j); }).catch(function(x){ fail('Speedy Verify: '+x.message); }).finally(function(){ b.disabled=false; b.textContent='Verify & sign in'; });
       });
       $('laUpForm').addEventListener('submit',function(e){
         e.preventDefault();
@@ -634,6 +649,8 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
                 <label class="fl">Email</label><input id="cdEmail2" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
                 <label class="fl">Password</label><input id="cdPw2" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
                 <button class="btn blue" style="margin-top:10px;" onclick="custLoginFromBook()">Sign in</button>
+                <div id="cdSvRow" style="display:none;margin-top:10px;"><label class="fl">Speedy Verify access code</label><input id="cdSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+                <button class="btn blue" style="margin-top:10px;" onclick="custVerify('cd')">Verify &amp; sign in</button></div>
                 <p class="sub" style="margin:8px 0 0;">New here? <a href="#" onclick="custToggleLogin(event)">Create an account</a></p>
               </div>
               <p class="sub" id="cdSignedIn" style="display:none; margin:8px 0 0;"></p>
@@ -846,6 +863,8 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
               <label class="fl">Email</label><input id="acEmail" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
               <label class="fl">Password</label><input id="acPw" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
               <div class="btnrow" style="margin-top:10px;"><button class="btn blue" onclick="custLogin()">Sign in</button></div>
+              <div id="acSvRow" style="display:none;margin-top:10px;"><label class="fl">Speedy Verify access code</label><input id="acSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
+              <div class="btnrow" style="margin-top:10px;"><button class="btn blue" onclick="custVerify('ac')">Verify &amp; sign in</button></div></div>
               <p class="sub" style="margin:8px 0 0;">New here? Start a booking — you create the account on the confirm step.</p>
             </div>
             <div id="acctIn" style="display:none;">
@@ -1405,12 +1424,19 @@ function custToggleLogin(e){
   l.style.display=showLogin?'':'none';
   n.style.display=showLogin?'none':'';
 }
-function doCustLogin(email,pw){
+function doCustLogin(email,pw,src){
   return fetch(C_API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
     .then(function(j){
       if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){
         TSOSTempPassword.begin(j,'/app');
+        return;
+      }
+      if(j && j.verifyRequired && j.challenge){
+        custChallenge=j.challenge; custSrc=(src==='cd'?'cd':'ac');
+        var svRow=document.getElementById(custSrc==='cd'?'cdSvRow':'acSvRow'); if(svRow) svRow.style.display='';
+        toast('Speedy Verify \u2014 enter the access code the office issued you, then tap Verify & sign in');
+        var svCi=document.getElementById(custSrc==='cd'?'cdSvCode':'acSvCode'); if(svCi) svCi.focus();
         return;
       }
       if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
@@ -1419,8 +1445,28 @@ function doCustLogin(email,pw){
       }
       setCustSession(j); toast('Welcome back \u2014 signed in'); refreshMyBooking(); });
 }
-function custLogin(){ var em=cVal('acEmail'), pw=cVal('acPw'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
-function custLoginFromBook(){ var em=cVal('cdEmail2'), pw=cVal('cdPw2'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw).catch(function(e){ toast('Sign-in failed: '+e.message); }); }
+function custLogin(){ var em=cVal('acEmail'), pw=cVal('acPw'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw,'ac').catch(function(e){ toast('Sign-in failed: '+e.message); }); }
+function custLoginFromBook(){ var em=cVal('cdEmail2'), pw=cVal('cdPw2'); if(!em||!pw) return toast('Enter your email and password'); doCustLogin(em,pw,'cd').catch(function(e){ toast('Sign-in failed: '+e.message); }); }
+/* Speedy Verify code step (2026-11-20): a flagged business/PM
+   account's password sign-in returns a challenge instead of a
+   session — collect the office-issued access code, exchange it at
+   /speedy-verify/verify, then continue through the same Layer 2 /
+   session path as a normal sign-in (same pattern as Book OS). */
+var custChallenge=null, custSrc='ac';
+function custVerify(src){
+  var codeEl=document.getElementById(src==='cd'?'cdSvCode':'acSvCode');
+  var code=codeEl?codeEl.value.trim():'';
+  if(!custChallenge) return toast('Sign in with your password first, then enter your code');
+  if(!code) return toast('Enter your access code');
+  fetch(C_API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:custChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/app'); return; }
+      if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){ TSOSLayer2.run(j,{onSession:function(s){ setCustSession(s); toast('Welcome back \u2014 signed in'); refreshMyBooking(); },onCancel:function(){ toast('Sign-in cancelled \u2014 the 2-step code is required to finish.'); }}); return; }
+      custChallenge=null; setCustSession(j); toast('Welcome back \u2014 signed in'); refreshMyBooking();
+    })
+    .catch(function(e){ toast('Speedy Verify: '+e.message); });
+}
 function custLogout(){ try{ localStorage.removeItem('tsos_cust_token'); localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); }
 function stageForBooking(b){
   if(!b) return 1;

@@ -161,6 +161,9 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
         <input id="siEmail" type="email" autocomplete="username" required placeholder="you@topspeedappliance.net">
         <label class="small mut" for="siPass" style="display:block;margin-top:10px">Password</label>
         <input id="siPass" type="password" autocomplete="current-password" required placeholder="Your Service OS password">
+        <div id="svRow" style="display:none;margin-top:10px"><label class="small mut" for="svCode">Speedy Verify access code</label>
+        <input id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">
+        <div style="margin-top:8px"><button class="btn" type="button" id="svVerifyBtn">Verify &amp; sign in</button></div></div>
         <div style="margin-top:12px"><button class="btn" type="submit">Sign in to Ad Studio</button></div>
         <div class="msg" id="signinMsg"></div>
       </form>
@@ -1267,12 +1270,37 @@ document.getElementById('signinForm').addEventListener('submit', function(ev){
     body: JSON.stringify({ email: document.getElementById('siEmail').value.trim(), password: document.getElementById('siPass').value })
   }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
     .then(function(res){
+      if (res.j && res.j.verifyRequired && res.j.challenge){ asChallenge = res.j.challenge; document.getElementById('svRow').style.display = ''; setMsg('signinMsg', 'Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.', true); document.getElementById('svCode').focus(); return; }
       if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ setMsg('signinMsg', 'Sign-in cancelled — the 2-step code is required to finish.', false); } }); return; }
       if (!res.ok || !res.j || !res.j.token){ setMsg('signinMsg', (res.j && res.j.error) || 'Sign-in failed — check the email and password.', false); return; }
       try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
       boot();
     })
     .catch(function(){ setMsg('signinMsg', 'Sign-in failed — connection error.', false); });
+});
+/* Speedy Verify code step (2026-11-20): a flagged account's password
+   sign-in returns a challenge instead of a session — collect the
+   office-issued access code, exchange it at /speedy-verify/verify,
+   then continue through the same temp-password / Layer 2 / session
+   path as a normal sign-in (same pattern as Book OS). */
+var asChallenge=null;
+document.getElementById('svVerifyBtn').addEventListener('click', function(){
+  var code=document.getElementById('svCode').value.trim();
+  if(!asChallenge){ setMsg('signinMsg', 'Sign in with your password first, then enter your code.', false); return; }
+  if(!code){ setMsg('signinMsg', 'Enter your access code.', false); return; }
+  fetch(API + '/speedy-verify/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challenge: asChallenge, code: code }) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok || !res.j){ setMsg('signinMsg', 'Speedy Verify: ' + ((res.j && res.j.error) || 'verification failed.'), false); return; }
+      if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(res.j)){ TSOSTempPassword.begin(res.j, '/ad-studio'); return; }
+      if (res.j.mustChangePassword){ setMsg('signinMsg', 'This account uses a temporary password — set your own password first (sign in on Book OS), then return here.', false); return; }
+      if (res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ asChallenge = null; document.getElementById('svRow').style.display = 'none'; TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ setMsg('signinMsg', 'Sign-in cancelled — the 2-step code is required to finish.', false); } }); return; }
+      if (!res.j.token){ setMsg('signinMsg', 'Speedy Verify: no session was returned — sign in again.', false); return; }
+      asChallenge = null;
+      try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+      boot();
+    })
+    .catch(function(){ setMsg('signinMsg', 'Speedy Verify: connection error.', false); });
 });
 function boot(){
   if (!tok()){ showSignedOut(); return; }

@@ -78,6 +78,7 @@ footer strong{color:#fff}
       <div><label for="gaEmail">Team email</label><input id="gaEmail" type="email" placeholder="you@topspeedappliance.net"></div>
       <div><label for="gaPass">Password</label><input id="gaPass" type="password" placeholder="••••••••"></div>
     </div>
+    <div id="gaSvRow" style="display:none;margin-top:12px;"><label for="gaSvCode">Speedy Verify access code</label><input id="gaSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"> <button class="btn" type="button" onclick="gaVerify()">Verify &amp; sign in</button></div>
     <div style="margin-top:14px;"><button class="btn blue" onclick="gaSignIn()">Sign in to the registry</button></div>
     <div class="msg" id="gaLoginMsg"></div>
   </div>
@@ -150,12 +151,37 @@ function gaSignIn(){
   fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pass})})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
     .then(function(j){
+      if(j && j.verifyRequired && j.challenge){ gaChallenge=j.challenge; document.getElementById('gaSvRow').style.display=''; msg.textContent=' Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.'; msg.className='msg'; var svci=document.getElementById('gaSvCode'); if(svci) svci.focus(); return; }
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token', s.token); }catch(e){} gaShow(); },onCancel:function(){ msg.textContent=' Sign-in cancelled — the 2-step code is required to finish.'; msg.className='msg err'; }}); return; }
       var t=j.token||(j.data&&j.data.token); if(!t) throw new Error('No token returned');
       try{ localStorage.setItem('tsos_token', t); }catch(e){}
       gaShow();
     })
     .catch(function(e){ msg.textContent=' '+e.message; msg.className='msg err'; });
+}
+/* Speedy Verify code step (2026-11-20): a flagged account's password
+   sign-in returns a challenge instead of a session — collect the
+   office-issued access code, exchange it at /speedy-verify/verify,
+   then continue through the same temp-password / Layer 2 / session
+   path as a normal sign-in (same pattern as Book OS). */
+var gaChallenge=null;
+function gaVerify(){
+  var code=document.getElementById('gaSvCode').value.trim();
+  var msg=document.getElementById('gaLoginMsg');
+  if(!gaChallenge){ msg.textContent=' Sign in with your password first, then enter your code.'; msg.className='msg err'; return; }
+  if(!code){ msg.textContent=' Enter your access code.'; msg.className='msg err'; return; }
+  fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:gaChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/marketing-os/google-accounts'); return; }
+      if(j && j.mustChangePassword){ msg.textContent=' This account uses a temporary password — set your own password first (sign in on Book OS), then return here.'; msg.className='msg err'; return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ gaChallenge=null; document.getElementById('gaSvRow').style.display='none'; TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token', s.token); }catch(e){} gaShow(); },onCancel:function(){ msg.textContent=' Sign-in cancelled — the 2-step code is required to finish.'; msg.className='msg err'; }}); return; }
+      gaChallenge=null;
+      var t=j.token||(j.data&&j.data.token); if(!t){ msg.textContent=' Speedy Verify: no session was returned — sign in again.'; msg.className='msg err'; return; }
+      try{ localStorage.setItem('tsos_token', t); }catch(e){}
+      gaShow();
+    })
+    .catch(function(e){ msg.textContent=' Speedy Verify: '+e.message; msg.className='msg err'; });
 }
 function gaSignOut(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_studio_token'); }catch(e){} location.reload(); }
 function gaShow(){

@@ -77,6 +77,8 @@
     <form id="loginForm">
       <label for="email">Email</label><input id="email" type="email" autocomplete="email" required>
       <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required>
+      <div id="pbSvRow" style="display:none"><label for="pbSvCode">Speedy Verify access code</label><input id="pbSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">
+      <button class="next" type="button" id="pbSvBtn" style="width:100%;margin-top:10px">Verify &amp; sign in</button></div>
       <button class="next" id="loginBtn" type="submit" style="width:100%;margin-top:22px">Sign in</button>
       <div class="err" id="loginErr"></div>
     </form>
@@ -256,12 +258,37 @@
     fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:$('email').value.trim(),password:$('password').value})})
     .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
+      if(x.j&&x.j.verifyRequired&&x.j.challenge){ pbChallenge=x.j.challenge; $('pbSvRow').style.display=''; el.textContent='Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.'; el.style.display='block'; $('pbSvCode').focus(); return; }
       if(x.j&&x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){ TSOSLayer2.run(x.j,{api:API,onSession:function(s){ localStorage.setItem('tsos_token',s.token); enter(); },onCancel:function(){ el.textContent='Sign-in cancelled — the 2-step code is required to finish.'; el.style.display='block'; }}); return; }
       if(!x.ok||!x.j.token) throw new Error((x.j&&x.j.error)||'Sign-in failed');
       try{if(window.TSOSVault&&x.j.user&&x.j.token)window.TSOSVault.add(x.j.user,x.j.token);}catch(e){} localStorage.setItem('tsos_token',x.j.token); enter();
     })
     .catch(function(ex){ el.textContent=ex.message; el.style.display='block'; })
     .finally(function(){ btn.disabled=false; });
+  });
+  /* Speedy Verify code step (2026-11-20): a flagged account's password
+     sign-in returns a challenge instead of a session — collect the
+     office-issued access code, exchange it at /speedy-verify/verify,
+     then continue through the same temp-password / Layer 2 / session
+     path as a normal sign-in (same pattern as Book OS). */
+  var pbChallenge=null;
+  $('pbSvBtn').addEventListener('click',function(){
+    var el=$('loginErr'); el.style.display='none';
+    var code=$('pbSvCode').value.trim();
+    if(!pbChallenge){ el.textContent='Sign in with your password first, then enter your code.'; el.style.display='block'; return; }
+    if(!code){ el.textContent='Enter your access code.'; el.style.display='block'; return; }
+    fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:pbChallenge,code:code})})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
+    .then(function(x){
+      if(!x.ok) throw new Error((x.j&&x.j.error)||'Verification failed');
+      if(window.TSOSTempPassword&&TSOSTempPassword.isChangeState(x.j)){ TSOSTempPassword.begin(x.j,'/pro-booking'); return; }
+      if(x.j.mustChangePassword){ el.textContent='This account uses a temporary password — set your own password first (sign in on Book OS), then return here.'; el.style.display='block'; return; }
+      if(x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){ pbChallenge=null; $('pbSvRow').style.display='none'; TSOSLayer2.run(x.j,{api:API,onSession:function(s){ localStorage.setItem('tsos_token',s.token); enter(); },onCancel:function(){ el.textContent='Sign-in cancelled — the 2-step code is required to finish.'; el.style.display='block'; }}); return; }
+      if(!x.j.token) throw new Error('No session was returned — sign in again.');
+      pbChallenge=null;
+      try{if(window.TSOSVault&&x.j.user&&x.j.token)window.TSOSVault.add(x.j.user,x.j.token);}catch(e){} localStorage.setItem('tsos_token',x.j.token); enter();
+    })
+    .catch(function(ex){ el.textContent='Speedy Verify: '+ex.message; el.style.display='block'; });
   });
   $('signOutBtn').addEventListener('click',function(){ localStorage.removeItem('tsos_token'); location.reload(); });
   $('againBtn').addEventListener('click',function(e){ e.preventDefault(); location.reload(); });

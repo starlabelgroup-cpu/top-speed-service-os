@@ -81,6 +81,8 @@
         <div><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
         <div><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
       </div>
+      <div id="tcSvRow" style="display:none;margin-top:12px"><label for="tcSvCode">Speedy Verify access code</label><input id="tcSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">
+      <button class="btn" type="button" id="tcSvBtn" style="margin-top:8px">Verify &amp; sign in</button></div>
       <button class="btn btn-red" id="loginBtn" type="submit" style="margin-top:16px;width:100%;padding:13px">Sign in to the console</button>
       <div class="err" id="loginErr"></div>
     </form>
@@ -220,7 +222,13 @@ $('loginForm').addEventListener('submit', async (e) => {
   try {
     const res = await fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('email').value.trim(), password: $('password').value }) });
     const body = await res.json();
-    if (body && body.layer2Required && body.challenge && window.TSOSLayer2) {
+    if (body && body.verifyRequired && body.challenge) {
+      tcChallenge = body.challenge;
+      $('tcSvRow').style.display = '';
+      err.textContent = 'Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.';
+      err.style.display = 'block';
+      $('tcSvCode').focus();
+    } else if (body && body.layer2Required && body.challenge && window.TSOSLayer2) {
       await new Promise((resolve) => {
         TSOSLayer2.run(body, { api: API, onSession: (s) => { try { localStorage.setItem('tsos_token', s.token); } catch (e) {} enter(); resolve(); }, onCancel: () => { err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; resolve(); } });
       });
@@ -231,6 +239,36 @@ $('loginForm').addEventListener('submit', async (e) => {
     }
   } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
   finally { btn.disabled = false; }
+});
+
+/* Speedy Verify code step (2026-11-20): a flagged account's password
+   sign-in returns a challenge instead of a session — collect the
+   office-issued access code, exchange it at /speedy-verify/verify,
+   then continue through the same temp-password / Layer 2 / session
+   path as a normal sign-in (same pattern as Book OS). */
+let tcChallenge = null;
+$('tcSvBtn').addEventListener('click', async () => {
+  const err = $('loginErr');
+  const code = $('tcSvCode').value.trim();
+  if (!tcChallenge) { err.textContent = 'Sign in with your password first, then enter your code.'; err.style.display = 'block'; return; }
+  if (!code) { err.textContent = 'Enter your access code.'; err.style.display = 'block'; return; }
+  try {
+    const res = await fetch(API + '/speedy-verify/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challenge: tcChallenge, code }) });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.error || 'Verification failed');
+    if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(body)) { TSOSTempPassword.begin(body, '/track-console'); return; }
+    if (body.mustChangePassword) { err.textContent = 'This account uses a temporary password — set your own password first (sign in on Book OS), then return here.'; err.style.display = 'block'; return; }
+    if (body.layer2Required && body.challenge && window.TSOSLayer2) {
+      tcChallenge = null; $('tcSvRow').style.display = 'none';
+      await new Promise((resolve) => { TSOSLayer2.run(body, { api: API, onSession: (s) => { try { localStorage.setItem('tsos_token', s.token); } catch (e) {} enter(); resolve(); }, onCancel: () => { err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; resolve(); } }); });
+      return;
+    }
+    if (!body.token) throw new Error('No session was returned — sign in again.');
+    tcChallenge = null;
+    try { if (window.TSOSVault && body.user && body.token) window.TSOSVault.add(body.user, body.token); } catch (e) {}
+    localStorage.setItem('tsos_token', body.token);
+    enter();
+  } catch (ex) { err.textContent = 'Speedy Verify: ' + ex.message; err.style.display = 'block'; }
 });
 
 $('refreshBtn').addEventListener('click', () => loadBoard().catch((e) => flash(false, e.message)));

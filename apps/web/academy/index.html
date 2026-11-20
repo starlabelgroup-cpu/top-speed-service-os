@@ -338,6 +338,11 @@ function trackOf(n){
 }
 
 /* ── Sign-in gate ──────────────────────────────────────── */
+/* Speedy Verify code step (2026-11-20): a flagged account's password
+   sign-in returns a challenge instead of a session — the gate collects
+   the office-issued access code and exchanges it, then continues
+   through the same Layer 2 / session path (same pattern as Book OS). */
+var acChallenge=null;
 function showGate(note){
   document.getElementById('staffZone').style.display = 'none';
   var zone = document.getElementById('gateZone');
@@ -346,6 +351,8 @@ function showGate(note){
     (note ? ' ' + esc(note) : '') + '</p>' +
     '<form id="loginForm"><label>Email</label><input id="liEmail" type="email" autocomplete="username" required>' +
     '<label>Password</label><input id="liPass" type="password" autocomplete="current-password" required>' +
+    '<div id="liSvRow" style="display:none"><label>Speedy Verify access code</label><input id="liSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">' +
+    '<button class="btn" type="button" id="liSvBtn">Verify &amp; sign in</button></div>' +
     '<button class="btn" type="submit">Sign in to the Academy</button><div class="gerr" id="liErr"></div></form></div>';
   document.getElementById('loginForm').addEventListener('submit', function(ev){
     ev.preventDefault();
@@ -354,12 +361,32 @@ function showGate(note){
     fetch(API + '/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: document.getElementById('liEmail').value.trim(), password: document.getElementById('liPass').value }) })
       .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
       .then(function(res){
+        if (res.j && res.j.verifyRequired && res.j.challenge){ acChallenge = res.j.challenge; document.getElementById('liSvRow').style.display = ''; err.textContent = 'Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.'; err.style.display = 'block'; document.getElementById('liSvCode').focus(); return; }
         if (res.j && res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
         if (!res.ok || !res.j || !res.j.token){ err.textContent = 'Sign-in failed — check the email and password and try again.'; err.style.display = 'block'; return; }
         try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
         boot();
       })
       .catch(function(){ err.textContent = 'Could not reach the sign-in service — check your connection and try again.'; err.style.display = 'block'; });
+  });
+  document.getElementById('liSvBtn').addEventListener('click', function(){
+    var err = document.getElementById('liErr'); err.style.display = 'none';
+    var code = document.getElementById('liSvCode').value.trim();
+    if (!acChallenge){ err.textContent = 'Sign in with your password first, then enter your code.'; err.style.display = 'block'; return; }
+    if (!code){ err.textContent = 'Enter your access code.'; err.style.display = 'block'; return; }
+    fetch(API + '/speedy-verify/verify', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ challenge: acChallenge, code: code }) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        if (!res.ok || !res.j){ err.textContent = 'Speedy Verify: verification failed.'; err.style.display = 'block'; return; }
+        if (window.TSOSTempPassword && TSOSTempPassword.isChangeState(res.j)){ TSOSTempPassword.begin(res.j, '/academy'); return; }
+        if (res.j.mustChangePassword){ err.textContent = 'This account uses a temporary password — set your own password first (sign in on Book OS), then return here.'; err.style.display = 'block'; return; }
+        if (res.j.layer2Required && res.j.challenge && window.TSOSLayer2){ acChallenge = null; TSOSLayer2.run(res.j, { api: API, onSession: function(s){ try { localStorage.setItem('tsos_token', s.token); } catch(e){} boot(); }, onCancel: function(){ err.textContent = 'Sign-in cancelled — the 2-step code is required to finish.'; err.style.display = 'block'; } }); return; }
+        if (!res.j.token){ err.textContent = 'Speedy Verify: ' + (res.j.error || 'verification failed.'); err.style.display = 'block'; return; }
+        acChallenge = null;
+        try { try{if(window.TSOSVault&&res.j.user&&res.j.token)window.TSOSVault.add(res.j.user,res.j.token);}catch(e){} localStorage.setItem('tsos_token', res.j.token); } catch(e){}
+        boot();
+      })
+      .catch(function(){ err.textContent = 'Speedy Verify: could not reach the verification service.'; err.style.display = 'block'; });
   });
 }
 

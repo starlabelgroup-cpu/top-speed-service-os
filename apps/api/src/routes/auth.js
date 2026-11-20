@@ -299,11 +299,16 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
     // token), but persist NOTHING and queue NO notification.
     // Phase 2 (2026-11-20) discards land in the same ghost: forged /
     // expired / inhumanly-fast form tokens, gibberish-scored payloads,
-    // and failed Turnstile (when configured). A signed-in session
-    // (an admin creating accounts) is never shield-scored. Phase 1
-    // precedence is preserved: a honeypot hit ghosts first;
-    // otherwise the NANP phone validation answers a visible 400;
-    // the Phase 2 verdict ghosts after that.
+    // and failed Turnstile (when configured). Phase 1 precedence is
+    // preserved: a honeypot hit ghosts first; otherwise the NANP
+    // phone validation answers a visible 400; the Phase 2 verdict
+    // ghosts after that.
+    // Session skip (parity fix, 2026-11-20): ONLY a grant-capable
+    // administrator session (PLATFORM_ADMIN / COMPANY_OWNER — the
+    // office creating accounts) skips Phase 2 scoring. Any other
+    // signed-in session (e.g. a self-served CUSTOMER account) is
+    // scored exactly like an anonymous submission, so a low-tier
+    // session can no longer walk bot signups past the shield.
     const honeypot = honeypotTripped(req.body);
     if (!honeypot && parsed.data.phone) {
       const phoneCheck = validateNanpPhone(parsed.data.phone);
@@ -311,7 +316,7 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
         return res.status(400).json({ error: INVALID_PHONE_MESSAGE, code: 'INVALID_PHONE' });
       }
     }
-    const shieldVerdict = req.user
+    const shieldVerdict = canGrantStaffRoles(req)
       ? { discard: false }
       : await evaluateFormShield(req.body, {
           names: [parsed.data.firstName, parsed.data.lastName],
@@ -569,6 +574,24 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
         emailVerification: emailVerificationState(user),
         terms,
         termsStatus: terms,
+      });
+    }
+    // Session minting (parity fix, 2026-11-20): an administrator who
+    // creates an account for SOMEONE ELSE never receives a session
+    // for the new account here. A session may exist only after the
+    // holder's own password (+ Speedy Verify + Layer 2, where they
+    // apply) verifies through the sign-in pipeline — so the admin
+    // response carries the created-account summary and NO token.
+    // (Covered roles already returned the PENDING shape above; this
+    // closes the same mint for non-covered roles.)
+    if (adminCreated) {
+      return res.status(201).json({
+        user: publicUser(user),
+        emailVerification: emailVerificationState(user),
+        terms,
+        termsStatus: terms,
+        adminCreated: true,
+        message: 'Account created. No session was started for the new account — its holder signs in with their own password and completes any Speedy Verify / Layer 2 steps at first sign-in.',
       });
     }
     return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...(await recordSignInSession(req, user)) });
