@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { STAFF_ROLES } from '../config/security.js';
+import { MANAGER_ROLES, STAFF_ROLES } from '../config/security.js';
 import { buildPepperStatus } from '../services/pepperConsole.js';
+import { buildPepperBriefing } from '../services/pepperBriefing.js';
 import { buildOpsDigest, etDateString, formatDigestDraft } from '../services/opsDigest.js';
 import { pepperChat, pepperChatStatus, pepperPhoto } from '../services/pepperChat.js';
 import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReportsRepo.js';
@@ -36,6 +37,16 @@ import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReports
  *                                 report log as a STATUS draft. Also
  *                                 sends nothing — the log is the
  *                                 delivery, by a human's choice.
+ *   GET  /pepper-console/briefing the live operations briefing
+ *                                 behind ApplianceMan's Pepper
+ *                                 section (2026-11-20): insights,
+ *                                 analytics and grounded
+ *                                 recommendations in ONE aggregate
+ *                                 (services/pepperBriefing.js).
+ *                                 MANAGER-gated (MANAGER_ROLES —
+ *                                 ApplianceMan is the managers'
+ *                                 virtual office), per route like
+ *                                 every gate in this router.
  *   POST /pepper/chat             the Workstation chat bar: staff
  *                                 ask Pepper about the platform,
  *                                 their work and onboarding; live
@@ -69,6 +80,7 @@ import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReports
 const router = Router();
 
 const staffGate = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
+const managerGate = [authenticate, requireCompany, requireRole(...MANAGER_ROLES)];
 
 function iso(value) {
   if (!value) return null;
@@ -98,6 +110,14 @@ function publicReport(row) {
 router.get('/pepper-console/status', ...staffGate, async (req, res, next) => {
   try {
     return res.json({ data: await buildPepperStatus() });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/pepper-console/briefing', ...managerGate, async (req, res, next) => {
+  try {
+    return res.json({ data: await buildPepperBriefing() });
   } catch (error) {
     return next(error);
   }

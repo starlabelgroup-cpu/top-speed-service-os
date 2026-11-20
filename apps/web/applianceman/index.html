@@ -128,6 +128,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <p>OVERVIEW</p>
         <a class="cc-nav-link active" href="#top"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.6"/></svg><span>ApplianceMan</span></a>
         <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.2" r="3.8"/><path d="M4.8 20.2a7.4 7.4 0 0 1 14.4 0"/></svg><span>Master account</span></a>
+        <a class="cc-nav-link" href="#sec-pepper"><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H11L9.8 22l8.7-11.5H12z"/></svg><span>Pepper briefing</span><span class="cc-ai-nav-dot"></span></a>
         <a class="cc-nav-link" href="#sec-now"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg><span>Right now</span><span class="cc-ai-nav-dot"></span></a>
         <a class="cc-nav-link" href="#sec-depts"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/></svg><span>Departments</span></a>
         <a class="cc-nav-link" href="#platform-links"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg><span>All Platform Links</span></a>
@@ -223,6 +224,23 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
           <span class="cc-floating-tag cc-tag-bottom"><span class="cc-tag-dot red"></span>18 manager systems</span>
         </div>
       </div>
+
+      <h2 class="sec" id="sec-pepper">Pepper — live operations briefing</h2>
+      <div class="grid"><div class="card wide">
+        <p class="small mut" style="margin-top:0">Pepper — your System Operations Manager — live inside your virtual office: the operational picture, the analytics, and what needs a move. Every number is read from the live systems; a source that cannot be read says so instead of showing a guessed figure. <a href="/pepper" style="color:#e65766;font-weight:700">Open the full Pepper console →</a></p>
+        <div class="rows" id="pepperInsights"><span class="mut small"><span class="spin"></span> Pepper is pulling the live picture…</span></div>
+        <div class="grid" id="pepperKpis" style="margin-top:14px"></div>
+        <div class="rows" id="pepperAnalytics"></div>
+        <h3 style="font-size:15px;margin:18px 0 0;color:#182742">Recommendations — what needs a move</h3>
+        <div class="rows" id="pepperRecs"><span class="mut small"><span class="spin"></span> Checking the states Pepper watches…</span></div>
+        <h3 style="font-size:15px;margin:18px 0 0;color:#182742">Reports — the owner's queue</h3>
+        <div class="rows" id="pepperReports"><span class="mut small"><span class="spin"></span> Loading the report log…</span></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px">
+          <button type="button" class="iconbtn" id="pepperDigestBtn">Draft morning digest</button>
+          <span class="small mut">Files the digest as a draft report in the log above — sends nothing.</span>
+        </div>
+        <div id="pepperDigestMsg"></div>
+      </div></div>
 
       <h2 class="sec" id="sec-account">Master account</h2>
       <div class="grid"><div class="card wide">
@@ -647,6 +665,7 @@ function bindVerifyPanel(){
 
 function loadAll(){
   loadVerifyPanel(); bindVerifyPanel();
+  loadPepperBriefing(); bindPepperBriefing();
   document.getElementById('updatedLine').innerHTML = '<span class="spin"></span> Refreshing live data…';
   var done = 0; function tick(){ done++; if (done >= 6){ document.getElementById('updatedLine').textContent = 'Live — updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + '. Tap Refresh anytime.'; } }
 
@@ -743,6 +762,154 @@ var ccMb = document.getElementById('ccMenuBtn'); if (ccMb) ccMb.addEventListener
 var ccCb = document.getElementById('ccCloseBtn'); if (ccCb) ccCb.addEventListener('click', function(){ ccToggleSidebar(false); });
 if (ccBd) ccBd.addEventListener('click', function(){ ccToggleSidebar(false); });
 if (ccSb) ccSb.addEventListener('click', function(ev){ if (ev.target.closest && ev.target.closest('a')) ccToggleSidebar(false); });
+/* ---- Pepper live briefing (2026-11-20) ----------------------------
+   The Pepper section at the top of this office. One aggregate read
+   (GET /pepper-console/briefing, manager-gated) drives Insights +
+   Analytics + Recommendations; the Reports block reads the Pepper
+   report log (GET /pepper-console/reports) with NEEDS_OWNER first,
+   and the digest button files the D14 morning digest as a draft
+   report (POST /pepper-console/digest/draft) — it sends nothing.
+   Every block degrades to an honest unavailable line, never a
+   guessed number. */
+function pbMoney(cents){ if (cents == null) return '—'; return '$' + (cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function pbUnavail(what){ return row('y', '<b>' + esc(what) + '</b> — unavailable right now. Open its own console for the live state.'); }
+function loadPepperBriefing(){
+  var ins = document.getElementById('pepperInsights'); if (!ins) return;
+  get('/pepper-console/briefing', true).then(function(res){
+    var b = data(res.j);
+    var kpis = document.getElementById('pepperKpis');
+    var ana = document.getElementById('pepperAnalytics');
+    var recs = document.getElementById('pepperRecs');
+    if (!res.ok || !b || !b.sections){
+      ins.innerHTML = row('y', '<b>Pepper\u2019s briefing is unavailable right now</b> — open the <a href="/pepper" style="color:#e65766;font-weight:700">Pepper console</a> for the live board.');
+      if (kpis) kpis.innerHTML = '';
+      if (ana) ana.innerHTML = '';
+      if (recs) recs.innerHTML = row('y', 'Recommendations unavailable right now.');
+      return;
+    }
+    var s = b.sections;
+    var html = '';
+    var op = s.operations;
+    if (op && op.available){
+      var byStatus = Object.keys(op.jobsByStatus || {}).map(function(k){ return k.replace(/_/g, ' ') + ' ' + op.jobsByStatus[k]; }).join(' · ');
+      html += row('g', '<b>' + esc(op.bookingsCreatedToday) + ' bookings today</b> · ' + esc(op.bookingsCreatedLast7Days) + ' in the last 7 days · ' + esc(op.jobsCompletedToday) + ' jobs completed today (' + esc(op.jobsCompletedLast7Days) + ' this week) · setter queue depth <b>' + esc(op.setterQueueDepth) + '</b>.' + (byStatus ? '<br><span class="small mut">Jobs by status: ' + esc(byStatus) + '.</span>' : ''));
+    } else html += pbUnavail('Operations');
+    var dg = s.digest && s.digest.sections ? s.digest.sections : null;
+    if (dg){
+      var un = dg.unassigned, ex = dg.exceptions, pd = dg.partsDelays;
+      if (un && un.available) html += row(un.count > 0 ? 'y' : 'g', '<b>' + esc(un.count) + ' unassigned job' + (un.count === 1 ? '' : 's') + '</b> waiting for a tech.');
+      if (ex && ex.available) html += row(ex.count > 0 ? 'r' : 'g', '<b>' + esc(ex.count) + ' exception' + (ex.count === 1 ? '' : 's') + '</b> in the setter exception queue.');
+      if (pd && pd.available) html += row(pd.count > 0 ? 'y' : 'g', '<b>' + esc(pd.count) + ' job' + (pd.count === 1 ? '' : 's') + '</b> awaiting parts.');
+      if ((!un || !un.available) && (!ex || !ex.available) && (!pd || !pd.available)) html += pbUnavail('Dispatch digest');
+    } else html += pbUnavail('Dispatch digest');
+    var cl = s.calls;
+    if (cl && cl.available){
+      html += row('b', '<b>' + esc(cl.totals.calls) + ' calls · ' + esc(cl.totals.texts) + ' texts</b> in the last ' + esc(cl.windowDays) + ' days on tracked numbers' + (cl.unattributed && cl.unattributed.total ? ' · ' + esc(cl.unattributed.total) + ' unattributed (shown separately, never guessed into a source)' : '') + '. <a href="/insights" style="color:#e65766;font-weight:700">Insights →</a>');
+    } else html += pbUnavail('Calls &amp; texts');
+    var pf = s.platform && s.platform.sections ? s.platform.sections : null;
+    if (pf){
+      var bits = [];
+      if (pf.payments && pf.payments.available) bits.push('Payments ' + (pf.payments.configured ? 'configured' : 'NOT configured'));
+      if (pf.speedy && pf.speedy.available) bits.push('Speedy ' + (pf.speedy.configured ? 'live' : 'in fallback'));
+      if (pf.notifications && pf.notifications.available) bits.push('Outbox: ' + pf.notifications.queued + ' queued · ' + pf.notifications.failed + ' failed');
+      if (pf.adStudio && pf.adStudio.available) bits.push('Ad Studio: ' + pf.adStudio.pendingApproval + ' awaiting approval');
+      if (pf.pepperLists && pf.pepperLists.available) bits.push('Pepper Lists: ' + pf.pepperLists.pending + ' channel requests pending');
+      if (pf.insights && pf.insights.available && pf.insights.connections) bits.push(pf.insights.connections.map(function(c){ return esc(c.label) + ' ' + (c.status === 'connected' ? 'connected' : 'not connected'); }).join(' · '));
+      html += row('b', '<b>Platform health</b> — ' + bits.join(' · ') + '.');
+    } else html += pbUnavail('Platform health');
+    ins.innerHTML = html;
+
+    var oc = s.outcomes, pl = s.pipeline;
+    if (kpis){
+      kpis.innerHTML =
+        kpi(oc && oc.available ? oc.totals.leads : '—', 'LEADS · 28 DAYS', 'Attributed intake, all sources.') +
+        kpi(oc && oc.available ? oc.totals.won : '—', 'WON · 28 DAYS', 'Won jobs in the same window.') +
+        kpi(oc && oc.available ? pbMoney(oc.totals.wonCollectedCents) : '—', 'COLLECTED ON WON · 28 DAYS', 'Paid payments + recorded receipts.') +
+        kpi(pl && pl.available ? pl.totalLeads : '—', 'LEADS IN PIPELINE NOW', 'The live CRM board, all stages.');
+    }
+    if (ana){
+      var ah = '';
+      if (pl && pl.available){
+        ah += row('b', '<b>Pipeline now:</b> ' + pl.columns.map(function(c){ return esc(c.label) + ' ' + esc(c.count) + (c.valueCents != null ? ' (' + esc(pbMoney(c.valueCents)) + ' known value)' : ''); }).join(' · ') + '. <a href="/crm" style="color:#e65766;font-weight:700">Open CRM →</a>');
+      } else ah += pbUnavail('CRM pipeline');
+      if (oc && oc.available){
+        ah += oc.costStatus === 'NO_COST_RECORDED'
+          ? row('y', '<b>Cost per won job: no cost recorded.</b> No campaign in this system carries a recorded spend figure, so no cost-per-won number is shown instead of an invented one. <a href="/ad-studio" style="color:#e65766;font-weight:700">Ad Studio →</a>')
+          : row('g', '<b>Cost per won job</b> is computed from recorded campaign spend. <a href="/ad-studio" style="color:#e65766;font-weight:700">Ad Studio →</a>');
+      } else ah += pbUnavail('Cost per won job');
+      var rv = s.reviews;
+      if (rv && rv.available){
+        ah += row('b', '<b>Review funnel:</b> ' + esc(rv.asksQueued) + ' asks queued · ' + esc(rv.remindersQueued) + ' reminders · ' + esc(rv.reviewsReceived) + ' reviews received · ' + esc(rv.escalated) + ' escalated.');
+      } else ah += pbUnavail('Review funnel');
+      ana.innerHTML = ah;
+    }
+    if (recs){
+      var items = Array.isArray(b.recommendations) ? b.recommendations : [];
+      if (!items.length){
+        recs.innerHTML = row('g', '<b>Nothing needs a move right now.</b> Every state Pepper watches — queues, prices, publishing, connections — is in order.');
+      } else {
+        recs.innerHTML = items.map(function(it){
+          return row('y', '<b>' + esc(it.fact) + '</b><br>' + esc(it.action) + ' <a href="' + esc(it.href) + '" style="color:#e65766;font-weight:700">Go →</a>');
+        }).join('');
+      }
+    }
+  });
+  get('/pepper-console/reports', true).then(function(res){
+    var rows = data(res.j);
+    renderPepperReports(res.ok && Array.isArray(rows) ? rows : null);
+  });
+}
+function renderPepperReports(rows){
+  var el = document.getElementById('pepperReports'); if (!el) return;
+  if (!rows){
+    el.innerHTML = row('y', '<b>Report log unavailable right now</b> — open the <a href="/pepper" style="color:#e65766;font-weight:700">Pepper console</a> for the full log.');
+    return;
+  }
+  if (!rows.length){
+    el.innerHTML = '<span class="small mut">No reports filed yet — the log opens with the first report.</span>';
+    return;
+  }
+  var sorted = rows.slice().sort(function(a, b){
+    var an = a.category === 'NEEDS_OWNER' ? 0 : 1, bn = b.category === 'NEEDS_OWNER' ? 0 : 1;
+    if (an !== bn) return an - bn;
+    return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+  });
+  el.innerHTML = sorted.slice(0, 8).map(function(r){
+    var cls = r.category === 'NEEDS_OWNER' ? 'r' : r.category === 'INCIDENT' ? 'y' : 'g';
+    var who = r.createdBy ? (r.createdBy.name || r.createdBy.email || '') : '';
+    return row(cls, '<b>' + esc(String(r.category || '').replace(/_/g, ' ')) + '</b> · ' + esc(r.title) + ' <span class="mut small">' + esc(fmtWhen(r.createdAt)) + (who ? ' · ' + esc(who) : '') + '</span><br><span class="small">' + esc(r.body) + '</span>');
+  }).join('') + '<div style="margin-top:2px"><a class="small" href="/pepper" style="color:#e65766;font-weight:700">Open the Pepper console for the full log →</a></div>';
+}
+var pepperBriefBound = false;
+function bindPepperBriefing(){
+  if (pepperBriefBound) return;
+  var btn = document.getElementById('pepperDigestBtn'); if (!btn) return;
+  pepperBriefBound = true;
+  btn.addEventListener('click', function(){
+    var msg = document.getElementById('pepperDigestMsg');
+    btn.disabled = true;
+    if (msg) msg.innerHTML = '<span class="mut small"><span class="spin"></span> Filing the digest draft…</span>';
+    fetch(API + '/pepper-console/digest/draft', { method: 'POST', headers: hdr(), body: '{}' })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+      .then(function(res){
+        btn.disabled = false;
+        if (res.ok){
+          if (msg) msg.innerHTML = '<p class="small" style="color:#27b99d;margin:8px 0 0">Draft filed in the report log above — nothing was sent anywhere.</p>';
+          get('/pepper-console/reports', true).then(function(r2){
+            var rows = data(r2.j);
+            renderPepperReports(r2.ok && Array.isArray(rows) ? rows : null);
+          });
+        } else if (msg){
+          msg.innerHTML = '<p class="small" style="color:#e94e5c;margin:8px 0 0">The digest draft could not be filed' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + ' — try again.</p>';
+        }
+      })
+      .catch(function(){
+        btn.disabled = false;
+        if (msg) msg.innerHTML = '<p class="small" style="color:#e94e5c;margin:8px 0 0">The digest draft could not be filed — check your connection and try again.</p>';
+      });
+  });
+}
+
 document.getElementById('refreshBtn').addEventListener('click', loadAll);
 document.getElementById('logoutBtn').addEventListener('click', function(){
   try { localStorage.removeItem('tsos_token'); } catch(e){}
