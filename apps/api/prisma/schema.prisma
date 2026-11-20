@@ -213,6 +213,7 @@ model User {
   pepperReports PepperReport[]
 
   advertiserSubscription AdvertiserSubscription?
+  careSubscription CareSubscription?
 
   authHandoffs AuthHandoff[]
   sessionHandoffs SessionHandoff[]
@@ -1971,6 +1972,89 @@ model AdvertiserSubscription {
 // Owner-configurable billing settings (singleton row, id 'default'):
 // the past-due grace window in days (default 7, per the plan spec).
 model AdBillingSetting {
+  id        String   @id
+  graceDays Int      @default(7)
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum CareSubscriptionStatus {
+  NONE
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  OFFICE_GRANTED
+}
+
+// Appliance Care Plan (membership) — B4 (2026-11-20, Ramone approved
+// the recommendations program). Mirrors the Flywheel advertiser-plan
+// discipline exactly: the plan is STRUCTURE seeded with
+// annualPriceCents NULL; the price exists only because the owner set
+// it in the admin surface (routes/carePlans.js), which is also the
+// only place a Stripe Product/Price for the plan is ever created.
+// An unpriced plan refuses checkout with pricing_not_set.
+model CarePlan {
+  id               String   @id @default(uuid()) @db.Uuid
+  key              String   @unique
+  name             String
+  description      String?
+  // NULL = pricing not set by the owner yet — checkout is refused
+  // with an honest "pricing not set" state everywhere it appears.
+  annualPriceCents Int?
+  currency         String   @default("usd")
+  // Feature matrix: { <featureKey>: true|false } over the keys in
+  // services/carePlans.js CARE_FEATURES (annualCheckup,
+  // priorityBooking).
+  features         Json     @default("{}")
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  // Set only by the owner price flow (Stripe sync at price-set time).
+  stripeProductId  String?
+  stripePriceId    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  subscriptions CareSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+model CareSubscription {
+  id                   String               @id @default(uuid()) @db.Uuid
+  userId               String               @unique @db.Uuid
+  planId               String?              @db.Uuid
+  status               CareSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  // When the first failed invoice landed; the grace clock starts here.
+  pastDueAt            DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  // The included annual check-up: the period-end it was booked for,
+  // and the booking reference that fulfilled it. One per period.
+  checkupBookedForPeriodEnd DateTime?
+  checkupBookingRef         String?
+  // Office grant audit (status OFFICE_GRANTED): who granted it, when.
+  grantedById          String?              @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan CarePlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+// Owner-configurable care-plan billing settings (singleton row, id
+// 'default'): the past-due grace window in days (default 7, mirroring
+// the advertiser-plan setting).
+model CareBillingSetting {
   id        String   @id
   graceDays Int      @default(7)
   updatedBy String?
