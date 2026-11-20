@@ -4,6 +4,7 @@ import { ROLES } from '../config/security.js';
 import { db } from '../db/client.js';
 import {
   buildOverview,
+  buildCallsBySource,
   refreshPageSpeed,
   latestPageSpeed,
   googleConnections,
@@ -76,6 +77,22 @@ router.post('/insights/pagespeed/refresh', async (req, res) => {
 
 router.get('/insights/connections', async (req, res) => {
   return res.json({ data: googleConnections() });
+});
+
+/**
+ * Calls & texts by source (2026-11-20, Wave 3 E7) — the Tracking
+ * Number System's real ContactEvent counts (28 days), grouped by
+ * surface, by number, and an honest unattributed bucket. Sits next
+ * to the Google data on the Insights board; first-party records
+ * only, no Google data is mixed in.
+ */
+router.get('/insights/calls', async (req, res) => {
+  try {
+    return res.json({ data: await buildCallsBySource() });
+  } catch (error) {
+    console.error('insights calls-by-source failed:', error);
+    return res.status(500).json({ error: 'Calls-by-source failed to load' });
+  }
 });
 
 export default router;

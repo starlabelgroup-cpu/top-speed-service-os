@@ -6,6 +6,14 @@ import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import { persistMediaAsset, persistMediaContent } from '../db/mediaOsRepo.js';
 import { emitReport } from '../services/managementReports.js';
+import {
+  queueMediaFacebookPost,
+  facebookSummaryFor,
+  facebookSummariesFor,
+  mediaFacebookConnectionState,
+  MEDIA_FACEBOOK_PAGE,
+} from '../services/mediaFacebook.js';
+import { mediaFacebookRepo } from '../db/mediaFacebookRepo.js';
 
 /**
  * Top Speed Media OS — Phase 1 API on the Service OS backend
@@ -101,6 +109,17 @@ function adminContent(record) {
   return { ...publicContent(record), ownerId: record.ownerId || null, assetCount: assetCountFor(record.id) };
 }
 
+/**
+ * Facebook publish state for admin payloads (Wave 3 E6): the truthful
+ * queue display for the record's latest Facebook post row — "Queued
+ * for posting" until a real outcome exists, "Published — <real
+ * facebook.com URL>" after one is recorded, "Couldn't post —
+ * <reason>" after a failure. Null when nothing was ever queued.
+ */
+async function withFacebook(record) {
+  return { ...adminContent(record), facebook: await facebookSummaryFor(record.id) };
+}
+
 function creatorContent(record) {
   return { ...publicContent(record), ownerId: record.ownerId || null, assetCount: assetCountFor(record.id) };
 }
@@ -140,7 +159,7 @@ router.get('/media-os/content/:slug', (req, res) => {
 
 // ─── admin: content ─────────────────────────────────────────────────
 
-router.get('/media-os/admin/content', ...mediaOnly, (req, res) => {
+router.get('/media-os/admin/content', ...mediaOnly, async (req, res) => {
   const q = String(req.query.q || '').trim().toLowerCase();
   const status = String(req.query.status || '').trim().toUpperCase();
   const division = String(req.query.division || '').trim().toUpperCase();
@@ -155,8 +174,9 @@ router.get('/media-os/admin/content', ...mediaOnly, (req, res) => {
       (Array.isArray(c.tags) && c.tags.some((t) => t.toLowerCase().includes(q))));
   }
   const byStatus = Object.fromEntries(CONTENT_STATUSES.map((s) => [s, store.mediaContent.filter((c) => c.status === s).length]));
+  const fbSummaries = await facebookSummariesFor(items.map((c) => c.id));
   return res.json({
-    data: items.map(adminContent),
+    data: items.map((c) => ({ ...adminContent(c), facebook: fbSummaries.get(c.id) || null })),
     counts: { total: store.mediaContent.length, byStatus, published: byStatus.PUBLISHED, assets: store.mediaAssets.length },
   });
 });
@@ -218,10 +238,10 @@ router.post('/media-os/admin/content', ...mediaOnly, async (req, res) => {
   return res.status(201).json({ data: adminContent(record) });
 });
 
-router.get('/media-os/admin/content/:id', ...mediaOnly, (req, res) => {
+router.get('/media-os/admin/content/:id', ...mediaOnly, async (req, res) => {
   const record = findContent(req.params.id);
   if (!record) return res.status(404).json({ error: 'Content not found' });
-  return res.json({ data: adminContent(record) });
+  return res.json({ data: await withFacebook(record) });
 });
 
 const contentPatchSchema = z.object({
@@ -298,8 +318,152 @@ router.post('/media-os/admin/content/:id/status', ...mediaOnly, async (req, res)
       reference: record.slug,
       eventKey: `media-content:${record.id}:published:${record.updatedAt}`,
     });
+    // Wave 3 E6: publishing also queues the Facebook Page post
+    // package. The queue is the deliverable — Pepper posts through
+    // the owner's connected account behind Ramone's approval and
+    // staff record the real outcome; the record's facebook state
+    // reads "Queued for posting" until then, never "posted".
+    const fb = await queueMediaFacebookPost(record);
+    if (fb.queued && !fb.duplicate) {
+      await appendEvent('MEDIA_FACEBOOK_QUEUED', {
+        source: 'media-os-console',
+        actor: actorOf(req),
+        entityType: 'MEDIA_CONTENT',
+        entityId: record.id,
+        details: { slug: record.slug, queueId: fb.row.id, pageId: MEDIA_FACEBOOK_PAGE.id },
+      });
+    }
+    const data = await withFacebook(record);
+    data.facebookQueue = fb.queued
+      ? { queued: true, duplicate: Boolean(fb.duplicate), queueId: fb.row.id }
+      : { queued: false, reason: fb.reason };
+    return res.json({ data });
   }
   return res.json({ data: adminContent(record) });
+});
+
+// ─── admin: Facebook Page publish queue (Wave 3 E6) ───────────────
+// The office/Pepper worklist for the Top Speed Facebook Page
+// (Repair & Installation, 1437372132795817): what is waiting to be
+// posted, oldest first, plus recorded outcomes. Pepper works this
+// queue through the owner's connected Facebook account behind
+// Ramone's approval; nothing here — or anywhere in the server —
+// writes to Facebook.
+
+function publicFacebookPost(row) {
+  const content = findContent(row.contentId);
+  return {
+    id: row.id,
+    contentId: row.contentId,
+    contentSlug: row.contentSlug,
+    contentTitle: content ? content.title : null,
+    contentStatus: content ? content.status : null,
+    pageId: row.pageId,
+    pageName: row.pageName,
+    message: row.message,
+    linkUrl: row.linkUrl || null,
+    imageUrl: row.imageUrl || null,
+    status: row.status,
+    externalId: row.externalId || null,
+    externalUrl: row.externalUrl || null,
+    error: row.error || null,
+    postedAt: row.postedAt || null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+router.get('/media-os/admin/facebook-queue', ...mediaOnly, async (req, res) => {
+  const rows = await mediaFacebookRepo.listQueue(200);
+  return res.json({
+    data: {
+      connection: mediaFacebookConnectionState(),
+      count: rows.length,
+      queued: rows.filter((r) => r.status === 'QUEUED').length,
+      posts: rows.map(publicFacebookPost),
+    },
+  });
+});
+
+router.post('/media-os/admin/content/:id/facebook-queue', ...mediaOnly, async (req, res) => {
+  const record = findContent(req.params.id);
+  if (!record) return res.status(404).json({ error: 'Content not found' });
+  if (record.status !== 'PUBLISHED') {
+    return res.status(422).json({
+      error: `Only published content can be queued for Facebook — this record is ${record.status.toLowerCase().replace('_', ' ')}`,
+    });
+  }
+  const fb = await queueMediaFacebookPost(record);
+  if (!fb.queued) {
+    return res.status(503).json({
+      error: 'The platform Facebook connection is not verified right now, so nothing was queued — Pepper re-verifies the connected account before posting can be queued.',
+    });
+  }
+  if (!fb.duplicate) {
+    await appendEvent('MEDIA_FACEBOOK_QUEUED', {
+      source: 'media-os-console',
+      actor: actorOf(req),
+      entityType: 'MEDIA_CONTENT',
+      entityId: record.id,
+      details: { slug: record.slug, queueId: fb.row.id, pageId: MEDIA_FACEBOOK_PAGE.id, manual: true },
+    });
+  }
+  return res.status(fb.duplicate ? 200 : 201).json({
+    data: { ...publicFacebookPost(fb.row), duplicate: Boolean(fb.duplicate) },
+  });
+});
+
+const facebookOutcomeSchema = z.object({
+  status: z.enum(['POSTED', 'FAILED']),
+  externalUrl: z.string().trim().max(1000).optional(),
+  externalId: z.string().trim().max(120).optional(),
+  error: z.string().trim().max(500).optional(),
+});
+
+function isFacebookUrl(raw) {
+  try {
+    const url = new URL(raw);
+    return url.protocol === 'https:'
+      && (url.hostname === 'facebook.com' || url.hostname.endsWith('.facebook.com'));
+  } catch {
+    return false;
+  }
+}
+
+router.post('/media-os/admin/facebook-queue/:id/outcome', ...mediaOnly, async (req, res) => {
+  const parsed = facebookOutcomeSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid outcome', details: parsed.error.flatten() });
+  }
+  const data = parsed.data;
+  if (data.status === 'POSTED' && (!data.externalUrl || !isFacebookUrl(data.externalUrl))) {
+    return res.status(400).json({ error: 'A posted outcome needs the real Facebook post URL (an https://facebook.com link)' });
+  }
+  if (data.status === 'FAILED' && (!data.error || data.error.length < 3)) {
+    return res.status(400).json({ error: 'A failed outcome needs the reason it could not post' });
+  }
+  const { row, conflict } = await mediaFacebookRepo.markOutcome(req.params.id, {
+    status: data.status,
+    externalId: data.externalId,
+    externalUrl: data.status === 'POSTED' ? data.externalUrl : undefined,
+    error: data.status === 'FAILED' ? data.error : undefined,
+    outcomeById: req.user.id,
+  });
+  if (!row) return res.status(404).json({ error: 'Facebook queue item not found' });
+  if (conflict) {
+    return res.status(409).json({
+      error: 'This Facebook post already has an outcome',
+      data: { post: publicFacebookPost(row) },
+    });
+  }
+  await appendEvent(data.status === 'POSTED' ? 'MEDIA_FACEBOOK_POSTED' : 'MEDIA_FACEBOOK_FAILED', {
+    source: 'media-os-console',
+    actor: actorOf(req),
+    entityType: 'MEDIA_CONTENT',
+    entityId: row.contentId,
+    details: { slug: row.contentSlug, queueId: row.id, externalUrl: row.externalUrl || null, error: row.error || null },
+  });
+  return res.json({ data: { post: publicFacebookPost(row) } });
 });
 
 // ─── admin: assets ──────────────────────────────────────────────────

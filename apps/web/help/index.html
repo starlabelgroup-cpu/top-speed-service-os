@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Help Center — Top Speed Appliance</title>
+<meta name="description" content="Top Speed Appliance help center: how booking, tracking, warranties, referrals and appliance care work — published by the Top Speed team from the same knowledge Speedy answers from. Book a repair or call (844) 460-7038.">
+<link rel="canonical" href="https://topspeedserviceos.com/help">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0E1A36;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--blue:#1280FF;--grn:#22C55E;--yel:#EAB308;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1080px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:16px}
+.htitle{font-family:"Rajdhani",Inter,sans-serif;font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hnav{margin-left:auto;display:flex;gap:14px;align-items:center;font-size:13.5px;font-weight:600}
+.hnav a{color:var(--mut)}
+.hnav a:hover{color:#fff}
+.callbtn{background:var(--red);color:#fff !important;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1080px;margin:0 auto;padding:26px 18px 40px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero h1{font-family:"Rajdhani",Inter,sans-serif;font-size:clamp(28px,6vw,44px);line-height:1.05;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:700px;line-height:1.6}
+.bookbar{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 6px}
+.btn{display:inline-block;background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:12px 22px;font-size:14.5px;border:1px solid var(--red);cursor:pointer;font-family:Inter}
+.btn.ghost{background:transparent;color:var(--txt);border-color:var(--line)}
+.btn.sm{padding:7px 14px;font-size:12.5px}
+.searchrow{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0 6px}
+.searchrow input[type="search"]{flex:1;min-width:220px;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--txt);padding:12px 18px;font-size:14.5px;font-family:Inter}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 4px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:Inter}
+.chip.on{color:#fff;border-color:var(--blue);background:rgba(18,128,255,.16)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px;cursor:pointer}
+.card:hover{border-color:var(--blue)}
+.card h3{font-family:"Rajdhani",Inter,sans-serif;font-size:16.5px;line-height:1.25}
+.card p{color:var(--mut);font-size:13px;line-height:1.55}
+.card .go{margin-top:auto;font-size:13px;font-weight:700;color:var(--blue)}
+.pill{font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 8px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);white-space:nowrap;text-transform:uppercase;align-self:flex-start}
+.pill.pub{color:var(--grn);border-color:rgba(34,197,94,.4)}
+.empty{background:var(--panel);border:1px dashed var(--line);border-radius:var(--rad);padding:22px;color:var(--mut);font-size:14px;line-height:1.6;margin-top:16px}
+.article{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:22px;margin-top:16px}
+.article h2{font-family:"Rajdhani",Inter,sans-serif;font-size:24px;line-height:1.2;margin:8px 0 12px}
+.article .body{font-size:15px;line-height:1.7;color:var(--txt)}
+.article .body p{margin-bottom:12px}
+.article .body ul{margin:0 0 12px 20px}
+.article .body li{margin-bottom:6px}
+.bookpanel{background:var(--panel2);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:18px}
+.bookpanel h3{font-family:"Rajdhani",Inter,sans-serif;font-size:18px;margin-bottom:6px}
+.bookpanel p{color:var(--mut);font-size:13.5px;line-height:1.55}
+.console{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:18px;margin-top:26px}
+.console h3{font-family:"Rajdhani",Inter,sans-serif;font-size:17px;margin-bottom:6px}
+.small{font-size:12.5px}.mut{color:var(--mut)}
+.srow{display:flex;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.srow .meta{flex:1;min-width:0}
+.srow .meta b{font-size:14px}
+.msg{font-size:13px;margin-top:10px;min-height:18px}
+.msg.ok{color:var(--grn)}.msg.err{color:var(--red)}
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+footer{border-top:1px solid var(--line);padding:22px 18px;text-align:center;color:var(--mut);font-size:13px;line-height:1.7}
+footer a{margin:0 8px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <div class="htitle">Top Speed Appliance<br><span style="color:var(--red)">Help Center</span></div>
+    <nav class="hnav">
+      <a href="/">Home</a>
+      <a href="/track">Track My Tech</a>
+      <a href="/app">Customer App</a>
+      <a class="callbtn" href="tel:+18444607038">Call (844) 460-7038</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Help Center</div>
+    <h1>Answers, <span>published by our team</span></h1>
+    <p>How booking, tracking, pricing, warranties, referrals and appliance care work at Top Speed — the same grounded knowledge our assistant Speedy answers from, published here by a person on the team. If an answer here doesn't settle it, booking a visit or calling us will.</p>
+    <div class="bookbar">
+      <a class="btn" href="/book">Book a Repair</a>
+      <a class="btn ghost" href="tel:+18444607038">Call (844) 460-7038</a>
+    </div>
+  </div>
+
+  <div id="helpListView">
+    <div class="searchrow">
+      <input type="search" id="helpQ" placeholder="Search help — try “warranty”, “diagnostic”, “referral”, “dryer not heating”…" aria-label="Search help articles">
+    </div>
+    <div class="chips" id="helpChips">
+      <button class="chip on" data-pack="" type="button">All topics</button>
+      <button class="chip" data-pack="site" type="button">About Top Speed &amp; the Platform</button>
+      <button class="chip" data-pack="industry" type="button">Appliance Care &amp; Repair Guides</button>
+      <button class="chip" data-pack="glossary" type="button">Words &amp; Terms</button>
+    </div>
+    <div id="helpGrid"><div class="empty"><span class="spin"></span> Loading published help articles…</div></div>
+  </div>
+
+  <div id="helpArticleView" style="display:none"></div>
+
+  <div id="helpStaff" style="display:none">
+    <div class="console">
+      <h3>Help publishing — staff</h3>
+      <p class="small mut">Every Speedy knowledge entry, with its public state. An article appears on this page only after a staff member publishes it — publishing is always a person's decision. <span id="helpCounts"></span></p>
+      <div id="helpStaffRows" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading entries…</span></div>
+      <div class="msg" id="helpStaffMsg"></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <a href="/">Platform Home</a><a href="/book">Book Service</a><a href="/track">Track My Tech</a><a href="/media">Media OS</a><a href="/speedy">Talk to Speedy</a><a href="tel:+18444607038">Call (844) 460-7038</a>
+  <div style="margin-top:8px">Top Speed Appliance LLC · Help Center — answers published by the Top Speed team.</div>
+</footer>
+
+<script>
+var API = 'https://top-speed-service-os.vercel.app/api/v1';
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function tok(){ try { return localStorage.getItem('tsos_token') || ''; } catch(e){ return ''; } }
+function authFetch(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({}, opts.headers || {}, { 'Authorization': 'Bearer ' + tok(), 'Content-Type': 'application/json' });
+  return fetch(API + path, opts);
+}
+var helpArticles = [];
+var helpPack = '';
+var helpBooking = { bookUrl: '/book', callDisplay: '(844) 460-7038', callHref: 'tel:+18444607038' };
+
+function renderGrid(){
+  var grid = document.getElementById('helpGrid');
+  var rows = helpArticles.filter(function(a){ return !helpPack || a.pack === helpPack; });
+  if (!rows.length){
+    grid.innerHTML = '<div class="empty">No published articles match that yet. Try a different search — or <a href="/book">book a repair</a> / <a href="tel:+18444607038">call (844) 460-7038</a> and the team will answer directly.</div>';
+    return;
+  }
+  grid.innerHTML = '<div class="grid">' + rows.map(function(a){
+    return '<div class="card" data-article="' + esc(a.id) + '" role="button" tabindex="0">' +
+      '<span class="pill">' + esc(a.category) + '</span>' +
+      '<h3>' + esc(a.topic) + '</h3>' +
+      '<p>' + esc(a.excerpt || '') + '</p>' +
+      '<span class="go">Read the answer →</span></div>';
+  }).join('') + '</div>';
+}
+function loadArticles(q){
+  var grid = document.getElementById('helpGrid');
+  grid.innerHTML = '<div class="empty"><span class="spin"></span> Loading published help articles…</div>';
+  fetch(API + '/help/articles' + (q ? '?q=' + encodeURIComponent(q) : ''))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var d = j.data || {};
+      helpArticles = d.articles || [];
+      if (d.booking) helpBooking = d.booking;
+      if (!helpArticles.length && !q){
+        grid.innerHTML = '<div class="empty">The team is publishing the first help articles now — check back soon. Meanwhile every question can go straight to the team: <a href="/book">book a repair</a> or <a href="tel:+18444607038">call (844) 460-7038</a>.</div>';
+        return;
+      }
+      renderGrid();
+    })
+    .catch(function(){
+      grid.innerHTML = '<div class="empty">Help articles could not be loaded right now — please <a href="/book">book a repair</a> or <a href="tel:+18444607038">call (844) 460-7038</a> and the team will help directly.</div>';
+    });
+}
+function renderBody(answer){
+  var lines = String(answer || '').split('\n');
+  var html = '', inList = false;
+  function closeList(){ if (inList){ html += '</ul>'; inList = false; } }
+  lines.forEach(function(line){
+    var t = line.trim();
+    if (t.indexOf('- ') === 0){
+      if (!inList){ html += '<ul>'; inList = true; }
+      html += '<li>' + esc(t.slice(2)) + '</li>';
+    } else if (t){
+      closeList();
+      html += '<p>' + esc(t) + '</p>';
+    }
+  });
+  closeList();
+  return html;
+}
+function bookPanel(){
+  return '<div class="bookpanel"><h3>Need a technician?</h3>' +
+    '<p>Help answers explain how things work — a diagnostic visit is what confirms the cause on your appliance. Book online in a couple of minutes, or call the team.</p>' +
+    '<div class="bookbar" style="margin-bottom:0"><a class="btn" href="' + esc(helpBooking.bookUrl) + '">Book a Repair</a>' +
+    '<a class="btn ghost" href="' + esc(helpBooking.callHref) + '">Call ' + esc(helpBooking.callDisplay) + '</a></div></div>';
+}
+function openArticle(id){
+  var view = document.getElementById('helpArticleView');
+  document.getElementById('helpListView').style.display = 'none';
+  view.style.display = '';
+  view.innerHTML = '<div class="empty"><span class="spin"></span> Loading article…</div>';
+  fetch(API + '/help/articles/' + encodeURIComponent(id))
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ view.innerHTML = '<div class="empty">That article is not published. <a href="/help">Back to the Help Center</a></div>'; return; }
+      var d = res.j.data || {};
+      var a = d.article || {};
+      if (d.booking) helpBooking = d.booking;
+      view.innerHTML = '<p><a href="/help" id="helpBack">← All help articles</a></p>' +
+        '<div class="article"><span class="pill">' + esc(a.category) + '</span>' +
+        '<h2>' + esc(a.topic) + '</h2><div class="body">' + renderBody(a.answer) + '</div>' +
+        (a.link ? '<p style="margin-top:10px"><a href="' + esc(a.link) + '">Related page →</a></p>' : '') +
+        bookPanel() + '</div>';
+      var back = document.getElementById('helpBack');
+      if (back) back.addEventListener('click', function(ev){ ev.preventDefault(); closeArticle(); });
+      window.scrollTo(0, 0);
+    })
+    .catch(function(){
+      view.innerHTML = '<div class="empty">That article could not be loaded. <a href="/help">Back to the Help Center</a></div>';
+    });
+}
+function closeArticle(){
+  document.getElementById('helpArticleView').style.display = 'none';
+  document.getElementById('helpListView').style.display = '';
+  if (location.hash) history.pushState(null, '', location.pathname);
+}
+document.getElementById('helpGrid').addEventListener('click', function(ev){
+  var card = ev.target.closest('[data-article]'); if (!card) return;
+  var id = card.getAttribute('data-article');
+  location.hash = '/article/' + id;
+  openArticle(id);
+});
+var helpTimer = null;
+document.getElementById('helpQ').addEventListener('input', function(){
+  clearTimeout(helpTimer);
+  var q = this.value.trim();
+  helpTimer = setTimeout(function(){ loadArticles(q); }, 300);
+});
+document.getElementById('helpChips').addEventListener('click', function(ev){
+  var chip = ev.target.closest('[data-pack]'); if (!chip) return;
+  var chips = this.querySelectorAll('.chip');
+  for (var i = 0; i < chips.length; i++) chips[i].classList.remove('on');
+  chip.classList.add('on');
+  helpPack = chip.getAttribute('data-pack') || '';
+  renderGrid();
+});
+
+/* ── Staff publishing (visible only with a staff session) ── */
+function setStaffMsg(text, ok){
+  var m = document.getElementById('helpStaffMsg');
+  m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'err');
+}
+function loadStaff(){
+  authFetch('/help/admin/articles').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if (!j) return;
+    document.getElementById('helpStaff').style.display = '';
+    var d = j.data || {};
+    var c = d.counts || {};
+    document.getElementById('helpCounts').textContent = (c.published || 0) + ' published · ' + (c.draft || 0) + ' draft · ' + (c.total || 0) + ' total entries.';
+    document.getElementById('helpStaffRows').innerHTML = (d.articles || []).map(function(a){
+      var pub = a.state === 'PUBLISHED';
+      return '<div class="srow"><div class="meta"><b>' + esc(a.topic) + '</b> ' +
+        '<span class="pill' + (pub ? ' pub' : '') + '">' + (pub ? 'Published' : 'Draft') + '</span>' +
+        '<div class="small mut">' + esc(a.category) + ' · ' + esc(a.id) + '</div></div>' +
+        '<button class="btn ghost sm" type="button" data-hstatus="' + (pub ? 'DRAFT' : 'PUBLISHED') + '" data-hid="' + esc(a.id) + '">' + (pub ? 'Unpublish' : 'Publish') + '</button></div>';
+    }).join('');
+  }).catch(function(){});
+}
+document.getElementById('helpStaffRows').addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-hstatus]'); if (!btn) return;
+  btn.disabled = true;
+  authFetch('/help/admin/articles/' + encodeURIComponent(btn.getAttribute('data-hid')) + '/status', {
+    method: 'POST', body: JSON.stringify({ status: btn.getAttribute('data-hstatus') })
+  }).then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ setStaffMsg((res.j && res.j.error) || 'Status change failed.', false); btn.disabled = false; return; }
+      setStaffMsg('Article ' + (btn.getAttribute('data-hstatus') === 'PUBLISHED' ? 'published — it is now public.' : 'unpublished — back to draft.'), true);
+      loadStaff(); loadArticles(document.getElementById('helpQ').value.trim());
+    })
+    .catch(function(){ setStaffMsg('Status change failed — connection error.', false); btn.disabled = false; });
+});
+if (tok()) loadStaff();
+
+if (location.hash.indexOf('#/article/') === 0){
+  openArticle(decodeURIComponent(location.hash.slice('#/article/'.length)));
+} else {
+  loadArticles('');
+}
+</script>
+<script src="/shared/session-vault.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

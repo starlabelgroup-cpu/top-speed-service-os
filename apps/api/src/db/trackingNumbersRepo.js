@@ -244,6 +244,65 @@ export async function contactCountsSince(since) {
   return { byNumber, unattributed };
 }
 
+/**
+ * Contact counts since `since`, grouped BY SOURCE for the Insights
+ * calls-by-source board (2026-11-20, Wave 3 E7):
+ *  - bySurface counts only events that matched a registered
+ *    tracking number (trackingNumberId set) — grouped by the
+ *    surfaceKey the number carries. These are the attributable
+ *    calls/texts per source.
+ *  - unattributed counts events whose dialed number matched NO
+ *    registered ACTIVE number (trackingNumberId null). They reached
+ *    a Top Speed line, but no source can honestly be claimed for
+ *    them — reported as their own bucket, never folded into a
+ *    surface and never dropped.
+ * The two sets are disjoint and together cover every event in the
+ * window. Real rows only — no rows, no count.
+ */
+export async function contactCountsBySourceSince(since) {
+  const bySurface = new Map();
+  const unattributed = { VOICE: 0, SMS: 0 };
+  const bumpSurface = (surfaceKey, channel) => {
+    if (channel !== 'VOICE' && channel !== 'SMS') return;
+    if (!bySurface.has(surfaceKey)) bySurface.set(surfaceKey, { VOICE: 0, SMS: 0 });
+    bySurface.get(surfaceKey)[channel] += 1;
+  };
+  const bumpUnattributed = (channel) => {
+    if (channel === 'VOICE' || channel === 'SMS') unattributed[channel] += 1;
+  };
+  if (!DATABASE_ENABLED) {
+    for (const e of memory.events) {
+      if (!inWindow(e.createdAt, since)) continue;
+      if (e.trackingNumberId) bumpSurface(e.surfaceKey, e.channel);
+      else bumpUnattributed(e.channel);
+    }
+    return { bySurface, unattributed };
+  }
+  try {
+    const attributed = await db().contactEvent.groupBy({
+      by: ['surfaceKey', 'channel'],
+      where: { createdAt: { gte: since }, trackingNumberId: { not: null } },
+      _count: { _all: true },
+    });
+    for (const g of attributed) {
+      const n = g._count?._all || 0;
+      for (let i = 0; i < n; i += 1) bumpSurface(g.surfaceKey, g.channel);
+    }
+    const unattr = await db().contactEvent.groupBy({
+      by: ['channel'],
+      where: { createdAt: { gte: since }, trackingNumberId: null },
+      _count: { _all: true },
+    });
+    for (const g of unattr) {
+      const n = g._count?._all || 0;
+      for (let i = 0; i < n; i += 1) bumpUnattributed(g.channel);
+    }
+  } catch {
+    /* counts degrade to zero rather than failing the board read */
+  }
+  return { bySurface, unattributed };
+}
+
 /** Test/drill support: every logged contact event, oldest first. */
 export async function listContactEvents() {
   if (!DATABASE_ENABLED) return memory.events.map(eventFromRow);

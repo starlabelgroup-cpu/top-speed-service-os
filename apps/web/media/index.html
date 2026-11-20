@@ -186,6 +186,14 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     </div>
 
     <div class="console">
+      <h3>Facebook posting queue — Top Speed Page</h3>
+      <p class="small mut">Publishing a record above queues its post package for the Top Speed Facebook Page — <b>Repair &amp; Installation</b>. Pepper posts queued items through the owner's connected Facebook account, one at a time, behind Ramone's approval; the outcome is recorded here with the real post link. A queued item is <b>not</b> posted until its outcome says so.</p>
+      <div class="small mut" id="fbConn" style="margin-top:8px">Checking the Facebook connection…</div>
+      <div class="rows" id="fbRows" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading queue…</span></div>
+      <div class="msg" id="fbMsg"></div>
+    </div>
+
+    <div class="console">
       <h3>Asset registry — rights</h3>
       <p class="small mut">Every original, version and thumbnail the network holds, with its rights status. Nothing customer-owned is published without a permission record.</p>
       <div class="rows" id="assetRows" style="margin-top:10px"><span class="mut small"><span class="spin"></span> Loading assets…</span></div>
@@ -314,10 +322,18 @@ function renderContentRows(){
       return '<button class="btn ghost sm" type="button" data-act="' + esc(next) + '" data-id="' + esc(c.id) + '">' +
         (next === 'PUBLISHED' ? 'Publish' : next === 'ARCHIVED' ? 'Archive' : 'Move to ' + esc(STATUS_LABEL[next] || next)) + '</button>';
     }).join('');
+    var fbLine = '';
+    if (c.facebook){
+      fbLine = '<div class="slug">Facebook: ' + (c.facebook.state === 'POSTED'
+        ? 'Published — <a href="' + esc(c.facebook.url || '#') + '" target="_blank" rel="noopener">view post</a>'
+        : esc(c.facebook.label)) + '</div>';
+    } else if (c.status === 'PUBLISHED'){
+      fbLine = '<div class="slug">Facebook: not queued — <button class="btn ghost sm" type="button" data-fbq="' + esc(c.id) + '">Queue Facebook post</button></div>';
+    }
     return '<div class="crow"><div class="meta"><b>' + esc(c.title) + '</b> ' + statusPill(c.status) +
       ' <span class="pill">' + esc(c.division) + '</span> <span class="pill">' + esc(c.type.replace('_',' ')) + '</span>' +
       '<div class="slug">' + esc(c.slug) + ' · ' + (c.assetCount || 0) + ' asset(s)' +
-      (c.publishedAt ? ' · published ' + esc(String(c.publishedAt).slice(0,10)) : '') + '</div>' +
+      (c.publishedAt ? ' · published ' + esc(String(c.publishedAt).slice(0,10)) : '') + '</div>' + fbLine +
       (c.description ? '<div class="desc">' + esc(c.description) + '</div>' : '') +
       '</div><div class="acts">' + acts + '</div></div>';
   }).join('');
@@ -332,10 +348,84 @@ document.getElementById('contentRows').addEventListener('click', function(ev){
     .then(function(res){
       if (!res.ok){ setMsg('contentMsg', (res.j && res.j.error) || 'Status change failed.', false); btn.disabled = false; return; }
       setMsg('contentMsg', 'Moved to ' + (STATUS_LABEL[target] || target) + '.', true);
-      loadConsole(); loadPublished();
+      loadConsole(); loadPublished(); loadFbQueue();
     })
     .catch(function(){ setMsg('contentMsg', 'Status change failed — connection error.', false); btn.disabled = false; });
 });
+/* ── Facebook posting queue (Wave 3 E6) ─────────────────── */
+function fbPill(st){
+  var cls = st === 'POSTED' ? 'pub' : st === 'FAILED' ? 'arch' : 'rev';
+  var lbl = st === 'POSTED' ? 'Published' : st === 'FAILED' ? 'Couldn\'t post' : 'Queued for posting';
+  return '<span class="pill ' + cls + '">' + lbl + '</span>';
+}
+function loadFbQueue(){
+  var rowsEl = document.getElementById('fbRows'); if (!rowsEl) return;
+  authFetch('/media-os/admin/facebook-queue').then(function(r){ return r.ok ? r.json() : null; }).then(function(j){
+    if (!j){ rowsEl.innerHTML = '<span class="mut small">Queue unavailable for this session.</span>'; return; }
+    var d = j.data || {};
+    var conn = d.connection || {};
+    document.getElementById('fbConn').innerHTML = conn.connected
+      ? 'Facebook connection: <b>verified</b> — owner account ' + esc((conn.account || {}).name || '') + ' (verified ' + esc((conn.account || {}).verifiedAt || '') + ', via ' + esc((conn.account || {}).via || '') + '). Target Page: <b>' + esc((conn.page || {}).name || '') + '</b> · ' + (d.queued || 0) + ' waiting to post.'
+      : 'Facebook connection: <b>not verified</b> — nothing can be queued until Pepper re-verifies the connected account.';
+    var posts = d.posts || [];
+    if (!posts.length){ rowsEl.innerHTML = '<span class="mut small">Nothing queued yet — publish a record and its Facebook post package lands here.</span>'; return; }
+    rowsEl.innerHTML = posts.map(function(p){
+      var head = '<div class="crow"><div class="meta"><b>' + esc(p.contentTitle || p.contentSlug) + '</b> ' + fbPill(p.status) +
+        '<div class="slug">' + esc(p.contentSlug) + ' · for ' + esc(p.pageName) + ' · queued ' + esc(String(p.createdAt).slice(0,10)) +
+        (p.contentStatus && p.contentStatus !== 'PUBLISHED' ? ' · content now ' + esc(p.contentStatus) : '') + '</div>' +
+        '<div class="desc" style="white-space:pre-line">' + esc(p.message) + '</div>' +
+        (p.status === 'POSTED' ? '<div class="slug">Post: <a href="' + esc(p.externalUrl || '#') + '" target="_blank" rel="noopener">' + esc(p.externalUrl || '') + '</a></div>' : '') +
+        (p.status === 'FAILED' ? '<div class="slug">Reason: ' + esc(p.error || '') + '</div>' : '') +
+        '</div>';
+      if (p.status !== 'QUEUED') return head + '</div>';
+      return head + '<div class="acts" style="min-width:260px">' +
+        '<input type="url" placeholder="https://facebook.com/… post URL" data-fburl="' + esc(p.id) + '" style="width:100%;margin-bottom:6px">' +
+        '<button class="btn ghost sm" type="button" data-fbposted="' + esc(p.id) + '">Mark posted</button> ' +
+        '<input type="text" placeholder="Why it couldn\'t post" data-fberr="' + esc(p.id) + '" style="width:100%;margin:6px 0">' +
+        '<button class="btn ghost sm" type="button" data-fbfailed="' + esc(p.id) + '">Mark couldn\'t post</button>' +
+        '</div></div>';
+    }).join('');
+  }).catch(function(){ rowsEl.innerHTML = '<span class="mut small">Queue failed to load — connection error.</span>'; });
+}
+function fbOutcome(id, body, btn){
+  btn.disabled = true;
+  authFetch('/media-os/admin/facebook-queue/' + id + '/outcome', { method: 'POST', body: JSON.stringify(body) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ setMsg('fbMsg', (res.j && res.j.error) || 'Outcome failed.', false); btn.disabled = false; return; }
+      setMsg('fbMsg', body.status === 'POSTED' ? 'Recorded as posted with its real Facebook link.' : 'Recorded as couldn\'t post, with the reason.', true);
+      loadFbQueue(); loadConsole();
+    })
+    .catch(function(){ setMsg('fbMsg', 'Outcome failed — connection error.', false); btn.disabled = false; });
+}
+document.getElementById('fbRows').addEventListener('click', function(ev){
+  var posted = ev.target.closest('button[data-fbposted]');
+  var failed = ev.target.closest('button[data-fbfailed]');
+  if (posted){
+    var idp = posted.getAttribute('data-fbposted');
+    var url = (document.querySelector('input[data-fburl="' + idp + '"]') || {}).value || '';
+    fbOutcome(idp, { status: 'POSTED', externalUrl: url.trim() }, posted);
+    return;
+  }
+  if (failed){
+    var idf = failed.getAttribute('data-fbfailed');
+    var err = (document.querySelector('input[data-fberr="' + idf + '"]') || {}).value || '';
+    fbOutcome(idf, { status: 'FAILED', error: err.trim() }, failed);
+  }
+});
+document.getElementById('contentRows').addEventListener('click', function(ev){
+  var btn = ev.target.closest('button[data-fbq]'); if (!btn) return;
+  btn.disabled = true;
+  authFetch('/media-os/admin/content/' + btn.getAttribute('data-fbq') + '/facebook-queue', { method: 'POST', body: JSON.stringify({}) })
+    .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, j: j }; }); })
+    .then(function(res){
+      if (!res.ok){ setMsg('contentMsg', (res.j && res.j.error) || 'Could not queue the Facebook post.', false); btn.disabled = false; return; }
+      setMsg('contentMsg', res.j.data && res.j.data.duplicate ? 'Already queued for posting.' : 'Queued for posting to the Facebook Page.', true);
+      loadConsole(); loadFbQueue();
+    })
+    .catch(function(){ setMsg('contentMsg', 'Could not queue — connection error.', false); btn.disabled = false; });
+});
+
 ['fStatus','fDivision'].forEach(function(id){ document.getElementById(id).addEventListener('change', loadConsole); });
 document.getElementById('fQ').addEventListener('input', function(){ clearTimeout(window._mq); window._mq = setTimeout(loadConsole, 350); });
 document.getElementById('btnReload').addEventListener('click', loadConsole);
@@ -422,7 +512,7 @@ if (tok()){
     }
     return null;
   }).then(function(j){
-    if (j){ loadConsole(); loadAssets(); }
+    if (j){ loadConsole(); loadAssets(); loadFbQueue(); }
   }).catch(function(){});
 }
 

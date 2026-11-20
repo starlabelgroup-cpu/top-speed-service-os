@@ -1,4 +1,10 @@
 import { seoConfigured, seoServiceAccountEmail, grantSteps, GA4_PROPERTY_ID } from './googleSeo.js';
+import {
+  contactCountsBySourceSince,
+  contactCountsSince,
+  listTrackingNumbers,
+} from '../db/trackingNumbersRepo.js';
+import { surfaceLabel, TRACKING_ACTIVITY_WINDOW_DAYS, ensureTrackingSeeds } from './trackingNumbers.js';
 
 /**
  * Service OS Insights (2026-11-17) — the web traffic & website activity
@@ -160,6 +166,87 @@ export async function buildOverview(prisma) {
       'First-party data: counted from this platform\'s own lead and booking records — no Google data is mixed in.',
       'Attribution is captured first-touch at intake (landing page, UTM fields and ad click IDs). Records created before capture existed carry none and fall into "(not captured)" — they are never backfilled or estimated.',
       'A "lead" is a Connection intake (forms, provider applications, Pepper Lists submissions); a "booking" is a ServiceRequest. The same person can appear in both.',
+    ],
+  };
+}
+
+/* --------------------- Calls & texts by source --------------------- */
+
+/**
+ * The calls-by-source board (2026-11-20, Wave 3 E7): real
+ * ContactEvent rows from the Tracking Number System, counted over
+ * the same 28-day window the ApplianceMan registry uses, grouped
+ * three honest ways:
+ *  - bySurface: events that reached a REGISTERED tracking number,
+ *    grouped by the surface that number belongs to (the source);
+ *  - byNumber: the same events per phone row (label + number), so
+ *    a shared line reads differently from a dedicated one;
+ *  - unattributed: events whose dialed number matched no registered
+ *    ACTIVE number. They are real contacts, but no source can be
+ *    claimed — shown as their own bucket, never folded into a
+ *    surface and never dropped.
+ * EMAIL registry rows carry no contact events (mail is not logged
+ * per-address), so they never appear here. No events in the window
+ * → zeros and empty lists: the board says so rather than estimating.
+ */
+export async function buildCallsBySource() {
+  await ensureTrackingSeeds();
+  const since = new Date(Date.now() - TRACKING_ACTIVITY_WINDOW_DAYS * DAY_MS);
+  const [{ bySurface, unattributed }, { byNumber }, numbers] = await Promise.all([
+    contactCountsBySourceSince(since),
+    contactCountsSince(since),
+    listTrackingNumbers(),
+  ]);
+
+  const bySurfaceRows = [...bySurface.entries()]
+    .map(([surfaceKey, counts]) => ({
+      surfaceKey,
+      surfaceLabel: surfaceLabel(surfaceKey),
+      calls: counts.VOICE,
+      texts: counts.SMS,
+      total: counts.VOICE + counts.SMS,
+    }))
+    .sort((a, b) => b.total - a.total || String(a.surfaceLabel).localeCompare(String(b.surfaceLabel)));
+
+  const byNumberRows = numbers
+    .filter((row) => row.kind === 'PHONE')
+    .map((row) => {
+      const counts = byNumber.get(row.id) || { VOICE: 0, SMS: 0 };
+      return {
+        id: row.id,
+        label: row.label,
+        value: row.value,
+        status: row.status,
+        shared: row.shared,
+        surfaceKey: row.surfaceKey,
+        surfaceLabel: surfaceLabel(row.surfaceKey),
+        calls: counts.VOICE,
+        texts: counts.SMS,
+        total: counts.VOICE + counts.SMS,
+      };
+    })
+    .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label));
+
+  const attributedCalls = bySurfaceRows.reduce((sum, r) => sum + r.calls, 0);
+  const attributedTexts = bySurfaceRows.reduce((sum, r) => sum + r.texts, 0);
+
+  return {
+    windowDays: TRACKING_ACTIVITY_WINDOW_DAYS,
+    since: since.toISOString(),
+    totals: {
+      calls: attributedCalls + unattributed.VOICE,
+      texts: attributedTexts + unattributed.SMS,
+      total: attributedCalls + attributedTexts + unattributed.VOICE + unattributed.SMS,
+      attributedCalls,
+      attributedTexts,
+    },
+    bySurface: bySurfaceRows,
+    byNumber: byNumberRows,
+    unattributed: { calls: unattributed.VOICE, texts: unattributed.SMS, total: unattributed.VOICE + unattributed.SMS },
+    notes: [
+      'Counted from real ContactEvent rows the Twilio webhooks log when a call or text reaches a tracked number — the same records behind the ApplianceMan Tracking Numbers registry.',
+      'A contact is attributed to a source only when the dialed number is a registered tracking number for that surface. Contacts that reached an unregistered number are shown as unattributed — never guessed into a source.',
+      'The shared platform line (844) 460-7038 serves every surface today, so most contacts land on the platform source until the per-surface numbers are provisioned.',
     ],
   };
 }

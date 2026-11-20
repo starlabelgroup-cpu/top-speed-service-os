@@ -1661,6 +1661,67 @@ model MediaAsset {
   @@index([contentId])
 }
 
+// Media OS → Facebook Page publish queue (2026-11-20, Wave 3 E6).
+// When staff PUBLISH a Media OS record, a ready-to-post package for
+// the Top Speed Facebook Page (Repair & Installation,
+// 1437372132795817) is queued here. There is NO server-side Facebook
+// write anywhere in the platform: Pepper executes queued rows
+// through the owner's connected Facebook account behind Ramone's
+// approval (the facebookConnector attestation), and staff record the
+// real outcome — POSTED only with the real facebook.com post URL,
+// FAILED only with the real reason. Until an outcome exists the
+// honest status is QUEUED ("Queued for posting") — never "posted".
+// contentId is a plain column (the PepperListsCrossPost precedent)
+// so the dual-mode repo keeps identical shapes with/without a DB.
+enum MediaFacebookPostStatus {
+  QUEUED
+  POSTED
+  FAILED
+}
+
+model MediaFacebookPost {
+  id          String                  @id @default(uuid()) @db.Uuid
+  contentId   String                  @db.Uuid
+  contentSlug String
+  pageId      String
+  pageName    String
+  message     String                  @db.Text
+  linkUrl     String?
+  imageUrl    String?
+  status      MediaFacebookPostStatus @default(QUEUED)
+  externalId  String?
+  externalUrl String?
+  error       String?
+  outcomeById String?                 @db.Uuid
+  postedAt    DateTime?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([contentId, status])
+  @@index([status, createdAt])
+}
+
+// Public Help Center publishing state (2026-11-20, Wave 3 E5).
+// The help articles themselves are Speedy's grounded knowledge
+// entries (apps/api/src/knowledge — rebuilt from live platform
+// sources on every read, so they can never drift). This table holds
+// ONLY the human publishing decision per entry: no row (or a DRAFT
+// row) means the article is NOT public; a PUBLISHED row — set by a
+// staff member, never automatically — is what lets /help serve it.
+// entryId is the knowledge entry's stable id (a plain string: the
+// knowledge packs are code, not database rows).
+model HelpArticleState {
+  id          String    @id @default(uuid()) @db.Uuid
+  entryId     String    @unique
+  status      String    @default("DRAFT") // DRAFT | PUBLISHED
+  updatedById String?   @db.Uuid
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([status])
+}
+
 // ─── Ad Studio (in-house advertising system, 2026-11-14) ────────────
 // Ramone's own ad system on the Service OS: campaigns are built from
 // Media OS creatives, send traffic to his own published landing pages,
