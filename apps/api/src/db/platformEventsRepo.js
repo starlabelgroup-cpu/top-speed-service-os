@@ -134,6 +134,19 @@ const prismaRepo = {
     });
     return row ? toFeedShape(row) : null;
   },
+  // Newest event whose TYPE is in the list, or null. Some surfaces
+  // (the CRM) emit events that carry no source tag — their activity
+  // is joined by type instead. Same honesty contract as
+  // lastForSources: null means no such event exists.
+  async lastForTypes(types) {
+    if (!Array.isArray(types) || !types.length) return null;
+    const row = await db().platformEvent.findFirst({
+      where: { type: { in: types } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return row ? toFeedShape(row) : null;
+  },
+
   async countSince(since) {
     return db().platformEvent.count({ where: { createdAt: { gte: since } } });
   },
@@ -158,6 +171,11 @@ const memoryRepo = {
   async lastForSources(sources) {
     if (!Array.isArray(sources) || !sources.length) return null;
     const hit = memoryFiltered({}).find((row) => sources.includes(row.source));
+    return hit ? toFeedShape(hit) : null;
+  },
+  async lastForTypes(types) {
+    if (!Array.isArray(types) || !types.length) return null;
+    const hit = memoryFiltered({}).find((row) => types.includes(row.type));
     return hit ? toFeedShape(hit) : null;
   },
   async countSince(since) {

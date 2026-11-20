@@ -180,9 +180,15 @@ function renderBoard(d){
     }).join('');
     var lastRow;
     if (!s.eventsAvailable) lastRow = kv('Last event', 'Feed unavailable on this load');
-    else if (!s.eventSources || !s.eventSources.length) lastRow = kv('Last event', 'Lands under the shared intake tags');
+    else if ((!s.eventSources || !s.eventSources.length) && (!s.eventTypes || !s.eventTypes.length)) lastRow = kv('Last event', 'Lands under the shared intake tags');
     else if (s.lastEvent) lastRow = kv('Last event', s.lastEvent.type + ' · ' + when(s.lastEvent.at));
     else lastRow = kv('Last event', 'No events recorded yet');
+    var edgesHtml = '';
+    if (s.edges && s.edges.length) {
+      edgesHtml = '<div class="rows">' + kv('Connected systems', s.edges.length + ' wired in') + s.edges.map(function(e){
+        return kv(e.name, e.label + (e.lastSignal ? ' · ' + e.lastSignal.type + ' · ' + when(e.lastSignal.at) : ''));
+      }).join('') + '</div>';
+    }
     return '<div class="card"><h3>' + esc(s.name) + ' <span class="pill ' + (IDENTITY_PILL[idn.state] || '') + '">' + esc(idn.label || idn.state || '') + '</span></h3>' +
       '<div class="kind">' + esc(s.kind || '') + '</div>' +
       '<div class="rows">' +
@@ -195,6 +201,7 @@ function renderBoard(d){
       (idn.note ? '<div class="note">' + esc(idn.note) + '</div>' : '') +
       (s.api && s.api.note ? '<div class="note">' + esc(s.api.note) + '</div>' : '') +
       '<div class="chips">' + chips + '</div>' +
+      edgesHtml +
       (s.home ? '<div class="openrow"><a class="btn ghost sm" href="' + esc(s.home) + '" target="_blank" rel="noopener">Open surface</a></div>' : '') +
       '</div>';
   }).join('');

@@ -36,6 +36,89 @@ import { platformEventsRepo } from '../db/platformEventsRepo.js';
 
 export const INTERCONNECT_VERIFIED_ON = '2026-11-19';
 
+// Connection edges (2026-11-19, CRM interlink). An edge names a real,
+// code-verified data path between two surfaces. Its state is computed
+// per request, never stored: 'live' only when the platform event feed
+// holds a real event of one of the edge's signal types; otherwise
+// 'linked', labelled by the KIND of data link the code proves. Edges
+// whose far side only READS (management oversight consoles) or whose
+// traffic the feed cannot attribute (the Field Pro mobile app shares
+// the provider endpoints with the Tech App web portal) carry no
+// signal types and therefore can never show 'live' from the feed —
+// their mechanism note says so, in the open.
+export const EDGE_LIVE_LABEL = 'Live — activity in the feed';
+export const EDGE_LINK_LABELS = {
+  'shared-records': 'Linked — shared records',
+  'provider-api': 'Linked — shared provider API',
+  'aggregate-reads': 'Linked — aggregate reads',
+};
+
+const CRM_EDGES = [
+  {
+    to: 'book-os',
+    name: 'Service Setters — Book OS',
+    url: '/book-os',
+    link: 'shared-records',
+    mechanism:
+      'Same records: Book OS works the setter queue and dispatch board over the same bookings and customers the CRM reads — a booking created anywhere shows in both.',
+    signalTypes: ['BOOKING_CREATED', 'APPOINTMENT_SET'],
+  },
+  {
+    to: 'dispatch',
+    name: 'Dispatch — service booking dispatch software',
+    url: '/dispatch-dashboard',
+    link: 'shared-records',
+    mechanism:
+      'Dispatch match and approve act on the same booking records the CRM shows; an approval lands on the very booking the customer record displays.',
+    signalTypes: ['DISPATCH_MATCHED', 'DISPATCH_APPROVED'],
+  },
+  {
+    to: 'tech-app',
+    name: 'Tech App — web portal (/tech + /tech-network)',
+    url: '/tech',
+    link: 'shared-records',
+    mechanism:
+      'The Tech App board and job workspace read the same assignments through the provider endpoints — the job a tech works is the booking on the CRM customer record.',
+    signalTypes: ['ASSIGNMENT_ACCEPTED', 'DIAGNOSIS_RECORDED', 'JOB_COMPLETED'],
+  },
+  {
+    to: 'field-pro',
+    name: 'Top Speed Field Pro — mobile app',
+    url: 'https://top-speed-field-pro.vercel.app',
+    link: 'provider-api',
+    mechanism:
+      'Data/API-level connection: the Field Pro app signs in to this same backend and works the same provider endpoints and full job record as the Tech App web portal. The event feed cannot tell app activity from web-portal activity, so this edge reports the data link itself, never feed activity.',
+    signalTypes: [],
+  },
+  {
+    to: 'oversight',
+    name: 'Oversight',
+    url: '/oversight',
+    link: 'aggregate-reads',
+    mechanism:
+      'Oversight reads the CRM home, the Book OS boards and scorecard and the finance overview — the same live records, watched read-only. Reads emit no events, so this edge reports the data link itself.',
+    signalTypes: [],
+  },
+  {
+    to: 'manager',
+    name: 'Manager',
+    url: '/manager',
+    link: 'aggregate-reads',
+    mechanism:
+      'The Manager console reads management reports, finance status and referral aggregates computed over the same platform records the CRM works. Reads emit no events, so this edge reports the data link itself.',
+    signalTypes: [],
+  },
+  {
+    to: 'turbo-boss',
+    name: 'Turbo Boss',
+    url: '/turbo-boss',
+    link: 'aggregate-reads',
+    mechanism:
+      'Turbo Boss reads the Book OS setter queue and dispatch board, bookings and connections over the same records the CRM holds. Reads emit no events, so this edge reports the data link itself.',
+    signalTypes: [],
+  },
+];
+
 export const INTERCONNECT_SURFACES = [
   {
     id: 'flagship-web',
@@ -52,6 +135,35 @@ export const INTERCONNECT_SURFACES = [
     api: { mode: 'same-deployment', verifiedOn: INTERCONNECT_VERIFIED_ON, note: 'The web project and the API are this platform — every console calls the one backend.' },
     eventSources: ['WEB_FORM', 'SPEEDY_CHAT'],
     services: { speedy: true, attribution: true, payments: true, outbox: true },
+  },
+  {
+    id: 'crm',
+    name: 'Top Speed CRM',
+    hosts: ['topspeedserviceos.com/crm'],
+    home: 'https://topspeedserviceos.com/crm',
+    kind: 'The customer system of record: Customer 360, the communications log, Speedy briefs and the leads pipeline — it reads and works the same customers and bookings Book OS, dispatch, the Tech App and Field Pro run on.',
+    identity: {
+      state: 'live',
+      receiverPath: '/auth-handoff/',
+      verifiedOn: INTERCONNECT_VERIFIED_ON,
+      note: 'Same origin as the flagship — the flagship receiver and session vault cover it; the vault mirrors the CRM token key and the CRM page carries the vault and the account switcher.',
+    },
+    api: {
+      mode: 'same-deployment',
+      verifiedOn: INTERCONNECT_VERIFIED_ON,
+      note: 'The /crm routes run on the one backend and read the same customer + booking store as Book OS, dispatch and the provider board.',
+    },
+    // CRM route events are appended without a source tag, so this
+    // surface's activity joins the feed by event TYPE instead.
+    eventSources: [],
+    eventTypes: [
+      'CRM_NOTE_ADDED',
+      'CRM_PIPELINE_STAGE_SET',
+      'CRM_CUSTOMER_FLAG_SET',
+      'SPEEDY_DRAFT_CREATED',
+    ],
+    services: { speedy: true, attribution: true, payments: true, outbox: true },
+    edges: CRM_EDGES,
   },
   {
     id: 'tech-app',
@@ -293,6 +405,45 @@ export async function buildInterconnectRegistry() {
         eventsAvailable = false;
       }
     }
+    // Surfaces whose events carry no source tag (the CRM) join the
+    // feed by event type instead — same honesty contract.
+    if (eventsAvailable && Array.isArray(surface.eventTypes) && surface.eventTypes.length) {
+      try {
+        lastEvent = await platformEventsRepo.lastForTypes(surface.eventTypes);
+      } catch {
+        eventsAvailable = false;
+      }
+    }
+    // Connection edges: 'live' only from a real feed event of one of
+    // the edge's signal types; otherwise the code-proven data link,
+    // labelled by kind. Edges without signal types never consult the
+    // feed at all.
+    let edges = null;
+    if (Array.isArray(surface.edges) && surface.edges.length) {
+      edges = [];
+      for (const edge of surface.edges) {
+        let lastSignal = null;
+        if (eventsAvailable && Array.isArray(edge.signalTypes) && edge.signalTypes.length) {
+          try {
+            const hit = await platformEventsRepo.lastForTypes(edge.signalTypes);
+            if (hit) lastSignal = { type: hit.type, at: hit.at };
+          } catch {
+            lastSignal = null;
+          }
+        }
+        const state = lastSignal ? 'live' : 'linked';
+        edges.push({
+          to: edge.to,
+          name: edge.name,
+          url: edge.url,
+          link: edge.link,
+          mechanism: edge.mechanism,
+          state,
+          label: state === 'live' ? EDGE_LIVE_LABEL : EDGE_LINK_LABELS[edge.link] || 'Linked',
+          lastSignal,
+        });
+      }
+    }
     surfaces.push({
       id: surface.id,
       name: surface.name,
@@ -302,7 +453,9 @@ export async function buildInterconnectRegistry() {
       identity: { ...surface.identity, label: IDENTITY_LABELS[surface.identity.state] || surface.identity.state },
       api: { ...surface.api, label: API_MODE_LABELS[surface.api.mode] || surface.api.mode },
       eventSources: surface.eventSources,
+      ...(Array.isArray(surface.eventTypes) ? { eventTypes: surface.eventTypes } : {}),
       services: surface.services,
+      ...(edges ? { edges } : {}),
       eventsAvailable,
       lastEvent: lastEvent
         ? { type: lastEvent.type, at: lastEvent.at, source: lastEvent.source, referenceCode: lastEvent.referenceCode }

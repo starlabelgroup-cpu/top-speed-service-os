@@ -171,6 +171,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <a class="cc-nav-link" href="#sec-master"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h8M19 7h0M5 12h2M13 12h6M5 17h10M21 17h0"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="17" r="2"/></svg><span>Master controls</span></a>
         <a class="cc-nav-link" href="#sec-verify"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.6-3 8.4-7 10-4-1.6-7-5.4-7-10V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg><span>Speedy Verify</span></a>
         <a class="cc-nav-link" href="#sec-tracking"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5.2 3.6h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1 4.2 1.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 5.7a2 2 0 0 1 2-2.1z"/><path d="M9.5 21h11"/></svg><span>Tracking Numbers</span></a>
+        <a class="cc-nav-link" href="#sec-crm-links"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.4"/><path d="M3.4 19.6a5.8 5.8 0 0 1 11.2 0"/><path d="M15.5 5.6a3.4 3.4 0 0 1 0 5.9M17.8 14.3a5.8 5.8 0 0 1 2.8 5.3"/></svg><span>CRM Connections</span></a>
         <a class="cc-nav-link" href="#sec-account"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.8l1.4 2.5M12 21.2l-1.4-2.5M2.8 12l2.5-1.4M21.2 12l-2.5 1.4M5.2 5.2l2.3 1M18.8 18.8l-2.3-1M18.8 5.2l-2.3 1M5.2 18.8l2.3-1"/></svg><span>Settings</span></a>
       </div>
     </div>
@@ -305,6 +306,12 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
             <button type="button" class="iconbtn" data-tn="register">Register</button>
           </div>
         </div>
+      </div></div>
+
+      <h2 class="sec" id="sec-crm-links">Top Speed CRM — Connected Systems</h2>
+      <div class="grid"><div class="card wide">
+        <p class="small mut" style="margin-top:0">The CRM is the customer system of record on the one Service OS backend. These are the systems it is wired to — Service Setters Book OS, the dispatch software, the Tech App web portal, the Field Pro mobile app, and the management oversight consoles. A connection shows <b>LIVE</b> only when the platform event feed holds real activity across it; otherwise it shows the data link itself, exactly as it exists in the platform. Nothing here is decorative — this panel reads the live Platform Interconnect registry.</p>
+        <div id="ciPanel"><span class="mut small"><span class="spin"></span> Loading CRM connections…</span></div>
       </div></div>
 
       <h2 class="sec" id="platform-links">All Platform Links</h2>
@@ -1060,6 +1067,54 @@ document.addEventListener('click', function(ev){
 });
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ tnLoad(0); });
 else tnLoad(0);
+</script>
+<script>
+/* ── Top Speed CRM — Connected Systems (2026-11-19) ─────────────
+   Renders the CRM surface of the Platform Interconnect registry
+   (GET /interconnect/registry — staff-gated server-side; this
+   console itself is manager-gated). States come from the registry:
+   LIVE only from real platform-feed activity across the connection,
+   otherwise the code-proven data link. Nothing is decorated. */
+function ciPill(e){
+  if (e.state === 'live') return '<span class="pill ok">LIVE</span>';
+  return '<span class="pill">LINKED</span>';
+}
+function ciRender(reg){
+  var el = document.getElementById('ciPanel');
+  if (!el) return;
+  var crm = null;
+  ((reg && reg.surfaces) || []).forEach(function(s){ if (s.id === 'crm') crm = s; });
+  if (!crm){ el.innerHTML = '<p class="small mut">The interconnect registry has no CRM surface yet.</p>'; return; }
+  var idn = crm.identity || {};
+  var html = '<p class="small mut" style="margin:0 0 4px">Signed-in travel: ' + esc(idn.label || '—') + ' · API path: ' + esc((crm.api && crm.api.label) || '—') +
+    (crm.lastEvent ? ' · Last CRM activity: ' + esc(crm.lastEvent.type) + ' · ' + esc(fmtWhen(crm.lastEvent.at)) : ' · No CRM activity recorded in the feed yet') + '</p>';
+  (crm.edges || []).forEach(function(e){
+    var ext = e.url && e.url.indexOf('http') === 0;
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid rgba(255,255,255,.08)">' +
+      '<div><b>' + esc(e.name) + '</b> ' + ciPill(e) +
+      '<br><span class="small mut">' + esc(e.mechanism || '') + '</span>' +
+      '<br><span class="small mut">' + esc(e.label || '') + (e.lastSignal ? ' · last signal ' + esc(e.lastSignal.type) + ' · ' + esc(fmtWhen(e.lastSignal.at)) : '') + '</span></div>' +
+      '<div style="white-space:nowrap"><a class="btn ghost" href="' + esc(e.url || '#') + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>Open</a></div></div>';
+  });
+  html += '<p style="margin:10px 0 0"><button type="button" class="iconbtn" data-ci="refresh">Refresh</button> <a class="btn ghost" href="/interconnect">Open the Interconnect console</a> <a class="btn ghost" href="/crm">Open Top Speed CRM</a></p>';
+  el.innerHTML = html;
+}
+function ciLoad(tries){
+  var el = document.getElementById('ciPanel');
+  if (!el) return;
+  get('/interconnect/registry', true).then(function(res){
+    if (res.ok){ ciRender(data(res.j)); return; }
+    if ((tries || 0) < 12){ setTimeout(function(){ ciLoad((tries || 0) + 1); }, 2500); return; }
+    el.innerHTML = '<p class="small mut">CRM connections load for manager accounts once you are signed in.' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '</p>';
+  });
+}
+document.addEventListener('click', function(ev){
+  var b = ev.target && ev.target.closest ? ev.target.closest('[data-ci]') : null;
+  if (!b) return;
+  if (b.getAttribute('data-ci') === 'refresh') ciLoad(0);
+});
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ ciLoad(0); });
+else ciLoad(0);
 </script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
