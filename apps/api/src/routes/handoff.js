@@ -4,7 +4,7 @@ import { store } from '../data/store.js';
 import { authenticate } from '../middleware/auth.js';
 import { HANDOFF_AUDIENCES, consumeHandoff, createHandoff, findUserById, findUsersByEmailOrPhone } from '../services/handoff.js';
 import { createSessionHandoff, redeemSessionHandoff } from '../services/sessionHandoff.js';
-import { signAccessToken } from '../services/tokens.js';
+import { recordSignInSession } from '../services/sessions.js';
 import { queueNotification } from '../services/notifications.js';
 
 /**
@@ -110,7 +110,7 @@ router.post('/auth/handoff/consume', async (req, res) => {
     if (!user || user.active === false) {
       return res.status(403).json({ error: 'This account is inactive' });
     }
-    return res.json({ user: publicUser(user), ...signAccessToken(user) });
+    return res.json({ user: publicUser(user), ...(await recordSignInSession(req, user)) });
   } catch (error) {
     return res.status(error.status || 500).json({ error: error.message || 'Handoff failed', ...(error.code ? { code: error.code } : {}) });
   }
@@ -161,7 +161,7 @@ router.post('/auth/handoff/redeem', async (req, res) => {
       return deny();
     }
     redeemFailures.delete(ip);
-    return res.json({ user: publicUser(user), ...signAccessToken(user, { speedyVerified: sv }) });
+    return res.json({ user: publicUser(user), ...(await recordSignInSession(req, user, { speedyVerified: sv })) });
   } catch (error) {
     noteRedeemFailure(ip);
     return deny();

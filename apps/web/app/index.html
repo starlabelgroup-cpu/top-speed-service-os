@@ -881,6 +881,21 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
               <label class="fl">Phone for text codes</label><input id="l2Phone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
               <div class="btnrow" style="margin-top:10px;"><button class="btn blue small" onclick="mnuLayer2Save()">Save 2-step sign-in</button><button class="btn ghost small" onclick="mnuLayer2Off()">Turn off</button></div>
             </div>
+            <button class="menu-row" onclick="mnuPasskeys()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="8" cy="14.5" r="4.2"/><path d="M11.2 11.3L19.5 3M16.8 5.7l2.6 2.6M14.2 8.3l2.2 2.2"/></svg></span><span>Passkeys &amp; devices<span class="m-sub">Fingerprint / face sign-in and signed-in devices</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div id="pkForm" style="display:none; padding:4px 2px 12px;">
+              <p class="sub" style="margin:4px 0 8px;">A passkey lets this device sign you in with fingerprint or face instead of typing your password. Your access code and 2-step settings still apply exactly as before.</p>
+              <div id="pkList"><p class="sub" style="margin:4px 0;">Loading…</p></div>
+              <div class="btnrow" style="margin-top:8px;"><button class="btn blue small" id="pkAddBtn" onclick="mnuAddPasskey()">Add a passkey on this device</button></div>
+              <p class="fl" style="margin-top:14px;">Signed-in devices</p>
+              <div id="sessList"><p class="sub" style="margin:4px 0;">Loading…</p></div>
+              <div class="btnrow" style="margin-top:8px;"><button class="btn ghost small" onclick="mnuRevokeOthers()">Sign out other devices</button></div>
+            </div>
+            <button class="menu-row" id="cofRow" style="display:none" onclick="mnuCardOnFile()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3.5" y="6" width="17" height="12.5"/><path d="M3.5 10.2h17"/><path d="M6.5 15h4"/></svg></span><span>Card on file<span class="m-sub">Business auto-pay for approved invoices</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+            <div id="cofForm" style="display:none; padding:4px 2px 12px;">
+              <p class="sub" style="margin:4px 0 8px;" id="cofStatus">Loading…</p>
+              <div class="btnrow" style="margin-top:8px;" id="cofBtns"></div>
+              <p class="sub" style="margin:8px 0 0;">Auto-pay only ever charges an invoice after you approve that invoice — turning it on saves the card, it never charges on its own.</p>
+            </div>
             <button class="menu-row" onclick="openInstall()"><span class="m-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 4v10.2M7.9 10.6L12 14.7l4.1-4.1"/><path d="M5 19.5h14"/></svg></span><span>Install the app<span class="m-sub">Add Appliance Connect to your home screen</span></span><svg class="m-chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
           </div>
 
@@ -1193,6 +1208,7 @@ function showTab(tab){
   if(tab === 'garage') loadGarage();
   if(tab === 'refer' && window.refLoad) window.refLoad();
   if(tab === 'more' && window.tsosPushInit) window.tsosPushInit();
+  if(tab === 'more' && window.cofCheck) window.cofCheck();
 }
 /* ============ booking flow ============ */
 function startBooking(i){
@@ -2320,6 +2336,91 @@ function mnuNotifications(){
   var c=document.getElementById('acctCard'); if(c){ c.scrollIntoView({behavior:'smooth', block:'start'}); }
   toast('Booking texts & emails follow your account contact info — keep your profile current and you will not miss an update');
 }
+/* ===== Passkeys & devices (F2/F3, 2026-11-20) ===== */
+function pkWhen(ts){ try{ return new Date(ts).toLocaleString(); }catch(e){ return ''; } }
+function mnuPasskeys(){
+  if(!cTok()){ mnuNeedSignIn('Sign in to manage passkeys & devices'); return; }
+  mnuToggle('pkForm');
+  pkLoadAll();
+}
+function pkLoadAll(){
+  if(!window.TSOSPasskey){ return; }
+  TSOSPasskey.listPasskeys(C_API,cTok()).then(function(list){
+    var el=document.getElementById('pkList'); if(!el) return;
+    if(!list.length){ el.innerHTML='<p class="sub" style="margin:4px 0;">No passkeys yet — add one for this device below.</p>'; }
+    else el.innerHTML=list.map(function(p){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #EDF1F7;"><span style="font-size:14.5px;">'+escC(p.deviceLabel||'Passkey')+'<span style="display:block;font-size:12px;opacity:.65;">Added '+pkWhen(p.createdAt)+(p.lastUsedAt?' · Last used '+pkWhen(p.lastUsedAt):'')+'</span></span><button class="btn ghost small" onclick="mnuRemovePasskey(\''+p.id+'\')">Remove</button></div>';
+    }).join('');
+    var add=document.getElementById('pkAddBtn'); if(add) add.style.display=TSOSPasskey.supported()?'':'none';
+  }).catch(function(e){ var el=document.getElementById('pkList'); if(el) el.innerHTML='<p class="sub" style="margin:4px 0;">'+escC(e.message||'Could not load passkeys')+'</p>'; });
+  TSOSPasskey.listSessions(C_API,cTok()).then(function(list){
+    var el=document.getElementById('sessList'); if(!el) return;
+    if(!list.length){ el.innerHTML='<p class="sub" style="margin:4px 0;">No recorded devices yet — devices appear here as you sign in.</p>'; return; }
+    el.innerHTML=list.map(function(s){
+      return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #EDF1F7;"><span style="font-size:14.5px;">'+escC(s.deviceLabel||'Device')+(s.current?' <b style="color:#1D7A3A;">· this device</b>':'')+'<span style="display:block;font-size:12px;opacity:.65;">Signed in '+pkWhen(s.createdAt)+' · Last active '+pkWhen(s.lastSeenAt)+'</span></span>'+(s.current?'':'<button class="btn ghost small" onclick="mnuRevokeSession(\''+s.id+'\')">Sign out</button>')+'</div>';
+    }).join('');
+  }).catch(function(e){ var el=document.getElementById('sessList'); if(el) el.innerHTML='<p class="sub" style="margin:4px 0;">'+escC(e.message||'Could not load devices')+'</p>'; });
+}
+function mnuAddPasskey(){
+  if(!window.TSOSPasskey||!TSOSPasskey.supported()){ toast('This device or browser does not support passkeys'); return; }
+  TSOSPasskey.registerPasskey(C_API,cTok(),'This device').then(function(){ toast('Passkey added — you can sign in with it next time'); pkLoadAll(); })
+    .catch(function(e){ toast(e.message||'Passkey setup did not finish'); });
+}
+function mnuRemovePasskey(id){
+  TSOSPasskey.removePasskey(C_API,cTok(),id).then(function(){ toast('Passkey removed'); pkLoadAll(); })
+    .catch(function(e){ toast(e.message||'Could not remove that passkey'); });
+}
+function mnuRevokeSession(id){
+  TSOSPasskey.revokeSession(C_API,cTok(),id).then(function(){ toast('That device is signed out'); pkLoadAll(); })
+    .catch(function(e){ toast(e.message||'Could not sign that device out'); });
+}
+function mnuRevokeOthers(){
+  TSOSPasskey.revokeOtherSessions(C_API,cTok()).then(function(r){ toast(r.revoked?('Signed out '+r.revoked+' other device'+(r.revoked===1?'':'s')):'No other devices to sign out'); pkLoadAll(); })
+    .catch(function(e){ toast(e.message||'Could not sign out other devices'); });
+}
+/* ===== Card on file (F5, 2026-11-20) — business / PM accounts ===== */
+var cofState=null;
+window.cofCheck=function(){
+  if(!cTok()){ var r0=document.getElementById('cofRow'); if(r0) r0.style.display='none'; return; }
+  cFetch('/payments/card-on-file').then(function(j){
+    cofState=j.data;
+    var row=document.getElementById('cofRow');
+    if(row) row.style.display=(j.data&&j.data.eligible)?'':'none';
+  }).catch(function(){});
+};
+function mnuCardOnFile(){
+  mnuToggle('cofForm');
+  cofRender();
+}
+function cofRender(){
+  var st=document.getElementById('cofStatus'), btns=document.getElementById('cofBtns');
+  if(!st||!btns) return;
+  if(!cofState){ st.textContent='Loading…'; btns.innerHTML=''; window.cofCheck(); return; }
+  var card=cofState.card;
+  if(!card){
+    st.textContent='No card on file yet. Save one on Stripe\u2019s secure page — your card details never touch our servers.';
+    btns.innerHTML='<button class="btn blue small" onclick="cofSetup()">Save a card</button>';
+    return;
+  }
+  st.textContent='Card on file: '+String(card.brand||'Card').toUpperCase()+' \u2022\u2022\u2022\u2022 '+escC(card.last4||'')+' (expires '+card.expMonth+'/'+card.expYear+'). Auto-pay is '+(card.autoPayEnabled?'ON — approved invoices can be charged to this card.':'OFF.');
+  btns.innerHTML='<button class="btn blue small" onclick="cofSetup()">Replace card</button>'
+    +'<button class="btn '+(card.autoPayEnabled?'ghost':'blue')+' small" onclick="cofToggleAutopay()">'+(card.autoPayEnabled?'Turn auto-pay off':'Turn auto-pay on')+'</button>'
+    +'<button class="btn ghost small" onclick="cofRemove()">Remove card</button>';
+}
+function cofSetup(){
+  cFetch('/payments/card-on-file/setup',{method:'POST',body:'{}'}).then(function(j){ if(j.data&&j.data.url) location.assign(j.data.url); })
+    .catch(function(e){ toast(e.message||'Could not start card setup'); });
+}
+function cofToggleAutopay(){
+  if(!cofState||!cofState.card) return;
+  cFetch('/payments/card-on-file/autopay',{method:'POST',body:JSON.stringify({enabled:!cofState.card.autoPayEnabled})}).then(function(j){
+    cofState.card.autoPayEnabled=j.data.autoPayEnabled; toast('Auto-pay '+(j.data.autoPayEnabled?'on':'off')); cofRender();
+  }).catch(function(e){ toast(e.message||'Could not change auto-pay'); });
+}
+function cofRemove(){
+  cFetch('/payments/card-on-file',{method:'DELETE'}).then(function(){ cofState.card=null; toast('Card removed'); cofRender(); })
+    .catch(function(e){ toast(e.message||'Could not remove the card'); });
+}
 </script>
 <script>
 /* ============ BOOKING UPDATES ON THIS DEVICE (Web Push, 2026-11-20) ============
@@ -2519,7 +2620,7 @@ try {
   load();
 })();
 </script>
-<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script>
+<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script><script src="/shared/passkey.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

@@ -164,6 +164,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
           <label for="siEmail">Email<input id="siEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
           <label for="siPw">Password<input id="siPw" type="password" autocomplete="current-password" placeholder="Your password"></label>
           <button class="btn btn-red" id="siBtn" type="submit">Sign in</button>
+          <button class="btn btn-navy" id="pkBtn" type="button" style="display:none;margin-top:8px">Sign in with a passkey</button>
           <div class="verify-row" id="svRow">
             <p style="font-size:.95rem;line-height:1.55;margin:0 0 10px"><b>Speedy Verify.</b> Your account is protected by an access code issued by the Owner. Enter your 8-digit code to finish signing in.</p>
             <label for="svCode">Access code<input class="code-input" id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="9" placeholder="0000 0000"></label>
@@ -357,6 +358,19 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
       .finally(function(){ b.disabled=false; b.textContent='Sign in'; });
   });
 
+  /* Passkey sign-in (F2): replaces the password step only — the
+     result feeds the same pipeline, so Speedy Verify and Layer 2
+     still apply to flagged accounts exactly as with a password. */
+  document.addEventListener('DOMContentLoaded',function(){ if(window.TSOSPasskey&&TSOSPasskey.supported()){ $('pkBtn').style.display=''; } });
+  $('pkBtn').addEventListener('click',function(){
+    var em=$('siEmail').value.trim();
+    if(!em) return fail('Enter your email first, then use your passkey.');
+    var b=$('pkBtn'); b.disabled=true; b.textContent='Waiting for your passkey…';
+    TSOSPasskey.loginWithPasskey(API,em).then(handlePipeline)
+      .catch(function(x){ fail('Passkey sign-in: '+x.message); })
+      .finally(function(){ b.disabled=false; b.textContent='Sign in with a passkey'; });
+  });
+
   $('svBtn').addEventListener('click',function(){
     var code=$('svCode').value.replace(/[\s-]/g,'');
     if(!svChallenge) return fail('Sign in with your password first, then enter your access code.');
@@ -453,7 +467,7 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
 <script src="/layer2.js" defer></script>
 <script src="/temp-password.js" defer></script>
 <script src="/email-verify-notice.js" defer></script>
-<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/passkey.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

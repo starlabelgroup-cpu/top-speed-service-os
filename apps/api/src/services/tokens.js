@@ -13,7 +13,7 @@ function base64UrlJson(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-export function signAccessToken(user, { expiresInSeconds, speedyVerified } = {}) {
+export function signAccessToken(user, { expiresInSeconds, speedyVerified, sessionId } = {}) {
   const secret = process.env.JWT_SECRET;
   if (!secret) throw new Error('JWT_SECRET is not configured');
 
@@ -31,6 +31,15 @@ export function signAccessToken(user, { expiresInSeconds, speedyVerified } = {})
     // a session that passed the Master's access-code check carries
     // sv: true; /auth/me requires it for activated accounts.
     ...(speedyVerified ? { sv: true } : {}),
+    // Device sessions (2026-11-20, F3): the UserSession row this
+    // sign-in created, when the minting route recorded one (see
+    // services/sessions.js). The session guard in server.js refuses a
+    // token whose sid has been revoked by the account holder. Tokens
+    // without an sid (everything minted before this system, and any
+    // path that does not record a session) are never checked — the
+    // password path and every gate stay exactly as they were, so no
+    // account, the Master above all, can be locked out by this layer.
+    ...(sessionId ? { sid: sessionId } : {}),
     iat: now,
     exp,
   };

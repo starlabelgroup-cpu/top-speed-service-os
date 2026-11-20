@@ -84,6 +84,11 @@ export function authenticate(req, res, next) {
       // the Master's access-code step (services/speedyVerify.js).
       sv: payload.sv === true,
     };
+    // Device sessions (2026-11-20, F3): the UserSession row this token
+    // was minted from, when it carries one — the session manager uses
+    // it to mark "this device". Revocation itself is enforced by the
+    // session guard in server.js, not here.
+    req.sessionId = payload.sid || null;
     req.authMode = 'jwt';
     return next();
   } catch (error) {
@@ -114,6 +119,7 @@ export function optionalAuthenticate(req, res, next) {
       roles: Array.isArray(payload.roles) ? payload.roles : [],
       sv: payload.sv === true,
     };
+    req.sessionId = payload.sid || null;
     req.authMode = 'jwt';
   } catch {
     // Invalid or expired token: proceed as an anonymous request.

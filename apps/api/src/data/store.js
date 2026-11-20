@@ -29,6 +29,15 @@ export const store = {
   // the database mode uses the SessionHandoff table). Keyed by code
   // SHA-256 hash, same discipline as authHandoffs.
   sessionHandoffs: new Map(),
+  // Identity & payments trust (2026-11-20, Wave 3 F2/F3/F5):
+  // skeleton-mode fallbacks for the PasskeyCredential /
+  // PasskeyChallenge / UserSession / StoredCard tables. Passkey maps
+  // are keyed by credentialId / challenge; sessions by session id;
+  // stored cards by userId.
+  passkeyCredentials: new Map(),
+  passkeyChallenges: new Map(),
+  userSessions: new Map(),
+  storedCards: new Map(),
   // Email verification tokens (skeleton-mode fallback; the database
   // mode uses the EmailVerificationToken table). Keyed by token
   // SHA-256 hash, same discipline as authHandoffs.

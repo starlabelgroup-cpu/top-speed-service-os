@@ -9,6 +9,9 @@ import layer2Router from './routes/layer2.js';
 import emailChangeRouter from './routes/emailChange.js';
 import feedbackRouter from './routes/feedback.js';
 import googleReviewsRouter from './routes/googleReviews.js';
+import passkeysRouter from './routes/passkeys.js';
+import sessionsRouter from './routes/sessions.js';
+import { sessionGuard } from './services/sessions.js';
 import bookingsRouter from './routes/bookings.js';
 import integrationsRouter from './routes/integrations.js';
 import inboxRouter from './routes/inbox.js';
@@ -46,8 +49,6 @@ import adStudioRouter from './routes/adStudio.js';
 import adProvidersRouter from './routes/adProviders.js';
 import adPlansRouter from './routes/adPlans.js';
 import carePlansRouter from './routes/carePlans.js';
-import pepperListsTrustRouter from './routes/pepperListsTrust.js';
-import sellerPlansRouter from './routes/sellerPlans.js';
 import insightsRouter from './routes/insights.js';
 import helpCenterRouter from './routes/helpCenter.js';
 import academyRouter from './routes/academy.js';
@@ -221,7 +222,15 @@ app.use('/api/v1', async (req, res, next) => {
   }
 });
 
+// Device-session revocation guard (2026-11-20, F3): refuses a
+// bearer token whose recorded session the account holder signed out.
+// Fail-open by construction (services/sessions.js) — it can never
+// lock anyone out; tokens without an sid are untouched.
+app.use('/api/v1', sessionGuard);
+
 app.use('/api/v1', authRouter);
+app.use('/api/v1', passkeysRouter);
+app.use('/api/v1', sessionsRouter);
 app.use('/api/v1/speedy-verify', speedyVerifyRouter);
 app.use('/api/v1', accessControlRouter);
 app.use('/api/v1', layer2Router);
@@ -265,8 +274,6 @@ app.use('/api/v1', adStudioRouter);
 app.use('/api/v1', adProvidersRouter);
 app.use('/api/v1', adPlansRouter);
 app.use('/api/v1', carePlansRouter);
-app.use('/api/v1', pepperListsTrustRouter);
-app.use('/api/v1', sellerPlansRouter);
 app.use('/api/v1', insightsRouter);
 app.use('/api/v1', helpCenterRouter);
 app.use('/api/v1', academyRouter);

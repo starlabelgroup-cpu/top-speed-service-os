@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
-import { signAccessToken } from '../services/tokens.js';
+import { recordSignInSession } from '../services/sessions.js';
 import { termsStatusForUser } from '../services/legalTerms.js';
 import { publicUser } from './auth.js';
 import {
@@ -56,13 +56,13 @@ function serviceError(res, error) {
   });
 }
 
-async function sessionResponse(res, user, { speedyVerified }) {
+async function sessionResponse(req, res, user, { speedyVerified }) {
   const terms = await termsStatusForUser(user.id);
   return res.json({
     user: publicUser(user),
     terms,
     termsStatus: terms,
-    ...signAccessToken(user, { speedyVerified }),
+    ...(await recordSignInSession(req, user, { speedyVerified, alertOnNewDevice: true })),
   });
 }
 
@@ -88,7 +88,7 @@ router.post('/verify', async (req, res) => {
     if (tempAuth) {
       return res.json(await changeStateJson(user, { speedyVerified: !alreadySatisfied }));
     }
-    return sessionResponse(res, user, { speedyVerified: !alreadySatisfied });
+    return sessionResponse(req, res, user, { speedyVerified: !alreadySatisfied });
   } catch (error) {
     return serviceError(res, error);
   }
@@ -122,7 +122,7 @@ router.post('/recover/confirm', async (req, res) => {
     // layer by construction, so the recovery session is never
     // blocked by it.
     await invalidatePendingChallenges(user.id);
-    return sessionResponse(res, user, { speedyVerified: false });
+    return sessionResponse(req, res, user, { speedyVerified: false });
   } catch (error) {
     return serviceError(res, error);
   }

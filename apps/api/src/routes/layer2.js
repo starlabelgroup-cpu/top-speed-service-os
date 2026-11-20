@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate } from '../middleware/auth.js';
-import { signAccessToken } from '../services/tokens.js';
+import { recordSignInSession } from '../services/sessions.js';
 import { termsStatusForUser } from '../services/legalTerms.js';
 import { publicUser } from './auth.js';
 import {
@@ -90,7 +90,7 @@ router.post('/auth/layer2/verify', async (req, res) => {
       user: publicUser(user),
       terms,
       termsStatus: terms,
-      ...signAccessToken(user, { speedyVerified }),
+      ...(await recordSignInSession(req, user, { speedyVerified, alertOnNewDevice: true })),
     });
   } catch (error) {
     return serviceError(res, error);

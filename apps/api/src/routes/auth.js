@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createPublicKey, sign as cryptoSign, verify as cryptoVerify } from 'node:crypto';
 import { createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { authenticate, optionalAuthenticate, requireRole } from '../middleware/auth.js';
 import { MARKETING_ROLES, PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
-import { signAccessToken } from '../services/tokens.js';
+import { recordSignInSession } from '../services/sessions.js';
 import { notifyAccountCreated } from '../services/notifications.js';
 import { OFFER_SIGNUP_TYPES, appPathForAudience, getOffer, OFFERS, publicOffer } from '../config/offers.js';
 import { consumeEmailVerification, emailVerificationState, issueEmailVerification } from '../services/emailVerification.js';
@@ -540,7 +539,7 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
         termsStatus: terms,
       });
     }
-    return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...signAccessToken(user) });
+    return res.status(201).json({ user: publicUser(user), emailVerification: emailVerificationState(user), terms, termsStatus: terms, ...(await recordSignInSession(req, user)) });
   } catch (error) {
     return next(error);
   }
@@ -876,7 +875,7 @@ router.post('/auth/login', async (req, res, next) => {
     }
 
     const terms = await termsStatusForUser(user.id);
-    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user) });
+    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...(await recordSignInSession(req, user, { alertOnNewDevice: true })) });
   } catch (error) {
     return next(error);
   }
@@ -904,7 +903,7 @@ router.post('/auth/set-password', async (req, res, next) => {
     }
     const { user, speedyVerified } = await completePasswordChange(parsed.data.changeToken, parsed.data.newPassword);
     const terms = await termsStatusForUser(user.id);
-    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...signAccessToken(user, { speedyVerified }) });
+    return res.json({ user: publicUser(user), terms, termsStatus: terms, ...(await recordSignInSession(req, user, { speedyVerified, alertOnNewDevice: true })) });
   } catch (error) {
     if (error?.status) {
       return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
@@ -1396,241 +1395,7 @@ router.get('/auth/google/callback', async (req, res, next) => {
       dest.searchParams.set('layer2', layer2.challenge);
       return res.redirect(dest.toString());
     }
-    const issued = signAccessToken(user);
-    const dest = new URL(webOrigin() + nextPath);
-    dest.searchParams.set('token', issued.token);
-    return res.redirect(dest.toString());
-  } catch (error) {
-    return next(error);
-  }
-});
-
-/* ------------------------------------------------------------------ */
-/* Sign in with Apple (F9, 2026-11-20).                               */
-/*                                                                    */
-/* The same shape as Google above, with Apple's differences honored: */
-/* the callback is a form POST (response_mode=form_post — server.js  */
-/* mounts a urlencoded parser for this path), the client secret is a */
-/* short-lived ES256 JWT signed with the .p8 key from App Store      */
-/* Connect, and the id_token is verified against Apple's published   */
-/* JWKS. Account rules are IDENTICAL to Google's: find-or-create by  */
-/* verified email, the same sign-in pipeline afterwards (Speedy      */
-/* Verify gate → Layer 2 challenge → session token), and no role is  */
-/* ever taken from the provider — new accounts are CUSTOMER. Apple   */
-/* only shares the person's name on the FIRST consent, in the `user` */
-/* form field; the email may be an Apple private-relay address,      */
-/* which is simply the account's email like any other.               */
-/*                                                                    */
-/* Inert until configured: APPLE_CLIENT_ID (the Services ID),        */
-/* APPLE_TEAM_ID, APPLE_KEY_ID and APPLE_PRIVATE_KEY (the .p8        */
-/* contents) must ALL be present — Ramone's Apple Developer          */
-/* enrollment is what unblocks them. While unconfigured the status   */
-/* endpoint says so, the portal buttons stay hidden, and the start   */
-/* route answers the same 501 as an unconfigured Google.             */
-/* APPLE_AUTH_BASE exists so drills can stub Apple's endpoints; in   */
-/* production it stays unset (Apple's real host).                    */
-/* ------------------------------------------------------------------ */
-function appleConfig() {
-  const clientId = process.env.APPLE_CLIENT_ID || null;
-  const teamId = process.env.APPLE_TEAM_ID || null;
-  const keyId = process.env.APPLE_KEY_ID || null;
-  const privateKey = (process.env.APPLE_PRIVATE_KEY || '').replace(/\\n/g, '\n') || null;
-  const redirectUri = process.env.APPLE_REDIRECT_URI
-    || 'https://top-speed-service-os.vercel.app/api/v1/auth/apple/callback';
-  const authBase = process.env.APPLE_AUTH_BASE || 'https://appleid.apple.com';
-  return {
-    clientId,
-    teamId,
-    keyId,
-    privateKey,
-    redirectUri,
-    authBase,
-    configured: Boolean(clientId && teamId && keyId && privateKey),
-  };
-}
-
-router.get('/auth/apple/status', (req, res) => {
-  // Flat shape, mirroring /auth/google/status exactly.
-  return res.json({ configured: appleConfig().configured });
-});
-
-router.get('/auth/apple', (req, res) => {
-  const config = appleConfig();
-  if (!config.configured) {
-    return res.status(501).json({ error: 'Apple sign-in is not connected yet' });
-  }
-  const state = Buffer.from(JSON.stringify({ next: googleNext(req.query.next) }), 'utf8').toString('base64url');
-  const authorize = new URL('/auth/authorize', config.authBase);
-  authorize.searchParams.set('client_id', config.clientId);
-  authorize.searchParams.set('redirect_uri', config.redirectUri);
-  authorize.searchParams.set('response_type', 'code');
-  authorize.searchParams.set('scope', 'name email');
-  authorize.searchParams.set('response_mode', 'form_post');
-  authorize.searchParams.set('state', state);
-  return res.redirect(authorize.toString());
-});
-
-/** The ES256 client-secret JWT Apple requires for the code exchange. */
-function appleClientSecret(config) {
-  const now = Math.floor(Date.now() / 1000);
-  const header = { alg: 'ES256', kid: config.keyId, typ: 'JWT' };
-  const payload = {
-    iss: config.teamId,
-    iat: now,
-    exp: now + 600,
-    aud: 'https://appleid.apple.com',
-    sub: config.clientId,
-  };
-  const encode = (value) => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
-  const signingInput = `${encode(header)}.${encode(payload)}`;
-  const signature = cryptoSign('SHA256', Buffer.from(signingInput, 'utf8'), {
-    key: config.privateKey,
-    dsaEncoding: 'ieee-p1363',
-  });
-  return `${signingInput}.${signature.toString('base64url')}`;
-}
-
-let appleJwksCache = { keys: null, fetchedAt: 0 };
-async function applePublicKey(config, kid) {
-  const stale = Date.now() - appleJwksCache.fetchedAt > 60 * 60 * 1000;
-  if (!appleJwksCache.keys || stale) {
-    const response = await fetch(`${config.authBase}/auth/keys`);
-    if (!response.ok) throw new Error(`Apple JWKS fetch failed: ${response.status}`);
-    const body = await response.json();
-    appleJwksCache = { keys: Array.isArray(body?.keys) ? body.keys : [], fetchedAt: Date.now() };
-  }
-  const jwk = appleJwksCache.keys.find((key) => key.kid === kid);
-  if (!jwk) throw new Error('Apple signing key not found');
-  return createPublicKey({ key: jwk, format: 'jwk' });
-}
-
-/** Verify an Apple id_token (RS256 against Apple's JWKS) → claims. */
-async function verifyAppleIdToken(config, idToken) {
-  const parts = String(idToken || '').split('.');
-  if (parts.length !== 3) throw new Error('malformed id_token');
-  const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
-  if (header.alg !== 'RS256' || !header.kid) throw new Error('unexpected id_token header');
-  const key = await applePublicKey(config, header.kid);
-  const ok = cryptoVerify(
-    'RSA-SHA256',
-    Buffer.from(`${parts[0]}.${parts[1]}`, 'utf8'),
-    key,
-    Buffer.from(parts[2], 'base64url'),
-  );
-  if (!ok) throw new Error('id_token signature invalid');
-  const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-  if (claims.iss !== 'https://appleid.apple.com') throw new Error('id_token issuer mismatch');
-  if (claims.aud !== config.clientId) throw new Error('id_token audience mismatch');
-  if (!claims.exp || claims.exp * 1000 < Date.now()) throw new Error('id_token expired');
-  return claims;
-}
-
-router.post('/auth/apple/callback', async (req, res, next) => {
-  const config = appleConfig();
-  try {
-    if (!config.configured) {
-      return res.status(501).json({ error: 'Apple sign-in is not connected yet' });
-    }
-    const body = req.body || {};
-    let nextPath = '/app';
-    try {
-      nextPath = googleNext(JSON.parse(Buffer.from(String(body.state || ''), 'base64url').toString('utf8')).next);
-    } catch { /* default next */ }
-    if (body.error) {
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('authError', `Apple sign-in was not completed (${String(body.error).slice(0, 40)}).`);
-      return res.redirect(dest.toString());
-    }
-    const code = String(body.code || '');
-    if (!code) return res.status(400).json({ error: 'Missing authorization code' });
-
-    const tokenResponse = await fetch(`${config.authBase}/auth/token`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: config.clientId,
-        client_secret: appleClientSecret(config),
-        code,
-        grant_type: 'authorization_code',
-        redirect_uri: config.redirectUri,
-      }),
-    });
-    const tokenBody = await tokenResponse.json().catch(() => ({}));
-    if (!tokenResponse.ok || !tokenBody.id_token) {
-      console.error(JSON.stringify({ level: 'error', message: 'apple token exchange failed', status: tokenResponse.status, error: tokenBody?.error || null }));
-      return res.status(502).json({ error: 'Apple sign-in failed at token exchange' });
-    }
-    const claims = await verifyAppleIdToken(config, tokenBody.id_token);
-
-    // Same rule as Google: only a verified email may sign in — Apple
-    // reports email_verified as a boolean OR the string 'true'.
-    const emailVerified = claims.email_verified === true || claims.email_verified === 'true';
-    if (!claims.email || !emailVerified) {
-      return res.status(502).json({ error: 'Apple account email not verified' });
-    }
-    const email = String(claims.email).trim().toLowerCase();
-
-    // The name arrives only on the first consent, as JSON in the
-    // `user` form field; later sign-ins reuse the stored name.
-    let firstName = null;
-    let lastName = null;
-    if (typeof body.user === 'string' && body.user) {
-      try {
-        const parsed = JSON.parse(body.user);
-        firstName = parsed?.name?.firstName || null;
-        lastName = parsed?.name?.lastName || null;
-      } catch { /* name is best-effort only */ }
-    }
-
-    // Find-or-create — identical rules to the Google path above.
-    const existing = await usersRepo.findAllByEmail(email);
-    let user = (existing || []).find((u) => u.active) || null;
-    if (!user) {
-      const draft = {
-        id: createId(),
-        companyId: PLATFORM_COMPANY_ID,
-        email,
-        passwordHash: await hashPassword(createId() + ':' + createId()),
-        firstName,
-        lastName,
-        phone: null,
-        roles: [ROLES.CUSTOMER],
-        active: true,
-        // Apple verified this email at sign-in (the callback refuses
-        // unverified Apple emails), so the account starts verified.
-        emailVerifiedAt: new Date().toISOString(),
-        signupSource: 'APPLE_SIGNIN',
-        // Layer 2: new accounts start with the per-login code step
-        // on — Apple-created accounts included, same as Google's.
-        layer2Required: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      user = await usersRepo.create(draft);
-      // Same alert matrix as the register route (welcome + staff).
-      notifyAccountCreated(user, 'APPLE_SIGNUP');
-    }
-    // Sign-in pipeline: factor 1 here is Apple, and the same gates as
-    // password sign-in apply before a session exists — Speedy Verify
-    // first, then Layer 2 — exactly as on the Google callback.
-    const gate = await speedyLoginGate(user);
-    if (gate.action === 'deny') {
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('authError', 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.');
-      return res.redirect(dest.toString());
-    }
-    if (gate.action === 'challenge') {
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('authError', 'This account uses Speedy Verify — sign in with your email and password to complete the access-code step.');
-      return res.redirect(dest.toString());
-    }
-    if (layer2Applies(user)) {
-      const layer2 = await beginLayer2Challenge(user, { req });
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('layer2', layer2.challenge);
-      return res.redirect(dest.toString());
-    }
-    const issued = signAccessToken(user);
+    const issued = await recordSignInSession(req, user, { alertOnNewDevice: true });
     const dest = new URL(webOrigin() + nextPath);
     dest.searchParams.set('token', issued.token);
     return res.redirect(dest.toString());
