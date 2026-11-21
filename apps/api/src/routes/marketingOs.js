@@ -15,6 +15,7 @@ import {
   persistTaxonomyRecord,
 } from '../db/marketingOsRepo.js';
 import { emitReport } from '../services/managementReports.js';
+import { fireIndexNow } from '../services/indexnow.js';
 
 /**
  * Top Speed Marketing OS — the agency's API on the Service OS backend.
@@ -726,6 +727,7 @@ router.post('/marketing-os/admin/pages', ...marketingOnly, async (req, res) => {
   firePublishEvent({ kind: 'page.created', title: page.title, url: page.canonicalUrl });
   if (page.status === 'PUBLISHED') {
     firePublishEvent({ kind: 'page.published', title: page.title, url: page.canonicalUrl });
+    if (page.canonicalUrl) fireIndexNow([page.canonicalUrl]);
   }
   return res.status(201).json({ data: pageAdmin(page) });
 });
@@ -824,6 +826,9 @@ router.post('/marketing-os/admin/pages/:id/status', ...marketingOnly, async (req
   }
   if (target === 'PUBLISHED' && previousStatus !== 'PUBLISHED') {
     firePublishEvent({ kind: 'page.published', title: page.title, url: page.canonicalUrl });
+    // AI-search presence: ping IndexNow so the new page enters the Bing-fed
+    // indexes fast. Fire-and-forget; a failed ping never affects the publish.
+    if (page.canonicalUrl) fireIndexNow([page.canonicalUrl]);
   } else if (previousStatus === 'PUBLISHED' && target !== 'PUBLISHED') {
     firePublishEvent({ kind: 'page.unpublished', title: page.title, url: page.canonicalUrl });
   }
