@@ -1530,6 +1530,7 @@ function confirmBooking(){
     cFetch('/bookings',{method:'POST',body:JSON.stringify(payload)})
       .then(function(j){
         booking.ref=j.data.referenceCode; booking.id=j.data.id; booking.payment=j.data.payment||null;
+        try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(booking.ref); }catch(e){}
         document.getElementById('refCode').textContent=booking.ref;
         stageIdx=stageForBooking(j.data);
         FEED.push({time:'Now',text:'<b>Top Speed:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
@@ -1792,6 +1793,7 @@ function aspPost(payload, btn){
   var done = function(ref){
     window._aspRef = ref;
     window._aspBookedRef = ref;
+    try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(ref); }catch(e){}
     var slot = document.getElementById('aspCard');
     if(slot) slot.innerHTML = '<div class="card" style="border:2px solid var(--blue); font-size:14px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E94E5C"/></svg> <b>Booked!</b> Your reference is <b>' + escC(ref) + '</b>. A Service Setter will text ' + escC(d.phone) + ' to confirm your window.' + aspReceiptBtns() + '</div>';
   };
@@ -2652,6 +2654,7 @@ try {
       if(!body2.city||!body2.zip){ if(msg) msg.textContent='City and ZIP are needed to book your check-up.'; return; }
       book.disabled=true;
       api('/care/checkup/book',{method:'POST',body:JSON.stringify(body2)}).then(function(j){
+        try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(j.data&&j.data.referenceCode); }catch(e){}
         if(msg) msg.textContent='Booked — reference '+(j.data&&j.data.referenceCode||'')+'. A Service Setter will confirm by text.';
         load();
       }).catch(function(e){ if(msg) msg.textContent=e.message||'Could not book — try again'; book.disabled=false; });

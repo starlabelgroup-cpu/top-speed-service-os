@@ -21,9 +21,11 @@ import { z } from 'zod';
  *                                    object { source, medium, campaign }
  *
  * The normalized shape stored on booking/connection records:
- *   { page, via, utmSource, utmMedium, utmCampaign }  (present keys only)
+ *   { page, via, utmSource, utmMedium, utmCampaign, utmTerm,
+ *     utmContent }  (present keys only)
  * Persistence flattens it to the sourcePage / viaTag / utmSource /
- * utmMedium / utmCampaign columns (see the intake_attribution migration).
+ * utmMedium / utmCampaign / utmTerm / utmContent columns (see the
+ * intake_attribution + booking_utm_term_content migrations).
  *
  * Top Speed Ads (2026-11-17): the platform click IDs ride along —
  * gclid (Google), fbclid (Meta), msclkid (Microsoft) — captured
@@ -47,6 +49,10 @@ export const attributionFields = {
   utm_medium: shortText(200),
   utmCampaign: shortText(200),
   utm_campaign: shortText(200),
+  utmTerm: shortText(200),
+  utm_term: shortText(200),
+  utmContent: shortText(200),
+  utm_content: shortText(200),
   gclid: clickId,
   fbclid: clickId,
   msclkid: clickId,
@@ -57,9 +63,13 @@ export const attributionFields = {
         source: shortText(200),
         medium: shortText(200),
         campaign: shortText(200),
+        term: shortText(200),
+        content: shortText(200),
         utm_source: shortText(200),
         utm_medium: shortText(200),
         utm_campaign: shortText(200),
+        utm_term: shortText(200),
+        utm_content: shortText(200),
       }),
     ])
     .optional(),
@@ -78,6 +88,8 @@ function parseRawUtm(raw) {
     found.utmSource = clean(raw.utm_source ?? raw.source);
     found.utmMedium = clean(raw.utm_medium ?? raw.medium);
     found.utmCampaign = clean(raw.utm_campaign ?? raw.campaign);
+    found.utmTerm = clean(raw.utm_term ?? raw.term);
+    found.utmContent = clean(raw.utm_content ?? raw.content);
     return found;
   }
   try {
@@ -85,6 +97,8 @@ function parseRawUtm(raw) {
     found.utmSource = clean(params.get('utm_source'));
     found.utmMedium = clean(params.get('utm_medium'));
     found.utmCampaign = clean(params.get('utm_campaign'));
+    found.utmTerm = clean(params.get('utm_term'));
+    found.utmContent = clean(params.get('utm_content'));
     found.gclid = clean(params.get('gclid'));
     found.fbclid = clean(params.get('fbclid'));
     found.msclkid = clean(params.get('msclkid'));
@@ -108,6 +122,8 @@ export function normalizeAttribution(data) {
   const utmSource = clean(data.utmSource ?? data.utm_source) ?? fromRaw.utmSource;
   const utmMedium = clean(data.utmMedium ?? data.utm_medium) ?? fromRaw.utmMedium;
   const utmCampaign = clean(data.utmCampaign ?? data.utm_campaign) ?? fromRaw.utmCampaign;
+  const utmTerm = clean(data.utmTerm ?? data.utm_term) ?? fromRaw.utmTerm;
+  const utmContent = clean(data.utmContent ?? data.utm_content) ?? fromRaw.utmContent;
   const gclid = clean(data.gclid) ?? fromRaw.gclid;
   const fbclid = clean(data.fbclid) ?? fromRaw.fbclid;
   const msclkid = clean(data.msclkid) ?? fromRaw.msclkid;
@@ -116,6 +132,8 @@ export function normalizeAttribution(data) {
   if (utmSource) attribution.utmSource = utmSource;
   if (utmMedium) attribution.utmMedium = utmMedium;
   if (utmCampaign) attribution.utmCampaign = utmCampaign;
+  if (utmTerm) attribution.utmTerm = utmTerm;
+  if (utmContent) attribution.utmContent = utmContent;
   if (gclid) attribution.gclid = gclid;
   if (fbclid) attribution.fbclid = fbclid;
   if (msclkid) attribution.msclkid = msclkid;
@@ -130,6 +148,8 @@ export function attributionToColumns(attribution) {
     utmSource: attribution?.utmSource ?? null,
     utmMedium: attribution?.utmMedium ?? null,
     utmCampaign: attribution?.utmCampaign ?? null,
+    utmTerm: attribution?.utmTerm ?? null,
+    utmContent: attribution?.utmContent ?? null,
     gclid: attribution?.gclid ?? null,
     fbclid: attribution?.fbclid ?? null,
     msclkid: attribution?.msclkid ?? null,
@@ -145,6 +165,8 @@ export function attributionFromColumns(row) {
   if (row.utmSource) attribution.utmSource = row.utmSource;
   if (row.utmMedium) attribution.utmMedium = row.utmMedium;
   if (row.utmCampaign) attribution.utmCampaign = row.utmCampaign;
+  if (row.utmTerm) attribution.utmTerm = row.utmTerm;
+  if (row.utmContent) attribution.utmContent = row.utmContent;
   if (row.gclid) attribution.gclid = row.gclid;
   if (row.fbclid) attribution.fbclid = row.fbclid;
   if (row.msclkid) attribution.msclkid = row.msclkid;

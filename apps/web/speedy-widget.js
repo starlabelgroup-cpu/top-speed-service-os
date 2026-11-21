@@ -414,6 +414,7 @@
     post('/speedy/book', bookPayload).then(function (j) {
       bookedRef = j.data.referenceCode;
       bookedPhone = d.phone;
+      try { if (window.TSOSBookingSubmitted) { TSOSBookingSubmitted(bookedRef); } else { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event: 'booking_submitted', reference_code: bookedRef }); } } catch (e) {}
       var card = document.createElement('div');
       card.className = 'tsw-msg bot tsw-book';
       card.innerHTML = '<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> <b>Booked!</b> Your reference is <b>' + esc(bookedRef) + '</b>. A Service Setter will text ' + esc(d.phone) + ' to confirm your window.' +

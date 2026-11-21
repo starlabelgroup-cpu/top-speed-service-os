@@ -325,6 +325,12 @@ model ServiceRequest {
   utmSource                         String?
   utmMedium                         String?
   utmCampaign                       String?
+  // Conversion tracking completion (2026-11-20): the remaining two
+  // UTM fields, so a booking carries the full campaign fingerprint
+  // (term = the keyword, content = the creative variant) beside the
+  // click IDs below. All optional — absent stays null.
+  utmTerm                           String?
+  utmContent                        String?
   // Top Speed Ads click IDs (2026-11-17): the platform click
   // identifiers a paid click carries into the landing page (Google
   // gclid, Meta fbclid, Microsoft msclkid), captured first-touch by
@@ -840,6 +846,8 @@ model Connection {
   utmSource   String?
   utmMedium   String?
   utmCampaign String?
+  utmTerm     String?
+  utmContent  String?
   // Top Speed Ads click IDs (2026-11-17) — same columns as
   // ServiceRequest; the shared attribution layer flattens both.
   gclid       String?

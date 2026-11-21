@@ -376,6 +376,7 @@
         throw new Error((x.j&&x.j.error)||'La reserva no se completó.');
       }
       $('doneRef').textContent=x.j.data.referenceCode;
+      try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(x.j.data.referenceCode); }catch(e){}
       $('formCard').hidden=true; $('doneCard').hidden=false;
       segs.forEach(function(s){s.className='done'}); labels.forEach(function(l){l.className='done'});
       window.scrollTo({top:0,behavior:'smooth'});

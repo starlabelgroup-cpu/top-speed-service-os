@@ -20,11 +20,13 @@
     ['utm_source', 'utmSource'],
     ['utm_medium', 'utmMedium'],
     ['utm_campaign', 'utmCampaign'],
+    ['utm_term', 'utmTerm'],
+    ['utm_content', 'utmContent'],
     ['gclid', 'gclid'],
     ['fbclid', 'fbclid'],
     ['msclkid', 'msclkid'],
   ];
-  var KEYS = ['page', 'utmSource', 'utmMedium', 'utmCampaign', 'gclid', 'fbclid', 'msclkid'];
+  var KEYS = ['page', 'utmSource', 'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent', 'gclid', 'fbclid', 'msclkid'];
 
   function read() {
     try {
@@ -76,4 +78,16 @@
   };
 
   capture();
+
+  /* Conversion event (2026-11-20): every booking surface calls this
+     once the Service OS has accepted a booking, so the measurement
+     layer (Google Tag Manager / gtag, whenever Ramone connects one)
+     sees one consistent event with the booking reference. A no-op
+     beyond the dataLayer push itself — no tag is loaded by this. */
+  window.TSOSBookingSubmitted = function (referenceCode) {
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({ event: 'booking_submitted', reference_code: referenceCode || null });
+    } catch (e) { /* measurement must never break a booking */ }
+  };
 })();

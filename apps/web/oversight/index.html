@@ -202,6 +202,11 @@
           <div id="ovMarketing"><p class="ov-load">Loading…</p></div>
         </section>
 
+        <section class="ov-tile" id="tile-adtracking">
+          <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg></span><h3>Ad Tracking</h3><a class="ov-open" href="/ad-studio">Open console</a></div>
+          <div id="ovAdTracking"><p class="ov-load">Loading…</p></div>
+        </section>
+
         <section class="ov-tile" id="tile-referrals">
           <div class="ov-thead"><span class="ov-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.4"/><circle cx="17" cy="17" r="2.4"/></svg></span><h3>Referrals</h3><a class="ov-open" href="/book-os">Open console</a></div>
           <div id="ovReferrals"><p class="ov-load">Loading…</p></div>
@@ -424,12 +429,35 @@ function loadSlow(){
     get('/marketing-os/pages', false).then(function(r){ store(OV.slow, OV.serr, 'pages', r); }),
     get('/marketing-os/publish-events', false).then(function(r){ store(OV.slow, OV.serr, 'pub', r); }),
     get('/ad-studio/campaigns').then(function(r){ if (r.ok && r.j) { OV.adCounts = r.j.counts || null; delete OV.serr.ads; } else { OV.serr.ads = r.status; } }),
+    get('/admin/conversions/summary').then(function(r){ store(OV.slow, OV.serr, 'adtrack', r); }),
     get('/referrals/admin/funnel').then(function(r){ store(OV.slow, OV.serr, 'ref', r); }),
     get('/parts/summary').then(function(r){ store(OV.slow, OV.serr, 'parts', r); }),
     get('/chats/insights').then(function(r){ store(OV.slow, OV.serr, 'chats', r); })
   ]).then(function(){
-    renderCommercial(); renderCrm(); renderFinance(); renderMarketing(); renderReferrals(); renderParts(); renderProviders(); renderFeed();
+    renderCommercial(); renderCrm(); renderFinance(); renderMarketing(); renderReferrals(); renderParts(); renderProviders(); renderFeed(); renderAdTracking();
   });
+}
+
+function renderAdTracking(){
+  var s = OV.slow.adtrack;
+  if (!s) { tileState('ovAdTracking', 'Ad tracking data could not load just now — the conversion export lives with Ad Studio.'); return; }
+  var t = s.totals || {}, rev = s.revenueConversions || {}, ex = s.exportState || {};
+  var html = bigRow(num(t.captured), 'bookings captured with ad tracking');
+  html += rowsHtml([
+    ['Bookings in the window', num(t.bookings)],
+    ['Google click (gclid)', num(t.withGclid)],
+    ['Microsoft click (msclkid)', num(t.withMsclkid)],
+    ['Meta click (fbclid)', num(t.withFbclid)],
+    ['Lead conversions ready', num(s.leadConversionsReady)],
+    ['Revenue conversions', num(rev.count) + ' · $' + Number(rev.totalValue || 0).toFixed(2)]
+  ]);
+  var groups = (s.bySourceCampaign || []).slice(0, 6);
+  if (groups.length) {
+    html += rowsHtml(groups.map(function(g){ return [g.source + ' — ' + g.campaign, num(g.bookings) + ' bookings']; }));
+  }
+  if (!Number(t.captured)) html += '<p class="ov-note">No ad clicks captured yet — the first booking that arrives from a tagged ad link will appear here.</p>';
+  html += '<p class="ov-note">Conversion export: ' + esc(ex.mode === 'MANUAL_CSV_IMPORT' ? 'manual CSV import' : (ex.mode || '—')) + ' · ' + num(ex.googleRows) + ' Google rows / ' + num(ex.microsoftRows) + ' Microsoft rows ready · API upload ' + (ex.apiUpload === 'AWAITING_DEVELOPER_TOKEN' ? 'awaits the Google Ads developer token' : esc(ex.apiUpload || '—')) + '. Revenue rows come only from recorded payments — never estimated.</p>';
+  el('ovAdTracking').innerHTML = html;
 }
 
 function renderDispatch(){

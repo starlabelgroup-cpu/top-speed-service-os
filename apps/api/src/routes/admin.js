@@ -11,6 +11,14 @@ import {
   SURFACE_LABELS,
 } from '../services/trackingNumbers.js';
 import {
+  buildAdTrackingSummary,
+  buildConversionRows,
+  conversionRowsToCsv,
+  API_UPLOAD_STATE,
+  CONVERSION_TIMEZONE,
+  EXPORT_MODE,
+} from '../services/conversionExport.js';
+import {
   createTrackingNumber,
   updateTrackingNumber,
   findTrackingNumberById,
@@ -557,6 +565,51 @@ router.post('/admin/tracking-numbers/:id', ...managerOnly, async (req, res) => {
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Update failed' });
   }
+});
+
+/**
+ * Offline ad-conversion export (2026-11-20): the bookings that
+ * arrived on an ad click, as import-ready conversion rows — a LEAD
+ * row at booking time ($99 diagnostic value) and a REVENUE row when
+ * the job completed with money actually recorded. Built only from
+ * real records (services/conversionExport.js); bookings without the
+ * platform's click ID never appear.
+ *
+ * GET /admin/conversions/export                 → Google-format CSV
+ * GET /admin/conversions/export?platform=microsoft → Microsoft rows
+ * GET /admin/conversions/export?format=json     → rows + state (JSON)
+ *
+ * Delivery state: manual CSV import today; direct API upload waits
+ * on the owner's Google Ads developer token — the response headers
+ * and JSON meta say so plainly.
+ */
+router.get('/admin/conversions/export', ...managerOnly, (req, res) => {
+  const platform = req.query.platform === 'microsoft' ? 'microsoft' : 'google';
+  const rows = buildConversionRows(platform);
+  res.setHeader('X-Conversion-Export-Mode', EXPORT_MODE);
+  res.setHeader('X-Conversion-Api-Upload', API_UPLOAD_STATE);
+  if (req.query.format === 'json') {
+    return res.json({
+      data: {
+        platform,
+        mode: EXPORT_MODE,
+        apiUpload: API_UPLOAD_STATE,
+        timezone: CONVERSION_TIMEZONE,
+        rows,
+      },
+    });
+  }
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename="${platform === 'microsoft' ? 'microsoft' : 'google'}-ads-offline-conversions.csv"`,
+  );
+  return res.send(conversionRowsToCsv(rows, platform));
+});
+
+/** The Oversight console's Ad Tracking read model (counts only). */
+router.get('/admin/conversions/summary', ...managerOnly, (req, res) => {
+  return res.json({ data: buildAdTrackingSummary() });
 });
 
 export default router;
