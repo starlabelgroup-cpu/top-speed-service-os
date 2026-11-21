@@ -7,8 +7,8 @@ import {
   createListingReport, createSellerReview, createSellerSale, getListingComment,
   getListingProfile, getSaleByListing, getSellerReviewBySale, incrementListingViews,
   listListingComments, listListingProfiles, listListingReports, listSalesByBuyer,
-  listSalesBySeller, listSellerReviews, updateListingComment, updateListingReport,
-  updateSellerReview, upsertListingProfile,
+  listSalesBySeller, listSellerReviews, listSavedListings, saveListing, unsaveListing,
+  updateListingComment, updateListingReport, updateSellerReview, upsertListingProfile,
 } from '../db/listingTrustRepo.js';
 import { getSubmissionMediaItem, listSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { pepperReportsRepo } from '../db/pepperReportsRepo.js';
@@ -221,6 +221,14 @@ async function serializeCard(listing, profile, commentCounts) {
   const facts = parseListingFacts(listing);
   if (!facts) return null;
   const photos = await photoUrlsFor(listing);
+  // Seller display name (2026-11-21): resolve the account like the
+  // detail path does. The record's name field falls back to the
+  // account email when the create path had no display name, and an
+  // email address must never be published as the public seller name.
+  const sellerId = await sellerIdFor(listing, profile);
+  const seller = sellerId ? await findUserById(sellerId) : null;
+  let sellerName = publicNameOf(seller, listing.name);
+  if (sellerName.includes('@')) sellerName = 'Pepper Lists seller';
   return {
     id: listing.id,
     reference: listing.reference,
@@ -232,7 +240,7 @@ async function serializeCard(listing, profile, commentCounts) {
     featured: Boolean(profile?.featured),
     photoUrl: photos[0] || null,
     commentCount: commentCounts?.get(listing.id) ?? 0,
-    sellerName: publicNameOf(null, listing.name),
+    sellerName,
     createdAt: listing.createdAt,
   };
 }
@@ -435,6 +443,42 @@ async function rateLimitUser(req, res) {
   });
   return false;
 }
+
+/* Saved listings (2026-11-21, launch package) — the signed-in
+   customer's private save list (Facebook Marketplace parity). A
+   save is visible only to its owner: the list lane answers only
+   the caller's own saves, and unsaving another account's row is
+   indistinguishable from unsaving nothing. Cards serialize exactly
+   like the public feed (listing facts only — never the seller's
+   phone or email); a saved listing that has since been removed
+   simply drops off the list. */
+router.get('/pepper-lists/saved', authenticate, async (req, res) => {
+  const saved = await listSavedListings(req.user.id);
+  const profiles = await listListingProfiles();
+  const byConn = new Map(profiles.map((p) => [p.connectionId, p]));
+  const listings = saved.map((row) => findListing(row.listingId)).filter(Boolean);
+  const counts = await countVisibleComments(listings.map((l) => l.id));
+  const cards = [];
+  for (const listing of listings) {
+    const card = await serializeCard(listing, byConn.get(listing.id), counts);
+    if (card) cards.push(card);
+  }
+  return res.json({ data: cards });
+});
+
+router.post('/pepper-lists/listings/:id/save', authenticate, async (req, res) => {
+  const listing = findListing(req.params.id);
+  if (!listing || !parseListingFacts(listing)) return res.status(404).json({ error: 'Listing not found' });
+  if (!(await rateLimitUser(req, res))) return undefined;
+  const row = await saveListing({ userId: req.user.id, listingId: listing.id });
+  return res.status(201).json({ data: { saved: true, listingId: listing.id, savedId: row.id } });
+});
+
+router.delete('/pepper-lists/listings/:id/save', authenticate, async (req, res) => {
+  const listing = findListing(req.params.id);
+  await unsaveListing(req.user.id, listing ? listing.id : req.params.id);
+  return res.json({ data: { saved: false, listingId: listing ? listing.id : req.params.id } });
+});
 
 const commentSchema = z.object({ body: z.string().trim().min(1).max(2000) });
 

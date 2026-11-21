@@ -365,6 +365,27 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     }); });
   }
 
+  /* Sign-in fetch hardening (2026-11-21): a stalled mobile
+     connection must never read as a password failure. The login
+     request carries a 25s hard timeout; a NETWORK failure (no HTTP
+     response at all — the fetch rejected or the timeout fired)
+     retries the identical request exactly once and then reports a
+     stalled connection honestly. Any HTTP response — including a
+     401 — is final and never retried, so a wrong password can never
+     double-hit the auth rate bucket, and a 401 keeps its normal
+     "Email or password is incorrect." message. */
+  function postLogin(body){
+    return post('/auth/login',body,25000).catch(function(e){
+      if(e && typeof e.status==='number') throw e;
+      return post('/auth/login',body,25000).catch(function(e2){
+        if(e2 && typeof e2.status==='number') throw e2;
+        var err=new Error('Connection stalled — your password wasn’t checked. Check your signal and tap Sign in again.');
+        err.code='CONNECTION_STALLED';
+        throw err;
+      });
+    });
+  }
+
   /* The sign-in pipeline, shared by the password step and the Speedy
      Verify code step (mirrors Book OS): temp-password change state,
      then the Speedy Verify code step, then Layer 2, then the session. */
@@ -390,8 +411,8 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     var em=$('siEmail').value.trim(), pw=$('siPw').value;
     if(!em||!pw) return fail('Enter your email and password.');
     var b=$('siBtn'); b.disabled=true; b.textContent='Signing in…';
-    post('/auth/login',{email:em,password:pw}).then(handlePipeline)
-      .catch(function(x){ fail('Sign-in failed: '+x.message); })
+    postLogin({email:em,password:pw}).then(handlePipeline)
+      .catch(function(x){ fail(x && x.code==='CONNECTION_STALLED' ? x.message : 'Sign-in failed: '+x.message); })
       .finally(function(){ b.disabled=false; b.textContent='Sign in'; });
   });
 

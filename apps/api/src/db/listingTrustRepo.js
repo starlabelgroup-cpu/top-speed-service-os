@@ -21,6 +21,7 @@ const reports = new Map(); // reportId -> report row
 const sales = new Map(); // saleId -> sale row
 const sellerReviews = new Map(); // reviewId -> seller review row
 const bumps = []; // bump rows
+const savedListings = []; // saved-listing rows (private per user)
 
 const iso = (value) => (value instanceof Date ? value.toISOString() : String(value));
 
@@ -93,6 +94,10 @@ function sellerReviewFromDb(row) {
 
 function bumpFromDb(row) {
   return { id: row.id, listingId: row.listingId, sellerId: row.sellerId, createdAt: iso(row.createdAt) };
+}
+
+function savedFromDb(row) {
+  return { id: row.id, userId: row.userId, listingId: row.listingId, createdAt: iso(row.createdAt) };
 }
 
 async function persist(label, fn) {
@@ -495,4 +500,69 @@ export async function countBumpsSince(sellerId, sinceIso) {
     }
   }
   return count;
+}
+
+/* ---------------------------- saved listings --------------------------- */
+
+/**
+ * Saved listings (2026-11-21) — the customer's private save list.
+ * Same discipline as the bump ledger: in-memory working set plus
+ * write-through persistence, reads merged so a cold start still
+ * serves the real list. A save is idempotent per (userId, listingId)
+ * — saving twice is one row, and the @@unique index backs that up
+ * in the database.
+ */
+export async function listSavedListings(userId) {
+  const seen = new Set();
+  const rows = [];
+  const take = (row) => {
+    if (!row || row.userId !== userId || seen.has(row.id)) return;
+    seen.add(row.id);
+    rows.push(row);
+  };
+  for (const row of savedListings) take(row);
+  if (DATABASE_ENABLED) {
+    try {
+      const dbRows = await db().savedListing.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+      for (const row of dbRows) take(savedFromDb(row));
+    } catch (error) {
+      console.error('listSavedListings failed', error?.message || error);
+    }
+  }
+  return rows.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+
+export async function saveListing(input) {
+  const existing = (await listSavedListings(input.userId)).find((row) => row.listingId === input.listingId);
+  if (existing) return existing;
+  const row = {
+    id: createId(),
+    userId: input.userId,
+    listingId: input.listingId,
+    createdAt: new Date().toISOString(),
+  };
+  savedListings.push(row);
+  await persist('saveListing', () => db().savedListing.create({
+    data: { id: row.id, userId: row.userId, listingId: row.listingId, createdAt: new Date(row.createdAt) },
+  }));
+  return row;
+}
+
+export async function unsaveListing(userId, listingId) {
+  let removed = false;
+  for (let i = savedListings.length - 1; i >= 0; i -= 1) {
+    if (savedListings[i].userId === userId && savedListings[i].listingId === listingId) {
+      savedListings.splice(i, 1);
+      removed = true;
+    }
+  }
+  if (DATABASE_ENABLED) {
+    try {
+      const result = await db().savedListing.deleteMany({ where: { userId, listingId } });
+      if (result.count > 0) removed = true;
+    } catch (error) {
+      console.error('unsaveListing failed', error?.message || error);
+    }
+  }
+  return removed;
 }

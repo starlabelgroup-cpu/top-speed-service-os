@@ -163,7 +163,13 @@ async function main() {
   });
   check('register honeypot → 201 (success-shaped)', regHoney.status, 201);
   check('register honeypot echoes the email', regHoney.json?.user?.email, 'shield-honey@test.local');
-  check('register honeypot shape is the pending-activation shape', regHoney.json?.speedyVerify?.status, 'PENDING');
+  // Shape updated 2026-11-21 (Ramone's approval-free customer signup
+  // directive): a discarded CUSTOMER submission now mirrors the real
+  // customer success shape — the Layer 2 (2-step) challenge envelope —
+  // never the Speedy Verify office-approval shape. Covered kinds keep
+  // the pending shape (drilled in customer-signup-approval-free).
+  check('register honeypot shape is the customer 2-step shape', regHoney.json?.layer2Required, true);
+  check('register honeypot carries NO office-approval block', regHoney.json?.speedyVerify, undefined);
   check('register honeypot issued NO token', regHoney.json?.token, undefined);
   checkTrue('register honeypot persisted NO user', !(await userByEmail('shield-honey@test.local')));
   await settle();

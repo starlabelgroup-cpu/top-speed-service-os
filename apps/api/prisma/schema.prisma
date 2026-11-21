@@ -2390,6 +2390,21 @@ model ListingBump {
   @@index([sellerId, createdAt])
 }
 
+// Pepper Lists Saved listings (2026-11-21, launch package) — a
+// signed-in customer's private save list, the Facebook Marketplace
+// "Saved" surface. listingId is a PEPPER_LISTS_SELL Connection id,
+// stored as a plain reference like every other trust table; a save
+// is private to its owner and never serialized publicly.
+model SavedListing {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  listingId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@index([userId, createdAt])
+}
+
 // Pepper Lists Seller Plans — the structural mirror of AdPlan above
 // (2026-11-20). monthlyPriceCents NULL = pricing not set by the owner
 // yet — checkout is refused with an honest pricing_not_set. Feature

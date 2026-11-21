@@ -41,9 +41,13 @@ import {
   verifyGateApplies,
 } from '../services/speedyVerify.js';
 import {
+  LAYER2,
+  availableChannels,
   beginLayer2Challenge,
   layer2Applies,
+  preferredChannel,
   registrationLayer2Required,
+  signLayer2Challenge,
 } from '../services/layer2.js';
 import {
   changeStateJson,
@@ -302,8 +306,17 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
     }
     // Intake shield (2026-11-19): honeypot — a filled hidden field is
     // an automated form-filler. Answer with the same success shape a
-    // real pending-activation signup gets (201, user envelope, no
+    // real signup of the same kind gets (201, user envelope, no
     // token), but persist NOTHING and queue NO notification.
+    // Shape parity (2026-11-21, Ramone's approval-free customer
+    // signup directive): covered accounts (staff / business /
+    // provider / advertiser / creator) genuinely answer with the
+    // Speedy Verify pending shape, so their discards mimic it; a
+    // CUSTOMER (or any non-covered self-serve role) genuinely
+    // answers with the Layer 2 challenge shape, so its discards
+    // mimic THAT — a discarded customer submission never presents
+    // as office approval, and a bot still cannot tell a discard
+    // from a success.
     // Phase 2 (2026-11-20) discards land in the same ghost: forged /
     // expired / inhumanly-fast form tokens, gibberish-scored payloads,
     // and failed Turnstile (when configured). Phase 1 precedence is
@@ -351,15 +364,54 @@ router.post('/auth/register', optionalAuthenticate, intakeRateLimit('register'),
         createdAt: new Date().toISOString(),
       };
       const terms = await termsStatusForUser(ghost.id);
+      // Which real success shape does this registration answer with?
+      // Mirror the audience resolution the real path performs below
+      // (offer pin wins, then the declared portal type) and ask the
+      // same coverage question registrationStartsUnverified asks.
+      const ghostOffer = parsed.data.offerSlug ? getOffer(parsed.data.offerSlug) : null;
+      const ghostAudience = ghostOffer
+        ? OFFER_SIGNUP_TYPES[ghostOffer.signupType].audience
+        : (parsed.data.accountType ? OFFER_SIGNUP_TYPES[parsed.data.accountType].audience : null);
+      const ghostCovered = isSpeedyVerifyCovered({ roles: ghost.roles, signupAudience: ghostAudience });
+      if (ghostCovered) {
+        return res.status(201).json({
+          user: publicUser(ghost),
+          emailVerification: emailVerificationState(ghost),
+          terms,
+          termsStatus: terms,
+          speedyVerify: {
+            status: 'PENDING',
+            message: 'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',
+          },
+        });
+      }
+      // Customer-shape ghost: the Layer 2 challenge envelope a real
+      // customer signup returns (see the layer2Applies branch below).
+      // The challenge token is signed for the ghost id but no
+      // challenge record exists, so completing it answers with the
+      // ordinary self-serve "sign in again" expiry — never an
+      // office-approval state.
+      ghost.layer2Required = true;
+      let ghostChallenge = null;
+      let ghostExpires = LAYER2.challengeTtlSeconds;
+      try {
+        const signed = signLayer2Challenge(ghost, createId(), {});
+        ghostChallenge = signed.challenge;
+        ghostExpires = signed.expiresInSeconds;
+      } catch (error) {
+        console.error(JSON.stringify({ level: 'error', message: 'register ghost layer2 challenge signing failed', error: String(error?.message || error) }));
+      }
       return res.status(201).json({
+        layer2Required: true,
+        code: 'LAYER2_REQUIRED',
+        challenge: ghostChallenge,
+        expiresInSeconds: ghostExpires,
+        channels: availableChannels(ghost),
+        preferredChannel: preferredChannel(ghost),
         user: publicUser(ghost),
         emailVerification: emailVerificationState(ghost),
         terms,
         termsStatus: terms,
-        speedyVerify: {
-          status: 'PENDING',
-          message: 'Your account was created. Speedy Verify: the office issues your access code before your first sign-in — you will get it from the office directly.',
-        },
       });
     }
     const { email, password, firstName, lastName, phone } = parsed.data;

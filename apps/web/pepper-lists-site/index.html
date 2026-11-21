@@ -103,6 +103,56 @@ footer a{color:var(--lime)}
 .plg-acct button{margin-left:auto;background:var(--panel2);color:var(--ink);border:1px solid #2c4232;border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .plg-herobadge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;border:2px solid #0C130E;border-radius:999px;padding:5px 12px;margin-bottom:16px}
 </style>
+<style>
+/* LAUNCH PACKAGE (2026-11-21) — stepwise signup wizard, the post-signup
+   "Confirm it's you" page, the app menu, and the Saved / Bookings /
+   Notifications / account-settings surfaces. Theme tokens only. */
+.plwz-steps{display:flex;gap:8px;margin:4px 0 16px}
+.plwz-step{flex:1;text-align:center;font-size:12.5px;font-weight:700;color:var(--faint);border-bottom:3px solid #2c4232;padding-bottom:8px}
+.plwz-step.on{color:var(--ink);border-bottom-color:var(--lime)}
+.plwz-doc{border:1.5px solid #2c4232;border-radius:14px;padding:14px 16px;margin-top:14px;background:var(--panel2)}
+.plwz-doc h4{margin:0 0 4px;font-size:15.5px;color:var(--ink)}
+.plwz-doc .plwz-ver{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.plwz-reader{max-height:240px;overflow-y:auto;border:1px solid #2c4232;border-radius:10px;background:var(--bg);padding:12px 14px;font-size:13.5px;line-height:1.6;color:var(--muted)}
+.plwz-reader h2,.plwz-reader h3{color:var(--ink);font-size:15px;margin:10px 0 6px}
+.plwz-reader p{margin:0 0 8px}
+.plwz-reader ul{margin:0 0 8px;padding-left:18px}
+.plwz-agree{display:flex;gap:10px;align-items:flex-start;font-size:14px;font-weight:600;color:var(--ink);padding:10px 0 2px;cursor:pointer}
+.plwz-agree input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--lime)}
+.plwz-sig{width:100%;padding:11px 14px;border:1.5px solid #2c4232;border-radius:10px;font:inherit;font-size:15px;background:var(--bg);color:var(--ink);margin-top:5px;box-sizing:border-box}
+.plwz-nav{display:flex;gap:10px;margin-top:16px}
+.plwz-nav .btn{flex:1;text-align:center}
+.plvf-check{list-style:none;margin:14px 0;padding:0}
+.plvf-check li{display:flex;gap:11px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #22301f;font-size:14.5px}
+.plvf-check li:last-child{border-bottom:none}
+.plvf-ic{flex:none;width:24px;height:24px;border-radius:50%;border:2px solid #33473a;color:var(--faint);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;margin-top:1px}
+.plvf-check li.done .plvf-ic{background:var(--lime);border-color:var(--lime);color:#0C130E}
+.plvf-check li.now .plvf-ic{border-color:var(--lime);color:var(--lime)}
+.plvf-check li .plvf-note{display:block;font-size:13px;color:var(--muted);font-weight:500;margin-top:2px}
+.plvf-check li b{color:var(--ink)}
+.plvf-chan{border:1.5px solid #2c4232;border-radius:14px;padding:13px 15px;margin-top:12px;background:var(--panel2)}
+.plvf-chan h4{margin:0 0 3px;font-size:15px;color:var(--ink)}
+.plvf-chan p{margin:0;font-size:13.5px;color:var(--muted);line-height:1.5}
+.plvf-code{width:100%;box-sizing:border-box;font-size:24px;letter-spacing:8px;text-align:center;padding:12px 10px;border:1.5px solid #2c4232;border-radius:14px;margin-top:14px;font:inherit;font-weight:700;color:var(--ink);background:var(--bg)}
+.plmenu-wrap{position:relative;max-width:1020px;margin:0 auto}
+#plMenu{position:absolute;right:24px;top:6px;z-index:60;width:min(340px,calc(100vw - 32px));background:var(--panel);border:1px solid #2c4232;border-radius:18px;padding:10px;box-shadow:0 24px 60px rgba(0,0,0,.5)}
+#plMenu .plmenu-head{padding:8px 10px 10px;border-bottom:1px solid #22301f;margin-bottom:6px}
+#plMenu .plmenu-head b{color:var(--ink);font-size:15.5px}
+#plMenu .plmenu-head span{display:block;color:var(--muted);font-size:13px;margin-top:2px;overflow-wrap:anywhere}
+.plmenu-item{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:none;border:none;border-radius:12px;padding:11px 10px;font:inherit;font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;text-decoration:none;box-sizing:border-box}
+.plmenu-item:hover{background:var(--panel2)}
+.plmenu-item svg{width:21px;height:21px;flex:none;color:var(--lime)}
+.plmenu-item .plmenu-sub{display:block;font-size:12.5px;color:var(--muted);font-weight:500}
+.plbk-card{border:1.5px solid #2c4232;border-radius:14px;padding:14px 16px;margin-top:12px;background:var(--panel2)}
+.plbk-card h4{margin:0 0 4px;font-size:16px;color:var(--ink)}
+.plbk-pill{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border:1.5px solid #33473a;border-radius:999px;padding:3px 10px;color:var(--muted);margin-left:8px;vertical-align:2px}
+.plset-lab{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-top:12px}
+.plset-lab input,.plset-lab select{display:block;width:100%;margin-top:5px;padding:11px 14px;border:1.5px solid #2c4232;border-radius:10px;background:var(--bg);color:var(--ink);font:inherit;font-size:15px;font-weight:500;box-sizing:border-box}
+.plset-box{border-top:1px solid #22301f;margin-top:20px;padding-top:6px}
+.plsv-wrap{position:relative}
+.plsv-remove{margin-top:8px}
+@media(max-width:560px){#plMenu{right:12px}}
+</style>
 <section id="plGate" style="display:none" aria-label="Sign in to Pepper Lists It">
   <div class="plg-wrap">
     <button type="button" class="plg-back" onclick="plCloseGate()">&#8592; Back to Pepper Lists It</button>
@@ -127,19 +177,91 @@ footer a{color:var(--lime)}
         <p class="plg-note" style="margin-top:10px;text-align:center"><a href="/reset-password">Forgot password?</a></p>
       </div>
       <div id="plUpForm" style="display:none">
-        <div class="plg-row">
-          <label class="plg-lab">First name<input id="plUpFirst" type="text" autocomplete="given-name" placeholder="First"></label>
-          <label class="plg-lab">Last name<input id="plUpLast" type="text" autocomplete="family-name" placeholder="Last"></label>
+        <!-- LAUNCH PACKAGE (2026-11-21): signup is a two-step PROCESS.
+             Step 1 collects the account details; Step 2 presents the
+             actual Terms & Conditions documents readably with the
+             signature, and only then is the account created. After
+             creation the flow moves to the #plVerify page — never a
+             bounce back to this form. -->
+        <div class="plwz-steps" aria-hidden="true">
+          <div class="plwz-step on" id="plWzStep1Tab">1 · Your details</div>
+          <div class="plwz-step" id="plWzStep2Tab">2 · Terms &amp; signature</div>
         </div>
-        <label class="plg-lab">Email<input id="plUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
-        <label class="plg-lab">Phone (optional)<input id="plUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
-        <label class="plg-lab">Password — 10+ characters<input id="plUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
-        <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
-        <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="plUpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
-        <div id="plLegal"></div>
-        <p class="plg-msg" id="plUpMsg" role="status"></p>
-        <div class="tsos-turnstile-slot"></div>
-        <button class="btn plg-full" type="button" id="plUpBtn" onclick="plRegister()" disabled>Create account</button>
+        <div id="plUpStep1">
+          <div class="plg-row">
+            <label class="plg-lab">First name<input id="plUpFirst" type="text" autocomplete="given-name" placeholder="First"></label>
+            <label class="plg-lab">Last name<input id="plUpLast" type="text" autocomplete="family-name" placeholder="Last"></label>
+          </div>
+          <label class="plg-lab">Email<input id="plUpEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+          <label class="plg-lab">Phone (optional)<input id="plUpPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+          <label class="plg-lab">Password — 10+ characters<input id="plUpPass" type="password" autocomplete="new-password" placeholder="Create a password"></label>
+          <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
+          <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="plUpWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
+          <p class="plg-msg" id="plUpMsg" role="status"></p>
+          <div class="tsos-turnstile-slot"></div>
+          <button class="btn plg-full" type="button" id="plUpNextBtn" onclick="plUpNext()">Continue to terms</button>
+          <p class="plg-note" style="margin-top:10px">Free to join and use — you only ever pay for work you book, or a plan you choose to upgrade to.</p>
+        </div>
+        <div id="plUpStep2" style="display:none">
+          <p class="plg-note" style="text-align:left">Read both documents, check each agreement box, and type your full name as your signature. We record the versions you signed with your account.</p>
+          <div class="plwz-doc">
+            <h4>Top Speed Service OS — Terms &amp; Conditions</h4>
+            <p class="plwz-ver">Version 1.0 · Effective November 12, 2026</p>
+            <div class="plwz-reader" id="plWzDocOs"><p>The full document could not be loaded here — you can read it on the <a href="/legal#service-os-terms" target="_blank" rel="noopener">Legal Documents page</a> before you sign.</p></div>
+            <label class="plwz-agree"><input type="checkbox" id="plWzTermsOs"><span>I agree to the Top Speed Service OS — Terms &amp; Conditions (v1.0)</span></label>
+          </div>
+          <div class="plwz-doc">
+            <h4>Appliance Connect Software — Terms of Use</h4>
+            <p class="plwz-ver">Version 1.0 · Effective November 12, 2026</p>
+            <div class="plwz-reader" id="plWzDocConnect"><p>The full document could not be loaded here — you can read it on the <a href="/legal#appliance-connect-terms" target="_blank" rel="noopener">Legal Documents page</a> before you sign.</p></div>
+            <label class="plwz-agree"><input type="checkbox" id="plWzTermsConnect"><span>I agree to the Appliance Connect Software — Terms of Use (v1.0)</span></label>
+          </div>
+          <label class="plg-lab" style="margin-top:14px">Type your full name as your signature<input id="plWzSignature" type="text" autocomplete="name" placeholder="Your full name"></label>
+          <p class="plg-msg" id="plUpMsg2" role="status"></p>
+          <div class="plwz-nav">
+            <button class="btn dark" type="button" onclick="plUpBack()">Back</button>
+            <button class="btn" type="button" id="plUpBtn" onclick="plRegister()" disabled>Create account</button>
+          </div>
+        </div>
+      </div>
+      <!-- LAUNCH PACKAGE (2026-11-21): the post-signup NEXT PAGE.
+           One coherent "Confirm it's you" process: the account and
+           terms steps show complete, the 2-step authentication code
+           (Layer 2) runs by email with text as the customer's other
+           channel, and every send shows its real state. Completing
+           the code signs the customer in — nothing here bounces back
+           to the signup form. -->
+      <div id="plVerify" style="display:none">
+        <h2 style="margin:2px 0 6px;font-size:21px">Confirm it&rsquo;s you</h2>
+        <p class="plg-note" style="text-align:left">Your account is created — this last step proves it&rsquo;s really you and finishes your sign-in. It&rsquo;s your account&rsquo;s 2-step authentication: a 6-digit code on top of your password.</p>
+        <ul class="plvf-check">
+          <li class="done" id="plVfStepAccount"><span class="plvf-ic">&#10003;</span><span><b>Account created</b></span></li>
+          <li class="done" id="plVfStepTerms"><span class="plvf-ic">&#10003;</span><span><b>Terms accepted</b><span class="plvf-note">Both documents signed and recorded with your account.</span></span></li>
+          <li class="now" id="plVfStepEmail"><span class="plvf-ic">3</span><span><b>Email confirmation</b><span class="plvf-note" id="plVfEmailNote">Enter the code we email you — that completes your 2-step authentication and signs you in.</span></span></li>
+          <li id="plVfStepPhone"><span class="plvf-ic">4</span><span><b>Phone confirmation</b><span class="plvf-note" id="plVfPhoneNote">Optional — if you added a phone, you can get the same code by text instead.</span></span></li>
+        </ul>
+        <div id="plVfChannels">
+          <div class="plvf-chan">
+            <h4>Email code</h4>
+            <p id="plVfEmailState" role="status">Sending your code&hellip;</p>
+            <div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" id="plVfEmailSend" onclick="plVfSend('EMAIL')">Resend email code</button></div>
+          </div>
+          <div class="plvf-chan" id="plVfSmsBlock" style="display:none">
+            <h4>Text code</h4>
+            <p id="plVfSmsState" role="status">You can get the same 6-digit code by text instead — sending a text replaces the email code.</p>
+            <div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" id="plVfSmsSend" onclick="plVfSend('SMS')">Text me the code</button></div>
+          </div>
+          <label class="plg-lab" style="margin-top:14px">Your 6-digit code<input id="plVfCode" class="plvf-code" inputmode="numeric" autocomplete="one-time-code" placeholder="••••••" maxlength="8"></label>
+          <p class="plg-msg" id="plVfMsg" role="status"></p>
+          <button class="btn plg-full" type="button" id="plVfBtn" onclick="plVfVerify()">Verify &amp; finish</button>
+          <div id="plVfRestart" style="display:none;margin-top:10px"><button class="btn plg-full dark" type="button" onclick="plVfGoSignIn()">Go to Sign in for a fresh code</button></div>
+          <p class="plg-note" style="margin-top:12px;text-align:center"><button type="button" onclick="plVfLater()" style="background:none;border:none;color:var(--lime);font:inherit;font-weight:700;cursor:pointer;text-decoration:underline">Finish later — I&rsquo;ll sign in instead</button></p>
+        </div>
+        <div id="plVfDone" style="display:none">
+          <p class="plg-note" style="text-align:left" id="plVfDoneMsg">You&rsquo;re signed in — welcome to Pepper Lists.</p>
+          <p class="plg-note" style="text-align:left" id="plVfDonePhone"></p>
+          <button class="btn plg-full" type="button" onclick="plVfFinish()">Continue to Pepper Lists</button>
+        </div>
       </div>
       <div id="plPending" style="display:none">
         <p class="plg-note" id="plPendingMsg"></p>
@@ -149,7 +271,30 @@ footer a{color:var(--lime)}
   </div>
 </section>
 <div id="plApp">
-<div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><button type="button" onclick="plSignOut()">Sign out</button></div>
+<div class="plg-acct" id="plAcctBar" style="display:none"><span>Signed in as <b id="plWho"></b></span><span style="margin-left:auto;display:flex;gap:8px"><button type="button" id="plMenuBtn" onclick="plMenuToggle()" aria-haspopup="true" aria-expanded="false">Menu</button><button type="button" onclick="plSignOut()" style="margin-left:0">Sign out</button></span></div>
+<!-- LAUNCH PACKAGE (2026-11-21): the app menu — every Pepper Lists
+     option in one place, Facebook-app style. Every entry performs a
+     real action: it opens the real section below or runs the real
+     flow. It exists only inside the signed-in account bar, so a
+     signed-out visitor never sees a broken option — they get the
+     sign-in gate, exactly as before. -->
+<div class="plmenu-wrap">
+<nav id="plMenu" style="display:none" aria-label="Your Pepper Lists menu">
+  <div class="plmenu-head"><b id="plMenuName">Your account</b><span id="plMenuEmail"></span></div>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plAccount')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c1.2-3.4 3.8-5 7-5s5.8 1.6 7 5"/></svg><span>Profile &amp; account settings<span class="plmenu-sub">Name, phone, email, 2-step authentication</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plSeller')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg><span>My listings &amp; seller dashboard<span class="plmenu-sub">Your listings, sales, analytics</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plSaved')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6.5 4h11V20L12 15.8 6.5 20Z"/></svg><span>Saved listings<span class="plmenu-sub">Listings you saved for later</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plMessages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 5.5h16V16H9l-5 3.5z"/><path d="M7.5 9.5h9M7.5 12.5h5.5"/></svg><span>Messages<span class="plmenu-sub">Buyer &amp; seller conversations</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plNotify')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 3h-15z"/><path d="M10 21a2.2 2.2 0 0 0 4 0"/></svg><span>Notifications<span class="plmenu-sub">Push alerts on this device</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plBookings')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 5.5h14V20H5z"/><path d="M5 10h14"/><path d="M9 3.5v4M15 3.5v4"/><path d="M9.3 15.2l1.9 1.9 3.4-3.9"/></svg><span>My bookings<span class="plmenu-sub">Your service visits &amp; tracking</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plReviews')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg><span>Reviews<span class="plmenu-sub">Write a review, see yours</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuStorefront()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 9.5 5.5 4h13L20 9.5"/><path d="M4 9.5h16V20H4z"/><path d="M9.5 20v-5.5h5V20"/></svg><span>My storefront<span class="plmenu-sub">Your public seller page</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plSeller','pltPlans')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.6"/><path d="M12 16V8M8.5 11 12 7.5 15.5 11"/></svg><span>Seller plans &amp; upgrades<span class="plmenu-sub">Free forever — upgrades are optional</span></span></button>
+  <button type="button" class="plmenu-item" onclick="plMenuGo('plChannels')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="6" cy="12" r="2.6"/><circle cx="17.5" cy="5.5" r="2.6"/><circle cx="17.5" cy="18.5" r="2.6"/><path d="M8.3 10.8 15.2 6.7M8.3 13.2 15.2 17.3"/></svg><span>Channel connections<span class="plmenu-sub">Where your listings can reach</span></span></button>
+  <a class="plmenu-item" href="https://topspeedserviceos.com/help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><circle cx="12" cy="12" r="8.6"/><path d="M9.6 9.4A2.6 2.6 0 0 1 12 7.8c1.4 0 2.5 1 2.5 2.2 0 1.7-2.3 2-2.3 3.5"/><circle cx="12.2" cy="16.8" r=".4" fill="currentColor"/></svg><span>Help<span class="plmenu-sub">Guides &amp; answers from the Help Center</span></span></a>
+  <button type="button" class="plmenu-item" onclick="plSignOut()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14 4h6v16h-6"/><path d="M10 8l-4 4 4 4"/><path d="M6 12h11"/></svg><span>Sign out</span></button>
+</nav>
+</div>
 <!-- EMAIL CHANGE RESULT — the confirmation link emailed to the NEW
      address lands here (pepperlists.com/?mode=email-change&token=…).
      On load the page exchanges the token at POST
@@ -208,7 +353,41 @@ footer a{color:var(--lime)}
     <h2>Your <span style="color:var(--lime)">account</span></h2>
     <p class="ple-cur">Signed in as <b id="pleCurrent"></b></p>
     <p class="plb-sub" id="plgStoreRow" style="display:none">Your public storefront — all your live listings on one shareable page: <a id="plgStoreLink" href="#" target="_blank" rel="noopener" style="color:var(--lime);font-weight:700">your storefront</a></p>
-    <h3 style="margin-top:18px">Username / email</h3>
+    <!-- LAUNCH PACKAGE (2026-11-21): profile, email confirmation and
+         2-step authentication settings — every control below runs a
+         real account endpoint (POST /auth/profile, POST
+         /auth/email-verification/resend, the /auth/layer2 settings
+         trio). States render from the server's own answers. -->
+    <div class="plset-box">
+      <h3>Profile</h3>
+      <p class="plb-sub">Name: <b id="plPfName" style="color:var(--ink)">—</b></p>
+      <label class="plset-lab">Phone<input id="plPfPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+      <label class="plset-lab">Service street address<input id="plPfStreet" type="text" autocomplete="street-address" placeholder="Street address"></label>
+      <div class="plg-row">
+        <label class="plset-lab">City<input id="plPfCity" type="text" autocomplete="address-level2" placeholder="City"></label>
+        <label class="plset-lab">ZIP<input id="plPfZip" type="text" autocomplete="postal-code" placeholder="ZIP"></label>
+      </div>
+      <p class="plb-msg" id="plPfMsg" role="status"></p>
+      <div style="margin-top:10px"><button class="btn" type="button" id="plPfBtn" onclick="plPfSave()">Save profile</button></div>
+    </div>
+    <div class="plset-box">
+      <h3>Email confirmation</h3>
+      <p class="plb-sub" id="plEvState">Checking your email confirmation…</p>
+      <div id="plEvResendRow" style="display:none;margin-top:8px"><button class="btn dark" type="button" id="plEvBtn" onclick="plEvResend()">Email me a fresh confirmation link</button></div>
+    </div>
+    <div class="plset-box">
+      <h3>2-step authentication</h3>
+      <p class="plb-sub" id="plL2State">Checking your 2-step settings…</p>
+      <label class="plset-lab">Get codes by<select id="plL2Channel"><option value="EMAIL">Email</option><option value="SMS">Text message</option></select></label>
+      <label class="plset-lab">Phone for text codes<input id="plL2Phone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
+      <p class="plb-msg" id="plL2Msg" role="status"></p>
+      <div class="plb-btnrow" style="margin-top:10px">
+        <button class="btn" type="button" id="plL2SaveBtn" onclick="plL2Save()">Save 2-step settings</button>
+        <button class="btn dark" type="button" id="plL2OnBtn" onclick="plL2Toggle(true)">Turn 2-step on</button>
+        <button class="btn dark" type="button" id="plL2OffBtn" onclick="plL2Toggle(false)">Turn 2-step off</button>
+      </div>
+    </div>
+    <h3 style="margin-top:22px">Username / email</h3>
     <p class="plb-sub">Your email address is your username. To change it, enter the new address and your current password — and, if your account has 2-step sign-in on, the code we send you. We then email a confirmation link to the NEW address; the change only takes effect when you tap it, and your old address stops signing you in once it lands. Your password stays the same.</p>
     <label class="ple-lab">New email address<input id="pleNewEmail" type="email" autocomplete="email" placeholder="you@new-address.com"></label>
     <label class="ple-lab">Current password<input id="pleCurrentPass" type="password" autocomplete="current-password" placeholder="Your current password"></label>
@@ -259,6 +438,44 @@ footer a{color:var(--lime)}
 .plc-block p{color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px}
 @media(max-width:560px){.plc-cat{padding:18px 15px}}
 </style>
+<!-- LAUNCH PACKAGE (2026-11-21): Saved listings — the customer's
+     private save list (GET /pepper-lists/saved). Cards render with
+     the same public serializer as the feed; removing here calls the
+     real unsave endpoint. Signed-in only. -->
+<section class="plb" id="plSaved" style="display:none" aria-label="Your saved listings">
+  <div class="plb-card">
+    <h2>Saved <span style="color:var(--lime)">listings</span></h2>
+    <p class="plb-sub">Listings you saved from the marketplace — only you can see this list.</p>
+    <p class="plb-msg" id="plSavedMsg" role="status"></p>
+    <div id="plSavedList"><p class="plt-mini">Loading your saved listings…</p></div>
+  </div>
+</section>
+<!-- LAUNCH PACKAGE (2026-11-21): My bookings — the customer's own
+     bookings from GET /bookings (the API scopes the list to the
+     signed-in account), with Track My Tech as the live follow-up. -->
+<section class="plb" id="plBookings" style="display:none" aria-label="Your bookings">
+  <div class="plb-card">
+    <h2>My <span style="color:var(--lime)">bookings</span></h2>
+    <p class="plb-sub">Your Top Speed service bookings. On the day of a visit, follow your technician live with Track My Tech.</p>
+    <div id="plBkList"><p class="plt-mini">Loading your bookings…</p></div>
+    <div class="plb-btnrow" style="margin-top:14px"><button class="btn small" type="button" onclick="plCatShow('book')">Book a repair</button><a class="btn small dark" href="https://topspeedserviceos.com/track">Track My Tech</a></div>
+  </div>
+</section>
+<!-- LAUNCH PACKAGE (2026-11-21): Notifications — real web-push
+     state for THIS browser from GET /app/push/status, with the same
+     subscribe/unsubscribe flow the customer app runs. Nothing here
+     pretends: unavailable or unsupported states say so plainly. -->
+<section class="plb" id="plNotify" style="display:none" aria-label="Notifications">
+  <div class="plb-card">
+    <h2>Notifi<span style="color:var(--lime)">cations</span></h2>
+    <p class="plb-sub">Push alerts for this browser — booking updates and message replies, the moment they happen.</p>
+    <p class="plb-sub" id="plNtState" role="status">Checking notification settings…</p>
+    <div class="plb-btnrow" style="margin-top:10px">
+      <button class="btn" type="button" id="plNtOnBtn" onclick="plNtSubscribe()" style="display:none">Turn on notifications here</button>
+      <button class="btn dark" type="button" id="plNtOffBtn" onclick="plNtUnsubscribe()" style="display:none">Turn off notifications here</button>
+    </div>
+  </div>
+</section>
 <section class="plb" id="plCats" style="display:none" aria-label="Pepper Lists purposes">
   <div class="plb-card">
     <h2>Three purposes, <span style="color:var(--lime)">one Pepper Lists</span></h2>
@@ -1307,6 +1524,10 @@ function plPublic(){
   if(window.pleHide) pleHide();
   if(window.plgHide) plgHide();
   if(window.plmHide) plmHide();
+  if(window.plsvHide) plsvHide();
+  if(window.plbkHide) plbkHide();
+  if(window.plntHide) plntHide();
+  var mn=document.getElementById('plMenu'); if(mn) mn.style.display='none';
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -1331,7 +1552,7 @@ function plApi(path,opts){
   if(timeoutMs&&window.AbortController){ var ctrl=new AbortController(); opts.signal=ctrl.signal; hardT=setTimeout(function(){ ctrl.abort(); },timeoutMs); }
   var req=fetch(PL_API+path,opts);
   if(hardT){ req=req.then(function(r){ clearTimeout(hardT); return r; },function(e){ clearTimeout(hardT); throw e; }); }
-  return req.then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; e.details=j.details; e.status=r.status; throw e; } return j; }); });
+  return req.then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; e.details=j.details; e.status=r.status; if(typeof j.retryAfterSeconds==='number') e.retryAfterSeconds=j.retryAfterSeconds; if(typeof j.attemptsRemaining==='number') e.attemptsRemaining=j.attemptsRemaining; if(j.channels) e.channels=j.channels; throw e; } return j; }); });
 }
 function plMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='plg-msg'+(isErr?' err':''); }
 /* First-touch ad attribution (fbclid / gclid / msclkid + UTM),
@@ -1345,11 +1566,33 @@ function plMode(m){
   document.getElementById('plInForm').style.display=(m==='in')?'':'none';
   document.getElementById('plUpForm').style.display=(m==='up')?'':'none';
   document.getElementById('plPending').style.display='none';
+  var vf=document.getElementById('plVerify'); if(vf) vf.style.display='none';
 }
 var plSvChallenge=null;
+/* Sign-in fetch hardening (2026-11-21): a stalled mobile connection
+   must never read as a password failure. The login request carries
+   the same 25s hard timeout as signup; a NETWORK failure (no HTTP
+   response at all — the fetch rejected or the timeout fired) retries
+   the identical request exactly once and then reports a stalled
+   connection honestly. Any HTTP response — including a 401 — is
+   final and never retried, so a wrong password can never double-hit
+   the auth rate bucket, and a 401 keeps its normal message. */
+function plLoginAttempt(body){
+  return plApi('/auth/login',{method:'POST',body:JSON.stringify(body),timeoutMs:25000})
+    .catch(function(e){
+      if(e && typeof e.status==='number') throw e;
+      return plApi('/auth/login',{method:'POST',body:JSON.stringify(body),timeoutMs:25000})
+        .catch(function(e2){
+          if(e2 && typeof e2.status==='number') throw e2;
+          var err=new Error('Connection stalled — your password wasn’t checked. Check your signal and tap Sign in again.');
+          err.code='CONNECTION_STALLED';
+          throw err;
+        });
+    });
+}
 function plLogin(){
   plMsg('plMsg','Signing in…');
-  plApi('/auth/login',{method:'POST',body:JSON.stringify({email:document.getElementById('plLiEmail').value.trim(),password:document.getElementById('plLiPass').value})})
+  plLoginAttempt({email:document.getElementById('plLiEmail').value.trim(),password:document.getElementById('plLiPass').value})
     .then(function(j){
       if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/pepper-lists-site'); return; }
       if(j && j.verifyRequired && j.challenge){
@@ -1373,21 +1616,83 @@ function plVerify(){
     .catch(function(e){ plMsg('plMsg',e.message,true); });
 }
 var plJustRegistered=false;
+/* ---------------- Signup wizard (launch package, 2026-11-21) -------
+   Step 1 = account details, Step 2 = the Terms & Conditions step:
+   both documents are loaded from the canonical /legal page into
+   readable in-flow readers (the fallback text inside each reader
+   links there if the load fails), each with its own agreement box,
+   plus the typed signature. The acceptance object is built in
+   exactly the register contract's shape — the same documents and
+   versions services/legalTerms.js validates server-side. */
+var PLWZ_DOCS=[
+  {document:'SERVICE_OS',version:'1.0',anchor:'service-os-terms',reader:'plWzDocOs',box:'plWzTermsOs'},
+  {document:'APPLIANCE_CONNECT',version:'1.0',anchor:'appliance-connect-terms',reader:'plWzDocConnect',box:'plWzTermsConnect'}
+];
+var plWzTermsLoaded=false;
+function plWzShowStep(n){
+  document.getElementById('plUpStep1').style.display=(n===1)?'':'none';
+  document.getElementById('plUpStep2').style.display=(n===2)?'':'none';
+  document.getElementById('plWzStep1Tab').className='plwz-step'+(n===1?' on':'');
+  document.getElementById('plWzStep2Tab').className='plwz-step'+(n===2?' on':'');
+  var g=document.getElementById('plGate'); if(g) g.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function plUpNext(){
+  var email=document.getElementById('plUpEmail').value.trim();
+  var password=document.getElementById('plUpPass').value;
+  var phone=document.getElementById('plUpPhone').value.trim();
+  if(!/^[^@\s]+@[^\s]+\.[^\s]+$/.test(email)){ plMsg('plUpMsg','Please add a valid email address — it is your sign-in.',true); return; }
+  if(password.length<10){ plMsg('plUpMsg','Password needs at least 10 characters.',true); return; }
+  if(phone && phone.replace(/\D/g,'').length<7){ plMsg('plUpMsg','That phone number looks too short — add the full number, or leave the phone blank.',true); return; }
+  plMsg('plUpMsg','');
+  plWzShowStep(2);
+  plWzLoadTerms();
+}
+function plUpBack(){ plWzShowStep(1); }
+function plWzLoadTerms(){
+  if(plWzTermsLoaded) return;
+  plWzTermsLoaded=true;
+  fetch('/legal',{headers:{'Accept':'text/html'}}).then(function(r){ if(!r.ok) throw new Error('legal load failed'); return r.text(); }).then(function(html){
+    var doc=new DOMParser().parseFromString(html,'text/html');
+    PLWZ_DOCS.forEach(function(d){
+      var src=doc.getElementById(d.anchor);
+      var dst=document.getElementById(d.reader);
+      if(src&&dst) dst.innerHTML=src.innerHTML;
+    });
+  }).catch(function(){ /* the fallback copy + link inside each reader stays — honest either way */ });
+}
+function plWzSync(){
+  var ok=true;
+  PLWZ_DOCS.forEach(function(d){ var b=document.getElementById(d.box); if(!b||!b.checked) ok=false; });
+  var sig=document.getElementById('plWzSignature');
+  if(!sig||sig.value.trim().length<2) ok=false;
+  var btn=document.getElementById('plUpBtn'); if(btn) btn.disabled=!ok;
+}
+function plWzAcceptance(){
+  var sig=document.getElementById('plWzSignature');
+  var documents=[];
+  for(var i=0;i<PLWZ_DOCS.length;i++){
+    var b=document.getElementById(PLWZ_DOCS[i].box);
+    if(!b||!b.checked) return null;
+    documents.push({document:PLWZ_DOCS[i].document,version:PLWZ_DOCS[i].version,agreed:true});
+  }
+  if(!sig||sig.value.trim().length<2) return null;
+  return { signatureName:sig.value.trim(), documents:documents };
+}
 function plRegister(){
-  var acceptance=window.TSOSLegal?TSOSLegal.acceptance('pl'):null;
-  if(!acceptance){ plMsg('plUpMsg','Check both agreement boxes and type your full name as your signature first.',true); return; }
+  var acceptance=plWzAcceptance();
+  if(!acceptance){ plMsg('plUpMsg2','Check both agreement boxes and type your full name as your signature first.',true); return; }
   var email=document.getElementById('plUpEmail').value.trim();
   var password=document.getElementById('plUpPass').value;
   var phone=document.getElementById('plUpPhone').value.trim();
   /* Client checks mirror the register contract (same rules and plain
      copy as the flagship /signup page); the server still has the
      final say and its errors surface below. */
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ plMsg('plUpMsg','Please add a valid email address — it is your sign-in.',true); return; }
-  if(password.length<10){ plMsg('plUpMsg','Password needs at least 10 characters.',true); return; }
-  if(phone && phone.replace(/\D/g,'').length<7){ plMsg('plUpMsg','That phone number looks too short — add the full number, or leave the phone blank.',true); return; }
+  if(!/^[^@\s]+@[^\s]+\.[^\s]+$/.test(email)){ plWzShowStep(1); plMsg('plUpMsg','Please add a valid email address — it is your sign-in.',true); return; }
+  if(password.length<10){ plWzShowStep(1); plMsg('plUpMsg','Password needs at least 10 characters.',true); return; }
+  if(phone && phone.replace(/\D/g,'').length<7){ plWzShowStep(1); plMsg('plUpMsg','That phone number looks too short — add the full number, or leave the phone blank.',true); return; }
   var body={
     email:email,
-    password:password,
+    password: password,
     firstName:document.getElementById('plUpFirst').value.trim()||undefined,
     lastName:document.getElementById('plUpLast').value.trim()||undefined,
     phone:phone||undefined,
@@ -1395,13 +1700,18 @@ function plRegister(){
     companyWebsite:document.getElementById('plUpWebsite').value
   };
   if(window.TSOSIntakeShield)Object.assign(body,TSOSIntakeShield.fields());
-  plMsg('plUpMsg','Creating your account…');
-  var slowT=setTimeout(function(){ plMsg('plUpMsg','Still working — slow connection…'); },10000);
+  plMsg('plUpMsg2','Creating your account…');
+  var slowT=setTimeout(function(){ plMsg('plUpMsg2','Still working — slow connection…'); },10000);
+  var btn=document.getElementById('plUpBtn'); if(btn) btn.disabled=true;
   plApi('/auth/register',{method:'POST',body:JSON.stringify(body),timeoutMs:25000})
     .then(function(j){
       clearTimeout(slowT);
-      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
-        TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plJustRegistered=true; plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plUpMsg','Account created — sign in and complete the 2-step code to finish.',true); }});
+      if(btn) btn.disabled=false;
+      if(j && j.layer2Required && j.challenge){
+        /* The account exists and the 2-step challenge is open: move
+           to the dedicated "Confirm it's you" page — the process
+           continues there, never back at this form. */
+        plShowVerify(j);
         return;
       }
       if(!j.token){
@@ -1411,12 +1721,13 @@ function plRegister(){
         document.getElementById('plInForm').style.display='none';
         document.getElementById('plUpForm').style.display='none';
         var p=document.getElementById('plPending'); p.style.display='';
-        document.getElementById('plPendingMsg').textContent=(j.speedyVerify&&j.speedyVerify.message)||'Your account was created. The office will finish activating it before your first sign-in.';
+        document.getElementById('plPendingMsg').textContent=(j.speedyVerify&&j.speedyVerify.message)||'Your account was created — use the Sign in tab to sign in; a 2-step code sent to your own email finishes the sign-in.';
         return;
       }
       plJustRegistered=true; plCapture(j); plBoot();
     }).catch(function(e){
       clearTimeout(slowT);
+      if(btn) btn.disabled=false;
       var m;
       if(e&&e.name==='AbortError'){
         /* The 25s timeout fired: the request stalled (dead signal,
@@ -1429,9 +1740,151 @@ function plRegister(){
         if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } }
         if(/exist|already/i.test(m)) m='That email already has a Top Speed account — use the Sign in tab above instead.';
       }
-      plMsg('plUpMsg',m,true);
+      plMsg('plUpMsg2',m,true);
     });
 }
+/* ------------- "Confirm it's you" page (launch package) -------------
+   Runs the register Layer 2 challenge end-to-end on a dedicated
+   page: the email code is auto-sent on arrival; the text code is
+   the customer's other channel for the SAME code step (sending on
+   one channel replaces the other — the page says so). Every send
+   shows the server's real answer: sent (with the masked
+   destination), failed, or unavailable. Verifying mints the
+   session and completes onboarding; an SMS failure can never trap
+   anyone — the email code alone finishes, and the phone row then
+   reads exactly what is true: confirm it later in account
+   settings. */
+var plVf={challenge:null,channels:[],lastChannel:null,done:false};
+function plVfChan(name){ for(var i=0;i<plVf.channels.length;i++){ if(plVf.channels[i].channel===name) return plVf.channels[i]; } return null; }
+function plVfSetStep(id,cls,note){
+  var li=document.getElementById(id); if(!li) return;
+  li.className=cls;
+  var ic=li.querySelector('.plvf-ic'); if(ic) ic.innerHTML=(cls==='done')?'&#10003;':(id==='plVfStepEmail'?'3':'4');
+  if(note!=null){ var n=li.querySelector('.plvf-note'); if(n) n.textContent=note; }
+}
+function plShowVerify(j){
+  plVf={challenge:j.challenge,channels:j.channels||[],lastChannel:null,done:false};
+  document.getElementById('plInForm').style.display='none';
+  document.getElementById('plUpForm').style.display='none';
+  document.getElementById('plPending').style.display='none';
+  document.getElementById('plVfDone').style.display='none';
+  document.getElementById('plVfRestart').style.display='none';
+  document.getElementById('plVfChannels').style.display='';
+  var vf=document.getElementById('plVerify'); vf.style.display='';
+  plVfSetStep('plVfStepEmail','now','Enter the code we email you — that completes your 2-step authentication and signs you in.');
+  var sms=plVfChan('SMS');
+  var smsBlock=document.getElementById('plVfSmsBlock');
+  if(sms && sms.available){
+    smsBlock.style.display='';
+    plVfSetStep('plVfStepPhone','','Optional — you can get the same code by text to '+(sms.destination||'your phone')+' instead.');
+  } else {
+    smsBlock.style.display='none';
+    plVfSetStep('plVfStepPhone','','No phone on this account — you can add one later in Account settings.');
+  }
+  plMsg('plVfMsg','');
+  var code=document.getElementById('plVfCode'); if(code) code.value='';
+  vf.scrollIntoView({behavior:'smooth',block:'start'});
+  plVfSend('EMAIL');
+}
+function plVfSend(channel){
+  if(!plVf.challenge||plVf.done) return;
+  var stateId=(channel==='SMS')?'plVfSmsState':'plVfEmailState';
+  var st=document.getElementById(stateId); if(st) st.textContent='Sending your code…';
+  plApi('/auth/layer2/send',{method:'POST',body:JSON.stringify({challenge:plVf.challenge,channel:channel}),timeoutMs:25000})
+    .then(function(j){
+      plVf.lastChannel=channel;
+      if(st) st.textContent='Code sent to '+(j.destination||'you')+' — it expires in 10 minutes and works once.';
+      var c=document.getElementById('plVfCode'); if(c) c.focus();
+    })
+    .catch(function(e){
+      var m=(e&&e.message)||'The code could not be sent just now.';
+      if(e && e.code==='LAYER2_RESEND_COOLDOWN' && typeof e.retryAfterSeconds==='number') m='A code was just sent — wait about '+e.retryAfterSeconds+' seconds, then try again.';
+      else if(channel==='SMS') m+=' The email code below works either way — you can also confirm your phone later in Account settings.';
+      if(st) st.textContent=m;
+    });
+}
+function plVfVerify(){
+  if(!plVf.challenge||plVf.done) return;
+  var code=document.getElementById('plVfCode').value.replace(/[\s-]/g,'');
+  if(!/^\d{6}$/.test(code)){ plMsg('plVfMsg','Enter the 6-digit code from your email or text.',true); return; }
+  var btn=document.getElementById('plVfBtn'); if(btn) btn.disabled=true;
+  plMsg('plVfMsg','Checking your code…');
+  plApi('/auth/layer2/verify',{method:'POST',body:JSON.stringify({challenge:plVf.challenge,code:code}),timeoutMs:25000})
+    .then(function(j){
+      if(btn) btn.disabled=false;
+      plVf.done=true;
+      plJustRegistered=true;
+      plCapture(j);
+      var viaSms=(plVf.lastChannel==='SMS');
+      if(viaSms){
+        plVfSetStep('plVfStepPhone','done','Confirmed — the code we texted you finished your sign-in.');
+        plVfSetStep('plVfStepEmail','done','Your sign-in finished with the text code — no email code was needed.');
+      } else {
+        plVfSetStep('plVfStepEmail','done','Confirmed — your email code completed your 2-step authentication.');
+        var smsCh=plVfChan('SMS');
+        if(smsCh && smsCh.available){
+          plVfSetStep('plVfStepPhone','','Not confirmed yet — you can confirm your phone later in Account settings.');
+          var dp=document.getElementById('plVfDonePhone'); if(dp) dp.textContent='Your phone is not confirmed yet — you can confirm it later in Account settings, under 2-step authentication.';
+        } else {
+          plVfSetStep('plVfStepPhone','','No phone on this account — you can add one later in Account settings.');
+        }
+      }
+      document.getElementById('plVfChannels').style.display='none';
+      document.getElementById('plVfDone').style.display='';
+      document.getElementById('plVerify').scrollIntoView({behavior:'smooth',block:'start'});
+    })
+    .catch(function(e){
+      if(btn) btn.disabled=false;
+      var m=(e&&e.message)||'That code did not go through.';
+      if(e && typeof e.attemptsRemaining==='number') m+=' ('+e.attemptsRemaining+' attempt'+(e.attemptsRemaining===1?'':'s')+' left)';
+      plMsg('plVfMsg',m,true);
+      if(e && (e.code==='LAYER2_CHALLENGE_INVALID'||e.code==='LAYER2_CHALLENGE_EXPIRED'||e.code==='LAYER2_CHALLENGE_USED'||e.code==='LAYER2_CHALLENGE_INVALIDATED')){
+        var r=document.getElementById('plVfRestart'); if(r) r.style.display='';
+      }
+    });
+}
+function plVfFinish(){
+  document.getElementById('plVerify').style.display='none';
+  plBoot();
+}
+function plVfGoSignIn(){
+  plVf.challenge=null;
+  plMode('in');
+  plMsg('plMsg','Your account is created — sign in with your password and you will get a fresh 2-step code.');
+}
+function plVfLater(){
+  plVf.challenge=null;
+  plMode('in');
+  plMsg('plMsg','Your account is created — sign in with your password and finish the 2-step code to get in.');
+}
+/* ---------------- App menu (launch package, 2026-11-21) ----------- */
+function plMenuToggle(force){
+  var m=document.getElementById('plMenu'); if(!m) return;
+  var open=(typeof force==='boolean')?force:(m.style.display==='none');
+  m.style.display=open?'':'none';
+  var b=document.getElementById('plMenuBtn'); if(b) b.setAttribute('aria-expanded',open?'true':'false');
+  if(open && plUser){
+    var n=document.getElementById('plMenuName'); if(n) n.textContent=((plUser.firstName||'')+' '+(plUser.lastName||'')).trim()||'Your account';
+    var e=document.getElementById('plMenuEmail'); if(e) e.textContent=plUser.email||'';
+  }
+}
+function plMenuGo(id,anchorId){
+  plMenuToggle(false);
+  var sec=document.getElementById(id); if(!sec) return;
+  sec.style.display='';
+  var tgt=anchorId?document.getElementById(anchorId):sec;
+  (tgt||sec).scrollIntoView({behavior:'smooth',block:'start'});
+}
+function plMenuStorefront(){
+  plMenuToggle(false);
+  if(plUser && plUser.id && window.pltOpenStorefront) pltOpenStorefront(plUser.id);
+}
+document.addEventListener('click',function(ev){
+  var m=document.getElementById('plMenu'); if(!m||m.style.display==='none') return;
+  if(m.contains(ev.target)) return;
+  var b=document.getElementById('plMenuBtn'); if(b&&b.contains(ev.target)) return;
+  plMenuToggle(false);
+});
 function plSignOut(){ plClearTok(); plUser=null; location.reload(); }
 function plEnterApp(u){
   plUser=u||{};
@@ -1444,6 +1897,10 @@ function plEnterApp(u){
   if(window.pleEnter) pleEnter(u);
   if(window.plgEnter) plgEnter(u);
   if(window.plmEnter) plmEnter(u);
+  if(window.plSetEnter) plSetEnter(u);
+  if(window.plsvEnter) plsvEnter(u);
+  if(window.plbkEnter) plbkEnter(u);
+  if(window.plntEnter) plntEnter(u);
   if(plJustRegistered){
     /* Fresh sign-up on this page: welcome the new customer and point
        at Channel Connections + the Sell / Post entry points. Shown
@@ -1479,7 +1936,12 @@ function plBoot(){
   });
 }
 document.addEventListener('DOMContentLoaded',function(){
-  if(window.TSOSLegal) TSOSLegal.mountSigning('plLegal','pl',{buttonId:'plUpBtn'});
+  /* Launch package: the register form's terms step is the wizard's
+     own (plWzSync gates the Create button); TSOSLegal still serves
+     the sign-to-continue gate for existing accounts in plBoot. */
+  ['plWzTermsOs','plWzTermsConnect'].forEach(function(id){ var b=document.getElementById(id); if(b) b.addEventListener('change',plWzSync); });
+  var sig=document.getElementById('plWzSignature'); if(sig) sig.addEventListener('input',plWzSync);
+  var vfc=document.getElementById('plVfCode'); if(vfc) vfc.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plVfVerify(); });
   var pw=document.getElementById('plLiPass'); if(pw) pw.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plLogin(); });
   plBoot();
   if(!plTok()){
@@ -2840,6 +3302,17 @@ function pltOpenListing(id){
     if(d.status==='SOLD') h+='<span class="plt-sold">Sold</span>';
     h+='<h3>'+pltEsc(d.title)+'</h3><span class="plt-price" style="font-size:19px">'+pltEsc(pltMoney(d.priceCents))+'</span>';
     h+='<p class="plt-meta">'+pltEsc(d.category||'')+(d.condition?' · '+pltEsc(d.condition):'')+' · Listed '+pltEsc(pltDate(d.createdAt))+' · '+d.viewCount+' view'+(d.viewCount===1?'':'s')+'</p>';
+    /* Saved listings (launch package, 2026-11-21): a real save
+       toggle for signed-in shoppers, riding GET/POST/DELETE
+       /pepper-lists/saved + /listings/:id/save. Signed-out shoppers
+       get the sign-in gate — the same pattern as comments and
+       reports below. */
+    if(pltSignedIn()){
+      var isSaved=!!(window.plSavedIds && plSavedIds.has(d.id));
+      h+='<div class="plb-btnrow" style="margin-top:10px"><button class="btn small '+(isSaved?'':'dark')+'" type="button" id="pltSaveBtn" onclick="pltToggleSave()">'+(isSaved?'Saved — tap to remove':'Save this listing')+'</button></div><p class="plt-msg" id="pltSaveMsg" role="status"></p>';
+    } else {
+      h+='<div class="plb-btnrow" style="margin-top:10px"><button class="btn small dark" type="button" onclick="return plOpenApp(event)">Sign in to save this listing</button></div>';
+    }
     if(d.photos && d.photos.length){ h+='<div class="plt-photos">'+d.photos.map(function(p){ return '<img src="'+pltEsc(PL_API+p)+'" alt="Photo of '+pltEsc(d.title)+'" loading="lazy">'; }).join('')+'</div>'; }
     if(d.description) h+='<p style="font-size:15px;line-height:1.65;white-space:pre-line">'+pltEsc(d.description)+'</p>';
     /* Seller trust card — badges only when the facts are true. */
@@ -3127,6 +3600,182 @@ pltLoadBookReviews();
 if(window.plEnterApp){
   var _plEnterAppMaster = window.plEnterApp;
   window.plEnterApp = function(u){ _plEnterAppMaster(u); if(window.PepperMasterGate) window.PepperMasterGate.checkUser(u); };
+}
+</script>
+<script>
+/* LAUNCH PACKAGE (2026-11-21) — account settings (profile, email
+   confirmation, 2-step authentication), Saved listings, My bookings
+   and Notifications. Every control calls a real endpoint and shows
+   the server's real answer; Enter/Hide follow the page's existing
+   plEnterApp / plPublic pattern. */
+window.plSavedIds = new Set();
+function plSetMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='plb-msg'+(isErr?' err':''); }
+function plSetEnter(u){
+  if(!u) return;
+  var nm=document.getElementById('plPfName'); if(nm) nm.textContent=((u.firstName||'')+' '+(u.lastName||'')).trim()||u.email||'—';
+  var ph=document.getElementById('plPfPhone'); if(ph && u.phone) ph.value=u.phone;
+  var ct=document.getElementById('plPfCity'); if(ct && u.serviceCity) ct.value=u.serviceCity;
+  var zp=document.getElementById('plPfZip'); if(zp && u.serviceZip) zp.value=u.serviceZip;
+  var ev=document.getElementById('plEvState');
+  var rr=document.getElementById('plEvResendRow');
+  if(ev){
+    if(u.emailVerified){ ev.textContent='Your email is confirmed — the verification link for '+(u.email||'your address')+' was completed.'; if(rr) rr.style.display='none'; }
+    else { ev.textContent='Your email is not confirmed yet. We emailed a confirmation link to '+(u.email||'your address')+' when you signed up — it stays good until you use it, and your account works fully in the meantime.'; if(rr) rr.style.display=''; }
+  }
+  plL2Load();
+}
+function plPfSave(){
+  var phone=document.getElementById('plPfPhone').value.trim();
+  var street=document.getElementById('plPfStreet').value.trim();
+  var city=document.getElementById('plPfCity').value.trim();
+  var zip=document.getElementById('plPfZip').value.trim();
+  if(phone && phone.replace(/\D/g,'').length<7){ plSetMsg('plPfMsg','That phone number looks too short — add the full number, or leave the phone blank.',true); return; }
+  var body={};
+  if(phone) body.phone=phone;
+  if(street||city||zip) body.serviceAddress={street:street||undefined,city:city||undefined,zip:zip||undefined};
+  if(!Object.keys(body).length){ plSetMsg('plPfMsg','Nothing to save yet — add a phone or an address first.',true); return; }
+  var btn=document.getElementById('plPfBtn'); if(btn) btn.disabled=true;
+  plSetMsg('plPfMsg','Saving…');
+  plApi('/auth/profile',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){ if(btn) btn.disabled=false; plSetMsg('plPfMsg',((j&&j.profile&&j.profile.areaMessage)||'Profile saved.')); if(j&&j.user) plUser=j.user; })
+    .catch(function(e){ if(btn) btn.disabled=false; plSetMsg('plPfMsg',(e&&e.message)||'Profile did not save.',true); });
+}
+function plEvResend(){
+  var btn=document.getElementById('plEvBtn'); if(btn) btn.disabled=true;
+  plApi('/auth/email-verification/resend',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){ if(btn) btn.disabled=false; var ev=document.getElementById('plEvState'); if(ev) ev.textContent=(j&&j.message)||'A fresh confirmation link is on its way to your inbox.'; })
+    .catch(function(e){ if(btn) btn.disabled=false; var ev2=document.getElementById('plEvState'); if(ev2) ev2.textContent=(e&&e.message)||'The confirmation email could not be sent just now — try again in a little while.'; });
+}
+function plL2Render(v){
+  var st=document.getElementById('plL2State'); if(!st) return;
+  var onBtn=document.getElementById('plL2OnBtn'), offBtn=document.getElementById('plL2OffBtn'), saveBtn=document.getElementById('plL2SaveBtn');
+  if(v.exempt){ st.textContent='This account is exempt from 2-step sign-in by platform rule.'; if(onBtn) onBtn.style.display='none'; if(offBtn) offBtn.style.display='none'; if(saveBtn) saveBtn.style.display='none'; return; }
+  var chan=(v.channels||[]).map(function(c){ return c.channel==='SMS' ? ('Text to '+(c.destination||'your phone')) : ('Email to '+(c.destination||'your email')); }).join(' · ');
+  st.textContent=(v.required?'2-step authentication is ON — every sign-in asks for a 6-digit code after your password.':'2-step authentication is OFF — you can turn it on for a stronger account.')+(chan?(' Channels: '+chan+'.'):'');
+  if(v.roleRequired) st.textContent+=' 2-step is required for your account type and cannot be turned off.';
+  if(onBtn) onBtn.style.display=v.required?'none':'';
+  if(offBtn) offBtn.style.display=(v.required&&!v.roleRequired)?'':'none';
+  var sel=document.getElementById('plL2Channel'); if(sel&&v.preferredChannel) sel.value=v.preferredChannel;
+  var ph=document.getElementById('plL2Phone'); if(ph) ph.placeholder=v.phone?('Current: '+v.phone):'(954) 555-0100';
+}
+function plL2Load(){
+  plApi('/auth/layer2/status').then(function(j){ if(j&&j.layer2) plL2Render(j.layer2); }).catch(function(){ var st=document.getElementById('plL2State'); if(st) st.textContent='2-step settings could not be loaded just now.'; });
+}
+function plL2Save(){
+  var body={channel:document.getElementById('plL2Channel').value};
+  var phone=document.getElementById('plL2Phone').value.trim();
+  if(phone) body.phone=phone;
+  plSetMsg('plL2Msg','Saving…');
+  plApi('/auth/layer2/update',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){ plSetMsg('plL2Msg','2-step settings saved.'); if(j&&j.layer2) plL2Render(j.layer2); })
+    .catch(function(e){ plSetMsg('plL2Msg',(e&&e.message)||'Settings did not save.',true); });
+}
+function plL2Toggle(on){
+  plSetMsg('plL2Msg',on?'Turning 2-step on…':'Turning 2-step off…');
+  plApi(on?'/auth/layer2/enroll':'/auth/layer2/disable',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){ plSetMsg('plL2Msg',on?'2-step authentication is on — it applies from your next sign-in.':'2-step authentication is off.'); if(j&&j.layer2) plL2Render(j.layer2); })
+    .catch(function(e){ plSetMsg('plL2Msg',(e&&e.message)||'That change did not go through.',true); });
+}
+/* ------------------------- Saved listings ------------------------- */
+function plsvEnter(){ plsvLoad(); }
+function plsvHide(){ var s=document.getElementById('plSaved'); if(s) s.style.display='none'; }
+function plsvLoad(){
+  var box=document.getElementById('plSavedList'); if(!box) return;
+  plApi('/pepper-lists/saved').then(function(j){
+    var items=(j&&j.data)||[];
+    window.plSavedIds=new Set(items.map(function(c){ return c.id; }));
+    if(!items.length){ box.innerHTML='<p class="plt-mini">Nothing saved yet — tap “Save this listing” on any listing and it will wait for you here.</p>'; return; }
+    box.innerHTML='<div class="plt-grid">'+items.map(function(c){
+      return '<div class="plsv-wrap">'+pltCardHtml(c)+'<button class="btn small dark plsv-remove" type="button" onclick="plsvRemove(\''+pltEsc(c.id)+'\')">Remove from saved</button></div>';
+    }).join('')+'</div>';
+  }).catch(function(){ box.innerHTML='<p class="plt-mini">Your saved listings could not be loaded just now — try again in a moment.</p>'; });
+}
+function plsvRemove(id){
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/save',{method:'DELETE'})
+    .then(function(){ window.plSavedIds.delete(id); plsvLoad(); })
+    .catch(function(e){ plSetMsg('plSavedMsg',(e&&e.message)||'That listing could not be removed just now.',true); });
+}
+function pltToggleSave(){
+  if(!window.pltCurrentListing) return;
+  var id=pltCurrentListing.id;
+  var msg=document.getElementById('pltSaveMsg');
+  var saved=window.plSavedIds&&plSavedIds.has(id);
+  plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/save',{method:saved?'DELETE':'POST',body:saved?undefined:JSON.stringify({})})
+    .then(function(){
+      if(saved){ window.plSavedIds.delete(id); } else { window.plSavedIds.add(id); }
+      var btn=document.getElementById('pltSaveBtn');
+      if(btn){ btn.textContent=saved?'Save this listing':'Saved — tap to remove'; btn.className='btn small '+(saved?'dark':''); }
+      if(msg){ msg.textContent=saved?'Removed from your saved listings.':'Saved — find it any time under Menu → Saved listings.'; msg.className='plt-msg'; }
+      if(window.plsvLoad && document.getElementById('plSaved') && document.getElementById('plSaved').style.display!=='none') plsvLoad();
+    })
+    .catch(function(e){ if(msg){ msg.textContent=(e&&e.message)||'That did not go through — try again.'; msg.className='plt-msg err'; } });
+}
+/* --------------------------- My bookings -------------------------- */
+function plbkEnter(){ plbkLoad(); }
+function plbkHide(){ var s=document.getElementById('plBookings'); if(s) s.style.display='none'; }
+function plbkLoad(){
+  var box=document.getElementById('plBkList'); if(!box) return;
+  plApi('/bookings').then(function(j){
+    var items=(j&&j.data)||[];
+    if(!items.length){ box.innerHTML='<p class="plt-mini">No bookings yet — when you book a repair, it shows up here with its status.</p>'; return; }
+    box.innerHTML=items.map(function(b){
+      var ref=b.reference||b.referenceCode||'';
+      var what=b.appliance||b.applianceType||b.service||'Appliance service';
+      var when=b.preferredDate||b.appointmentDate||b.scheduledDate||b.createdAt||'';
+      var win=b.appointmentWindow||b.window||'';
+      var city=(b.customer&&b.customer.city)||b.serviceCity||b.city||'';
+      return '<div class="plbk-card"><h4>'+pltEsc(what)+'<span class="plbk-pill">'+pltEsc(b.status||'BOOKED')+'</span></h4>'
+        +'<p class="plt-mini">'+(ref?('Booking '+pltEsc(ref)+' · '):'')+(when?('Date: '+pltEsc(plrDate?plrDate(when):when)+(win?(' · '+pltEsc(win)):'')+' · '):'')+pltEsc(city)+'</p>'
+        +'<div class="plb-btnrow" style="margin-top:8px"><a class="btn small dark" href="https://topspeedserviceos.com/track">Track My Tech</a></div></div>';
+    }).join('');
+  }).catch(function(){ box.innerHTML='<p class="plt-mini">Your bookings could not be loaded just now — they also live in the customer app.</p>'; });
+}
+/* --------------------------- Notifications ------------------------ */
+function plntEnter(){ plNtLoad(); }
+function plntHide(){ var s=document.getElementById('plNotify'); if(s) s.style.display='none'; }
+var plNtPublicKey=null;
+function plNtState(text){ var st=document.getElementById('plNtState'); if(st) st.textContent=text; }
+function plNtSupported(){ return ('serviceWorker' in navigator)&&('PushManager' in window)&&('Notification' in window); }
+function plNtLoad(){
+  plApi('/app/push/status').then(function(j){
+    var d=(j&&j.data)||{};
+    plNtPublicKey=d.publicKey||null;
+    var on=document.getElementById('plNtOnBtn'), off=document.getElementById('plNtOffBtn');
+    if(!d.available){ plNtState('Push notifications are not switched on for Pepper Lists yet — nothing to set up here today.'); if(on) on.style.display='none'; if(off) off.style.display='none'; return; }
+    if(!plNtSupported()){ plNtState('This browser does not support push notifications. Your account has '+((d.subscriptions||0)===1?'1 device':((d.subscriptions||0)+' devices'))+' subscribed — manage alerts in the customer app on a supported device.'); if(on) on.style.display='none'; if(off) off.style.display='none'; return; }
+    navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription(); }).then(function(sub){
+      if(sub){ plNtState('Notifications are ON for this browser.'); if(on) on.style.display='none'; if(off) off.style.display=''; }
+      else { plNtState('Notifications are off for this browser — turn them on to get booking and message alerts here.'); if(on) on.style.display=''; if(off) off.style.display='none'; }
+    }).catch(function(){ plNtState('Notification state could not be read in this browser just now.'); });
+  }).catch(function(){ plNtState('Notification settings could not be loaded just now.'); });
+}
+function plNtB64ToUint8(b64){
+  var pad='='.repeat((4-(b64.length%4))%4);
+  var raw=atob((b64+pad).replace(/-/g,'+').replace(/_/g,'/'));
+  var out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++) out[i]=raw.charCodeAt(i);
+  return out;
+}
+function plNtSubscribe(){
+  if(!plNtSupported()||!plNtPublicKey){ plNtState('Push notifications are not available in this browser right now.'); return; }
+  plNtState('Turning on notifications…');
+  Notification.requestPermission().then(function(perm){
+    if(perm!=='granted'){ plNtState('The browser did not allow notifications — you can allow them in the browser site settings and try again.'); return null; }
+    return navigator.serviceWorker.register('/sw.js',{scope:'/'})
+      .then(function(){ return navigator.serviceWorker.ready; })
+      .then(function(reg){ return reg.pushManager.getSubscription().then(function(existing){ return existing||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:plNtB64ToUint8(plNtPublicKey)}); }); })
+      .then(function(sub){ return plApi('/app/push/subscribe',{method:'POST',body:JSON.stringify({subscription:sub.toJSON(),userAgent:navigator.userAgent})}); })
+      .then(function(){ plNtState('Notifications are ON for this browser.'); var on=document.getElementById('plNtOnBtn'),off=document.getElementById('plNtOffBtn'); if(on) on.style.display='none'; if(off) off.style.display=''; });
+  }).catch(function(){ plNtState('Notifications could not be turned on in this browser just now — try again, or use the customer app.'); });
+}
+function plNtUnsubscribe(){
+  plNtState('Turning off notifications…');
+  navigator.serviceWorker.ready.then(function(reg){ return reg.pushManager.getSubscription(); }).then(function(sub){
+    if(!sub){ plNtState('Notifications are already off for this browser.'); return null; }
+    var endpoint=sub.endpoint;
+    return sub.unsubscribe().then(function(){ return plApi('/app/push/unsubscribe',{method:'POST',body:JSON.stringify({endpoint:endpoint})}); })
+      .then(function(){ plNtState('Notifications are off for this browser.'); var on=document.getElementById('plNtOnBtn'),off=document.getElementById('plNtOffBtn'); if(on) on.style.display=''; if(off) off.style.display='none'; });
+  }).catch(function(){ plNtState('Notifications could not be turned off just now — try again in a moment.'); });
 }
 </script>
 <script src="/shared/page-slider.js" defer></script>

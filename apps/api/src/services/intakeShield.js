@@ -198,6 +198,18 @@ export async function consumeIntakeAttempt(family, ip) {
 //     discards. A siteverify TRANSPORT error fails OPEN with an
 //     error log — the Phase 1 rule: a public form must never die
 //     because a protection service hiccuped.
+//     CREDENTIAL errors are NOT bot signals (2026-11-21, Ramone's
+//     approval-free customer signup directive): when siteverify
+//     answers success:false with a secret-side error code
+//     (invalid-input-secret / missing-input-secret), Cloudflare is
+//     rejecting OUR stored secret, not the visitor's token — the
+//     2026-11-20 key entry put a wrong secret in the API env, and
+//     every genuine signup was silently discarded as a bot while
+//     the widget itself showed "Success!". That failure is logged
+//     distinctly (level error) and the submission rides the scored
+//     layers 4+5 exactly like a transport failure — it is never
+//     discarded on Turnstile grounds. A token-side failure
+//     (invalid-input-response and friends) keeps the discard.
 //
 // Signal set (layer 5) — evaluated on the name fields and the email
 // local part of the submission:
@@ -343,7 +355,12 @@ export function turnstileSiteKey() {
  * TURNSTILE_SITEVERIFY_URL overrides the endpoint (drills point it
  * at a local mock — production leaves it unset). A transport error
  * fails OPEN with an error log (Phase 1 discipline); an answered
- * success:false or a missing token does not pass.
+ * success:false or a missing token does not pass. One exception: a
+ * success:false whose error codes blame the SECRET
+ * (invalid-input-secret / missing-input-secret) is a server-side
+ * credential problem, not a bot verdict — it returns
+ * credentialError: true (and logs at error level) so the caller can
+ * fail soft instead of eating genuine signups.
  */
 export async function verifyTurnstileToken(token, remoteIp) {
   if (!turnstileConfigured()) return { enforced: false, ok: true };
@@ -362,7 +379,17 @@ export async function verifyTurnstileToken(token, remoteIp) {
       signal: AbortSignal.timeout(5000),
     });
     const data = await response.json().catch(() => null);
-    return { enforced: true, ok: data?.success === true };
+    if (data?.success === true) return { enforced: true, ok: true };
+    const errorCodes = Array.isArray(data?.['error-codes']) ? data['error-codes'] : [];
+    if (errorCodes.includes('invalid-input-secret') || errorCodes.includes('missing-input-secret')) {
+      console.error(JSON.stringify({
+        level: 'error',
+        message: 'turnstile siteverify rejected the server secret — TURNSTILE_SECRET_KEY does not match the widget; failing soft so genuine signups are not discarded',
+        errorCodes,
+      }));
+      return { enforced: true, ok: false, credentialError: true, errorCodes };
+    }
+    return { enforced: true, ok: false, errorCodes };
   } catch (error) {
     console.error(JSON.stringify({
       level: 'error',
@@ -381,7 +408,10 @@ export async function verifyTurnstileToken(token, remoteIp) {
  *   token ok + 0–1 signals                   → pass to Turnstile
  *   token missing + 0 signals                → pass to Turnstile
  *   Turnstile configured + missing/failed    → discard
- * Returns { discard, tokenState, signals, reasons }.
+ *   Turnstile secret rejected by Cloudflare  → NO discard (credential
+ *     error: the submission rides the scored verdict above; the
+ *     failure is logged at error level inside verifyTurnstileToken)
+ * Returns { discard, tokenState, signals, reasons, turnstileCredentialError }.
  */
 export async function evaluateFormShield(body, { names = [], email = null, ip = null, door = 'intake', enforceTurnstile = true } = {}) {
   const tokenState = inspectFormToken(body?.[FORM_TOKEN_FIELD]);
@@ -397,14 +427,21 @@ export async function evaluateFormShield(body, { names = [], email = null, ip = 
     discard = true;
     reasons.push('form-token-missing+gibberish');
   }
+  let turnstileCredentialError = false;
   if (!discard && enforceTurnstile) {
     const turnstile = await verifyTurnstileToken(body?.[TURNSTILE_TOKEN_FIELD], ip);
-    if (turnstile.enforced && !turnstile.ok) { discard = true; reasons.push('turnstile-failed'); }
+    if (turnstile.credentialError) {
+      // Cloudflare rejected OUR secret, not this visitor's token:
+      // never discard on Turnstile grounds (see layer 6 above). The
+      // scored verdict from layers 4+5 stands as-is.
+      turnstileCredentialError = true;
+      reasons.push('turnstile-credential-error');
+    } else if (turnstile.enforced && !turnstile.ok) { discard = true; reasons.push('turnstile-failed'); }
   }
   if (discard) {
     console.info(JSON.stringify({
       level: 'info', message: 'intake shield phase 2 discard', door, tokenState, signals, reasons,
     }));
   }
-  return { discard, tokenState, signals, reasons };
+  return { discard, tokenState, signals, reasons, turnstileCredentialError };
 }
