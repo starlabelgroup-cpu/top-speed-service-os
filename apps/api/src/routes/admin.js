@@ -580,7 +580,7 @@ router.post('/admin/tracking-numbers/:id', ...managerOnly, async (req, res) => {
  * GET /admin/conversions/export?format=json     → rows + state (JSON)
  *
  * Delivery state: manual CSV import today; direct API upload waits
- * on the owner's Google Ads developer token — the response headers
+ * on the Google Ads API connection — the response headers
  * and JSON meta say so plainly.
  */
 router.get('/admin/conversions/export', ...managerOnly, (req, res) => {

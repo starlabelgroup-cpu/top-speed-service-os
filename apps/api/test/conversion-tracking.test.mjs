@@ -18,7 +18,8 @@
  *   - the Oversight summary read model (GET
  *     /admin/conversions/summary): captured counts by source +
  *     campaign, lead/revenue readiness, and the honest export state
- *     (manual CSV import; API upload awaiting the developer token);
+ *     (manual CSV import; API upload awaiting the Google Ads API
+ *     connection);
  *   - the shared client capture script (apps/web/shared/
  *     attribution-capture.js) in a stubbed browser: first touch
  *     inside the 30-day window wins over a later click, an expired
@@ -229,7 +230,7 @@ async function main() {
   const csv1 = await apiText('/admin/conversions/export', { token: manager });
   check('export manager → 200', csv1.status, 200);
   check('export mode header', csv1.headers.get('x-conversion-export-mode'), 'MANUAL_CSV_IMPORT');
-  check('export api-upload header', csv1.headers.get('x-conversion-api-upload'), 'AWAITING_DEVELOPER_TOKEN');
+  check('export api-upload header', csv1.headers.get('x-conversion-api-upload'), 'AWAITING_API_CONNECTION');
   const lines = csv1.text.trim().split('\n');
   check('csv line 1 is the timezone Parameters line', lines[0], 'Parameters:TimeZone=America/New_York');
   check('csv header row', lines[1], 'Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency');
@@ -251,7 +252,7 @@ async function main() {
 
   const jsonExport = await api('/admin/conversions/export?format=json', { token: owner });
   check('json export mode', jsonExport.json?.data?.mode, 'MANUAL_CSV_IMPORT');
-  check('json export apiUpload state', jsonExport.json?.data?.apiUpload, 'AWAITING_DEVELOPER_TOKEN');
+  check('json export apiUpload state', jsonExport.json?.data?.apiUpload, 'AWAITING_API_CONNECTION');
   check('json export timezone', jsonExport.json?.data?.timezone, 'America/New_York');
 
   // ── Summary read model (seeded state) ─────────────────────────
@@ -268,7 +269,7 @@ async function main() {
   check('summary revenue count (seeded)', s1.revenueConversions?.count, 2);
   check('summary revenue total = 259.15 + 99.00', s1.revenueConversions?.totalValue, 358.15);
   check('summary exportState mode', s1.exportState?.mode, 'MANUAL_CSV_IMPORT');
-  check('summary exportState apiUpload', s1.exportState?.apiUpload, 'AWAITING_DEVELOPER_TOKEN');
+  check('summary exportState apiUpload', s1.exportState?.apiUpload, 'AWAITING_API_CONNECTION');
 
   // ── Live capture: guest intake stores everything verbatim ─────
   const full = await api('/speedy/book', {

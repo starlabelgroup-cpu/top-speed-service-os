@@ -456,7 +456,7 @@ function renderAdTracking(){
     html += rowsHtml(groups.map(function(g){ return [g.source + ' — ' + g.campaign, num(g.bookings) + ' bookings']; }));
   }
   if (!Number(t.captured)) html += '<p class="ov-note">No ad clicks captured yet — the first booking that arrives from a tagged ad link will appear here.</p>';
-  html += '<p class="ov-note">Conversion export: ' + esc(ex.mode === 'MANUAL_CSV_IMPORT' ? 'manual CSV import' : (ex.mode || '—')) + ' · ' + num(ex.googleRows) + ' Google rows / ' + num(ex.microsoftRows) + ' Microsoft rows ready · API upload ' + (ex.apiUpload === 'AWAITING_DEVELOPER_TOKEN' ? 'awaits the Google Ads developer token' : esc(ex.apiUpload || '—')) + '. Revenue rows come only from recorded payments — never estimated.</p>';
+  html += '<p class="ov-note">Conversion export: ' + esc(ex.mode === 'MANUAL_CSV_IMPORT' ? 'manual CSV import' : (ex.mode || '—')) + ' · ' + num(ex.googleRows) + ' Google rows / ' + num(ex.microsoftRows) + ' Microsoft rows ready · API upload ' + (ex.apiUpload === 'AWAITING_API_CONNECTION' ? 'awaits the Google Ads API connection' : esc(ex.apiUpload || '—')) + '. Revenue rows come only from recorded payments — never estimated.</p>';
   el('ovAdTracking').innerHTML = html;
 }
 
