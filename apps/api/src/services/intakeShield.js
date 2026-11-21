@@ -45,6 +45,10 @@ export const INVALID_PHONE_MESSAGE =
 export const INTAKE_RATE_LIMITS = {
   register: { limit: 10, windowMs: 60 * 60 * 1000 },
   connections: { limit: 10, windowMs: 60 * 60 * 1000 },
+  // CocoCane Express public orders (2026-11-21): same budget as the
+  // other intake doors, but its OWN family — coconut orders must never
+  // eat the lead-intake budget, nor leads the order budget.
+  cococaneOrders: { limit: 10, windowMs: 60 * 60 * 1000 },
   booking: { limit: 10, windowMs: 60 * 60 * 1000 },
   // Forgot-password is tighter: it sends real email, and its route
   // contract is an enumeration-safe generic 200 — when this limit is

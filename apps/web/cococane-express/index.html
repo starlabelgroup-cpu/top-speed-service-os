@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CocoCane Express — Top Speed Service OS</title>
+<meta name="description" content="CocoCane Express: the flex-warehouse console for CocoCane — one catalog, stock held across the warehouse, the juice shop and the market vehicle, order requests with transactional stock reservation. Staff console on the Top Speed Service OS.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--green:#0B3D2E;--green2:#0e4d39;--lime:#7FB069;--amber:#E8A13A;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.green{background:var(--green)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.btn:disabled{opacity:.55;cursor:wait}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:820px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Space Mono',monospace;font-size:22px;color:var(--navy)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{background:#fff;border:1px solid var(--line);color:var(--navy);font-weight:700;padding:10px 16px;border-radius:99px;cursor:pointer;font-family:inherit;font-size:14.5px}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.low td{background:#fff7e8}
+tr.out td{background:#fff4f4}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+.tag.amber{background:#fdf0d3;color:#7a5410}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px}
+form.grid .wide{grid-column:1/-1}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.ok{color:#0f7a3d;font-weight:700}
+.msg.err{color:var(--red);font-weight:700}
+.empty{color:var(--muted);padding:18px 4px;font-size:15px}
+.order{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px;background:#fff}
+.order .meta{color:var(--muted);font-size:13.5px;line-height:1.5}
+.order .lines{font-size:14px;margin-top:6px}
+.order .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:99px;font-weight:700;font-size:14.5px;display:none;z-index:50;max-width:92vw;text-align:center}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;font-size:14px;line-height:1.9}
+footer strong{color:#fff}
+footer a{color:#cfe0f5}
+footer .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px;max-width:1120px;margin:0 auto}
+</style>
+<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a href="/" style="color:#fff;font-weight:800;font-size:19px;">Top Speed Service OS</a>
+  <nav>
+    <a href="/cococane-site">CocoCane Storefront</a>
+    <a href="/crm">Top Speed CRM</a>
+    <a href="/book-os">Book OS</a>
+    <a href="/portal">Portal</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>CocoCane Express</h1>
+  <p class="sub">The flex-warehouse console for CocoCane: ONE catalog, stock held flexibly across the warehouse, the juice shop and the market vehicle — any location can fulfill any channel. Order requests reserve stock the moment they land; cancelling releases it, fulfilling consumes it. No payment is ever taken here — orders are requests, paid at pickup; wholesale is a quote flow. <span id="whoLine"></span></p>
+
+  <div class="panel" id="gatePanel">
+    <h2>Staff sign-in required</h2>
+    <p class="note">CocoCane Express is operations data — stock, orders and the wholesale desk are staff-only. Sign in with your Service OS staff account. Nothing here is visible signed out.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div id="svRow" style="display:none;"><label for="svCode">Speedy Verify access code</label><input id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></div>
+      <div id="svBtnRow" style="display:none;align-self:end;"><button class="btn" type="button" id="svVerifyBtn">Verify &amp; sign in</button></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;"><button class="btn ghost small" id="refreshBtn" type="button">Refresh</button><button class="btn ghost small" id="signOutBtn">Sign out</button></div>
+    <div class="stats">
+      <div class="stat"><small>Open orders</small><b id="stOpen">—</b></div>
+      <div class="stat"><small>Units on hand (all locations)</small><b id="stUnits">—</b></div>
+      <div class="stat"><small>Units reserved</small><b id="stReserved">—</b></div>
+      <div class="stat"><small>Low / out flags</small><b id="stLow">—</b></div>
+      <div class="stat"><small>Locations</small><b id="stLocs">—</b></div>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="orders" class="on">Orders</button>
+      <button data-tab="stock">Stock Board</button>
+      <button data-tab="move">Move Stock</button>
+      <button data-tab="catalog">Catalog &amp; Locations</button>
+    </div>
+
+    <section class="panel" id="tab-orders">
+      <h2>Order queue</h2>
+      <p class="note">Retail orders arrive already reserved at their fulfillment location. Wholesale requests arrive unreserved — build the lines, assign a location, then Confirm takes the reservation. Cancel releases stock back; Fulfilled consumes it.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0;">
+        <select id="ordFilterStatus" style="max-width:220px;"><option value="">All statuses</option><option>REQUESTED</option><option>CONFIRMED</option><option>READY</option><option>FULFILLED</option><option>COMPLETED</option><option>CANCELLED</option></select>
+        <select id="ordFilterChannel" style="max-width:220px;"><option value="">All channels</option><option>RETAIL</option><option>WHOLESALE</option></select>
+      </div>
+      <div id="orderList"></div>
+      <div class="msg" id="orderMsg"></div>
+      <h2 style="margin-top:24px;">New staff order</h2>
+      <p class="note">Phone and walk-up orders. With items and a location, stock reserves immediately.</p>
+      <form class="grid" id="newOrderForm">
+        <div><label>Channel</label><select id="noChannel"><option>RETAIL</option><option>WHOLESALE</option></select></div>
+        <div><label>Method</label><select id="noMethod"><option>PICKUP</option><option>DELIVERY</option></select></div>
+        <div><label>Customer name *</label><input id="noName" required maxlength="120"></div>
+        <div><label>Phone *</label><input id="noPhone" required maxlength="30"></div>
+        <div><label>Fulfillment location</label><select id="noLocation"></select></div>
+        <div><label>Delivery address (delivery only)</label><input id="noAddress" maxlength="300"></div>
+        <div class="wide"><label>Items — one per row: SKU, quantity</label><textarea id="noItems" rows="3" placeholder="COCONUT-WHOLE, 300"></textarea></div>
+        <div class="wide"><label>Notes</label><input id="noNotes" maxlength="1000"></div>
+        <div style="align-self:end;"><button class="btn green" type="submit">Create order</button></div>
+      </form>
+      <div class="msg" id="newOrderMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-stock" style="display:none;">
+      <h2>Stock by location</h2>
+      <p class="note">On hand, reserved by open orders, and available (on hand − reserved) at every location. A row flags when available hits zero, or at/below the product's staff-set low-stock mark.</p>
+      <div id="stockBoard"></div>
+      <h2 style="margin-top:24px;">Recent stock movements</h2>
+      <div id="movementList"></div>
+    </section>
+
+    <section class="panel" id="tab-move" style="display:none;">
+      <h2>Transfer stock between locations</h2>
+      <p class="note">Transfers move AVAILABLE stock only (reserved units stay put) and are recorded on both sides — the network total never changes in a transfer.</p>
+      <form class="grid" id="transferForm">
+        <div><label>Product *</label><select id="tfProduct" required></select></div>
+        <div><label>From *</label><select id="tfFrom" required></select></div>
+        <div><label>To *</label><select id="tfTo" required></select></div>
+        <div><label>Quantity *</label><input id="tfQty" type="number" min="1" step="1" required></div>
+        <div><label>Reason</label><input id="tfReason" maxlength="300" placeholder="Load the van for Saturday market"></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Transfer</button></div>
+      </form>
+      <div class="msg" id="transferMsg"></div>
+      <h2 style="margin-top:24px;">Adjust stock (count correction)</h2>
+      <p class="note">A signed adjustment to on-hand at one location, always with a reason. On-hand can never drop below what open orders have reserved.</p>
+      <form class="grid" id="adjustForm">
+        <div><label>Product *</label><select id="ajProduct" required></select></div>
+        <div><label>Location *</label><select id="ajLocation" required></select></div>
+        <div><label>Delta (+ add / − remove) *</label><input id="ajDelta" type="number" step="1" required></div>
+        <div><label>Reason *</label><input id="ajReason" maxlength="300" required placeholder="Delivery received / count correction / spoilage"></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Apply adjustment</button></div>
+      </form>
+      <div class="msg" id="adjustMsg"></div>
+    </section>
+
+    <section class="panel" id="tab-catalog" style="display:none;">
+      <h2>Catalog</h2>
+      <p class="note">One shared catalog for every channel. Prices are CocoCane's locked menu — a fixed price, or a by-size range for sized coconuts. Avocado stays OFF the catalog until it has a locked price.</p>
+      <div id="productList"></div>
+      <form class="grid" id="productForm">
+        <div><label>SKU *</label><input id="pfSku" required maxlength="48" placeholder="COCO-WATER-12OZ"></div>
+        <div><label>Name *</label><input id="pfName" required maxlength="160"></div>
+        <div><label>Category *</label><input id="pfCategory" required maxlength="80"></div>
+        <div><label>Unit</label><input id="pfUnit" maxlength="40" value="each"></div>
+        <div><label>Fixed price $ (or use range)</label><input id="pfPrice" type="number" min="0" step="0.01"></div>
+        <div><label>Range low $</label><input id="pfLow" type="number" min="0" step="0.01"></div>
+        <div><label>Range high $</label><input id="pfHigh" type="number" min="0" step="0.01"></div>
+        <div><label>Low-stock flag at (available)</label><input id="pfLowStock" type="number" min="0" step="1"></div>
+        <div class="wide"><label>Description</label><input id="pfDesc" maxlength="500"></div>
+        <div style="align-self:end;"><button class="btn green" type="submit">Add product</button></div>
+      </form>
+      <div class="msg" id="productMsg"></div>
+      <h2 style="margin-top:24px;">Stock locations</h2>
+      <p class="note">Locations are data — add a market stall, a second van, a partner shop. Codes are permanent once created.</p>
+      <div id="locationList"></div>
+      <form class="grid" id="locationForm">
+        <div><label>Code *</label><input id="lfCode" required maxlength="40" placeholder="MARKET-STALL-1"></div>
+        <div><label>Name *</label><input id="lfName" required maxlength="120"></div>
+        <div><label>Kind</label><select id="lfKind"><option>OTHER</option><option>WAREHOUSE</option><option>SHOP</option><option>VEHICLE</option></select></div>
+        <div style="align-self:end;"><button class="btn green" type="submit">Add location</button></div>
+      </form>
+      <div class="msg" id="locationMsg"></div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  <div class="cols">
+    <div>
+      <p><strong>Top Speed Appliance LLC</strong> · CocoCane Express — part of the Top Speed Service OS · <strong>844-460-7038</strong></p>
+      <p>CocoCane · Coconut + Sugarcane Juice Co. · Coconut Creek, Florida</p>
+    </div>
+    <div>
+      <h3 style="font-size:17px;margin-bottom:12px;color:#fff;">Workstation</h3>
+      <p>
+        <a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+        <a href="/book-os">Service Setters — Book OS</a><br>
+        <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+        <a href="/applianceman">ApplianceMan</a><br>
+        <a href="/finance">Finance</a><br>
+        <a href="/tech">Tech App — Service Providers</a><br>
+        <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+        <a href="/network">Service Network</a><br>
+        <a href="/parts">Parts Supply</a><br>
+        <a href="/advertiser">Advertiser Console</a><br>
+        <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+        <a href="/flywheel">Flywheel Advertising</a><br>
+        <a href="/marketing-os">Top Speed Local OS</a><br>
+        <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+        <a href="/media">Media OS</a><br>
+        <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+        <a href="/refer">Referrals &amp; Rewards</a><br>
+        <a href="/portal">Service OS Portal</a><br>
+        <a href="/academy">Training Academy</a><br>
+        <a href="/work-time-access">Work Time Access</a><br>
+        <a href="/navigator">Workstation — Team Consoles</a>
+      </p>
+    </div>
+  </div>
+</footer>
+<div id="toast"></div>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var board=null;
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function moneyRange(lo,hi){ return lo===hi?money(lo):money(lo)+'–'+money(hi); }
+function toast(m){ var t=document.getElementById('toast'); t.textContent=m; t.style.display='block'; setTimeout(function(){ t.style.display='none'; },3400); }
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function setMsg(id,ok,text){ var el=document.getElementById(id); if(!el) return; el.className='msg '+(ok?'ok':'err'); el.textContent=text; }
+function locName(id){ if(!board||!id) return '—'; for(var i=0;i<board.locations.length;i++){ if(board.locations[i].id===id) return board.locations[i].name; } return '—'; }
+function prodName(id){ if(!board) return id; for(var i=0;i<board.products.length;i++){ if(board.products[i].id===id) return board.products[i].name; } return id; }
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var email=document.getElementById('liEmail').value.trim(), pw=document.getElementById('liPw').value;
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){ svStart(j.challenge); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ setMsg('loginMsg',false,'Sign-in cancelled — the 2-step code is required to finish.'); }}); return; }
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ setMsg('loginMsg',false,'Sign-in failed: '+e.message); });
+});
+var svChallenge=null;
+function svShowMsg(text,isErr){ var m=document.getElementById('loginMsg'); if(!m) return; m.className='msg'+(isErr?' err':''); m.textContent=text; }
+function svStart(challenge){ svChallenge=challenge; document.getElementById('svRow').style.display=''; document.getElementById('svBtnRow').style.display=''; svShowMsg('Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.',false); var ci=document.getElementById('svCode'); if(ci) ci.focus(); }
+document.getElementById('svVerifyBtn').addEventListener('click',function(){
+  var code=document.getElementById('svCode').value.trim();
+  if(!svChallenge){ svShowMsg('Sign in with your password first, then enter your code.',true); return; }
+  if(!code){ svShowMsg('Enter your access code.',true); return; }
+  fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:svChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/cococane-express'); return; }
+      if(j && j.mustChangePassword){ svShowMsg('This account uses a temporary password — set your own password first (sign in on Book OS), then return here.',true); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ svChallenge=null; document.getElementById('svRow').style.display='none'; document.getElementById('svBtnRow').style.display='none'; TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ svShowMsg('Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      svChallenge=null;
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user);
+    })
+    .catch(function(e){ svShowMsg('Speedy Verify: '+e.message,true); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+document.getElementById('refreshBtn').addEventListener('click',function(){ loadAll(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return STAFF.indexOf(r)>-1; })){
+    setMsg('loginMsg',false,'That account is not a staff account — CocoCane Express is staff-only.');
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  document.getElementById('whoLine').textContent='Signed in as '+user.email+'.';
+  loadAll();
+}
+
+function loadAll(){
+  return apiFetch('/cococane/console').then(function(j){
+    board=j.data;
+    renderStats(); renderOrders(); renderStock(); renderMovements(); renderCatalog(); fillSelects();
+  }).catch(function(e){ toast('Load failed: '+e.message); });
+}
+
+function renderStats(){
+  var open=board.orders.filter(function(o){ return ['REQUESTED','CONFIRMED','READY'].indexOf(o.status)>-1; }).length;
+  var units=0,res=0,low=0;
+  board.products.forEach(function(p){ p.stock.forEach(function(s){ units+=s.onHand; res+=s.reserved; if(p.active&&(s.available===0||(p.lowStockAt!=null&&s.available<=p.lowStockAt))) low++; }); });
+  document.getElementById('stOpen').textContent=open;
+  document.getElementById('stUnits').textContent=units;
+  document.getElementById('stReserved').textContent=res;
+  document.getElementById('stLow').textContent=low;
+  document.getElementById('stLocs').textContent=board.locations.filter(function(l){ return l.active; }).length;
+}
+
+var NEXT={ REQUESTED:['CONFIRMED','CANCELLED'], CONFIRMED:['READY','CANCELLED'], READY:['FULFILLED','CANCELLED'], FULFILLED:['COMPLETED'], COMPLETED:[], CANCELLED:[] };
+function renderOrders(){
+  var fs=document.getElementById('ordFilterStatus').value, fc=document.getElementById('ordFilterChannel').value;
+  var list=board.orders.filter(function(o){ return (!fs||o.status===fs)&&(!fc||o.channel===fc); });
+  var el=document.getElementById('orderList');
+  if(!list.length){ el.innerHTML='<p class="empty">No orders match — new requests from the CocoCane page land here.</p>'; return; }
+  el.innerHTML=list.map(function(o){
+    var acts=(NEXT[o.status]||[]).map(function(s){ return '<button class="btn small '+(s==='CANCELLED'?'ghost':'blue')+'" data-act="'+s+'" data-id="'+o.id+'">'+s+'</button>'; }).join('');
+    var locOpts=board.locations.filter(function(l){ return l.active; }).map(function(l){ return '<option value="'+l.id+'"'+(o.fulfillmentLocationId===l.id?' selected':'')+'>'+esc(l.name)+'</option>'; }).join('');
+    var assign=(['REQUESTED','CONFIRMED','READY'].indexOf(o.status)>-1)?'<select data-locsel="'+o.id+'" style="max-width:210px;"><option value="">— assign location —</option>'+locOpts+'</select>':'';
+    var lines=o.lines.length?o.lines.map(function(l){ return esc(l.quantity+' x '+l.productName); }).join('<br>'):'<span style="color:var(--muted);">No lines yet — add them below for the wholesale quote path.</span>';
+    var addLines=(o.status==='REQUESTED'&&!o.stockReserved)?'<div style="margin-top:8px;"><textarea data-linesbox="'+o.id+'" rows="2" placeholder="COCONUT-WHOLE, 300 — one SKU, quantity per line"></textarea><div style="margin-top:6px;"><button class="btn small green" data-addlines="'+o.id+'">Add lines</button></div></div>':'';
+    return '<div class="order"><div><strong>'+esc(o.reference)+'</strong> <span class="tag">'+esc(o.channel)+'</span> <span class="tag '+(o.status==='CANCELLED'?'red':o.status==='COMPLETED'?'green':'amber')+'">'+esc(o.status)+'</span> <span class="tag">'+esc(o.method)+'</span>'+(o.stockReserved?' <span class="tag green">STOCK RESERVED</span>':'')+'</div>'+
+      '<div class="meta">'+esc(o.customerName)+' · '+esc(o.phone)+(o.email?' · '+esc(o.email):'')+'<br>Fulfillment: '+esc(locName(o.fulfillmentLocationId))+' · Total '+moneyRange(o.totalLowCents,o.totalHighCents)+
+      (o.method==='DELIVERY'&&o.deliveryAddress?'<br>Deliver to: '+esc(o.deliveryAddress):'')+(o.pickupDay||o.pickupTime?'<br>Pickup: '+esc((o.pickupDay||'')+' '+(o.pickupTime||'')):'')+(o.notes?'<br>Notes: '+esc(o.notes):'')+'</div>'+
+      '<div class="lines">'+lines+'</div>'+addLines+
+      '<div class="acts">'+acts+assign+'</div></div>';
+  }).join('');
+  el.querySelectorAll('button[data-act]').forEach(function(b){ b.addEventListener('click',function(){ orderStatus(b.getAttribute('data-id'),b.getAttribute('data-act')); }); });
+  el.querySelectorAll('select[data-locsel]').forEach(function(s){ s.addEventListener('change',function(){ if(s.value) assignLocation(s.getAttribute('data-locsel'),s.value); }); });
+  el.querySelectorAll('button[data-addlines]').forEach(function(b){ b.addEventListener('click',function(){ addLines(b.getAttribute('data-addlines')); }); });
+}
+function orderStatus(id,status){
+  apiFetch('/cococane/orders/'+id+'/status',{method:'POST',body:JSON.stringify({status:status})})
+    .then(function(){ toast('Order moved to '+status); return loadAll(); })
+    .catch(function(e){ setMsg('orderMsg',false,e.message); });
+}
+function assignLocation(id,locationId){
+  apiFetch('/cococane/orders/'+id+'/assign',{method:'POST',body:JSON.stringify({locationId:locationId})})
+    .then(function(){ toast('Fulfillment location updated'); return loadAll(); })
+    .catch(function(e){ setMsg('orderMsg',false,e.message); loadAll(); });
+}
+function parseSkuLines(text){
+  var bySku={}; board.products.forEach(function(p){ bySku[p.sku]=p; });
+  var items=[];
+  String(text||'').split('\n').forEach(function(row){
+    var parts=row.split(','); if(parts.length<2) return;
+    var sku=parts[0].trim().toUpperCase(), qty=parseInt(parts[1],10);
+    if(bySku[sku]&&qty>0) items.push({productId:bySku[sku].id,quantity:qty});
+  });
+  return items;
+}
+function addLines(id){
+  var box=document.querySelector('textarea[data-linesbox="'+id+'"]');
+  var items=parseSkuLines(box?box.value:'');
+  if(!items.length){ setMsg('orderMsg',false,'No valid SKU lines — use "SKU, quantity" per line.'); return; }
+  apiFetch('/cococane/orders/'+id+'/lines',{method:'POST',body:JSON.stringify({items:items})})
+    .then(function(){ toast('Lines added — Confirm now reserves the stock.'); return loadAll(); })
+    .catch(function(e){ setMsg('orderMsg',false,e.message); });
+}
+document.getElementById('ordFilterStatus').addEventListener('change',renderOrders);
+document.getElementById('ordFilterChannel').addEventListener('change',renderOrders);
+document.getElementById('newOrderForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var items=parseSkuLines(document.getElementById('noItems').value);
+  var body={ channel:document.getElementById('noChannel').value, method:document.getElementById('noMethod').value,
+    customerName:document.getElementById('noName').value.trim(), phone:document.getElementById('noPhone').value.trim(),
+    locationId:document.getElementById('noLocation').value||undefined, deliveryAddress:document.getElementById('noAddress').value.trim()||undefined,
+    notes:document.getElementById('noNotes').value.trim()||undefined, items:items };
+  apiFetch('/cococane/orders/staff',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){ setMsg('newOrderMsg',true,'Order '+j.data.reference+' created'+(j.data.stockReserved?' — stock reserved.':' — no reservation (no items/location).')); document.getElementById('newOrderForm').reset(); return loadAll(); })
+    .catch(function(e){ setMsg('newOrderMsg',false,e.message); });
+});
+
+function renderStock(){
+  var el=document.getElementById('stockBoard');
+  var head='<tr><th>Product</th>'+board.locations.map(function(l){ return '<th>'+esc(l.name)+'</th>'; }).join('')+'</tr>';
+  var rows=board.products.map(function(p){
+    var cells=p.stock.map(function(s){
+      var cls=(p.active&&(s.available===0&&(s.onHand>0||s.reserved>0)))?' class="out"':(p.active&&p.lowStockAt!=null&&s.available<=p.lowStockAt)?' class="low"':'';
+      return '<td'+cls+'>On hand <b>'+s.onHand+'</b> · Reserved '+s.reserved+' · <b>Available '+s.available+'</b></td>';
+    }).join('');
+    return '<tr><td><strong>'+esc(p.name)+'</strong><br><span style="color:var(--muted);font-size:12.5px;">'+esc(p.sku)+(p.active?'':' · INACTIVE')+'</span></td>'+cells+'</tr>';
+  }).join('');
+  el.innerHTML='<table>'+head+rows+'</table>';
+}
+function renderMovements(){
+  var el=document.getElementById('movementList');
+  if(!board.movements.length){ el.innerHTML='<p class="empty">No stock movements yet — adjustments, transfers, reservations and fulfilments record here.</p>'; return; }
+  el.innerHTML='<table><tr><th>When</th><th>Type</th><th>Product</th><th>Location</th><th>Change</th><th>Reason</th></tr>'+board.movements.map(function(m){
+    var change=[]; if(m.onHandDelta) change.push('on hand '+(m.onHandDelta>0?'+':'')+m.onHandDelta); if(m.reservedDelta) change.push('reserved '+(m.reservedDelta>0?'+':'')+m.reservedDelta);
+    return '<tr><td>'+esc(new Date(m.createdAt).toLocaleString())+'</td><td><span class="tag">'+esc(m.type)+'</span></td><td>'+esc(prodName(m.productId))+'</td><td>'+esc(locName(m.locationId))+'</td><td>'+esc(change.join(' · '))+'</td><td>'+esc(m.reason||'')+'</td></tr>';
+  }).join('')+'</table>';
+}
+function priceText(p){ if(p.priceCents!=null) return money(p.priceCents); if(p.priceLowCents!=null) return money(p.priceLowCents)+'–'+money(p.priceHighCents)+' by size'; return 'unpriced'; }
+function renderCatalog(){
+  document.getElementById('productList').innerHTML='<table><tr><th>SKU</th><th>Product</th><th>Price</th><th>Low-stock flag</th><th>Active</th><th></th></tr>'+board.products.map(function(p){
+    return '<tr><td>'+esc(p.sku)+'</td><td><strong>'+esc(p.name)+'</strong><br><span style="color:var(--muted);font-size:12.5px;">'+esc(p.category)+' · per '+esc(p.unit)+'</span></td><td>'+priceText(p)+'</td><td>'+(p.lowStockAt==null?'—':p.lowStockAt)+'</td><td>'+(p.active?'Yes':'No')+'</td><td><button class="btn small ghost" data-toggle-product="'+p.id+'" data-active="'+(p.active?1:0)+'">'+(p.active?'Deactivate':'Activate')+'</button></td></tr>';
+  }).join('')+'</table>';
+  document.querySelectorAll('button[data-toggle-product]').forEach(function(b){ b.addEventListener('click',function(){
+    apiFetch('/cococane/products/'+b.getAttribute('data-toggle-product'),{method:'PATCH',body:JSON.stringify({active:b.getAttribute('data-active')!=='1'})})
+      .then(function(){ return loadAll(); }).catch(function(e){ setMsg('productMsg',false,e.message); });
+  }); });
+  document.getElementById('locationList').innerHTML='<table><tr><th>Code</th><th>Name</th><th>Kind</th><th>Active</th><th></th></tr>'+board.locations.map(function(l){
+    return '<tr><td>'+esc(l.code)+'</td><td>'+esc(l.name)+'</td><td>'+esc(l.kind)+'</td><td>'+(l.active?'Yes':'No')+'</td><td><button class="btn small ghost" data-toggle-location="'+l.id+'" data-active="'+(l.active?1:0)+'">'+(l.active?'Deactivate':'Activate')+'</button></td></tr>';
+  }).join('')+'</table>';
+  document.querySelectorAll('button[data-toggle-location]').forEach(function(b){ b.addEventListener('click',function(){
+    apiFetch('/cococane/locations/'+b.getAttribute('data-toggle-location'),{method:'PATCH',body:JSON.stringify({active:b.getAttribute('data-active')!=='1'})})
+      .then(function(){ return loadAll(); }).catch(function(e){ setMsg('locationMsg',false,e.message); });
+  }); });
+}
+function fillSelects(){
+  var prods=board.products.filter(function(p){ return p.active; }).map(function(p){ return '<option value="'+p.id+'">'+esc(p.name)+'</option>'; }).join('');
+  var locs=board.locations.filter(function(l){ return l.active; }).map(function(l){ return '<option value="'+l.id+'">'+esc(l.name)+'</option>'; }).join('');
+  ['tfProduct','ajProduct'].forEach(function(id){ document.getElementById(id).innerHTML=prods; });
+  ['tfFrom','tfTo','ajLocation','noLocation'].forEach(function(id){ document.getElementById(id).innerHTML=locs; });
+}
+document.getElementById('transferForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={ productId:document.getElementById('tfProduct').value, fromLocationId:document.getElementById('tfFrom').value, toLocationId:document.getElementById('tfTo').value, quantity:parseInt(document.getElementById('tfQty').value,10), reason:document.getElementById('tfReason').value.trim()||undefined };
+  apiFetch('/cococane/stock/transfer',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('transferMsg',true,'Transfer recorded on both sides.'); document.getElementById('transferForm').reset(); return loadAll(); })
+    .catch(function(e){ setMsg('transferMsg',false,e.message); });
+});
+document.getElementById('adjustForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={ productId:document.getElementById('ajProduct').value, locationId:document.getElementById('ajLocation').value, delta:parseInt(document.getElementById('ajDelta').value,10), reason:document.getElementById('ajReason').value.trim() };
+  apiFetch('/cococane/stock/adjust',{method:'POST',body:JSON.stringify(body)})
+    .then(function(j){ setMsg('adjustMsg',true,'Adjusted — on hand now '+j.data.onHand+', available '+j.data.available+'.'); document.getElementById('adjustForm').reset(); return loadAll(); })
+    .catch(function(e){ setMsg('adjustMsg',false,e.message); });
+});
+function cents(id){ var v=document.getElementById(id).value; return v===''?null:Math.round(Number(v)*100); }
+document.getElementById('productForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={ sku:document.getElementById('pfSku').value.trim(), name:document.getElementById('pfName').value.trim(), category:document.getElementById('pfCategory').value.trim(), unit:document.getElementById('pfUnit').value.trim()||'each', description:document.getElementById('pfDesc').value.trim(), priceCents:cents('pfPrice'), priceLowCents:cents('pfLow'), priceHighCents:cents('pfHigh'), lowStockAt:document.getElementById('pfLowStock').value===''?null:parseInt(document.getElementById('pfLowStock').value,10) };
+  apiFetch('/cococane/products',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('productMsg',true,'Product added to the shared catalog.'); document.getElementById('productForm').reset(); return loadAll(); })
+    .catch(function(e){ setMsg('productMsg',false,e.message); });
+});
+document.getElementById('locationForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={ code:document.getElementById('lfCode').value.trim(), name:document.getElementById('lfName').value.trim(), kind:document.getElementById('lfKind').value };
+  apiFetch('/cococane/locations',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ setMsg('locationMsg',true,'Location added — stock starts at zero there.'); document.getElementById('locationForm').reset(); return loadAll(); })
+    .catch(function(e){ setMsg('locationMsg',false,e.message); });
+});
+document.getElementById('tabs').addEventListener('click',function(ev){
+  var b=ev.target.closest('button[data-tab]'); if(!b) return;
+  document.querySelectorAll('#tabs button').forEach(function(x){ x.classList.toggle('on',x===b); });
+  ['orders','stock','move','catalog'].forEach(function(t){ document.getElementById('tab-'+t).style.display=(t===b.getAttribute('data-tab'))?'block':'none'; });
+});
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} });
+}
+</script>
+<script src="/shared/pepper-chat.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

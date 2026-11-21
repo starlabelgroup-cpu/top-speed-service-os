@@ -45,6 +45,8 @@ h2{font-size:28px;color:var(--green);margin-bottom:10px}
 .dish .sizes label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14.5px;font-weight:600;color:var(--ink)}
 .dish .price{color:var(--green);font-weight:800;white-space:nowrap}
 .qty{width:74px;padding:8px 9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:15px}
+.avail{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}
+.avail.out{color:#a03a36}
 .note{background:#fdf3e0;border:1px solid #f0d48a;border-radius:12px;padding:14px 18px;font-size:14.5px;line-height:1.55;color:#6b5312;margin-top:22px}
 form.shop{background:#fff;border:1px solid var(--line);border-radius:14px;padding:26px;margin-top:22px}
 form.shop .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -92,54 +94,54 @@ footer a{color:#d8efe0}
 </div>
 
 <section id="order" style="padding-top:30px;">
-  <h2>Menu &amp; order-ahead pickup</h2>
-  <p class="sub">Set your quantities, tell us when you want to pick up, and send the order. We confirm by text or call with your pickup time — sized coconuts (whole and dry) are priced by size inside their range, so we confirm those exact prices on the same message. Pay at pickup.</p>
+  <h2>Menu &amp; order-ahead</h2>
+  <p class="sub">Set your quantities, choose pickup or delivery, and send the order — your items are <strong>reserved for you the moment it lands</strong>, from real stock at the shop, the warehouse or the market van (availability under each item is live). We confirm by text or call — sized coconuts (whole and dry) are priced by size inside their range, so we confirm those exact prices on the same message. Pay at pickup.</p>
 
   <div class="menu" id="menuGrid">
     <div class="dish">
       <h3>Bottled Coconut Water</h3>
       <p>One ingredient, poured straight from the coconut. Light, clean, naturally full of electrolytes.</p>
       <div class="sizes">
-        <label><span>12 oz bottle · <span class="price">$5</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — 12 oz bottle" data-price="5"></label>
-        <label><span>Half gallon · <span class="price">$15</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Half gallon" data-price="15"></label>
-        <label><span>Gallon · <span class="price">$30</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Gallon" data-price="30"></label>
+        <label><span>12 oz bottle · <span class="price">$5</span><span class="avail" data-avail="COCO-WATER-12OZ"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — 12 oz bottle" data-sku="COCO-WATER-12OZ" data-price="5"></label>
+        <label><span>Half gallon · <span class="price">$15</span><span class="avail" data-avail="COCO-WATER-HGAL"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Half gallon" data-sku="COCO-WATER-HGAL" data-price="15"></label>
+        <label><span>Gallon · <span class="price">$30</span><span class="avail" data-avail="COCO-WATER-GAL"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Coconut Water — Gallon" data-sku="COCO-WATER-GAL" data-price="30"></label>
       </div>
     </div>
     <div class="dish">
       <h3>Bottled Sugarcane Juice</h3>
       <p>Super cane, pressed fresh. Naturally sweet the way the cane made it — nothing added.</p>
       <div class="sizes">
-        <label><span>12 oz bottle · <span class="price">$5</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — 12 oz bottle" data-price="5"></label>
-        <label><span>Half gallon · <span class="price">$15</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Half gallon" data-price="15"></label>
-        <label><span>Gallon · <span class="price">$30</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Gallon" data-price="30"></label>
+        <label><span>12 oz bottle · <span class="price">$5</span><span class="avail" data-avail="CANE-JUICE-12OZ"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — 12 oz bottle" data-sku="CANE-JUICE-12OZ" data-price="5"></label>
+        <label><span>Half gallon · <span class="price">$15</span><span class="avail" data-avail="CANE-JUICE-HGAL"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Half gallon" data-sku="CANE-JUICE-HGAL" data-price="15"></label>
+        <label><span>Gallon · <span class="price">$30</span><span class="avail" data-avail="CANE-JUICE-GAL"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Bottled Sugarcane Juice — Gallon" data-sku="CANE-JUICE-GAL" data-price="30"></label>
       </div>
     </div>
     <div class="dish">
       <h3>Whole Coconut</h3>
       <p>Fresh whole coconuts, priced by size — drink it, jelly and all, or take it home to cook.</p>
       <div class="sizes">
-        <label><span>Each · <span class="price">$2–$4 by size</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Coconut (each, by size)" data-low="2" data-high="4"></label>
+        <label><span>Each · <span class="price">$2–$4 by size</span><span class="avail" data-avail="COCONUT-WHOLE"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Coconut (each, by size)" data-sku="COCONUT-WHOLE" data-low="2" data-high="4"></label>
       </div>
     </div>
     <div class="dish">
       <h3>Whole Dry Coconut</h3>
       <p>Mature dry coconuts for grating, milk and cooking — priced by size.</p>
       <div class="sizes">
-        <label><span>Each · <span class="price">$2–$3 by size</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Dry Coconut (each, by size)" data-low="2" data-high="3"></label>
+        <label><span>Each · <span class="price">$2–$3 by size</span><span class="avail" data-avail="COCONUT-DRY"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Whole Dry Coconut (each, by size)" data-sku="COCONUT-DRY" data-low="2" data-high="3"></label>
       </div>
     </div>
     <div class="dish">
       <h3>Sugarcane Sticks</h3>
       <p>Cut super cane sticks, ready to chew — sweet, fresh and fibrous, the old-fashioned way.</p>
       <div class="sizes">
-        <label><span>Per bundle · <span class="price">$7</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Sugarcane Sticks (per bundle)" data-price="7"></label>
+        <label><span>Per bundle · <span class="price">$7</span><span class="avail" data-avail="CANE-STICKS"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Sugarcane Sticks (per bundle)" data-sku="CANE-STICKS" data-price="7"></label>
       </div>
     </div>
     <div class="dish">
       <h3>Coconut Meat</h3>
       <p>Fresh coconut meat, ready to eat or blend — per container.</p>
       <div class="sizes">
-        <label><span>Per container · <span class="price">$7</span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Coconut Meat (per container)" data-price="7"></label>
+        <label><span>Per container · <span class="price">$7</span><span class="avail" data-avail="COCO-MEAT"></span></span><input class="qty" type="number" min="0" max="999" value="0" data-name="Coconut Meat (per container)" data-sku="COCO-MEAT" data-price="7"></label>
       </div>
     </div>
   </div>
@@ -151,6 +153,15 @@ footer a{color:#d8efe0}
       <div><label for="coName">Your name</label><input id="coName" type="text" autocomplete="name" required placeholder="Full name"></div>
       <div><label for="coPhone">Phone (for your confirmation)</label><input id="coPhone" type="tel" autocomplete="tel" required placeholder="(954) 000-0000"></div>
     </div>
+    <div class="row">
+      <div><label for="coMethod">Pickup or delivery</label>
+        <select id="coMethod">
+          <option value="PICKUP">Pickup</option>
+          <option value="DELIVERY">Delivery</option>
+        </select></div>
+      <div><label for="coLocation">Reserve my stock at</label><select id="coLocation"></select></div>
+    </div>
+    <div id="coAddressRow" style="display:none;"><label for="coAddress">Delivery address</label><input id="coAddress" type="text" autocomplete="street-address" placeholder="Street, city — where the order goes"></div>
     <div class="row">
       <div><label for="coDate">Pickup day</label><input id="coDate" type="date"></div>
       <div><label for="coTime">Pickup time preference</label>
@@ -223,6 +234,13 @@ footer a{color:#d8efe0}
 <script>
 (function () {
   var API = 'https://top-speed-service-os.vercel.app/api/v1/connections';
+  var COCO_API = 'https://top-speed-service-os.vercel.app/api/v1/cococane';
+  // CocoCane Express (2026-11-21): when the live catalog answers, the
+  // menu carries real per-location availability and the order RESERVES
+  // stock transactionally. If it does not answer, the page keeps
+  // working exactly as before on the connection intake below.
+  var catalog = null;
+  var bySku = {};
   function money(n) { return '$' + n.toFixed(2).replace(/\.00$/, ''); }
   function collectItems() {
     var lines = [], fixed = 0, low = 0, high = 0, count = 0;
@@ -254,6 +272,66 @@ footer a{color:#d8efe0}
   for (var i = 0; i < qtys.length; i++) qtys[i].addEventListener('input', refreshTotal);
   refreshTotal();
 
+  function collectOrderItems() {
+    var items = [];
+    var inputs = document.querySelectorAll('#menuGrid .qty');
+    for (var i = 0; i < inputs.length; i++) {
+      var q = parseInt(inputs[i].value, 10) || 0;
+      var sku = inputs[i].getAttribute('data-sku');
+      if (q > 0 && sku && bySku[sku]) items.push({ productId: bySku[sku].id, quantity: q });
+    }
+    return items;
+  }
+  function renderAvailability() {
+    if (!catalog) return;
+    var spans = document.querySelectorAll('[data-avail]');
+    for (var i = 0; i < spans.length; i++) {
+      var product = bySku[spans[i].getAttribute('data-avail')];
+      if (!product) continue;
+      if (!product.availableTotal) {
+        spans[i].textContent = 'Out of stock right now — call and we will tell you when it lands.';
+        spans[i].classList.add('out');
+        continue;
+      }
+      spans[i].classList.remove('out');
+      var parts = [];
+      for (var j = 0; j < product.stock.length; j++) {
+        var loc = null;
+        for (var k = 0; k < catalog.locations.length; k++) if (catalog.locations[k].id === product.stock[j].locationId) loc = catalog.locations[k];
+        if (loc && product.stock[j].available > 0) parts.push(loc.name + ': ' + product.stock[j].available);
+      }
+      spans[i].textContent = 'In stock — ' + parts.join(' · ');
+    }
+    var sel = document.getElementById('coLocation');
+    sel.innerHTML = '';
+    for (var m = 0; m < catalog.locations.length; m++) {
+      var opt = document.createElement('option');
+      opt.value = catalog.locations[m].code;
+      opt.textContent = catalog.locations[m].name;
+      sel.appendChild(opt);
+    }
+    syncLocationDefault();
+  }
+  function syncLocationDefault() {
+    var sel = document.getElementById('coLocation');
+    if (!sel.options.length) return;
+    var want = document.getElementById('coMethod').value === 'DELIVERY' ? 'WAREHOUSE' : 'SHOP';
+    for (var i = 0; i < sel.options.length; i++) if (sel.options[i].value === want) sel.selectedIndex = i;
+  }
+  document.getElementById('coMethod').addEventListener('change', function () {
+    document.getElementById('coAddressRow').style.display = this.value === 'DELIVERY' ? 'block' : 'none';
+    syncLocationDefault();
+  });
+  fetch(COCO_API + '/catalog')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (j) {
+      if (!j || !j.data || !j.data.products) return;
+      catalog = j.data;
+      for (var i = 0; i < catalog.products.length; i++) bySku[catalog.products[i].sku] = catalog.products[i];
+      renderAvailability();
+    })
+    .catch(function () { /* catalog unreachable — the classic flow below still works */ });
+
   function send(payload, okEl, errEl, btn, btnText, okHtml, onOk) {
     btn.disabled = true; btn.textContent = 'Sending…';
     errEl.classList.remove('show'); okEl.classList.remove('show');
@@ -276,10 +354,52 @@ footer a{color:#d8efe0}
   document.getElementById('orderForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var err = document.getElementById('coErr');
+    var okEl = document.getElementById('coOk');
     var t = collectItems();
     var name = val('coName'), phone = val('coPhone');
     if (!t.count) { err.textContent = 'Set a quantity on at least one menu item first — then send the order.'; err.classList.add('show'); return; }
     if (name.length < 2 || phone.replace(/\D/g, '').length < 7) { err.textContent = 'Please add your name and a phone number we can text or call to confirm your pickup.'; err.classList.add('show'); return; }
+    var method = val('coMethod') || 'PICKUP';
+    if (method === 'DELIVERY' && !val('coAddress')) { err.textContent = 'Add the delivery address so we know where the order goes.'; err.classList.add('show'); return; }
+    if (catalog) {
+      // CocoCane Express path: the order reserves real stock at the
+      // chosen location the moment it is accepted.
+      var btn = document.getElementById('coBtn');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      err.classList.remove('show'); okEl.classList.remove('show');
+      fetch(COCO_API + '/orders', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: 'RETAIL', method: method, name: name, phone: phone,
+          locationCode: val('coLocation') || undefined,
+          pickupDay: val('coDate') || undefined, pickupTime: val('coTime') || undefined,
+          deliveryAddress: method === 'DELIVERY' ? val('coAddress') : undefined,
+          notes: val('coNotes') || undefined,
+          companyWebsite: document.getElementById('coWebsite').value,
+          items: collectOrderItems()
+        })
+      })
+        .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+        .then(function (x) {
+          if (x.s !== 201) throw new Error((x.j && x.j.error) || 'send failed');
+          var ref = (x.j.data && x.j.data.reference) || '';
+          okEl.innerHTML = '<strong>Order received' + (ref ? ' — reference ' + ref : '') + ' and your items are reserved.</strong> We will text or call ' +
+            'to confirm your ' + (method === 'DELIVERY' ? 'delivery' : 'pickup time') + (t.low !== t.high ? ' and the exact price of your sized coconuts' : '') +
+            '. Pay at ' + (method === 'DELIVERY' ? 'delivery' : 'pickup') + ' — see you soon.';
+          okEl.classList.add('show');
+          okEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          document.getElementById('orderForm').reset();
+          document.getElementById('coAddressRow').style.display = 'none';
+          refreshTotal();
+          fetch(COCO_API + '/catalog').then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { if (j && j.data) { catalog = j.data; bySku = {}; for (var i = 0; i < catalog.products.length; i++) bySku[catalog.products[i].sku] = catalog.products[i]; renderAvailability(); } }).catch(function () {});
+        })
+        .catch(function (ex) {
+          err.textContent = (ex && ex.message && ex.message !== 'send failed') ? ex.message : 'Something went wrong sending that — please call 844-460-7038 and we will take it by phone.';
+          err.classList.add('show');
+        })
+        .finally(function () { btn.disabled = false; btn.textContent = 'Send my order'; });
+      return;
+    }
     var message = 'CocoCane order-ahead pickup. Items:\n' + t.lines.join('\n') +
       '\nTotal: ' + totalsText(t) + (t.low !== t.high ? ' (exact total for sized coconuts confirmed with the customer)' : '') +
       '\nPickup: ' + (val('coDate') || 'no day given') + ' · ' + val('coTime') +
@@ -308,6 +428,40 @@ footer a{color:#d8efe0}
       '\nDelivery area: ' + (val('wsWhere') || 'not stated') +
       (val('wsNotes') ? '\nNotes: ' + val('wsNotes') : '') +
       '\nDesk to reply with: availability, quote for the quantity, deposit details and a delivery date — in writing, against this reference.';
+    // CocoCane Express path: the request also opens a wholesale order
+    // in the Express console, where the desk builds the quote. Any
+    // failure falls back to the classic intake below — the request is
+    // a quote request either way, never a reservation.
+    var wsBtn = document.getElementById('wsBtn');
+    wsBtn.disabled = true; wsBtn.textContent = 'Sending…';
+    err.classList.remove('show');
+    fetch(COCO_API + '/orders', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        channel: 'WHOLESALE', name: name, phone: phone, email: email || undefined,
+        deliveryAddress: val('wsWhere') || undefined,
+        notes: message.slice(0, 1000),
+        companyWebsite: document.getElementById('wsWebsite').value
+      })
+    })
+      .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
+      .then(function (x) {
+        if (x.s !== 201) throw new Error('express unavailable');
+        var ref = (x.j.data && x.j.data.reference) || '';
+        var okEl = document.getElementById('wsOk');
+        okEl.innerHTML = '<strong>Wholesale request received' + (ref ? ' — your reference is ' + ref : '') + '.</strong> The wholesale desk will reply with availability, your quote for ' +
+          qty + ', deposit details and a delivery date — in writing. Quote your reference on any call and the desk can pull your request straight up.';
+        okEl.classList.add('show');
+        okEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('wsForm').reset();
+      })
+      .catch(function () {
+        sendWholesaleClassic(message, name, phone, email, qty);
+      })
+      .finally(function () { wsBtn.disabled = false; wsBtn.textContent = 'Send to the wholesale desk'; });
+  });
+  function sendWholesaleClassic(message, name, phone, email, qty) {
+    var err = document.getElementById('wsErr');
     send({ type: 'COCOCANE_WHOLESALE', name: name, phone: phone, email: email || undefined, source: 'cococane-site', companyWebsite: document.getElementById('wsWebsite').value, message: message },
       document.getElementById('wsOk'), err, document.getElementById('wsBtn'), 'Send to the wholesale desk',
       function (ref) {
@@ -315,7 +469,7 @@ footer a{color:#d8efe0}
           qty + ', deposit details and a delivery date — in writing. Quote your reference on any call and the desk can pull your request straight up.';
       },
       function () { document.getElementById('wsForm').reset(); });
-  });
+  }
 })();
 </script>
 <script src="/shared/page-slider.js" defer></script>

@@ -3350,4 +3350,188 @@ model GiftCardLedgerEntry {
   @@index([bookingId])
 }
 
+// ---------------------------------------------------------------------------
+// CocoCane Express — flex warehouse model (2026-11-21, Ramone's directive:
+// "Upgrade CocoCane Express with the CocoShells flex warehouse model").
+// ONE shared CocoCane catalog whose stock is held FLEXIBLY across
+// locations (warehouse / juice shop / market vehicle / staff-added) and
+// can fulfill any channel (retail pickup/delivery, wholesale). Order
+// requests RESERVE stock transactionally at a fulfillment location;
+// cancelling releases the reservation, fulfilling consumes it. Prices
+// are Ramone's LOCKED set only (seeded by services/cococaneCatalog.js —
+// drinks $5/$15/$30, whole coconuts $2–$4 by size, dry $2–$3 by size,
+// sugarcane sticks $7, coconut meat $7). Avocado has NO locked price and
+// is never catalogued. NO payment collection anywhere in this family —
+// orders are requests, pay at pickup, wholesale is a quote flow.
+// ---------------------------------------------------------------------------
+
+enum CocoCaneLocationKind {
+  WAREHOUSE
+  SHOP
+  VEHICLE
+  OTHER
+}
+
+enum CocoCaneOrderChannel {
+  RETAIL
+  WHOLESALE
+}
+
+enum CocoCaneOrderMethod {
+  PICKUP
+  DELIVERY
+}
+
+enum CocoCaneOrderStatus {
+  REQUESTED
+  CONFIRMED
+  READY
+  FULFILLED
+  COMPLETED
+  CANCELLED
+}
+
+enum CocoCaneMovementType {
+  ADJUSTMENT
+  TRANSFER_IN
+  TRANSFER_OUT
+  RESERVE
+  RELEASE
+  CONSUME
+}
+
+model CocoCaneProduct {
+  id            String   @id @default(uuid()) @db.Uuid
+  sku           String   @unique
+  name          String
+  description   String   @default("")
+  category      String
+  unit          String   @default("each")
+  // Exactly one pricing shape: a fixed locked price (priceCents) OR a
+  // locked by-size range (priceLowCents + priceHighCents). Both null is
+  // not a sellable product — the route layer refuses it.
+  priceCents    Int?
+  priceLowCents Int?
+  priceHighCents Int?
+  // Staff-set low-stock flag threshold (available <= lowStockAt flags
+  // the console board). Null = no flag except zero availability.
+  lowStockAt    Int?
+  active        Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stock     CocoCaneStock[]
+  lines     CocoCaneOrderLine[]
+  movements CocoCaneStockMovement[]
+
+  @@index([active, sortOrder])
+}
+
+model CocoCaneLocation {
+  id        String              @id @default(uuid()) @db.Uuid
+  code      String              @unique
+  name      String
+  kind      CocoCaneLocationKind @default(OTHER)
+  active    Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  stock     CocoCaneStock[]
+  movements CocoCaneStockMovement[]
+  orders    CocoCaneOrder[]
+
+  @@index([active])
+}
+
+model CocoCaneStock {
+  id         String @id @default(uuid()) @db.Uuid
+  productId  String @db.Uuid
+  locationId String @db.Uuid
+  onHand     Int    @default(0)
+  reserved   Int    @default(0)
+  updatedAt  DateTime @updatedAt
+
+  product  CocoCaneProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  location CocoCaneLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locationId])
+  @@index([locationId])
+}
+
+model CocoCaneStockMovement {
+  id            String              @id @default(uuid()) @db.Uuid
+  productId     String              @db.Uuid
+  locationId    String              @db.Uuid
+  type          CocoCaneMovementType
+  onHandDelta   Int                 @default(0)
+  reservedDelta Int                 @default(0)
+  reason        String?
+  orderId       String?             @db.Uuid
+  transferGroup String?
+  createdById   String?             @db.Uuid
+  createdAt     DateTime            @default(now())
+
+  product  CocoCaneProduct  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  location CocoCaneLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  order    CocoCaneOrder?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([productId, locationId, createdAt])
+  @@index([orderId])
+  @@index([transferGroup])
+}
+
+model CocoCaneOrder {
+  id                    String              @id @default(uuid()) @db.Uuid
+  reference             String              @unique
+  channel               CocoCaneOrderChannel @default(RETAIL)
+  method                CocoCaneOrderMethod  @default(PICKUP)
+  status                CocoCaneOrderStatus  @default(REQUESTED)
+  customerName          String
+  phone                 String
+  email                 String?
+  // The Connection record (COCOCANE_ORDER / COCOCANE_WHOLESALE) this
+  // order rides on, when one exists — the existing staff intake flows
+  // keep seeing every public request exactly as before.
+  connectionId          String?             @db.Uuid
+  fulfillmentLocationId String?             @db.Uuid
+  // True once this order's lines hold stock (reserved > 0 taken in its
+  // name). Wholesale requests start unreserved (quote flow); staff
+  // confirming them with lines + a location takes the reservation.
+  stockReserved         Boolean             @default(false)
+  pickupDay             String?
+  pickupTime            String?
+  deliveryAddress       String?
+  notes                 String?
+  totalLowCents         Int                 @default(0)
+  totalHighCents        Int                 @default(0)
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  fulfillmentLocation CocoCaneLocation? @relation(fields: [fulfillmentLocationId], references: [id], onDelete: SetNull)
+  lines               CocoCaneOrderLine[]
+  movements           CocoCaneStockMovement[]
+
+  @@index([status, createdAt])
+  @@index([channel, createdAt])
+}
+
+model CocoCaneOrderLine {
+  id               String @id @default(uuid()) @db.Uuid
+  orderId          String @db.Uuid
+  productId        String @db.Uuid
+  // Snapshot of the catalog name/pricing at order time — later catalog
+  // edits never rewrite an order's history.
+  productName      String
+  quantity         Int
+  unitPriceCents   Int?
+  unitPriceLowCents Int?
+  unitPriceHighCents Int?
+
+  order   CocoCaneOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product CocoCaneProduct @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
 
