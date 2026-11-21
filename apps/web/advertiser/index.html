@@ -390,7 +390,15 @@ fillSel('plService',SERVICES); fillSel('plCity',CITIES); fillSel('cpService',SER
 document.getElementById('edCategory').innerHTML=CATEGORIES.map(function(c){ return '<option value="'+c[0]+'">'+c[1]+'</option>'; }).join('');
 function esc(t){ return String(t==null?'':t).replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
 function api(path,opts){ opts=opts||{}; var h={'Content-Type':'application/json'}; if(tok()) h.Authorization='Bearer '+tok();
-  return fetch(API+path,Object.assign({},opts,{headers:h})).then(function(r){ return r.json().then(function(j){ return {status:r.status,j:j}; }); }); }
+  /* Opt-in request timeout (opts.timeoutMs): a stalled connection
+     must surface as an error the caller can explain, never as a
+     spinner that runs forever. */
+  var timeoutMs=opts.timeoutMs||0; delete opts.timeoutMs;
+  var hardT=null;
+  if(timeoutMs&&window.AbortController){ var ctrl=new AbortController(); opts.signal=ctrl.signal; hardT=setTimeout(function(){ ctrl.abort(); },timeoutMs); }
+  var req=fetch(API+path,Object.assign({},opts,{headers:h}));
+  if(hardT){ req=req.then(function(r){ clearTimeout(hardT); return r; },function(e){ clearTimeout(hardT); throw e; }); }
+  return req.then(function(r){ return r.json().then(function(j){ return {status:r.status,j:j}; }); }); }
 function msg(id,text,ok){ var el=document.getElementById(id); if(!el) return; el.textContent=text; el.className='g-msg '+(ok?'ok':'err'); }
 function fmtDate(s){ if(!s) return '—'; var d=new Date(s); if(isNaN(d)) return '—'; return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
 
@@ -429,14 +437,16 @@ function advSignup(){ var role=document.getElementById('suRole').value;
     phone:document.getElementById('suPhone').value.trim()||undefined,role:role,termsAcceptance:acceptance,companyWebsite:document.getElementById('suWebsite').value};
   if(!body.email||!body.password||!body.firstName) return msg('authMsg','First name, email, and a 10+ character password are required.');
   if(body.password.length<10) return msg('authMsg','Password must be at least 10 characters.');
-  api('/auth/register',{method:'POST',body:JSON.stringify(body)}).then(function(x){
+  var slowT=setTimeout(function(){ msg('authMsg','Still working — slow connection…',true); },10000);
+  api('/auth/register',{method:'POST',body:JSON.stringify(body),timeoutMs:25000}).then(function(x){
+    clearTimeout(slowT);
     if(x.status===201&&x.j.layer2Required&&x.j.challenge&&window.TSOSLayer2){ TSOSLayer2.run(x.j,{api:API,onSession:function(s){ setTok(s.token||s.accessToken); showConsole(s.user); },onCancel:function(){ msg('authMsg','Account created — sign in and complete the 2-step code to finish.'); }}); return; }
     if(x.status===201&&(x.j.token||x.j.accessToken)){ setTok(x.j.token||x.j.accessToken); showConsole(x.j.user); return; }
     if(x.status===201&&x.j.speedyVerify&&x.j.speedyVerify.status==='PENDING'){
       // Business account created, waiting on the office-issued code.
       if(x.j.speedyVerify.message) document.getElementById('verifyPendingText').textContent=x.j.speedyVerify.message+' Once you have your code, sign in here and enter it when asked. Nothing is wrong; every business account on the platform activates this way.';
       showAuthCard('verifyPendingCard'); return; }
-    var m=(x.j&&x.j.error)||'Could not create the account.'; var fe=x.j&&x.j.details&&x.j.details.fieldErrors; if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } } msg('authMsg',m); }); }
+    var m=(x.j&&x.j.error)||'Could not create the account.'; var fe=x.j&&x.j.details&&x.j.details.fieldErrors; if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } } msg('authMsg',m); }).catch(function(e){ clearTimeout(slowT); msg('authMsg',(e&&e.name==='AbortError')?'This is taking too long — your connection may have stalled. Check your signal and tap Create account again. If your account was created, sign in instead.':((e&&e.message)||'Could not create the account.')); }); }
 function advLogout(){ setTok(''); location.reload(); }
 
 function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Marketing Manager',DEVELOPER:'Developer',COMPANY_OWNER:'Owner',DISPATCHER:'Service Setter / Dispatcher',PLATFORM_ADMIN:'Platform Admin'}[r]||r; }

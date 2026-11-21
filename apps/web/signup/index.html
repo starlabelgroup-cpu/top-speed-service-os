@@ -116,7 +116,12 @@
     if(window.TSOSIntakeShield)Object.assign(payload,TSOSIntakeShield.fields());
     if(parts.length>1) payload.lastName=parts.slice(1).join(' ');
     var btn=$('createBtn'); btn.disabled=true; btn.textContent='Creating your account…';
-    fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    /* 25s hard timeout: a stalled connection must end in an honest
+       message, never in a button that spins forever. */
+    var slowT=setTimeout(function(){ btn.textContent='Still working — slow connection…'; },10000);
+    var ctrl=window.AbortController?new AbortController():null;
+    var hardT=ctrl?setTimeout(function(){ ctrl.abort(); },25000):null;
+    fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl?ctrl.signal:undefined})
     .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
     .then(function(x){
       if(x.ok&&x.j.speedyVerify&&x.j.speedyVerify.status==='PENDING'){
@@ -142,8 +147,11 @@
       localStorage.setItem('tsos_account_type',type);
       location.href=DEST[type];
     })
-    .catch(function(ex){ fail(ex.message); })
-    .finally(function(){ btn.disabled=!TSOSLegal.complete('su'); btn.textContent='Create Account'; });
+    .catch(function(ex){
+      if(ex&&ex.name==='AbortError') fail('This is taking too long — your connection may have stalled. Check your signal and tap Create Account again. If your account was created, use the Sign in link below instead.');
+      else fail(ex.message);
+    })
+    .finally(function(){ clearTimeout(slowT); if(hardT)clearTimeout(hardT); btn.disabled=!TSOSLegal.complete('su'); btn.textContent='Create Account'; });
   });
 })();
 </script>

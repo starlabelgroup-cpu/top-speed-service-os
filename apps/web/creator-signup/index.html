@@ -175,8 +175,13 @@ $('csForm').addEventListener('submit', function(e){
   var btn = $('csBtn');
   btn.disabled = true;
   setMsg('Sending your application…', true);
-  fetch(API + '/creator/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(function(r){ return r.json().then(function(j){ return { status: r.status, j: j }; }); })
+  /* 25s hard timeout: a stalled connection must end in an honest
+     message, never in a status line that spins forever. */
+  var slowT = setTimeout(function(){ setMsg('Still working — slow connection…', true); }, 10000);
+  var ctrl = window.AbortController ? new AbortController() : null;
+  var hardT = ctrl ? setTimeout(function(){ ctrl.abort(); }, 25000) : null;
+  fetch(API + '/creator/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: ctrl ? ctrl.signal : undefined })
+    .then(function(r){ clearTimeout(slowT); if (hardT) clearTimeout(hardT); return r.json().then(function(j){ return { status: r.status, j: j }; }); })
     .then(function(x){
       if (x.status === 201) {
         if (x.j && x.j.speedyVerify && x.j.speedyVerify.message) $('doneText').textContent = x.j.speedyVerify.message;
@@ -190,8 +195,10 @@ $('csForm').addEventListener('submit', function(e){
       setMsg(m);
       btn.disabled = false;
     })
-    .catch(function(){
-      setMsg('We could not reach the sign-up service just now — please try again in a moment, or call (844) 460-7038.');
+    .catch(function(err){
+      clearTimeout(slowT); if (hardT) clearTimeout(hardT);
+      if (err && err.name === 'AbortError') setMsg('This is taking too long — your connection may have stalled. Check your signal and tap Submit application again.');
+      else setMsg('We could not reach the sign-up service just now — please try again in a moment, or call (844) 460-7038.');
       btn.disabled = false;
     });
 });

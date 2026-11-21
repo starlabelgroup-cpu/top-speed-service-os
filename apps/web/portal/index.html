@@ -346,8 +346,15 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
      challenge, forced temp-password change, Speedy Verify challenge,
      and the register pending-activation state); anything else without
      a session token is an error carrying the API's details. */
-  function post(path,body){
-    return fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  function post(path,body,timeoutMs){
+    /* Optional timeout (register passes 25000): a stalled connection
+       must surface as an error, never as a spinner that runs
+       forever. Other callers keep the old unbounded wait. */
+    var ctrl=(timeoutMs&&window.AbortController)?new AbortController():null;
+    var hardT=ctrl?setTimeout(function(){ ctrl.abort(); },timeoutMs):null;
+    var req=fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl?ctrl.signal:undefined});
+    if(hardT){ req=req.then(function(r){ clearTimeout(hardT); return r; },function(e){ clearTimeout(hardT); throw e; }); }
+    return req
     .then(function(r){ return r.json().then(function(j){
       if(j&&j.layer2Required&&j.challenge) return j;
       if(j&&j.mustChangePassword&&j.changeToken) return j;
@@ -450,14 +457,16 @@ footer .brandline{display:flex;align-items:center;gap:9px;color:#fff;font-weight
     if(window.TSOSIntakeShield)Object.assign(body,TSOSIntakeShield.fields());
     if(last) body.lastName=last;
     var b=$('laUpBtn'); b.disabled=true; b.textContent='Creating…';
-    post('/auth/register',body).then(handleRegisterResult).catch(function(x){
+    var slowT=setTimeout(function(){ b.textContent='Still working — slow connection…'; },10000);
+    post('/auth/register',body,25000).then(handleRegisterResult).catch(function(x){
       var m=x.message;
-      if(x.code==='TERMS_ACCEPTANCE_REQUIRED'||x.status===422) m='Please review both legal documents, check both agreement boxes, and type your full name as your signature.';
+      if(x&&x.name==='AbortError') m='This is taking too long — your connection may have stalled. Check your signal and tap Create my account again. If your account was created, use Sign in instead.';
+      else if(x.code==='TERMS_ACCEPTANCE_REQUIRED'||x.status===422) m='Please review both legal documents, check both agreement boxes, and type your full name as your signature.';
       else if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.password) m='Password must be at least 10 characters.';
       else if(x.details&&x.details.fieldErrors&&x.details.fieldErrors.accountType) m='Please choose an account type: Homeowner, Business, or Property Manager.';
       else if(/exist|already/i.test(m)) m='That email already has an account — use Sign in instead.';
       fail(m);
-    }).finally(function(){ b.disabled=false; b.textContent='Create my account'; });
+    }).finally(function(){ clearTimeout(slowT); b.disabled=false; b.textContent='Create my account'; });
   });
 
   /* Already signed in: replace the forms with the signed-in panel.

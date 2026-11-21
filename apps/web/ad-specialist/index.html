@@ -234,8 +234,13 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
     payload.companyWebsite=document.getElementById('fWebsite').value;
     if(window.TSOSIntakeShield)Object.assign(payload,TSOSIntakeShield.fields());
     var btn=document.getElementById('applyBtn'); btn.disabled=true; btn.textContent='Sending…';
-    fetch('https://top-speed-service-os.vercel.app/api/v1/auth/ad-specialist/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-      .then(function(r){ return r.json().then(function(j){ return {s:r.status,j:j}; }).catch(function(){ return {s:r.status,j:{}}; }); })
+    /* 25s hard timeout: a stalled connection must end in an honest
+       message, never in a button that spins forever. */
+    var slowT=setTimeout(function(){ btn.textContent='Still working — slow connection…'; },10000);
+    var ctrl=window.AbortController?new AbortController():null;
+    var hardT=ctrl?setTimeout(function(){ ctrl.abort(); },25000):null;
+    fetch('https://top-speed-service-os.vercel.app/api/v1/auth/ad-specialist/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl?ctrl.signal:undefined})
+      .then(function(r){ clearTimeout(slowT); if(hardT)clearTimeout(hardT); return r.json().then(function(j){ return {s:r.status,j:j}; }).catch(function(){ return {s:r.status,j:{}}; }); })
       .then(function(x){
         btn.disabled=false; btn.textContent='Submit Application';
         if(x.s===409) return fail('An account with this email already exists. If it is yours, sign in at the Portal or use its Forgot password link.');
@@ -249,7 +254,7 @@ footer h4{color:#ffb3ab;font-size:12px;letter-spacing:.24em;margin-bottom:14px;f
         box.scrollIntoView({behavior:'smooth',block:'center'});
         document.getElementById('applyForm').reset();
       })
-      .catch(function(){ btn.disabled=false; btn.textContent='Submit Application'; fail('Something went wrong sending that.'); });
+      .catch(function(e){ clearTimeout(slowT); if(hardT)clearTimeout(hardT); btn.disabled=false; btn.textContent='Submit Application'; fail(e&&e.name==='AbortError'?'This is taking too long — your connection may have stalled. Check your signal and tap Submit Application again.':'Something went wrong sending that.'); });
   });
 })();
 </script>

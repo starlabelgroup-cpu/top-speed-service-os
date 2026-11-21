@@ -249,8 +249,14 @@ $('registerForm').addEventListener('submit', async (e) => {
   const acceptance = TSOSLegal.acceptance('gr');
   if (!acceptance) { err.textContent = 'Please review both legal documents, check both agreement boxes, and type your full name as your signature.'; err.style.display = 'block'; return; }
   btn.disabled = true;
+  /* 25s hard timeout: a stalled connection must end in an honest
+     message, never in a form that hangs forever. */
+  const btnText = btn.textContent;
+  const slowT = setTimeout(() => { btn.textContent = 'Still working — slow connection…'; }, 10000);
+  const ctrl = ('AbortController' in window) ? new AbortController() : null;
+  const hardT = ctrl ? setTimeout(() => ctrl.abort(), 25000) : null;
   try {
-    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value, termsAcceptance: acceptance, companyWebsite: $('rWebsite').value }, window.TSOSIntakeShield ? TSOSIntakeShield.fields() : {})) });
+    const res = await fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctrl ? ctrl.signal : undefined, body: JSON.stringify(Object.assign({ firstName: $('rFirst').value.trim(), lastName: $('rLast').value.trim(), email: $('rEmail').value.trim(), phone: $('rPhone').value.trim() || undefined, password: $('rPass').value, termsAcceptance: acceptance, companyWebsite: $('rWebsite').value }, window.TSOSIntakeShield ? TSOSIntakeShield.fields() : {})) });
     const body = await res.json();
     if (!res.ok || !body.token) {
       let m = body.error || 'Registration failed';
@@ -260,8 +266,8 @@ $('registerForm').addEventListener('submit', async (e) => {
     }
     try{if(window.TSOSVault&&body.user&&body.token)window.TSOSVault.add(body.user,body.token);}catch(e){} localStorage.setItem('tsos_token', body.token);
     await loadGarage();
-  } catch (ex) { err.textContent = ex.message; err.style.display = 'block'; }
-  finally { btn.disabled = false; }
+  } catch (ex) { err.textContent = (ex && ex.name === 'AbortError') ? 'This is taking too long — your connection may have stalled. Check your signal and tap Create my account again. If your account was created, sign in instead.' : ex.message; err.style.display = 'block'; }
+  finally { clearTimeout(slowT); if (hardT) clearTimeout(hardT); btn.textContent = btnText; btn.disabled = false; }
 });
 
 $('toggleMode').addEventListener('click', (e) => {

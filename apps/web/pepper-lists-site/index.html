@@ -1322,7 +1322,16 @@ function plClearTok(){ try{ localStorage.removeItem('tsos_token'); localStorage.
 function plApi(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
   if(plTok()) opts.headers['Authorization']='Bearer '+plTok();
-  return fetch(PL_API+path,opts).then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; e.details=j.details; e.status=r.status; throw e; } return j; }); });
+  /* Opt-in request timeout (opts.timeoutMs): a stalled connection
+     must surface as an error the caller can explain, never as a
+     spinner that runs forever. Callers that move photos or other
+     large payloads do not pass it and keep the old unbounded wait. */
+  var timeoutMs=opts.timeoutMs||0; delete opts.timeoutMs;
+  var hardT=null;
+  if(timeoutMs&&window.AbortController){ var ctrl=new AbortController(); opts.signal=ctrl.signal; hardT=setTimeout(function(){ ctrl.abort(); },timeoutMs); }
+  var req=fetch(PL_API+path,opts);
+  if(hardT){ req=req.then(function(r){ clearTimeout(hardT); return r; },function(e){ clearTimeout(hardT); throw e; }); }
+  return req.then(function(r){ return r.json().then(function(j){ if(!r.ok){ var e=new Error(j.error||('status '+r.status)); e.code=j.code; e.details=j.details; e.status=r.status; throw e; } return j; }); });
 }
 function plMsg(id,text,isErr){ var m=document.getElementById(id); if(!m) return; m.textContent=text||''; m.className='plg-msg'+(isErr?' err':''); }
 /* First-touch ad attribution (fbclid / gclid / msclkid + UTM),
@@ -1387,8 +1396,10 @@ function plRegister(){
   };
   if(window.TSOSIntakeShield)Object.assign(body,TSOSIntakeShield.fields());
   plMsg('plUpMsg','Creating your account…');
-  plApi('/auth/register',{method:'POST',body:JSON.stringify(body)})
+  var slowT=setTimeout(function(){ plMsg('plUpMsg','Still working — slow connection…'); },10000);
+  plApi('/auth/register',{method:'POST',body:JSON.stringify(body),timeoutMs:25000})
     .then(function(j){
+      clearTimeout(slowT);
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){
         TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plJustRegistered=true; plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plUpMsg','Account created — sign in and complete the 2-step code to finish.',true); }});
         return;
@@ -1405,10 +1416,19 @@ function plRegister(){
       }
       plJustRegistered=true; plCapture(j); plBoot();
     }).catch(function(e){
-      var m=e.message||'Sign-up did not go through.';
-      var fe=e.details&&e.details.fieldErrors;
-      if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } }
-      if(/exist|already/i.test(m)) m='That email already has a Top Speed account — use the Sign in tab above instead.';
+      clearTimeout(slowT);
+      var m;
+      if(e&&e.name==='AbortError'){
+        /* The 25s timeout fired: the request stalled (dead signal,
+           hung connection). Say so plainly and give the two ways
+           forward — retry, or sign in if the account actually landed. */
+        m='This is taking too long — your connection may have stalled. Check your signal and tap Create account again. If your account was created, use the Sign in tab instead.';
+      } else {
+        m=e.message||'Sign-up did not go through.';
+        var fe=e.details&&e.details.fieldErrors;
+        if(fe){ if(fe.password) m='Password must be at least 10 characters.'; else { var k=Object.keys(fe)[0]; if(k&&fe[k][0]) m=fe[k][0]; } }
+        if(/exist|already/i.test(m)) m='That email already has a Top Speed account — use the Sign in tab above instead.';
+      }
       plMsg('plUpMsg',m,true);
     });
 }

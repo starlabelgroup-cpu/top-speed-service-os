@@ -1546,15 +1546,21 @@ function confirmBooking(){
   var acceptance=window.TSOSLegal?TSOSLegal.acceptance('cd'):null;
   if(!acceptance){ setBtn('Confirm booking',true); return toast('Please review both legal documents, check both agreement boxes, and type your full name as your signature.'); }
   var parts=name.split(' ');
-  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance,companyWebsite:document.getElementById('cdWebsite').value},window.TSOSIntakeShield?TSOSIntakeShield.fields():{}))})
-    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
+  /* 25s hard timeout on the account-creation leg: a stalled
+     connection must end in an honest message, never in a Confirm
+     button that spins forever. */
+  var regCtrl=window.AbortController?new AbortController():null;
+  var regHard=regCtrl?setTimeout(function(){ regCtrl.abort(); },25000):null;
+  var regSlow=setTimeout(function(){ setBtn('Still working — slow connection…',false); },10000);
+  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},signal:regCtrl?regCtrl.signal:undefined,body:JSON.stringify(Object.assign({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance,companyWebsite:document.getElementById('cdWebsite').value},window.TSOSIntakeShield?TSOSIntakeShield.fields():{}))})
+    .then(function(r){ clearTimeout(regSlow); if(regHard)clearTimeout(regHard); return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
     .then(function(j){
       if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
         TSOSLayer2.run(j,{onSession:function(s){ setCustSession(s); payload.customer.email=email; doBook(); },onCancel:function(){ setBtn('Confirm booking',true); toast('Account created — sign in above and complete the 2-step code, then confirm your booking.'); }});
         return;
       }
       setCustSession(j); payload.customer.email=email; doBook(); })
-    .catch(function(e){ setBtn('Confirm booking',true); toast(e.message); });
+    .catch(function(e){ clearTimeout(regSlow); if(regHard)clearTimeout(regHard); setBtn('Confirm booking',true); toast(e&&e.name==='AbortError'?'This is taking too long — your connection may have stalled. Check your signal and try again. If your account was created, sign in above, then confirm your booking.':e.message); });
 }
 /* Auto-resume a customer session */
 if(cTok()){

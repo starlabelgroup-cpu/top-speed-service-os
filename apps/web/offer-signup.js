@@ -34,8 +34,15 @@
     opts = opts || {};
     var headers = { 'Content-Type': 'application/json' };
     if (opts.auth) headers.Authorization = 'Bearer ' + token();
-    return fetch(API + path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined })
-      .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); });
+    /* Opt-in request timeout (opts.timeoutMs): a stalled connection
+       must surface as an error the caller can explain, never as a
+       spinner that runs forever. Callers that do not pass it keep
+       the old unbounded wait. */
+    var ctrl = (opts.timeoutMs && window.AbortController) ? new AbortController() : null;
+    var hardT = ctrl ? setTimeout(function () { ctrl.abort(); }, opts.timeoutMs) : null;
+    var req = fetch(API + path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined, signal: ctrl ? ctrl.signal : undefined });
+    if (hardT) req = req.then(function (r) { clearTimeout(hardT); return r; }, function (e) { clearTimeout(hardT); throw e; });
+    return req.then(function (r) { return r.json().then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); });
   }
 
   /* ---------------- profile block (shared by both states) ---------------- */
@@ -147,7 +154,8 @@
       if (OFFER.slug) payload.offerSlug = OFFER.slug;
       if (window.TSOSIntakeShield) Object.assign(payload, TSOSIntakeShield.fields());
       var btn = el('ofCreate'); btn.disabled = true; btn.textContent = 'Creating your account…';
-      api('/auth/register', { method: 'POST', body: payload }).then(function (x) {
+      var slowT = setTimeout(function () { btn.textContent = 'Still working — slow connection…'; }, 10000);
+      api('/auth/register', { method: 'POST', body: payload, timeoutMs: 25000 }).then(function (x) {
         if (!x.ok || !x.j.token) {
           var m = (x.j && x.j.error) || 'Sign-up did not go through.';
           var fe = x.j && x.j.details && x.j.details.fieldErrors;
@@ -162,8 +170,10 @@
         var phone2 = el('ofPhone2'); if (phone2) phone2.value = phone;
         showDone(email);
       }).catch(function (ex) {
-        fail(ex.message);
+        if (ex && ex.name === 'AbortError') fail('This is taking too long — your connection may have stalled. Check your signal and tap Create Account again. If your account was created, sign in from the app instead.');
+        else fail(ex.message);
       }).finally(function () {
+        clearTimeout(slowT);
         btn.disabled = !TSOSLegal.complete('of'); btn.textContent = 'Create Account';
       });
     });
