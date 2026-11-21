@@ -7,6 +7,7 @@ import { authenticate, optionalAuthenticate, requireRole } from '../middleware/a
 import { MARKETING_ROLES, PUBLIC_SELF_SERVE_ROLES, ROLES } from '../config/security.js';
 import { DUMMY_HASH_PROMISE, hashPassword, verifyPassword } from '../services/passwords.js';
 import { recordSignInSession } from '../services/sessions.js';
+import { createSessionHandoff } from '../services/sessionHandoff.js';
 import { notifyAccountCreated } from '../services/notifications.js';
 import { OFFER_SIGNUP_TYPES, appPathForAudience, getOffer, OFFERS, publicOffer } from '../config/offers.js';
 import { consumeEmailVerification, emailVerificationState, issueEmailVerification } from '../services/emailVerification.js';
@@ -1433,6 +1434,29 @@ function googleNext(raw) {
   return GOOGLE_NEXT_WHITELIST.includes(raw) ? raw : '/app';
 }
 
+// Appliance Connect app return (2026-11-21): the native app opens
+// /auth/google in an in-app browser (openAuthSessionAsync) and the
+// flow has to land back on the app's custom-scheme redirect. The app
+// asks with ?target=app on the start route and the choice rides the
+// OAuth state. The return URL is a FIXED constant — never built from
+// request input — so this door cannot be turned into an open
+// redirect. Outcomes mirror the web paths below, with one upgrade:
+// success carries a one-time session handoff code (services/
+// sessionHandoff.js — hash-only, single-use, 60 seconds) instead of
+// a raw session token, and the app exchanges it at
+// POST /auth/handoff/redeem for the same session the direct token
+// would have opened. Layer 2 rides as its challenge token (plus the
+// channel hints the app's code step renders), and the Speedy Verify
+// gate keeps the honest explanations it already returns on web.
+const GOOGLE_APP_RETURN_URL = 'applianceconnect://auth/google';
+function googleState(raw) {
+  let parsed = {};
+  try {
+    parsed = JSON.parse(Buffer.from(String(raw || ''), 'base64url').toString('utf8'));
+  } catch { /* default state */ }
+  return { next: googleNext(parsed.next), app: parsed.app === true };
+}
+
 router.get('/auth/google/status', (req, res) =>
   res.json({ configured: Boolean(googleClientId() && googleClientSecret()) })
 );
@@ -1441,7 +1465,10 @@ router.get('/auth/google', (req, res) => {
   if (!googleClientId() || !googleClientSecret()) {
     return res.status(501).json({ error: 'Google sign-in is not connected yet' });
   }
-  const state = Buffer.from(JSON.stringify({ next: googleNext(req.query.next) })).toString('base64url');
+  const state = Buffer.from(JSON.stringify({
+    next: googleNext(req.query.next),
+    ...(req.query.target === 'app' ? { app: true } : {}),
+  })).toString('base64url');
   const params = new URLSearchParams({
     client_id: googleClientId(),
     redirect_uri: googleRedirectUri(),
@@ -1459,12 +1486,30 @@ router.get('/auth/google/callback', async (req, res, next) => {
     if (!googleClientId() || !googleClientSecret()) {
       return res.status(501).json({ error: 'Google sign-in is not connected yet' });
     }
+    const state = googleState(req.query.state);
+    const nextPath = state.next;
+    const appReturn = state.app;
+    // One destination builder for every outcome: web surfaces keep
+    // their exact URLs (web origin + whitelisted path); the app
+    // target lands on its fixed custom-scheme return instead.
+    const destFor = (params) => {
+      const dest = new URL(appReturn ? GOOGLE_APP_RETURN_URL : webOrigin() + nextPath);
+      for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== '') dest.searchParams.set(key, String(value));
+      }
+      return dest.toString();
+    };
     const code = req.query.code;
-    if (!code) return res.status(400).json({ error: 'Missing authorization code' });
-    let nextPath = '/app';
-    try {
-      nextPath = googleNext(JSON.parse(Buffer.from(String(req.query.state || ''), 'base64url').toString('utf8')).next);
-    } catch { /* default next */ }
+    if (!code) {
+      // Google returns no code when the person backs out at the
+      // consent screen (it sends its own error parameter instead).
+      // Web callers keep the plain 400; the app gets its return with
+      // the honest explanation so its browser session can close.
+      if (appReturn) {
+        return res.redirect(destFor({ authError: 'Google sign-in was not completed — no authorization came back from Google.' }));
+      }
+      return res.status(400).json({ error: 'Missing authorization code' });
+    }
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1478,6 +1523,9 @@ router.get('/auth/google/callback', async (req, res, next) => {
     });
     const tokenJson = await tokenRes.json().catch(() => ({}));
     if (!tokenRes.ok || !tokenJson.access_token) {
+      if (appReturn) {
+        return res.redirect(destFor({ authError: 'Google sign-in failed — Google did not complete the sign-in. Please try again.' }));
+      }
       return res.status(502).json({ error: 'Google sign-in failed at token exchange' });
     }
     const infoRes = await fetch('https://openidconnect.googleapis.com/v1/userinfo', {
@@ -1485,6 +1533,9 @@ router.get('/auth/google/callback', async (req, res, next) => {
     });
     const info = await infoRes.json().catch(() => ({}));
     if (!infoRes.ok || !info.email || info.email_verified === false) {
+      if (appReturn) {
+        return res.redirect(destFor({ authError: 'Google account email not verified — Google sign-in needs a Google account with a verified email.' }));
+      }
       return res.status(502).json({ error: 'Google account email not verified' });
     }
     const email = String(info.email).trim().toLowerCase();
@@ -1528,20 +1579,47 @@ router.get('/auth/google/callback', async (req, res, next) => {
     // rides the redirect as a challenge the app completes.
     const gate = await speedyLoginGate(user);
     if (gate.action === 'deny') {
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('authError', 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.');
-      return res.redirect(dest.toString());
+      return res.redirect(destFor({ authError: 'Speedy Verify required — no access code has been issued for this account yet. Contact the office.' }));
     }
     if (gate.action === 'challenge') {
-      const dest = new URL(webOrigin() + nextPath);
-      dest.searchParams.set('authError', 'This account uses Speedy Verify — sign in with your email and password to complete the access-code step.');
-      return res.redirect(dest.toString());
+      return res.redirect(destFor({ authError: 'This account uses Speedy Verify — sign in with your email and password to complete the access-code step.' }));
     }
     if (layer2Applies(user)) {
       const layer2 = await beginLayer2Challenge(user, { req });
+      if (appReturn) {
+        // The app's code step renders the same challenge view the
+        // password door returns: challenge token, channel hints, and
+        // the account email for its copy. The web redirect below is
+        // unchanged (challenge token only).
+        return res.redirect(destFor({
+          layer2: layer2.challenge,
+          // challengeView channels are {channel, destination,
+          // available} objects; the redirect carries the names of
+          // the channels that can actually receive a code.
+          channels: (layer2.channels || [])
+            .map((c) => (typeof c === 'string' ? c : c && c.available !== false ? c.channel : null))
+            .filter(Boolean)
+            .join(','),
+          preferredChannel: layer2.preferredChannel || undefined,
+          email,
+        }));
+      }
       const dest = new URL(webOrigin() + nextPath);
       dest.searchParams.set('layer2', layer2.challenge);
       return res.redirect(dest.toString());
+    }
+    if (appReturn) {
+      // The session reaches the app through the handoff, never as a
+      // raw token in the redirect: a one-time 60-second code the app
+      // exchanges at POST /auth/handoff/redeem. The Speedy Verify
+      // gate above has passed, which means it does not apply to this
+      // account (an account it covers stops at deny/challenge), so
+      // the redeemed session needs no sv claim — exactly the claims
+      // of the direct token issued below (recordSignInSession with
+      // no speedyVerified). The redemption records the device
+      // session from the app's own request, like every handoff.
+      const handoff = await createSessionHandoff(user.id, { sv: false });
+      return res.redirect(destFor({ hc: handoff.code }));
     }
     const issued = await recordSignInSession(req, user, { alertOnNewDevice: true });
     const dest = new URL(webOrigin() + nextPath);
