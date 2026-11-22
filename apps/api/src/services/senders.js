@@ -284,6 +284,23 @@ async function sendSms(entry) {
     if (body?.code === 21211 || body?.code === 21401) providerError.validation = true;
     throw providerError;
   }
+  // Twilio can accept the API call (HTTP 201) yet report the message
+  // itself as failed/undeliverable in the create response — e.g.
+  // error_code 30032 when a toll-free number's messaging verification
+  // is rejected and the message is blocked. That is a provider-side
+  // rejection, not a send: surface it (validation = false, so the
+  // chain may still try the fallback provider) instead of letting
+  // callers report a code as "sent" that never left Twilio. Async
+  // delivery failures after a genuinely queued message cannot be
+  // known here — flows that send codes therefore always keep a
+  // second channel one tap away.
+  if (body?.error_code || body?.status === 'failed' || body?.status === 'undelivered') {
+    const providerError = new Error(body?.error_message || `Twilio message ${body?.status || 'rejected'}${body?.error_code ? ` (error ${body.error_code})` : ''}`);
+    providerError.httpStatus = 422;
+    providerError.providerCode = body?.error_code || null;
+    providerError.validation = false;
+    throw providerError;
+  }
   return body.sid || null;
 }
 

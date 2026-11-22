@@ -130,6 +130,10 @@
     s.el.querySelector('.l2o-body').innerHTML =
       '<p>We sent a 6-digit code by ' + via + (sent.destination ? ' to <b>' + esc(sent.destination) + '</b>' : '') +
       '. Enter it here — it expires in 10 minutes.</p>' +
+      (sent.channel === 'SMS'
+        ? '<p class="l2o-note">Text not arriving? Carriers can block a text after it leaves us, and we cannot see that from here. ' +
+          '<button type="button" class="l2o-link l2o-emailinstead">Email me the code instead</button> — the email code finishes your sign-in the same way, right now.</p>'
+        : '') +
       '<form class="l2o-form"><input class="l2o-code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="••••••" aria-label="6-digit code">' +
       '<button type="submit" class="l2o-go">Verify &amp; sign in</button></form>' +
       '<div class="l2o-err"></div>' +
@@ -140,6 +144,8 @@
       ev.preventDefault();
       verifyCode();
     });
+    var instead = s.el.querySelector('.l2o-emailinstead');
+    if (instead) instead.addEventListener('click', function () { sendCode('EMAIL'); });
     s.el.querySelector('.l2o-back2').addEventListener('click', function () { renderChoose(); });
     startCooldown(sent.resendCooldownSeconds || 60);
     var input = s.el.querySelector('.l2o-code');

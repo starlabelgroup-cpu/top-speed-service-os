@@ -378,7 +378,14 @@ export async function sendLayer2Code(challengeToken, rawChannel) {
     fail(400, 'LAYER2_CHANNEL_INVALID', 'Choose email or text for your code.');
   }
   const now = Date.now();
-  if (record.lastSentAt && now - new Date(record.lastSentAt).getTime() < LAYER2.resendCooldownSeconds * 1000) {
+  // The resend cooldown throttles repeat sends on the SAME channel
+  // as the last successful send. Switching channels is the escape
+  // hatch when a code does not arrive (a text blocked carrier-side,
+  // a mailbox that filters): it is never cooled down, so the other
+  // channel — email above all — can finish the sign-in immediately.
+  // The per-challenge send cap below still binds every send.
+  const sameChannel = !record.channel || record.channel === channel;
+  if (sameChannel && record.lastSentAt && now - new Date(record.lastSentAt).getTime() < LAYER2.resendCooldownSeconds * 1000) {
     fail(429, 'LAYER2_RESEND_COOLDOWN', 'A code was just sent — wait a few seconds before asking for another.', {
       retryAfterSeconds: Math.ceil((LAYER2.resendCooldownSeconds * 1000 - (now - new Date(record.lastSentAt).getTime())) / 1000),
     });

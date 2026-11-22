@@ -102,6 +102,16 @@ footer a{color:var(--lime)}
 .plg-acct b{color:var(--ink)}
 .plg-acct button{margin-left:auto;background:var(--panel2);color:var(--ink);border:1px solid #2c4232;border-radius:999px;padding:7px 14px;font:inherit;font-weight:700;font-size:13px;cursor:pointer}
 .plg-herobadge{display:inline-block;font-size:11.5px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;border:2px solid #0C130E;border-radius:999px;padding:5px 12px;margin-bottom:16px}
+/* TOP LOGIN BAR + LOGIN PAGE (2026-11-22) — login options on top of
+   the home page for easy access, and the dedicated login view. The
+   bar's state is driven by plTopSync from the one session source of
+   truth (plUser, set only by a verified /auth/me in plBoot). */
+.pltop{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--panel);border-bottom:1px solid #22301f;padding:10px 22px}
+.pltop .brand{text-decoration:none}
+.pltop-out,.pltop-in{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pltop-who{font-size:13.5px;color:var(--muted)}
+.pltop-who b{color:var(--ink)}
+@media(max-width:560px){.pltop{padding:10px 14px}.pltop-who{display:none}}
 </style>
 <style>
 /* LAUNCH PACKAGE (2026-11-21) — stepwise signup wizard, the post-signup
@@ -153,6 +163,27 @@ footer a{color:var(--lime)}
 .plsv-remove{margin-top:8px}
 @media(max-width:560px){#plMenu{right:12px}}
 </style>
+<!-- TOP LOGIN BAR (2026-11-22, Ramone: "login options on top of
+     home page of pepperlists easy access") — the first thing on the
+     page at every width. Signed out: Log in (opens the dedicated
+     login page below) + Create account (the signup wizard). Signed
+     in: the account name, the SAME app menu the account bar opens
+     (plMenuToggle — one menu, two triggers), and Sign out. State
+     comes only from plTopSync/plUser — never a second store — so
+     the bar can never disagree with the gate, the app, or the
+     account chip. -->
+<div class="pltop" id="plTopBar">
+  <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></a>
+  <span class="pltop-out" id="plTopOut">
+    <button type="button" class="btn small dark" onclick="plOpenLogin()">Log in</button>
+    <button type="button" class="btn small" onclick="plOpenGate('up')">Create account</button>
+  </span>
+  <span class="pltop-in" id="plTopIn" style="display:none">
+    <span class="pltop-who">Signed in as <b id="plTopWho"></b></span>
+    <button type="button" class="btn small dark" onclick="plMenuToggle()">Menu</button>
+    <button type="button" class="btn small dark" onclick="plSignOut()">Sign out</button>
+  </span>
+</div>
 <section id="plGate" style="display:none" aria-label="Sign in to Pepper Lists It">
   <div class="plg-wrap">
     <button type="button" class="plg-back" onclick="plCloseGate()">&#8592; Back to Pepper Lists It</button>
@@ -266,6 +297,39 @@ footer a{color:var(--lime)}
       <div id="plPending" style="display:none">
         <p class="plg-note" id="plPendingMsg"></p>
       </div>
+    </div>
+    <p class="plg-foot">One account for the whole Top Speed platform — booking, tracking, referrals and this app.<br><a href="https://topspeedserviceos.com/privacy">Privacy Policy</a> · <a href="https://topspeedserviceos.com/legal">Legal Documents</a></p>
+  </div>
+</section>
+<!-- LOGIN PAGE (2026-11-22) — the dedicated sign-in screen, reached
+     from the top bar's Log in button, ?mode=login, or #login (the
+     page's existing deep-link pattern). It is a page of its own —
+     the app pitch hides behind it — but it runs the exact sign-in
+     pipeline the gate runs: plLoginAttempt (25s timeout, one retry
+     on network failure only, a 401 never retried), the Speedy
+     Verify code step for covered accounts, and TSOSLayer2 for the
+     customer 2-step code; completion lands in plBoot/plEnterApp
+     exactly like a gate sign-in. Forgot password goes to the same
+     /reset-password flow; Create account opens the same wizard.
+     Customer door only — no office approval, no workstation gate. -->
+<section id="plLogin" style="display:none" aria-label="Log in to Pepper Lists It">
+  <div class="plg-wrap">
+    <button type="button" class="plg-back" onclick="plCloseLogin()">&#8592; Back to Pepper Lists It</button>
+    <div class="plg-brandrow"><span class="brand"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></span></div>
+    <span class="plg-badge">Top Speed OS · Consumer App</span>
+    <h1 class="plg-h">Welcome back.</h1>
+    <p class="plg-sub">Log in with your Top Speed account to open Pepper Lists — your listings, bookings, messages and reviews, all in one place.</p>
+    <div class="plg-card">
+      <label class="plg-lab">Email<input id="plLgEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
+      <label class="plg-lab">Password<input id="plLgPass" type="password" autocomplete="current-password" placeholder="Your password"></label>
+      <div id="plLgSvStep" style="display:none">
+        <label class="plg-lab">Speedy Verify access code<input id="plLgSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></label>
+        <button class="btn plg-full" type="button" style="margin-bottom:10px" onclick="plPageVerify()">Verify &amp; sign in</button>
+      </div>
+      <p class="plg-msg" id="plLgMsg" role="status"></p>
+      <button class="btn plg-full" type="button" id="plLgBtn" onclick="plPageLogin()">Log in</button>
+      <p class="plg-note" style="margin-top:10px;text-align:center"><a href="/reset-password">Forgot password?</a></p>
+      <p class="plg-note" style="margin-top:6px;text-align:center">New to Pepper Lists? <a href="#" onclick="return plLoginToSignup(event)">Create account</a> — free to join and use.</p>
     </div>
     <p class="plg-foot">One account for the whole Top Speed platform — booking, tracking, referrals and this app.<br><a href="https://topspeedserviceos.com/privacy">Privacy Policy</a> · <a href="https://topspeedserviceos.com/legal">Legal Documents</a></p>
   </div>
@@ -1492,6 +1556,14 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
    accountType, signupAudience null) and never start verifyRequired. */
 var PL_API='https://top-speed-service-os.vercel.app/api/v1';
 var plUser=null;
+/* Session-resolution state (2026-11-22): idle → checking → in (a
+   verified session; plUser set, or the terms gate is up) / out (no
+   session, or the API rejected it) / unknown (the check stalled —
+   nothing was proven either way, so nothing is cleared). App-entry
+   buttons consult this state, never plUser alone. */
+var plBootState='idle';
+var plBootInFlight=false;
+var plPendingOpen=false; /* false | 'app' | 'up' — a queued entry tap */
 function plOpenGate(mode){
   var g=document.getElementById('plGate'); if(!g) return;
   g.style.display='';
@@ -1502,6 +1574,11 @@ function plOpenGate(mode){
 function plOpenSignup(ev){
   if(plUser) return true; /* signed in — the app is already open */
   if(ev && ev.preventDefault) ev.preventDefault();
+  /* Session still resolving (or unverifiable on a stalled
+     connection, or valid with the terms gate up): never drop a
+     possibly-signed-in visitor on the sign-in wall — queue the
+     intent and let plBoot's resolution decide. */
+  if(plBootState==='checking'||plBootState==='unknown'||plBootState==='in'){ plPendingOpen='up'; plBoot(); return false; }
   plOpenGate('up');
   return false;
 }
@@ -1512,6 +1589,7 @@ function plCloseGate(){
 function plOpenApp(ev){
   if(plUser) return true; /* signed in — the app opens as it always has */
   if(ev && ev.preventDefault) ev.preventDefault();
+  if(plBootState==='checking'||plBootState==='unknown'||plBootState==='in'){ plPendingOpen='app'; plBoot(); return false; }
   plOpenGate();
   return false;
 }
@@ -1529,6 +1607,7 @@ function plPublic(){
   if(window.plbkHide) plbkHide();
   if(window.plntHide) plntHide();
   var mn=document.getElementById('plMenu'); if(mn) mn.style.display='none';
+  plTopSync();
 }
 function plTok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
 function plSaveTok(t){ try{ if(t){ localStorage.setItem('tsos_token',t); localStorage.setItem('tsos_cust_token',t); } }catch(e){} }
@@ -1541,6 +1620,27 @@ function plCapture(j){
   if(j&&j.token) plSaveTok(j.token);
 }
 function plClearTok(){ try{ localStorage.removeItem('tsos_token'); localStorage.removeItem('tsos_cust_token'); }catch(e){} }
+/* ONE session source of truth (2026-11-22 fix for the wall + chip
+   both showing at once): the account chip (shared/account-switcher.js)
+   renders from the session VAULT (tsos_sessions_v1), while this page
+   historically read only tsos_token — when the two diverged, the
+   page showed the sign-in wall AND the signed-in chip together, and
+   a dead token cleared here left the chip claiming "signed in"
+   forever. plBootToken() resolves the ONE token the whole page
+   boots from: tsos_token first, else the vault's active session
+   token, re-mirrored into tsos_token so every reader — gate, top
+   bar, chip — sees the same session. */
+function plVaultActive(){
+  try{ if(window.TSOSVault && TSOSVault.active) return TSOSVault.active(); }catch(e){}
+  return null;
+}
+function plBootToken(){
+  var t=plTok();
+  if(t) return t;
+  var a=plVaultActive();
+  if(a && a.token){ plSaveTok(a.token); return a.token; }
+  return '';
+}
 function plApi(path,opts){
   opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json'},opts.headers||{});
   if(plTok()) opts.headers['Authorization']='Bearer '+plTok();
@@ -1615,6 +1715,77 @@ function plVerify(){
       if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ plSvChallenge=null; document.getElementById('plSvStep').style.display='none'; TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
       plSvChallenge=null; document.getElementById('plSvStep').style.display='none'; plCapture(j); plBoot(); })
     .catch(function(e){ plMsg('plMsg',e.message,true); });
+}
+/* ---------------- Login page + top bar (2026-11-22) --------------
+   The dedicated login view (#plLogin) runs the gate's pipeline
+   against its own inputs: plLoginAttempt for the password step
+   (identical hardening), the Speedy Verify step for covered
+   accounts, TSOSLayer2 for the 2-step code, then plCapture +
+   plBoot — completion is indistinguishable from a gate sign-in. */
+var plLgSvChallenge=null;
+function plShowLogin(){
+  var v=document.getElementById('plLogin'); if(v) v.style.display='';
+  var g=document.getElementById('plGate'); if(g) g.style.display='none';
+  var app=document.getElementById('plApp'); if(app) app.style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+  setTimeout(function(){ var e=document.getElementById('plLgEmail'); if(e) e.focus({preventScroll:true}); },350);
+}
+function plOpenLogin(){
+  if(plUser) return; /* signed in — the app (and its menu) is the destination */
+  if(plBootState==='checking'||plBootState==='unknown'){ plBoot(); }
+  plShowLogin();
+}
+function plCloseLogin(){
+  var v=document.getElementById('plLogin'); if(v) v.style.display='none';
+  var app=document.getElementById('plApp'); if(app) app.style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function plLoginToSignup(ev){
+  if(ev && ev.preventDefault) ev.preventDefault();
+  plCloseLogin();
+  plOpenGate('up');
+  return false;
+}
+function plPageLogin(){
+  var email=document.getElementById('plLgEmail').value.trim();
+  var password=document.getElementById('plLgPass').value;
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ plMsg('plLgMsg','Please add a valid email address — it is your sign-in.',true); return; }
+  if(!password){ plMsg('plLgMsg','Please enter your password.',true); return; }
+  plMsg('plLgMsg','Signing in…');
+  plLoginAttempt({email:email,password:password})
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/pepper-lists-site'); return; }
+      if(j && j.verifyRequired && j.challenge){
+        plLgSvChallenge=j.challenge;
+        document.getElementById('plLgSvStep').style.display='';
+        plMsg('plLgMsg','Speedy Verify — enter your access code to finish signing in.');
+        var ci=document.getElementById('plLgSvCode'); if(ci) ci.focus();
+        return;
+      }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plLgMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      plCapture(j); plBoot();
+    }).catch(function(e){ plMsg('plLgMsg',e.message,true); });
+}
+function plPageVerify(){
+  if(!plLgSvChallenge){ plMsg('plLgMsg','Log in with your password first, then enter your code.',true); return; }
+  plApi('/speedy-verify/verify',{method:'POST',body:JSON.stringify({challenge:plLgSvChallenge,code:document.getElementById('plLgSvCode').value})})
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/pepper-lists-site'); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ plLgSvChallenge=null; document.getElementById('plLgSvStep').style.display='none'; TSOSLayer2.run(j,{api:PL_API,onSession:function(s){ plSaveTok(s.token); plBoot(); },onCancel:function(){ plMsg('plLgMsg','Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      plLgSvChallenge=null; document.getElementById('plLgSvStep').style.display='none'; plCapture(j); plBoot(); })
+    .catch(function(e){ plMsg('plLgMsg',e.message,true); });
+}
+/* Top bar sync — the ONLY writer of the bar's signed-in/out state,
+   called from plPublic, plEnterApp and plBoot's resolutions. */
+function plTopSync(){
+  var out=document.getElementById('plTopOut'), inn=document.getElementById('plTopIn');
+  if(!out||!inn) return;
+  if(plUser){
+    out.style.display='none'; inn.style.display='';
+    var w=document.getElementById('plTopWho'); if(w) w.textContent=((plUser.firstName||'')+' '+(plUser.lastName||'')).trim()||plUser.email||'';
+  } else {
+    inn.style.display='none'; out.style.display='';
+  }
 }
 var plJustRegistered=false;
 /* ---------------- Signup wizard (launch package, 2026-11-21) -------
@@ -1886,11 +2057,22 @@ document.addEventListener('click',function(ev){
   var b=document.getElementById('plMenuBtn'); if(b&&b.contains(ev.target)) return;
   plMenuToggle(false);
 });
-function plSignOut(){ plClearTok(); plUser=null; location.reload(); }
+function plSignOut(){
+  /* Sign out of EVERY store (2026-11-22): the legacy keys AND this
+     account's vault session — otherwise the account chip kept
+     rendering "signed in" after sign-out. Other accounts saved in
+     the vault are untouched (the switcher's own semantics). */
+  var uid=plUser&&plUser.id;
+  plClearTok();
+  try{ if(uid&&window.TSOSVault&&TSOSVault.remove) TSOSVault.remove(uid); }catch(e){}
+  plUser=null; plBootState='out'; location.reload();
+}
 function plEnterApp(u){
   plUser=u||{};
   document.getElementById('plGate').style.display='none';
+  var lv=document.getElementById('plLogin'); if(lv) lv.style.display='none';
   document.getElementById('plApp').style.display='';
+  plTopSync();
   var bar=document.getElementById('plAcctBar'); if(bar) bar.style.display='';
   var who=document.getElementById('plWho'); if(who) who.textContent=(u&&u.email)||'';
   if(window.plbEnter) plbEnter(u);
@@ -1916,23 +2098,71 @@ function plWelcomeGo(dest){
   if(dest==='channels'){ var ch=document.getElementById('plChannels'); if(ch) ch.scrollIntoView({behavior:'smooth',block:'start'}); return; }
   if(window.plCatShow) plCatShow(dest==='post'?'post':(dest==='book'?'book':'sell'));
 }
+/* Session check with the sign-in hardening (2026-11-22): the old
+   plBoot called /auth/me with NO timeout, so a stalled check left
+   plUser null forever — the account chip (vault) showed "signed
+   in" while every app-entry tap opened the sign-in wall. Same
+   contract as plLoginAttempt: 25s hard timeout, exactly one retry
+   on a NETWORK failure only, any HTTP answer (incl. 401) final. */
+function plMeAttempt(){
+  return plApi('/auth/me',{timeoutMs:25000}).catch(function(e){
+    if(e && typeof e.status==='number') throw e;
+    return plApi('/auth/me',{timeoutMs:25000}).catch(function(e2){
+      if(e2 && typeof e2.status==='number') throw e2;
+      var err=new Error('Connection stalled — we could not check your session. Check your signal and try again.');
+      err.code='CONNECTION_STALLED';
+      throw err;
+    });
+  });
+}
 function plBoot(){
-  if(!plTok()){ plPublic(); return; }
-  plApi('/auth/me').then(function(j){
+  var tok=plBootToken();
+  if(!tok){
+    plBootState='out'; plPublic();
+    if(plPendingOpen){ var po=plPendingOpen; plPendingOpen=false; plOpenGate(po==='up'?'up':undefined); }
+    return;
+  }
+  if(plBootInFlight) return;
+  plBootInFlight=true; plBootState='checking';
+  plMeAttempt().then(function(j){
+    plBootInFlight=false;
     var u=j.user||{};
     if(window.TSOSLegal && !TSOSLegal.termsComplete(j.terms||j.termsStatus)){
+      plBootState='in'; /* session valid; the terms gate owns the screen */
       TSOSLegal.showTermsGate({api:PL_API,token:plTok(),onSignOut:plSignOut,onAccepted:function(){ plBoot(); }});
       return;
     }
+    plBootState='in'; plPendingOpen=false;
+    /* Keep the vault (and therefore the chip) in step with the
+       verified session — the same capture a fresh sign-in does. */
+    try{ if(window.TSOSVault&&u&&u.id&&plTok()) TSOSVault.add(u,plTok()); }catch(e){}
     plEnterApp(u);
   }).catch(function(e){
+    plBootInFlight=false;
+    if(e && e.code==='CONNECTION_STALLED'){
+      /* A stalled connection proves nothing about the session —
+         clear nothing (the token, the vault and the chip all stay,
+         in agreement), and let the next app-entry tap re-check.
+         Same honesty rule as sign-in: a stall is not a failure. */
+      plBootState='unknown'; plPublic();
+      return;
+    }
+    /* The API answered and rejected the session: the token is
+       dead. Clear it from EVERY store — legacy keys AND the vault
+       (TSOSVault.expireActive drops the account that owns the
+       mirrored token) — so the wall, the top bar and the account
+       chip all agree the visitor is signed out, and a fresh
+       sign-in starts clean. */
     plClearTok();
+    try{ if(window.TSOSVault&&TSOSVault.expireActive) TSOSVault.expireActive(); }catch(e2){}
+    plBootState='out';
     if(e && /^Speedy Verify/.test(e.message||'')){
       /* The session needs a Speedy Verify code step — open the gate
          with the reason, over the public pitch. */
       plPublic(); plOpenGate(); plMsg('plMsg',e.message,true);
     } else {
       plPublic();
+      if(plPendingOpen){ var po2=plPendingOpen; plPendingOpen=false; plOpenGate(po2==='up'?'up':undefined); }
     }
   });
 }
@@ -1944,17 +2174,21 @@ document.addEventListener('DOMContentLoaded',function(){
   var sig=document.getElementById('plWzSignature'); if(sig) sig.addEventListener('input',plWzSync);
   var vfc=document.getElementById('plVfCode'); if(vfc) vfc.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plVfVerify(); });
   var pw=document.getElementById('plLiPass'); if(pw) pw.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plLogin(); });
+  var lgpw=document.getElementById('plLgPass'); if(lgpw) lgpw.addEventListener('keydown',function(ev){ if(ev.key==='Enter') plPageLogin(); });
   plBoot();
   if(!plTok()){
     /* Deep links from the promo pages (pepperlists.com/how-it-works
        "Create your account" / "Sign in") land on the real form:
        ?mode=up opens the gate on Create account, ?mode=in on Sign in.
+       ?mode=login / #login opens the dedicated login page.
        Runs after plBoot so the signed-out public render is settled. */
     var dm=null;
     try{ dm=new URLSearchParams(location.search).get('mode'); }catch(e){}
     if(location.hash==='#create-account') dm='up';
     if(location.hash==='#sign-in') dm='in';
+    if(location.hash==='#login') dm='login';
     if(dm==='up'||dm==='in') plOpenGate(dm);
+    if(dm==='login') plShowLogin();
   }
 });
 </script>
