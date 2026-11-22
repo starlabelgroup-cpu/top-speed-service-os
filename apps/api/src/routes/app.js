@@ -4,7 +4,7 @@ import { PLATFORM_CONSTANTS } from '../config/platform.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
-import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512 } from '../assets/appIcons.js';
+import { PLUG_192, PLUG_512, PRO_192, PRO_512, CONNECT_192, CONNECT_512, CONNECTPRO_192, CONNECTPRO_512, SPEEDY_192, SPEEDY_512, TSAS_180, TSAS_192, TSAS_512 } from '../assets/appIcons.js';
 import { SERVICE_HERO_WEBP, SERVICE_COMMERCIAL_WEBP, SERVICE_VAN_WEBP, PM_VISIT_WEBP, GUIDE_FRIDGE_WEBP } from '../assets/serviceImages.js';
 import { PL_SELL_WEBP, PL_BOOK_WEBP } from '../assets/pepperListsImages.js';
 import { MASCOT_HERO_WEBP, MASCOT_HERO_LIGHT_WEBP, MASCOT_HEAD_WEBP } from '../assets/mascotImages.js';
@@ -95,6 +95,9 @@ const APP_ICON_FILES = {
   'connectpro-512.png': CONNECTPRO_512,
   'speedy-192.png': SPEEDY_192,
   'speedy-512.png': SPEEDY_512,
+  'tsas-180.png': TSAS_180,
+  'tsas-192.png': TSAS_192,
+  'tsas-512.png': TSAS_512,
 };
 
 router.get('/app/icons/:name', (req, res) => {
