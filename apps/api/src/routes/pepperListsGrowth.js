@@ -6,6 +6,7 @@ import { syndicationRepo } from '../db/pepperListsSyndicationRepo.js';
 import { messagesRepo } from '../db/pepperListsMessagesRepo.js';
 import { sellerChannelsRepo } from '../db/sellerChannelsRepo.js';
 import { pepperReportsRepo } from '../db/pepperReportsRepo.js';
+import { listSellerReviews } from '../db/listingTrustRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { API_PUBLIC_BASE, getListingByReference, listingPhotoUrl, listingViewUrl } from '../services/pepperListings.js';
@@ -386,6 +387,22 @@ async function storefrontData(userId) {
       createdAt: iso(listing.createdAt),
     });
   }
+  const publishedReviews = await listSellerReviews({ sellerId: user.id, status: 'PUBLISHED' }).catch(() => []);
+  const reviewItems = [];
+  for (const review of publishedReviews.slice(0, 5)) {
+    const buyer = review.buyerId ? await findUserByIdDual(review.buyerId) : null;
+    reviewItems.push({
+      id: review.id, rating: review.rating, title: review.title, body: review.body,
+      buyerName: buyer ? partyName(buyer) : null, createdAt: iso(review.createdAt),
+    });
+  }
+  const reviews = {
+    count: publishedReviews.length,
+    average: publishedReviews.length
+      ? Math.round((publishedReviews.reduce((sum, r) => sum + r.rating, 0) / publishedReviews.length) * 10) / 10
+      : null,
+    items: reviewItems,
+  };
   return {
     seller: {
       userId: user.id,
@@ -395,12 +412,10 @@ async function storefrontData(userId) {
     },
     listings,
     // Seller reviews are keyed to completed sales recorded on the
-    // platform. No seller-review record exists for this seller in
-    // the data this build can read, so the block reports the true
-    // empty state — count 0, average null, and the page renders no
-    // stars. (The Trust & Growth build's SellerReview store is the
-    // source this block reads once it lands.)
-    reviews: { count: 0, average: null, items: [] },
+    // platform — read live from the Trust build's SellerReview store
+    // (the same source the listing detail page reads), so this page
+    // always shows the seller's real record.
+    reviews,
   };
 }
 
@@ -600,7 +615,7 @@ function notifyOtherParty({ thread, message, recipientId, senderName }) {
         to: recipient.email,
         payload: {
           subject,
-          message: `${senderName} sent you a message on Pepper Lists about \u201C${title}\u201D:\n\n\u201C${excerpt}\u201D\n\nRead and reply in Pepper Lists: https://pepperlists.com/\nSign in with this account\u2019s email to open your messages.\n\nKeep the conversation on Pepper Lists — never pay by gift card or wire transfer, and never share payment details by message.`,
+          message: `${senderName} sent you a message on Pepper Lists about \u201C${title}\u201D:\n\n\u201C${excerpt}\u201D\n\nRead and reply in Pepper Lists: https://pepperlists.com/?inbox=${encodeURIComponent(thread.listingReference)}\nSign in with this account\u2019s email and your conversation about this listing opens.\n\nKeep the conversation on Pepper Lists — never pay by gift card or wire transfer, and never share payment details by message.`,
         },
         source: 'pepper-lists',
         eventKey: `plmsg:${thread.id}:${message.id}:${recipientId}`,

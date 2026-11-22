@@ -971,6 +971,12 @@ export function notifyPhotoDiagnosis({ submitter = {}, diagnosis = null, reply =
   const safetyCritical = Boolean(diagnosis?.safety_critical);
   const safetyActions = (diagnosis?.safety_actions || []).filter(Boolean);
 
+  // RULE 1: when the diagnosis is attached to a booking, its track
+  // link is that booking's own dedicated /track?t= page.
+  const linkedBooking = bookingReference
+    ? [...store.bookings.values()].find((b) => b.referenceCode === bookingReference) || null
+    : null;
+  const diagTrackLink = linkedBooking ? trackLinkForBooking(linkedBooking, 'PHOTO_DIAGNOSIS') : REACH_LINKS.track;
   const summaryLines = [
     `Appliance: ${appliance}`,
     ...(findings.length ? [`Visible findings: ${findings.slice(0, 4).join('; ')}`] : []),
@@ -992,7 +998,7 @@ export function notifyPhotoDiagnosis({ submitter = {}, diagnosis = null, reply =
     `Top Speed Appliance photo diagnosis: ${appliance}` +
     (causes.length ? ` — most likely: ${causes[0]}` : '') +
     (safetyCritical ? '. SAFETY: follow the safety steps Speedy gave you and do not use the appliance.' : '.') +
-    (bookingReference ? ` Attached to booking ${bookingReference}. Track it: ${REACH_LINKS.track}` : ' Book the $99 diagnostic (credited toward repair): topspeedserviceos.com/book') +
+    (bookingReference ? ` Attached to booking ${bookingReference}. Track it: ${diagTrackLink}` : ' Book the $99 diagnostic (credited toward repair): topspeedserviceos.com/book') +
     ` Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`;
 
   const emailPayload = {
@@ -1056,6 +1062,7 @@ export function notifyBookingConfirmation(booking, source = null) {
   // or moved, so the key carries the appointment's setAt stamp; the
   // initial booking confirmation keys on the booking itself.
   const keyStamp = appointment?.setAt || 'initial';
+  const trackLink = trackLinkForBooking(booking, 'BOOKING_CONFIRMATION');
   const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
@@ -1076,7 +1083,7 @@ export function notifyBookingConfirmation(booking, source = null) {
         businessPhone: PLATFORM_CONSTANTS.phone,
         message:
           `Top Speed Appliance: your ${booking.appliance} service in ${booking.city} is booked.${appointmentText} ` +
-          `${PLATFORM_CONSTANTS.feeTerms} Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${REACH_LINKS.track}`,
+          `${PLATFORM_CONSTANTS.feeTerms} Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${trackLink}`,
       },
     }),
   );
@@ -1160,6 +1167,7 @@ export function notifyNewBooking(booking, source = null) {
  */
 export function notifyAppointmentReminder(booking, source = null) {
   const appointment = booking.appointment || {};
+  const trackLink = trackLinkForBooking(booking, 'APPOINTMENT_REMINDER');
   const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
@@ -1179,7 +1187,7 @@ export function notifyAppointmentReminder(booking, source = null) {
         message:
           `Top Speed Appliance reminder: your ${booking.appliance} appointment in ${booking.city} is ` +
           `${appointment.date}, ${appointment.windowLabel || appointment.window}. ` +
-          `Need a different time? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${REACH_LINKS.track}`,
+          `Need a different time? Call ${PLATFORM_CONSTANTS.phoneDisplay}. Track your visit: ${trackLink}`,
       },
     }),
   );
@@ -1248,6 +1256,7 @@ export function notifyWhatsAppOfficeMessage({ to, body, reference = null, source
  */
 export function notifyAppointmentReminderWithReply(booking, kind, source = null) {
   const appointment = booking.appointment || {};
+  const trackLink = trackLinkForBooking(booking, 'APPOINTMENT_REMINDER');
   const whenText = kind === 'MORNING_OF'
     ? `today, ${appointment.date}`
     : `tomorrow, ${appointment.date}`;
@@ -1257,13 +1266,13 @@ export function notifyAppointmentReminderWithReply(booking, kind, source = null)
     const created = !store.notificationOutbox.some((entry) => entry.eventKey === eventKey);
     const message = channel === 'sms'
       ? `Top Speed Appliance reminder: your ${booking.appliance} appointment in ${booking.city} is ${whenText}, ${windowText}. ` +
-        `Reply C to confirm or R to reschedule. Track your visit: ${REACH_LINKS.track}`
+        `Reply C to confirm or R to reschedule. Track your visit: ${trackLink}`
       : `Hi ${booking.customer?.name || 'there'},\n\n` +
         `A reminder from Top Speed Appliance: your ${booking.appliance} appointment in ${booking.city} is ${whenText}, ${windowText}.\n\n` +
         `Everything set? Just text us back C to confirm. Need a different time? Text back R and a ` +
         `Service Setter will call you to reschedule — your appointment stays as it is until you ` +
         `agree on a new time with us. You can also call ${PLATFORM_CONSTANTS.phoneDisplay}.\n\n` +
-        `Track your visit: ${REACH_LINKS.track}\n\n` +
+        `Track your visit: ${trackLink}\n\n` +
         `— Top Speed Appliance · ${PLATFORM_CONSTANTS.slogan}`;
     const entry = queueNotification({
       channel,
@@ -1686,13 +1695,13 @@ function parseDataUrl(dataUrl) {
 /** Mint a tracking token for the en-route photo link (hash at rest,
  * same 7-day expiry as staff-issued tracking links). The raw token is
  * returned for the message only — it is never stored. */
-function mintEnRouteTrackToken(booking) {
+function mintEnRouteTrackToken(booking, issuedBy = 'EN_ROUTE_ALERT') {
   const raw = randomBytes(32).toString('base64url');
   const record = {
     id: createId(),
     tokenHash: createHash('sha256').update(raw).digest('hex'),
     bookingId: booking.id,
-    issuedBy: 'EN_ROUTE_ALERT',
+    issuedBy,
     expiresAt: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString(),
     revokedAt: null,
     createdAt: new Date().toISOString(),
@@ -1702,6 +1711,18 @@ function mintEnRouteTrackToken(booking) {
     console.error(JSON.stringify({ level: 'error', message: 'en-route tracking token persist failed', error: String(error?.message || error) }));
   });
   return raw;
+}
+
+/** RULE 1 (Ramone, 2026-11-22): a link about one booking must land on
+ * THAT booking's own page. Every customer message that says "track"
+ * carries a dedicated /track?t= link that loads this booking's live
+ * job — never the bare /track homepage-style entry. Mints a fresh
+ * token per message (same store, hash-at-rest, 7-day expiry as the
+ * en-route and staff-issued links); falls back to the plain /track
+ * entry only when there is no booking to mint for. */
+function trackLinkForBooking(booking, issuedBy) {
+  if (!booking?.id) return REACH_LINKS.track;
+  return `${REACH_LINKS.track}?t=${mintEnRouteTrackToken(booking, issuedBy)}`;
 }
 
 export function notifyTechEnRoute(booking, source = null, options = {}) {
@@ -1751,6 +1772,7 @@ export function notifyTechEnRoute(booking, source = null, options = {}) {
 
 /** A Track My Tech status update, queued from the staff tracking console. */
 export function notifyTrackingUpdate(booking, stageLabel, source = null, eventKey = null) {
+  const trackLink = trackLinkForBooking(booking, 'TRACKING_UPDATE');
   return customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
@@ -1762,7 +1784,7 @@ export function notifyTrackingUpdate(booking, stageLabel, source = null, eventKe
       payload: {
         bookingId: booking.id,
         referenceCode: booking.referenceCode || null,
-        message: `Top Speed Appliance: update on your service visit (${booking.referenceCode || ''}) — current status: ${stageLabel}. Track your technician any time at topspeedserviceos.com/track.`,
+        message: `Top Speed Appliance: update on your service visit (${booking.referenceCode || ''}) — current status: ${stageLabel}. Track your technician any time: ${trackLink}`,
       },
     }),
   );
@@ -1770,6 +1792,7 @@ export function notifyTrackingUpdate(booking, stageLabel, source = null, eventKe
 
 /** Customer notice that a technician has been assigned to their job. */
 export function notifyBookingAssigned(booking, assignment, source = null) {
+  const trackLink = trackLinkForBooking(booking, 'BOOKING_ASSIGNED');
   const entries = customerChannels(booking).map(({ channel, to }) =>
     queueNotification({
       channel,
@@ -1787,7 +1810,7 @@ export function notifyBookingAssigned(booking, assignment, source = null) {
         assignmentId: assignment?.id || null,
         message:
           `Top Speed Appliance: a technician has been assigned to your ${booking.appliance} service in ${booking.city} ` +
-          `(ref ${booking.referenceCode || ''}). We will update you as the visit progresses — track any time at topspeedserviceos.com/track. ` +
+          `(ref ${booking.referenceCode || ''}). We will update you as the visit progresses — track any time: ${trackLink} ` +
           `Questions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`,
       },
     }),
@@ -2051,13 +2074,13 @@ export function notifyBookingReceipt(booking, channel, source = null) {
   const when = appointment
     ? `${appointment.date}, ${appointment.windowLabel || appointment.window}`
     : booking.preferredWindow || 'Window to be confirmed by Service Setters';
-  const trackingUrl = 'https://topspeedserviceos.com/track';
+  const trackingUrl = trackLinkForBooking(booking, 'BOOKING_RECEIPT');
   const to = channel === 'email' ? booking.customer?.email : booking.customer?.phone;
   if (!to) return null;
   const message =
     channel === 'email'
-      ? `Top Speed Appliance — booking receipt\nReference: ${booking.referenceCode}\nService: ${booking.appliance} — ${booking.issue}\nCity: ${booking.city}\nWhen: ${when}\nStatus: ${booking.status}\n${diagnosticLine}\nTrack your job live: ${trackingUrl} (use your reference + phone).\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`
-      : `Top Speed Appliance receipt: ${booking.appliance} in ${booking.city}, ref ${booking.referenceCode}. ${diagnosticLine} Track live: ${trackingUrl} (ref + this phone).`;
+      ? `Top Speed Appliance — booking receipt\nReference: ${booking.referenceCode}\nService: ${booking.appliance} — ${booking.issue}\nCity: ${booking.city}\nWhen: ${when}\nStatus: ${booking.status}\n${diagnosticLine}\nTrack your job live: ${trackingUrl}\nQuestions? Call ${PLATFORM_CONSTANTS.phoneDisplay}.`
+      : `Top Speed Appliance receipt: ${booking.appliance} in ${booking.city}, ref ${booking.referenceCode}. ${diagnosticLine} Track live: ${trackingUrl}.`;
   return queueNotification({
     channel,
     template: NOTIFICATION_TEMPLATES.BOOKING_RECEIPT,

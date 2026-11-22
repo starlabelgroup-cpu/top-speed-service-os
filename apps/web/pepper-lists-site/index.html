@@ -3360,10 +3360,12 @@ function plgEnter(u){
 function plgHide(){ var row=document.getElementById('plgStoreRow'); if(row) row.style.display='none'; }
 
 /* ------------------------- C18 — messages ------------------------- */
-var PLM_OPEN=null, PLM_WANT=null;
+var PLM_OPEN=null, PLM_WANT=null, PLM_INBOX=null;
 try{
   var wantRef=new URLSearchParams(location.search).get('message');
   if(wantRef){ PLM_WANT=wantRef; try{ sessionStorage.setItem('plm_want',wantRef); }catch(e){} }
+  var wantInbox=new URLSearchParams(location.search).get('inbox');
+  if(wantInbox){ PLM_INBOX=wantInbox; try{ sessionStorage.setItem('plm_inbox',wantInbox); }catch(e){} }
 }catch(e){}
 function plmEnter(u){
   var sec=document.getElementById('plMessages'); if(sec) sec.style.display='';
@@ -3377,6 +3379,20 @@ function plmEnter(u){
     PLM_COMPOSE_REF=ref;
   }
   plmLoadList();
+  /* RULE 1 deep link (2026-11-22): pepperlists.com/?inbox=<reference>
+     — the message-notification email lands here, and after sign-in the
+     conversation about THAT listing opens, not the bare inbox. */
+  if(!PLM_INBOX){ try{ PLM_INBOX=sessionStorage.getItem('plm_inbox')||null; }catch(e){} }
+  if(PLM_INBOX){
+    var iref=PLM_INBOX; PLM_INBOX=null;
+    try{ sessionStorage.removeItem('plm_inbox'); }catch(e){}
+    plApi('/pepper-lists/threads').then(function(j){
+      var threads=(j.data||{}).threads||[];
+      for(var i=0;i<threads.length;i++){
+        if(threads[i].listing && threads[i].listing.reference===iref){ plmOpen(threads[i].id); break; }
+      }
+    }).catch(function(){});
+  }
 }
 function plmHide(){ var sec=document.getElementById('plMessages'); if(sec) sec.style.display='none'; PLM_OPEN=null; }
 var PLM_COMPOSE_REF=null;
@@ -3819,6 +3835,11 @@ function pltCancelPlan(){
 
 pltLoadFeed();
 pltLoadBookReviews();
+/* RULE 1 deep link (2026-11-22): pepperlists.com/?listing=<reference>
+   — the share page's "See it on Pepper Lists" button lands here, and
+   the visitor gets THIS listing's own detail (the public API resolves
+   references as well as ids), never just the homepage. */
+try{ var plWantListing=new URLSearchParams(location.search).get('listing'); if(plWantListing) pltOpenListing(plWantListing); }catch(e){}
 </script>
 <script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script><script src="/temp-password.js" defer></script><script src="/flywheel-banner.js" data-category="PEPPER_LISTS" defer></script>
 <script src="/speedy-guide.js" defer></script>
