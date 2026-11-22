@@ -1,5 +1,5 @@
 import { createId } from '../data/store.js';
-import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DB_AVAILABLE, plDb } from './plClient.js';
 
 /**
  * Pepper Lists Seller Plans — repository (2026-11-20).
@@ -158,11 +158,11 @@ const memoryRepo = {
 // ---------------------------------------------------------------------------
 const prismaRepo = {
   async listPlans() {
-    const rows = await db().sellerPlan.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] });
+    const rows = await plDb().sellerPlan.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] });
     return rows.map(toPlan);
   },
   async createPlan(tier) {
-    const row = await db().sellerPlan.create({
+    const row = await plDb().sellerPlan.create({
       data: {
         key: tier.key, name: tier.name, description: tier.description ?? null,
         monthlyPriceCents: null, currency: 'usd',
@@ -173,20 +173,20 @@ const prismaRepo = {
     return toPlan(row);
   },
   async updatePlan(id, data) {
-    const row = await db().sellerPlan.update({ where: { id }, data });
+    const row = await plDb().sellerPlan.update({ where: { id }, data });
     return toPlan(row);
   },
   async getSubscriptionByUserId(userId) {
-    const row = await db().sellerSubscription.findUnique({ where: { userId } });
+    const row = await plDb().sellerSubscription.findUnique({ where: { userId } });
     return toSubscription(row);
   },
   async getSubscriptionByStripeSubscriptionId(stripeSubscriptionId) {
     if (!stripeSubscriptionId) return null;
-    const row = await db().sellerSubscription.findFirst({ where: { stripeSubscriptionId } });
+    const row = await plDb().sellerSubscription.findFirst({ where: { stripeSubscriptionId } });
     return toSubscription(row);
   },
   async upsertSubscription(userId, data) {
-    const row = await db().sellerSubscription.upsert({
+    const row = await plDb().sellerSubscription.upsert({
       where: { userId },
       create: { userId, ...data },
       update: data,
@@ -194,7 +194,7 @@ const prismaRepo = {
     return toSubscription(row);
   },
   async listSubscriptions() {
-    const rows = await db().sellerSubscription.findMany({
+    const rows = await plDb().sellerSubscription.findMany({
       orderBy: { updatedAt: 'desc' },
       include: { user: { select: { email: true, firstName: true, lastName: true, roles: true } } },
     });
@@ -202,7 +202,7 @@ const prismaRepo = {
   },
 };
 
-const repo = DATABASE_ENABLED ? prismaRepo : memoryRepo;
+const repo = PL_DB_AVAILABLE ? prismaRepo : memoryRepo;
 
 /** Idempotent tier seed: creates Free / Featured Seller / Pro Seller (prices UNSET) only when no plans exist. */
 export async function ensureSeedSellerPlans() {

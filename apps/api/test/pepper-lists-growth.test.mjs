@@ -293,6 +293,20 @@ async function main() {
   });
   check('eBay outcome with a Facebook URL 400', wrongHost.status, 400);
 
+  // Phase 2 (2026-11-21) — grant enforcement: a POSTED outcome
+  // means the office posted under the seller's OWN account, allowed
+  // only while the seller's agent grant for that channel is ON.
+  // This suite predates the gate; assert the refusal, then grant
+  // exactly as a real seller now must.
+  const postedNoGrant = await api(BASE, `/pepper-lists/syndication/${ebayRowId}/outcome`, {
+    token: staff, method: 'POST',
+    body: { status: 'POSTED', externalUrl: 'https://www.ebay.com/itm/155512345678' },
+  });
+  check('eBay outcome POSTED refused while the grant is OFF', postedNoGrant.status, 403);
+  check('refusal code is AGENT_GRANT_REQUIRED', postedNoGrant.json?.code, 'AGENT_GRANT_REQUIRED');
+  await api(BASE, '/pepper-lists/channels/EBAY/agent-access', { token: a, method: 'PATCH', body: { granted: true } });
+  await api(BASE, '/pepper-lists/channels/GOOGLE_SHOPPING/agent-access', { token: a, method: 'PATCH', body: { granted: true } });
+
   const postedEbay = await api(BASE, `/pepper-lists/syndication/${ebayRowId}/outcome`, {
     token: staff, method: 'POST',
     body: { status: 'POSTED', externalUrl: 'https://www.ebay.com/itm/155512345678' },

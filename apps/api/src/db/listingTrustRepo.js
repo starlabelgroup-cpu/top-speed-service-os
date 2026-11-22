@@ -1,5 +1,5 @@
 import { createId } from '../data/store.js';
-import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DB_AVAILABLE, plDb } from './plClient.js';
 
 /**
  * Pepper Lists Trust & Growth persistence (2026-11-20) — listing
@@ -101,7 +101,7 @@ function savedFromDb(row) {
 }
 
 async function persist(label, fn) {
-  if (!DATABASE_ENABLED) return;
+  if (!PL_DB_AVAILABLE) return;
   try {
     await fn();
   } catch (error) {
@@ -114,9 +114,9 @@ async function persist(label, fn) {
 export async function getListingProfile(connectionId) {
   const inMemory = profiles.get(connectionId);
   if (inMemory) return inMemory;
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const row = await db().listingProfile.findUnique({ where: { connectionId } });
+      const row = await plDb().listingProfile.findUnique({ where: { connectionId } });
       if (row) {
         const mapped = profileFromDb(row);
         profiles.set(connectionId, mapped);
@@ -146,7 +146,7 @@ export async function upsertListingProfile(connectionId, patch) {
       updatedAt: now,
     };
     profiles.set(connectionId, row);
-    await persist('createListingProfile', () => db().listingProfile.create({
+    await persist('createListingProfile', () => plDb().listingProfile.create({
       data: {
         id: row.id, connectionId: row.connectionId, sellerUserId: row.sellerUserId,
         status: row.status, featured: row.featured,
@@ -160,7 +160,7 @@ export async function upsertListingProfile(connectionId, patch) {
   }
   Object.assign(row, patch, { updatedAt: now });
   profiles.set(connectionId, row);
-  await persist('updateListingProfile', () => db().listingProfile.update({
+  await persist('updateListingProfile', () => plDb().listingProfile.update({
     where: { connectionId },
     data: {
       sellerUserId: row.sellerUserId, status: row.status, featured: row.featured,
@@ -178,7 +178,7 @@ export async function incrementListingViews(connectionId) {
   row.viewCount = (row.viewCount || 0) + 1;
   row.updatedAt = new Date().toISOString();
   profiles.set(connectionId, row);
-  await persist('incrementListingViews', () => db().listingProfile.update({
+  await persist('incrementListingViews', () => plDb().listingProfile.update({
     where: { connectionId },
     data: { viewCount: { increment: 1 }, updatedAt: new Date(row.updatedAt) },
   }));
@@ -188,9 +188,9 @@ export async function incrementListingViews(connectionId) {
 /** All profiles, memory merged with DB — used by the public feed's sort. */
 export async function listListingProfiles() {
   const byConn = new Map(profiles);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().listingProfile.findMany({});
+      const rows = await plDb().listingProfile.findMany({});
       for (const row of rows) {
         if (!byConn.has(row.connectionId)) byConn.set(row.connectionId, profileFromDb(row));
       }
@@ -215,7 +215,7 @@ export async function createListingComment(input) {
     createdAt: new Date().toISOString(),
   };
   comments.set(row.id, row);
-  await persist('createListingComment', () => db().listingComment.create({
+  await persist('createListingComment', () => plDb().listingComment.create({
     data: {
       id: row.id, listingId: row.listingId, authorId: row.authorId,
       authorKind: row.authorKind, body: row.body,
@@ -228,9 +228,9 @@ export async function createListingComment(input) {
 export async function getListingComment(id) {
   const inMemory = comments.get(id);
   if (inMemory) return inMemory;
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const row = await db().listingComment.findUnique({ where: { id } });
+      const row = await plDb().listingComment.findUnique({ where: { id } });
       if (row) {
         const mapped = commentFromDb(row);
         comments.set(id, mapped);
@@ -248,7 +248,7 @@ export async function updateListingComment(id, patch) {
   if (!row) return null;
   Object.assign(row, patch);
   comments.set(id, row);
-  await persist('updateListingComment', () => db().listingComment.update({
+  await persist('updateListingComment', () => plDb().listingComment.update({
     where: { id },
     data: { hidden: row.hidden, removed: row.removed },
   }));
@@ -259,9 +259,9 @@ export async function updateListingComment(id, patch) {
 export async function listListingComments(listingId) {
   const byId = new Map();
   for (const row of comments.values()) if (row.listingId === listingId) byId.set(row.id, row);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().listingComment.findMany({ where: { listingId }, orderBy: { createdAt: 'asc' } });
+      const rows = await plDb().listingComment.findMany({ where: { listingId }, orderBy: { createdAt: 'asc' } });
       for (const row of rows) if (!byId.has(row.id)) byId.set(row.id, commentFromDb(row));
     } catch (error) {
       console.error('listListingComments failed', error?.message || error);
@@ -282,9 +282,9 @@ export async function countVisibleComments(listingIds) {
     }
   };
   for (const row of comments.values()) tally(row);
-  if (DATABASE_ENABLED && listingIds.length) {
+  if (PL_DB_AVAILABLE && listingIds.length) {
     try {
-      const rows = await db().listingComment.findMany({ where: { listingId: { in: listingIds } } });
+      const rows = await plDb().listingComment.findMany({ where: { listingId: { in: listingIds } } });
       for (const row of rows) tally(commentFromDb(row));
     } catch (error) {
       console.error('countVisibleComments failed', error?.message || error);
@@ -306,7 +306,7 @@ export async function createListingReport(input) {
     createdAt: new Date().toISOString(),
   };
   reports.set(row.id, row);
-  await persist('createListingReport', () => db().listingReport.create({
+  await persist('createListingReport', () => plDb().listingReport.create({
     data: {
       id: row.id, listingId: row.listingId, reporterId: row.reporterId,
       reason: row.reason, details: row.details, status: row.status,
@@ -318,9 +318,9 @@ export async function createListingReport(input) {
 
 export async function listListingReports({ status = null } = {}) {
   const byId = new Map(reports);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().listingReport.findMany({ orderBy: { createdAt: 'desc' } });
+      const rows = await plDb().listingReport.findMany({ orderBy: { createdAt: 'desc' } });
       for (const row of rows) if (!byId.has(row.id)) byId.set(row.id, reportFromDb(row));
     } catch (error) {
       console.error('listListingReports failed', error?.message || error);
@@ -333,9 +333,9 @@ export async function listListingReports({ status = null } = {}) {
 
 export async function updateListingReport(id, patch) {
   let row = reports.get(id) || null;
-  if (!row && DATABASE_ENABLED) {
+  if (!row && PL_DB_AVAILABLE) {
     try {
-      const dbRow = await db().listingReport.findUnique({ where: { id } });
+      const dbRow = await plDb().listingReport.findUnique({ where: { id } });
       if (dbRow) { row = reportFromDb(dbRow); reports.set(id, row); }
     } catch (error) {
       console.error('getListingReport failed', error?.message || error);
@@ -344,7 +344,7 @@ export async function updateListingReport(id, patch) {
   if (!row) return null;
   Object.assign(row, patch);
   reports.set(id, row);
-  await persist('updateListingReport', () => db().listingReport.update({
+  await persist('updateListingReport', () => plDb().listingReport.update({
     where: { id },
     data: { status: row.status },
   }));
@@ -365,7 +365,7 @@ export async function createSellerSale(input) {
     createdAt: now,
   };
   sales.set(row.id, row);
-  await persist('createSellerSale', () => db().sellerSale.create({
+  await persist('createSellerSale', () => plDb().sellerSale.create({
     data: {
       id: row.id, listingId: row.listingId, sellerId: row.sellerId,
       buyerId: row.buyerId, buyerEmail: row.buyerEmail,
@@ -377,9 +377,9 @@ export async function createSellerSale(input) {
 
 async function allSales() {
   const byId = new Map(sales);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().sellerSale.findMany({ orderBy: { completedAt: 'desc' } });
+      const rows = await plDb().sellerSale.findMany({ orderBy: { completedAt: 'desc' } });
       for (const row of rows) if (!byId.has(row.id)) byId.set(row.id, saleFromDb(row));
     } catch (error) {
       console.error('listSellerSales failed', error?.message || error);
@@ -417,7 +417,7 @@ export async function createSellerReview(input) {
     updatedAt: now,
   };
   sellerReviews.set(row.id, row);
-  await persist('createSellerReview', () => db().sellerReview.create({
+  await persist('createSellerReview', () => plDb().sellerReview.create({
     data: {
       id: row.id, saleId: row.saleId, sellerId: row.sellerId, buyerId: row.buyerId,
       rating: row.rating, title: row.title, body: row.body, status: row.status,
@@ -429,9 +429,9 @@ export async function createSellerReview(input) {
 
 async function allSellerReviews() {
   const byId = new Map(sellerReviews);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().sellerReview.findMany({ orderBy: { createdAt: 'desc' } });
+      const rows = await plDb().sellerReview.findMany({ orderBy: { createdAt: 'desc' } });
       for (const row of rows) if (!byId.has(row.id)) byId.set(row.id, sellerReviewFromDb(row));
     } catch (error) {
       console.error('listSellerReviews failed', error?.message || error);
@@ -459,7 +459,7 @@ export async function updateSellerReview(id, patch) {
   if (!row) return null;
   Object.assign(row, patch, { updatedAt: new Date().toISOString() });
   sellerReviews.set(id, row);
-  await persist('updateSellerReview', () => db().sellerReview.update({
+  await persist('updateSellerReview', () => plDb().sellerReview.update({
     where: { id },
     data: { status: row.status, updatedAt: new Date(row.updatedAt) },
   }));
@@ -476,7 +476,7 @@ export async function createListingBump(input) {
     createdAt: new Date().toISOString(),
   };
   bumps.push(row);
-  await persist('createListingBump', () => db().listingBump.create({
+  await persist('createListingBump', () => plDb().listingBump.create({
     data: { id: row.id, listingId: row.listingId, sellerId: row.sellerId, createdAt: new Date(row.createdAt) },
   }));
   return row;
@@ -491,9 +491,9 @@ export async function countBumpsSince(sellerId, sinceIso) {
     if (row.sellerId === sellerId && String(row.createdAt) >= String(sinceIso)) count += 1;
   };
   for (const row of bumps) tally(row);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const rows = await db().listingBump.findMany({ where: { sellerId, createdAt: { gte: new Date(sinceIso) } } });
+      const rows = await plDb().listingBump.findMany({ where: { sellerId, createdAt: { gte: new Date(sinceIso) } } });
       for (const row of rows) tally(bumpFromDb(row));
     } catch (error) {
       console.error('countBumpsSince failed', error?.message || error);
@@ -521,9 +521,9 @@ export async function listSavedListings(userId) {
     rows.push(row);
   };
   for (const row of savedListings) take(row);
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const dbRows = await db().savedListing.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
+      const dbRows = await plDb().savedListing.findMany({ where: { userId }, orderBy: { createdAt: 'desc' } });
       for (const row of dbRows) take(savedFromDb(row));
     } catch (error) {
       console.error('listSavedListings failed', error?.message || error);
@@ -542,7 +542,7 @@ export async function saveListing(input) {
     createdAt: new Date().toISOString(),
   };
   savedListings.push(row);
-  await persist('saveListing', () => db().savedListing.create({
+  await persist('saveListing', () => plDb().savedListing.create({
     data: { id: row.id, userId: row.userId, listingId: row.listingId, createdAt: new Date(row.createdAt) },
   }));
   return row;
@@ -556,9 +556,9 @@ export async function unsaveListing(userId, listingId) {
       removed = true;
     }
   }
-  if (DATABASE_ENABLED) {
+  if (PL_DB_AVAILABLE) {
     try {
-      const result = await db().savedListing.deleteMany({ where: { userId, listingId } });
+      const result = await plDb().savedListing.deleteMany({ where: { userId, listingId } });
       if (result.count > 0) removed = true;
     } catch (error) {
       console.error('unsaveListing failed', error?.message || error);

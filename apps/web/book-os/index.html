@@ -270,6 +270,18 @@ body:not(.live) .gated{display:none!important}</style>
 <div id="plrList"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the review queue.</p></div>
 </div></section>
 
+<!-- PEPPER LISTS — CHANNELS & POSTING (staff only, live data; Phase 2, 2026-11-21) -->
+<section class="panel gated" id="plchqPanel" style="margin-top:14px"><div class="ph"><div><h2>· Pepper Lists — Channels &amp; Posting</h2><p>Seller channel-connection requests and posting queues. Work a request: <b>Start</b> it, then <b>Fulfill</b> it with the real live URL once the link is done — the seller&rsquo;s card flips to Active with that link as proof — or <b>Decline</b> it with the reason the seller will see. Fulfilling needs the seller&rsquo;s agent grant ON for that channel (shown on each card). Facebook is never fulfilled here: sellers don&rsquo;t connect their own Facebook — listings post through the gateway queue below, via Top Speed&rsquo;s connected account, and a Posted outcome needs the seller&rsquo;s Facebook grant on (the platform owner&rsquo;s own listings follow his approval). Every action you record is logged on the seller&rsquo;s account.</p></div><span class="badge" id="plchqCount">STAFF</span></div>
+<div style="padding:14px 16px">
+<div id="plchqMsg" style="font-size:13.5px;margin-bottom:10px"></div>
+<h3 style="font-size:14px;margin:4px 0 8px">Connection requests</h3>
+<div id="plchqList"><p style="color:var(--mut);font-size:13.5px">Sign in above to work the channel queues.</p></div>
+<h3 style="font-size:14px;margin:16px 0 8px">Facebook gateway — cross-post queue</h3>
+<div id="plchqFbList"><p style="color:var(--mut);font-size:13.5px">Nothing loaded yet.</p></div>
+<h3 style="font-size:14px;margin:16px 0 8px">Syndication queue — eBay &amp; Google Shopping</h3>
+<div id="plchqSynList"><p style="color:var(--mut);font-size:13.5px">Nothing loaded yet.</p></div>
+</div></section>
+
 <section class="panel gated" id="inboxPanel" style="margin-top:14px"><div class="ph"><div><h2>· Email Manager — Inbox</h2><p>Every email to the managed mailboxes in one console: the <b>forwarded service@ inbox</b> (service@topspeedappliance.net forwards a copy of everything it receives here), plus <b>service@topspeedserviceos.com</b> and <b>booking@topspeedserviceos.com</b>. Mail from a known customer files onto their CRM record; anything else waits here unmatched — nothing is dropped. Replies go out through Resend from the address the mail was sent to, and only when you click send.</p></div><span class="badge" id="inboxCount">STAFF</span></div>
 <div style="padding:14px 16px">
 <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
@@ -552,6 +564,7 @@ function renderScorecard(d){
 function loadLive(){
   if(!LIVE) return;
   if(window.plrLoadReviews) plrLoadReviews();
+  if(window.plchqLoad) plchqLoad();
   if(window.inboxLoad) inboxLoad();
   if(window.intakeLoad) intakeLoad();
   apiFetch('/bookos/scorecard').then(function(j){ renderScorecard(j.data); }).catch(function(e){ toast('Scorecard error: '+e.message); });
@@ -2120,6 +2133,96 @@ function wsSuggestLoad(){
   if(w) w.addEventListener('change',wsPersistBoardFilters);
   wsApplyAutoRefresh();
 })();
+</script>
+<script>
+/* ============ PEPPER LISTS — CHANNELS & POSTING (Phase 2) ============
+   The staff side of the channel loops: connection requests from
+   /pepper-lists/channels/oversight worked through
+   POST /pepper-lists/channels/:id/transition, plus the Facebook
+   gateway queue and the eBay/Google syndication queue. Outcomes are
+   recorded only with real evidence (the live URL) — the server
+   enforces the grant gates and writes the seller-side audit log. */
+var plchqConns=[], plchqFb=[], plchqSyn=[];
+function plchqMsg(t,err){ var el=document.getElementById('plchqMsg'); if(el){ el.textContent=t||''; el.style.color=err?'#b00020':'var(--mut)'; } }
+function plchqLoad(){
+  if(!LIVE) return;
+  apiFetch('/pepper-lists/channels/oversight').then(function(j){ plchqConns=(j.data&&j.data.connections)||[]; plchqRenderConns(); }).catch(function(e){ plchqMsg('Channel requests could not load ('+e.message+').',true); });
+  apiFetch('/pepper-lists/cross-posts/queue').then(function(j){ plchqFb=(j.data&&j.data.crossPosts)||[]; plchqRenderFb(); }).catch(function(){});
+  apiFetch('/pepper-lists/syndication/queue').then(function(j){ plchqSyn=(j.data&&j.data.syndication)||[]; plchqRenderSyn(); }).catch(function(){});
+}
+window.plchqLoad=plchqLoad;
+function plchqWorkable(c){ return c.status==='PENDING'||c.status==='IN_PROGRESS'; }
+function plchqRenderConns(){
+  var el=document.getElementById('plchqList'); if(!el) return;
+  var badge=document.getElementById('plchqCount');
+  var open=plchqConns.filter(plchqWorkable).length;
+  if(badge) badge.textContent=open? (open+' OPEN') : 'CLEAR';
+  var rows=plchqConns.filter(function(c){ return c.status!=='NOT_CONNECTED'; });
+  if(!rows.length){ el.innerHTML='<div class="empty">No seller channel requests yet.</div>'; return; }
+  el.innerHTML=rows.map(function(c,i){
+    var who=c.user? (c.user.name||c.user.email||'Seller') : 'Seller';
+    var grant=c.agentAccessGranted? '<span class="tag" style="background:#e5f4ea;color:#0f7a3d">GRANT ON</span>' : '<span class="tag" style="background:#fde8e8;color:#b00020">GRANT OFF</span>';
+    var tags='<span class="tag">'+escH(c.status)+'</span>'+grant+(c.channel==='FACEBOOK'?'<span class="tag">GATEWAY — use the Facebook queue below</span>':'');
+    var proof=c.fulfillmentUrl? '<br>Live link: <a href="'+escH(c.fulfillmentUrl)+'" target="_blank" rel="noopener">'+escH(c.fulfillmentUrl)+'</a>' : (c.declineReason? '<br>Decline reason: '+escH(c.declineReason) : '');
+    var actions='';
+    if(c.status==='PENDING') actions+='<button class="btn ghost" onclick="plchqTransition('+i+',\'start\')">Start work</button>';
+    if(plchqWorkable(c)&&c.channel!=='FACEBOOK') actions+='<button class="btn primary" onclick="plchqTransition('+i+',\'fulfill\')">Fulfill with live URL</button>';
+    if(plchqWorkable(c)) actions+='<button class="btn ghost" onclick="plchqTransition('+i+',\'decline\')">Decline</button>';
+    var inputs='';
+    if(plchqWorkable(c)&&c.channel!=='FACEBOOK') inputs='<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="plchqUrl-'+i+'" type="url" placeholder="Live URL — the proof link (https://…)" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><input id="plchqReason-'+i+'" type="text" maxlength="500" placeholder="Decline reason (seller sees this)" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"></div>';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(who)+'</b><span class="age">'+escH(String(c.updatedAt||'').slice(0,10))+'</span></div>'+
+      '<div class="meta"><b>'+escH(c.channel)+'</b>'+(c.externalAccountLabel?' · '+escH(c.externalAccountLabel):'')+proof+'</div>'+
+      '<div class="tags">'+tags+'</div><div class="actions">'+actions+'</div>'+inputs+'</article>';
+  }).join('');
+}
+function plchqTransition(i,action){
+  var c=plchqConns.filter(function(x){ return x.status!=='NOT_CONNECTED'; })[i]; if(!c) return;
+  var body={action:action};
+  if(action==='fulfill'){ var u=document.getElementById('plchqUrl-'+i); body.url=(u&&u.value||'').trim(); if(!body.url){ toast('Paste the real live URL first — that link is the proof the seller sees'); return; } }
+  if(action==='decline'){ var r=document.getElementById('plchqReason-'+i); body.reason=(r&&r.value||'').trim(); if(body.reason.length<3){ toast('Write the decline reason first — the seller sees it'); return; } }
+  apiFetch('/pepper-lists/channels/'+c.id+'/transition',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Connection '+action+' recorded — logged on the seller\u2019s account',ICO_CHECK); plchqLoad(); })
+    .catch(function(e){ toast('Could not '+action+': '+e.message); });
+}
+function plchqRenderFb(){
+  var el=document.getElementById('plchqFbList'); if(!el) return;
+  if(!plchqFb.length){ el.innerHTML='<div class="empty">No listings waiting to post to Facebook.</div>'; return; }
+  el.innerHTML=plchqFb.map(function(r,i){
+    return '<article class="qcard"><div class="qtop"><b>'+escH(r.listingReference)+'</b><span class="age">'+escH(String(r.createdAt||'').slice(0,10))+'</span></div>'+
+      '<div class="meta">Target: '+escH(r.target||'MARKETPLACE')+' — post it through Top Speed\u2019s Facebook account, then record the real Facebook URL.</div>'+
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="plchqFbUrl-'+i+'" type="url" placeholder="Real Facebook URL (https://facebook.com/…)" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><button class="btn primary" onclick="plchqFbOutcome('+i+',\'POSTED\')">Record posted</button></div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="plchqFbErr-'+i+'" type="text" maxlength="500" placeholder="Could not post because…" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><button class="btn ghost" onclick="plchqFbOutcome('+i+',\'FAILED\')">Record failed</button></div></article>';
+  }).join('');
+}
+function plchqFbOutcome(i,status){
+  var r=plchqFb[i]; if(!r) return;
+  var body={status:status};
+  if(status==='POSTED'){ var u=document.getElementById('plchqFbUrl-'+i); body.externalUrl=(u&&u.value||'').trim(); if(!body.externalUrl){ toast('Paste the real Facebook URL first'); return; } }
+  else { var e=document.getElementById('plchqFbErr-'+i); body.error=(e&&e.value||'').trim(); if(body.error.length<3){ toast('Write why it could not post'); return; } }
+  apiFetch('/pepper-lists/cross-posts/'+r.id+'/outcome',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Facebook outcome recorded — logged on the seller\u2019s account',ICO_CHECK); plchqLoad(); })
+    .catch(function(err){ toast('Could not record: '+err.message); });
+}
+function plchqRenderSyn(){
+  var el=document.getElementById('plchqSynList'); if(!el) return;
+  if(!plchqSyn.length){ el.innerHTML='<div class="empty">No listings waiting for eBay or Google Shopping.</div>'; return; }
+  el.innerHTML=plchqSyn.map(function(r,i){
+    var isEbay=r.channel==='EBAY';
+    return '<article class="qcard"><div class="qtop"><b>'+escH(r.listingReference)+'</b><span class="age">'+escH(String(r.createdAt||'').slice(0,10))+'</span></div>'+
+      '<div class="meta">'+(isEbay?'eBay':'Google Shopping')+' — posts under the seller\u2019s own account; a Posted outcome needs their grant on for that channel.</div>'+
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><input id="plchqSynUrl-'+i+'" type="url" placeholder="'+(isEbay?'Real eBay listing URL (https://ebay.com/…)':'Merchant product ID or google.com link')+'" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><button class="btn primary" onclick="plchqSynOutcome('+i+',\'POSTED\')">Record posted</button></div>'+
+      '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><input id="plchqSynErr-'+i+'" type="text" maxlength="500" placeholder="Could not post because…" style="flex:1;min-width:220px;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:14px"><button class="btn ghost" onclick="plchqSynOutcome('+i+',\'FAILED\')">Record failed</button></div></article>';
+  }).join('');
+}
+function plchqSynOutcome(i,status){
+  var r=plchqSyn[i]; if(!r) return;
+  var body={status:status};
+  if(status==='POSTED'){ var u=document.getElementById('plchqSynUrl-'+i); var v=(u&&u.value||'').trim(); if(!v){ toast('Paste the real listing URL or product ID first'); return; } if(/^https:\/\//i.test(v)) body.externalUrl=v; else body.externalId=v; }
+  else { var e=document.getElementById('plchqSynErr-'+i); body.error=(e&&e.value||'').trim(); if(body.error.length<3){ toast('Write why it could not post'); return; } }
+  apiFetch('/pepper-lists/syndication/'+r.id+'/outcome',{method:'POST',body:JSON.stringify(body)})
+    .then(function(){ toast('Syndication outcome recorded — logged on the seller\u2019s account',ICO_CHECK); plchqLoad(); })
+    .catch(function(err){ toast('Could not record: '+err.message); });
+}
 </script>
 
 </body>

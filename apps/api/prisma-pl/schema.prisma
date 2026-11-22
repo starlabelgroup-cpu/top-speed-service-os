@@ -1,0 +1,391 @@
+// Pepper Lists — its OWN database (Ramone, 2026-11-21: "Pepperlists
+// should have own database on Top Speed service OS server").
+//
+// This schema owns ONLY Pepper-Lists-dedicated tables. Accounts/auth
+// stay in the main Service OS database (one account for everything);
+// rows here reference userId / connectionId as plain columns and the
+// app layer resolves them (the SubmissionMedia precedent — no
+// cross-database relations, no cross-database joins). Shared platform
+// spines also stay in the main database: the Connection intake table
+// (PL listings ride on its PEPPER_LISTS_SELL rows), SubmissionMedia
+// (shared with Scan & Send / service submissions), PaymentsSetting
+// and GiftCard (platform payments config).
+//
+// Datasource: PL_DATABASE_URL — a second database on the same Neon
+// project/server as the main Service OS database. Until that env var
+// is set, src/db/plClient.js falls back to the main database client,
+// so this schema changes nothing in production by itself. Migrations
+// for this database live in prisma-pl/migrations/ and are applied
+// with: npx prisma migrate deploy --schema prisma-pl/schema.prisma
+// (deliberately NOT part of the Vercel build command — the flip is
+// an operator step, see scripts/migrate-pepper-lists-db.mjs).
+
+generator plClient {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/pl-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PL_DATABASE_URL")
+}
+
+enum AdSubscriptionStatus {
+  NONE
+  GRANDFATHERED
+  ACTIVE
+  TRIALING
+  PAST_DUE
+  GRACE
+  SUSPENDED
+  OFFICE_GRANTED
+}
+
+enum SellerChannel {
+  FACEBOOK
+  GOOGLE_SHOPPING
+  EBAY
+  ETSY
+  WALMART
+  TIKTOK
+  YOUTUBE
+  INSTAGRAM
+  X
+  LINKEDIN
+  GOOGLE_BUSINESS
+  BING_PLACES
+  SEARCH_DIRECTORIES
+}
+
+enum SellerChannelKind {
+  SELL
+  POST
+}
+
+// Phase 2 (2026-11-21) adds the office-fulfillment lifecycle:
+// IN_PROGRESS (office is working a request), ACTIVE (office completed
+// the link and recorded the real evidence URL — deliberately NOT
+// named CONNECTED, which stays reserved for a real completed
+// self-serve connect flow), DECLINED (office recorded the reason).
+enum SellerChannelStatus {
+  NOT_CONNECTED
+  PENDING
+  IN_PROGRESS
+  ACTIVE
+  DECLINED
+  CONNECTED
+  ERROR
+  REVOKED
+}
+
+enum PepperListsCrossPostTarget {
+  MARKETPLACE
+  PAGE
+}
+
+enum PepperListsCrossPostStatus {
+  QUEUED
+  POSTED
+  FAILED
+}
+
+enum PepperListsSyndicationChannel {
+  EBAY
+  GOOGLE_SHOPPING
+}
+
+enum PepperListsSyndicationStatus {
+  QUEUED
+  POSTED
+  FAILED
+}
+
+enum PepperListsThreadStatus {
+  OPEN
+  REPORTED
+  CLOSED
+}
+
+model ListingProfile {
+  id           String    @id @default(uuid()) @db.Uuid
+  connectionId String    @unique
+  sellerUserId String?   @db.Uuid
+  status       String    @default("ACTIVE")
+  featured     Boolean   @default(false)
+  bumpedAt     DateTime?
+  viewCount    Int       @default(0)
+  soldAt       DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([sellerUserId, status])
+  @@index([featured, bumpedAt])
+}
+
+model ListingComment {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String
+  authorId   String   @db.Uuid
+  authorKind String
+  body       String
+  hidden     Boolean  @default(false)
+  removed    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([listingId, createdAt])
+  @@index([authorId, createdAt])
+}
+
+model ListingReport {
+  id         String   @id @default(uuid()) @db.Uuid
+  listingId  String
+  reporterId String   @db.Uuid
+  reason     String
+  details    String?
+  status     String   @default("NEW")
+  createdAt  DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([listingId])
+}
+
+model SellerSale {
+  id          String   @id @default(uuid()) @db.Uuid
+  listingId   String   @unique
+  sellerId    String   @db.Uuid
+  buyerId     String?  @db.Uuid
+  buyerEmail  String?
+  completedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([sellerId, completedAt])
+  @@index([buyerId, completedAt])
+}
+
+model SellerReview {
+  id        String   @id @default(uuid()) @db.Uuid
+  saleId    String   @unique
+  sellerId  String   @db.Uuid
+  buyerId   String   @db.Uuid
+  rating    Int
+  title     String
+  body      String
+  status    String   @default("PUBLISHED")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sellerId, status, createdAt])
+  @@index([buyerId, createdAt])
+}
+
+model ListingBump {
+  id        String   @id @default(uuid()) @db.Uuid
+  listingId String
+  sellerId  String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  @@index([sellerId, createdAt])
+}
+
+model SavedListing {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  listingId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, listingId])
+  @@index([userId, createdAt])
+}
+
+model SellerPlan {
+  id                String   @id @default(uuid()) @db.Uuid
+  key               String   @unique
+  name              String
+  description       String?
+  monthlyPriceCents Int?
+  currency          String   @default("usd")
+  features          Json     @default("{}")
+  limits            Json     @default("{}")
+  isActive          Boolean  @default(true)
+  sortOrder         Int      @default(0)
+  stripeProductId   String?
+  stripePriceId     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  subscriptions SellerSubscription[]
+
+  @@index([isActive, sortOrder])
+}
+
+// userId references the main-database User row (no cross-database
+// relation — resolved through the app layer).
+model SellerSubscription {
+  id                   String               @id @default(uuid()) @db.Uuid
+  userId               String               @unique @db.Uuid
+  planId               String?              @db.Uuid
+  status               AdSubscriptionStatus @default(NONE)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  pastDueAt            DateTime?
+  pendingPlanId        String?              @db.Uuid
+  pendingEffectiveAt   DateTime?
+  cancelAtPeriodEnd    Boolean              @default(false)
+  grantedById          String?              @db.Uuid
+  grantedAt            DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  plan SellerPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([stripeSubscriptionId])
+}
+
+// userId references the main-database User row (no cross-database
+// relation — the oversight read resolves seller identity through the
+// app layer, findUserByIdDual-style).
+model SellerChannelConnection {
+  id                   String              @id @default(uuid()) @db.Uuid
+  userId               String              @db.Uuid
+  channel              SellerChannel
+  kind                 SellerChannelKind
+  status               SellerChannelStatus @default(NOT_CONNECTED)
+  externalAccountLabel String?
+  agentAccessGranted   Boolean             @default(false)
+  connectedAt          DateTime?
+  lastSyncAt           DateTime?
+  meta                 Json?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  audit SellerChannelAudit[]
+
+  @@unique([userId, channel])
+  @@index([status])
+}
+
+model SellerChannelAudit {
+  id           String   @id @default(uuid()) @db.Uuid
+  connectionId String   @db.Uuid
+  userId       String   @db.Uuid
+  action       String
+  detail       String?
+  createdAt    DateTime @default(now())
+
+  connection SellerChannelConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([connectionId, createdAt])
+  @@index([userId, createdAt])
+}
+
+model PepperListsCrossPost {
+  id               String                     @id @default(uuid()) @db.Uuid
+  connectionId     String                     @db.Uuid
+  listingReference String
+  userId           String                     @db.Uuid
+  target           PepperListsCrossPostTarget
+  pageId           String?
+  status           PepperListsCrossPostStatus @default(QUEUED)
+  externalId       String?
+  externalUrl      String?
+  error            String?
+  outcomeById      String?                    @db.Uuid
+  postedAt         DateTime?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+
+  @@index([connectionId, target, status])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+model PepperListsSyndication {
+  id               String                          @id @default(uuid()) @db.Uuid
+  connectionId     String                          @db.Uuid
+  listingReference String
+  userId           String                          @db.Uuid
+  channel          PepperListsSyndicationChannel
+  status           PepperListsSyndicationStatus    @default(QUEUED)
+  externalId       String?
+  externalUrl      String?
+  error            String?
+  outcomeById      String?                         @db.Uuid
+  postedAt         DateTime?
+  createdAt        DateTime                        @default(now())
+  updatedAt        DateTime                        @updatedAt
+
+  @@index([connectionId, channel, status])
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+}
+
+model PepperListsThread {
+  id               String                  @id @default(uuid()) @db.Uuid
+  connectionId     String                  @db.Uuid
+  listingReference String
+  sellerUserId     String                  @db.Uuid
+  buyerUserId      String                  @db.Uuid
+  status           PepperListsThreadStatus @default(OPEN)
+  lastMessageAt    DateTime?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@unique([connectionId, buyerUserId])
+  @@index([sellerUserId, lastMessageAt])
+  @@index([buyerUserId, lastMessageAt])
+  @@index([status, updatedAt])
+}
+
+model PepperListsMessage {
+  id           String    @id @default(uuid()) @db.Uuid
+  threadId     String    @db.Uuid
+  senderUserId String    @db.Uuid
+  body         String
+  readAt       DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([threadId, createdAt])
+  @@index([threadId, readAt])
+}
+
+model PepperListsOrder {
+  id                    String    @id @default(uuid()) @db.Uuid
+  companyId             String    @db.Uuid
+  listingConnectionId   String    @db.Uuid
+  listingReference      String
+  sellerUserId          String    @db.Uuid
+  buyerUserId           String?   @db.Uuid
+  buyerEmail            String?
+  amountCents           Int
+  feeCents              Int       @default(0)
+  currency              String    @default("usd")
+  status                String    @default("PENDING")
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  checkoutUrl           String?
+  sellerStripeAccountId String?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([sellerUserId, createdAt])
+  @@index([buyerUserId, createdAt])
+  @@index([listingConnectionId, status])
+}
+
+model SellerConnectAccount {
+  id               String   @id @default(uuid()) @db.Uuid
+  companyId        String   @db.Uuid
+  userId           String   @unique @db.Uuid
+  stripeAccountId  String?  @unique
+  status           String   @default("NOT_STARTED")
+  chargesEnabled   Boolean  @default(false)
+  payoutsEnabled   Boolean  @default(false)
+  detailsSubmitted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([companyId, status])
+}

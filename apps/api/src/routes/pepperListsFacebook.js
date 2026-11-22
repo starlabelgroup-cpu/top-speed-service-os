@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { store } from '../data/store.js';
 import { countSubmissionMedia, listSubmissionMedia } from '../db/submissionMediaRepo.js';
 import { crossPostsRepo } from '../db/pepperListsCrossPostsRepo.js';
+import { sellerChannelsRepo } from '../db/sellerChannelsRepo.js';
+import { findUserByIdDual } from '../services/pepperSyndication.js';
+import { ROLES } from '../config/security.js';
 import { getPaymentsSetting } from '../db/paymentsRailsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
@@ -311,6 +314,29 @@ router.post('/pepper-lists/cross-posts/:id/outcome', ...staffGate, async (req, r
     if (data.status === 'FAILED' && (!data.error || data.error.length < 3)) {
       return res.status(400).json({ error: 'A failed outcome needs the reason it could not post' });
     }
+    const existing = await crossPostsRepo.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Cross-post not found' });
+    // The Facebook gateway (Ramone, 2026-11-21: "Muse is the
+    // gateway to Facebook"): grant check → owner approval (this
+    // staff outcome IS the approval step) → post via Top Speed's
+    // connected account → real URL recorded → action logged on the
+    // seller's account. A POSTED outcome therefore requires the
+    // seller's Facebook agent grant ON — except when the seller IS
+    // the platform owner, whose own per-listing approval rule
+    // governs his account. FAILED bookkeeping stays ungated.
+    if (data.status === 'POSTED') {
+      const seller = await findUserByIdDual(existing.userId);
+      const sellerIsOwner = Array.isArray(seller?.roles) && seller.roles.includes(ROLES.COMPANY_OWNER);
+      if (!sellerIsOwner) {
+        const conn = await sellerChannelsRepo.findForUserChannel(existing.userId, 'FACEBOOK');
+        if (!conn || conn.agentAccessGranted !== true) {
+          return res.status(403).json({
+            error: 'The seller has not granted agent access for Facebook, so Pepper cannot post for them. Ask the seller to turn on "Allow Pepper to manage this channel" on their Facebook channel card first.',
+            code: 'AGENT_GRANT_REQUIRED',
+          });
+        }
+      }
+    }
     const { row, conflict } = await crossPostsRepo.markOutcome(req.params.id, {
       status: data.status,
       externalId: data.externalId,
@@ -325,6 +351,13 @@ router.post('/pepper-lists/cross-posts/:id/outcome', ...staffGate, async (req, r
         data: { crossPost: publicCrossPost(row) },
       });
     }
+    // The agent-action log the seller's channel page promises.
+    await sellerChannelsRepo.recordAgentAction(
+      row.userId, 'FACEBOOK', 'SELL',
+      row.status === 'POSTED'
+        ? `Pepper posted listing ${row.listingReference} to Facebook through the Top Speed account — ${row.externalUrl}`
+        : `Pepper could not post listing ${row.listingReference} to Facebook — ${row.error}`,
+    );
     return res.json({ data: { crossPost: publicCrossPost(row) } });
   } catch (error) {
     return next(error);

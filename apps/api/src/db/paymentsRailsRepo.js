@@ -1,5 +1,6 @@
 import { createId } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DATABASE_ENABLED, plDb } from './plClient.js';
 
 /**
  * New money rails — repository (2026-11-20, Wave 4).
@@ -273,11 +274,11 @@ const prismaRepo = {
   },
 
   async getConnectAccountByUserId(userId) {
-    const row = await db().sellerConnectAccount.findUnique({ where: { userId } });
+    const row = await plDb().sellerConnectAccount.findUnique({ where: { userId } });
     return toConnectAccount(row);
   },
   async upsertConnectAccount(userId, data) {
-    const row = await db().sellerConnectAccount.upsert({
+    const row = await plDb().sellerConnectAccount.upsert({
       where: { userId },
       create: { userId, ...data },
       update: data,
@@ -286,31 +287,31 @@ const prismaRepo = {
   },
 
   async createOrder(data) {
-    const row = await db().pepperListsOrder.create({ data });
+    const row = await plDb().pepperListsOrder.create({ data });
     return toOrder(row);
   },
   async getOrderById(id) {
-    const row = await db().pepperListsOrder.findUnique({ where: { id } });
+    const row = await plDb().pepperListsOrder.findUnique({ where: { id } });
     return toOrder(row);
   },
   async getOrderBySessionId(sessionId) {
     if (!sessionId) return null;
-    const row = await db().pepperListsOrder.findUnique({ where: { stripeSessionId: sessionId } });
+    const row = await plDb().pepperListsOrder.findUnique({ where: { stripeSessionId: sessionId } });
     return toOrder(row);
   },
   async updateOrder(id, data) {
-    const row = await db().pepperListsOrder.update({ where: { id }, data });
+    const row = await plDb().pepperListsOrder.update({ where: { id }, data });
     return toOrder(row);
   },
   async findOrderForListing(listingConnectionId, statuses) {
-    const row = await db().pepperListsOrder.findFirst({
+    const row = await plDb().pepperListsOrder.findFirst({
       where: { listingConnectionId, status: { in: statuses } },
       orderBy: { createdAt: 'desc' },
     });
     return toOrder(row);
   },
   async listOrdersForUser(userId) {
-    const rows = await db().pepperListsOrder.findMany({
+    const rows = await plDb().pepperListsOrder.findMany({
       where: { OR: [{ buyerUserId: userId }, { sellerUserId: userId }] },
       orderBy: { createdAt: 'desc' },
     });
@@ -394,7 +395,11 @@ const prismaRepo = {
   },
 };
 
-const repo = DATABASE_ENABLED ? prismaRepo : memoryRepo;
+// Pepper Lists orders + seller connect accounts live in the Pepper
+// Lists database (plDb — which falls back to the main client until
+// PL_DATABASE_URL is set); the payments setting and gift cards are
+// platform records and stay on the main client.
+const repo = DATABASE_ENABLED || PL_DATABASE_ENABLED ? prismaRepo : memoryRepo;
 
 export async function getPaymentsSetting() {
   return repo.getSetting();

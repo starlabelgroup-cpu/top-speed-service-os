@@ -1,5 +1,6 @@
 import { PLATFORM_COMPANY_ID, appendEvent, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
+import { plDb } from '../db/plClient.js';
 import { isMasterAccount } from './speedyVerify.js';
 
 /**
@@ -89,14 +90,17 @@ const BLOCKERS = [
       return prisma.dispatchAssignment.count({ where: { providerId: { in: providers.map((p) => p.id) } } });
     } },
   { key: 'appliances', label: 'connected appliance', count: (prisma, t) => prisma.customerAppliance.count({ where: { userId: t.id } }) },
-  { key: 'listings', label: 'marketplace listing', count: (prisma, t) => prisma.listingProfile.count({ where: { sellerUserId: t.id } }) },
-  { key: 'sellerSales', label: 'marketplace sale', count: (prisma, t) => prisma.sellerSale.count({ where: { OR: [{ sellerId: t.id }, { buyerId: t.id }] } }) },
-  { key: 'sellerReviews', label: 'marketplace review', count: (prisma, t) => prisma.sellerReview.count({ where: { OR: [{ sellerId: t.id }, { buyerId: t.id }] } }) },
-  { key: 'listingBumps', label: 'listing bump', count: (prisma, t) => prisma.listingBump.count({ where: { sellerId: t.id } }) },
-  { key: 'crossPosts', label: 'marketplace cross-post', count: (prisma, t) => prisma.pepperListsCrossPost.count({ where: { userId: t.id } }) },
-  { key: 'syndications', label: 'marketplace syndication request', count: (prisma, t) => prisma.pepperListsSyndication.count({ where: { userId: t.id } }) },
-  { key: 'messageThreads', label: 'marketplace message thread', count: (prisma, t) => prisma.pepperListsThread.count({ where: { OR: [{ sellerUserId: t.id }, { buyerUserId: t.id }] } }) },
-  { key: 'payoutAccount', label: 'marketplace payout account', count: (prisma, t) => prisma.sellerConnectAccount.count({ where: { userId: t.id } }) },
+  // Pepper Lists business records live in the Pepper Lists database
+  // (pl: true — counted through plDb(), which falls back to the main
+  // client until PL_DATABASE_URL is set).
+  { key: 'listings', pl: true, label: 'marketplace listing', count: (prisma, t) => prisma.listingProfile.count({ where: { sellerUserId: t.id } }) },
+  { key: 'sellerSales', pl: true, label: 'marketplace sale', count: (prisma, t) => prisma.sellerSale.count({ where: { OR: [{ sellerId: t.id }, { buyerId: t.id }] } }) },
+  { key: 'sellerReviews', pl: true, label: 'marketplace review', count: (prisma, t) => prisma.sellerReview.count({ where: { OR: [{ sellerId: t.id }, { buyerId: t.id }] } }) },
+  { key: 'listingBumps', pl: true, label: 'listing bump', count: (prisma, t) => prisma.listingBump.count({ where: { sellerId: t.id } }) },
+  { key: 'crossPosts', pl: true, label: 'marketplace cross-post', count: (prisma, t) => prisma.pepperListsCrossPost.count({ where: { userId: t.id } }) },
+  { key: 'syndications', pl: true, label: 'marketplace syndication request', count: (prisma, t) => prisma.pepperListsSyndication.count({ where: { userId: t.id } }) },
+  { key: 'messageThreads', pl: true, label: 'marketplace message thread', count: (prisma, t) => prisma.pepperListsThread.count({ where: { OR: [{ sellerUserId: t.id }, { buyerUserId: t.id }] } }) },
+  { key: 'payoutAccount', pl: true, label: 'marketplace payout account', count: (prisma, t) => prisma.sellerConnectAccount.count({ where: { userId: t.id } }) },
   { key: 'pmProperties', label: 'property-manager property', count: (prisma, t) => prisma.pmProperty.count({ where: { ownerId: t.id } }) },
   { key: 'pmUnits', label: 'property-manager unit', count: (prisma, t) => prisma.pmUnit.count({ where: { ownerId: t.id } }) },
   { key: 'pmTenantLinks', label: 'property-manager tenant link', count: (prisma, t) => prisma.pmTenantLink.count({ where: { ownerId: t.id } }) },
@@ -118,7 +122,7 @@ async function countBlockers(target) {
   if (DATABASE_ENABLED) {
     const prisma = db();
     for (const blocker of BLOCKERS) {
-      const n = await blocker.count(prisma, target);
+      const n = await blocker.count(blocker.pl ? plDb() : prisma, target);
       if (n > 0) blockers[blocker.key] = n;
     }
     return blockers;
@@ -151,6 +155,16 @@ const ARTIFACT_DELETES = [
 
 async function deleteAccountRows(target) {
   if (DATABASE_ENABLED) {
+    // Pepper Lists account-owned rows (channel connections + their
+    // audit trail, the seller subscription, saved listings) live in
+    // the Pepper Lists database, where no cross-database cascade can
+    // reach them — delete them FIRST, so a failure there aborts the
+    // removal before the account itself dies. Business records were
+    // already proven absent by the blocker counts above.
+    const pl = plDb();
+    await pl.sellerChannelConnection.deleteMany({ where: { userId: target.id } });
+    await pl.sellerSubscription.deleteMany({ where: { userId: target.id } });
+    await pl.savedListing.deleteMany({ where: { userId: target.id } });
     const prisma = db();
     const ops = ARTIFACT_DELETES.map((model) => prisma[model].deleteMany({ where: { userId: target.id } }));
     ops.push(prisma.user.delete({ where: { id: target.id } }));

@@ -281,6 +281,16 @@ async function main() {
 
   check('outcome by seller 403', (await api(BASE, `/pepper-lists/cross-posts/${xp1Id}/outcome`, { token: a, method: 'POST', body: { status: 'POSTED', externalUrl: 'https://www.facebook.com/marketplace/item/123' } })).status, 403);
   check('outcome POSTED with non-Facebook URL 400', (await api(BASE, `/pepper-lists/cross-posts/${xp1Id}/outcome`, { token: staff, method: 'POST', body: { status: 'POSTED', externalUrl: 'https://example.com/item/123' } })).status, 400);
+  // Phase 2 (2026-11-21) — the Facebook gateway gate: a POSTED
+  // outcome requires the seller's Facebook agent grant ON (grant
+  // check → owner approval → post → URL → logged). The Phase 1
+  // version of this suite predates the gate; the flow below grants
+  // first, exactly as a real seller now must.
+  const postedNoGrant = await api(BASE, `/pepper-lists/cross-posts/${xp1Id}/outcome`, { token: staff, method: 'POST', body: { status: 'POSTED', externalUrl: 'https://www.facebook.com/marketplace/item/1234567890', externalId: '1234567890' } });
+  check('outcome POSTED refused while the seller grant is OFF', postedNoGrant.status, 403);
+  check('gateway refusal code', postedNoGrant.json.code, 'AGENT_GRANT_REQUIRED');
+  const grantFb = await api(BASE, '/pepper-lists/channels/FACEBOOK/agent-access', { token: a, method: 'PATCH', body: { granted: true } });
+  check('seller grants Facebook agent access', grantFb.json.data.connection.agentAccessGranted, true);
   const posted = await api(BASE, `/pepper-lists/cross-posts/${xp1Id}/outcome`, { token: staff, method: 'POST', body: { status: 'POSTED', externalUrl: 'https://www.facebook.com/marketplace/item/1234567890', externalId: '1234567890' } });
   check('outcome POSTED 200', posted.status, 200);
   check('outcome stored POSTED', posted.json.data.crossPost.status, 'POSTED');

@@ -269,6 +269,19 @@ router.post('/pepper-lists/syndication/:id/outcome', ...staffGate, async (req, r
     if (data.status === 'FAILED' && (!data.error || data.error.length < 3)) {
       return res.status(400).json({ error: 'A failed outcome needs the reason it could not post' });
     }
+    // Phase 2 grant enforcement (2026-11-21): a POSTED outcome means
+    // the office posted under the seller's OWN account on that
+    // channel — allowed only while the seller's agent-management
+    // grant for the channel is ON. FAILED bookkeeping stays ungated.
+    if (data.status === 'POSTED') {
+      const conn = await sellerChannelsRepo.findForUserChannel(existing.userId, existing.channel);
+      if (!conn || conn.agentAccessGranted !== true) {
+        return res.status(403).json({
+          error: 'The seller has not granted agent access for this channel, so the office cannot post under their account. Ask the seller to turn on "Allow Pepper to manage this channel" first.',
+          code: 'AGENT_GRANT_REQUIRED',
+        });
+      }
+    }
     const { row, conflict } = await syndicationRepo.markOutcome(req.params.id, {
       status: data.status,
       externalId: data.externalId,
@@ -283,6 +296,13 @@ router.post('/pepper-lists/syndication/:id/outcome', ...staffGate, async (req, r
         data: { syndication: publicSyndication(row) },
       });
     }
+    // The agent-action log the seller's channel page promises.
+    await sellerChannelsRepo.recordAgentAction(
+      row.userId, row.channel, 'SELL',
+      row.status === 'POSTED'
+        ? `Pepper posted listing ${row.listingReference} to ${row.channel === 'EBAY' ? 'eBay' : 'Google Shopping'} — ${row.externalUrl || row.externalId}`
+        : `Pepper could not post listing ${row.listingReference} to ${row.channel === 'EBAY' ? 'eBay' : 'Google Shopping'} — ${row.error}`,
+    );
     return res.json({ data: { syndication: publicSyndication(row) } });
   } catch (error) {
     return next(error);

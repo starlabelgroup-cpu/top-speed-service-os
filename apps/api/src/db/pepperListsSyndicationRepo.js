@@ -1,5 +1,5 @@
 import { createId } from '../data/store.js';
-import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DB_AVAILABLE, plDb } from './plClient.js';
 
 /**
  * Pepper Lists — Phase 2 syndication queue repository (2026-11-20,
@@ -29,38 +29,38 @@ const prismaRepo = {
   async create({ connectionId, listingReference, userId, channel }) {
     const queued = await this.findQueued(connectionId, channel);
     if (queued) return { row: queued, duplicate: true };
-    const row = await db().pepperListsSyndication.create({
+    const row = await plDb().pepperListsSyndication.create({
       data: { connectionId, listingReference, userId, channel },
     });
     return { row, duplicate: false };
   },
   async findQueued(connectionId, channel) {
-    return db().pepperListsSyndication.findFirst({
+    return plDb().pepperListsSyndication.findFirst({
       where: { connectionId, channel, status: 'QUEUED' },
       orderBy: { createdAt: 'asc' },
     });
   },
   async listForConnection(connectionId) {
-    return db().pepperListsSyndication.findMany({
+    return plDb().pepperListsSyndication.findMany({
       where: { connectionId },
       orderBy: { createdAt: 'desc' },
     });
   },
   async listQueued(limit = 200) {
-    return db().pepperListsSyndication.findMany({
+    return plDb().pepperListsSyndication.findMany({
       where: { status: 'QUEUED' },
       orderBy: { createdAt: 'asc' },
       take: limit,
     });
   },
   async findById(id) {
-    return db().pepperListsSyndication.findUnique({ where: { id } });
+    return plDb().pepperListsSyndication.findUnique({ where: { id } });
   },
   async markOutcome(id, { status, externalId, externalUrl, error, outcomeById }) {
     const existing = await this.findById(id);
     if (!existing) return { row: null, conflict: false };
     if (existing.status !== 'QUEUED') return { row: existing, conflict: true };
-    const row = await db().pepperListsSyndication.update({
+    const row = await plDb().pepperListsSyndication.update({
       where: { id },
       data: {
         status,
@@ -122,4 +122,4 @@ const memoryRepo = {
   },
 };
 
-export const syndicationRepo = DATABASE_ENABLED ? prismaRepo : memoryRepo;
+export const syndicationRepo = PL_DB_AVAILABLE ? prismaRepo : memoryRepo;

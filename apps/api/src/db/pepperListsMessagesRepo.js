@@ -1,5 +1,5 @@
 import { createId } from '../data/store.js';
-import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DB_AVAILABLE, plDb } from './plClient.js';
 
 /**
  * Pepper Lists — buyer–seller messaging repository (2026-11-20,
@@ -26,18 +26,18 @@ const memoryMessages = [];
 
 const prismaRepo = {
   async getOrCreate({ connectionId, listingReference, sellerUserId, buyerUserId }) {
-    const existing = await db().pepperListsThread.findUnique({
+    const existing = await plDb().pepperListsThread.findUnique({
       where: { connectionId_buyerUserId: { connectionId, buyerUserId } },
     });
     if (existing) return { thread: existing, created: false };
     try {
-      const thread = await db().pepperListsThread.create({
+      const thread = await plDb().pepperListsThread.create({
         data: { connectionId, listingReference, sellerUserId, buyerUserId },
       });
       return { thread, created: true };
     } catch (error) {
       // A concurrent first message won the unique race — re-read.
-      const row = await db().pepperListsThread.findUnique({
+      const row = await plDb().pepperListsThread.findUnique({
         where: { connectionId_buyerUserId: { connectionId, buyerUserId } },
       });
       if (row) return { thread: row, created: false };
@@ -45,53 +45,53 @@ const prismaRepo = {
     }
   },
   async findById(id) {
-    return db().pepperListsThread.findUnique({ where: { id } });
+    return plDb().pepperListsThread.findUnique({ where: { id } });
   },
   async listForUser(userId) {
-    return db().pepperListsThread.findMany({
+    return plDb().pepperListsThread.findMany({
       where: { OR: [{ buyerUserId: userId }, { sellerUserId: userId }] },
       orderBy: [{ lastMessageAt: 'desc' }, { createdAt: 'desc' }],
     });
   },
   async listReported(limit = 100) {
-    return db().pepperListsThread.findMany({
+    return plDb().pepperListsThread.findMany({
       where: { status: 'REPORTED' },
       orderBy: { updatedAt: 'asc' },
       take: limit,
     });
   },
   async setStatus(id, status) {
-    return db().pepperListsThread.update({ where: { id }, data: { status } });
+    return plDb().pepperListsThread.update({ where: { id }, data: { status } });
   },
   async addMessage({ threadId, senderUserId, body }) {
-    const message = await db().pepperListsMessage.create({
+    const message = await plDb().pepperListsMessage.create({
       data: { threadId, senderUserId, body },
     });
-    await db().pepperListsThread.update({
+    await plDb().pepperListsThread.update({
       where: { id: threadId },
       data: { lastMessageAt: message.createdAt },
     });
     return message;
   },
   async listMessages(threadId) {
-    return db().pepperListsMessage.findMany({
+    return plDb().pepperListsMessage.findMany({
       where: { threadId },
       orderBy: { createdAt: 'asc' },
     });
   },
   async findLastMessage(threadId) {
-    return db().pepperListsMessage.findFirst({
+    return plDb().pepperListsMessage.findFirst({
       where: { threadId },
       orderBy: { createdAt: 'desc' },
     });
   },
   async countUnread(threadId, userId) {
-    return db().pepperListsMessage.count({
+    return plDb().pepperListsMessage.count({
       where: { threadId, senderUserId: { not: userId }, readAt: null },
     });
   },
   async markRead(threadId, readerUserId) {
-    return db().pepperListsMessage.updateMany({
+    return plDb().pepperListsMessage.updateMany({
       where: { threadId, senderUserId: { not: readerUserId }, readAt: null },
       data: { readAt: new Date() },
     });
@@ -169,4 +169,4 @@ const memoryRepo = {
   },
 };
 
-export const messagesRepo = DATABASE_ENABLED ? prismaRepo : memoryRepo;
+export const messagesRepo = PL_DB_AVAILABLE ? prismaRepo : memoryRepo;

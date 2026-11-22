@@ -1,5 +1,5 @@
 import { createId } from '../data/store.js';
-import { DATABASE_ENABLED, db } from './client.js';
+import { PL_DB_AVAILABLE, plDb } from './plClient.js';
 
 /**
  * Pepper Lists — Facebook cross-post queue repository (2026-11-20,
@@ -26,38 +26,38 @@ const prismaRepo = {
   async create({ connectionId, listingReference, userId, target, pageId }) {
     const queued = await this.findQueued(connectionId, target);
     if (queued) return { row: queued, duplicate: true };
-    const row = await db().pepperListsCrossPost.create({
+    const row = await plDb().pepperListsCrossPost.create({
       data: { connectionId, listingReference, userId, target, pageId: pageId ?? null },
     });
     return { row, duplicate: false };
   },
   async findQueued(connectionId, target) {
-    return db().pepperListsCrossPost.findFirst({
+    return plDb().pepperListsCrossPost.findFirst({
       where: { connectionId, target, status: 'QUEUED' },
       orderBy: { createdAt: 'asc' },
     });
   },
   async listForConnection(connectionId) {
-    return db().pepperListsCrossPost.findMany({
+    return plDb().pepperListsCrossPost.findMany({
       where: { connectionId },
       orderBy: { createdAt: 'desc' },
     });
   },
   async listQueued(limit = 200) {
-    return db().pepperListsCrossPost.findMany({
+    return plDb().pepperListsCrossPost.findMany({
       where: { status: 'QUEUED' },
       orderBy: { createdAt: 'asc' },
       take: limit,
     });
   },
   async findById(id) {
-    return db().pepperListsCrossPost.findUnique({ where: { id } });
+    return plDb().pepperListsCrossPost.findUnique({ where: { id } });
   },
   async markOutcome(id, { status, externalId, externalUrl, error, outcomeById }) {
     const existing = await this.findById(id);
     if (!existing) return { row: null, conflict: false };
     if (existing.status !== 'QUEUED') return { row: existing, conflict: true };
-    const row = await db().pepperListsCrossPost.update({
+    const row = await plDb().pepperListsCrossPost.update({
       where: { id },
       data: {
         status,
@@ -119,4 +119,4 @@ const memoryRepo = {
   },
 };
 
-export const crossPostsRepo = DATABASE_ENABLED ? prismaRepo : memoryRepo;
+export const crossPostsRepo = PL_DB_AVAILABLE ? prismaRepo : memoryRepo;

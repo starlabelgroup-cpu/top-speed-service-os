@@ -2973,29 +2973,32 @@ var PLCH_PLACEHOLDERS={
   BING_PLACES:'Your business name, exactly as on Bing Places',
   SEARCH_DIRECTORIES:'Your business name'
 };
-var PLCH_STATUS={NOT_CONNECTED:['Not connected','none'],PENDING:['Pending','pend'],CONNECTED:['Connected','live'],ERROR:['Needs attention','pend'],REVOKED:['Disconnected','none']};
+var PLCH_STATUS={NOT_CONNECTED:['Not connected','none'],PENDING:['Pending','pend'],IN_PROGRESS:['In progress','pend'],ACTIVE:['Active','live'],DECLINED:['Not completed','none'],CONNECTED:['Connected','live'],ERROR:['Needs attention','pend'],REVOKED:['Disconnected','none']};
 function plchCard(ch){
   var conn=ch.connection||{}; var st=PLCH_STATUS[conn.status]||PLCH_STATUS.NOT_CONNECTED;
   var key=ch.key;
   var h='<div class="plch-card" data-plch="'+key+'">';
   h+='<div class="plch-top">'+(PLCH_ICONS[key]||'')+'<h3>'+plchEsc(ch.label)+'</h3><span class="plch-chip '+st[1]+'">'+st[0]+'</span></div>';
   h+='<p>'+plchEsc(ch.blurb)+'</p>';
-  if(key==='FACEBOOK'&&!conn.platformManaged&&window.PL_PLATFORM_FB&&window.PL_PLATFORM_FB.connected){ h+='<div class="plch-steps">Top Speed\u2019s Facebook account is connected — you don\u2019t need your own to sell there: confirm a listing, tap <b>Post to Facebook</b> on it, and Pepper posts it for you after the owner\u2019s approval. Facebook connection for your own account is coming — for now, Top Speed posts for you.</div>'; }
+  if(key==='FACEBOOK'&&!conn.platformManaged&&window.PL_PLATFORM_FB&&window.PL_PLATFORM_FB.connected){ h+='<div class="plch-steps">Top Speed\u2019s Facebook account is connected — you don\u2019t need your own to sell there: confirm a listing, tap <b>Post to Facebook</b> on it, and Pepper posts it for you through Top Speed\u2019s account after the owner\u2019s approval. Your agent grant below must be on for Pepper to post for you. Facebook connection for your own account is coming — for now, Top Speed posts for you.</div>'; }
   if(conn.externalAccountLabel){ h+='<p class="plch-acct">Account: <b>'+plchEsc(conn.externalAccountLabel)+'</b></p>'; }
-  if(conn.status==='PENDING'){ h+='<div class="plch-steps">'+plchEsc(ch.nextSteps)+'</div>'; }
+  if(conn.status==='PENDING'){ h+='<div class="plch-steps">'+plchEsc(ch.nextSteps)+'<br><br>Your request is with the Top Speed office — this card updates as they work it: In progress, then Active with the live link, or Not completed with the reason.</div>'; }
+  if(conn.status==='IN_PROGRESS'){ h+='<div class="plch-steps">The Top Speed office is working on this connection now. When it is done, this card shows <b>Active</b> with the live link as proof.</div>'; }
+  if(conn.status==='ACTIVE'){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">Active — set up for you by the Top Speed office'+(conn.fulfilledAt?' on '+plchEsc(String(conn.fulfilledAt).slice(0,10)):'')+'.'+(conn.fulfillmentUrl?' <a href="'+plchEsc(conn.fulfillmentUrl)+'" target="_blank" rel="noopener" style="color:var(--lime);font-weight:700">See it live</a>':'')+'</div>'; }
+  if(conn.status==='DECLINED'){ h+='<div class="plch-steps">The office could not complete this one'+(conn.declineReason?': <b>'+plchEsc(conn.declineReason)+'</b>':'')+'. You can fix the account name above and request again.</div>'; }
   if(conn.status==='CONNECTED'&&conn.platformManaged){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">Connected through Top Speed\u2019s Facebook account — <b>'+plchEsc(conn.platformAccountName||conn.externalAccountLabel||'')+'</b>, verified '+plchEsc(String(conn.platformVerifiedAt||'').slice(0,10))+'. Pepper posts your listings through this account after your approval — use Post to Facebook on a listing. Connecting your OWN Facebook account is coming with Facebook Login (Phase B); for now, Top Speed posts for you.</div>'; }
   else if(conn.status==='CONNECTED'){ h+='<div class="plch-steps" style="color:var(--lime);background:rgba(183,227,60,.07);border-color:rgba(183,227,60,.35)">This channel is connected to your account.</div>'; }
   if(conn.platformManaged){
     /* Platform-managed connection: presented read-only — there is no
        seller-side row to disconnect; the connection is Top Speed's. */
   }
-  else if(conn.status!=='PENDING'&&conn.status!=='CONNECTED'){
+  else if(conn.status!=='PENDING'&&conn.status!=='CONNECTED'&&conn.status!=='IN_PROGRESS'&&conn.status!=='ACTIVE'){
     h+='<label class="plch-lab">Your account on this channel<input type="text" maxlength="120" data-plch-label="'+key+'" placeholder="'+plchEsc(PLCH_PLACEHOLDERS[key]||'Your account name or ID')+'"></label>';
     h+='<div class="plch-btnrow"><button class="btn small" type="button" onclick="plchConnect(this,\''+key+'\')">Request connection</button></div>';
   } else {
     h+='<div class="plch-btnrow"><button class="btn small dark" type="button" onclick="plchDisconnect(this,\''+key+'\')">Disconnect</button></div>';
   }
-  h+='<label class="plch-grant"><input type="checkbox" data-plch-grant="'+key+'" '+(conn.agentAccessGranted?'checked':'')+' onchange="plchGrant(this,\''+key+'\')"><span class="plch-sw" aria-hidden="true"></span><span><b>Allow the Pepper Lists agent (Pepper) to manage this channel for me</b><span>Off unless you turn it on. Revoke any time — every agent action on your channels is logged on your account.</span></span></label>';
+  h+='<label class="plch-grant"><input type="checkbox" data-plch-grant="'+key+'" '+(conn.agentAccessGranted?'checked':'')+' onchange="plchGrant(this,\''+key+'\')"><span class="plch-sw" aria-hidden="true"></span><span><b>Allow the Pepper Lists agent (Pepper) to manage this channel for me</b><span>Required before Pepper can complete a link or post on this channel for you — while it is off, the office cannot act on this channel. Revoke any time and further actions stop; every agent action on your channels is logged on your account.</span></span></label>';
   h+='</div>';
   return h;
 }

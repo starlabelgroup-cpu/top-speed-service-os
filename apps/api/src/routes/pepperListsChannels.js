@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { sellerChannelsRepo } from '../db/sellerChannelsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
+import { DATABASE_ENABLED, db } from '../db/client.js';
+import { store } from '../data/store.js';
 import { platformFacebookConnection } from '../services/facebookConnector.js';
 
 /**
@@ -48,6 +50,29 @@ import { platformFacebookConnection } from '../services/facebookConnector.js';
  * Every seller route is scoped to req.user.id from the session token
  * (the multi-account vault's ACTIVE account) — a seller can only ever
  * see or change their own connections.
+ *
+ * PHASE 2 (2026-11-21) — the loops complete, on Pepper Lists' own
+ * database (prisma-pl/schema.prisma via db/plClient.js; seller
+ * identity resolves through the app layer because accounts stay in
+ * the main database):
+ *  - The office can WORK a request: POST /channels/:id/transition
+ *    moves PENDING → IN_PROGRESS → ACTIVE (fulfilled, with the real
+ *    evidence URL recorded) or DECLINED (with the reason). ACTIVE is
+ *    deliberately not CONNECTED — CONNECTED remains reserved for a
+ *    real completed self-serve connect flow; the seller's card names
+ *    ACTIVE as office-completed and shows the evidence link.
+ *  - FACEBOOK is never office-fulfilled: "Muse is the gateway to
+ *    Facebook" (Ramone, 2026-11-21) — sellers never connect their
+ *    own Facebook; Facebook runs through the cross-post gateway
+ *    (grant → office outcome → post via Top Speed's connected
+ *    account → real URL → logged). A fulfill attempt on FACEBOOK is
+ *    refused 409 and pointed at that queue.
+ *  - The agent-management grant is now LOAD-BEARING: fulfilling a
+ *    request (the office completing a link on the seller's own
+ *    external account) requires the seller's grant ON for that
+ *    channel. Start / decline are office bookkeeping and stay
+ *    ungated. Every office action lands in the seller's
+ *    SellerChannelAudit log in the same call.
  */
 const router = Router();
 
@@ -143,6 +168,8 @@ function publicConnection(row, channelDef) {
   }
   // Deliberately field-by-field: `meta` (request context) and any
   // future token material never leave the server through a serializer.
+  const meta = row.meta && typeof row.meta === 'object' ? row.meta : {};
+  const fulfillment = meta.fulfillment && typeof meta.fulfillment === 'object' ? meta.fulfillment : null;
   return {
     id: row.id,
     channel: row.channel,
@@ -154,7 +181,36 @@ function publicConnection(row, channelDef) {
     lastSyncAt: iso(row.lastSyncAt),
     createdAt: iso(row.createdAt),
     updatedAt: iso(row.updatedAt),
+    // Phase 2: the office-fulfillment facts the seller is entitled to
+    // see — the real evidence URL once the office completes the link,
+    // or the reason when it declines. Staff ids inside the stored
+    // fulfillment record never leave the server.
+    fulfillmentUrl: fulfillment?.url ?? null,
+    fulfilledAt: fulfillment?.fulfilledAt ?? null,
+    declineReason: fulfillment?.declineReason ?? null,
   };
+}
+
+// Seller identity for the staff oversight read, resolved through the
+// app layer: Pepper Lists rows live in their own database and carry
+// userId as a plain column; accounts stay in the main database.
+async function resolveUsersById(userIds) {
+  const map = new Map();
+  const ids = [...new Set(userIds.filter(Boolean))];
+  if (!ids.length) return map;
+  if (DATABASE_ENABLED) {
+    const rows = await db().user.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, email: true, firstName: true, lastName: true, roles: true },
+    });
+    for (const u of rows) map.set(u.id, u);
+  } else {
+    for (const id of ids) {
+      const u = store.users.get(id);
+      if (u) map.set(id, { id: u.id, email: u.email, firstName: u.firstName, lastName: u.lastName, roles: u.roles });
+    }
+  }
+  return map;
 }
 
 function catalogWithConnections(rows) {
@@ -290,20 +346,24 @@ router.get('/pepper-lists/channels/oversight', ...staffGate, async (req, res, ne
       sellerChannelsRepo.listAll(),
       sellerChannelsRepo.listRecentAudit(100),
     ]);
+    const users = await resolveUsersById(rows.map((r) => r.userId));
     return res.json({
       data: {
         count: rows.length,
-        connections: rows.map((row) => ({
-          ...publicConnection(row, CHANNEL_BY_KEY.get(row.channel) || { key: row.channel, kind: row.kind }),
-          user: row.user
-            ? {
-                email: row.user.email,
-                name: [row.user.firstName, row.user.lastName].filter(Boolean).join(' ') || null,
-                roles: row.user.roles,
-              }
-            : undefined,
-          userId: row.userId,
-        })),
+        connections: rows.map((row) => {
+          const user = users.get(row.userId);
+          return {
+            ...publicConnection(row, CHANNEL_BY_KEY.get(row.channel) || { key: row.channel, kind: row.kind }),
+            user: user
+              ? {
+                  email: user.email,
+                  name: [user.firstName, user.lastName].filter(Boolean).join(' ') || null,
+                  roles: user.roles,
+                }
+              : undefined,
+            userId: row.userId,
+          };
+        }),
         audit: audit.map((entry) => ({
           id: entry.id,
           connectionId: entry.connectionId,
@@ -312,6 +372,81 @@ router.get('/pepper-lists/channels/oversight', ...staffGate, async (req, res, ne
           detail: entry.detail ?? null,
           createdAt: iso(entry.createdAt),
         })),
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ── Office: work a connection request (Phase 2) ─────────────────────
+// start   — PENDING → IN_PROGRESS (office bookkeeping, ungated).
+// fulfill — PENDING / IN_PROGRESS → ACTIVE, recording the real
+//           evidence URL. This completes a link on the seller's OWN
+//           external account, so it requires the seller's agent
+//           grant ON for the channel (403 AGENT_GRANT_REQUIRED).
+// decline — PENDING / IN_PROGRESS → DECLINED with the reason
+//           (office bookkeeping, ungated).
+// FACEBOOK can never be fulfilled here: sellers never connect their
+// own Facebook — Muse is the gateway, and Facebook work runs
+// through the cross-post queue. Every transition is audited on the
+// seller's account in the same repo call.
+const transitionSchema = z.object({
+  action: z.enum(['start', 'fulfill', 'decline']),
+  url: z.string().trim().url().max(1000).optional(),
+  reason: z.string().trim().max(500).optional(),
+});
+
+router.post('/pepper-lists/channels/:id/transition', ...staffGate, async (req, res, next) => {
+  try {
+    const parsed = transitionSchema.safeParse(req.body || {});
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid transition', details: parsed.error.flatten() });
+    }
+    const { action, url, reason } = parsed.data;
+    const existing = await sellerChannelsRepo.findById(String(req.params.id));
+    if (!existing) return res.status(404).json({ error: 'Connection request not found' });
+    if (action === 'fulfill') {
+      if (existing.channel === 'FACEBOOK') {
+        return res.status(409).json({
+          error: 'Facebook is never office-fulfilled. Sellers do not connect their own Facebook account — Facebook runs through the Pepper gateway: the seller queues a listing cross-post, and the office records the outcome in the cross-post queue.',
+          code: 'FACEBOOK_GATEWAY_ONLY',
+        });
+      }
+      if (!url || !/^https:\/\//i.test(url)) {
+        return res.status(400).json({ error: 'Fulfilling a connection requires the real https URL where the link or listing is live.' });
+      }
+      if (existing.agentAccessGranted !== true) {
+        return res.status(403).json({
+          error: 'The seller has not granted agent access for this channel. The office can complete the link only while the grant is on — ask the seller to turn on "Allow Pepper to manage this channel" first.',
+          code: 'AGENT_GRANT_REQUIRED',
+        });
+      }
+    }
+    if (action === 'decline' && (!reason || reason.trim().length < 3)) {
+      return res.status(400).json({ error: 'Declining a connection requires a short reason the seller will see.' });
+    }
+    const { row, conflict } = await sellerChannelsRepo.transition(existing.id, action, {
+      url, reason, byId: req.user.id,
+    });
+    if (!row) return res.status(404).json({ error: 'Connection request not found' });
+    if (conflict) {
+      return res.status(409).json({
+        error: `This request is ${row.status} — that step is no longer available.`,
+        code: 'TRANSITION_CONFLICT',
+        data: { connection: publicConnection(row, CHANNEL_BY_KEY.get(row.channel) || { key: row.channel, kind: row.kind }) },
+      });
+    }
+    const user = (await resolveUsersById([row.userId])).get(row.userId);
+    return res.json({
+      data: {
+        connection: {
+          ...publicConnection(row, CHANNEL_BY_KEY.get(row.channel) || { key: row.channel, kind: row.kind }),
+          user: user
+            ? { email: user.email, name: [user.firstName, user.lastName].filter(Boolean).join(' ') || null, roles: user.roles }
+            : undefined,
+          userId: row.userId,
+        },
       },
     });
   } catch (error) {
