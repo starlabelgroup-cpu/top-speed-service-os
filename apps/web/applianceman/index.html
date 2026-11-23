@@ -276,6 +276,11 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
         <a class="link" href="/chats"><b>Chat Insights</b><span>Every Speedy conversation, mined for topics, gaps and unanswered questions.</span><span class="st" id="st-chats"></span><span class="opn"><i>OPEN</i></span></a>
       </div>
 
+      <h2 class="sec" id="sec-quickbooks">QuickBooks — the money picture</h2>
+      <div class="grid"><div class="card wide">
+        <div id="qbPanel"><span class="mut small"><span class="spin"></span> Loading the QuickBooks picture…</span></div>
+      </div></div>
+
       <h2 class="sec">Growth &amp; publishing</h2>
       <div class="links">
         <a class="link" href="/marketing-os"><b>Marketing OS</b><span>The agency hub — brands, services, cities and landing pages, managed by Pepper, approved by the master.</span><span class="st" id="st-marketing"></span><span class="opn"><i>OPEN</i></span></a>
@@ -664,9 +669,69 @@ function bindVerifyPanel(){
   });
 }
 
+/* QuickBooks money picture (2026-11-23, Ramone's directive): the
+   ApplianceMan surface of the Finance OS mirror. Reads the same
+   manager-gated GET /finance/overview the Finance console and the
+   ApplianceMan app read — connection state, P&L / overview / AR / AP
+   snapshots and the invoice mirror, all verbatim from the last sync.
+   QuickBooks stays the book of record; until a first sync lands the
+   panel says exactly that and names the connecting steps. No figure
+   is ever estimated or invented here. */
+function loadQuickBooks(){
+  var el = document.getElementById('qbPanel'); if (!el) return;
+  function qbMoney(c){ if (c == null || isNaN(Number(c))) return '—'; return '$' + (Number(c) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function snapBlock(label, snap){
+    if (!snap) return row('b', '<b>' + label + '</b> — nothing synced yet.');
+    var p = snap.payload || {}; var body = '';
+    if (typeof p.text === 'string' && p.text){
+      body = '<pre style="white-space:pre-wrap;word-break:break-word;font-size:12.5px;margin:8px 0 2px;overflow:auto;max-height:300px">' + esc(p.text) + '</pre>';
+    } else {
+      var keys = Object.keys(p).slice(0, 12);
+      if (keys.length){
+        body = keys.map(function(k){
+          var v = p[k]; var s = (v !== null && typeof v === 'object') ? JSON.stringify(v) : String(v);
+          if (s.length > 300) s = s.slice(0, 300) + '…';
+          return '<div class="small" style="margin-top:3px">' + esc(k) + ': <b>' + esc(s) + '</b></div>';
+        }).join('');
+      } else body = '<div class="small mut" style="margin-top:3px">This snapshot carries no line items.</div>';
+    }
+    return row('g', '<b>' + label + '</b> — period ' + esc(snap.periodLabel || '—') + ' · synced ' + esc(fmtWhen(snap.syncedAt)) + ' via ' + esc(snap.source || 'quickbooks-connector') + '.' + body);
+  }
+  get('/finance/overview', true).then(function(res){
+    if (!res.ok || !data(res.j)){
+      el.innerHTML = row('y', 'The QuickBooks picture could not be loaded right now — open <a href="/finance" style="color:#e65766;font-weight:700">Finance OS</a> for the full console.');
+      return;
+    }
+    var d = data(res.j); var qb = d.quickbooks || {};
+    var inv = d.invoices || { count: 0, openCount: 0, outstandingCents: 0, list: [] };
+    var s = d.snapshots || {};
+    if (qb.status !== 'connected'){
+      el.innerHTML =
+        row('y', '<b>QuickBooks isn\'t connected to the Service OS yet.</b> No figures are shown until real data syncs — nothing here is estimated or invented.') +
+        row('b', '<b>The connecting steps (owner):</b> QuickBooks itself is already connected to Pepper. Two moves light this panel up: <b>(1)</b> pick the QuickBooks company industry — <b>NAICS 811412 · Appliance Repair and Maintenance</b> — so QuickBooks releases its profit &amp; loss and reports; <b>(2)</b> ask Pepper to run the first QuickBooks sync — Pepper reads the real figures through the connected QuickBooks account and posts them here with the owner\'s authorization, stamped with the sync time.') +
+        row('b', 'Full console: <a href="/finance" style="color:#e65766;font-weight:700">Finance OS →</a>');
+      return;
+    }
+    var html = row('g', '<b>' + esc(qb.companyName || 'QuickBooks company') + '</b> — connected · last synced <b>' + esc(fmtWhen(qb.lastSyncAt)) + '</b>. QuickBooks is the book of record; this panel is its synced mirror.');
+    html += row('g', '<b>' + esc(qbMoney(inv.outstandingCents)) + '</b> receivable outstanding across <b>' + esc(inv.openCount) + '</b> open invoice(s) · ' + esc(inv.count) + ' invoice(s) in the mirror.');
+    html += snapBlock('Profit &amp; loss', s.pnl);
+    html += snapBlock('Company overview', s.overview);
+    html += snapBlock('Receivables aging', s.arAging);
+    html += snapBlock('Payables aging', s.apAging);
+    if (inv.list && inv.list.length){
+      html += inv.list.slice(0, 8).map(function(v){
+        return row(v.balanceCents > 0 ? 'y' : 'g', '<b>' + esc(v.number || v.qbId) + '</b> · ' + esc(v.customerName || 'Customer') + ' — total ' + esc(qbMoney(v.totalCents)) + ' · balance ' + esc(qbMoney(v.balanceCents)) + (v.status ? ' · ' + esc(v.status) : '') + (v.dueDate ? ' · due ' + esc(fmtWhen(v.dueDate)) : '') + (v.qbUrl ? ' · <a href="' + esc(v.qbUrl) + '" target="_blank" rel="noopener">Open in QuickBooks →</a>' : ''));
+      }).join('');
+    }
+    html += row('b', 'Full console: <a href="/finance" style="color:#e65766;font-weight:700">Finance OS →</a>');
+    el.innerHTML = html;
+  });
+}
+
 function loadAll(){
   loadVerifyPanel(); bindVerifyPanel();
   loadPepperBriefing(); bindPepperBriefing();
+  loadQuickBooks();
   document.getElementById('updatedLine').innerHTML = '<span class="spin"></span> Refreshing live data…';
   var done = 0; function tick(){ done++; if (done >= 6){ document.getElementById('updatedLine').textContent = 'Live — updated ' + new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) + '. Tap Refresh anytime.'; } }
 
