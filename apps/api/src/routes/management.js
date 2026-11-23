@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { MANAGER_ROLES } from '../config/security.js';
-import { ackReport, listReports, reportSummary } from '../services/managementReports.js';
+import { ackReport, listReports, refreshDepartmentReports, reportSummary } from '../services/managementReports.js';
 
 /**
  * Management department reports (2026-11-14) — the read + acknowledge
@@ -41,11 +41,16 @@ function publicReport(report) {
   };
 }
 
-router.get('/management/reports/summary', ...managerOnly, (req, res) => {
+router.get('/management/reports/summary', ...managerOnly, async (req, res) => {
+  // Refresh the working set from the durable table before reading:
+  // an acknowledgment recorded by another serverless instance must
+  // show here, or acknowledged reports come back as NEW (2026-11-23).
+  await refreshDepartmentReports();
   return res.json({ data: reportSummary() });
 });
 
-router.get('/management/reports', ...managerOnly, (req, res) => {
+router.get('/management/reports', ...managerOnly, async (req, res) => {
+  await refreshDepartmentReports();
   const department = String(req.query.department || '').trim() || null;
   const status = String(req.query.status || '').trim().toUpperCase() || null;
   if (status && !['NEW', 'ACKED'].includes(status)) {

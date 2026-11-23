@@ -1,5 +1,5 @@
 import { createId, store } from '../data/store.js';
-import { persistDepartmentReport } from '../db/managementReportsRepo.js';
+import { hydrateDepartmentReports, persistDepartmentReport } from '../db/managementReportsRepo.js';
 
 /**
  * Management department reporting (Ramone's directive, 2026-11-14):
@@ -123,6 +123,28 @@ export function emitReport({ department, type, title, detail = {}, source = null
   }
 }
 
+/**
+ * Re-sync the in-memory working set from the durable DepartmentReport
+ * table (the same hydration that runs at cold start). Serverless
+ * instances are stateless and long-lived: an instance hydrates once,
+ * so an acknowledgment written through instance A is invisible to
+ * instance B's working set — B kept serving the report as NEW with a
+ * live Acknowledge button even though the database row was ACKED
+ * (Ramone's report, 2026-11-23: "when I acknowledged each campaign
+ * they all go back to acknowledge again"). The management read + ack
+ * paths therefore refresh before they read, so the feed every manager
+ * sees reflects every acknowledgment, whichever instance serves it.
+ * Failure degrades to the current working set — a refresh error never
+ * blocks the feed. No-op in skeleton mode (no database).
+ */
+export async function refreshDepartmentReports() {
+  try {
+    await hydrateDepartmentReports();
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'department report refresh failed', error: String(error?.message || error) }));
+  }
+}
+
 /** Per-department counts for the management summary: NEW + today's. */
 export function reportSummary() {
   const today = new Date().toISOString().slice(0, 10);
@@ -152,8 +174,21 @@ export function listReports({ department = null, status = null, limit = 100, off
  * Acknowledge a report. Idempotent by design: acknowledging an already
  * ACKED report returns it unchanged with `alreadyAcked: true` (the
  * route answers 200) — a double tap in the console is not an error.
+ *
+ * The working set is refreshed from the durable table FIRST, so an
+ * instance holding a stale NEW copy can never re-stamp over an
+ * earlier acknowledgment: the first ack's date/time is the record of
+ * the campaign (Ramone, 2026-11-23: "Each campaign must start
+ * acknowledged date and time"), and it is preserved.
+ *
+ * The acknowledgment also covers the submission as the unit: any
+ * other still-NEW row carrying the SAME eventKey (the same submission
+ * emitted twice into a working set) is stamped with the same ack
+ * date/time and by-id, so no rendering of that submission can offer
+ * the Acknowledge action again.
  */
 export async function ackReport(id, userId) {
+  await refreshDepartmentReports();
   const report = store.departmentReports.find((r) => r.id === id);
   if (!report) return null;
   if (report.status === 'ACKED') return { report, alreadyAcked: true };
@@ -163,5 +198,16 @@ export async function ackReport(id, userId) {
   await persistDepartmentReport(report).catch((error) => {
     console.error(JSON.stringify({ level: 'error', message: 'department report ack persist failed', error: String(error?.message || error) }));
   });
+  if (report.eventKey) {
+    const siblings = store.departmentReports.filter((r) => r.id !== report.id && r.eventKey === report.eventKey && r.status !== 'ACKED');
+    for (const sibling of siblings) {
+      sibling.status = 'ACKED';
+      sibling.ackById = report.ackById;
+      sibling.ackAt = report.ackAt;
+      await persistDepartmentReport(sibling).catch((error) => {
+        console.error(JSON.stringify({ level: 'error', message: 'department report sibling ack persist failed', error: String(error?.message || error) }));
+      });
+    }
+  }
   return { report, alreadyAcked: false };
 }
