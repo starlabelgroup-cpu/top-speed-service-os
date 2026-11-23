@@ -21,6 +21,7 @@ import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { attributionFields, normalizeAttribution } from '../services/attribution.js';
+import { displayCity } from '../services/cityDisplay.js';
 
 const router = Router();
 
@@ -221,7 +222,11 @@ router.get('/bookings/recent-completed', (req, res) => {
     .sort((a, b) => String(b.completedAt).localeCompare(String(a.completedAt)))
     .slice(0, 8)
     .map((b) => ({
-      city: b.city || null,
+      // Display-normalized (services/cityDisplay.js): the stored city
+      // is free text and prints verbatim otherwise — a stored typo
+      // ("lauderrhill") would show on the public feed. The record
+      // itself is never rewritten by this layer.
+      city: b.city ? displayCity(b.city) : null,
       appliance: b.appliance || null,
       completedDate: b.completedAt,
     }))

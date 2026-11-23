@@ -200,7 +200,7 @@ footer a{color:var(--lime)}
         <label class="plg-lab">Email<input id="plLiEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
         <label class="plg-lab">Password<input id="plLiPass" type="password" autocomplete="current-password" placeholder="Your password"></label>
         <div id="plSvStep" style="display:none">
-          <label class="plg-lab">Speedy Verify access code<input id="plSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></label>
+          <label class="plg-lab">Access code<input id="plSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="If your account uses an access code, enter it here"></label>
           <button class="btn plg-full" type="button" style="margin-bottom:10px" onclick="plVerify()">Verify &amp; sign in</button>
         </div>
         <p class="plg-msg" id="plMsg" role="status"></p>
@@ -323,7 +323,7 @@ footer a{color:var(--lime)}
       <label class="plg-lab">Email<input id="plLgEmail" type="email" autocomplete="email" placeholder="you@example.com"></label>
       <label class="plg-lab">Password<input id="plLgPass" type="password" autocomplete="current-password" placeholder="Your password"></label>
       <div id="plLgSvStep" style="display:none">
-        <label class="plg-lab">Speedy Verify access code<input id="plLgSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></label>
+        <label class="plg-lab">Access code<input id="plLgSvCode" inputmode="numeric" autocomplete="one-time-code" placeholder="If your account uses an access code, enter it here"></label>
         <button class="btn plg-full" type="button" style="margin-bottom:10px" onclick="plPageVerify()">Verify &amp; sign in</button>
       </div>
       <p class="plg-msg" id="plLgMsg" role="status"></p>
@@ -1161,7 +1161,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <a href="#platforms">Platforms</a>
     <a href="#catalog">Catalog Regulars</a>
     <a href="#faq">FAQ</a>
-    <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+    <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
     <a href="tel:+18444607038" aria-label="Call Top Speed Appliance">(844) 460-7038</a>
   </nav>
 </header>
@@ -1172,8 +1172,8 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <h1>Sell it. Post it. Book it. One app, three purposes.</h1>
     <p>Pepper Lists It is the Top Speed customer app, built for three purposes. <b>Selling?</b> Snap a photo of anything you sell — Pepper's AI drafts the listing and posts it for you, nothing live without your yes. <b>Posting?</b> Connect your social accounts and your search-directory listings, and be found where customers look. <b>Need a repair?</b> Book appliance service right here — send Speedy a photo of the problem, track your tech on the day, and review the job when it's done.</p>
     <div class="cta">
-      <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenSignup(event)">Create account</a>
-      <a class="btn alt" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+      <a class="btn" href="https://pepperlists.com/#create-account" onclick="return plOpenSignup(event)">Create account</a>
+      <a class="btn alt" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
       <a class="btn alt" href="https://topspeedserviceos.com/book">Book a Repair</a>
       <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
     </div>
@@ -1203,13 +1203,13 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
       <h3>Pepper Lists Sell</h3>
       <p style="margin-bottom:12px">For individuals &amp; businesses</p>
-      <a href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/sell-individual.webp" alt="Illustration: a homeowner photographing household items in the yard to sell them — Pepper Lists Sell for individuals and businesses" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
+      <a href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)" style="display:block;margin-bottom:14px"><img src="/api/v1/app/platform-images/sell-individual.webp" alt="Illustration: a homeowner photographing household items in the yard to sell them — Pepper Lists Sell for individuals and businesses" style="width:100%;height:auto;display:block;border-radius:12px" loading="lazy"></a>
       <ul class="plc-list">
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Individuals:</b> snap a photo of what you're selling — Pepper drafts the listing and posts it to Facebook Marketplace only after your yes.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Businesses:</b> advertise inside Pepper Lists — every ad is reviewed by the Top Speed office before it runs.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Full campaigns:</b> run across Top Speed sites from the Flywheel advertiser console.</li>
       </ul>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Start selling</a>
+      <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Start selling</a>
     </div>
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3.6 L14.3 8.9 L20 9.5 L15.7 13.4 L17.1 19 L12 16 L6.9 19 L8.3 13.4 L4 9.5 L9.7 8.9 Z"/></svg></div>
@@ -1221,7 +1221,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Be found in search:</b> your own Google Business Profile, Bing Places and more search directories, connected the same tracked way.</li>
         <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square" stroke-linejoin="miter"><polyline points="4.5,12.5 9.8,17.8 19.5,6.5"/></svg><b>Post a review</b> of your completed repair — photos or video, the quick survey, and Speedy answers every review on the public wall.</li>
       </ul>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Start posting</a>
+      <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Start posting</a>
       <a class="btn small dark" href="#reviews" style="margin-left:8px">Read the wall</a>
     </div>
     <div class="card">
@@ -1282,7 +1282,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <div class="fchip"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 21.5v-6.9h2.3l.4-2.7h-2.7V10c0-.8.3-1.3 1.4-1.3h1.3V6.2c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7v2.1H8.3v2.7h2.3v6.9a10 10 0 0 0 3 0z"/></svg></div>
       <h3>Facebook — through Top Speed</h3>
       <p>You never connect your own Facebook — no password sharing, ever. Grant Pepper the Facebook channel in your account, confirm your listing, and Pepper posts it through Top Speed's connected Facebook account. The channel shows Active with the real Facebook link on your account — and you can revoke the grant any time.</p>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Open Channel Connections</a>
+      <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)" style="margin-top:14px">Open Channel Connections</a>
     </div>
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
@@ -1294,7 +1294,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M7.5 3.5h9V20.5h-9z"/><path d="M10.8 17.8h2.4"/><circle cx="12" cy="7" r="1.1" fill="currentColor" stroke="none"/></svg></div>
       <h3>The seller app</h3>
       <p>List from your phone: snap a photo and talk it through with Speedy — the listing drafts itself from your photo. Your channel connections live in the same account, on any screen, so the whole shop travels with you.</p>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Open the seller app</a>
+      <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)" style="margin-top:14px">Open the seller app</a>
     </div>
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div>
@@ -1305,8 +1305,8 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   </div>
   <img class="pl-laneimg" src="/api/v1/app/pepper-lists-images/sell.webp" alt="Illustration: a Fort Lauderdale seller photographing produce and a potted tree to list for sale — one listing, prepared once in Pepper Lists" loading="lazy">
   <p class="sub" style="margin-bottom:16px">Also connecting from the same account page: <b style="color:var(--ink)">Google Shopping · eBay · Etsy · Walmart Marketplace · TikTok · YouTube · Instagram · X · LinkedIn</b> — and your search-directory listings: <b style="color:var(--ink)">Google Business Profile · Bing Places · more search directories</b>. Each channel shows its real first step before you send anything (an eBay seller account, Walmart's own seller approval, your Merchant Center ID, Google's own listing verification), so nothing is promised that isn't true.</p>
-  <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Channel Connections</a>
-  <a class="btn dark" href="https://topspeedserviceos.com" onclick="return plOpenSignup(event)" style="margin-left:10px">Create account</a>
+  <a class="btn" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Channel Connections</a>
+  <a class="btn dark" href="https://pepperlists.com/#create-account" onclick="return plOpenSignup(event)" style="margin-left:10px">Create account</a>
   <a class="btn dark" href="https://pepperlists.com/how-it-works" style="margin-left:10px">The full walkthrough</a>
 </section>
 
@@ -1328,18 +1328,18 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 
 <section style="padding-top:0;" id="catalog">
   <h2>Catalog <span class="lime">regulars</span></h2>
-  <p class="sub">The Fort Lauderdale staples Pepper already knows by name and price — snap one of these and the draft comes back priced and ready.</p>
+  <p class="sub">The Fort Lauderdale staples Pepper already knows by name and price — snap one of these and the draft comes back priced and ready. Fresh fruit beyond coconuts, avocado and super cane comes in by season — ask Pepper what's in before you list it.</p>
   <div class="grid4">
-    <div class="card pricecard"><p class="price">$5</p><h3>Fresh Ackee</h3><p>The classic — priced per unit, ready to list.</p></div>
-    <div class="card pricecard"><p class="price">$30</p><h3>Ackee by the Box</h3><p>The full box, for buyers who stock up.</p></div>
+    <div class="card pricecard"><p class="price">$2–$4</p><h3>Whole Coconuts</h3><p>Fresh whole coconuts, priced by size.</p></div>
+    <div class="card pricecard"><p class="price">$2–$3</p><h3>Dry Coconuts</h3><p>Dry coconuts, priced by size.</p></div>
+    <div class="card pricecard"><p class="price">$5/$15/$30</p><h3>Coconut Water</h3><p>Fresh coconut water — three sizes, priced and ready.</p></div>
+    <div class="card pricecard"><p class="price">$7</p><h3>Coconut Meat</h3><p>Fresh coconut meat, ready to list.</p></div>
+    <div class="card pricecard"><p class="price">$7</p><h3>Sugarcane Sticks</h3><p>Super cane sticks, cut and ready.</p></div>
+    <div class="card pricecard"><p class="price">$12</p><h3>Avocados</h3><p>Fresh avocados, priced and ready.</p></div>
     <div class="card pricecard"><p class="price">$4</p><h3>Ackee Tree</h3><p>Young ackee trees, garden-ready.</p></div>
     <div class="card pricecard"><p class="price">$10</p><h3>Mango Trees</h3><p>Established mango trees.</p></div>
     <div class="card pricecard"><p class="price">$12</p><h3>Mango Tree</h3><p>The larger single-tree listing.</p></div>
     <div class="card pricecard"><p class="price">$8</p><h3>Saplings</h3><p>Young saplings, ready to plant.</p></div>
-    <div class="card pricecard"><p class="price">$12</p><h3>Longan</h3><p>Fresh longan, Fort Lauderdale pickup.</p></div>
-    <div class="card pricecard"><p class="price">$12</p><h3>Avocados</h3><p>Fresh avocados, priced and ready.</p></div>
-    <div class="card pricecard"><p class="price">$20</p><h3>Spanish Limes / Longans / Avocados</h3><p>The combo listing regulars ask for.</p></div>
-    <div class="card pricecard"><p class="price">$25</p><h3>Box of Fruits</h3><p>A mixed box of what's fresh.</p></div>
   </div>
 </section>
 
@@ -1439,7 +1439,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <div class="plt-grid" id="pltFeed"></div>
   <div class="plw-empty" id="pltFeedEmpty" style="display:none">
     <p>No listings are live right now. When a neighbor posts something for sale it appears here — or be the first: sign in, snap a photo, and Pepper drafts your listing.</p>
-    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">List something</a>
+    <a class="btn" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">List something</a>
   </div>
   <div id="pltDetail"></div>
 </section>
@@ -1463,7 +1463,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <div class="grid" id="plwGrid"></div>
   <div class="plw-empty" id="plwEmpty" style="display:none">
     <p>Real reviews from real repairs — be the first after your service. Had a repair with Top Speed? Open the app, pick the finished job, and tell the next neighbor how it went.</p>
-    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+    <a class="btn" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
   </div>
 </section>
 
@@ -1471,7 +1471,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <div class="getapp">
     <h2>Ready to list <span class="lime">something?</span></h2>
     <p>Open Pepper Lists It on the Service OS, snap a photo, and review your first draft in under a minute. Or ask Speedy first — tap Talk to Speedy and describe what you're selling.</p>
-    <a class="btn" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+    <a class="btn" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
     <button class="btn dark" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}" style="margin-left:10px;">Talk to Speedy</button>
   </div>
 </section>
@@ -3115,7 +3115,7 @@ function plAdsEsc(t){return String(t==null?'':t).replace(/</g,'&lt;').replace(/"
   var wall=document.getElementById('plAdsWall');
   if(!wall) return;
   function invite(){
-    wall.innerHTML='<div class="plad-card"><img src="/api/v1/app/platform-images/flywheel-display-ad.webp" alt="Illustration: a Top Speed technician waving beside a blank display-ad card — your product could be advertised here" style="width:100%;height:auto;display:block;border-radius:12px;margin-bottom:14px" loading="lazy"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
+    wall.innerHTML='<div class="plad-card"><img src="/api/v1/app/platform-images/flywheel-display-ad.webp" alt="Illustration: a Top Speed technician waving beside a blank display-ad card — your product could be advertised here" style="width:100%;height:auto;display:block;border-radius:12px;margin-bottom:14px" loading="lazy"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
   }
   fetch(PL_API+'/ad-studio/display?category=PEPPER_LISTS').then(function(r){return r.json();}).then(function(j){
     var list=(j&&j.data)||[];
