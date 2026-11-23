@@ -29,6 +29,19 @@
  *    test/ad-specialist.test.mjs).
  *  - Insights gate: STAFF_ROLES + MARKETING_MANAGER + AD_SPECIALIST (insights.js,
  *    scoped router.use('/insights', ...)).
+ *  - Badge table completed 2026-11-23 (Ramone's approval): the four
+ *    consoles whose badge include shipped in the Step 3 sweep joined
+ *    the table from their own audited gates — Pro Booking: the page's
+ *    own sign-in gate (the STAFF list in apps/web/pro-booking/
+ *    index.html, enforced against /auth/me before the app renders);
+ *    Parts: routes/parts.js staff = requireRole(...STAFF_ROLES) on
+ *    every /parts/* route + the page's STAFF gate; CocoCane Express:
+ *    routes/cococane.js staffOnly = requireRole(...STAFF_ROLES) on
+ *    every console route + the page's STAFF gate; Marketing OS hub:
+ *    routes/marketingOs.js marketingOnly (the marketing set) on the
+ *    admin surface — the same entry as its Studio/SEO/Google
+ *    Accounts sub-consoles (the hub's three public GETs are the
+ *    published-content contract, not console data).
  *  - Master gate (COMPANY_OWNER only): accessControl (scoped
  *    router.use('/access-control', ...)) + speedyVerify accounts —
  *    Work Time Access.
@@ -203,6 +216,7 @@ const EXPECTED_TABLE = {
   '/pepper': { label: 'STAFF ONLY', roles: STAFF },
   '/crm': { label: 'STAFF ONLY', roles: STAFF },
   '/book-os': { label: 'STAFF ONLY', roles: STAFF },
+  '/pro-booking': { label: 'STAFF ONLY', roles: STAFF },
   '/applianceman': { label: 'MANAGER ONLY', roles: MANAGERS },
   '/oversight': { label: 'MANAGER ONLY', roles: MANAGERS },
   '/dispatch-dashboard': { label: 'STAFF ONLY', roles: STAFF },
@@ -216,6 +230,9 @@ const EXPECTED_TABLE = {
   '/media': { label: 'STAFF ONLY', roles: MKTG },
   '/chats': { label: 'STAFF ONLY', roles: STAFF },
   '/track-console': { label: 'STAFF ONLY', roles: STAFF },
+  '/parts': { label: 'STAFF ONLY', roles: STAFF },
+  '/cococane-express': { label: 'STAFF ONLY', roles: STAFF },
+  '/marketing-os': { label: 'STAFF ONLY', roles: MKTG },
   '/marketing-os/studio': { label: 'STAFF ONLY', roles: MKTG },
   '/marketing-os/seo': { label: 'STAFF ONLY', roles: MKTG },
   '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: MKTG },
@@ -226,7 +243,16 @@ const EXPECTED_TABLE = {
 //   fetch at all — the badge is its only wiring.
 // - media: hybrid public Media OS page; on 403 its protected admin
 //   zone is removed entirely (no partial render, no protected data).
-const RESTRICTED_EXCEPTIONS = ['/service-setters-dispatch', '/media'];
+// - pro-booking, parts, cococane-express (2026-11-23): each page's own
+//   sign-in gate IS its restricted path — boot/enter rejects a
+//   non-staff account before the console renders and drops the token,
+//   and no console data is fetched before that gate passes.
+// - marketing-os hub (2026-11-23): no sign-in wall by design — public
+//   hub reads plus staff panels that degrade panel-by-panel (its
+//   revenue panel carries Finance-gated data, a different gate than
+//   the hub's own); the restricted screen belongs to its gated
+//   sub-consoles, which wire it.
+const RESTRICTED_EXCEPTIONS = ['/service-setters-dispatch', '/media', '/pro-booking', '/parts', '/cococane-express', '/marketing-os'];
 // Badged consoles with no system-map area to extend:
 const NO_MAP_AREA = ['/notifications', '/track-console'];
 
@@ -298,6 +324,11 @@ function staticChecks() {
   checkTrue('bookings list scoped by ownership for non-staff', src('routes/bookings.js').includes('isStaff || bookingBelongsToUser(booking, req.user)'));
   checkTrue('management reports gate is MANAGER_ROLES', src('routes/management.js').includes('requireRole(...MANAGER_ROLES)'));
   checkTrue('finance overview gate is MANAGER_ROLES', src('routes/finance.js').includes("'/finance/overview', authenticate, requireCompany, requireRole(...MANAGER_ROLES)"));
+  checkTrue('cococane console gate is STAFF_ROLES', src('routes/cococane.js').includes('requireRole(...STAFF_ROLES)'));
+  checkTrue('parts gate is STAFF_ROLES', src('routes/parts.js').includes('requireRole(...STAFF_ROLES)'));
+  checkTrue('pro-booking page gate is the STAFF list', read('apps/web/pro-booking/index.html').includes("var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN']"));
+  checkTrue('parts page gate is the STAFF list', read('apps/web/parts/index.html').includes("var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN']"));
+  checkTrue('cococane-express page gate is the STAFF list', read('apps/web/cococane-express/index.html').includes("var STAFF=['DISPATCHER','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN']"));
   checkTrue('provider reads carry the oversight board gate', src('routes/provider.js').includes('providerBoard') && src('routes/provider.js').includes('OVERSIGHT_ROLES'));
   checkTrue('MANAGER_ROLES mirrors the Turbo Boss page gate', src('config/security.js').includes('MANAGER_ROLES = [ROLES.COMPANY_ADMIN, ROLES.COMPANY_OWNER, ROLES.PLATFORM_ADMIN]'));
   checkTrue('session vault supports expireActive', read('apps/web/shared/session-vault.js').includes('expireActive'));
