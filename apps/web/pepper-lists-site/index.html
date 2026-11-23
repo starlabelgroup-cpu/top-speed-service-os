@@ -640,7 +640,7 @@ footer a{color:var(--lime)}
     </div>
       <div style="margin-top:18px;background:var(--panel2);border:1px solid #2c4232;border-radius:13px;padding:16px 18px">
         <h4 style="font-size:16px;margin-bottom:5px;color:var(--lime)">Reach more marketplaces</h4>
-        <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px">Connect your Facebook, Google Shopping, eBay, Etsy and Walmart accounts — plus your posting channels — in Channel Connections, right below in your account. One account, every channel, and you can grant the Pepper Lists agent access channel by channel.</p>
+        <p style="color:var(--muted);font-size:14px;line-height:1.6;margin-bottom:12px">Facebook is live today — and you never connect your own account: Pepper posts your confirmed listings through Top Speed's connected Facebook account, and the real Facebook link lands on your account. Google Shopping, eBay, Etsy and Walmart are rolling out — request them in Channel Connections, right below in your account, and grant the Pepper Lists agent access channel by channel.</p>
         <button class="btn small" type="button" onclick="var s=document.getElementById('plChannels'); if(s) s.scrollIntoView({behavior:'smooth',block:'start'});">Open Channel Connections</button>
       </div>
     </div>
@@ -1101,8 +1101,10 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
      the Service OS (GET/POST /pepper-lists/channels), scoped to the
      signed-in account. A Connect files a request the Top Speed team
      completes on the platform side — the same honest pattern as the
-     Advertiser Console — so a channel reads Pending until the link
-     is real, and Connected only when it truly is. The per-channel
+     Advertiser Console — so a channel reads Pending while the office
+     works the request, and Active only when it is live with a real
+     link. Facebook is gateway-only: sellers never connect their own
+     Facebook; Pepper posts through Top Speed's account. The per-channel
      toggle is the seller's explicit grant for the Muse agent
      (Pepper) to manage that channel for them: default off,
      revocable any time, every change logged. Signed-in only, shown
@@ -1140,7 +1142,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <section class="plb" id="plChannels" style="display:none" aria-label="Channel Connections">
   <div class="plb-card">
     <h2>Channel <span style="color:var(--lime)">Connections</span></h2>
-    <p class="plb-sub">Connect the places you sell and post — and the search directories where customers find your business. Send a request for a channel and the Top Speed team completes the link on that platform's side — <b style="color:var(--ink)">no password sharing, ever</b>. A channel shows <b style="color:var(--ink)">Pending</b> until the link is real, and <b style="color:var(--ink)">Connected</b> only when it truly is. Connections belong to your account, not to this browser — sign in anywhere and they are yours.</p>
+    <p class="plb-sub">Connect the places you sell and post — and the search directories where customers find your business. Send a request for a channel and the Top Speed team completes the link on that platform's side — <b style="color:var(--ink)">no password sharing, ever</b>. A channel shows <b style="color:var(--ink)">Pending</b> while the office works your request, and <b style="color:var(--ink)">Active</b> only when it is live, with the real link on your account as proof. Connections belong to your account, not to this browser — sign in anywhere and they are yours.</p>
     <p class="plb-msg" id="plchMsg" role="status"></p>
     <h3 class="plch-group">Sell on</h3>
     <div class="plch-grid" id="plchSell"><p class="plb-note" style="margin:0">Loading your channels…</p></div>
@@ -1247,7 +1249,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <div class="card"><div class="stepnum">1</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8 L8 8 L10 5 L14 5 L16 8 L21 8 L21 19 L3 19 Z"/><circle cx="12" cy="13" r="3.2"/><circle cx="18" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Snap a photo</h3><p>Point your camera at the item — a box of ackee, a mango tree, a stack of produce. One photo is enough to start.</p></div>
     <div class="card"><div class="stepnum">2</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>AI drafts the listing</h3><p>Pepper recognizes the item and drafts the title, category, condition and description, with a confidence score. Regulars are matched to their usual prices automatically.</p></div>
     <div class="card"><div class="stepnum">3</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L20 7.5 L20 16.5 L12 21 L4 16.5 L4 7.5 Z"/><polyline points="8.2,12.2 11,15 15.8,9.2"/></svg></div><h3>You review</h3><p>Check the draft, fix anything, set the price if it's something new. If a price is missing, Pepper asks — it never invents one.</p></div>
-    <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 3 L10.5 13.5"/><path d="M21 3 L14 21 L10.5 13.5 L3 10 Z"/><circle cx="10.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Pepper posts it</h3><p>Only after you confirm in chat does Pepper post the listing through your connected account. You get the live link back.</p></div>
+    <div class="card"><div class="stepnum">4</div><div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M21 3 L10.5 13.5"/><path d="M21 3 L14 21 L10.5 13.5 L3 10 Z"/><circle cx="10.5" cy="13.5" r="1.2" fill="currentColor" stroke="none"/></svg></div><h3>Pepper posts it</h3><p>Only after you confirm in chat does Pepper post the listing to Facebook through Top Speed's connected account — you never connect your own. The real Facebook link is recorded on your account.</p></div>
   </div>
   <h3 style="font-size:21px;margin:34px 0 4px">Posting — three steps to being found</h3>
   <div class="grid4">
@@ -1266,25 +1268,26 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 </section>
 
 <!-- CHANNEL CONNECTIONS PROMO (2026-11-17): how Pepper Lists It works
-     with a seller's own accounts — Facebook, Marketplace, the seller
-     app, and the Muse AI agent. Copy matches Phase 1 exactly:
-     sellers can connect/request channels and grant agent access
+     with a seller's channels — Facebook through the Top Speed gateway
+     (sellers never connect their own Facebook), Marketplace, the
+     seller app, and the Muse AI agent. Sellers request channels and
+     grant agent access
      today; per-channel sync engines roll out channel by channel and
      are never claimed live here before they are. -->
 <section style="padding-top:0" id="channels">
   <h2>One account, <span class="lime">every channel</span></h2>
-  <p class="sub">Pepper Lists It works with the accounts you already have. Connect them once in your seller account and your listings have a path to the marketplaces and feeds your buyers actually use — here is exactly how each piece works.</p>
+  <p class="sub">One Pepper Lists account reaches every channel — and Facebook works differently from what you might expect: you never connect your own Facebook account. Pepper is the gateway, and here is exactly how each piece works.</p>
   <div class="grid4">
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.6 21.5v-6.9h2.3l.4-2.7h-2.7V10c0-.8.3-1.3 1.4-1.3h1.3V6.2c-.3 0-1.1-.1-2.1-.1-2.1 0-3.6 1.3-3.6 3.7v2.1H8.3v2.7h2.3v6.9a10 10 0 0 0 3 0z"/></svg></div>
-      <h3>With your Facebook account</h3>
-      <p>Your Pepper Lists account connects to your own Facebook — no password sharing, ever. Send the connection request in your account, our team completes the link on Facebook's side, and the status flips to Connected in your account when it's real.</p>
-      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Connect Facebook</a>
+      <h3>Facebook — through Top Speed</h3>
+      <p>You never connect your own Facebook — no password sharing, ever. Grant Pepper the Facebook channel in your account, confirm your listing, and Pepper posts it through Top Speed's connected Facebook account. The channel shows Active with the real Facebook link on your account — and you can revoke the grant any time.</p>
+      <a class="btn small" href="https://topspeedserviceos.com" onclick="return plOpenApp(event)" style="margin-top:14px">Open Channel Connections</a>
     </div>
     <div class="card">
       <div class="fchip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg></div>
       <h3>Sell on Facebook Marketplace</h3>
-      <p>List once in Pepper Lists — snap the photo, approve the draft — and your listing has its path to Marketplace buyers through your connected Facebook account, showing in your Seller app like any listing you made yourself. Nothing posts without your yes.</p>
+      <p>List once in Pepper Lists — snap the photo, approve the draft — and Pepper posts your listing to Marketplace through Top Speed's connected Facebook account, the same account behind the Seller app. The live Facebook link is recorded on your Pepper Lists account. Nothing posts without your yes.</p>
       <a class="btn small" href="https://pepperlists.com/how-it-works" style="margin-top:14px">See how it works</a>
     </div>
     <div class="card">
@@ -1343,7 +1346,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <section style="padding-top:0;" class="faq" id="faq">
   <h2>Questions, <span class="lime">answered</span></h2>
   <p class="sub">How Pepper Lists It actually works — no fine print.</p>
-  <details><summary>Does Pepper post without asking me?</summary><p>No. Pepper drafts every listing and waits. A listing only goes live after you confirm it in chat — and posting runs through your own connected Facebook account, so it shows up in your Seller app like any listing you made yourself.</p></details>
+  <details><summary>Does Pepper post without asking me?</summary><p>No. Pepper drafts every listing and waits. A listing only goes live after you confirm it in chat — and posting runs through Top Speed's connected Facebook account, never your own. The real Facebook link is recorded on your account, so you can open the live post any time.</p></details>
   <details><summary>What if Pepper doesn't know the price?</summary><p>Then the listing is marked "Needs info" and Pepper asks you. Known regulars come back with their usual prices; anything new waits for your number. Pepper never invents a price.</p></details>
   <details><summary>Which platforms can I post to today?</summary><p>Facebook Marketplace is live. Instagram can be selected and queues until the owner's Instagram account is connected. TikTok, YouTube, eBay and OfferUp are coming soon — they're shown honestly as not live yet.</p></details>
   <details><summary>Can I book appliance repair here too?</summary><p>Yes — Book is one of Pepper Lists' three purposes, alongside Sell and Post. Book Top Speed appliance services with the classic web form (it comes first) or with Speedy AI, track your technician live, keep your appliances in your Garage, and review your repair when it's done.</p></details>
@@ -2343,7 +2346,7 @@ function plCatGoReviews(){
 /* ---------- Lane 1: Speedy Recommends ---------- */
 var PLB_RECS={
   repair:{title:'Book a repair — Top Speed Appliance',why:'A broken appliance goes to the Service Setters: book online in a couple of minutes, or send Speedy a scan of the problem right here and the office calls you back.',links:[['Book a repair','https://topspeedserviceos.com/book'],['Open the customer app','https://topspeedserviceos.com/app']],lane:'scan',laneLabel:'Or scan & send from here'},
-  sell:{title:'You are in the right app — Pepper Lists It',why:'Snap a photo of what you are selling and Pepper drafts the listing; nothing posts without your yes. Marketplace posting runs through the connected account after you confirm in chat.',links:[['See how it works','#how']]},
+  sell:{title:'You are in the right app — Pepper Lists It',why:'Snap a photo of what you are selling and Pepper drafts the listing; nothing posts without your yes. Marketplace posting runs through Top Speed\u2019s connected Facebook account after you confirm in chat — you never connect your own.',links:[['See how it works','#how']]},
   commercial:{title:'Appliance Pro — commercial service',why:'Businesses run on Appliance Pro: facilities, equipment registry and custom-quoted commercial work — no residential diagnostic pricing, ever.',links:[['Open Appliance Pro','https://topspeedserviceos.com/appliance-pro-site']]},
   pm:{title:'Appliance Connect Pro — property managers',why:'Connect Pro is the service hub for homeowners and property managers: units, work orders and tracking across your portfolio.',links:[['Open Connect Pro','https://topspeedserviceos.com/connect-pro-site']]},
   vent:{title:'Cleanout Vents — our dryer-vent partner',why:'Dryer-vent cleaning is handled by Cleanout Vents, a registered partner in the Top Speed network. Speedy routes vent work to them — call 844-460-7038 or open their page.',links:[['Open Cleanout Vents','https://topspeedserviceos.com/cleanout-vents-site']]},
@@ -3170,9 +3173,10 @@ function plAdsMine(){
    renders it and sends the three mutations (connect request,
    disconnect, agent-access grant). A channel can only ever show
    what the server says — Pending until the office completes a real
-   link, Connected only when one truly exists. Facebook appears in
-   both groups on purpose: one connection to your Facebook account
-   covers Marketplace selling AND Page/profile posting. The search
+   link, Active only when one truly exists. Facebook appears in
+   both groups on purpose: it is gateway-only — Pepper posts through
+   Top Speed's connected Facebook account, never the seller's own —
+   covering Marketplace selling AND Page/profile posting. The search
    directories (Google Business Profile, Bing Places, more
    directories — added with the three-purpose consolidation) render
    in their own "Be found on" group under Post. */
