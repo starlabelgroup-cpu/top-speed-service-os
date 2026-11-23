@@ -12,6 +12,7 @@ import {
   exchangeAdsOsConnectCode,
   mintAdsOsConnectCode,
 } from '../services/adsOsSso.js';
+import { buildAdsOsPlatform, buildAdsOsPlatforms } from '../services/adsOsPlatforms.js';
 
 /**
  * Top Speed Ads OS integration (2026-11-20): the read-only summary
@@ -34,17 +35,64 @@ import {
 
 const router = Router();
 
-router.get('/integrations/ads-os/summary', (req, res) => {
+/**
+ * The one service-key gate every Ads OS read door shares — the
+ * summary below and the unified platforms feed under it answer
+ * the identical 503 / 401 shapes, so a caller can never tell the
+ * doors apart by their refusals.
+ */
+function adsOsGate(req, res) {
   if (!adsOsConfigured()) {
-    return res.status(503).json({
+    res.status(503).json({
       error: 'Ads OS integration is not configured (the service key environment variable is not set)',
       code: 'ADS_OS_NOT_CONFIGURED',
     });
+    return false;
   }
   if (!adsOsKeyMatches(req.get(ADS_OS_KEY_HEADER))) {
-    return res.status(401).json({ error: 'Invalid Ads OS service key', code: 'ADS_OS_UNAUTHORIZED' });
+    res.status(401).json({ error: 'Invalid Ads OS service key', code: 'ADS_OS_UNAUTHORIZED' });
+    return false;
   }
+  return true;
+}
+
+router.get('/integrations/ads-os/summary', (req, res) => {
+  if (!adsOsGate(req, res)) return undefined;
   return res.json({ data: buildAdsOsSummary([...store.bookings.values()]) });
+});
+
+// ---------------------------------------------------------------------------
+// The UNIFIED advertising feed (2026-11-22): one aggregate over
+// all five advertising platforms in Service OS — Top Speed Ads
+// (Ad Studio), Ads Console (Advertiser Console), Top Speed Local
+// OS, Marketing OS and Flywheel Advertising — so the Ads OS
+// Manager app is one front door over all of them. Same service
+// key gate as the summary, same counts-and-labels discipline:
+// read-only, no PII, nothing written. A platform whose source is
+// unavailable answers a dark section (available:false) instead of
+// failing the whole feed. See services/adsOsPlatforms.js.
+// ---------------------------------------------------------------------------
+
+router.get('/integrations/ads-os/platforms', async (req, res, next) => {
+  if (!adsOsGate(req, res)) return undefined;
+  try {
+    return res.json({ data: await buildAdsOsPlatforms() });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+router.get('/integrations/ads-os/platforms/:key', async (req, res, next) => {
+  if (!adsOsGate(req, res)) return undefined;
+  try {
+    const section = await buildAdsOsPlatform(req.params.key);
+    if (!section) {
+      return res.status(404).json({ error: 'Unknown Ads OS platform', code: 'ADS_OS_PLATFORM_UNKNOWN' });
+    }
+    return res.json({ data: section });
+  } catch (error) {
+    return next(error);
+  }
 });
 
 // ---------------------------------------------------------------------------
