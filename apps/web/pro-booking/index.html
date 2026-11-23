@@ -88,6 +88,7 @@
     <div class="staffbar" style="margin-top:20px">
       <span id="who" style="font-weight:700;color:#fff"></span><span style="flex:1"></span>
       <a href="/book-os">Book OS</a>·<a href="/crm">CRM</a>·<a href="/track-console">Tracking</a>
+      <button id="pbWsOptBtn" type="button">Options</button>
       <button id="signOutBtn" type="button">Sign out</button>
     </div>
 
@@ -164,6 +165,55 @@
 
   <p class="fine">Top Speed CRM — booking, CRM &amp; dispatch software by Top Speed Appliance LLC.<br>Customer-facing form: <a href="/book" style="color:#c7d6f2;font-weight:600">topspeedserviceos.com/book</a></p>
 </div>
+
+<footer style="max-width:1060px;margin:0 auto;padding:0 18px 34px">
+<!-- WORKSTATION STANDARD — SYSTEM FOOTER (Step 3 fix, 2026-11-23):
+     the uniform directory block every workstation carries: customer
+     apps first under "Customer App", then the 21-entry "Workstation"
+     directory in its fixed order (the homepage/CocoCane column, with
+     Local OS naming its own face at /local and Marketing OS its face
+     at /marketing-os). Additive — the console's own footer stays. -->
+<style>
+.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
+.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
+.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
+.tsos-wsfoot a:hover{text-decoration:underline}
+</style>
+<div class="tsos-wsfoot">
+  <div>
+    <h3>Customer App</h3>
+    <p><a href="/app">Appliance Connect — Customer App</a><br>
+    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
+    <a href="/appliance-pro-site">Appliance Pro</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
+  </div>
+  <div>
+    <h3>Workstation</h3>
+    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+    <a href="/book-os">Service Setters — Book OS</a><br>
+    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+    <a href="/applianceman">ApplianceMan</a><br>
+    <a href="/finance">Finance</a><br>
+    <a href="/tech">Tech App — Service Providers</a><br>
+    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+    <a href="/network">Service Network</a><br>
+    <a href="/parts">Parts Supply</a><br>
+    <a href="/advertiser">Advertiser Console</a><br>
+    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+    <a href="/flywheel">Flywheel Advertising</a><br>
+    <a href="/local">Top Speed Local OS</a><br>
+    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+    <a href="/media">Media OS</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+    <a href="/refer">Referrals &amp; Rewards</a><br>
+    <a href="/portal">Service OS Portal</a><br>
+    <a href="/academy">Training Academy</a><br>
+    <a href="/work-time-access">Work Time Access</a><br>
+    <a href="/navigator">Workstation — Team Consoles</a></p>
+  </div>
+</div>
+</footer>
 
 <script>
 (function(){
@@ -302,8 +352,60 @@
   if(token()) enter();
 })();
 </script>
-<script src="/speedy-widget.js" defer></script><script src="/layer2.js" defer></script>
+<style id="pbWsStyle">
+.pbws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.pbws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840;font-family:Inter,system-ui,sans-serif}
+.pbws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.pbws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.pbws-row{margin-bottom:14px}
+.pbws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.pbws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.pbws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.pbws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.pbws-done{border:1px solid #dfe7f0;background:#182742;color:#fff;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+<div class="pbws-back" id="pbWsOptBack" role="dialog" aria-modal="true" aria-label="Pro Booking options">
+  <div class="pbws-panel">
+    <h3>Pro Booking options</h3>
+    <p class="pbws-sub">Saved on this device only. The booking flow stays exactly as it is — this option only remembers the city you book most, so the Location step starts there. You can still pick any city in the wizard.</p>
+    <div class="pbws-row"><span class="lb">Usual city</span>
+      <select id="pbWsCitySel" style="width:100%;padding:10px 12px;border:1.5px solid #d7dee9;border-radius:10px;font:inherit;font-size:14.5px;background:#fff;color:#101828">
+        <option value="">No usual city</option><option value="Lauderhill">Lauderhill</option><option value="Plantation">Plantation</option><option value="Sunrise">Sunrise</option><option value="Tamarac">Tamarac</option><option value="Fort Lauderdale">Fort Lauderdale</option><option value="Lauderdale Lakes">Lauderdale Lakes</option><option value="North Lauderdale">North Lauderdale</option><option value="Davie">Davie</option><option value="Coral Springs">Coral Springs</option><option value="Pompano Beach">Pompano Beach</option><option value="Oakland Park">Oakland Park</option><option value="Margate">Margate</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="pbws-done" type="button" id="pbWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Pro Booking) ═══
+   Additive only: an Options panel that remembers, on this
+   device, the staffer's usual booking city and preselects it
+   on the wizard's Location step. The wizard itself, its
+   validation and its submit path are untouched. Defaults
+   reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_probooking_prefs';
+  var prefs={city:''};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'&&typeof p.city==='string') prefs.city=p.city; } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function citySel(){ return document.getElementById('wCity'); }
+  function applyCity(){ var s=citySel(); if(!s||!prefs.city) return; if(!s.value) s.value=prefs.city; }
+  function openBack(){ var sel=document.getElementById('pbWsCitySel'); if(sel) sel.value=prefs.city; document.getElementById('pbWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('pbWsOptBack').style.display='none'; }
+  document.getElementById('pbWsOptBtn').addEventListener('click',openBack);
+  document.getElementById('pbWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('pbWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('pbWsCitySel').addEventListener('change',function(){ prefs.city=this.value; savePrefs(); applyCity(); });
+  var s=citySel();
+  if(s) s.addEventListener('change',function(){ if(s.value){ prefs.city=s.value; savePrefs(); } });
+  applyCity();
+})();
+</script>
+<script src="/layer2.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
+<script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 </body>
 </html>

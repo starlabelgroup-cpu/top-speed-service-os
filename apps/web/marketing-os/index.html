@@ -72,6 +72,7 @@ footer strong{color:#fff} footer a{color:#cfe0f5}
     <a href="/marketing-os/studio">Page Studio</a>
     <a href="/marketing-os/seo">SEO Dashboard</a>
     <a href="/marketing-os/google-accounts">Google Accounts</a>
+    <a href="#" id="mkWsOptBtn" onclick="return false;">Options</a>
     <a href="/portal">Portal</a>
   <a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a></nav>
 </header>
@@ -196,6 +197,52 @@ footer strong{color:#fff} footer a{color:#cfe0f5}
 <footer>
   <strong>Top Speed Appliance LLC</strong> · Top Speed Marketing OS — the agency on the Top Speed Service OS.<br>
   <a href="/local">Local OS</a> · <a href="/ads">Top Speed Ads</a> · <a href="/ad-studio">Ad Studio</a> · <a href="/flywheel">Flywheel</a> · <a href="/marketing-os/studio">Page Studio</a> · <a href="/marketing-os/seo">SEO Dashboard</a> · <a href="/marketing-os/google-accounts">Google Accounts</a> · <a href="/portal">Portal</a> · <a href="tel:+18444607038">844-460-7038</a>
+<!-- WORKSTATION STANDARD — SYSTEM FOOTER (Step 3 fix, 2026-11-23):
+     the uniform directory block every workstation carries: customer
+     apps first under "Customer App", then the 21-entry "Workstation"
+     directory in its fixed order (the homepage/CocoCane column, with
+     Local OS naming its own face at /local and Marketing OS its face
+     at /marketing-os). Additive — the console's own footer stays. -->
+<style>
+.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
+.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
+.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
+.tsos-wsfoot a:hover{text-decoration:underline}
+</style>
+<div class="tsos-wsfoot">
+  <div>
+    <h3>Customer App</h3>
+    <p><a href="/app">Appliance Connect — Customer App</a><br>
+    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
+    <a href="/appliance-pro-site">Appliance Pro</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
+  </div>
+  <div>
+    <h3>Workstation</h3>
+    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+    <a href="/book-os">Service Setters — Book OS</a><br>
+    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+    <a href="/applianceman">ApplianceMan</a><br>
+    <a href="/finance">Finance</a><br>
+    <a href="/tech">Tech App — Service Providers</a><br>
+    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+    <a href="/network">Service Network</a><br>
+    <a href="/parts">Parts Supply</a><br>
+    <a href="/advertiser">Advertiser Console</a><br>
+    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+    <a href="/flywheel">Flywheel Advertising</a><br>
+    <a href="/local">Top Speed Local OS</a><br>
+    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+    <a href="/media">Media OS</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+    <a href="/refer">Referrals &amp; Rewards</a><br>
+    <a href="/portal">Service OS Portal</a><br>
+    <a href="/academy">Training Academy</a><br>
+    <a href="/work-time-access">Work Time Access</a><br>
+    <a href="/navigator">Workstation — Team Consoles</a></p>
+  </div>
+</div>
 </footer>
 
 <script>
@@ -279,6 +326,75 @@ document.getElementById('mosForm').addEventListener('submit',function(ev){
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>/* TOP SPEED TYPE SYSTEM — Futuristic Font System (Ramone font collection 2026-11-16) */ body{font-family:'Inter',system-ui,Arial,sans-serif} h1{font-family:'Anton',Impact,sans-serif} h2,h3{font-family:'Rajdhani','Inter',sans-serif} .brand,.logo-text,.wordmark{font-family:'Rajdhani','Inter',sans-serif;letter-spacing:.02em} .anton{font-family:'Anton',Impact,sans-serif;letter-spacing:.5px} .stat b,.stat strong,.kpi b,.kpi strong,.metric b,.metric strong,[class*='stat'] .num{font-family:'Space Mono',monospace}</style>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<style id="mkWsStyle">
+.mkws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.mkws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840;font-family:Inter,system-ui,sans-serif}
+.mkws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.mkws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.mkws-row{margin-bottom:14px}
+.mkws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.mkws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.mkws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.mkws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.mkws-done{border:1px solid #dfe7f0;background:#182742;color:#fff;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+<div class="mkws-back" id="mkWsOptBack" role="dialog" aria-modal="true" aria-label="Marketing OS options">
+  <div class="mkws-panel">
+    <h3>Marketing OS options</h3>
+    <p class="mkws-sub">Saved on this device only. This option only re-reads the hub's headline counts — covered cities, brands, services and published pages — on a timer.</p>
+    <div class="mkws-row"><span class="lb">Auto-refresh</span>
+      <div class="mkws-seg" id="mkWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="mkws-sub" style="margin:8px 0 0">Pauses while this panel is open or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="mkws-done" type="button" id="mkWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Marketing OS) ═══
+   Additive only: an Options panel that remembers, on this
+   device, an opt-in 60-second refresh of the hub's headline
+   counts — the same two public reads (taxonomy + published
+   pages) the page makes at load. Defaults reproduce the
+   page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_marketingos_prefs';
+  var API='https://top-speed-service-os.vercel.app/api/v1';
+  var prefs={autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'&&typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function syncSegs(){ var seg=document.getElementById('mkWsAutoSeg'); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute('data-auto')===(prefs.autoRefresh?'on':'off')); }); }
+  function loadStats(){
+    fetch(API+'/marketing-os/taxonomy').then(function(r){ return r.json(); }).then(function(j){
+      var d=j.data||{};
+      var covered=(d.cities||[]).filter(function(c){ return c.serviceCovered; }).length;
+      if(covered) document.getElementById('stCities').textContent=covered;
+      if(d.brands) document.getElementById('stBrands').textContent=d.brands.length;
+      if(d.services) document.getElementById('stServices').textContent=d.services.filter(function(s){ return !s.partOfService; }).length;
+    }).catch(function(){});
+    fetch(API+'/marketing-os/pages').then(function(r){ return r.json(); }).then(function(j){
+      if(j.data) document.getElementById('stPages').textContent=j.data.length;
+    }).catch(function(){});
+  }
+  function openBack(){ document.getElementById('mkWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('mkWsOptBack').style.display='none'; }
+  document.getElementById('mkWsOptBtn').addEventListener('click',function(ev){ ev.preventDefault(); syncSegs(); openBack(); });
+  document.getElementById('mkWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('mkWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('mkWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('mkWsOptBack').style.display==='flex') return;
+    loadStats();
+  },60000);
+  syncSegs();
+})();
+</script>
 </body>
 </html>

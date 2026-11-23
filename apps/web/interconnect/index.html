@@ -109,12 +109,58 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
     <p class="sub">The durable cross-platform feed — bookings, completions, referrals, reviews, advertiser and provider job events from every surface, newest first. The feed is written once per event at the flow's own success point.</p>
     <div class="console" id="feedZone"><p class="small mut"><span class="spin"></span> Loading the feed…</p></div>
 
-    <div style="margin-top:18px"><button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
+    <div style="margin-top:18px"><button class="btn ghost sm" id="icWsOptBtn" type="button">Options</button> <button class="btn ghost sm" id="btnSignOut" type="button">Sign out</button></div>
   </div>
 </main>
 
 <footer>
   <a href="/navigator">System Navigator</a><a href="/pepper">Pepper — Systems Manager</a><a href="/applianceman">ApplianceMan</a><a href="/insights">Insights</a><a href="/notifications">Notifications</a><a href="/">Platform Home</a>
+<!-- WORKSTATION STANDARD — SYSTEM FOOTER (Step 3 fix, 2026-11-23):
+     the uniform directory block every workstation carries: customer
+     apps first under "Customer App", then the 21-entry "Workstation"
+     directory in its fixed order (the homepage/CocoCane column, with
+     Local OS naming its own face at /local and Marketing OS its face
+     at /marketing-os). Additive — the console's own footer stays. -->
+<style>
+.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
+.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
+.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
+.tsos-wsfoot a:hover{text-decoration:underline}
+</style>
+<div class="tsos-wsfoot">
+  <div>
+    <h3>Customer App</h3>
+    <p><a href="/app">Appliance Connect — Customer App</a><br>
+    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
+    <a href="/appliance-pro-site">Appliance Pro</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
+  </div>
+  <div>
+    <h3>Workstation</h3>
+    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+    <a href="/book-os">Service Setters — Book OS</a><br>
+    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+    <a href="/applianceman">ApplianceMan</a><br>
+    <a href="/finance">Finance</a><br>
+    <a href="/tech">Tech App — Service Providers</a><br>
+    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+    <a href="/network">Service Network</a><br>
+    <a href="/parts">Parts Supply</a><br>
+    <a href="/advertiser">Advertiser Console</a><br>
+    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+    <a href="/flywheel">Flywheel Advertising</a><br>
+    <a href="/local">Top Speed Local OS</a><br>
+    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+    <a href="/media">Media OS</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+    <a href="/refer">Referrals &amp; Rewards</a><br>
+    <a href="/portal">Service OS Portal</a><br>
+    <a href="/academy">Training Academy</a><br>
+    <a href="/work-time-access">Work Time Access</a><br>
+    <a href="/navigator">Workstation — Team Consoles</a></p>
+  </div>
+</div>
   <div style="margin-top:8px">Top Speed Appliance LLC · Platform Interconnect — the wiring of the house · Staff only</div>
 </footer>
 
@@ -274,5 +320,60 @@ boot();
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<style id="icWsStyle">
+.icws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.icws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840;font-family:Inter,system-ui,sans-serif}
+.icws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.icws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.icws-row{margin-bottom:14px}
+.icws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.icws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.icws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.icws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.icws-done{border:1px solid #dfe7f0;background:#182742;color:#fff;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+<div class="icws-back" id="icWsOptBack" role="dialog" aria-modal="true" aria-label="Interconnect options">
+  <div class="icws-panel">
+    <h3>Interconnect options</h3>
+    <p class="icws-sub">Saved on this device only. The wiring board stays as it is — this option only re-reads the latest platform events feed on a timer.</p>
+    <div class="icws-row"><span class="lb">Auto-refresh</span>
+      <div class="icws-seg" id="icWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="icws-sub" style="margin:8px 0 0">Pauses while this panel is open or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="icws-done" type="button" id="icWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — FINAL SWEEP (Interconnect) ═══
+   Additive only: an Options panel that remembers, on this
+   device, an opt-in 60-second refresh of the platform
+   events feed (the page’s own loadFeed read).
+   Defaults reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_interconnect_prefs';
+  var prefs={autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'&&typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function syncSegs(){ var seg=document.getElementById('icWsAutoSeg'); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute('data-auto')===(prefs.autoRefresh?'on':'off')); }); }
+  function openBack(){ document.getElementById('icWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('icWsOptBack').style.display='none'; }
+  document.getElementById('icWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('icWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('icWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('icWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('icWsOptBack').style.display==='flex') return;
+    var z=document.getElementById('staffZone'); if(!z||z.style.display==='none') return;
+    loadFeed();
+  },60000);
+  syncSegs();
+})();
+</script>
 </body>
 </html>
