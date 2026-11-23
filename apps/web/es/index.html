@@ -616,7 +616,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="sec-head reveal">
       <span class="tag"><svg class="rti" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(4.32 1.5) scale(0.5122)"><path d="M1.5 1.5V39.5" stroke-width="3.5"/><path d="M1.5 3.5H28.5V20.5H1.5V3.5Z" stroke-width="3.5"/><path d="M10.5 3.5H1.5V12H10.5V3.5Z" fill="currentColor" stroke="none"/><path d="M28.5 3.5H19.5V12H28.5V3.5Z" fill="currentColor" stroke="none"/><path d="M19.5 12H10.5V20.5H19.5V12Z" fill="currentColor" stroke="none"/></g></svg> Lo que reparamos</span>
       <h2>Nueve servicios. <em>Una llamada rápida.</em></h2>
-      <p>Toca cualquier servicio para prellenar tu reserva y obtener un rango de estimado al instante. Residencial y comercial: todas las marcas principales.</p>
+      <p>Toca cualquier servicio para prellenar tu reserva y ver exactamente cómo funcionan nuestros precios planos. Residencial y comercial: todas las marcas principales.</p>
     </div>
     <div class="svc-grid" id="svcGrid"></div>
     <div class="card reveal" style="margin-top:16px;padding:22px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -1000,7 +1000,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="sec-head reveal">
       <span class="tag live">● En vivo — Laboratorio de diagnóstico con IA</span>
       <h2>Toma la foto. Envíala. <em>Diagnosticado.</em></h2>
-      <p>Dos herramientas, en vivo ahora: el diagnóstico por foto de Speedy lee la foto de tu electrodoméstico y el síntoma, y el estimador te da un rango de planificación antes de que salga cualquier furgoneta.</p>
+      <p>Dos herramientas, en vivo ahora: el diagnóstico por foto de Speedy lee la foto de tu electrodoméstico y el síntoma, y la herramienta de precios te muestra nuestras tarifas planas publicadas por adelantado — sin rangos y sin adivinar — antes de que salga cualquier furgoneta.</p>
     </div>
         <div class="reveal" style="max-width:860px;margin:0 auto 18px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
       <div style="font-size:26px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.8" y="7.5" width="12.5" height="10" rx="2.2"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E8322E"/><circle cx="9" cy="12.5" r="2.2"/></svg></div>
@@ -1011,7 +1011,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="lab reveal">
       <div class="lab-tabs" role="tablist" aria-label="Herramientas de diagnóstico">
         <button class="lab-tab" role="tab" aria-selected="true" id="tabPhoto" onclick="switchLab('photo')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> Diagnóstico por foto / video con IA</button>
-        <button class="lab-tab" role="tab" aria-selected="false" id="tabEst" onclick="switchLab('est')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M7.5 8h9M7.5 12h.01M11 12h.01M14.5 12h.01M7.5 15.5h.01M11 15.5h.01M14.5 15.5h.01" stroke-width="2.3" stroke="#E8322E"/></svg> Estimador de precio al instante</button>
+        <button class="lab-tab" role="tab" aria-selected="false" id="tabEst" onclick="switchLab('est')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M7.5 8h9M7.5 12h.01M11 12h.01M14.5 12h.01M7.5 15.5h.01M11 15.5h.01M14.5 15.5h.01" stroke-width="2.3" stroke="#E8322E"/></svg> Precios planos</button>
       </div>
 
       <div class="lab-body" id="panelPhoto" role="tabpanel">
@@ -1056,14 +1056,14 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             </div>
             <div style="margin-bottom:14px"><label class="flabel" for="estBrand">Marca (opcional)</label>
               <select id="estBrand"><option>Cualquier marca</option><option>Samsung</option><option>LG</option><option>Whirlpool</option><option>GE</option><option>Frigidaire</option><option>Maytag</option><option>Bosch</option><option>KitchenAid</option><option>Otra</option></select></div>
-            <button class="btn btn-blue" style="width:100%" onclick="runEstimate()">Obtener mi rango de estimado</button>
-            <p class="fine" style="margin-top:10px">Los estimados son rangos de planificación basados en reparaciones típicas del condado de Broward para el problema seleccionado. Tu total exacto lo confirma el técnico después del diagnóstico de $99, y esos $99 se acreditan a la reparación.</p>
+            <button class="btn btn-blue" style="width:100%" onclick="runEstimate()">Ver mi precio plano</button>
+            <p class="fine" style="margin-top:10px">Sin rangos y sin adivinar: los precios de Top Speed son planos y publicados. Tu total exacto queda en un presupuesto escrito después del diagnóstico de $99, y esos $99 se acreditan a la reparación.</p>
           </div>
           <div>
             <div class="result" id="estResult">
-              <span class="tag">Estimado</span>
-              <h3 style="margin-top:10px">Tu rango aparece aquí</h3>
-              <p>Elige un electrodoméstico y un problema, y luego toca <b>Obtener mi rango de estimado</b>. ¿Te gusta lo que ves? Reserva el diagnóstico de $99 y asegura la visita: el cargo se descuenta del total de tu reparación.</p>
+              <span class="tag">Precio plano</span>
+              <h3 style="margin-top:10px">Tu precio plano aparece aquí</h3>
+              <p>Elige un electrodoméstico y un problema, y luego toca <b>Ver mi precio plano</b>. Verás la causa más probable y exactamente cómo funciona el precio plano. Reserva el diagnóstico de $99 y asegura la visita: el cargo se descuenta del total de tu reparación.</p>
             </div>
           </div>
         </div>
@@ -1938,29 +1938,29 @@ var SERVICES=[
 ];
 var DIAG={
  fridge:{symptoms:['No enfría / está tibio','Hace ruidos fuertes','Fuga de agua','Hielo acumulado por todas partes','Muestra un código de error'],results:[
-   {issue:'Ventilador del condensador dañado o serpentines bloqueados',detail:'Las temperaturas altas con el compresor funcionando suelen ser flujo de aire: un motor de ventilador dañado o serpentines tapados. El técnico limpia y prueba el flujo de aire primero; suele arreglarse en la misma visita.',range:'$185 – $385',conf:82},
-   {issue:'Falla del sistema de descongelación',detail:'La escarcha abundante apunta a la resistencia de descongelación, el termostato o un control. El técnico prueba el circuito de descongelación y reemplaza el componente dañado.',range:'$210 – $420',conf:76}]},
+   {issue:'Ventilador del condensador dañado o serpentines bloqueados',detail:'Las temperaturas altas con el compresor funcionando suelen ser flujo de aire: un motor de ventilador dañado o serpentines tapados. El técnico limpia y prueba el flujo de aire primero; suele arreglarse en la misma visita.',conf:82},
+   {issue:'Falla del sistema de descongelación',detail:'La escarcha abundante apunta a la resistencia de descongelación, el termostato o un control. El técnico prueba el circuito de descongelación y reemplaza el componente dañado.',conf:76}]},
  washer:{symptoms:['No desagua','No centrifuga ni agita','Tiene fugas','Muestra un código de error','Golpea fuerte'],results:[
-   {issue:'Falla o atasco de la bomba de desagüe',detail:'El agua estancada suele ser un atasco en la bomba (monedas, medias, pelusa) o una bomba dañada. El técnico limpia la trampa y prueba la bomba antes de presupuestar repuestos.',range:'$165 – $340',conf:84},
-   {issue:'Desgaste de suspensión / rodamientos',detail:'Los golpes al centrifugar suelen significar barras de suspensión o rodamientos de la tina desgastados. El técnico inspecciona y presupuesta el kit exacto para tu modelo.',range:'$240 – $480',conf:71}]},
+   {issue:'Falla o atasco de la bomba de desagüe',detail:'El agua estancada suele ser un atasco en la bomba (monedas, medias, pelusa) o una bomba dañada. El técnico limpia la trampa y prueba la bomba antes de presupuestar repuestos.',conf:84},
+   {issue:'Desgaste de suspensión / rodamientos',detail:'Los golpes al centrifugar suelen significar barras de suspensión o rodamientos de la tina desgastados. El técnico inspecciona y presupuesta el kit exacto para tu modelo.',conf:71}]},
  dryer:{symptoms:['No calienta','Tarda una eternidad en secar','El tambor no gira','Chirrido / golpes','Se apaga rápido'],results:[
-   {issue:'Falla del fusible térmico o del elemento',detail:'Las secadoras sin calor suelen haber fundido un fusible térmico (normalmente por un conducto tapado) o quemado el elemento. El técnico prueba ambos y revisa tu conducto.',range:'$155 – $330',conf:85},
-   {issue:'Desgaste de correa o rodillos',detail:'Los golpes con el tambor detenido apuntan a una correa rota o rodillos/polea desgastados. Reparación estándar con kit, normalmente en la misma visita.',range:'$170 – $310',conf:78}]},
+   {issue:'Falla del fusible térmico o del elemento',detail:'Las secadoras sin calor suelen haber fundido un fusible térmico (normalmente por un conducto tapado) o quemado el elemento. El técnico prueba ambos y revisa tu conducto.',conf:85},
+   {issue:'Desgaste de correa o rodillos',detail:'Los golpes con el tambor detenido apuntan a una correa rota o rodillos/polea desgastados. Reparación estándar con kit, normalmente en la misma visita.',conf:78}]},
  oven:{symptoms:['No calienta','Horneado desigual','Muestra un código de error','La hornilla no enciende','La puerta no cierra'],results:[
-   {issue:'Falla del encendedor o del elemento de hornear',detail:'La causa clásica de la falta de calor: encendedor débil (gas) o elemento quemado (eléctrico). Se prueba en minutos y suele estar en la furgoneta.',range:'$175 – $360',conf:83},
-   {issue:'Falla de tarjeta de control / sensor',detail:'Los códigos de error y las temperaturas locas suelen significar un sensor o una tarjeta de control dañados. El técnico lo verifica con lecturas de medidor antes de presupuestar.',range:'$260 – $520',conf:68}]},
+   {issue:'Falla del encendedor o del elemento de hornear',detail:'La causa clásica de la falta de calor: encendedor débil (gas) o elemento quemado (eléctrico). Se prueba en minutos y suele estar en la furgoneta.',conf:83},
+   {issue:'Falla de tarjeta de control / sensor',detail:'Los códigos de error y las temperaturas locas suelen significar un sensor o una tarjeta de control dañados. El técnico lo verifica con lecturas de medidor antes de presupuestar.',conf:68}]},
  dish:{symptoms:['No desagua','Los platos quedan sucios','Tiene fugas','No arranca','Rechina fuerte'],results:[
-   {issue:'Bloqueo de bomba de desagüe o filtro',detail:'El agua estancada y los platos sucios suelen venir de un filtro/bomba tapados o una bomba de desagüe fallando. El técnico despeja y prueba el flujo de todo el camino de desagüe.',range:'$150 – $320',conf:80},
-   {issue:'Problema de bomba de lavado / brazos rociadores',detail:'La limpieza débil con llenado normal apunta a la presión de la bomba de lavado o a brazos rociadores partidos. Se presupuesta después de una prueba de presión.',range:'$210 – $430',conf:70}]},
+   {issue:'Bloqueo de bomba de desagüe o filtro',detail:'El agua estancada y los platos sucios suelen venir de un filtro/bomba tapados o una bomba de desagüe fallando. El técnico despeja y prueba el flujo de todo el camino de desagüe.',conf:80},
+   {issue:'Problema de bomba de lavado / brazos rociadores',detail:'La limpieza débil con llenado normal apunta a la presión de la bomba de lavado o a brazos rociadores partidos. Se presupuesta después de una prueba de presión.',conf:70}]},
  freezer:{symptoms:['No hace hielo','El hielo sabe mal','Demasiada escarcha','No congela','Tiene fugas'],results:[
-   {issue:'Falla del módulo de la fábrica de hielo o de la válvula de entrada',detail:'La falta de hielo suele ser el módulo de la fábrica o una válvula de entrada de agua sin presión. El técnico prueba la presión del agua y el ciclo del módulo.',range:'$165 – $360',conf:79},
-   {issue:'Problema de descongelación / sello',detail:'La invasión de escarcha suele significar una falla de descongelación o una junta de puerta fugando aire caliente. La prueba del billete nos dice mucho al llegar.',range:'$180 – $390',conf:74}]},
+   {issue:'Falla del módulo de la fábrica de hielo o de la válvula de entrada',detail:'La falta de hielo suele ser el módulo de la fábrica o una válvula de entrada de agua sin presión. El técnico prueba la presión del agua y el ciclo del módulo.',conf:79},
+   {issue:'Problema de descongelación / sello',detail:'La invasión de escarcha suele significar una falla de descongelación o una junta de puerta fugando aire caliente. La prueba del billete nos dice mucho al llegar.',conf:74}]},
  micro:{symptoms:['No calienta','Echa chispas','El plato giratorio está atascado','Problemas de puerta','Sin vida / sin energía'],results:[
-   {issue:'Falla del interruptor de puerta o del magnetrón',detail:'Los microondas son de alto voltaje: las fallas de calor las prueba el técnico de forma segura y se presupuestan antes de pedir cualquier repuesto.',range:'$150 – $340',conf:72},
-   {issue:'Falla de control / panel táctil',detail:'Los paneles muertos y los pitidos fantasma suelen venir de la tarjeta de control o la membrana. Los repuestos específicos del modelo pueden tener que pedirse.',range:'$190 – $380',conf:66}]},
+   {issue:'Falla del interruptor de puerta o del magnetrón',detail:'Los microondas son de alto voltaje: las fallas de calor las prueba el técnico de forma segura y se presupuestan antes de pedir cualquier repuesto.',conf:72},
+   {issue:'Falla de control / panel táctil',detail:'Los paneles muertos y los pitidos fantasma suelen venir de la tarjeta de control o la membrana. Los repuestos específicos del modelo pueden tener que pedirse.',conf:66}]},
  disposal:{symptoms:['Zumba pero está atascado','Tiene fugas','No enciende','Mal olor','Desagüe lento'],results:[
-   {issue:'Atasco o motor dañado',detail:'Un zumbido suele significar un atasco en el volante (muchas veces despejable); el silencio o las fugas pueden significar que la unidad terminó su vida. Los reemplazos son un trabajo estándar de la misma visita.',range:'$120 – $295',conf:86},
-   {issue:'Falla de sello / fuga',detail:'Las fugas del cuerpo significan que los sellos internos fallaron; el reemplazo suele ser la solución honesta y se presupuesta fijo.',range:'$210 – $340',conf:81}]}
+   {issue:'Atasco o motor dañado',detail:'Un zumbido suele significar un atasco en el volante (muchas veces despejable); el silencio o las fugas pueden significar que la unidad terminó su vida. Los reemplazos son un trabajo estándar de la misma visita.',conf:86},
+   {issue:'Falla de sello / fuga',detail:'Las fugas del cuerpo significan que los sellos internos fallaron; el reemplazo suele ser la solución honesta y se presupuesta fijo.',conf:81}]}
 };
 var EST={
  fridge:{issues:DIAG.fridge.symptoms},washer:{issues:DIAG.washer.symptoms},dryer:{issues:DIAG.dryer.symptoms},
@@ -1968,7 +1968,6 @@ var EST={
  micro:{issues:DIAG.micro.symptoms},disposal:{issues:DIAG.disposal.symptoms},
  install:{issues:['Instalación de un electrodoméstico','Instalación de paquete de cocina','Instalación de par de lavandería','Conexión + retiro del viejo']}
 };
-var EST_RANGES={'Instalación de un electrodoméstico':'$120 – $220','Instalación de paquete de cocina':'$290 – $540','Instalación de par de lavandería':'$180 – $320','Conexión + retiro del viejo':'$150 – $260'};
 var BRANDS=['Samsung','LG','Whirlpool','GE','Frigidaire','Maytag','Bosch','KitchenAid'];
 var CITIES=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
 var GARAGE=[
@@ -1981,7 +1980,7 @@ var GARAGE=[
 /* ---------- render grids ---------- */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s,i){
- return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><span class="rt-lap" aria-hidden="true">0'+(i+1)+'</span><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Reservar + obtener estimado →</div></button>';
+ return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><span class="rt-lap" aria-hidden="true">0'+(i+1)+'</span><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Reservar + precio plano →</div></button>';
 }).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<div class="card brand reveal">'+b+'<div style="font-family:Barlow;font-weight:600;font-size:13px;color:var(--muted);margin-top:4px">Reparación • Repuestos • Modelos inteligentes</div></div>';}).join('');
 document.getElementById('cityGrid').innerHTML=CITIES.map(function(c){return '<div class="card city reveal"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+c+'</div>';}).join('');
@@ -2066,18 +2065,25 @@ function runEstimate(){
   var a=document.getElementById('estAppliance').value;
   var issue=document.getElementById('estIssue').value;
   var brand=document.getElementById('estBrand').value;
-  var range,detail;
-  if(EST_RANGES[issue]){range=EST_RANGES[issue];detail='Precio plano de instalación confirmado al reservar: incluye nivelación, conexión y una prueba completa de funcionamiento.';}
+  var detail,pricing;
+  if(a==='install'){
+    detail='Precio plano de instalación confirmado al reservar: incluye nivelación, conexión y una prueba completa de funcionamiento.';
+    pricing='<p style="margin:6px 0"><b>Instalación plana: $150</b> — un solo precio plano por la instalación, confirmado al reservar.</p>'+
+      '<p style="margin:6px 0"><b>Repuestos y materiales</b> (mangueras, cables, kits de conexión) — con precio en tu presupuesto escrito si tu instalación los necesita.</p>';
+  }
   else{
     var d=DIAG[a]; var idx=d.symptoms.indexOf(issue); var r=d.results[idx>=0?idx%d.results.length:0];
-    range=r.range; detail='Lo más probable: '+r.issue+'. '+r.detail;
+    detail='Lo más probable: '+r.issue+'. '+r.detail;
+    pricing='<p style="margin:6px 0"><b>Diagnóstico de $99</b> — se cobra al reservar y se acredita completo a tu reparación. Si decides no reparar, los $99 se deben igual por la visita.</p>'+
+      '<p style="margin:6px 0"><b>Mano de obra de reparación plana: $210</b> — un solo precio plano de mano de obra por la reparación.</p>'+
+      '<p style="margin:6px 0"><b>Repuestos y materiales</b> — con precio en tu presupuesto escrito después del diagnóstico.</p>';
   }
   var name=document.querySelector('#estAppliance option:checked').textContent;
   document.getElementById('estResult').innerHTML=
-    '<span class="tag">Estimado: '+esc(name)+(brand&&brand!=='Cualquier marca'?' • '+esc(brand):'')+'</span>'+
+    '<span class="tag">Precio plano: '+esc(name)+(brand&&brand!=='Cualquier marca'?' • '+esc(brand):'')+'</span>'+
     '<h3 style="margin-top:10px">'+esc(issue)+'</h3><p>'+esc(detail)+'</p>'+
-    '<div class="fine">Rango total estimado</div><div class="price-big">'+range+'</div>'+
-    '<p class="fine">Solo un estimado, no un presupuesto. Tu precio fijo se confirma después del diagnóstico presencial de $99, que se acredita a la reparación.</p>'+
+    '<div class="fine">Cómo funcionan los precios de Top Speed</div>'+pricing+
+    '<p class="fine">Sin rangos y sin totales inventados: tu precio exacto queda en un presupuesto escrito después del diagnóstico presencial, y ningún trabajo empieza sin tu presupuesto escrito aprobado. El servicio comercial se cotiza a medida: llama al 844-460-7038.</p>'+
     '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Asegúralo: reserva ahora</a>';
 }
 

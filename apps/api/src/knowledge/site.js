@@ -66,10 +66,13 @@ export function buildSitePack() {
         'top speed appliance', 'about you', 'your company', 'who are you', 'phone number',
         'contact', 'email', 'address', 'where are you located', 'office', 'hours',
         'when are you open', 'slogan', 'the faster the better',
+        'open on saturday', 'open on sunday', 'open saturday', 'open sunday',
+        'saturday', 'sunday', 'weekend', 'open on the weekend', 'open today',
+        'open now', 'what time do you open', 'what time do you close', 'closing time',
       ],
       answer:
         `${P.platformName} is run by ${P.platformOwner} ("Top Speed Appliance Network"), an appliance repair and installation company based in Coconut Creek, Florida — slogan: "${P.slogan}" ` +
-        `You can reach the team at ${PHONE} or service@topspeedappliance.net, Monday–Friday, 8 AM–7 PM. ` +
+        `You can reach the team at ${PHONE} or service@topspeedappliance.net, Monday–Friday, 8 AM–7 PM — we're closed on Saturday and Sunday. ` +
         `The office is at ${P.officeAddress}; technicians are dispatched from there, and repairs happen at your home or business, not at the office.`,
       link: `${SITE}/about`,
     },

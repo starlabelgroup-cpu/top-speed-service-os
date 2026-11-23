@@ -725,7 +725,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="sec-head reveal">
       <span class="tag"><svg class="rti" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><g transform="translate(4.32 1.5) scale(0.5122)"><path d="M1.5 1.5V39.5" stroke-width="3.5"/><path d="M1.5 3.5H28.5V20.5H1.5V3.5Z" stroke-width="3.5"/><path d="M10.5 3.5H1.5V12H10.5V3.5Z" fill="currentColor" stroke="none"/><path d="M28.5 3.5H19.5V12H28.5V3.5Z" fill="currentColor" stroke="none"/><path d="M19.5 12H10.5V20.5H19.5V12Z" fill="currentColor" stroke="none"/></g></svg> What we fix</span>
       <h2>Nine services. <em>One fast call.</em></h2>
-      <p>Tap any service to pre-fill your booking and get an instant estimate range. Residential and commercial — every major brand.</p>
+      <p>Tap any service to pre-fill your booking and see exactly how our flat pricing works. Residential and commercial — every major brand.</p>
     </div>
     <div class="svc-grid" id="svcGrid"></div>
     <div class="card reveal" style="margin-top:16px;padding:22px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;justify-content:space-between">
@@ -1110,7 +1110,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="sec-head reveal">
       <span class="tag live">● Live — AI Diagnose Lab</span>
       <h2>Snap. Send. <em>Diagnosed.</em></h2>
-      <p>Two tools, live now: Speedy’s photo diagnosis reads your appliance photo and symptom, and the estimator gives a planning range before anyone rolls a truck.</p>
+      <p>Two tools, live now: Speedy’s photo diagnosis reads your appliance photo and symptom, and the pricing tool shows our published flat rates up front — no ranges, no guessing — before anyone rolls a truck.</p>
     </div>
         <div class="reveal" style="max-width:860px;margin:0 auto 18px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 22px;display:flex;gap:14px;align-items:center;flex-wrap:wrap;">
       <div style="font-size:26px;"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.8" y="7.5" width="12.5" height="10" rx="2.2"/><path d="M15.3 10.8l5.9-3.3v10l-5.9-3.3" stroke="#E8322E"/><circle cx="9" cy="12.5" r="2.2"/></svg></div>
@@ -1121,7 +1121,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div class="lab reveal">
       <div class="lab-tabs" role="tablist" aria-label="Diagnosis tools">
         <button class="lab-tab" role="tab" aria-selected="true" id="tabPhoto" onclick="switchLab('photo')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> AI Photo / Video Diagnosis</button>
-        <button class="lab-tab" role="tab" aria-selected="false" id="tabEst" onclick="switchLab('est')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M7.5 8h9M7.5 12h.01M11 12h.01M14.5 12h.01M7.5 15.5h.01M11 15.5h.01M14.5 15.5h.01" stroke-width="2.3" stroke="#E8322E"/></svg> Instant Price Estimator</button>
+        <button class="lab-tab" role="tab" aria-selected="false" id="tabEst" onclick="switchLab('est')"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M7.5 8h9M7.5 12h.01M11 12h.01M14.5 12h.01M7.5 15.5h.01M11 15.5h.01M14.5 15.5h.01" stroke-width="2.3" stroke="#E8322E"/></svg> Flat Pricing</button>
       </div>
 
       <div class="lab-body" id="panelPhoto" role="tabpanel">
@@ -1166,14 +1166,14 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
             </div>
             <div style="margin-bottom:14px"><label class="flabel" for="estBrand">Brand (optional)</label>
               <select id="estBrand"><option>Any brand</option><option>Samsung</option><option>LG</option><option>Whirlpool</option><option>GE</option><option>Frigidaire</option><option>Maytag</option><option>Bosch</option><option>KitchenAid</option><option>Other</option></select></div>
-            <button class="btn btn-blue" style="width:100%" onclick="runEstimate()">Get my estimate range</button>
-            <p class="fine" style="margin-top:10px">Estimates are planning ranges based on typical Broward County repairs for the selected issue. Your exact total is confirmed by the technician after the $99 diagnostic — and that $99 is credited toward the repair.</p>
+            <button class="btn btn-blue" style="width:100%" onclick="runEstimate()">See my flat pricing</button>
+            <p class="fine" style="margin-top:10px">No ranges and no guessing: Top Speed pricing is flat and published. Your exact total is set in a written quote after the $99 diagnostic — and that $99 is credited toward the repair.</p>
           </div>
           <div>
             <div class="result" id="estResult">
-              <span class="tag">Estimate</span>
-              <h3 style="margin-top:10px">Your range appears here</h3>
-              <p>Pick an appliance and issue, then tap <b>Get my estimate range</b>. Like what you see? Book the $99 diagnostic and lock the visit in — the fee comes off your repair total.</p>
+              <span class="tag">Flat pricing</span>
+              <h3 style="margin-top:10px">Your flat pricing appears here</h3>
+              <p>Pick an appliance and issue, then tap <b>See my flat pricing</b>. You will see the most likely cause and exactly how the flat pricing works. Book the $99 diagnostic and lock the visit in — the fee comes off your repair total.</p>
             </div>
           </div>
         </div>
@@ -2058,29 +2058,29 @@ var SERVICES=[
 ];
 var DIAG={
  fridge:{symptoms:['Not cooling / warm','Making loud noises','Leaking water','Ice buildup everywhere','Error code showing'],results:[
-   {issue:'Failed condenser fan or blocked coils',detail:'Warm temps with a running compressor usually trace to airflow: a failed fan motor or matted coils. Tech cleans/tests airflow first — often a same-visit fix.',range:'$185 – $385',conf:82},
-   {issue:'Defrost system failure',detail:'Heavy frost points to a defrost heater, thermostat or control issue. The tech tests the defrost circuit and replaces the failed component.',range:'$210 – $420',conf:76}]},
+   {issue:'Failed condenser fan or blocked coils',detail:'Warm temps with a running compressor usually trace to airflow: a failed fan motor or matted coils. Tech cleans/tests airflow first — often a same-visit fix.',conf:82},
+   {issue:'Defrost system failure',detail:'Heavy frost points to a defrost heater, thermostat or control issue. The tech tests the defrost circuit and replaces the failed component.',conf:76}]},
  washer:{symptoms:['Won\u2019t drain','Won\u2019t spin or agitate','Leaking','Error code showing','Loud banging'],results:[
-   {issue:'Drain pump failure or clog',detail:'Standing water is most often a pump clog (coins, socks, lint) or a failed pump. Tech clears the trap and tests the pump before quoting parts.',range:'$165 – $340',conf:84},
-   {issue:'Suspension / bearing wear',detail:'Banging on spin usually means worn suspension rods or tub bearings. The tech inspects and quotes the exact kit for your model.',range:'$240 – $480',conf:71}]},
+   {issue:'Drain pump failure or clog',detail:'Standing water is most often a pump clog (coins, socks, lint) or a failed pump. Tech clears the trap and tests the pump before quoting parts.',conf:84},
+   {issue:'Suspension / bearing wear',detail:'Banging on spin usually means worn suspension rods or tub bearings. The tech inspects and quotes the exact kit for your model.',conf:71}]},
  dryer:{symptoms:['No heat','Takes forever to dry','Drum won\u2019t turn','Squealing / thumping','Shuts off quickly'],results:[
-   {issue:'Thermal fuse or heating element failure',detail:'No-heat dryers most often blew a thermal fuse (usually from a clogged vent) or burned out the element. Tech tests both and checks your vent run.',range:'$155 – $330',conf:85},
-   {issue:'Belt or roller wear',detail:'Thumping and a still drum point to a snapped belt or worn rollers/idler. A standard kit repair, typically same visit.',range:'$170 – $310',conf:78}]},
+   {issue:'Thermal fuse or heating element failure',detail:'No-heat dryers most often blew a thermal fuse (usually from a clogged vent) or burned out the element. Tech tests both and checks your vent run.',conf:85},
+   {issue:'Belt or roller wear',detail:'Thumping and a still drum point to a snapped belt or worn rollers/idler. A standard kit repair, typically same visit.',conf:78}]},
  oven:{symptoms:['Not heating','Uneven baking','Error code showing','Burner won\u2019t light','Door won\u2019t close'],results:[
-   {issue:'Igniter or bake element failure',detail:'The classic no-heat cause: a weak igniter (gas) or burned element (electric). Tested in minutes, commonly stocked on the truck.',range:'$175 – $360',conf:83},
-   {issue:'Control board / sensor fault',detail:'Error codes and wild temperatures usually mean a failed oven sensor or control board. Tech verifies with meter readings before quoting.',range:'$260 – $520',conf:68}]},
+   {issue:'Igniter or bake element failure',detail:'The classic no-heat cause: a weak igniter (gas) or burned element (electric). Tested in minutes, commonly stocked on the truck.',conf:83},
+   {issue:'Control board / sensor fault',detail:'Error codes and wild temperatures usually mean a failed oven sensor or control board. Tech verifies with meter readings before quoting.',conf:68}]},
  dish:{symptoms:['Not draining','Dishes still dirty','Leaking','Won\u2019t start','Loud grinding'],results:[
-   {issue:'Drain pump or filter blockage',detail:'Standing water and dirty dishes usually trace to a clogged filter/pump or a failing drain pump. Tech clears and flow-tests the full drain path.',range:'$150 – $320',conf:80},
-   {issue:'Wash pump / spray arm issue',detail:'Weak cleaning with normal fill points to wash-pump pressure or split spray arms. Quoted after a pressure test.',range:'$210 – $430',conf:70}]},
+   {issue:'Drain pump or filter blockage',detail:'Standing water and dirty dishes usually trace to a clogged filter/pump or a failing drain pump. Tech clears and flow-tests the full drain path.',conf:80},
+   {issue:'Wash pump / spray arm issue',detail:'Weak cleaning with normal fill points to wash-pump pressure or split spray arms. Quoted after a pressure test.',conf:70}]},
  freezer:{symptoms:['No ice','Ice tastes bad','Too much frost','Not freezing','Leaking'],results:[
-   {issue:'Ice maker module or inlet valve failure',detail:'No ice is most often the maker module or a starved water inlet valve. Tech tests water pressure and the module cycle.',range:'$165 – $360',conf:79},
-   {issue:'Defrost / seal problem',detail:'Frost takeover usually means a defrost fault or a door gasket leaking warm air. The dollar-bill seal test tells us a lot on arrival.',range:'$180 – $390',conf:74}]},
+   {issue:'Ice maker module or inlet valve failure',detail:'No ice is most often the maker module or a starved water inlet valve. Tech tests water pressure and the module cycle.',conf:79},
+   {issue:'Defrost / seal problem',detail:'Frost takeover usually means a defrost fault or a door gasket leaking warm air. The dollar-bill seal test tells us a lot on arrival.',conf:74}]},
  micro:{symptoms:['No heat','Sparking','Turntable stuck','Door issues','Dead / no power'],results:[
-   {issue:'Door switch or magnetron fault',detail:'Microwaves are high-voltage: no-heat faults are tested safely by the tech and quoted before any parts are ordered.',range:'$150 – $340',conf:72},
-   {issue:'Control / touchpad failure',detail:'Dead panels and phantom beeps usually trace to the control board or membrane. Model-specific parts may need ordering.',range:'$190 – $380',conf:66}]},
+   {issue:'Door switch or magnetron fault',detail:'Microwaves are high-voltage: no-heat faults are tested safely by the tech and quoted before any parts are ordered.',conf:72},
+   {issue:'Control / touchpad failure',detail:'Dead panels and phantom beeps usually trace to the control board or membrane. Model-specific parts may need ordering.',conf:66}]},
  disposal:{symptoms:['Humming but stuck','Leaking','Won\u2019t turn on','Bad smell','Slow drain'],results:[
-   {issue:'Jam or failed motor',detail:'A hum usually means a jam at the flywheel (often clearable) — silence or leaks can mean the unit is done. Replacements are a standard same-visit job.',range:'$120 – $295',conf:86},
-   {issue:'Seal failure / leak',detail:'Leaks from the body mean internal seals have failed; replacement is typically the honest fix and is quoted flat.',range:'$210 – $340',conf:81}]}
+   {issue:'Jam or failed motor',detail:'A hum usually means a jam at the flywheel (often clearable) — silence or leaks can mean the unit is done. Replacements are a standard same-visit job.',conf:86},
+   {issue:'Seal failure / leak',detail:'Leaks from the body mean internal seals have failed; replacement is typically the honest fix and is quoted flat.',conf:81}]}
 };
 var EST={
  fridge:{issues:DIAG.fridge.symptoms},washer:{issues:DIAG.washer.symptoms},dryer:{issues:DIAG.dryer.symptoms},
@@ -2088,7 +2088,6 @@ var EST={
  micro:{issues:DIAG.micro.symptoms},disposal:{issues:DIAG.disposal.symptoms},
  install:{issues:['Single appliance install','Kitchen package install','Laundry pair install','Hookup + haul-away']}
 };
-var EST_RANGES={'Single appliance install':'$120 – $220','Kitchen package install':'$290 – $540','Laundry pair install':'$180 – $320','Hookup + haul-away':'$150 – $260'};
 var BRANDS=['Samsung','LG','Whirlpool','GE','Frigidaire','Maytag','Bosch','KitchenAid'];
 var CITIES=['Lauderhill','Plantation','Sunrise','Tamarac','Fort Lauderdale','Lauderdale Lakes','North Lauderdale','Davie','Coral Springs','Pompano Beach','Oakland Park','Margate'];
 var GARAGE=[
@@ -2101,7 +2100,7 @@ var GARAGE=[
 /* ---------- render grids ---------- */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 document.getElementById('svcGrid').innerHTML=SERVICES.map(function(s,i){
- return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><span class="rt-lap" aria-hidden="true">0'+(i+1)+'</span><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Book + get estimate →</div></button>';
+ return '<button type="button" class="card svc reveal" onclick="pickService(\''+s.name+'\',\''+s.id+'\')"><span class="rt-lap" aria-hidden="true">0'+(i+1)+'</span><div class="ic">'+s.icon+'</div><h3>'+s.name+'</h3><p>'+s.desc+'</p><div class="go">Book + flat pricing →</div></button>';
 }).join('');
 document.getElementById('brandGrid').innerHTML=BRANDS.map(function(b){return '<div class="card brand reveal">'+b+'<div style="font-family:Barlow;font-weight:600;font-size:13px;color:var(--muted);margin-top:4px">Repair • Parts • Smart models</div></div>';}).join('');
 document.getElementById('cityGrid').innerHTML=CITIES.map(function(c){return '<div class="card city reveal"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> '+c+'</div>';}).join('');
@@ -2186,18 +2185,25 @@ function runEstimate(){
   var a=document.getElementById('estAppliance').value;
   var issue=document.getElementById('estIssue').value;
   var brand=document.getElementById('estBrand').value;
-  var range,detail;
-  if(EST_RANGES[issue]){range=EST_RANGES[issue];detail='Flat installation pricing confirmed at booking — includes leveling, hookup and a full function test.';}
+  var detail,pricing;
+  if(a==='install'){
+    detail='Flat installation pricing confirmed at booking — includes leveling, hookup and a full function test.';
+    pricing='<p style="margin:6px 0"><b>$150 flat installation</b> — one flat price for the install, confirmed at booking.</p>'+
+      '<p style="margin:6px 0"><b>Parts and materials</b> (hoses, cords, fitting kits) — priced on your written quote if your install needs them.</p>';
+  }
   else{
     var d=DIAG[a]; var idx=d.symptoms.indexOf(issue); var r=d.results[idx>=0?idx%d.results.length:0];
-    range=r.range; detail='Most likely: '+r.issue+'. '+r.detail;
+    detail='Most likely: '+r.issue+'. '+r.detail;
+    pricing='<p style="margin:6px 0"><b>$99 diagnostic</b> — collected at booking and credited in full toward your repair. If you decide not to repair, the $99 is still due for the visit.</p>'+
+      '<p style="margin:6px 0"><b>$210 flat repair labor</b> — one flat labor price for the repair itself.</p>'+
+      '<p style="margin:6px 0"><b>Parts and materials</b> — priced on your written quote after the diagnostic.</p>';
   }
   var name=document.querySelector('#estAppliance option:checked').textContent;
   document.getElementById('estResult').innerHTML=
-    '<span class="tag">Estimate — '+esc(name)+(brand&&brand!=='Any brand'?' • '+esc(brand):'')+'</span>'+
+    '<span class="tag">Flat pricing — '+esc(name)+(brand&&brand!=='Any brand'?' • '+esc(brand):'')+'</span>'+
     '<h3 style="margin-top:10px">'+esc(issue)+'</h3><p>'+esc(detail)+'</p>'+
-    '<div class="fine">Estimated total range</div><div class="price-big">'+range+'</div>'+
-    '<p class="fine">Estimate only — not a quote. Your flat price is confirmed after the in-person $99 diagnostic, which is credited toward the repair.</p>'+
+    '<div class="fine">How Top Speed pricing works</div>'+pricing+
+    '<p class="fine">No ranges and no invented totals: your exact price is set in a written quote after the in-person diagnostic, and no work starts without your approved written quote. Commercial service is priced by custom quote — call 844-460-7038.</p>'+
     '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Lock it in — book now</a>';
 }
 
