@@ -283,6 +283,137 @@ let phase2Corrected = 0;
   }
 }
 
+// ─── Phase 3 publish: the seven remaining problem pages (2026-11-23) ────
+// The 2026-11-13 tri-county problem-page batch defined 36 symptom pages
+// in buildPhase2DraftPages(); 29 were published through the Studio the
+// same day. These seven were seeded as drafts and never published, which
+// left the live count at 124 against the platform's stated 131
+// (COVERAGE_AFTER_RING2.pagesBefore in data/expansionCities.js, surfaced
+// by the Ads OS platforms feed). Owner directive 2026-11-23 ("Do
+// everything" — publish the missing pages, do not correct the claim
+// down) closes the gap by publishing exactly these seven.
+//
+// Guards, modeled on the Phase 2 correction above:
+//   - ONLY the seven canonicalUrls listed here are ever touched.
+//   - A record is published ONLY if it is still exactly the seed's own
+//     unpublished output: createdBy 'phase2-seed', status DRAFT or
+//     IN_REVIEW, publishedAt null, and NO PageVersion written by anyone
+//     other than the seed authors — a human edit, a human unpublish
+//     (UNPUBLISHED / publishedAt set), or an already-PUBLISHED record
+//     all skip the page untouched.
+//   - If a record does not exist at all, it is created from the current
+//     Phase 2 spec first (same create-only shape as the Phase 2 seed)
+//     and then published in the same step.
+//   - The publish is recorded as a PageVersion (createdBy
+//     'phase3-publish') in the same snapshot shape the Studio writes.
+// Idempotent: once PUBLISHED, later runs skip every record.
+const PHASE3_PUBLISH_URLS = [
+  'https://topspeedappliance.net/services/refrigerator-repair/leaking/',
+  'https://topspeedappliance.net/services/refrigerator-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/refrigerator-repair/error-codes/',
+  'https://topspeedappliance.net/services/washer-repair/leaking/',
+  'https://topspeedappliance.net/services/washer-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/washer-repair/error-codes/',
+  'https://topspeedappliance.net/services/dryer-repair/unusual-noises/',
+];
+const PHASE3_SEED_AUTHORS = ['phase2-seed', 'phase2-seed-correction'];
+let phase3Published = 0;
+{
+  const specsByUrl = new Map(buildPhase2DraftPages().map((s) => [s.canonicalUrl, s]));
+  for (const url of PHASE3_PUBLISH_URLS) {
+    const spec = specsByUrl.get(url);
+    if (!spec) {
+      console.warn(`Phase 3 publish: skipping ${url} — no Phase 2 spec defines it.`);
+      continue;
+    }
+    let page = await prisma.landingPage.findUnique({
+      where: { canonicalUrl: url },
+      include: { versions: { select: { version: true, createdBy: true } } },
+    });
+    if (!page) {
+      const service = spec.serviceSlug ? servicesBySlug.get(spec.serviceSlug) : null;
+      if (spec.serviceSlug && !service) {
+        console.warn(`Phase 3 publish: skipping ${url} — taxonomy record missing.`);
+        continue;
+      }
+      page = await prisma.landingPage.create({
+        data: {
+          type: spec.type,
+          cityId: null,
+          brandId: null,
+          serviceId: service ? service.id : null,
+          slug: spec.slug,
+          canonicalUrl: spec.canonicalUrl,
+          title: spec.title,
+          metaDescription: spec.metaDescription,
+          status: 'IN_REVIEW',
+          sections: spec.sections,
+          createdBy: 'phase2-seed',
+          updatedBy: 'phase2-seed',
+        },
+      });
+      await prisma.pageVersion.create({
+        data: {
+          pageId: page.id,
+          version: 1,
+          snapshot: {
+            type: page.type,
+            cityId: page.cityId,
+            brandId: null,
+            serviceId: page.serviceId,
+            slug: page.slug,
+            canonicalUrl: page.canonicalUrl,
+            title: page.title,
+            metaDescription: page.metaDescription,
+            status: page.status,
+            sections: spec.sections,
+          },
+          note: 'Phase 3 publish (2026-11-23): record created by the seed from the Phase 2 spec — no Studio draft existed for this page.',
+          createdBy: 'phase2-seed',
+        },
+      });
+      page = { ...page, versions: [{ version: 1, createdBy: 'phase2-seed' }] };
+    }
+    if (page.status === 'PUBLISHED') continue;
+    const eligible =
+      page.createdBy === 'phase2-seed' &&
+      (page.status === 'DRAFT' || page.status === 'IN_REVIEW') &&
+      !page.publishedAt &&
+      page.versions.every((v) => PHASE3_SEED_AUTHORS.includes(v.createdBy));
+    if (!eligible) {
+      console.log(`Phase 3 publish: skipping ${url} — record is no longer the seed's untouched draft (status ${page.status}, createdBy ${page.createdBy}).`);
+      continue;
+    }
+    const nextVersion = Math.max(0, ...page.versions.map((v) => v.version)) + 1;
+    await prisma.landingPage.update({
+      where: { id: page.id },
+      data: { status: 'PUBLISHED', publishedAt: new Date(), updatedBy: 'phase3-publish' },
+    });
+    await prisma.pageVersion.create({
+      data: {
+        pageId: page.id,
+        version: nextVersion,
+        snapshot: {
+          type: page.type,
+          cityId: page.cityId,
+          brandId: page.brandId,
+          serviceId: page.serviceId,
+          slug: page.slug,
+          canonicalUrl: page.canonicalUrl,
+          title: page.title,
+          metaDescription: page.metaDescription,
+          status: 'PUBLISHED',
+          sections: page.sections,
+        },
+        note: 'Published by seed Phase 3 (2026-11-23): one of the seven 2026-11-13 problem pages seeded as drafts and never published — owner directive 2026-11-23 makes the published count the stated 131.',
+        createdBy: 'phase3-publish',
+      },
+    });
+    phase3Published += 1;
+    console.log(`Phase 3 publish: published ${url}.`);
+  }
+}
+
 // Top Speed Media OS — Phase 1 content library (2026-11-14).
 // Create-only by slug, exactly like the Phase 2 pages above: a record
 // is inserted the first time its slug is seen and NEVER modified by
@@ -332,5 +463,5 @@ const marketingCityCount = await prisma.marketingCity.count();
 const landingPageCount = await prisma.landingPage.count();
 const googleAccountCount = await prisma.googleAccountLink.count();
 const mediaContentCount = await prisma.mediaContent.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected), ${googleAccountCount} Google account links, ${mediaContentCount} media content records (${mediaCreated} created).`);
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected, ${phase3Published} Phase 3 pages published), ${googleAccountCount} Google account links, ${mediaContentCount} media content records (${mediaCreated} created).`);
 await prisma.$disconnect();
