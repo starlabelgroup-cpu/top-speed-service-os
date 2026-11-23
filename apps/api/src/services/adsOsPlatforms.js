@@ -8,6 +8,7 @@ import { seoConfigured } from './googleSeo.js';
 import { mediaFacebookConnectionState } from './mediaFacebook.js';
 import { adsStreamCounts, queueSummary as facebookOsQueueSummary } from './facebookOs.js';
 import { salesOsMetrics } from './salesOs.js';
+import { campaignEngineSummary } from './campaignEngine.js';
 
 /**
  * Top Speed Ads OS — the UNIFIED advertising feed (2026-11-22,
@@ -145,6 +146,13 @@ export const ADS_OS_PLATFORMS = [
     console: 'Sales OS',
     role: 'The sales platform inside the Service OS: Top Speed Appliances — the used-appliance shop at topspeedappliances.com — as its first vendor, with a staff-entered catalog and Stripe-checkout orders. Status is read from the catalog itself: LIVE once a real product is ACTIVE, BUILT while the catalog is still empty.',
     consoleUrl: 'https://topspeedserviceos.com/sales-os',
+  },
+  {
+    key: 'campaign-engine',
+    name: 'Top Speed Campaign Engine',
+    console: 'Campaign Engine (registry)',
+    role: 'The perpetual campaign factory (added 2026-11-23): campaign records generated daily across EVERY advertising division — Top Speed Ads, Local OS, Marketing OS, Sales OS, Book OS / Service Setters, dispatch, Tech, Field Pro, Ad Console, Flywheel, Ad Studio, Page Studio, CRM, Media OS, the service network, parts supply, Appliance Plug, Finance, Pepper Lists, Appliance Connect / Pro, AppliancePro, Speedy booking, rewards & referrals, Training Academy, the portal, Work Time Access, ApplianceMan, CocoCane and Cleanout Vents — each division row below carries its campaign count and its own console link (Rule 1). Zero spend: records are DRAFT / QUEUED / STAGED; funding, publishing and sending stay behind the owner\'s own approvals.',
+    consoleUrl: 'https://topspeedserviceos.com/ads',
   },
 ];
 
@@ -326,6 +334,36 @@ async function adsStreamMetrics() {
   return adsStreamCounts();
 }
 
+// ─── Top Speed Campaign Engine ────────────────────────────────────
+// The registry's own summary (services/campaignEngine.js): totals
+// by status and surface, the batch ledger, and one row per
+// division with its campaign count and console link — the
+// interconnection view the owner directed (every advertising
+// division working from one system of record).
+async function campaignEngineMetrics() {
+  const summary = await campaignEngineSummary();
+  return {
+    campaigns: {
+      total: summary.total,
+      byStatus: summary.byStatus,
+      bySurface: summary.bySurface,
+    },
+    divisions: summary.divisions,
+    batches: {
+      total: summary.batches.total,
+      latest: summary.batches.latest
+        ? {
+          batchKey: summary.batches.latest.batchKey,
+          kind: summary.batches.latest.kind,
+          campaignCount: summary.batches.latest.campaignCount,
+          socialQueued: summary.batches.latest.socialQueued,
+          generatedAt: summary.batches.latest.generatedAt,
+        }
+        : null,
+    },
+  };
+}
+
 // ─── Top Speed Sales OS ───────────────────────────────────────────
 // The sales platform's own metrics (services/salesOs.js): vendor
 // identity, ACTIVE product count, the storefront domain, and the
@@ -343,6 +381,7 @@ const METRIC_BUILDERS = {
   'facebook-os': facebookOsMetrics,
   'ads-stream': adsStreamMetrics,
   'sales-os': salesOsSectionMetrics,
+  'campaign-engine': campaignEngineMetrics,
 };
 
 /**
