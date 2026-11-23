@@ -19,8 +19,8 @@ import {
   AD_SERVING_PROVIDER_ENTRIES, AD_SERVING_PROVIDERS_LABEL, AD_SERVING_PROVIDERS_VERIFIED_ON,
 } from '../data/externalAds.js';
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
-import { requirePlanFeature } from '../services/adPlans.js';
-import { campaignOutcomeReport, flywheelLoopStages } from '../services/adOutcomes.js';
+import { publicAccess, publicPlan, requirePlanFeature, resolveAccess } from '../services/adPlans.js';
+import { campaignOutcomeReport, flywheelLoopStages, recordedCostCents } from '../services/adOutcomes.js';
 
 /**
  * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
@@ -1352,6 +1352,111 @@ router.get('/ad-studio/my-results', ...advertiserOnly, requirePlanFeature('attri
       },
     },
   });
+});
+
+// ─── Advertiser overview: plan + recorded results (Upgrade #8, 2026-11-23) ───
+
+/**
+ * GET /ad-studio/my-overview — the per-advertiser results view's data.
+ *
+ * Unlike my-results (the plan-gated Attribution view), this view is
+ * open to EVERY signed-in advertiser: their own plan state, their own
+ * campaigns, and the figures the office has RECORDED — nothing else.
+ * Scoping is the my-campaigns ownership rule (createdById === the
+ * caller's account id); another advertiser's campaign never appears,
+ * not even inside a total. Spend is AdCampaign.recordedSpendCents —
+ * staff-recorded only, read through adOutcomes' recordedCostCents —
+ * and outcomes are campaignOutcomeReport rows filtered to the
+ * caller's own campaign ids (leads / won / money actually collected).
+ * A campaign with no recorded spend reports recordedSpendCents null
+ * with spendStatus NO_COST_RECORDED; an advertiser with no campaigns
+ * gets empty arrays and hasRecordedResults:false — the console
+ * renders the honest empty states from exactly these fields.
+ */
+router.get('/ad-studio/my-overview', ...advertiserOnly, async (req, res, next) => {
+  try {
+    const ownerId = actorIdOf(req);
+    const access = await resolveAccess(req.user);
+    const mine = store.adCampaigns
+      .filter((c) => ownerId && c.createdById === ownerId)
+      .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
+    const myIds = new Set(mine.map((c) => c.id));
+    const report = campaignOutcomeReport({ days: 365 });
+    const outcomeById = new Map(
+      (report.rows || []).filter((r) => myIds.has(r.campaignId)).map((r) => [r.campaignId, r]),
+    );
+    const campaigns = mine.map((record) => {
+      const outcome = outcomeById.get(record.id) || null;
+      const recordedSpendCents = recordedCostCents(record);
+      return {
+        id: record.id,
+        name: record.name,
+        status: record.status,
+        sourceTag: record.sourceTag,
+        recordedSpendCents,
+        spendStatus: recordedSpendCents == null ? 'NO_COST_RECORDED' : 'RECORDED',
+        outcomes: outcome
+          ? {
+              leads: outcome.leads ?? 0,
+              won: outcome.won ?? 0,
+              wonCollectedCents: outcome.wonCollectedCents ?? 0,
+              costPerWonCents: outcome.cost?.perWonCents ?? null,
+            }
+          : { leads: 0, won: 0, wonCollectedCents: 0, costPerWonCents: null },
+        wasApproved: Boolean(record.approvedAt),
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+      };
+    });
+    const recorded = campaigns.filter((c) => c.recordedSpendCents != null);
+    return res.json({
+      data: {
+        access: publicAccess(access),
+        plan: access?.plan ? publicPlan(access.plan) : null,
+        campaigns,
+        totals: {
+          campaigns: campaigns.length,
+          recordedSpendCents: recorded.length
+            ? recorded.reduce((sum, c) => sum + c.recordedSpendCents, 0)
+            : null,
+          won: campaigns.reduce((sum, c) => sum + (c.outcomes?.won || 0), 0),
+          wonCollectedCents: campaigns.reduce((sum, c) => sum + (c.outcomes?.wonCollectedCents || 0), 0),
+        },
+        outcomesWindowDays: report.windowDays,
+        hasRecordedResults: recorded.length > 0
+          || campaigns.some((c) => (c.outcomes?.won || 0) > 0 || (c.outcomes?.leads || 0) > 0),
+        note: 'Results are recorded by the Top Speed office from platform reports. Nothing here is estimated or projected.',
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ─── Office approval queue (Upgrade #8, 2026-11-23) ────────────────
+
+/**
+ * GET /ad-studio/approval-queue — the office's single creative
+ * approval queue. ONE queue, every lane: Flywheel advertiser-console
+ * submissions (my-campaigns submit), Pepper Lists seller ads
+ * (routes/pepperListsAds.js) and staff drafts all land as AdCampaign
+ * rows in PENDING_APPROVAL in the same store, and this is the
+ * office's read of exactly those rows — the same records the Ad
+ * Studio campaign list shows, with the lane each submission arrived
+ * through. Nothing leaves this queue except through the owner-only
+ * approve route (PENDING_APPROVAL → ACTIVE); there is no other path
+ * from an advertiser submission to a live campaign.
+ */
+router.get('/ad-studio/approval-queue', ...staffOnly, (req, res) => {
+  const items = store.adCampaigns
+    .filter((c) => c.status === 'PENDING_APPROVAL')
+    .sort((a, b) => String(a.updatedAt).localeCompare(String(b.updatedAt)))
+    .map((record) => ({
+      ...publicCampaign(record),
+      lane: record.category === 'PEPPER_LISTS' ? 'PEPPER_LISTS' : record.businessLine === 'EXTERNAL' ? 'ADVERTISER_CONSOLE' : 'STAFF',
+      submittedById: record.createdById ?? null,
+    }));
+  return res.json({ data: { items, counts: { pending: items.length } } });
 });
 
 // ─── Advertiser creative uploads (E3, 2026-11-20) ───────────────────

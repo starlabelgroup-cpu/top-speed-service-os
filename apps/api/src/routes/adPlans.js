@@ -9,7 +9,7 @@ import {
   updateBillingSetting, updatePlan, upsertSubscription,
 } from '../db/adPlansRepo.js';
 import {
-  PLAN_CHANNELS, PLAN_FEATURE_KEYS, adminPlan, effectiveStatusOf, ensureSubscription,
+  PLAN_CHANNELS, PLAN_FEATURES, PLAN_FEATURE_KEYS, adminPlan, effectiveStatusOf, ensureSubscription,
   grandfatherEligible, publicAccess, publicPlan, resolveAccess,
 } from '../services/adPlans.js';
 import { emitReport } from '../services/managementReports.js';
@@ -75,6 +75,36 @@ function pricingNotSet(res, plan) {
     planKey: plan.key,
   });
 }
+
+// ---------------------------------------------------------------------------
+// Public side (Flywheel Upgrade #8, 2026-11-23)
+// ---------------------------------------------------------------------------
+
+/**
+ * GET /advertise/plans — the PUBLIC plan catalog behind the
+ * /advertise onboarding funnel. Catalog facts only (publicPlan:
+ * name, description, the owner's recorded price, the feature matrix
+ * and the limits) — no account data, no subscription state. Prices
+ * come from the plan rows the owner priced in Ad Studio; an unpriced
+ * plan reports priced:false and the funnel says so honestly instead
+ * of inventing a number. Signup and checkout do NOT happen here —
+ * the funnel deep-links into the Advertiser Console, whose Plans &
+ * Billing view runs the existing checkout above.
+ */
+router.get('/advertise/plans', async (req, res, next) => {
+  try {
+    const plans = (await listPlans()).filter((p) => p.isActive);
+    return res.json({
+      data: {
+        plans: plans.map(publicPlan),
+        featuresCatalog: PLAN_FEATURES,
+        consoleUrl: '/advertiser',
+      },
+    });
+  } catch (error) {
+    return next(error);
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Advertiser side

@@ -228,6 +228,11 @@ footer strong{color:#fff}
 
         <!-- RESULTS (E2) -->
         <section class="g-view hidden" id="view-results">
+          <div class="g-card">
+            <h3>Your plan &amp; recorded results</h3>
+            <p class="g-sub">Your plan, your campaigns, and the spend and outcomes the Top Speed office has recorded for them — visible on every plan.</p>
+            <div id="resOverview" style="margin-top:8px"><p class="g-sub">Loading your overview…</p></div>
+          </div>
           <div class="g-stats" id="resStats"></div>
           <div class="g-card">
             <h3>Results by campaign</h3>
@@ -538,8 +543,35 @@ function pauseCampaign(id){
     else msg('campMsg',(x.j&&x.j.error)||'Pause failed.'); });
 }
 
+/* ── Overview (Upgrade #8): plan + recorded spend/outcomes, every plan ── */
+function moneyStr(cents){ return cents==null?'—':'$'+(cents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function renderOverview(){
+  api('/ad-studio/my-overview').then(function(x){
+    var host=document.getElementById('resOverview'); if(!host) return;
+    if(x.status!==200){ host.innerHTML='<p class="g-sub">Could not load your overview ('+x.status+').</p>'; return; }
+    var d=x.j.data||{}; var a=d.access||{}; var t=d.totals||{};
+    var planLine=d.plan?('<b>'+esc(d.plan.name)+'</b> plan'+(d.plan.monthlyPriceCents!=null?' — '+moneyStr(d.plan.monthlyPriceCents)+'/month':'')):(a.bypass?'Staff account — plans never gate staff.':'No paid plan yet — you are on the '+(a.effectiveStatus||'baseline')+' access. <button class="g-link" onclick="showView(\'plans\')">See Plans &amp; Billing</button>');
+    var html='<p class="g-sub" style="margin-bottom:8px">Plan: '+planLine+'</p>';
+    if(!d.campaigns||!d.campaigns.length){
+      html+='<p class="g-sub">No campaigns yet — create one under Create Campaign and submit it for office approval.</p>';
+      html+='<p class="g-sub" style="margin-top:6px">No recorded results yet — results are recorded by the Top Speed office from platform reports.</p>';
+    } else {
+      var rows=d.campaigns.map(function(c){
+        var spend=c.recordedSpendCents==null?'No cost recorded':moneyStr(c.recordedSpendCents);
+        var o=c.outcomes||{};
+        return '<tr><td><b style="font-weight:500">'+esc(c.name)+'</b></td><td>'+chipForStatus(c)+'</td><td>'+spend+'</td><td>'+(o.leads||0)+'</td><td>'+(o.won||0)+'</td><td>'+moneyStr(o.wonCollectedCents||0)+'</td><td>'+(o.costPerWonCents==null?'—':moneyStr(o.costPerWonCents))+'</td></tr>';
+      }).join('');
+      html+='<table class="g-table"><thead><tr><th>CAMPAIGN</th><th>STATUS</th><th>RECORDED SPEND</th><th>LEADS</th><th>WON</th><th>COLLECTED</th><th>COST / WON</th></tr></thead><tbody>'+rows+'</tbody></table>';
+      html+='<p class="g-sub" style="margin-top:8px">Total recorded spend: <b>'+(t.recordedSpendCents==null?'No cost recorded':moneyStr(t.recordedSpendCents))+'</b> · Won jobs (last '+(d.outcomesWindowDays||365)+' days): <b>'+(t.won||0)+'</b> · Collected on won jobs: <b>'+moneyStr(t.wonCollectedCents||0)+'</b></p>';
+      if(!d.hasRecordedResults) html+='<p class="g-sub" style="margin-top:6px">No recorded results yet — results are recorded by the Top Speed office from platform reports.</p>';
+    }
+    host.innerHTML=html;
+  });
+}
+
 /* ── Results (E2): the advertiser's own recorded numbers ── */
 function renderResults(){
+  renderOverview();
   api('/ad-studio/my-results').then(function(x){
     if(x.status===403&&x.j&&x.j.error==='plan_upgrade_required'){
       document.getElementById('resStats').innerHTML='';

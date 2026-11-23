@@ -92,6 +92,14 @@ ul.tick li:before{content:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stro
     </ul>
   </div>
 
+  <!-- Flywheel plans funnel (Upgrade #8): rendered live from the plan catalog the owner priced in Ad Studio — prices, caps and features below come from the API, never from this page. Signup + checkout run in the Advertiser Console; this page creates no parallel signup. -->
+  <div class="card" id="plans">
+    <h2>Flywheel advertiser plans</h2>
+    <p>Pick a plan, open your Advertiser Console account, and check out there — your campaigns, creative and recorded results all live in the console. Every plan runs on the same placements above; plans differ by campaign cap, channels and platform features.</p>
+    <div id="fw8Plans" style="margin-top:16px"><p>Loading the current plans…</p></div>
+    <p style="margin-top:14px;">Every campaign you submit is reviewed by the Top Speed office before it can run — nothing advertiser-submitted goes live without office approval.</p>
+  </div>
+
   <div class="card">
     <h2>Who should advertise here</h2>
     <p>Appliance manufacturers and brands · parts distributors and supply houses · home warranty and service-plan companies · realtors, property-management vendors and HOA services · home improvement and trades serving Broward County. If your customer owns, manages or maintains appliances, this is their screen.</p>
@@ -99,9 +107,48 @@ ul.tick li:before{content:'<svg class="fxi" viewBox="0 0 24 24" fill="none" stro
       <a class="btn" href="tel:+18444607038">Call 844-460-7038</a>
       <a class="btn ghost" href="/ads">Advertiser contact form</a>
     </div>
-    <p style="margin-top:14px;">Packages are custom by placement and term — no rate-card games. Tell us what you're promoting and we'll build the placement around it.</p>
+    <p style="margin-top:14px;">Self-serve advertisers run on the Flywheel plans above — the price on the plan is the price, charged monthly through the Advertiser Console. Custom placements by placement and term are still available through the ads team.</p>
   </div>
 </div>
+<script>
+/* Flywheel plans funnel (Upgrade #8): fetch the public plan catalog
+   and render the comparison from the API's own plan rows. Feature
+   labels are the catalog's labels; caps come from each plan's
+   limits. The only call to action is the Advertiser Console, where
+   signup and the existing plan checkout live. */
+(function(){
+  var host=document.getElementById('fw8Plans');
+  if(!host) return;
+  function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function money(cents){ return '$'+(cents/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  fetch('/api/v1/advertise/plans').then(function(r){ return r.json(); }).then(function(j){
+    var d=(j&&j.data)||{}; var plans=d.plans||[]; var catalog=d.featuresCatalog||[];
+    if(!plans.length){ host.innerHTML='<p>Plans are being published — call the ads team and we will set you up.</p>'; return; }
+    var cards=plans.map(function(p){
+      var feats=catalog.map(function(f){
+        var on=p.features&&p.features[f.key];
+        return '<li style="padding:5px 0;color:'+(on?'var(--ink)':'#9db1c9')+'">'+(on?'✓ ':'— ')+esc(f.label)+'</li>';
+      }).join('');
+      var lim=p.limits||{};
+      var cap=lim.maxCampaigns==null?'Unlimited campaigns':'Up to '+lim.maxCampaigns+' campaigns at a time';
+      var chans=(lim.channels||[]).join(' + ')||'—';
+      var price=p.priced?money(p.monthlyPriceCents)+' <span style="font-size:13px;color:var(--muted)">/ month</span>':'<span style="font-size:15px">Pricing opens soon — ask the ads team</span>';
+      return '<div class="place" style="display:flex;flex-direction:column">'
+        +'<h3>'+esc(p.name)+'</h3>'
+        +'<div style="font-size:26px;font-weight:900;color:var(--navy);margin:4px 0 6px">'+price+'</div>'
+        +(p.description?'<p>'+esc(p.description)+'</p>':'')
+        +'<p style="margin-top:8px"><b style="color:var(--navy)">'+esc(cap)+'</b> · Channels: '+esc(chans)+'</p>'
+        +'<ul style="list-style:none;margin-top:8px;font-size:14px">'+feats+'</ul>'
+        +'<div style="margin-top:auto;padding-top:14px"><a class="btn blue" href="/advertiser">Start with '+esc(p.name)+' — open the Advertiser Console</a></div>'
+        +'</div>';
+    }).join('');
+    host.innerHTML='<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(250px,1fr))">'+cards+'</div>'
+      +'<p style="margin-top:12px">The button opens the Advertiser Console: sign in or create your advertiser account there, then choose your plan under Plans &amp; Billing — checkout is the console\u2019s existing Stripe checkout, on this page nothing is sold and no second signup exists.</p>';
+  }).catch(function(){
+    host.innerHTML='<p>Could not load the plan catalog just now — <a href="/advertiser">open the Advertiser Console</a> to see plans and check out there.</p>';
+  });
+})();
+</script>
 <script src="/speedy-guide.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 <script src="/shared/attribution-capture.js" defer></script>
