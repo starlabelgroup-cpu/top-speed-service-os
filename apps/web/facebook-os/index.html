@@ -131,6 +131,16 @@ footer strong{color:#fff}
     </div>
 
     <div class="panel">
+      <h2>City Spotlight — one post per city page</h2>
+      <p class="note">The City Posts engine holds one ready-made City Spotlight draft for every verified published landing page — each post links to its own page (Rule 1), rotates service and angle so no two neighbours repeat, and carries its designed-graphic spec (service icon, rate-card number element, the written-quote shield, racing symbols). Loading is idempotent: re-running adds nothing. Drafts only — each post still publishes through the normal lifecycle behind Ramone's approval.</p>
+      <div>
+        <button class="btn" id="loadCityBtn" type="button">Load city posts</button>
+        <span class="note" id="cityCounts" style="margin-left:10px;"></span>
+      </div>
+      <div class="msg" id="cityMsg"></div>
+    </div>
+
+    <div class="panel">
       <h2>New stream post</h2>
       <form class="grid" id="newPostForm">
         <div><label for="npTitle">Title</label><input id="npTitle" required></div>
@@ -442,6 +452,19 @@ function loadSyndication(){
     }).join('')+'</tbody></table>';
   }).catch(function(e){ document.getElementById('synBody').innerHTML='<div class="empty">Could not load syndication: '+esc(e.message)+'</div>'; });
 }
+
+document.getElementById('loadCityBtn').addEventListener('click',function(){
+  var btn=document.getElementById('loadCityBtn'); var m=document.getElementById('cityMsg');
+  btn.disabled=true; m.className='msg'; m.textContent='Loading city posts…';
+  apiFetch('/facebook-os/city-posts/ingest',{method:'POST',body:'{}'}).then(function(j){
+    var d=j.data||{}; var created=(d.created||[]).length; var dup=(d.duplicates||[]).length;
+    document.getElementById('cityCounts').textContent='City posts in queue: '+(created+dup)+' of '+(d.total||0)+' verified pages.';
+    m.className='msg';
+    m.textContent=created? ('Loaded '+created+' new city post drafts ('+dup+' already in the queue — nothing duplicated). They sit in the stream queue as drafts until each is approved.')
+                         : 'All city posts are already in the queue — nothing new was added.';
+    btn.disabled=false; loadAll();
+  }).catch(function(e){ m.className='msg err'; m.textContent='Could not load city posts: '+e.message; btn.disabled=false; });
+});
 
 document.getElementById('newPostForm').addEventListener('submit',function(ev){
   ev.preventDefault();

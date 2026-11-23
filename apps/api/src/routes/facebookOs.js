@@ -21,6 +21,7 @@ import {
   todaysPosts,
   transitionStreamPost,
 } from '../services/facebookOs.js';
+import { ingestCityPosts } from '../services/cityPosts.js';
 
 /**
  * Top Speed Facebook OS Manager (2026-11-23) — the streaming posts +
@@ -190,6 +191,21 @@ router.post('/facebook-os/stream/:id/transition', ...facebookOsStaff, async (req
 router.post('/facebook-os/series/ingest', ...facebookOsStaff, async (req, res, next) => {
   try {
     const result = await ingestSeriesWeek(req.body || {}, req.user.id);
+    return res.status(201).json({ data: result });
+  } catch (error) {
+    return handleServiceError(error, res, next);
+  }
+});
+
+// ─── City posts: one City Spotlight draft per verified page ────────
+// The generator (services/cityPostGenerator.js) builds one draft per
+// page in the verified published-pages list; the loader is
+// idempotent per page (keyed by the page's canonical URL), so
+// re-running adds 0. Drafts only — publishing is unchanged.
+
+router.post('/facebook-os/city-posts/ingest', ...facebookOsStaff, async (req, res, next) => {
+  try {
+    const result = await ingestCityPosts(req.user.id);
     return res.status(201).json({ data: result });
   } catch (error) {
     return handleServiceError(error, res, next);

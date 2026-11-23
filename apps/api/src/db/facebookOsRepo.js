@@ -81,6 +81,11 @@ const prismaPosts = {
       where: { seriesKey, seriesWeek, format, title },
     }));
   },
+  async findBySeriesAndLink(seriesKey, linkUrl) {
+    return rowFromDb(await db().facebookStreamPost.findFirst({
+      where: { seriesKey, linkUrl },
+    }));
+  },
   async list({ status, seriesKey, limit = 200 } = {}) {
     const where = {};
     if (status) where.status = status;
@@ -250,6 +255,11 @@ const memoryPostsRepo = {
   async findSeriesInstallment(seriesKey, seriesWeek, format, title) {
     return memoryPosts.find(
       (r) => r.seriesKey === seriesKey && r.seriesWeek === seriesWeek && r.format === format && r.title === title,
+    ) || null;
+  },
+  async findBySeriesAndLink(seriesKey, linkUrl) {
+    return memoryPosts.find(
+      (r) => r.seriesKey === seriesKey && r.linkUrl === linkUrl,
     ) || null;
   },
   async list({ status, seriesKey, limit = 200 } = {}) {
