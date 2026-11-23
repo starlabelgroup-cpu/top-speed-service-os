@@ -1,5 +1,5 @@
 import { createId, store } from '../data/store.js';
-import { hydrateDepartmentReports, persistDepartmentReport } from '../db/managementReportsRepo.js';
+import { deleteDepartmentReport, hydrateDepartmentReports, persistDepartmentReport } from '../db/managementReportsRepo.js';
 
 /**
  * Management department reporting (Ramone's directive, 2026-11-14):
@@ -210,4 +210,65 @@ export async function ackReport(id, userId) {
     }
   }
   return { report, alreadyAcked: false };
+}
+
+/**
+ * Find one report by id, refreshed from the durable table first (the
+ * same read discipline as ack). Returns the working-set row or null.
+ */
+export async function findReport(id) {
+  await refreshDepartmentReports();
+  return store.departmentReports.find((r) => r.id === id) || null;
+}
+
+/**
+ * Delete a report — the owner's record-keeping removal (Ramone's
+ * directive, 2026-11-23: delete options for everything in the master
+ * workstation). The submission is the unit, exactly as with ack: the
+ * target row AND every other row carrying the same eventKey are
+ * removed, from the working set and from the durable table, so no
+ * rendering of that submission survives anywhere. The refresh-first
+ * discipline matches ackReport: the delete acts on the durable state,
+ * not on one instance's stale snapshot. Returns the removed target row
+ * plus how many rows were removed, or null when the report is gone.
+ */
+export async function deleteReport(id) {
+  await refreshDepartmentReports();
+  const report = store.departmentReports.find((r) => r.id === id);
+  if (!report) return null;
+  const unit = report.eventKey
+    ? store.departmentReports.filter((r) => r.eventKey === report.eventKey)
+    : [report];
+  const ids = new Set(unit.map((r) => r.id));
+  store.departmentReports = store.departmentReports.filter((r) => !ids.has(r.id));
+  await deleteDepartmentReport([...ids]);
+  return { report, removedRows: unit.length };
+}
+
+/**
+ * Reset a report — return an acknowledged report to NEW, clearing its
+ * ack stamp (ackById / ackAt), so it asks for a decision again. The
+ * unit semantics match ack: every ACKED row sharing the eventKey is
+ * reset with it. Refresh-first, like ack, so a reset can never be
+ * overwritten by a stale instance re-serving the old stamp. Resetting
+ * a report that is already NEW is an honest no-op
+ * (`alreadyNew: true`), never an error.
+ */
+export async function resetReport(id) {
+  await refreshDepartmentReports();
+  const report = store.departmentReports.find((r) => r.id === id);
+  if (!report) return null;
+  if (report.status !== 'ACKED') return { report, alreadyNew: true, resetRows: 0 };
+  const unit = report.eventKey
+    ? store.departmentReports.filter((r) => r.eventKey === report.eventKey && r.status === 'ACKED')
+    : [report];
+  for (const row of unit) {
+    row.status = 'NEW';
+    row.ackById = null;
+    row.ackAt = null;
+    await persistDepartmentReport(row).catch((error) => {
+      console.error(JSON.stringify({ level: 'error', message: 'department report reset persist failed', error: String(error?.message || error) }));
+    });
+  }
+  return { report, alreadyNew: false, resetRows: unit.length };
 }

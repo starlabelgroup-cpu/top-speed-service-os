@@ -7,6 +7,7 @@ import { buildPepperBriefing } from '../services/pepperBriefing.js';
 import { buildOpsDigest, etDateString, formatDigestDraft } from '../services/opsDigest.js';
 import { pepperChat, pepperChatStatus, pepperPhoto } from '../services/pepperChat.js';
 import { PEPPER_REPORT_CATEGORIES, pepperReportsRepo } from '../db/pepperReportsRepo.js';
+import { appendEvent } from '../data/store.js';
 
 /**
  * Pepper — Systems Manager console API (2026-11-18).
@@ -81,6 +82,9 @@ const router = Router();
 
 const staffGate = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
 const managerGate = [authenticate, requireCompany, requireRole(...MANAGER_ROLES)];
+// Owner tier for destructive console controls (2026-11-23): the same
+// owner set the admin router uses for its delete endpoints.
+const ownerGate = [authenticate, requireCompany, requireRole('COMPANY_OWNER', 'PLATFORM_ADMIN')];
 
 function iso(value) {
   if (!value) return null;
@@ -151,6 +155,28 @@ router.post('/pepper-console/reports', ...staffGate, async (req, res, next) => {
       createdByUserId: req.user.id,
     });
     return res.status(201).json({ data: publicReport(row) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+/**
+ * Delete one Pepper report (owner only, 2026-11-23). The report log
+ * is staff-filed record-keeping; the owner prunes it from
+ * ApplianceMan. The deletion itself is audit-logged.
+ */
+router.post('/pepper-console/reports/:id/delete', ...ownerGate, async (req, res, next) => {
+  try {
+    const removed = await pepperReportsRepo.remove(req.params.id);
+    if (!removed) return res.status(404).json({ error: 'Report not found' });
+    await appendEvent('PEPPER_REPORT_DELETED', {
+      source: 'PEPPER_CONSOLE',
+      actor: req.user.email,
+      entityType: 'PEPPER_REPORT',
+      entityId: removed.id,
+      details: { title: removed.title || null, category: removed.category || null },
+    });
+    return res.json({ data: { deleted: publicReport(removed) } });
   } catch (error) {
     return next(error);
   }

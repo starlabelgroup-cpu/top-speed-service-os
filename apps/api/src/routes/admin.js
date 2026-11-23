@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { MANAGER_ROLES } from '../config/security.js';
-import { store } from '../data/store.js';
+import { appendEvent, store } from '../data/store.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import {
   buildTrackingRegistry,
@@ -20,6 +20,7 @@ import {
 } from '../services/conversionExport.js';
 import {
   createTrackingNumber,
+  deleteTrackingNumber,
   updateTrackingNumber,
   findTrackingNumberById,
   findLiveByKindValue,
@@ -433,13 +434,17 @@ router.post('/admin/connections/delete', ...ownerOnly, async (req, res) => {
 /**
  * Satellite Website Tracking Number System (2026-11-19) — the
  * registry behind the ApplianceMan "Tracking Numbers" panel.
- * Manager-gated (the panel itself is a manager surface). There is
- * deliberately NO delete endpoint: a number leaves service by being
- * set RETIRED. Nothing here touches accounts (Rule Zero).
+ * Manager-gated (the panel itself is a manager surface). RETIRED
+ * remains the normal end state for a number leaving service; since
+ * 2026-11-23 (Ramone's directive: delete options for everything in
+ * the master workstation) the owner may also delete a registry row
+ * outright — the contact log is history and survives, unattributed.
+ * Nothing here touches accounts (Rule Zero).
  *
- * GET  /admin/tracking-numbers        registry + 28-day activity
- * POST /admin/tracking-numbers        register a number/mailbox
- * POST /admin/tracking-numbers/:id    update (surface/status/label/…)
+ * GET  /admin/tracking-numbers             registry + 28-day activity
+ * POST /admin/tracking-numbers             register a number/mailbox
+ * POST /admin/tracking-numbers/:id         update (surface/status/label/…)
+ * POST /admin/tracking-numbers/:id/delete  owner-only row delete
  */
 const managerOnly = [authenticate, requireCompany, requireRole(...MANAGER_ROLES)];
 
@@ -564,6 +569,25 @@ router.post('/admin/tracking-numbers/:id', ...managerOnly, async (req, res) => {
     return res.json({ ok: true, data: { ...row, surfaceLabel: surfaceLabel(row.surfaceKey) } });
   } catch (error) {
     return res.status(500).json({ error: error.message || 'Update failed' });
+  }
+});
+
+router.post('/admin/tracking-numbers/:id/delete', ...ownerOnly, async (req, res) => {
+  const id = String(req.params.id || '');
+  try {
+    await ensureTrackingSeeds();
+    const removed = await deleteTrackingNumber(id);
+    if (!removed) return res.status(404).json({ error: 'No tracking row with that id' });
+    await appendEvent('TRACKING_NUMBER_DELETED', {
+      source: 'APPLIANCEMAN',
+      actor: req.user.email,
+      entityType: 'TRACKING_NUMBER',
+      entityId: removed.id,
+      details: { kind: removed.kind, label: removed.label, surfaceKey: removed.surfaceKey },
+    });
+    return res.json({ ok: true, data: removed });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || 'Delete failed' });
   }
 });
 

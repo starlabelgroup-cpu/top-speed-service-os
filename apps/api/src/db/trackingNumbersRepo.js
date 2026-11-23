@@ -313,3 +313,32 @@ export async function listContactEvents() {
     return [];
   }
 }
+
+/**
+ * Delete one tracking-number row (owner record-keeping, 2026-11-23 —
+ * Ramone's directive superseded the retire-only design). The contact
+ * LOG is history and is never deleted with the number: in database
+ * mode the ContactEvent.trackingNumber relation is onDelete:SetNull,
+ * and memory mode nulls the same field, so past calls/texts stay on
+ * record, just unattributed to a registry row. Answers the removed
+ * row, or null when no row carries the id.
+ */
+export async function deleteTrackingNumber(id) {
+  if (!DATABASE_ENABLED) {
+    const index = memory.numbers.findIndex((n) => n.id === id);
+    if (index === -1) return null;
+    const [row] = memory.numbers.splice(index, 1);
+    for (const event of memory.events) {
+      if (event.trackingNumberId === id) event.trackingNumberId = null;
+    }
+    return numberFromRow(row);
+  }
+  try {
+    const existing = await db().trackingNumber.findUnique({ where: { id } });
+    if (!existing) return null;
+    await db().trackingNumber.delete({ where: { id } });
+    return numberFromRow(existing);
+  } catch {
+    return null;
+  }
+}

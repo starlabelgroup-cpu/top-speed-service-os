@@ -998,6 +998,60 @@ boot();
         rows+=kv('Notes',c.notes?esc(c.notes):'');
         if(rows) enr.innerHTML='<div class="tbws-kv" style="border-top:1px solid #eef1f6;padding-top:10px">'+rows+'</div>';
       });
+    } else if(it.kind==='REPORT'&&it.id){
+      // Report detail (2026-11-23): the full report record, its linked
+      // booking, and the booking's tracking sources — values exactly
+      // as recorded; a field the record does not carry reads
+      // "Not recorded" rather than disappearing.
+      get('/management/reports/'+encodeURIComponent(it.id)+'/detail').then(function(res){
+        if(!res.ok||cur!==it) return;
+        var d=data(res.j)||{};
+        var r=d.report||{};
+        var nr='<span class="mut">Not recorded</span>';
+        function rk(k,v){ return kv(k,(v==null||v==='')?nr:esc(String(v))); }
+        var rows='';
+        rows+=rk('Report status',r.status);
+        rows+=rk('Department',r.department);
+        rows+=rk('Type',r.type);
+        rows+=rk('Source',r.source);
+        rows+=rk('Reference',r.reference);
+        rows+=rk('Event key',r.eventKey);
+        rows+=rk('Acknowledged',r.status==='ACKED'?('Yes — '+(r.ackAt?fmtET(r.ackAt):'')):'Not yet');
+        var det=r.detail||{};
+        Object.keys(det).forEach(function(k){ var v=det[k]; if(v!=null&&typeof v==='object'){ try{ v=JSON.stringify(v); }catch(e){ v=null; } } rows+=rk(k,v); });
+        var b=d.booking;
+        if(b){
+          var t=b.tracking||{};
+          rows+=kv('Booking','<b>'+esc(b.referenceCode||b.id||'')+'</b>');
+          rows+=rk('Booking status',b.status);
+          rows+=rk('Customer',b.customer?b.customer.name:null);
+          rows+=rk('Phone',b.customer?b.customer.phone:null);
+          rows+=rk('Service',b.appliance);
+          rows+=rk('Issue',b.issue);
+          rows+=rk('City',b.city);
+          rows+=rk('Tracking · source',t.source);
+          rows+=rk('Tracking · source page',t.sourcePage);
+          rows+=rk('Tracking · via tag',t.viaTag);
+          rows+=rk('Tracking · UTM source',t.utmSource);
+          rows+=rk('Tracking · UTM medium',t.utmMedium);
+          rows+=rk('Tracking · UTM campaign',t.utmCampaign);
+          rows+=rk('Tracking · UTM term',t.utmTerm);
+          rows+=rk('Tracking · UTM content',t.utmContent);
+          rows+=rk('Tracking · Google click (gclid)',t.gclid);
+          rows+=rk('Tracking · Facebook click (fbclid)',t.fbclid);
+          rows+=rk('Tracking · Microsoft click (msclkid)',t.msclkid);
+          rows+=rk('Tracking · referral code',t.referralCode);
+        } else {
+          rows+=kv('Linked booking',nr);
+        }
+        var resetBtn=(r.status==='ACKED'&&(TB.roles.indexOf('COMPANY_OWNER')!==-1||TB.roles.indexOf('PLATFORM_ADMIN')!==-1))?'<div style="margin-top:10px"><button class="btn2 ghost" type="button" id="tbWsRepReset">Reset to NEW</button></div>':'';
+        enr.innerHTML='<div class="tbws-kv" style="border-top:1px solid #eef1f6;padding-top:10px">'+rows+'</div>'+resetBtn;
+        var rst=document.getElementById('tbWsRepReset');
+        if(rst) rst.addEventListener('click',function(){
+          if(!window.confirm('Reset this report to NEW?\n\nIts acknowledged stamp is cleared and it asks for a decision again on every surface.')) return;
+          post('/management/reports/'+encodeURIComponent(it.id)+'/reset',{}).then(function(res2){ if(!res2.ok){ actDone(false,'Reset failed: '+errText(res2,'the Service OS did not accept it.')); return; } actDone(true,'Report reset to NEW. The queue has been refreshed.'); });
+        });
+      });
     }
   }
   function detailMsg(ok,text){ var m=document.getElementById('tbWsMsg'); if(m){ m.textContent=text; m.style.color=ok?'#14532d':'#9e3e4b'; } }
@@ -1016,7 +1070,9 @@ boot();
       else { h='<span class="pill">Owner approval</span>'; }
       h+='<a class="btn2 ghost" href="/ad-studio">Ad Studio</a>';
     } else if(it.kind==='REPORT'){
-      h='<button class="btn2" type="button" id="tbWsAck">Acknowledge</button><a class="btn2 ghost" href="/manager">Reports</a>';
+      h='<button class="btn2" type="button" id="tbWsAck">Acknowledge</button>';
+      if(TB.roles.indexOf('COMPANY_OWNER')!==-1||TB.roles.indexOf('PLATFORM_ADMIN')!==-1){ h+='<button class="btn2 ghost" type="button" id="tbWsRepDel">Delete</button>'; }
+      h+='<a class="btn2 ghost" href="/manager">Reports</a>';
     } else if(it.kind==='COMMREQ'){
       h='<a class="btn2" href="/crm">Work it in the CRM</a>';
     } else if(it.kind==='VERIFY'){
@@ -1040,6 +1096,11 @@ boot();
     if(co) co.addEventListener('click',function(){ post('/ad-studio/campaigns/'+encodeURIComponent(it.id)+'/approve',{}).then(function(res){ if(!res.ok){ actDone(false,'Campaign approval failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Campaign approved — it is now ACTIVE in Ad Studio. The queue has been refreshed.'); }); });
     var ak=document.getElementById('tbWsAck');
     if(ak) ak.addEventListener('click',function(){ post('/management/reports/'+encodeURIComponent(it.id)+'/ack',{}).then(function(res){ if(!res.ok){ actDone(false,'Acknowledge failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Report acknowledged. The queue has been refreshed.'); }); });
+    var rd=document.getElementById('tbWsRepDel');
+    if(rd) rd.addEventListener('click',function(){
+      if(!window.confirm('Delete this report permanently?\n\nThe report leaves the management feed everywhere. The record it points at (a booking, a campaign) is NOT deleted — only this report.')) return;
+      post('/management/reports/'+encodeURIComponent(it.id)+'/delete',{}).then(function(res){ if(!res.ok){ actDone(false,'Delete failed: '+errText(res,'the Service OS did not accept it.')); return; } actDone(true,'Report deleted. The queue has been refreshed.'); });
+    });
   }
   var decList=document.getElementById('decList');
   if(decList) decList.addEventListener('click',function(ev){

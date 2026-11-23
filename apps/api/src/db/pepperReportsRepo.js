@@ -35,6 +35,14 @@ const prismaRepo = {
       include: { createdBy: { select: AUTHOR_SELECT } },
     });
   },
+  // Owner record-keeping delete (2026-11-23): removes the row and
+  // answers whether it existed, so the route can 404 honestly.
+  async remove(id) {
+    const existing = await db().pepperReport.findUnique({ where: { id } });
+    if (!existing) return null;
+    await db().pepperReport.delete({ where: { id } });
+    return existing;
+  },
 };
 
 const memoryRepo = {
@@ -54,6 +62,12 @@ const memoryRepo = {
       createdBy: null,
     };
     memoryReports.push(row);
+    return row;
+  },
+  async remove(id) {
+    const index = memoryReports.findIndex((r) => r.id === id);
+    if (index === -1) return null;
+    const [row] = memoryReports.splice(index, 1);
     return row;
   },
 };

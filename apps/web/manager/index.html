@@ -771,5 +771,187 @@ boot();
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<style id="mgxStyle">
+.mgx-owner-only{display:none!important}
+body.mgx-owner .mgx-owner-only{display:inline-block!important}
+.mgx-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+.mgx-btn{background:#fff;color:#34445c;border:1px solid #dfe7f0;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
+.mgx-btn:hover{border-color:#b9c8dc}
+.mgx-btn.danger{color:#b3261e;border-color:rgba(179,38,30,.45)}
+.mgx-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1400;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.mgx-back.open{display:flex}
+.mgx-panel{background:#fff;border-radius:14px;max-width:720px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.mgx-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.mgx-panel h4{margin:16px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#65758e}
+.mgx-kv{display:grid;grid-template-columns:170px 1fr;gap:4px 12px;font-size:13px}
+.mgx-kv .k{color:#8591a4;font-weight:700}
+.mgx-hist{font-size:12.5px;color:#52647c;max-height:180px;overflow:auto;border-top:1px solid #eef1f6;padding-top:6px}
+</style>
+<div class="mgx-back" id="mgxBack" role="dialog" aria-modal="true" aria-label="Report detail">
+  <div class="mgx-panel">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><h3 id="mgxTitle">Report detail</h3><button class="mgx-btn" type="button" id="mgxClose">Close</button></div>
+    <div id="mgxBody"><span class="mut small"><span class="spin"></span> Loading…</span></div>
+  </div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   Manager — report-card options (2026-11-23, Ramone's scope
+   extension): every management report card gets, beside Acknowledge,
+   · More info — the full report record plus, for booking-linked
+     reports, the full booking and its tracking sources (attribution
+     exactly as recorded; absent fields read "Not recorded"),
+   · Reset — an acknowledged report returns to NEW, stamp cleared
+     (owner only, server-gated),
+   · Delete — the report leaves the feed everywhere (owner only,
+     server-gated). The record the report points at is never deleted.
+   ADDITIVE: the feed render is untouched; this block watches the
+   feed, maps cards to the last fetched report array (the same
+   get()-capture idiom the ApplianceMan standard block uses), and
+   appends its action row to each card.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function isOwner(){ var rb = $('roleBadge'); return !!(rb && rb.textContent && rb.textContent.indexOf('MASTER') !== -1); }
+  function syncOwner(){ document.body.classList.toggle('mgx-owner', isOwner()); }
+  var rbEl = $('roleBadge');
+  if (rbEl && window.MutationObserver) new MutationObserver(syncOwner).observe(rbEl, { childList: true, characterData: true, attributes: true, subtree: true });
+  syncOwner(); setTimeout(syncOwner, 1200); setTimeout(syncOwner, 3000);
+
+  function mgxPost(path, body){
+    return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body || {}) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+      .catch(function(){ return { ok: false, status: 0, j: null }; });
+  }
+  function errText(res, fallback){ return (res.j && res.j.error) ? res.j.error : fallback; }
+  function fmtWhen(iso){ try { return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e){ return ''; } }
+
+  /* Capture the report array behind the feed (order = card order). */
+  var mgxReports = [];
+  if (typeof get === 'function'){
+    var mgxOrigGet = get;
+    get = function(path, auth){
+      var p = mgxOrigGet(path, auth);
+      if (typeof path === 'string' && path.indexOf('/management/reports?') === 0){
+        p.then(function(res){ var d = data(res.j) || {}; if (res.ok && Array.isArray(d.reports)) mgxReports = d.reports; });
+      }
+      return p;
+    };
+  }
+
+  /* ── Detail modal ────────────────────────────────────────────── */
+  var back = $('mgxBack');
+  function openModal(title){ $('mgxTitle').textContent = title; back.classList.add('open'); }
+  function closeModal(){ back.classList.remove('open'); }
+  $('mgxClose').addEventListener('click', closeModal);
+  back.addEventListener('click', function(ev){ if (ev.target === back) closeModal(); });
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeModal(); });
+
+  function kv(k, v){ return '<div class="k">' + esc(k) + '</div><div>' + (v == null || v === '' ? '<span class="mut">Not recorded</span>' : esc(String(v))) + '</div>'; }
+  function money(cents){ if (cents == null || isNaN(Number(cents))) return null; return '$' + (Number(cents) / 100).toFixed(2); }
+  function detailRows(detail){
+    var h = '';
+    Object.keys(detail || {}).forEach(function(k){
+      var v = detail[k];
+      if (v == null || v === '') { h += kv(k, null); return; }
+      if (typeof v === 'object') { try { h += kv(k, JSON.stringify(v)); } catch(e){ h += kv(k, null); } return; }
+      h += kv(k, v);
+    });
+    return h || kv('Detail', null);
+  }
+  function bookingHtml(b){
+    if (!b) return '<h4>Linked booking</h4><p class="small mut">This report is not linked to a booking record.</p>';
+    var t = b.tracking || {};
+    var h = '<h4>Booking — ' + esc(b.referenceCode || b.id || '') + '</h4><div class="mgx-kv">';
+    h += kv('Status', b.status) + kv('Customer', b.customer && b.customer.name) + kv('Phone', b.customer && b.customer.phone) + kv('Email', b.customer && b.customer.email) + kv('Address', b.customer && b.customer.address);
+    h += kv('Service', b.appliance) + kv('Issue', b.issue) + kv('City', b.city) + kv('ZIP', b.zip) + kv('Area', b.area) + kv('Area status', b.areaStatus) + kv('Service address', b.serviceAddress);
+    h += kv('Preferred window', b.preferredWindow) + kv('Preferred date', b.preferredDate) + kv('Priority', b.priorityTier);
+    h += kv('Diagnostic fee', money(b.diagnosticFee)) + kv('Fee status', b.feeStatus);
+    h += kv('Created', b.createdAt ? fmtWhen(b.createdAt) : null) + kv('Completed', b.completedAt ? fmtWhen(b.completedAt) : null) + kv('Completed by', b.completedBy);
+    if (b.dispatch) h += kv('Dispatch stage', b.dispatch.stage) + kv('Assignment', b.dispatch.assignmentId) + kv('Provider', b.dispatch.providerId) + kv('Approved by', b.dispatch.approvedBy) + kv('Approved at', b.dispatch.approvedAt ? fmtWhen(b.dispatch.approvedAt) : null);
+    if (b.appointment) { try { h += kv('Appointment', JSON.stringify(b.appointment)); } catch(e){} }
+    h += '</div><h4>Tracking sources — where this booking came from</h4><div class="mgx-kv">';
+    h += kv('Source', t.source) + kv('Source page', t.sourcePage) + kv('Via tag', t.viaTag);
+    h += kv('UTM source', t.utmSource) + kv('UTM medium', t.utmMedium) + kv('UTM campaign', t.utmCampaign) + kv('UTM term', t.utmTerm) + kv('UTM content', t.utmContent);
+    h += kv('Google click (gclid)', t.gclid) + kv('Facebook click (fbclid)', t.fbclid) + kv('Microsoft click (msclkid)', t.msclkid);
+    h += kv('Referral code', t.referralCode) + kv('Referred by customer', t.referredByCustomerId);
+    h += '</div>';
+    var hist = Array.isArray(b.history) ? b.history : [];
+    h += '<h4>Booking history</h4>';
+    if (!hist.length) h += '<p class="small mut">No history recorded.</p>';
+    else h += '<div class="mgx-hist">' + hist.map(function(ev){ return '<div>' + esc(ev.type || 'event') + ' · ' + esc(ev.at ? fmtWhen(ev.at) : '') + (ev.actor ? ' · ' + esc(ev.actor) : '') + '</div>'; }).join('') + '</div>';
+    return h;
+  }
+  function openReportDetail(id, title){
+    openModal(title || 'Report detail');
+    $('mgxBody').innerHTML = '<span class="mut small"><span class="spin"></span> Loading the full record…</span>';
+    get('/management/reports/' + encodeURIComponent(id) + '/detail', true).then(function(res){
+      if (!res.ok){ $('mgxBody').innerHTML = '<p class="small" style="color:#b3261e">Could not load the detail' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '.</p>'; return; }
+      var d = data(res.j) || {};
+      var r = d.report || {};
+      var h = '<div class="mgx-kv">';
+      h += kv('Title', r.title) + kv('Department', r.department) + kv('Type', r.type) + kv('Status', r.status);
+      h += kv('Acknowledged', r.status === 'ACKED' ? ('Yes — ' + (r.ackAt ? fmtWhen(r.ackAt) : '')) : 'Not yet');
+      h += kv('Source', r.source) + kv('Reference', r.reference) + kv('Event key', r.eventKey) + kv('Report id', r.id) + kv('Filed', r.createdAt ? fmtWhen(r.createdAt) : null);
+      h += '</div><h4>Report detail — everything on the record</h4><div class="mgx-kv">' + detailRows(r.detail) + '</div>';
+      h += bookingHtml(d.booking);
+      $('mgxBody').innerHTML = h;
+    });
+  }
+
+  /* ── Card augmentation ───────────────────────────────────────── */
+  function augment(){
+    var feed = $('repFeed'); if (!feed) return;
+    var cards = feed.querySelectorAll('.rep');
+    cards.forEach(function(card, i){
+      if (card.querySelector('[data-mgx]')) return;
+      var r = mgxReports[i]; if (!r) return;
+      var div = document.createElement('div');
+      div.className = 'mgx-actions'; div.setAttribute('data-mgx', '1');
+      var info = document.createElement('button');
+      info.type = 'button'; info.className = 'mgx-btn'; info.textContent = 'More info';
+      info.setAttribute('data-mgx-info', r.id); info.setAttribute('data-mgx-title', r.title || 'Report detail');
+      div.appendChild(info);
+      if (r.status === 'ACKED'){
+        var reset = document.createElement('button');
+        reset.type = 'button'; reset.className = 'mgx-btn mgx-owner-only'; reset.textContent = 'Reset';
+        reset.setAttribute('data-mgx-reset', r.id); reset.setAttribute('data-mgx-title', r.title || 'this report');
+        div.appendChild(reset);
+      }
+      var del = document.createElement('button');
+      del.type = 'button'; del.className = 'mgx-btn danger mgx-owner-only'; del.textContent = 'Delete';
+      del.setAttribute('data-mgx-del', r.id); del.setAttribute('data-mgx-title', r.title || 'this report');
+      div.appendChild(del);
+      card.appendChild(div);
+    });
+  }
+  var feedEl = $('repFeed');
+  if (feedEl && window.MutationObserver) new MutationObserver(augment).observe(feedEl, { childList: true, subtree: true });
+
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    var info = t && t.closest ? t.closest('[data-mgx-info]') : null;
+    if (info){ openReportDetail(info.getAttribute('data-mgx-info'), info.getAttribute('data-mgx-title')); return; }
+    var reset = t && t.closest ? t.closest('[data-mgx-reset]') : null;
+    if (reset){
+      var rid = reset.getAttribute('data-mgx-reset'), rtitle = reset.getAttribute('data-mgx-title');
+      if (!window.confirm('Reset this report to NEW?\n\n"' + rtitle + '"\n\nIts acknowledged stamp is cleared and it asks for a decision again on every surface.')) return;
+      mgxPost('/management/reports/' + encodeURIComponent(rid) + '/reset', {}).then(function(res){
+        if (res.ok) loadReports(); else window.alert('Reset failed: ' + errText(res, 'the Service OS did not accept it.'));
+      });
+      return;
+    }
+    var del = t && t.closest ? t.closest('[data-mgx-del]') : null;
+    if (del){
+      var did = del.getAttribute('data-mgx-del'), dtitle = del.getAttribute('data-mgx-title');
+      if (!window.confirm('Delete this report permanently?\n\n"' + dtitle + '"\n\nThe report leaves the management feed everywhere. The record it points at (a booking, a campaign) is NOT deleted — only this report.')) return;
+      mgxPost('/management/reports/' + encodeURIComponent(did) + '/delete', {}).then(function(res){
+        if (res.ok) loadReports(); else window.alert('Delete failed: ' + errText(res, 'the Service OS did not accept it.'));
+      });
+    }
+  });
+})();
+</script>
+
 </body>
 </html>

@@ -65,6 +65,9 @@ const router = Router();
  */
 
 const staffOnly = [authenticate, requireCompany, requireRole(...STAFF_ROLES)];
+// Owner tier for destructive commercial controls (2026-11-23): the
+// same owner set the admin router uses for its delete endpoints.
+const ownerOnly = [authenticate, requireCompany, requireRole('COMPANY_OWNER', 'PLATFORM_ADMIN')];
 
 const accountSchema = z.object({
   companyName: z.string().trim().min(2),
@@ -680,6 +683,34 @@ router.patch('/commercial/agreements/:id', ...staffOnly, async (req, res) => {
   return res.json({ data: publicAgreement(agreement) });
 });
 
+/**
+ * Delete a maintenance agreement (owner only, 2026-11-23). Refused
+ * with 409 while the agreement has generated work orders — those are
+ * live job records, and deleting their parent would orphan them; the
+ * owner Ends the agreement instead and it stays on file. An agreement
+ * that never generated work deletes cleanly, audit-logged.
+ */
+router.post('/commercial/agreements/:id/delete', ...ownerOnly, async (req, res) => {
+  const agreement = findAgreement(req, req.params.id);
+  if (!agreement) return res.status(404).json({ error: 'Maintenance agreement not found' });
+  const generated = [...store.commercialWorkOrders.values()].filter((wo) => wo.agreementId === agreement.id).length;
+  if (generated > 0) {
+    return res.status(409).json({
+      error: `This agreement has already generated ${generated} work order${generated === 1 ? '' : 's'} — live job records that must keep their agreement on file. End the agreement instead of deleting it.`,
+    });
+  }
+  store.maintenanceAgreements.delete(agreement.id);
+  await appendEvent('MAINTENANCE_AGREEMENT_DELETED', {
+    source: 'COMMERCIAL',
+    actor: req.user.email,
+    entityType: 'MAINTENANCE_AGREEMENT',
+    entityId: agreement.id,
+    referenceCode: agreement.referenceCode || null,
+    details: { status: agreement.status || null, accountId: agreement.accountId || null },
+  });
+  return res.json({ data: { deleted: publicAgreement(agreement) } });
+});
+
 router.post('/commercial/agreements/generate-due', ...staffOnly, async (req, res) => {
   const summary = await runAgreementGeneration(req);
   const created = summary.reduce((sum, row) => sum + (row.workOrdersCreated || 0), 0);
@@ -834,6 +865,36 @@ router.patch('/commercial/quotes/:id', ...staffOnly, async (req, res) => {
     details: { fields: Object.keys(parsed.data), totalCents: quote.totalCents },
   });
   return res.json({ data: publicQuoteStaff(quote) });
+});
+
+/**
+ * Delete a commercial quote (owner only, 2026-11-23). A quote the
+ * customer has APPROVED — or one already converted to a work order —
+ * is a financial record and is refused with 409: it stays on file.
+ * Any other quote deletes with its outstanding approval tokens, so a
+ * sent approval link dies with the quote. Audit-logged.
+ */
+router.post('/commercial/quotes/:id/delete', ...ownerOnly, async (req, res) => {
+  const quote = findQuote(req, req.params.id);
+  if (!quote) return res.status(404).json({ error: 'Quote not found' });
+  if (quote.status === 'APPROVED' || quote.workOrderId) {
+    return res.status(409).json({
+      error: 'This quote was approved by the customer and converted to a work order — it is a financial record and cannot be deleted. It stays on file.',
+    });
+  }
+  for (const [key, record] of store.commercialQuoteTokens.entries()) {
+    if (record && record.quoteId === quote.id) store.commercialQuoteTokens.delete(key);
+  }
+  store.commercialQuotes.delete(quote.id);
+  await appendEvent('COMMERCIAL_QUOTE_DELETED', {
+    source: 'COMMERCIAL',
+    actor: req.user.email,
+    entityType: 'COMMERCIAL_QUOTE',
+    entityId: quote.id,
+    referenceCode: quote.referenceCode || null,
+    details: { status: quote.status || null, accountId: quote.accountId || null },
+  });
+  return res.json({ data: { deleted: publicQuoteStaff(quote) } });
 });
 
 router.post('/commercial/quotes/:id/send', ...staffOnly, async (req, res) => {

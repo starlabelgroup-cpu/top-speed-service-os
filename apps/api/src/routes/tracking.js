@@ -10,6 +10,7 @@ import { activeAssignmentFor, computeTracking, photoReportOf, providerById, tech
 import { priorityTierOf } from '../services/dispatchOps.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
+import { bookingDetailOf } from '../services/bookingDetail.js';
 import { persistTrackingToken, revokeTrackingTokensForBooking } from '../db/trackingRepo.js';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { issueReferralForBooking } from '../services/flywheel.js';
@@ -144,8 +145,20 @@ router.post('/tracking/console/:reference/assign', ...staffOnly, async (req, res
     assignment = approveDispatch(booking, provider.id, req.user.email);
   }
   if (!assignment) {
-    const now = new Date().toISOString();
     const current = activeAssignmentFor(booking.id);
+    if (current && current.providerId === provider.id) {
+      // Idempotent re-assign (2026-11-23): this provider already holds
+      // the approved assignment — a double-tap, a retry, or a second
+      // setter repeating the same assignment. Reuse the existing
+      // assignment. Minting a fresh one here also minted a SECOND
+      // DISPATCH_APPROVED management report under a new eventKey
+      // (the duplicate cards Ramone photographed on 2026-11-23), and
+      // left booking.dispatch pointing at an assignment the board did
+      // not show. With reuse, the notifications below dedupe on their
+      // eventKeys and the repeat call is a true no-op.
+      assignment = current;
+    } else {
+    const now = new Date().toISOString();
     if (current && current.providerId !== provider.id) {
       current.status = 'REPLACED';
       await persistAssignment(current);
@@ -182,6 +195,7 @@ router.post('/tracking/console/:reference/assign', ...staffOnly, async (req, res
       providerId: provider.id,
       via: 'TRACKING_CONSOLE',
     });
+    }
   }
 
   booking.updatedAt = new Date().toISOString();
@@ -196,6 +210,86 @@ router.post('/tracking/console/:reference/assign', ...staffOnly, async (req, res
     entityId: booking.id,
     referenceCode: booking.referenceCode,
     details: { providerId: provider.id },
+  });
+  return res.status(201).json({ data: consoleJob(booking) });
+});
+
+/**
+ * Full detail for one console job (2026-11-23, the dispatch cards'
+ * View / More-info): the console job plus the full booking record and
+ * its tracking sources — attribution exactly as recorded on the
+ * booking; fields the record does not carry read null and the console
+ * renders them "Not recorded".
+ */
+router.get('/tracking/console/:reference/detail', ...staffOnly, async (req, res) => {
+  const booking = findBookingByReference(req.params.reference);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (!staffCanSee(req, booking)) return res.status(403).json({ error: 'Cannot manage another company booking' });
+  return res.json({ data: { job: consoleJob(booking), booking: bookingDetailOf(booking) } });
+});
+
+/**
+ * Reset a job's dispatch (2026-11-23, the dispatch cards' Reset):
+ * the active assignment is retired (REPLACED — the same terminal
+ * state a reassignment leaves), open proposals are cleared, the
+ * booking's dispatch stamp is wiped, and a job that was CONFIRMED by
+ * the approval returns to PENDING_DISPATCH — the setter queue — so it
+ * can be matched and assigned fresh. The job's history is NOT
+ * rewritten: the reset itself is recorded as a DISPATCH_RESET event,
+ * and stage dots derived from past stage events stay truthful. A
+ * closed job (completed / cancelled) refuses with 409.
+ */
+router.post('/tracking/console/:reference/reset-dispatch', ...staffOnly, async (req, res) => {
+  const booking = findBookingByReference(req.params.reference);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  if (!staffCanSee(req, booking)) return res.status(403).json({ error: 'Cannot manage another company booking' });
+  if (booking.status === 'COMPLETED' || booking.status === 'CANCELLED') {
+    return res.status(409).json({ error: 'This job is closed — its dispatch cannot be reset.' });
+  }
+  const active = activeAssignmentFor(booking.id);
+  if (active) {
+    active.status = 'REPLACED';
+    await persistAssignment(active);
+  }
+  for (const other of store.dispatchAssignments.values()) {
+    if (other.bookingId === booking.id && other.status === 'PROPOSED') {
+      other.status = 'NOT_SELECTED';
+      await persistAssignment(other);
+    }
+  }
+  booking.dispatch = {
+    ...(booking.dispatch || {}),
+    stage: 'AWAITING_ASSIGNMENT',
+    assignmentId: null,
+    providerId: null,
+    approvedBy: null,
+    approvedAt: null,
+  };
+  if (booking.status === 'CONFIRMED') booking.status = 'PENDING_DISPATCH';
+  addBookingEvent(booking, 'DISPATCH_RESET', req.user.email, {
+    assignmentId: active?.id || null,
+    providerId: active?.providerId || null,
+    via: 'TRACKING_CONSOLE',
+  });
+  booking.updatedAt = new Date().toISOString();
+  await persistBooking(booking);
+  await persistAssignmentsForBooking(booking.id);
+  emitReport({
+    department: 'dispatch',
+    type: 'DISPATCH_RESET',
+    title: `Dispatch reset — ${booking.referenceCode || booking.id} returned to the setter queue`,
+    detail: { bookingId: booking.id, bookingReference: booking.referenceCode || null, service: booking.appliance || null, city: booking.city || null, assignmentId: active?.id || null, resetBy: req.user.email },
+    source: 'TRACKING_CONSOLE',
+    reference: booking.referenceCode || null,
+    eventKey: `booking:${booking.id}:dispatch-reset:${booking.updatedAt}`,
+  });
+  await appendEvent('TRACKING_DISPATCH_RESET', {
+    source: 'TRACKING_CONSOLE',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { assignmentId: active?.id || null, providerId: active?.providerId || null },
   });
   return res.status(201).json({ data: consoleJob(booking) });
 });

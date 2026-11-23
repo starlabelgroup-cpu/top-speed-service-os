@@ -103,54 +103,7 @@
   </section>
 </main>
 
-<footer>Top Speed Service OS · Staff console · Actions are recorded with your account name.
-<!-- WORKSTATION STANDARD — SYSTEM FOOTER (Step 3 fix, 2026-11-23):
-     the uniform directory block every workstation carries: customer
-     apps first under "Customer App", then the 21-entry "Workstation"
-     directory in its fixed order (the homepage/CocoCane column, with
-     Local OS naming its own face at /local and Marketing OS its face
-     at /marketing-os). Additive — the console's own footer stays. -->
-<style>
-.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
-.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
-.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
-.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
-.tsos-wsfoot a:hover{text-decoration:underline}
-</style>
-<div class="tsos-wsfoot">
-  <div>
-    <h3>Customer App</h3>
-    <p><a href="/app">Appliance Connect — Customer App</a><br>
-    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
-    <a href="/appliance-pro-site">Appliance Pro</a><br>
-    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
-  </div>
-  <div>
-    <h3>Workstation</h3>
-    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
-    <a href="/book-os">Service Setters — Book OS</a><br>
-    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
-    <a href="/applianceman">ApplianceMan</a><br>
-    <a href="/finance">Finance</a><br>
-    <a href="/tech">Tech App — Service Providers</a><br>
-    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
-    <a href="/network">Service Network</a><br>
-    <a href="/parts">Parts Supply</a><br>
-    <a href="/advertiser">Advertiser Console</a><br>
-    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
-    <a href="/flywheel">Flywheel Advertising</a><br>
-    <a href="/local">Top Speed Local OS</a><br>
-    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
-    <a href="/media">Media OS</a><br>
-    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
-    <a href="/refer">Referrals &amp; Rewards</a><br>
-    <a href="/portal">Service OS Portal</a><br>
-    <a href="/academy">Training Academy</a><br>
-    <a href="/work-time-access">Work Time Access</a><br>
-    <a href="/navigator">Workstation — Team Consoles</a></p>
-  </div>
-</div>
-</footer>
+<footer>Top Speed Service OS · Staff console · Actions are recorded with your account name.</footer>
 
 <script>
 const API = 'https://top-speed-service-os.vercel.app/api/v1';
@@ -443,5 +396,141 @@ if (token()) enter();
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<style>
+.tcx-owner-only{display:none!important}
+body.tcx-owner .tcx-owner-only{display:inline-flex!important}
+.tcx-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.tcx-danger{background:#fff;color:#b3261e;border:1px solid rgba(179,38,30,.5)}
+.tcx-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1400;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.tcx-back.open{display:flex}
+.tcx-panel{background:#fff;border-radius:14px;max-width:720px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.tcx-panel h3{margin:0 0 4px;font-size:19px}
+.tcx-panel h4{margin:16px 0 6px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#65758e}
+.tcx-kv{display:grid;grid-template-columns:170px 1fr;gap:4px 12px;font-size:13px}
+.tcx-kv .k{color:#8591a4;font-weight:700}
+.tcx-hist{font-size:12.5px;color:#52647c;max-height:180px;overflow:auto;border-top:1px solid #eef1f6;padding-top:6px}
+</style>
+<div class="tcx-back" id="tcxBack" role="dialog" aria-modal="true" aria-label="Job detail">
+  <div class="tcx-panel">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><h3 id="tcxTitle">Job detail</h3><button class="btn btn-ghost" type="button" id="tcxClose">Close</button></div>
+    <div id="tcxBody">Loading…</div>
+  </div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   Service Setters Dispatch — card options (2026-11-23, Ramone's
+   scope extension): every job card gets, beside Assign / stage /
+   notify —
+   · More info — the full booking record and its tracking sources
+     (attribution exactly as recorded; absent fields read
+     "Not recorded"),
+   · Reset dispatch — the active assignment is retired, the job
+     returns to the setter queue (PENDING_DISPATCH) for a fresh
+     match; the job's history is never rewritten,
+   · Delete job — owner only (server-gated through the existing
+     owner-only bookings delete; a job with financial records is
+     refused by the server and the reason shows here).
+   ADDITIVE: jobHTML is wrapped (composing with the workstation
+   standard's own wrapper), the board render is untouched.
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var jobsByRef = {};
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtWhen(iso){ try { return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }); } catch(e){ return ''; } }
+
+  // Owner visibility for Delete (the server gate is the rule; this
+  // only decides whether the button renders).
+  fetch(API + '/auth/me', { headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token() } })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var roles = (j && j.data && j.data.user && j.data.user.roles) || (j && j.user && j.user.roles) || [];
+      if (roles.indexOf('COMPANY_OWNER') !== -1 || roles.indexOf('PLATFORM_ADMIN') !== -1) document.body.classList.add('tcx-owner');
+    })
+    .catch(function(){});
+
+  var origJobHTML = jobHTML;
+  jobHTML = function(j){
+    if (j && j.reference) jobsByRef[j.reference] = j;
+    var html = origJobHTML(j);
+    if (!j || !j.reference) return html;
+    var closed = j.stageIndex >= 7;
+    var hasDispatch = !!(j.assignmentId || j.providerId || j.stageIndex >= 2);
+    var row = '<div class="tcx-actions">' +
+      '<button class="btn btn-ghost" type="button" onclick="tcxInfo(\'' + j.reference + '\')">More info</button>' +
+      (!closed && hasDispatch ? '<button class="btn btn-ghost" type="button" onclick="tcxReset(\'' + j.reference + '\')">Reset dispatch</button>' : '') +
+      '<button class="btn tcx-danger tcx-owner-only" type="button" onclick="tcxDelete(\'' + j.reference + '\')">Delete job</button>' +
+      '</div>';
+    // Insert before the card's closing tag.
+    var cut = html.lastIndexOf('</div>');
+    return cut > 0 ? html.slice(0, cut) + row + html.slice(cut) : html + row;
+  };
+
+  var back = document.getElementById('tcxBack');
+  function closeModal(){ back.classList.remove('open'); }
+  document.getElementById('tcxClose').addEventListener('click', closeModal);
+  back.addEventListener('click', function(ev){ if (ev.target === back) closeModal(); });
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeModal(); });
+
+  function kv(k, v){ return '<div class="k">' + esc(k) + '</div><div>' + (v == null || v === '' ? '<span class="mut">Not recorded</span>' : esc(String(v))) + '</div>'; }
+  function money(cents){ if (cents == null || isNaN(Number(cents))) return null; return '$' + (Number(cents) / 100).toFixed(2); }
+
+  window.tcxInfo = async function(ref){
+    document.getElementById('tcxTitle').textContent = 'Job ' + ref + ' — full record';
+    document.getElementById('tcxBody').innerHTML = 'Loading the full record…';
+    back.classList.add('open');
+    try {
+      var d = await api('/tracking/console/' + encodeURIComponent(ref) + '/detail');
+      var b = (d && d.booking) || null;
+      if (!b){ document.getElementById('tcxBody').innerHTML = 'No booking record is attached to this job.'; return; }
+      var t = b.tracking || {};
+      var h = '<div class="tcx-kv">';
+      h += kv('Reference', b.referenceCode) + kv('Status', b.status);
+      h += kv('Customer', b.customer && b.customer.name) + kv('Phone', b.customer && b.customer.phone) + kv('Email', b.customer && b.customer.email) + kv('Address', b.customer && b.customer.address);
+      h += kv('Service', b.appliance) + kv('Issue', b.issue) + kv('City', b.city) + kv('ZIP', b.zip) + kv('Area', b.area) + kv('Area status', b.areaStatus) + kv('Service address', b.serviceAddress);
+      h += kv('Preferred window', b.preferredWindow) + kv('Preferred date', b.preferredDate) + kv('Priority', b.priorityTier);
+      h += kv('Diagnostic fee', money(b.diagnosticFee)) + kv('Fee status', b.feeStatus);
+      h += kv('Created', b.createdAt ? fmtWhen(b.createdAt) : null) + kv('Completed', b.completedAt ? fmtWhen(b.completedAt) : null) + kv('Completed by', b.completedBy);
+      if (b.dispatch) h += kv('Dispatch stage', b.dispatch.stage) + kv('Assignment', b.dispatch.assignmentId) + kv('Provider', b.dispatch.providerId) + kv('Approved by', b.dispatch.approvedBy) + kv('Approved at', b.dispatch.approvedAt ? fmtWhen(b.dispatch.approvedAt) : null);
+      if (b.appointment) { try { h += kv('Appointment', JSON.stringify(b.appointment)); } catch(e){} }
+      h += '</div><h4>Tracking sources — where this booking came from</h4><div class="tcx-kv">';
+      h += kv('Source', t.source) + kv('Source page', t.sourcePage) + kv('Via tag', t.viaTag);
+      h += kv('UTM source', t.utmSource) + kv('UTM medium', t.utmMedium) + kv('UTM campaign', t.utmCampaign) + kv('UTM term', t.utmTerm) + kv('UTM content', t.utmContent);
+      h += kv('Google click (gclid)', t.gclid) + kv('Facebook click (fbclid)', t.fbclid) + kv('Microsoft click (msclkid)', t.msclkid);
+      h += kv('Referral code', t.referralCode) + kv('Referred by customer', t.referredByCustomerId);
+      h += '</div>';
+      var hist = Array.isArray(b.history) ? b.history : [];
+      h += '<h4>Job history</h4>';
+      if (!hist.length) h += '<p class="small mut">No history recorded.</p>';
+      else h += '<div class="tcx-hist">' + hist.map(function(ev){ return '<div>' + esc(ev.type || 'event') + ' · ' + esc(ev.at ? fmtWhen(ev.at) : '') + (ev.actor ? ' · ' + esc(ev.actor) : '') + '</div>'; }).join('') + '</div>';
+      document.getElementById('tcxBody').innerHTML = h;
+    } catch (e) {
+      document.getElementById('tcxBody').innerHTML = 'Could not load the record: ' + esc(e.message || 'request failed');
+    }
+  };
+
+  window.tcxReset = async function(ref){
+    var j = jobsByRef[ref] || {};
+    var tech = j.technician && j.technician.assigned ? j.technician.name : 'the assigned technician';
+    if (!window.confirm('Reset dispatch for ' + ref + '?\n\n' + tech + ' is unassigned, and the job returns to the setter queue for a fresh match. The job\u2019s history stays on record — the reset itself is logged.')) return;
+    try {
+      await api('/tracking/console/' + encodeURIComponent(ref) + '/reset-dispatch', { method: 'POST', body: '{}' });
+      flash(true, ref + ': dispatch reset — back in the setter queue.');
+      loadBoard();
+    } catch (e) { flash(false, ref + ': ' + (e.message || 'reset failed')); }
+  };
+
+  window.tcxDelete = async function(ref){
+    var j = jobsByRef[ref] || {};
+    if (!window.confirm('Delete job ' + ref + (j.customerName ? ' (' + j.customerName + ')' : '') + ' permanently?\n\nThis deletes the booking record. Jobs tied to financial records the system must keep are refused, and the reason will show here.')) return;
+    try {
+      await api('/admin/bookings/delete', { method: 'POST', body: JSON.stringify({ reference: ref }) });
+      flash(true, ref + ': job deleted.');
+      loadBoard();
+    } catch (e) { flash(false, ref + ': ' + (e.message || 'delete failed')); }
+  };
+})();
+</script>
+
 </body>
 </html>

@@ -254,6 +254,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
       <h2 class="sec" id="sec-depts">Departments — management reports</h2>
       <div class="grid"><div class="card wide">
         <div class="rows" id="deptStrip"><span class="mut small"><span class="spin"></span> Loading departments…</span></div>
+        <div class="rows" id="amxReports"></div>
         <div class="rows"><div class="row"><div><a class="small" href="/manager" style="color:#e65766;font-weight:700">Open Reports in Remote Manager →</a></div></div></div>
       </div></div>
 
@@ -311,7 +312,7 @@ footer{color:#9ca8ba;font-size:12px;line-height:1.6;padding:22px 2px 6px}
 
       <h2 class="sec" id="sec-tracking">Tracking Numbers — every surface, one registry</h2>
       <div class="grid"><div class="card wide">
-        <p class="small mut" style="margin-top:0">Every phone number and mailbox a Top Speed surface publishes, and what each one brought in over the last 28 days. Calls and texts are counted from the contacts that actually reached the number; bookings are counted from real booking records by the surface they came from — for mailboxes, bookings show at the <b>surface</b> level, because mail is not attributable per address. A surface with no dedicated number yet shows <b>Planned</b> and “Not yet assigned” — no number is ever invented for it. Rows are never deleted here; <b>Retired</b> is the end state.</p>
+        <p class="small mut" style="margin-top:0">Every phone number and mailbox a Top Speed surface publishes, and what each one brought in over the last 28 days. Calls and texts are counted from the contacts that actually reached the number; bookings are counted from real booking records by the surface they came from — for mailboxes, bookings show at the <b>surface</b> level, because mail is not attributable per address. A surface with no dedicated number yet shows <b>Planned</b> and “Not yet assigned” — no number is ever invented for it. <b>Retired</b> is the normal end state for a row; the Master can also delete a row outright with the Delete button on it — past calls and texts stay on record, just no longer tied to the row.</p>
         <div id="tnPanel"><span class="mut small"><span class="spin"></span> Loading tracking numbers…</span></div>
         <div id="tnMsg"></div>
         <div id="tnEditBox"></div>
@@ -1593,5 +1594,415 @@ else { cpLoad(0); agLoad(0); }
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<style>
+.amx-owner-only{display:none!important}
+body.amx-owner .amx-owner-only{display:inline-block!important}
+.amx-danger{color:#ff8a94!important;border-color:rgba(230,87,102,.55)!important}
+.amx-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.amx-back{position:fixed;inset:0;background:rgba(4,8,16,.72);z-index:400;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:22px 12px}
+.amx-back.open{display:flex}
+.amx-modal{background:#131c2c;border:1px solid rgba(255,255,255,.16);border-radius:14px;max-width:720px;width:100%;padding:18px;color:#e8eef7}
+.amx-modal h3{margin:0 0 4px;font-size:17px}
+.amx-modal h4{margin:16px 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#9fb2c8}
+.amx-kv{display:grid;grid-template-columns:170px 1fr;gap:4px 12px;font-size:13px}
+.amx-kv .k{color:#9fb2c8}
+.amx-hist{font-size:12.5px;color:#c6d2e2;max-height:180px;overflow:auto;border-top:1px solid rgba(255,255,255,.08);padding-top:6px}
+</style>
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   ApplianceMan — Master Workstation Options (2026-11-23, Ramone's
+   directive: "Create options and settings with delete options for
+   everything in applianceman master workstation") + the report-card
+   option set (Delete / View / Reset) from the same morning's scope
+   extension. ADDITIVE: this block wraps the console's own render
+   functions and adds the missing controls beside the existing ones —
+   no existing layout, flow or contract changes.
+
+   What it adds:
+   · Management report log in the Departments card — every report
+     card gets Acknowledge (existing action, now on the card here
+     too), More info (full report + linked booking + its tracking
+     sources), Reset (ACKED → NEW, owner) and Delete (owner).
+   · Remove account on every Speedy Verify row (owner; the panel
+     itself is Master-only server-side). Calls the existing
+     owner-gated removal endpoint — the Master account and any
+     account holding business records are refused by the server,
+     with the reason shown.
+   · Delete on every Pepper report row (owner).
+   · Delete on every Tracking Numbers row (owner) — the contact log
+     survives, unattributed; the panel copy now says so.
+   · Care plans: an Activate / Deactivate toggle per plan (the real
+     end-state control — the plan definition is seeded by the system
+     and a delete would simply resurrect it, so no fake delete is
+     offered), plus an honest note on the members list: membership
+     rows are billing history and are never deleted.
+   · Delete on every maintenance agreement (owner; refused by the
+     server when the agreement has generated work orders) and every
+     deletable commercial quote (owner; approved quotes are financial
+     records and carry no delete button).
+
+   Owner visibility: destructive buttons render only when the role
+   badge reads MASTER (the server gates enforce regardless — hiding
+   is presentation, the 403 is the rule).
+   ══════════════════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function isOwner(){ var rb = $('roleBadge'); return !!(rb && rb.textContent && rb.textContent.indexOf('MASTER') !== -1); }
+  function syncOwner(){ document.body.classList.toggle('amx-owner', isOwner()); }
+  var rbEl = $('roleBadge');
+  if (rbEl && window.MutationObserver){
+    new MutationObserver(syncOwner).observe(rbEl, { childList: true, characterData: true, attributes: true, subtree: true });
+  }
+  syncOwner(); setTimeout(syncOwner, 1200); setTimeout(syncOwner, 3000);
+
+  function amxPost(path, body){
+    return fetch(API + path, { method: 'POST', headers: hdr(), body: JSON.stringify(body || {}) })
+      .then(function(r){ return r.json().then(function(j){ return { ok: r.ok, status: r.status, j: j }; }); })
+      .catch(function(){ return { ok: false, status: 0, j: null }; });
+  }
+  function errText(res, fallback){ return (res.j && res.j.error) ? res.j.error : fallback; }
+
+  /* ── Shared detail modal ─────────────────────────────────────── */
+  var back = document.createElement('div');
+  back.className = 'amx-back'; back.id = 'amxBack';
+  back.innerHTML = '<div class="amx-modal" role="dialog" aria-modal="true"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start"><h3 id="amxModalTitle">Details</h3><button type="button" class="iconbtn" id="amxModalClose">Close</button></div><div id="amxModalBody"><span class="mut small"><span class="spin"></span> Loading…</span></div></div>';
+  document.body.appendChild(back);
+  function amxOpenModal(title){ $('amxModalTitle').textContent = title; back.classList.add('open'); }
+  function amxCloseModal(){ back.classList.remove('open'); }
+  $('amxModalClose').addEventListener('click', amxCloseModal);
+  back.addEventListener('click', function(ev){ if (ev.target === back) amxCloseModal(); });
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') amxCloseModal(); });
+
+  function kv(k, v){ return '<div class="k">' + esc(k) + '</div><div>' + (v == null || v === '' ? '<span class="mut">Not recorded</span>' : esc(String(v))) + '</div>'; }
+  function money(cents){ if (cents == null || isNaN(Number(cents))) return null; return '$' + (Number(cents) / 100).toFixed(2); }
+  function detailRows(detail){
+    var h = '';
+    Object.keys(detail || {}).forEach(function(k){
+      var v = detail[k];
+      if (v == null || v === '') { h += kv(k, null); return; }
+      if (typeof v === 'object') { try { h += kv(k, JSON.stringify(v)); } catch(e){ h += kv(k, null); } return; }
+      h += kv(k, v);
+    });
+    return h || kv('Detail', null);
+  }
+  function bookingHtml(b){
+    if (!b) return '<h4>Linked booking</h4><p class="small mut">This report is not linked to a booking record.</p>';
+    var t = b.tracking || {};
+    var h = '<h4>Booking — ' + esc(b.referenceCode || b.id || '') + '</h4><div class="amx-kv">';
+    h += kv('Status', b.status) + kv('Customer', b.customer && b.customer.name) + kv('Phone', b.customer && b.customer.phone) + kv('Email', b.customer && b.customer.email) + kv('Address', b.customer && b.customer.address);
+    h += kv('Service', b.appliance) + kv('Issue', b.issue) + kv('City', b.city) + kv('ZIP', b.zip) + kv('Area', b.area) + kv('Area status', b.areaStatus) + kv('Service address', b.serviceAddress);
+    h += kv('Preferred window', b.preferredWindow) + kv('Preferred date', b.preferredDate) + kv('Priority', b.priorityTier);
+    h += kv('Diagnostic fee', money(b.diagnosticFee)) + kv('Fee status', b.feeStatus);
+    h += kv('Created', b.createdAt ? fmtWhen(b.createdAt) : null) + kv('Completed', b.completedAt ? fmtWhen(b.completedAt) : null) + kv('Completed by', b.completedBy);
+    if (b.dispatch) h += kv('Dispatch stage', b.dispatch.stage) + kv('Assignment', b.dispatch.assignmentId) + kv('Provider', b.dispatch.providerId) + kv('Approved by', b.dispatch.approvedBy) + kv('Approved at', b.dispatch.approvedAt ? fmtWhen(b.dispatch.approvedAt) : null);
+    if (b.appointment) { try { h += kv('Appointment', JSON.stringify(b.appointment)); } catch(e){} }
+    h += '</div><h4>Tracking sources — where this booking came from</h4><div class="amx-kv">';
+    h += kv('Source', t.source) + kv('Source page', t.sourcePage) + kv('Via tag', t.viaTag);
+    h += kv('UTM source', t.utmSource) + kv('UTM medium', t.utmMedium) + kv('UTM campaign', t.utmCampaign) + kv('UTM term', t.utmTerm) + kv('UTM content', t.utmContent);
+    h += kv('Google click (gclid)', t.gclid) + kv('Facebook click (fbclid)', t.fbclid) + kv('Microsoft click (msclkid)', t.msclkid);
+    h += kv('Referral code', t.referralCode) + kv('Referred by customer', t.referredByCustomerId);
+    h += '</div>';
+    var hist = Array.isArray(b.history) ? b.history : [];
+    h += '<h4>Booking history</h4>';
+    if (!hist.length) h += '<p class="small mut">No history recorded.</p>';
+    else h += '<div class="amx-hist">' + hist.map(function(ev){ return '<div>' + esc(ev.type || 'event') + ' · ' + esc(ev.at ? fmtWhen(ev.at) : '') + (ev.actor ? ' · ' + esc(ev.actor) : '') + '</div>'; }).join('') + '</div>';
+    return h;
+  }
+  function reportDetailHtml(d){
+    var r = d.report || {};
+    var h = '<div class="amx-kv">';
+    h += kv('Title', r.title) + kv('Department', r.department) + kv('Type', r.type) + kv('Status', r.status);
+    h += kv('Acknowledged', r.status === 'ACKED' ? ('Yes — ' + (r.ackAt ? fmtWhen(r.ackAt) : '')) : 'Not yet');
+    h += kv('Source', r.source) + kv('Reference', r.reference) + kv('Event key', r.eventKey) + kv('Report id', r.id) + kv('Filed', r.createdAt ? fmtWhen(r.createdAt) : null);
+    h += '</div><h4>Report detail — everything on the record</h4><div class="amx-kv">' + detailRows(r.detail) + '</div>';
+    h += bookingHtml(d.booking);
+    return h;
+  }
+  function amxOpenReportDetail(id, title){
+    amxOpenModal(title || 'Report detail');
+    $('amxModalBody').innerHTML = '<span class="mut small"><span class="spin"></span> Loading the full record…</span>';
+    get('/management/reports/' + encodeURIComponent(id) + '/detail', true).then(function(res){
+      if (!res.ok){ $('amxModalBody').innerHTML = '<p class="small" style="color:#e94e5c">Could not load the detail' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '.</p>'; return; }
+      $('amxModalBody').innerHTML = reportDetailHtml(data(res.j) || {});
+    });
+  }
+
+  /* ── Management report log (Departments card) ────────────────── */
+  var amxReports = [];
+  function amxDetailLine(detail){
+    var parts = [];
+    var keys = ['bookingId', 'reference', 'referenceCode', 'name', 'businessLine', 'campaignId', 'customerName', 'service', 'city', 'amountCents', 'approvedBy', 'providerId', 'assignmentId'];
+    keys.forEach(function(k){ var v = (detail || {})[k]; if (v != null && v !== '' && parts.length < 4) parts.push(k.replace(/Id$/, ' id') + ': ' + v); });
+    return parts.join(' · ');
+  }
+  function amxRenderReports(){
+    var el = $('amxReports'); if (!el) return;
+    if (!amxReports.length){ el.innerHTML = '<p class="small mut" style="margin:8px 0 0">No management reports on file.</p>'; return; }
+    var html = '<p style="margin:10px 0 2px"><b>Report log</b> <span class="small mut">— newest first. Acknowledge, open the full record, reset or delete each report.</span></p>';
+    amxReports.forEach(function(r){
+      var acked = r.status === 'ACKED';
+      html += '<div style="padding:10px 0;border-top:1px solid rgba(255,255,255,.08)"><div><b>' + esc(r.title) + '</b> ' + (acked ? '<span class="pill">ACKED</span>' : '<span class="pill warn">NEW</span>') + '</div>' +
+        '<div class="small mut">' + esc(r.department || '') + ' · ' + esc(r.type || '') + (r.reference ? ' · Ref ' + esc(r.reference) : '') + (r.source ? ' · via ' + esc(r.source) : '') + ' · ' + esc(fmtWhen(r.createdAt)) + (acked && r.ackAt ? ' · acknowledged ' + esc(fmtWhen(r.ackAt)) : '') + '</div>' +
+        '<div class="small">' + esc(amxDetailLine(r.detail)) + '</div>' +
+        '<div class="amx-actions">' +
+        (acked ? '' : '<button type="button" class="iconbtn" data-amx-rep="ack" data-id="' + esc(r.id) + '">Acknowledge</button>') +
+        '<button type="button" class="iconbtn" data-amx-rep="info" data-id="' + esc(r.id) + '">More info</button>' +
+        (acked ? '<button type="button" class="iconbtn amx-owner-only" data-amx-rep="reset" data-id="' + esc(r.id) + '" data-title="' + esc(r.title) + '">Reset</button>' : '') +
+        '<button type="button" class="iconbtn amx-danger amx-owner-only" data-amx-rep="delete" data-id="' + esc(r.id) + '" data-title="' + esc(r.title) + '">Delete</button>' +
+        '</div></div>';
+    });
+    el.innerHTML = html;
+  }
+  function amxLoadReports(){
+    var el = $('amxReports'); if (!el) return;
+    get('/management/reports?limit=25', true).then(function(res){
+      var d = data(res.j) || {};
+      amxReports = (res.ok && Array.isArray(d.reports)) ? d.reports : [];
+      amxRenderReports();
+    });
+  }
+  var amxRepEl = $('amxReports');
+  if (amxRepEl){
+    amxRepEl.addEventListener('click', function(ev){
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-rep]') : null;
+      if (!b) return;
+      var act = b.getAttribute('data-amx-rep'), id = b.getAttribute('data-id'), title = b.getAttribute('data-title') || 'this report';
+      if (act === 'info'){ amxOpenReportDetail(id, title); return; }
+      if (act === 'ack'){
+        amxPost('/management/reports/' + encodeURIComponent(id) + '/ack', {}).then(function(res){
+          if (res.ok) amxLoadReports(); else window.alert('Acknowledge failed: ' + errText(res, 'the Service OS did not accept it.'));
+        });
+        return;
+      }
+      if (act === 'reset'){
+        if (!window.confirm('Reset this report to NEW?\n\n"' + title + '"\n\nIts acknowledged stamp is cleared and it asks for a decision again on every surface.')) return;
+        amxPost('/management/reports/' + encodeURIComponent(id) + '/reset', {}).then(function(res){
+          if (res.ok) amxLoadReports(); else window.alert('Reset failed: ' + errText(res, 'the Service OS did not accept it.'));
+        });
+        return;
+      }
+      if (act === 'delete'){
+        if (!window.confirm('Delete this report permanently?\n\n"' + title + '"\n\nThe report leaves the management feed everywhere. The record it points at (a booking, a campaign) is NOT deleted — only this report.')) return;
+        amxPost('/management/reports/' + encodeURIComponent(id) + '/delete', {}).then(function(res){
+          if (res.ok) amxLoadReports(); else window.alert('Delete failed: ' + errText(res, 'the Service OS did not accept it.'));
+        });
+      }
+    });
+    amxLoadReports();
+    var refreshBtn = $('refreshBtn');
+    if (refreshBtn) refreshBtn.addEventListener('click', amxLoadReports);
+  }
+
+  /* ── Accounts: Remove account on the Speedy Verify rows ──────── */
+  function amxAugmentVerify(){
+    var panel = $('svPanel'); if (!panel) return;
+    var rows = panel.querySelectorAll('div');
+    rows.forEach(function(rowDiv){
+      var firstBtn = rowDiv.querySelector ? rowDiv.querySelector('[data-sv]') : null;
+      if (!firstBtn) return;
+      var holder = firstBtn.parentElement;
+      if (!holder || holder.querySelector('[data-amx-remove]')) return;
+      var uid = firstBtn.getAttribute('data-u');
+      var emailEl = rowDiv.querySelector('b');
+      var email = emailEl ? emailEl.textContent : 'this account';
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'iconbtn amx-danger';
+      btn.setAttribute('data-amx-remove', uid); btn.setAttribute('data-amx-email', email);
+      btn.textContent = 'Remove account';
+      holder.appendChild(document.createTextNode(' '));
+      holder.appendChild(btn);
+    });
+  }
+  var svPanelEl = $('svPanel');
+  if (svPanelEl && window.MutationObserver) new MutationObserver(amxAugmentVerify).observe(svPanelEl, { childList: true, subtree: true });
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-remove]') : null;
+    if (!b) return;
+    var uid = b.getAttribute('data-amx-remove'), email = b.getAttribute('data-amx-email') || 'this account';
+    if (!window.confirm('Remove the account ' + email + ' permanently?\n\nThis deletes the account, its sign-in, sessions and access codes. If the account owns bookings, listings or other business records, the removal is refused and you will see exactly what blocks it.\n\nThe Master account can never be removed.')) return;
+    amxPost('/access-control/accounts/' + encodeURIComponent(uid) + '/remove', {}).then(function(res){
+      if (res.ok){ window.alert('Account removed — ' + email + ' can no longer sign in.'); loadVerifyPanel(); }
+      else window.alert('Not removed: ' + errText(res, 'the Service OS did not accept it.'));
+    });
+  });
+
+  /* ── Pepper reports: Delete on each row ──────────────────────── */
+  if (typeof renderPepperReports === 'function'){
+    var amxOrigPepper = renderPepperReports;
+    renderPepperReports = function(rows){
+      amxOrigPepper(rows);
+      if (!Array.isArray(rows) || !rows.length) return;
+      var sorted = rows.slice().sort(function(a, b){
+        var an = a.category === 'NEEDS_OWNER' ? 0 : 1, bn = b.category === 'NEEDS_OWNER' ? 0 : 1;
+        if (an !== bn) return an - bn;
+        return String(b.createdAt || '').localeCompare(String(a.createdAt || ''));
+      }).slice(0, 8);
+      var el = $('pepperReports'); if (!el) return;
+      var rowEls = el.querySelectorAll('.row');
+      sorted.forEach(function(r, i){
+        var rowEl = rowEls[i]; if (!rowEl) return;
+        var body = rowEl.children[1] || rowEl;
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'iconbtn amx-danger amx-owner-only';
+        btn.setAttribute('data-amx-pdel', r.id); btn.setAttribute('data-amx-ptitle', r.title || 'this report');
+        btn.textContent = 'Delete'; btn.style.marginTop = '6px';
+        body.appendChild(document.createElement('br'));
+        body.appendChild(btn);
+      });
+    };
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-pdel]') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-amx-pdel'), title = b.getAttribute('data-amx-ptitle');
+    if (!window.confirm('Delete this Pepper report permanently?\n\n"' + title + '"\n\nIt leaves the report log. Nothing else is touched.')) return;
+    amxPost('/pepper-console/reports/' + encodeURIComponent(id) + '/delete', {}).then(function(res){
+      if (res.ok){
+        get('/pepper-console/reports', true).then(function(r2){ var rows = data(r2.j); renderPepperReports(r2.ok && Array.isArray(rows) ? rows : null); });
+      } else window.alert('Delete failed: ' + errText(res, 'the Service OS did not accept it.'));
+    });
+  });
+
+  /* ── Tracking numbers: Delete on each row ────────────────────── */
+  if (typeof tnRender === 'function'){
+    var amxOrigTn = tnRender;
+    tnRender = function(reg){
+      amxOrigTn(reg);
+      var panel = $('tnPanel'); if (!panel) return;
+      panel.querySelectorAll('[data-tn="edit"]').forEach(function(editBtn){
+        if (editBtn.parentElement.querySelector('[data-amx-tndel]')) return;
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'iconbtn amx-danger amx-owner-only';
+        btn.setAttribute('data-amx-tndel', editBtn.getAttribute('data-id'));
+        btn.textContent = 'Delete';
+        editBtn.parentElement.appendChild(document.createTextNode(' '));
+        editBtn.parentElement.appendChild(btn);
+      });
+    };
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-tndel]') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-amx-tndel');
+    var rowRec = null;
+    (window.tnRows || []).forEach(function(x){ if (x.id === id) rowRec = x; });
+    var label = rowRec ? (rowRec.label + (rowRec.value ? ' (' + rowRec.value + ')' : '')) : 'this tracking row';
+    if (!window.confirm('Delete the tracking row ' + label + ' permanently?\n\nThe registry row is removed. Past calls and texts stay on record — they just stop being tied to this row. Retiring (Edit, then Status: Retired) is the softer option.')) return;
+    amxPost('/admin/tracking-numbers/' + encodeURIComponent(id) + '/delete', {}).then(function(res){
+      if (res.ok) tnLoad(0); else window.alert('Delete failed: ' + errText(res, 'the Service OS did not accept it.'));
+    });
+  });
+
+  /* ── Care plans: Activate / Deactivate toggle + honest notes ─── */
+  if (typeof cpRender === 'function'){
+    var amxOrigCp = cpRender;
+    cpRender = function(d){
+      amxOrigCp(d);
+      var panel = $('cpPanel'); if (!panel) return;
+      var plans = (d && d.plans) || [];
+      var blocks = panel.children;
+      plans.forEach(function(p, i){
+        var block = blocks[i]; if (!block) return;
+        var anchor = block.querySelector('[data-cp="unset"]') || block.querySelector('[data-cp="price"]');
+        if (!anchor || block.querySelector('[data-amx-cpactive]')) return;
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'iconbtn amx-owner-only';
+        btn.setAttribute('data-amx-cpactive', p.key);
+        btn.setAttribute('data-amx-cpstate', p.isActive === false ? '0' : '1');
+        btn.textContent = p.isActive === false ? 'Reactivate plan' : 'Deactivate plan';
+        anchor.parentElement.appendChild(document.createTextNode(' '));
+        anchor.parentElement.appendChild(btn);
+        if (p.isActive === false){
+          var note = document.createElement('span');
+          note.className = 'pill warn'; note.textContent = 'INACTIVE — not offered to customers'; note.style.marginLeft = '8px';
+          var nameEl = block.querySelector('b'); if (nameEl && nameEl.parentElement) nameEl.parentElement.appendChild(note);
+        }
+      });
+    };
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-cpactive]') : null;
+    if (!b) return;
+    var key = b.getAttribute('data-amx-cpactive');
+    var next = b.getAttribute('data-amx-cpstate') !== '1';
+    cpSend('PATCH', '/admin/care-plans/' + encodeURIComponent(key), { isActive: next }).then(function(res){
+      if (res.ok){ cpMsg(next ? 'Plan reactivated — customers can join again.' : 'Plan deactivated — it is no longer offered to customers. Existing members keep their membership.'); cpLoad(0); }
+      else cpMsg(errText(res, 'Could not update the plan — plan changes are owner-only.'), true);
+    });
+  });
+  if (typeof cpRenderSubs === 'function'){
+    var amxOrigCpSubs = cpRenderSubs;
+    cpRenderSubs = function(subs){
+      amxOrigCpSubs(subs);
+      var el = $('cpSubs'); if (!el || !subs || !subs.length) return;
+      var note = document.createElement('p');
+      note.className = 'small mut'; note.style.marginTop = '8px';
+      note.textContent = 'Membership rows are billing history and are never deleted. To end a membership, end the office grant (button on the row) or the member cancels — the row stays as the record.';
+      el.appendChild(note);
+    };
+  }
+
+  /* ── Commercial agreements + quotes: Delete ──────────────────── */
+  if (typeof agRender === 'function'){
+    var amxOrigAg = agRender;
+    agRender = function(rows){
+      amxOrigAg(rows);
+      var panel = $('agPanel'); if (!panel || !rows) return;
+      var rowEls = panel.querySelectorAll(':scope > div');
+      rows.forEach(function(a, i){
+        var rowEl = rowEls[i]; if (!rowEl) return;
+        var holder = rowEl.children[1]; if (!holder || holder.querySelector('[data-amx-agdel]')) return;
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'iconbtn amx-danger amx-owner-only';
+        btn.setAttribute('data-amx-agdel', a.id); btn.setAttribute('data-amx-agref', a.referenceCode || 'this agreement');
+        btn.textContent = 'Delete';
+        holder.appendChild(document.createTextNode(' '));
+        holder.appendChild(btn);
+      });
+    };
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-agdel]') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-amx-agdel'), ref = b.getAttribute('data-amx-agref');
+    if (!window.confirm('Delete agreement ' + ref + ' permanently?\n\nIf it has already generated work orders, the delete is refused and the agreement stays on file — End it instead.')) return;
+    cpSend('POST', '/commercial/agreements/' + encodeURIComponent(id) + '/delete', {}).then(function(res){
+      if (res.ok){ agMsg('Agreement ' + ref + ' deleted.'); agLoad(0); }
+      else agMsg(errText(res, 'Could not delete the agreement.'), true);
+    });
+  });
+  if (typeof qtRender === 'function'){
+    var amxOrigQt = qtRender;
+    qtRender = function(rows){
+      amxOrigQt(rows);
+      var panel = $('qtPanel'); if (!panel || !rows) return;
+      var rowEls = panel.querySelectorAll(':scope > div');
+      rows.forEach(function(q, i){
+        if (q.status === 'APPROVED' || q.workOrderId) return;
+        var rowEl = rowEls[i]; if (!rowEl) return;
+        var holder = rowEl.children[1]; if (!holder || holder.querySelector('[data-amx-qtdel]')) return;
+        var btn = document.createElement('button');
+        btn.type = 'button'; btn.className = 'iconbtn amx-danger amx-owner-only';
+        btn.setAttribute('data-amx-qtdel', q.id); btn.setAttribute('data-amx-qtref', q.referenceCode || 'this quote');
+        btn.textContent = 'Delete';
+        holder.appendChild(document.createTextNode(' '));
+        holder.appendChild(btn);
+      });
+    };
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('[data-amx-qtdel]') : null;
+    if (!b) return;
+    var id = b.getAttribute('data-amx-qtdel'), ref = b.getAttribute('data-amx-qtref');
+    if (!window.confirm('Delete quote ' + ref + ' permanently?\n\nIts outstanding approval links stop working. A quote the customer approved is a financial record and cannot be deleted.')) return;
+    cpSend('POST', '/commercial/quotes/' + encodeURIComponent(id) + '/delete', {}).then(function(res){
+      if (res.ok){ qtMsg('Quote ' + ref + ' deleted.'); agLoad(0); }
+      else qtMsg(errText(res, 'Could not delete the quote.'), true);
+    });
+  });
+})();
+</script>
+
 </body>
 </html>

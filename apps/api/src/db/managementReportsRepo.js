@@ -62,3 +62,22 @@ export async function persistDepartmentReport(record) {
   };
   await db().departmentReport.upsert({ where: { id: row.id }, update: row, create: row });
 }
+
+/**
+ * Delete department report rows by id (owner record-keeping, 2026-11-23).
+ * Mirrors persistDepartmentReport's posture: database mode only, and a
+ * failure is logged and swallowed — the caller has already removed the
+ * rows from the working set, and a failed durable delete must not fail
+ * the request (the next refresh would resurrect the row, which the
+ * caller surfaces honestly rather than hiding).
+ */
+export async function deleteDepartmentReport(ids) {
+  const list = (Array.isArray(ids) ? ids : [ids]).filter(Boolean);
+  if (!list.length || !DATABASE_ENABLED) return;
+  try {
+    const client = await getPrisma();
+    await client.departmentReport.deleteMany({ where: { id: { in: list } } });
+  } catch (error) {
+    console.error(JSON.stringify({ level: 'error', message: 'department report delete failed', error: String(error?.message || error) }));
+  }
+}
