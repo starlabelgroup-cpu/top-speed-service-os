@@ -49,7 +49,8 @@
     '/marketing-os': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/marketing-os/studio': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
     '/marketing-os/seo': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
-    '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] }
+    '/marketing-os/google-accounts': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] },
+    '/facebook-os': { label: 'STAFF ONLY', roles: ['MARKETING_MANAGER', 'AD_SPECIALIST', 'COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'] }
   };
 
   function entryFor(path) {

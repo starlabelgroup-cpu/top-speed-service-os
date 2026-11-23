@@ -3538,3 +3538,175 @@ model CocoCaneOrderLine {
 }
 
 
+
+// ─── Top Speed Facebook OS Manager (2026-11-23) ─────────────────────
+// The database-backed streaming posts + advertisements system for the
+// Repair & Installation Facebook Page (1437372132795817), directed by
+// Ramone 2026-11-23: "Create a system and database streaming posts
+// advertisiments with manager os with Facebook ads built in" +
+// integrate Top Speed Posts by Pepper + all Service OS surfaces.
+//
+// HOUSE HONESTY RULES baked into this schema:
+// - There is NO server-side Facebook write anywhere in this system.
+//   The stream PREPARES and QUEUES; Pepper publishes through Ramone's
+//   connected Facebook account behind his approval card, and staff
+//   record the real outcome here. A post reaches POSTED only with the
+//   real facebook.com post URL (the MediaFacebookPost /
+//   PepperListsCrossPost precedent) — never before, never without it.
+// - Facebook Ads: Meta has DISABLED API writes on the connected ad
+//   account (834084027055828). FacebookAdDraft rows are DRAFT/PAUSED
+//   planning records with RECORDED-ONLY budget fields — the same rule
+//   as AdCampaign.recordedSpendCents: never estimated, never imported,
+//   and no row here can enable, fund, or launch anything. Enabling or
+//   funding happens only by Ramone in Ads Manager.
+// - All cross-references are plain columns (the SubmissionMedia /
+//   PepperListsSyndication precedent) so the dual-mode store keeps
+//   identical shapes with and without a database.
+
+enum FacebookStreamPostStatus {
+  DRAFT
+  PENDING_APPROVAL
+  SCHEDULED
+  POSTED
+  REJECTED
+  ARCHIVED
+}
+
+enum FacebookStreamFormat {
+  REPAIR_SPOTLIGHT
+  SPEEDY_TIP
+  REWARDS_SAVINGS
+  CITY_SPOTLIGHT
+  QUICK_TIP
+  REVIEW_INVITE
+  AD_IDEA
+  ANNOUNCEMENT
+  CUSTOM
+}
+
+// PAGE INTEGRATION (Ramone, 2026-11-23): the official Page is
+// integrated with Service OS in both directions. OUT: this stream
+// queues what the Page will publish. IN: the API server holds no
+// Facebook credential (the connection is Pepper's operator-side
+// connector + the facebookConnector attestation), so the Page's real
+// published activity is read back from THIS table's POSTED rows —
+// the recorded-posts registry. Every post Pepper publishes for the
+// Page is recorded here with its real facebook.com URL, and the
+// console's Page Activity view + the public latest-posts feed serve
+// from those records only. Page activity is never fabricated.
+//
+// DAILY CADENCE (Ramone, 2026-11-23): "I must see posts everyday."
+// The queue runs 7 slots a week — the 3 Top Speed Posts by Pepper
+// series posts (REPAIR_SPOTLIGHT / SPEEDY_TIP / REWARDS_SAVINGS)
+// plus 4 rotating daily formats (CITY_SPOTLIGHT — a real service in
+// a real covered city; QUICK_TIP; REWARDS_SAVINGS explainers;
+// REVIEW_INVITE — pointing at the platform's real review link only).
+// "Today's post" is a first-class concept in the service + console.
+// Publishing still happens ONLY behind Ramone's per-post approval
+// card — the system queues and presents; it never auto-posts.
+//
+// One post in the Facebook OS stream: a Top Speed Posts by Pepper
+// installment, an advertising idea, or a one-off announcement. The
+// lifecycle is DRAFT → PENDING_APPROVAL → SCHEDULED → POSTED (with
+// REJECTED / ARCHIVED exits). scheduledFor is the planned publish
+// slot; postedAt + facebookUrl are written ONLY when the real post
+// exists on Facebook. seriesKey/seriesWeek/format identify a Posts by
+// Pepper installment (seriesKey "top-speed-posts-by-pepper");
+// pageId/pageName default to the Repair & Installation Page.
+model FacebookStreamPost {
+  id           String                   @id @default(uuid()) @db.Uuid
+  seriesKey    String?
+  seriesWeek   Int?
+  format       FacebookStreamFormat     @default(CUSTOM)
+  title        String
+  copy         String                   @db.Text
+  mediaUrl     String?
+  mediaKind    String?
+  linkUrl      String?
+  pageId       String                   @default("1437372132795817")
+  pageName     String                   @default("Top Speed Appliance Repair and Installation")
+  status       FacebookStreamPostStatus @default(DRAFT)
+  scheduledFor DateTime?
+  facebookUrl  String?
+  facebookPostId String?
+  postedAt     DateTime?
+  statusNote   String?
+  createdById  String?                  @db.Uuid
+  updatedById  String?                  @db.Uuid
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+
+  @@index([status, scheduledFor])
+  @@index([seriesKey, seriesWeek])
+  @@index([status, postedAt])
+}
+
+enum FacebookAdDraftStatus {
+  DRAFT
+  PAUSED
+  ARCHIVED
+}
+
+// A Facebook Ads planning draft ("Facebook ads built in" = built into
+// the manager as drafts + read metrics + Ads Manager deep links).
+// Mirrors the Flywheel house rule: external campaigns are created
+// PAUSED/DRAFT with $0 live spend. budgetCents is the PLANNED budget
+// a person typed in; recordedSpendCents is the ONLY spend figure and
+// is staff-recorded after the fact — never estimated, never imported
+// from Meta. metaCampaignId/metaDeepLink are recorded when a person
+// creates the matching campaign by hand in Ads Manager.
+model FacebookAdDraft {
+  id                 String                @id @default(uuid()) @db.Uuid
+  name               String
+  objective          String
+  audience           String?               @db.Text
+  headline           String?
+  copy               String?               @db.Text
+  ctaText            String?
+  creativeRef        String?
+  destinationUrl     String?
+  budgetCents        Int?
+  recordedSpendCents Int?
+  status             FacebookAdDraftStatus @default(DRAFT)
+  metaCampaignId     String?
+  metaDeepLink       String?
+  streamPostId       String?               @db.Uuid
+  notes              String?               @db.Text
+  createdById        String?               @db.Uuid
+  updatedById        String?               @db.Uuid
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  @@index([status, createdAt])
+}
+
+enum FacebookSyndicationStatus {
+  PLANNED
+  LIVE
+  REMOVED
+}
+
+// Syndication: one row per (stream post × surface) recording where a
+// POSTED stream post is carried across the Service OS fleet — the
+// flagship homepage, city/landing pages, the customer app, Pepper
+// Lists, satellite sites. deepLink is the Rule 1 link for that
+// surface: the surface's own page for the post (or the real Facebook
+// post URL it points to) — never a bare homepage. surface is a stable
+// key: flagship-home | city-pages | customer-app | pepper-lists |
+// topspeedappliance-net | topspeedapplianceservice-com |
+// browardapplianceservice-com | totalhomeappliance-com |
+// appliancepro-net | ads-os-app.
+model FacebookSyndication {
+  id         String                    @id @default(uuid()) @db.Uuid
+  postId     String                    @db.Uuid
+  surface    String
+  deepLink   String
+  status     FacebookSyndicationStatus @default(PLANNED)
+  createdById String?                  @db.Uuid
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+
+  @@unique([postId, surface])
+  @@index([surface, status])
+  @@index([postId])
+}

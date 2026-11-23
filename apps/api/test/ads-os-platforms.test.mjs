@@ -182,10 +182,10 @@ try {
   check('configured, correct key → 200', ok.status === 200, `status ${ok.status}: ${ok.text.slice(0, 200)}`);
   const data = ok.j.data || {};
   const platforms = data.platforms || {};
-  check('order lists all five platforms',
-    JSON.stringify(data.order) === JSON.stringify(['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel']),
+  check('order lists all six platforms',
+    JSON.stringify(data.order) === JSON.stringify(['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os']),
     JSON.stringify(data.order));
-  for (const key of ['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel']) {
+  for (const key of ['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os']) {
     check(`section ${key}: available`, platforms[key]?.available === true, JSON.stringify(platforms[key]).slice(0, 200));
   }
 

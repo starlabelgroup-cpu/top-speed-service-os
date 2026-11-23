@@ -1004,6 +1004,13 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
     <div id="recentRepairsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px"></div>
   </div>
 </section>
+<!-- LATEST FROM TOP SPEED POSTS BY PEPPER (Facebook OS, 2026-11-23):
+     the official Facebook Page's latest real posts, fed by
+     /api/v1/facebook-os/feed (POSTED records only, each card linking
+     to the real Facebook post). The shared include renders NOTHING
+     until a real post exists — same honesty rule as Recent Repairs
+     above. -->
+<div data-tsos-fb-feed data-limit="3"></div>
 <script>
 (function(){
   var sec=document.getElementById('recentRepairs');
@@ -2724,6 +2731,7 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 <script src="/shared/google-reviews.js" defer></script>
+<script src="/shared/facebook-feed.js" defer></script>
 <script src="/shared/language-toggle.js" defer></script>
 </body>
 </html>

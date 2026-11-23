@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facebook OS Manager — Top Speed Service OS</title>
+<meta name="description" content="Top Speed Facebook OS Manager: the official Top Speed Appliance Facebook Page integrated with the Service OS — the daily streaming post queue, Top Speed Posts by Pepper, recorded Page activity, syndication across every surface, and Facebook Ads drafts.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:820px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Space Mono',monospace;font-size:21px;color:var(--navy)}
+.num{font-family:'Space Mono',monospace}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.amber{background:#fdf0d5;color:#7a5200}
+.tag.grey{background:#e8edf4;color:#43536b}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+textarea{min-height:110px;resize:vertical}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.err{color:var(--red);font-weight:700}
+.empty{color:var(--muted);padding:14px 4px;font-size:15px;line-height:1.55}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.today-hero{border:2px solid var(--navy2);background:linear-gradient(180deg,#ffffff,#f2f6fb)}
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.slot{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff}
+.slot small{display:block;color:var(--muted);font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.slot b{font-size:14px;color:var(--navy);line-height:1.4;display:block}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1400;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.modal{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:22px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.modal h3{margin:0 0 6px;font-size:20px;color:#182742}
+.modal .copybox{background:var(--light);border:1px solid var(--line);border-radius:10px;padding:12px;font-size:14.5px;line-height:1.55;white-space:pre-wrap;word-break:break-word;max-height:260px;overflow:auto}
+.kv{font-size:14px;line-height:1.7;color:var(--ink)}
+.kv b{color:var(--navy)}
+.cta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style>
+<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/software">Software</a>
+    <a href="/book-os">Book OS</a>
+    <a href="/ad-studio">Ad Studio</a>
+    <a href="/media">Media OS</a>
+    <a href="/portal">Portal</a>
+    <a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>Top Speed Facebook OS Manager</h1>
+  <p class="sub">The official Top Speed Appliance Facebook Page, integrated with the Service OS: a daily stream of posts queued here, published by Pepper through the owner's connected account behind Ramone's approval card, and recorded back with their real Facebook URLs. Facebook Ads live here as drafts and recorded figures — Meta has API writes disabled, so nothing on this page can enable, fund, or launch an ad.</p>
+
+  <div class="panel" id="gatePanel" style="display:none;">
+    <h2>Staff sign-in</h2>
+    <p class="note">The Facebook OS Manager is a marketing workstation. Sign in with your Service OS staff account — or sign in on another workstation in this browser and refresh.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div id="svRow" style="display:none;"><label for="svCode">Speedy Verify access code</label><input id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></div>
+      <div id="svBtnRow" style="display:none;align-self:end;"><button class="btn" type="button" id="svVerifyBtn">Verify &amp; sign in</button></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <span class="note" id="asOf" style="color:var(--muted);font-size:14px;"></span>
+      <span>
+        <button class="btn ghost small" id="fbWsOptBtn" type="button">Options</button>
+        <button class="btn ghost small" id="signOutBtn">Sign out</button>
+      </span>
+    </div>
+
+    <div class="panel today-hero">
+      <h2>Today's post</h2>
+      <div id="todayBody"><p class="note">Loading today's slot…</p></div>
+      <div class="slots" id="slotStrip"></div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><small>Drafts</small><b id="stDraft">—</b></div>
+      <div class="stat"><small>Pending approval</small><b id="stPending">—</b></div>
+      <div class="stat"><small>Scheduled</small><b id="stScheduled">—</b></div>
+      <div class="stat"><small>Posted (recorded)</small><b id="stPosted">—</b></div>
+      <div class="stat"><small>Ad drafts</small><b id="stAds">—</b></div>
+      <div class="stat"><small>Next scheduled</small><b id="stNext" style="font-size:15px;">—</b></div>
+    </div>
+
+    <div class="panel">
+      <h2>Page connection</h2>
+      <div id="connBody"><p class="note">Checking the Page connection…</p></div>
+    </div>
+
+    <div class="panel">
+      <h2>Stream queue — every post, every status</h2>
+      <p class="note">The streaming feed of posts for the Page. A post becomes <b>Posted</b> only when its real Facebook URL is recorded — open a post to move it through its lifecycle.</p>
+      <div id="streamBody"></div>
+    </div>
+
+    <div class="panel">
+      <h2>New stream post</h2>
+      <form class="grid" id="newPostForm">
+        <div><label for="npTitle">Title</label><input id="npTitle" required></div>
+        <div><label for="npFormat">Format</label>
+          <select id="npFormat">
+            <option value="REPAIR_SPOTLIGHT">Repair Spotlight (series A)</option>
+            <option value="SPEEDY_TIP">Speedy Tip (series B)</option>
+            <option value="REWARDS_SAVINGS">Rewards &amp; Savings (series C)</option>
+            <option value="CITY_SPOTLIGHT">City Spotlight (daily)</option>
+            <option value="QUICK_TIP">Quick Tip (daily)</option>
+            <option value="REVIEW_INVITE">Review Invite (daily)</option>
+            <option value="AD_IDEA">Advertising idea</option>
+            <option value="ANNOUNCEMENT">Announcement</option>
+            <option value="CUSTOM" selected>Custom</option>
+          </select>
+        </div>
+        <div><label for="npMedia">Graphic / media URL</label><input id="npMedia" placeholder="https://… (JPG/PNG/MP4)"></div>
+        <div><label for="npLink">Link in post (optional)</label><input id="npLink" placeholder="https://topspeedserviceos.com/book"></div>
+        <div style="grid-column:1/-1;"><label for="npCopy">Post copy</label><textarea id="npCopy" required></textarea></div>
+        <div style="align-self:end;"><button class="btn" type="submit">Add as draft</button></div>
+      </form>
+      <div class="msg" id="newPostMsg"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>Top Speed Posts by Pepper — series installments</h2>
+        <p class="note">Each week's production (3 series posts + the daily formats) registers here as drafts. Nothing publishes without Ramone's approval card.</p>
+        <div id="seriesBody"></div>
+      </div>
+      <div class="panel">
+        <h2>Page activity — recorded posts</h2>
+        <p class="note">The Page's real published activity, read back from the recorded-posts registry: every entry was published through the connected account and recorded with its real URL.</p>
+        <div id="activityBody"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Facebook Ads — drafts &amp; recorded figures</h2>
+      <div id="adsBoundary"></div>
+      <div id="adsBody"></div>
+      <form class="grid" id="newAdForm">
+        <div><label for="naName">Draft name</label><input id="naName" required></div>
+        <div><label for="naObjective">Objective</label><input id="naObjective" required placeholder="LEADS / TRAFFIC / ENGAGEMENT"></div>
+        <div><label for="naHeadline">Headline</label><input id="naHeadline"></div>
+        <div><label for="naDest">Destination URL</label><input id="naDest" placeholder="https://topspeedserviceos.com/book"></div>
+        <div><label for="naBudget">Planned budget (cents, recorded only)</label><input id="naBudget" type="number" min="0" step="1"></div>
+        <div style="grid-column:1/-1;"><label for="naCopy">Ad copy</label><textarea id="naCopy"></textarea></div>
+        <div style="align-self:end;"><button class="btn blue" type="submit">Save ad draft</button></div>
+      </form>
+      <div class="msg" id="newAdMsg"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Syndication — where each post is carried</h2>
+      <p class="note">One row per post × surface. A surface carries a post <b>Live</b> only once the post itself is Posted, and every row carries that surface's own deep link for the post (Rule 1 — never a bare homepage).</p>
+      <div id="synBody"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Top Speed Appliance LLC</strong> · Facebook OS Manager on the Top Speed Service OS · <strong>844-460-7038</strong>
+<!-- WORKSTATION STANDARD — SYSTEM FOOTER: the uniform directory
+     block every workstation carries: customer apps first under
+     "Customer App", then the 21-entry "Workstation" directory in
+     its fixed order. Additive — the console's own footer stays. -->
+<style>
+.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
+.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
+.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
+.tsos-wsfoot a:hover{text-decoration:underline}
+</style>
+<div class="tsos-wsfoot">
+  <div>
+    <h3>Customer App</h3>
+    <p><a href="/app">Appliance Connect — Customer App</a><br>
+    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
+    <a href="/appliance-pro-site">Appliance Pro</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
+  </div>
+  <div>
+    <h3>Workstation</h3>
+    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+    <a href="/book-os">Service Setters — Book OS</a><br>
+    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+    <a href="/applianceman">ApplianceMan</a><br>
+    <a href="/finance">Finance</a><br>
+    <a href="/tech">Tech App — Service Providers</a><br>
+    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+    <a href="/network">Service Network</a><br>
+    <a href="/parts">Parts Supply</a><br>
+    <a href="/advertiser">Advertiser Console</a><br>
+    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+    <a href="/flywheel">Flywheel Advertising</a><br>
+    <a href="/local">Top Speed Local OS</a><br>
+    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+    <a href="/media">Media OS</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+    <a href="/refer">Referrals &amp; Rewards</a><br>
+    <a href="/portal">Service OS Portal</a><br>
+    <a href="/academy">Training Academy</a><br>
+    <a href="/work-time-access">Work Time Access</a><br>
+    <a href="/navigator">Workstation — Team Consoles</a></p>
+  </div>
+</div>
+</footer>
+
+<div class="modal-back" id="postModalBack" role="dialog" aria-modal="true" aria-label="Stream post">
+  <div class="modal">
+    <h3 id="pmTitle">Post</h3>
+    <div class="kv" id="pmMeta"></div>
+    <div class="copybox" id="pmCopy" style="margin-top:10px;"></div>
+    <div id="pmMedia" style="margin-top:10px;"></div>
+    <div class="cta-row" id="pmCtas"></div>
+    <div id="pmActions" style="margin-top:16px;"></div>
+    <div class="msg" id="pmMsg"></div>
+    <div class="cta-row"><button class="btn ghost" type="button" id="pmClose">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-back" id="adModalBack" role="dialog" aria-modal="true" aria-label="Ad draft">
+  <div class="modal">
+    <h3 id="amTitle">Ad draft</h3>
+    <div class="kv" id="amMeta"></div>
+    <div class="copybox" id="amCopy" style="margin-top:10px;"></div>
+    <div id="amActions" style="margin-top:16px;"></div>
+    <div class="msg" id="amMsg"></div>
+    <div class="cta-row"><button class="btn ghost" type="button" id="amClose">Close</button></div>
+  </div>
+</div>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var ALLOWED=['MARKETING_MANAGER','AD_SPECIALIST','COMPANY_ADMIN','COMPANY_OWNER','PLATFORM_ADMIN'];
+var POSTS={}; var ADS={};
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function when(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); }catch(e){}
+  location.reload();
+}
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ if(r.status===401){ sessionExpired(); throw new Error('session expired'); } if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function statusTag(s){
+  if(s==='POSTED') return '<span class="tag green">POSTED</span>';
+  if(s==='SCHEDULED') return '<span class="tag">SCHEDULED</span>';
+  if(s==='PENDING_APPROVAL') return '<span class="tag amber">PENDING APPROVAL</span>';
+  if(s==='REJECTED') return '<span class="tag red">REJECTED</span>';
+  if(s==='ARCHIVED') return '<span class="tag grey">ARCHIVED</span>';
+  return '<span class="tag grey">'+esc(s)+'</span>';
+}
+function fmtLabel(f){
+  return ({REPAIR_SPOTLIGHT:'Repair Spotlight',SPEEDY_TIP:'Speedy Tip',REWARDS_SAVINGS:'Rewards & Savings',CITY_SPOTLIGHT:'City Spotlight',QUICK_TIP:'Quick Tip',REVIEW_INVITE:'Review Invite',AD_IDEA:'Advertising idea',ANNOUNCEMENT:'Announcement',CUSTOM:'Custom'})[f]||f;
+}
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPw').value})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){ svStart(j.challenge); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in cancelled — the 2-step code is required to finish.'; }}); return; }
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in failed: '+e.message; });
+});
+var svChallenge=null;
+function svShowMsg(text,isErr){ var m=document.getElementById('loginMsg'); if(!m) return; m.className='msg'+(isErr?' err':''); m.textContent=text; }
+function svStart(challenge){ svChallenge=challenge; document.getElementById('svRow').style.display=''; document.getElementById('svBtnRow').style.display=''; svShowMsg('Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.',false); var ci=document.getElementById('svCode'); if(ci) ci.focus(); }
+document.getElementById('svVerifyBtn').addEventListener('click',function(){
+  var code=document.getElementById('svCode').value.trim();
+  if(!svChallenge){ svShowMsg('Sign in with your password first, then enter your code.',true); return; }
+  if(!code){ svShowMsg('Enter your access code.',true); return; }
+  fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:svChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/facebook-os'); return; }
+      if(j && j.mustChangePassword){ svShowMsg('This account uses a temporary password — set your own password first (sign in on Book OS), then return here.',true); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ svChallenge=null; document.getElementById('svRow').style.display='none'; document.getElementById('svBtnRow').style.display='none'; TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ svShowMsg('Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      svChallenge=null;
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user);
+    })
+    .catch(function(e){ svShowMsg('Speedy Verify: '+e.message,true); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return ALLOWED.indexOf(r)>-1; })){
+    if(window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); return; }
+    document.getElementById('gatePanel').style.display='block';
+    var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='That account does not carry a marketing role for this workstation.';
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  loadAll();
+}
+
+function loadAll(){
+  loadSummary(); loadMeta(); loadStream(); loadSeries(); loadActivity(); loadAds(); loadSyndication();
+}
+
+function loadSummary(){
+  apiFetch('/facebook-os/summary').then(function(j){
+    var d=j.data||{};
+    document.getElementById('asOf').textContent='Stream as of '+when(d.generatedAt)+' · Page: '+(d.page?d.page.name:'');
+    var p=d.posts||{};
+    document.getElementById('stDraft').textContent=p.DRAFT||0;
+    document.getElementById('stPending').textContent=p.PENDING_APPROVAL||0;
+    document.getElementById('stScheduled').textContent=p.SCHEDULED||0;
+    document.getElementById('stPosted').textContent=p.POSTED||0;
+    var a=d.adDrafts||{}; document.getElementById('stAds').textContent=(a.DRAFT||0)+(a.PAUSED||0);
+    document.getElementById('stNext').textContent=d.nextScheduled?(d.nextScheduled.title+' · '+when(d.nextScheduled.scheduledFor)):'nothing scheduled';
+    var t=d.today||{scheduled:[],posted:[]};
+    var tb=document.getElementById('todayBody');
+    if(t.posted && t.posted.length){
+      tb.innerHTML=t.posted.map(function(x){ return '<p class="note"><span class="tag green">POSTED TODAY</span> &nbsp;<b>'+esc(x.title)+'</b> — <a href="'+esc(x.facebookUrl)+'" target="_blank" rel="noopener">view on Facebook</a></p>'; }).join('');
+    }else if(t.scheduled && t.scheduled.length){
+      tb.innerHTML=t.scheduled.map(function(x){ return '<p class="note"><span class="tag">SCHEDULED TODAY</span> &nbsp;<b>'+esc(x.title)+'</b> · '+esc(fmtLabel(x.format))+' · '+esc(when(x.scheduledFor))+' — publishes behind Ramone\'s approval card.</p>'; }).join('');
+    }else{
+      tb.innerHTML='<p class="note">Nothing is scheduled or posted for today yet. The queue runs 7 slots a week — add a draft below or let the weekly Posts by Pepper production fill the slots.</p>';
+    }
+    var slots=d.weeklySlots||[];
+    document.getElementById('slotStrip').innerHTML=slots.map(function(s,i){
+      var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      return '<div class="slot"><small>'+days[s.dayOffset]+(s.series?' · series':' · daily')+'</small><b>'+esc(s.label)+'</b></div>';
+    }).join('');
+  }).catch(function(e){ document.getElementById('asOf').textContent='Could not load the stream summary: '+e.message; });
+}
+
+function loadMeta(){
+  apiFetch('/facebook-os/meta').then(function(j){
+    var d=j.data||{}; var c=d.connection||{}; var ads=d.ads||{};
+    var el=document.getElementById('connBody');
+    var page=c.page||{};
+    var html='';
+    if(c.connected){
+      html='<p class="note"><span class="tag green">CONNECTED</span> &nbsp;<b>'+esc(page.name||'Top Speed Appliance — Repair & Installation')+'</b> via '+esc((c.account&&c.account.name)||'the owner account')+' — posts publish through this connection behind Ramone\'s approval card. <a href="'+esc(page.url||'')+'" target="_blank" rel="noopener">Open the Page</a></p>';
+    }else{
+      html='<p class="note"><span class="tag red">NOT CONNECTED</span> &nbsp;The platform Facebook connection is not attested right now — the queue still works, but nothing can present Facebook as connected until it is.</p>';
+    }
+    document.getElementById('connBody').innerHTML=html;
+    document.getElementById('adsBoundary').innerHTML='<p class="note"><span class="tag amber">ADS: DRAFTS ONLY</span> &nbsp;Ad account <b>'+esc(ads.adAccountId||'')+'</b> — Meta has API writes <b>disabled</b> on this account, so campaigns are planned here as drafts with recorded-only figures and created/enabled by Ramone in Ads Manager. <a class="btn blue small" href="'+esc(ads.adsManagerUrl||'#')+'" target="_blank" rel="noopener">Open Ads Manager</a></p>';
+  }).catch(function(){ document.getElementById('connBody').innerHTML='<p class="note">Connection state could not be loaded right now.</p>'; });
+}
+
+function postRow(p){
+  POSTS[p.id]=p;
+  return '<tr><td><b>'+esc(p.title)+'</b><br><span style="color:var(--muted);font-size:13px;">'+esc(fmtLabel(p.format))+(p.seriesWeek?' · '+esc(p.seriesKey||'')+' wk '+p.seriesWeek:'')+'</span></td><td>'+statusTag(p.status)+'</td><td>'+(p.scheduledFor?esc(when(p.scheduledFor)):'—')+'</td><td>'+(p.postedAt?esc(when(p.postedAt)):'—')+'</td><td>'+(p.facebookUrl?'<a href="'+esc(p.facebookUrl)+'" target="_blank" rel="noopener">Facebook post</a>':'—')+'</td><td><button class="btn ghost small" type="button" onclick="openPost(\''+p.id+'\')">Open</button></td></tr>';
+}
+function loadStream(){
+  apiFetch('/facebook-os/stream?limit=200').then(function(j){
+    var rows=j.data||[];
+    var el=document.getElementById('streamBody');
+    if(!rows.length){ el.innerHTML='<div class="empty">The queue is empty. The weekly Top Speed Posts by Pepper production registers drafts here, and the New stream post form above adds one-offs.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>Post</th><th>Status</th><th>Scheduled</th><th>Posted</th><th>Link</th><th></th></tr></thead><tbody>'+rows.map(postRow).join('')+'</tbody></table>';
+  }).catch(function(e){ document.getElementById('streamBody').innerHTML='<div class="empty">Could not load the stream: '+esc(e.message)+'</div>'; });
+}
+
+function loadSeries(){
+  apiFetch('/facebook-os/series').then(function(j){
+    var weeks=j.data||[];
+    var el=document.getElementById('seriesBody');
+    if(!weeks.length){ el.innerHTML='<div class="empty">No series weeks registered yet. When the weekly production pack is ingested, each week lands here as drafts.</div>'; return; }
+    el.innerHTML=weeks.map(function(w){
+      return '<p class="note" style="margin-top:8px;"><b>Week '+esc(w.seriesWeek)+'</b> — '+w.posts.length+' post'+(w.posts.length===1?'':'s')+'</p>'+w.posts.map(function(p){ return '<p class="note" style="margin:2px 0;">'+statusTag(p.status)+' &nbsp;'+esc(fmtLabel(p.format))+' — '+esc(p.title)+'</p>'; }).join('');
+    }).join('');
+  }).catch(function(e){ document.getElementById('seriesBody').innerHTML='<div class="empty">Could not load the series: '+esc(e.message)+'</div>'; });
+}
+
+function loadActivity(){
+  apiFetch('/facebook-os/page-activity?limit=20').then(function(j){
+    var d=j.data||{}; var posts=d.posts||[];
+    var el=document.getElementById('activityBody');
+    if(!posts.length){ el.innerHTML='<div class="empty">No posts recorded yet. When Pepper publishes a queued post behind Ramone\'s approval and its real URL is recorded, it appears here — this list is never filled any other way.</div>'; return; }
+    el.innerHTML=posts.map(function(p){ return '<p class="note" style="margin:4px 0;"><b>'+esc(p.title)+'</b><br><span style="font-size:13px;">'+esc(fmtLabel(p.format))+' · '+esc(when(p.postedAt))+' · <a href="'+esc(p.facebookUrl)+'" target="_blank" rel="noopener">view on Facebook</a></span></p>'; }).join('');
+  }).catch(function(e){ document.getElementById('activityBody').innerHTML='<div class="empty">Could not load Page activity: '+esc(e.message)+'</div>'; });
+}
+
+function adRow(a){
+  ADS[a.id]=a;
+  return '<tr><td><b>'+esc(a.name)+'</b><br><span style="color:var(--muted);font-size:13px;">'+esc(a.objective||'')+'</span></td><td>'+statusTag(a.status)+'</td><td class="num">'+(a.budgetCents!=null?money(a.budgetCents):'—')+'</td><td class="num">'+(a.recordedSpendCents!=null?money(a.recordedSpendCents):'no spend recorded')+'</td><td>'+(a.metaDeepLink?'<a href="'+esc(a.metaDeepLink)+'" target="_blank" rel="noopener">Ads Manager</a>':'—')+'</td><td><button class="btn ghost small" type="button" onclick="openAd(\''+a.id+'\')">Open</button></td></tr>';
+}
+function loadAds(){
+  apiFetch('/facebook-os/ads?limit=200').then(function(j){
+    var rows=j.data||[];
+    var el=document.getElementById('adsBody');
+    if(!rows.length){ el.innerHTML='<div class="empty">No ad drafts yet. Drafts are planning records — the real campaign is created by Ramone in Ads Manager, and its link is recorded on the draft.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>Draft</th><th>Status</th><th>Planned budget</th><th>Recorded spend</th><th>Meta</th><th></th></tr></thead><tbody>'+rows.map(adRow).join('')+'</tbody></table>';
+  }).catch(function(e){ document.getElementById('adsBody').innerHTML='<div class="empty">Could not load ad drafts: '+esc(e.message)+'</div>'; });
+}
+
+function loadSyndication(){
+  apiFetch('/facebook-os/syndication?limit=500').then(function(j){
+    var d=j.data||{}; var rows=d.rows||[];
+    var el=document.getElementById('synBody');
+    if(!rows.length){ el.innerHTML='<div class="empty">No syndication rows yet. When a post is Posted, record the surfaces carrying it — each with that surface\'s own deep link for the post.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>Post</th><th>Surface</th><th>Status</th><th>Deep link</th></tr></thead><tbody>'+rows.map(function(r){
+      var p=POSTS[r.postId];
+      return '<tr><td>'+esc(p?p.title:r.postId)+'</td><td>'+esc(r.surface)+'</td><td>'+statusTag(r.status)+'</td><td><a href="'+esc(r.deepLink)+'" target="_blank" rel="noopener">'+esc(r.deepLink)+'</a></td></tr>';
+    }).join('')+'</tbody></table>';
+  }).catch(function(e){ document.getElementById('synBody').innerHTML='<div class="empty">Could not load syndication: '+esc(e.message)+'</div>'; });
+}
+
+document.getElementById('newPostForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var body={ title:document.getElementById('npTitle').value.trim(), format:document.getElementById('npFormat').value, copy:document.getElementById('npCopy').value, mediaUrl:document.getElementById('npMedia').value.trim()||null, mediaKind:document.getElementById('npMedia').value.trim()?'IMAGE':null, linkUrl:document.getElementById('npLink').value.trim()||null };
+  apiFetch('/facebook-os/stream',{method:'POST',body:JSON.stringify(body)}).then(function(){
+    var m=document.getElementById('newPostMsg'); m.className='msg'; m.textContent='Draft added to the stream queue.';
+    document.getElementById('newPostForm').reset(); loadAll();
+  }).catch(function(e){ var m=document.getElementById('newPostMsg'); m.className='msg err'; m.textContent='Could not add the draft: '+e.message; });
+});
+
+document.getElementById('newAdForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var budget=document.getElementById('naBudget').value;
+  var body={ name:document.getElementById('naName').value.trim(), objective:document.getElementById('naObjective').value.trim(), headline:document.getElementById('naHeadline').value.trim()||null, destinationUrl:document.getElementById('naDest').value.trim()||null, copy:document.getElementById('naCopy').value||null, budgetCents:budget===''?null:Number(budget) };
+  apiFetch('/facebook-os/ads',{method:'POST',body:JSON.stringify(body)}).then(function(){
+    var m=document.getElementById('newAdMsg'); m.className='msg'; m.textContent='Ad draft saved. It stays a draft here — Ramone creates the real campaign in Ads Manager.';
+    document.getElementById('newAdForm').reset(); loadAll();
+  }).catch(function(e){ var m=document.getElementById('newAdMsg'); m.className='msg err'; m.textContent='Could not save the draft: '+e.message; });
+});
+
+/* ─── Record pop-ups ─── */
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+document.getElementById('pmClose').addEventListener('click',function(){ closeModal('postModalBack'); });
+document.getElementById('amClose').addEventListener('click',function(){ closeModal('adModalBack'); });
+document.getElementById('postModalBack').addEventListener('click',function(ev){ if(ev.target===this) closeModal('postModalBack'); });
+document.getElementById('adModalBack').addEventListener('click',function(ev){ if(ev.target===this) closeModal('adModalBack'); });
+
+function transition(id,toStatus,extra){
+  var body=Object.assign({toStatus:toStatus},extra||{});
+  return apiFetch('/facebook-os/stream/'+id+'/transition',{method:'POST',body:JSON.stringify(body)});
+}
+function openPost(id){
+  var p=POSTS[id]; if(!p) return;
+  document.getElementById('pmTitle').textContent=p.title;
+  document.getElementById('pmMeta').innerHTML='<b>Format:</b> '+esc(fmtLabel(p.format))+' &nbsp; <b>Status:</b> '+esc(p.status)+(p.seriesWeek?'<br><b>Series:</b> '+esc(p.seriesKey||'')+' — week '+p.seriesWeek:'')+'<br><b>Scheduled:</b> '+esc(when(p.scheduledFor))+' &nbsp; <b>Posted:</b> '+esc(when(p.postedAt))+(p.facebookUrl?'<br><b>Facebook:</b> <a href="'+esc(p.facebookUrl)+'" target="_blank" rel="noopener">'+esc(p.facebookUrl)+'</a>':'')+(p.linkUrl?'<br><b>Link in post:</b> '+esc(p.linkUrl):'');
+  document.getElementById('pmCopy').textContent=p.copy||'';
+  document.getElementById('pmMedia').innerHTML=p.mediaUrl?('<b style="font-size:13px;color:var(--muted);">MEDIA</b><br><a href="'+esc(p.mediaUrl)+'" target="_blank" rel="noopener">'+esc(p.mediaUrl)+'</a>'):'';
+  var ctas='';
+  if(p.linkUrl) ctas+='<a class="btn blue small" href="'+esc(p.linkUrl)+'" target="_blank" rel="noopener">Open post link</a>';
+  if(p.facebookUrl) ctas+='<a class="btn blue small" href="'+esc(p.facebookUrl)+'" target="_blank" rel="noopener">View on Facebook</a>';
+  ctas+='<a class="btn ghost small" href="https://www.facebook.com/profile.php?id=61596590488055" target="_blank" rel="noopener">Open the Page</a>';
+  ctas+='<a class="btn ghost small" href="tel:+18444607038">Call the office</a>';
+  document.getElementById('pmCtas').innerHTML=ctas;
+  var act='';
+  function btn(to,label,cls){ return '<button class="btn '+(cls||'ghost')+' small" type="button" onclick="pmTransition(\''+id+'\',\''+to+'\')">'+label+'</button>'; }
+  if(p.status==='DRAFT') act+=btn('PENDING_APPROVAL','Submit for approval','blue')+btn('ARCHIVED','Archive');
+  if(p.status==='PENDING_APPROVAL'){
+    act+='<div style="margin:10px 0;"><label for="pmWhen">Scheduled time</label><input id="pmWhen" type="datetime-local"></div>';
+    act+='<button class="btn blue small" type="button" onclick="pmSchedule(\''+id+'\')">Approve &amp; schedule</button> '+btn('DRAFT','Send back to draft')+' '+btn('REJECTED','Reject');
+  }
+  if(p.status==='SCHEDULED'){
+    act+='<div style="margin:10px 0;"><label for="pmFbUrl">Real Facebook post URL (after Pepper publishes it)</label><input id="pmFbUrl" placeholder="https://www.facebook.com/…"></div>';
+    act+='<button class="btn blue small" type="button" onclick="pmPosted(\''+id+'\')">Record as Posted</button> '+btn('DRAFT','Back to draft')+' '+btn('ARCHIVED','Archive');
+  }
+  if(p.status==='POSTED'){
+    act+='<div style="margin:10px 0;"><label for="pmSurface">Syndicate to surface</label><select id="pmSurface"><option value="flagship-home">Flagship homepage</option><option value="city-pages">City pages</option><option value="customer-app">Customer app</option><option value="pepper-lists">Pepper Lists</option><option value="topspeedappliance-net">topspeedappliance.net</option><option value="topspeedapplianceservice-com">topspeedapplianceservice.com</option><option value="browardapplianceservice-com">browardapplianceservice.com</option><option value="totalhomeappliance-com">totalhomeappliance.com</option><option value="appliancepro-net">appliancepro.net</option><option value="ads-os-app">Ads OS app</option></select></div>';
+    act+='<button class="btn blue small" type="button" onclick="pmSyndicate(\''+id+'\')">Mark carried LIVE</button> '+btn('ARCHIVED','Archive');
+  }
+  if(p.status==='REJECTED') act+=btn('DRAFT','Revive as draft','blue')+btn('ARCHIVED','Archive');
+  document.getElementById('pmActions').innerHTML=act?('<span class="lb" style="display:block;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:8px;">Lifecycle</span>'+act):'<p class="note">No lifecycle actions for this status.</p>';
+  document.getElementById('pmMsg').textContent='';
+  openModal('postModalBack');
+}
+function pmDone(){ closeModal('postModalBack'); loadAll(); }
+function pmFail(e){ var m=document.getElementById('pmMsg'); m.className='msg err'; m.textContent=e.message; }
+function pmTransition(id,to){ transition(id,to).then(pmDone).catch(pmFail); }
+function pmSchedule(id){
+  var v=document.getElementById('pmWhen').value;
+  if(!v){ pmFail(new Error('Pick the scheduled time first.')); return; }
+  transition(id,'SCHEDULED',{scheduledFor:new Date(v).toISOString()}).then(pmDone).catch(pmFail);
+}
+function pmPosted(id){
+  var v=document.getElementById('pmFbUrl').value.trim();
+  if(!v){ pmFail(new Error('Paste the real Facebook post URL first — Posted exists only with it.')); return; }
+  transition(id,'POSTED',{facebookUrl:v}).then(pmDone).catch(pmFail);
+}
+function pmSyndicate(id){
+  var p=POSTS[id]; var surface=document.getElementById('pmSurface').value;
+  apiFetch('/facebook-os/syndication',{method:'POST',body:JSON.stringify({postId:id,surface:surface,deepLink:p.facebookUrl,status:'LIVE'})}).then(pmDone).catch(pmFail);
+}
+function openAd(id){
+  var a=ADS[id]; if(!a) return;
+  document.getElementById('amTitle').textContent=a.name;
+  document.getElementById('amMeta').innerHTML='<b>Objective:</b> '+esc(a.objective||'')+' &nbsp; <b>Status:</b> '+esc(a.status)+'<br><b>Planned budget (recorded):</b> '+(a.budgetCents!=null?money(a.budgetCents):'—')+' &nbsp; <b>Recorded spend:</b> '+(a.recordedSpendCents!=null?money(a.recordedSpendCents):'no spend recorded')+(a.audience?'<br><b>Audience:</b> '+esc(a.audience):'')+(a.destinationUrl?'<br><b>Destination:</b> '+esc(a.destinationUrl):'')+(a.metaCampaignId?'<br><b>Meta campaign id (recorded):</b> '+esc(a.metaCampaignId):'')+(a.metaDeepLink?'<br><b>Ads Manager:</b> <a href="'+esc(a.metaDeepLink)+'" target="_blank" rel="noopener">open</a>':'');
+  document.getElementById('amCopy').textContent=(a.headline?a.headline+'\n\n':'')+(a.copy||'');
+  document.getElementById('amActions').innerHTML='<div style="margin:10px 0;"><label for="amSpend">Recorded spend (cents) — staff-recorded only, never imported</label><input id="amSpend" type="number" min="0" step="1" value="'+(a.recordedSpendCents!=null?a.recordedSpendCents:'')+'"></div>'
+    +'<div style="margin:10px 0;"><label for="amMetaLink">Ads Manager deep link (recorded when Ramone creates it)</label><input id="amMetaLink" value="'+esc(a.metaDeepLink||'')+'"></div>'
+    +'<button class="btn blue small" type="button" onclick="amSave(\''+id+'\')">Save recorded figures</button> '
+    +(a.status==='DRAFT'?'<button class="btn ghost small" type="button" onclick="amStatus(\''+id+'\',\'PAUSED\')">Mark paused</button> ':'')
+    +(a.status==='PAUSED'?'<button class="btn ghost small" type="button" onclick="amStatus(\''+id+'\',\'DRAFT\')">Back to draft</button> ':'')
+    +'<button class="btn ghost small" type="button" onclick="amStatus(\''+id+'\',\'ARCHIVED\')">Archive</button>'
+    +'<p class="note" style="margin-top:10px;">This draft can never be enabled here — Meta has API writes disabled; Ramone creates and enables the real campaign in Ads Manager.</p>';
+  document.getElementById('amMsg').textContent='';
+  openModal('adModalBack');
+}
+function amSave(id){
+  var spend=document.getElementById('amSpend').value;
+  var body={ recordedSpendCents:spend===''?null:Number(spend), metaDeepLink:document.getElementById('amMetaLink').value.trim()||null };
+  apiFetch('/facebook-os/ads/'+id,{method:'PATCH',body:JSON.stringify(body)}).then(function(){ closeModal('adModalBack'); loadAll(); }).catch(function(e){ var m=document.getElementById('amMsg'); m.className='msg err'; m.textContent=e.message; });
+}
+function amStatus(id,status){
+  apiFetch('/facebook-os/ads/'+id,{method:'PATCH',body:JSON.stringify({status:status})}).then(function(){ closeModal('adModalBack'); loadAll(); }).catch(function(e){ var m=document.getElementById('amMsg'); m.className='msg err'; m.textContent=e.message; });
+}
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(e){ if(e && e.message==='session expired') return; try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(err){} try{ localStorage.removeItem('tsos_token'); }catch(err){} document.getElementById('gatePanel').style.display='block'; });
+}else{
+  document.getElementById('gatePanel').style.display='block';
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Rajdhani',Inter,Arial,sans-serif}</style>
+<script src="/layer2.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
+<script src="/shared/pepper-chat.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+<style id="fbWsStyle">
+.fbws-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1300;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.fbws-panel{background:#fff;border-radius:14px;max-width:520px;width:100%;padding:20px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840;font-family:Inter,system-ui,sans-serif}
+.fbws-panel h3{margin:0 0 4px;font-size:19px;color:#182742}
+.fbws-sub{font-size:12.5px;color:#8591a4;margin:0 0 14px;line-height:1.5}
+.fbws-row{margin-bottom:14px}
+.fbws-row .lb{display:block;font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#65758e;margin-bottom:7px}
+.fbws-seg{display:flex;gap:7px;flex-wrap:wrap}
+.fbws-seg button{border:1px solid #dfe7f0;background:#fff;border-radius:999px;padding:7px 13px;font-size:12.5px;font-weight:700;color:#34445c;cursor:pointer;font-family:inherit}
+.fbws-seg button.on{background:#182742;color:#fff;border-color:#182742}
+.fbws-done{border:1px solid #dfe7f0;background:#182742;color:#fff;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;font-family:inherit}
+</style>
+<div class="fbws-back" id="fbWsOptBack" role="dialog" aria-modal="true" aria-label="Facebook OS Manager options">
+  <div class="fbws-panel">
+    <h3>Facebook OS Manager options</h3>
+    <p class="fbws-sub">Saved on this device only. The queue, the Page records, and every figure stay exactly as they are — this option only re-reads the console on a timer.</p>
+    <div class="fbws-row"><span class="lb">Auto-refresh</span>
+      <div class="fbws-seg" id="fbWsAutoSeg">
+        <button type="button" data-auto="off">Off</button>
+        <button type="button" data-auto="on">Every 60 seconds</button>
+      </div>
+      <p class="fbws-sub" style="margin:8px 0 0">Pauses while this panel or a record is open, or while the tab is hidden.</p>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px"><button class="fbws-done" type="button" id="fbWsOptClose">Done</button></div>
+  </div>
+</div>
+<script>
+/* ═══ WORKSTATION STANDARD — Options (Facebook OS Manager) ═══
+   Additive only: an Options panel that remembers, on this
+   device, an opt-in 60-second refresh of the console's reads.
+   Defaults reproduce the page's prior behavior exactly. */
+(function(){
+  var PREFS_KEY='tsos_facebook_os_prefs';
+  var prefs={autoRefresh:false};
+  try{ var raw=localStorage.getItem(PREFS_KEY); if(raw){ var p=JSON.parse(raw); if(p&&typeof p==='object'&&typeof p.autoRefresh==='boolean') prefs.autoRefresh=p.autoRefresh; } }catch(e){}
+  function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs)); }catch(e){} }
+  function syncSegs(){ var seg=document.getElementById('fbWsAutoSeg'); if(!seg) return; Array.prototype.forEach.call(seg.querySelectorAll('button'),function(b){ b.classList.toggle('on',b.getAttribute('data-auto')===(prefs.autoRefresh?'on':'off')); }); }
+  function openBack(){ document.getElementById('fbWsOptBack').style.display='flex'; }
+  function closeBack(){ document.getElementById('fbWsOptBack').style.display='none'; }
+  document.getElementById('fbWsOptBtn').addEventListener('click',function(){ syncSegs(); openBack(); });
+  document.getElementById('fbWsOptClose').addEventListener('click',closeBack);
+  document.getElementById('fbWsOptBack').addEventListener('click',function(ev){ if(ev.target===this) closeBack(); });
+  document.addEventListener('keydown',function(ev){ if(ev.key==='Escape') closeBack(); });
+  document.getElementById('fbWsAutoSeg').addEventListener('click',function(ev){ var b=ev.target.closest('button'); if(!b) return; prefs.autoRefresh=b.getAttribute('data-auto')==='on'; savePrefs(); syncSegs(); });
+  setInterval(function(){
+    if(!prefs.autoRefresh) return;
+    if(document.hidden) return;
+    if(document.getElementById('fbWsOptBack').style.display==='flex') return;
+    if(document.getElementById('postModalBack').style.display==='flex') return;
+    if(document.getElementById('adModalBack').style.display==='flex') return;
+    var con=document.getElementById('console'); if(!con||con.style.display==='none') return;
+    if(!tok()) return;
+    loadAll();
+  },60000);
+  syncSegs();
+})();
+</script>
+</body>
+</html>

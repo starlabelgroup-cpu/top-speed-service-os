@@ -6,6 +6,7 @@ import { campaignOutcomeReport, flywheelLoopStages, recordedCostCents } from './
 import { getReferralFunnel } from './referrals.js';
 import { seoConfigured } from './googleSeo.js';
 import { mediaFacebookConnectionState } from './mediaFacebook.js';
+import { queueSummary as facebookOsQueueSummary } from './facebookOs.js';
 
 /**
  * Top Speed Ads OS — the UNIFIED advertising feed (2026-11-22,
@@ -109,6 +110,13 @@ export const ADS_OS_PLATFORMS = [
     console: 'Flywheel',
     role: 'Flywheel advertiser plans plus the referral, review and install flywheel — serving the network and outside advertisers.',
     consoleUrl: 'https://topspeedserviceos.com/flywheel',
+  },
+  {
+    key: 'facebook-os',
+    name: 'Top Speed Facebook OS Manager',
+    console: 'Facebook OS Manager',
+    role: 'The official Facebook Page, integrated: the daily streaming post queue (Top Speed Posts by Pepper + daily formats), recorded Page activity, and Facebook Ads drafts — Meta API writes are disabled, so drafts are planning records and enabling happens in Ads Manager.',
+    consoleUrl: 'https://topspeedserviceos.com/facebook-os',
   },
 ];
 
@@ -263,12 +271,31 @@ async function flywheelMetrics() {
   };
 }
 
+// ─── Top Speed Facebook OS Manager ────────────────────────────────
+// The stream queue's own summary (services/facebookOs.js): counts
+// by lifecycle status, today's post, the next scheduled slot, the
+// posted total, and the ad-draft counts. Counts and labels only —
+// the app reads the same truth the /facebook-os console shows.
+async function facebookOsMetrics() {
+  const summary = await facebookOsQueueSummary();
+  return {
+    page: summary.page,
+    postsByStatus: summary.posts,
+    adDraftsByStatus: summary.adDrafts,
+    postedTotal: summary.postedTotal,
+    latestPostedAt: summary.latestPostedAt,
+    nextScheduled: summary.nextScheduled,
+    today: summary.today,
+  };
+}
+
 const METRIC_BUILDERS = {
   'top-speed-ads': topSpeedAdsMetrics,
   'ads-console': adsConsoleMetrics,
   'local-os': localOsMetrics,
   'marketing-os': marketingOsMetrics,
   flywheel: flywheelMetrics,
+  'facebook-os': facebookOsMetrics,
 };
 
 /**
