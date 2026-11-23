@@ -293,14 +293,21 @@ let phase2Corrected = 0;
 // everything" — publish the missing pages, do not correct the claim
 // down) closes the gap by publishing exactly these seven.
 //
-// Guards, modeled on the Phase 2 correction above:
+// Guards:
 //   - ONLY the seven canonicalUrls listed here are ever touched.
-//   - A record is published ONLY if it is still exactly the seed's own
-//     unpublished output: createdBy 'phase2-seed', status DRAFT or
-//     IN_REVIEW, publishedAt null, and NO PageVersion written by anyone
-//     other than the seed authors — a human edit, a human unpublish
-//     (UNPUBLISHED / publishedAt set), or an already-PUBLISHED record
-//     all skip the page untouched.
+//   - A record is published ONLY if it has never been published before:
+//     status DRAFT or IN_REVIEW and publishedAt null, with a non-empty
+//     title and sections. A page that WAS published and later taken
+//     down (status UNPUBLISHED, or publishedAt set) is never touched,
+//     and neither is an already-PUBLISHED record. The record's current
+//     content is published as-is — this step never edits title, meta
+//     or sections. (The first version of this step, 52a865d, also
+//     required the record to still be the seed's own untouched draft;
+//     the production records turned out to carry Studio-batch
+//     authorship, so that requirement skipped all seven and was
+//     dropped — the never-published test above is the guard that
+//     matters, and the owner's 2026-11-23 directive is the publish
+//     decision for exactly these seven URLs.)
 //   - If a record does not exist at all, it is created from the current
 //     Phase 2 spec first (same create-only shape as the Phase 2 seed)
 //     and then published in the same step.
@@ -316,7 +323,6 @@ const PHASE3_PUBLISH_URLS = [
   'https://topspeedappliance.net/services/washer-repair/error-codes/',
   'https://topspeedappliance.net/services/dryer-repair/unusual-noises/',
 ];
-const PHASE3_SEED_AUTHORS = ['phase2-seed', 'phase2-seed-correction'];
 let phase3Published = 0;
 {
   const specsByUrl = new Map(buildPhase2DraftPages().map((s) => [s.canonicalUrl, s]));
@@ -376,12 +382,14 @@ let phase3Published = 0;
     }
     if (page.status === 'PUBLISHED') continue;
     const eligible =
-      page.createdBy === 'phase2-seed' &&
       (page.status === 'DRAFT' || page.status === 'IN_REVIEW') &&
       !page.publishedAt &&
-      page.versions.every((v) => PHASE3_SEED_AUTHORS.includes(v.createdBy));
+      typeof page.title === 'string' &&
+      page.title.trim().length > 0 &&
+      Array.isArray(page.sections) &&
+      page.sections.length > 0;
     if (!eligible) {
-      console.log(`Phase 3 publish: skipping ${url} — record is no longer the seed's untouched draft (status ${page.status}, createdBy ${page.createdBy}).`);
+      console.log(`Phase 3 publish: skipping ${url} — record is not a never-published draft with content (status ${page.status}, publishedAt ${page.publishedAt ? 'set' : 'null'}).`);
       continue;
     }
     const nextVersion = Math.max(0, ...page.versions.map((v) => v.version)) + 1;
