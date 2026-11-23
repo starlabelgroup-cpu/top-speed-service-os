@@ -3710,3 +3710,173 @@ model FacebookSyndication {
   @@index([surface, status])
   @@index([postId])
 }
+
+// ─── Top Speed Sales OS (2026-11-23) ────────────────────────────────
+//
+// The FIRST Top Speed Sales OS platform: a full OS platform for
+// everything sales, with Top Speed Appliances — the used-appliance
+// shop at topspeedappliances.com — as its first sales vendor,
+// integrated into the Service OS as a vendor under this platform.
+//
+// - The catalog launches EMPTY: no product, price, or stock figure
+//   is seeded anywhere. Staff enter real units in the Sales OS
+//   console; a product is born DRAFT and reaches the public
+//   storefront only when staff set it ACTIVE.
+// - Condition uses ONE grade scale (SalesConditionGrade): LIKE_NEW /
+//   EXCELLENT / GOOD / FAIR, a staff attestation recorded when the
+//   unit is entered.
+// - Order items are SNAPSHOTS (title + priceCents copied at order
+//   time) so a later catalog edit never rewrites a placed order.
+//   Totals are computed server-side from the stored prices; total =
+//   subtotal — no tax or fee is invented.
+// - The single vendor row is resolved lazily by the service from
+//   the SALES_VENDOR_IDENTITY constant (services/salesOs.js) — the
+//   migration creates no vendor/product/order rows.
+
+enum SalesProductCategory {
+  REFRIGERATOR
+  WASHER
+  DRYER
+  OVEN_RANGE
+  DISHWASHER
+  FREEZER_ICE_MAKER
+  MICROWAVE
+  GARBAGE_DISPOSAL
+  OTHER
+}
+
+enum SalesConditionGrade {
+  LIKE_NEW
+  EXCELLENT
+  GOOD
+  FAIR
+}
+
+enum SalesProductStatus {
+  DRAFT
+  ACTIVE
+  SOLD
+  ARCHIVED
+}
+
+enum SalesFulfillment {
+  PICKUP
+  DELIVERY
+}
+
+enum SalesPaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum SalesOrderStatus {
+  PENDING_PAYMENT
+  PAID
+  FULFILLING
+  COMPLETED
+  CANCELLED
+}
+
+// A sales vendor under Top Speed Sales OS. One row today: Top Speed
+// Appliances (slug top-speed-appliances, domain
+// topspeedappliances.com). Contact/address fields stay null until
+// staff record the real values — nothing here is invented.
+model SalesVendor {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  slug         String   @unique
+  domain       String
+  phone        String?
+  email        String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  postalCode   String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products SalesProduct[]
+  orders   SalesOrder[]
+}
+
+// One used appliance for sale. photos is a JSON array of image URLs
+// (staff-supplied). serialRef records the unit's serial reference
+// when staff enter it. stockQty is the real on-hand count staff
+// recorded — orders validate against it.
+model SalesProduct {
+  id                String               @id @default(uuid()) @db.Uuid
+  vendorId          String               @db.Uuid
+  vendor            SalesVendor          @relation(fields: [vendorId], references: [id])
+  title             String
+  category          SalesProductCategory
+  brand             String?
+  modelRef          String?
+  conditionGrade    SalesConditionGrade
+  priceCents        Int
+  compareAtCents    Int?
+  stockQty          Int                  @default(0)
+  status            SalesProductStatus   @default(DRAFT)
+  photos            Json                 @default("[]")
+  serialRef         String?
+  warrantyDays      Int                  @default(0)
+  deliveryAvailable Boolean              @default(false)
+  pickupAvailable   Boolean              @default(true)
+  description       String?              @db.Text
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  orderItems SalesOrderItem[]
+
+  @@index([status, category])
+  @@index([vendorId, status])
+}
+
+// A storefront order. orderNumber is the human code (TS-S-XXXXXX).
+// stripeRef records the Stripe Checkout Session id when checkout is
+// created through the platform's Stripe pattern; checkoutUrl is its
+// hosted URL. Payment confirmation is designed to arrive through
+// the existing payments webhook (metadata purpose SALES_ORDER) —
+// see services/salesOs.js.
+model SalesOrder {
+  id            String             @id @default(uuid()) @db.Uuid
+  orderNumber   String             @unique
+  vendorId      String?            @db.Uuid
+  vendor        SalesVendor?       @relation(fields: [vendorId], references: [id])
+  customerName  String
+  customerPhone String?
+  customerEmail String?
+  subtotalCents Int
+  totalCents    Int
+  fulfillment   SalesFulfillment   @default(PICKUP)
+  paymentStatus SalesPaymentStatus @default(PENDING)
+  status        SalesOrderStatus   @default(PENDING_PAYMENT)
+  stripeRef     String?
+  checkoutUrl   String?
+  notes         String?            @db.Text
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  items SalesOrderItem[]
+
+  @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+}
+
+// One line of a sales order — a snapshot of the product as sold.
+model SalesOrderItem {
+  id         String       @id @default(uuid()) @db.Uuid
+  orderId    String       @db.Uuid
+  order      SalesOrder   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String       @db.Uuid
+  product    SalesProduct @relation(fields: [productId], references: [id])
+  title      String
+  priceCents Int
+  qty        Int          @default(1)
+
+  @@index([orderId])
+  @@index([productId])
+}

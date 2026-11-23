@@ -46,6 +46,7 @@ import adminRouter from './routes/admin.js';
 import marketingOsRouter from './routes/marketingOs.js';
 import mediaOsRouter from './routes/mediaOs.js';
 import facebookOsRouter from './routes/facebookOs.js';
+import salesOsRouter from './routes/salesOs.js';
 import videoFactoryRouter from './routes/videoFactory.js';
 import creatorSignupRouter from './routes/creatorSignup.js';
 import adStudioRouter from './routes/adStudio.js';
@@ -141,6 +142,8 @@ for (const satelliteOrigin of [
   'https://www.fixmyappliancefl.com',
   'https://browardappliancepros.com',
   'https://www.browardappliancepros.com',
+  'https://topspeedappliances.com',
+  'https://www.topspeedappliances.com',
 ]) {
   if (!corsOrigin.includes(satelliteOrigin)) corsOrigin.push(satelliteOrigin);
 }
@@ -291,6 +294,7 @@ app.use('/api/v1', adminRouter);
 app.use('/api/v1', marketingOsRouter);
 app.use('/api/v1', mediaOsRouter);
 app.use('/api/v1', facebookOsRouter);
+app.use('/api/v1', salesOsRouter);
 app.use('/api/v1', videoFactoryRouter);
 app.use('/api/v1', creatorSignupRouter);
 app.use('/api/v1', adStudioRouter);

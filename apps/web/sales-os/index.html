@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales OS — Top Speed Service OS</title>
+<meta name="description" content="Top Speed Sales OS: the sales platform inside the Service OS — Top Speed Appliances, the used-appliance shop at topspeedappliances.com, its staff-entered catalog, storefront orders and Stripe checkout.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:820px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Space Mono',monospace;font-size:21px;color:var(--navy)}
+.num{font-family:'Space Mono',monospace}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.amber{background:#fdf0d5;color:#7a5200}
+.tag.grey{background:#e8edf4;color:#43536b}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+textarea{min-height:90px;resize:vertical}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.err{color:var(--red);font-weight:700}
+.empty{color:var(--muted);padding:14px 4px;font-size:15px;line-height:1.55}
+.modal-back{display:none;position:fixed;inset:0;background:rgba(10,18,32,.55);z-index:1400;align-items:flex-start;justify-content:center;padding:22px 12px;overflow:auto}
+.modal{background:#fff;border-radius:14px;max-width:680px;width:100%;padding:22px;box-shadow:0 18px 50px rgba(10,18,32,.35);color:#1b2840}
+.modal h3{margin:0 0 6px;font-size:20px;color:#182742}
+.kv{font-size:14px;line-height:1.7;color:var(--ink)}
+.kv b{color:var(--navy)}
+.cta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style>
+<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/software">Software</a>
+    <a href="/book-os">Book OS</a>
+    <a href="/ad-studio">Ad Studio</a>
+    <a href="/media">Media OS</a>
+    <a href="/portal">Portal</a>
+    <a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>Top Speed Sales OS</h1>
+  <p class="sub">The sales platform inside the Service OS. Its first vendor is <b>Top Speed Appliances</b> — the used-appliance shop at <a href="https://topspeedappliances.com" target="_blank" rel="noopener">topspeedappliances.com</a>. Staff enter real units here as drafts and activate them; the storefront sells only ACTIVE products. Orders are priced from the stored catalog on the server and paid through the platform's Stripe checkout — when Stripe is not configured, an order saves as pending payment with no checkout link, and this console says so.</p>
+
+  <div class="panel" id="gatePanel" style="display:none;">
+    <h2>Staff sign-in</h2>
+    <p class="note">Sales OS is a staff workstation. Sign in with your Service OS staff account — or sign in on another workstation in this browser and refresh.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div id="svRow" style="display:none;"><label for="svCode">Speedy Verify access code</label><input id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></div>
+      <div id="svBtnRow" style="display:none;align-self:end;"><button class="btn" type="button" id="svVerifyBtn">Verify &amp; sign in</button></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <span class="note" id="asOf" style="color:var(--muted);font-size:14px;"></span>
+      <span><button class="btn ghost small" id="signOutBtn">Sign out</button></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><small>Active products</small><b id="stActive">—</b></div>
+      <div class="stat"><small>Draft products</small><b id="stDraft">—</b></div>
+      <div class="stat"><small>Sold</small><b id="stSold">—</b></div>
+      <div class="stat"><small>Orders</small><b id="stOrders">—</b></div>
+      <div class="stat"><small>Pending payment</small><b id="stPendingPay">—</b></div>
+      <div class="stat"><small>Stripe checkout</small><b id="stStripe" style="font-size:15px;">—</b></div>
+    </div>
+
+    <div class="panel">
+      <h2>Vendor — Top Speed Appliances</h2>
+      <div id="vendorBody"><p class="note">Loading the vendor record…</p></div>
+    </div>
+
+    <div class="panel">
+      <h2>Catalog — every product, every status</h2>
+      <p class="note">The storefront at topspeedappliances.com shows <b>ACTIVE</b> products only. A new product is born a <b>DRAFT</b> — check its price, stock, photos and condition grade, then set it ACTIVE when the real unit is ready to sell.</p>
+      <div id="productsBody"></div>
+    </div>
+
+    <div class="panel">
+      <h2>New product</h2>
+      <p class="note">Enter the real unit: its actual price, its actual stock, and the condition grade that honestly describes it (Like new / Excellent / Good / Fair). Nothing here is pre-filled with an invented product.</p>
+      <form class="grid" id="newProductForm">
+        <div><label for="npTitle">Title</label><input id="npTitle" required placeholder="e.g. Samsung French-door refrigerator"></div>
+        <div><label for="npCategory">Category</label>
+          <select id="npCategory">
+            <option value="REFRIGERATOR">Refrigerator</option>
+            <option value="WASHER">Washer</option>
+            <option value="DRYER">Dryer</option>
+            <option value="OVEN_RANGE">Oven / Range</option>
+            <option value="DISHWASHER">Dishwasher</option>
+            <option value="FREEZER_ICE_MAKER">Freezer / Ice maker</option>
+            <option value="MICROWAVE">Microwave</option>
+            <option value="GARBAGE_DISPOSAL">Garbage disposal</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <div><label for="npBrand">Brand</label><input id="npBrand"></div>
+        <div><label for="npModel">Model reference</label><input id="npModel"></div>
+        <div><label for="npGrade">Condition grade</label>
+          <select id="npGrade">
+            <option value="LIKE_NEW">Like new</option>
+            <option value="EXCELLENT">Excellent</option>
+            <option value="GOOD" selected>Good</option>
+            <option value="FAIR">Fair</option>
+          </select>
+        </div>
+        <div><label for="npPrice">Price (USD)</label><input id="npPrice" type="number" min="0" step="0.01" required></div>
+        <div><label for="npCompare">Compare-at price (USD, optional)</label><input id="npCompare" type="number" min="0" step="0.01"></div>
+        <div><label for="npStock">Stock on hand</label><input id="npStock" type="number" min="0" step="1" value="1" required></div>
+        <div><label for="npSerial">Serial reference (optional)</label><input id="npSerial"></div>
+        <div><label for="npWarranty">Warranty (days)</label><input id="npWarranty" type="number" min="0" step="1" value="0"></div>
+        <div><label for="npPhotos">Photo URLs (one per line)</label><textarea id="npPhotos" placeholder="https://…"></textarea></div>
+        <div><label for="npDesc">Description</label><textarea id="npDesc" placeholder="Condition notes, dimensions, what was serviced…"></textarea></div>
+        <div><label><input id="npDelivery" type="checkbox" style="width:auto;"> Delivery available</label></div>
+        <div><label><input id="npPickup" type="checkbox" style="width:auto;" checked> Pickup available</label></div>
+        <div style="align-self:end;"><button class="btn" type="submit">Add as draft</button></div>
+      </form>
+      <div class="msg" id="newProductMsg"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Orders</h2>
+      <p class="note">Storefront orders, newest first. Totals were computed on the server from the stored prices at order time. An order marked paid by hand is a staff reconciliation — record the Stripe reference when you mark it.</p>
+      <div id="ordersBody"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Top Speed Appliance LLC</strong> · Sales OS on the Top Speed Service OS · <strong>844-460-7038</strong>
+<!-- WORKSTATION STANDARD — SYSTEM FOOTER: the uniform directory
+     block every workstation carries: customer apps first under
+     "Customer App", then the 21-entry "Workstation" directory in
+     its fixed order. Additive — the console's own footer stays.
+     NOTE (Sales OS build, 2026-11-23): Sales OS is NOT added to
+     this fixed 21-entry list — the build brief flags the footer
+     question for Ramone/coordinator instead of editing the
+     ordered footer. Sales OS is listed in the system map /
+     portal directory and the access-badge table instead. -->
+<style>
+.tsos-wsfoot{display:flex;gap:26px;flex-wrap:wrap;justify-content:center;text-align:left;max-width:1060px;margin:16px auto 4px;padding:16px 18px;background:#071A38;border:1px solid #1C2C52;border-radius:14px}
+.tsos-wsfoot h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#fff;margin:0 0 8px}
+.tsos-wsfoot p{margin:0;font-size:13px;line-height:1.9}
+.tsos-wsfoot a{color:#B9CFF2;text-decoration:none;font-weight:600}
+.tsos-wsfoot a:hover{text-decoration:underline}
+</style>
+<div class="tsos-wsfoot">
+  <div>
+    <h3>Customer App</h3>
+    <p><a href="/app">Appliance Connect — Customer App</a><br>
+    <a href="/connect-pro-site">Appliance Connect Pro</a><br>
+    <a href="/appliance-pro-site">Appliance Pro</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists</a></p>
+  </div>
+  <div>
+    <h3>Workstation</h3>
+    <p><a href="/crm">Top Speed CRM — Customers &amp; Bookings</a><br>
+    <a href="/book-os">Service Setters — Book OS</a><br>
+    <a href="/dispatch-dashboard">Dispatch Dashboard</a><br>
+    <a href="/applianceman">ApplianceMan</a><br>
+    <a href="/finance">Finance</a><br>
+    <a href="/tech">Tech App — Service Providers</a><br>
+    <a href="https://top-speed-field-pro.vercel.app" target="_blank" rel="noopener">Field Pro — Tech App</a><br>
+    <a href="/network">Service Network</a><br>
+    <a href="/parts">Parts Supply</a><br>
+    <a href="/advertiser">Advertiser Console</a><br>
+    <a href="/ad-studio">Top Speed Ads — Ad Studio</a><br>
+    <a href="/flywheel">Flywheel Advertising</a><br>
+    <a href="/local">Top Speed Local OS</a><br>
+    <a href="/marketing-os">Top Speed Marketing OS</a> · <a href="/marketing-os/studio">Page Studio</a><br>
+    <a href="/media">Media OS</a><br>
+    <a href="https://pepperlists.com" target="_blank" rel="noopener">Pepper Lists — Marketplace</a><br>
+    <a href="/refer">Referrals &amp; Rewards</a><br>
+    <a href="/portal">Service OS Portal</a><br>
+    <a href="/academy">Training Academy</a><br>
+    <a href="/work-time-access">Work Time Access</a><br>
+    <a href="/navigator">Workstation — Team Consoles</a></p>
+  </div>
+</div>
+</footer>
+
+<div class="modal-back" id="productModalBack" role="dialog" aria-modal="true" aria-label="Product">
+  <div class="modal">
+    <h3>Edit product</h3>
+    <form class="grid" id="editProductForm">
+      <div><label for="epTitle">Title</label><input id="epTitle" required></div>
+      <div><label for="epCategory">Category</label>
+        <select id="epCategory">
+          <option value="REFRIGERATOR">Refrigerator</option>
+          <option value="WASHER">Washer</option>
+          <option value="DRYER">Dryer</option>
+          <option value="OVEN_RANGE">Oven / Range</option>
+          <option value="DISHWASHER">Dishwasher</option>
+          <option value="FREEZER_ICE_MAKER">Freezer / Ice maker</option>
+          <option value="MICROWAVE">Microwave</option>
+          <option value="GARBAGE_DISPOSAL">Garbage disposal</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+      <div><label for="epBrand">Brand</label><input id="epBrand"></div>
+      <div><label for="epModel">Model reference</label><input id="epModel"></div>
+      <div><label for="epGrade">Condition grade</label>
+        <select id="epGrade">
+          <option value="LIKE_NEW">Like new</option>
+          <option value="EXCELLENT">Excellent</option>
+          <option value="GOOD">Good</option>
+          <option value="FAIR">Fair</option>
+        </select>
+      </div>
+      <div><label for="epStatus">Status</label>
+        <select id="epStatus">
+          <option value="DRAFT">Draft</option>
+          <option value="ACTIVE">Active (on the storefront)</option>
+          <option value="SOLD">Sold</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+      </div>
+      <div><label for="epPrice">Price (USD)</label><input id="epPrice" type="number" min="0" step="0.01" required></div>
+      <div><label for="epCompare">Compare-at price (USD, optional)</label><input id="epCompare" type="number" min="0" step="0.01"></div>
+      <div><label for="epStock">Stock on hand</label><input id="epStock" type="number" min="0" step="1" required></div>
+      <div><label for="epSerial">Serial reference</label><input id="epSerial"></div>
+      <div><label for="epWarranty">Warranty (days)</label><input id="epWarranty" type="number" min="0" step="1"></div>
+      <div><label for="epPhotos">Photo URLs (one per line)</label><textarea id="epPhotos"></textarea></div>
+      <div><label for="epDesc">Description</label><textarea id="epDesc"></textarea></div>
+      <div><label><input id="epDelivery" type="checkbox" style="width:auto;"> Delivery available</label></div>
+      <div><label><input id="epPickup" type="checkbox" style="width:auto;"> Pickup available</label></div>
+      <div style="align-self:end;"><button class="btn blue" type="submit">Save product</button></div>
+    </form>
+    <div class="msg" id="editProductMsg"></div>
+    <div class="cta-row"><button class="btn ghost" type="button" id="epClose">Close</button></div>
+  </div>
+</div>
+
+<div class="modal-back" id="orderModalBack" role="dialog" aria-modal="true" aria-label="Order">
+  <div class="modal">
+    <h3 id="omTitle">Order</h3>
+    <div class="kv" id="omMeta"></div>
+    <div id="omItems" style="margin-top:10px;"></div>
+    <div style="margin-top:14px;">
+      <label for="omStatus">Order status</label>
+      <select id="omStatus">
+        <option value="PENDING_PAYMENT">Pending payment</option>
+        <option value="PAID">Paid</option>
+        <option value="FULFILLING">Fulfilling</option>
+        <option value="COMPLETED">Completed</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+    </div>
+    <div style="margin-top:10px;">
+      <label for="omPayStatus">Payment status</label>
+      <select id="omPayStatus">
+        <option value="PENDING">Pending</option>
+        <option value="PAID">Paid</option>
+        <option value="FAILED">Failed</option>
+        <option value="REFUNDED">Refunded</option>
+      </select>
+    </div>
+    <div style="margin-top:10px;"><label for="omStripeRef">Stripe reference (session id)</label><input id="omStripeRef"></div>
+    <div style="margin-top:10px;"><label for="omNotes">Notes</label><textarea id="omNotes"></textarea></div>
+    <div class="cta-row"><button class="btn blue" type="button" id="omSave">Save order</button><button class="btn ghost" type="button" id="omClose">Close</button></div>
+    <div class="msg" id="omMsg"></div>
+  </div>
+</div>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var ALLOWED=['COMPANY_OWNER','COMPANY_ADMIN','PLATFORM_ADMIN','MARKETING_MANAGER'];
+var PRODUCTS={}; var ORDERS={}; var EDIT_ID=null; var ORDER_ID=null;
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function money(c){ return '$'+((c||0)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function when(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); }catch(e){}
+  location.reload();
+}
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ if(r.status===401){ sessionExpired(); throw new Error('session expired'); } if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function statusTag(s){
+  if(s==='ACTIVE'||s==='PAID'||s==='COMPLETED') return '<span class="tag green">'+esc(s)+'</span>';
+  if(s==='PENDING_PAYMENT'||s==='PENDING') return '<span class="tag amber">'+esc(s.replace(/_/g,' '))+'</span>';
+  if(s==='SOLD'||s==='FULFILLING') return '<span class="tag">'+esc(s)+'</span>';
+  if(s==='CANCELLED'||s==='FAILED'||s==='REFUNDED') return '<span class="tag red">'+esc(s)+'</span>';
+  return '<span class="tag grey">'+esc(s)+'</span>';
+}
+function catLabel(c){
+  return ({REFRIGERATOR:'Refrigerator',WASHER:'Washer',DRYER:'Dryer',OVEN_RANGE:'Oven / Range',DISHWASHER:'Dishwasher',FREEZER_ICE_MAKER:'Freezer / Ice maker',MICROWAVE:'Microwave',GARBAGE_DISPOSAL:'Garbage disposal',OTHER:'Other'})[c]||c;
+}
+function gradeLabel(g){
+  return ({LIKE_NEW:'Like new',EXCELLENT:'Excellent',GOOD:'Good',FAIR:'Fair'})[g]||g;
+}
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPw').value})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){ svStart(j.challenge); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in cancelled — the 2-step code is required to finish.'; }}); return; }
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in failed: '+e.message; });
+});
+var svChallenge=null;
+function svShowMsg(text,isErr){ var m=document.getElementById('loginMsg'); if(!m) return; m.className='msg'+(isErr?' err':''); m.textContent=text; }
+function svStart(challenge){ svChallenge=challenge; document.getElementById('svRow').style.display=''; document.getElementById('svBtnRow').style.display=''; svShowMsg('Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.',false); var ci=document.getElementById('svCode'); if(ci) ci.focus(); }
+document.getElementById('svVerifyBtn').addEventListener('click',function(){
+  var code=document.getElementById('svCode').value.trim();
+  if(!svChallenge){ svShowMsg('Sign in with your password first, then enter your code.',true); return; }
+  if(!code){ svShowMsg('Enter your access code.',true); return; }
+  fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:svChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(window.TSOSTempPassword && TSOSTempPassword.isChangeState(j)){ TSOSTempPassword.begin(j,'/sales-os'); return; }
+      if(j && j.mustChangePassword){ svShowMsg('This account uses a temporary password — set your own password first (sign in on Book OS), then return here.',true); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ svChallenge=null; document.getElementById('svRow').style.display='none'; document.getElementById('svBtnRow').style.display='none'; TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ svShowMsg('Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      svChallenge=null;
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user);
+    })
+    .catch(function(e){ svShowMsg('Speedy Verify: '+e.message,true); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return ALLOWED.indexOf(r)>-1; })){
+    if(window.TSOSAccess){ window.TSOSAccess.showRestricted('STAFF ONLY'); return; }
+    document.getElementById('gatePanel').style.display='block';
+    var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='That account does not carry a sales role for this workstation.';
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  loadAll();
+}
+
+function loadAll(){ loadOverview(); loadProducts(); loadOrders(); }
+
+function loadOverview(){
+  apiFetch('/sales-os/overview').then(function(j){
+    var d=j.data||{}; var p=d.products||{}; var o=d.orders||{};
+    document.getElementById('asOf').textContent='Sales as of '+when(d.generatedAt)+' · Vendor: '+((d.vendor&&d.vendor.name)||'');
+    document.getElementById('stActive').textContent=p.ACTIVE||0;
+    document.getElementById('stDraft').textContent=p.DRAFT||0;
+    document.getElementById('stSold').textContent=p.SOLD||0;
+    document.getElementById('stOrders').textContent=d.ordersTotal||0;
+    document.getElementById('stPendingPay').textContent=o.PENDING_PAYMENT||0;
+    document.getElementById('stStripe').textContent=d.stripeConfigured?'Configured':'Not configured';
+    var v=d.vendor||{}; var addr=v.address||{};
+    var addrLine=[addr.line1,addr.city,addr.state,addr.postalCode].filter(Boolean).join(', ');
+    document.getElementById('vendorBody').innerHTML='<p class="note"><b>'+esc(v.name||'Top Speed Appliances')+'</b> · Storefront: <a href="'+esc(v.storefrontUrl||'https://topspeedappliances.com')+'" target="_blank" rel="noopener">'+esc(v.domain||'topspeedappliances.com')+'</a>'
+      +' · Phone: '+esc(v.phone||'—')+' · Email: '+esc(v.email||'not recorded yet')
+      +'<br>Address: '+esc(addrLine||'not recorded yet — the vendor record carries only what staff have entered.')
+      +'<br>Stripe checkout: '+(d.stripeConfigured?'<span class="tag green">CONFIGURED</span> Orders receive a hosted checkout link.':'<span class="tag amber">NOT CONFIGURED</span> Orders save as pending payment with no checkout link until the Stripe key is set on the API.')
+      +'</p>';
+  }).catch(function(e){ document.getElementById('asOf').textContent='Could not load the sales overview: '+e.message; });
+}
+
+function productRow(p){
+  PRODUCTS[p.id]=p;
+  return '<tr><td><b>'+esc(p.title)+'</b><br><span style="color:var(--muted);font-size:13px;">'+esc(catLabel(p.category))+(p.brand?' · '+esc(p.brand):'')+(p.modelRef?' · '+esc(p.modelRef):'')+'<br>Condition: '+esc(gradeLabel(p.conditionGrade))+(p.warrantyDays?' · '+p.warrantyDays+'-day warranty':' · no warranty recorded')+'</span></td><td>'+statusTag(p.status)+'</td><td class="num">'+money(p.priceCents)+(p.compareAtCents?' <span style="color:var(--muted);text-decoration:line-through;">'+money(p.compareAtCents)+'</span>':'')+'</td><td class="num">'+p.stockQty+'</td><td>'+(p.deliveryAvailable?'Delivery':'')+(p.deliveryAvailable&&p.pickupAvailable?' · ':'')+(p.pickupAvailable?'Pickup':'')+'</td><td><button class="btn ghost small" type="button" onclick="openProduct(\''+p.id+'\')">Edit</button></td></tr>';
+}
+function loadProducts(){
+  apiFetch('/sales-os/products?limit=500').then(function(j){
+    var rows=j.data||[];
+    var el=document.getElementById('productsBody');
+    if(!rows.length){ el.innerHTML='<div class="empty">The catalog is empty. No products have been entered yet — the storefront honestly shows nothing for sale until a real unit is entered below and set ACTIVE.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>Product</th><th>Status</th><th>Price</th><th>Stock</th><th>Fulfillment</th><th></th></tr></thead><tbody>'+rows.map(productRow).join('')+'</tbody></table>';
+  }).catch(function(e){ document.getElementById('productsBody').innerHTML='<div class="empty">Could not load products: '+esc(e.message)+'</div>'; });
+}
+
+function orderRow(o){
+  ORDERS[o.id]=o;
+  var items=(o.items||[]).map(function(i){ return esc(i.title)+' × '+i.qty; }).join('<br>');
+  return '<tr><td><b>'+esc(o.orderNumber)+'</b><br><span style="color:var(--muted);font-size:13px;">'+esc(when(o.createdAt))+'</span></td><td>'+esc(o.customerName)+'<br><span style="color:var(--muted);font-size:13px;">'+esc(o.customerPhone||o.customerEmail||'')+'</span></td><td>'+items+'</td><td>'+statusTag(o.status)+'<br>'+statusTag(o.paymentStatus)+'</td><td>'+esc(o.fulfillment)+'</td><td class="num">'+money(o.totalCents)+'</td><td><button class="btn ghost small" type="button" onclick="openOrder(\''+o.id+'\')">Open</button></td></tr>';
+}
+function loadOrders(){
+  apiFetch('/sales-os/orders?limit=500').then(function(j){
+    var rows=j.data||[];
+    var el=document.getElementById('ordersBody');
+    if(!rows.length){ el.innerHTML='<div class="empty">No orders yet. When a customer checks out on topspeedappliances.com, their order lands here with the server-computed total.</div>'; return; }
+    el.innerHTML='<table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Status</th><th>Fulfillment</th><th>Total</th><th></th></tr></thead><tbody>'+rows.map(orderRow).join('')+'</tbody></table>';
+  }).catch(function(e){ document.getElementById('ordersBody').innerHTML='<div class="empty">Could not load orders: '+esc(e.message)+'</div>'; });
+}
+
+function dollarsToCents(v){ if(v===''||v==null) return null; var n=Math.round(Number(v)*100); return isFinite(n)?n:null; }
+function photoLines(v){ return String(v||'').split('\n').map(function(s){ return s.trim(); }).filter(Boolean); }
+
+document.getElementById('newProductForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  var price=dollarsToCents(document.getElementById('npPrice').value);
+  if(price==null||price<0){ var m0=document.getElementById('newProductMsg'); m0.className='msg err'; m0.textContent='Enter the real price for this unit.'; return; }
+  var body={
+    title:document.getElementById('npTitle').value.trim(),
+    category:document.getElementById('npCategory').value,
+    brand:document.getElementById('npBrand').value.trim()||null,
+    modelRef:document.getElementById('npModel').value.trim()||null,
+    conditionGrade:document.getElementById('npGrade').value,
+    priceCents:price,
+    compareAtCents:dollarsToCents(document.getElementById('npCompare').value),
+    stockQty:Number(document.getElementById('npStock').value||0),
+    serialRef:document.getElementById('npSerial').value.trim()||null,
+    warrantyDays:Number(document.getElementById('npWarranty').value||0),
+    photos:photoLines(document.getElementById('npPhotos').value),
+    description:document.getElementById('npDesc').value.trim()||null,
+    deliveryAvailable:document.getElementById('npDelivery').checked,
+    pickupAvailable:document.getElementById('npPickup').checked
+  };
+  apiFetch('/sales-os/products',{method:'POST',body:JSON.stringify(body)}).then(function(){
+    var m=document.getElementById('newProductMsg'); m.className='msg'; m.textContent='Product saved as a DRAFT. Set it ACTIVE from its Edit panel when the unit is ready to sell.';
+    document.getElementById('newProductForm').reset(); document.getElementById('npStock').value='1'; document.getElementById('npPickup').checked=true; loadAll();
+  }).catch(function(e){ var m=document.getElementById('newProductMsg'); m.className='msg err'; m.textContent='Could not save the product: '+e.message; });
+});
+
+/* ─── Record pop-ups ─── */
+function openModal(id){ document.getElementById(id).style.display='flex'; }
+function closeModal(id){ document.getElementById(id).style.display='none'; }
+document.getElementById('epClose').addEventListener('click',function(){ closeModal('productModalBack'); });
+document.getElementById('omClose').addEventListener('click',function(){ closeModal('orderModalBack'); });
+document.getElementById('productModalBack').addEventListener('click',function(ev){ if(ev.target===this) closeModal('productModalBack'); });
+document.getElementById('orderModalBack').addEventListener('click',function(ev){ if(ev.target===this) closeModal('orderModalBack'); });
+
+function openProduct(id){
+  var p=PRODUCTS[id]; if(!p) return;
+  EDIT_ID=id;
+  document.getElementById('epTitle').value=p.title||'';
+  document.getElementById('epCategory').value=p.category;
+  document.getElementById('epBrand').value=p.brand||'';
+  document.getElementById('epModel').value=p.modelRef||'';
+  document.getElementById('epGrade').value=p.conditionGrade;
+  document.getElementById('epStatus').value=p.status;
+  document.getElementById('epPrice').value=(p.priceCents/100).toFixed(2);
+  document.getElementById('epCompare').value=p.compareAtCents!=null?(p.compareAtCents/100).toFixed(2):'';
+  document.getElementById('epStock').value=p.stockQty;
+  document.getElementById('epSerial').value=p.serialRef||'';
+  document.getElementById('epWarranty').value=p.warrantyDays||0;
+  document.getElementById('epPhotos').value=(p.photos||[]).join('\n');
+  document.getElementById('epDesc').value=p.description||'';
+  document.getElementById('epDelivery').checked=p.deliveryAvailable===true;
+  document.getElementById('epPickup').checked=p.pickupAvailable!==false;
+  document.getElementById('editProductMsg').textContent='';
+  openModal('productModalBack');
+}
+document.getElementById('editProductForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  if(!EDIT_ID) return;
+  var price=dollarsToCents(document.getElementById('epPrice').value);
+  if(price==null||price<0){ var m0=document.getElementById('editProductMsg'); m0.className='msg err'; m0.textContent='Enter the real price for this unit.'; return; }
+  var body={
+    title:document.getElementById('epTitle').value.trim(),
+    category:document.getElementById('epCategory').value,
+    brand:document.getElementById('epBrand').value.trim()||null,
+    modelRef:document.getElementById('epModel').value.trim()||null,
+    conditionGrade:document.getElementById('epGrade').value,
+    status:document.getElementById('epStatus').value,
+    priceCents:price,
+    compareAtCents:dollarsToCents(document.getElementById('epCompare').value),
+    stockQty:Number(document.getElementById('epStock').value||0),
+    serialRef:document.getElementById('epSerial').value.trim()||null,
+    warrantyDays:Number(document.getElementById('epWarranty').value||0),
+    photos:photoLines(document.getElementById('epPhotos').value),
+    description:document.getElementById('epDesc').value.trim()||null,
+    deliveryAvailable:document.getElementById('epDelivery').checked,
+    pickupAvailable:document.getElementById('epPickup').checked
+  };
+  apiFetch('/sales-os/products/'+EDIT_ID,{method:'PATCH',body:JSON.stringify(body)}).then(function(){
+    closeModal('productModalBack'); loadAll();
+  }).catch(function(e){ var m=document.getElementById('editProductMsg'); m.className='msg err'; m.textContent='Could not save: '+e.message; });
+});
+
+function openOrder(id){
+  var o=ORDERS[id]; if(!o) return;
+  ORDER_ID=id;
+  document.getElementById('omTitle').textContent='Order '+o.orderNumber;
+  document.getElementById('omMeta').innerHTML='<b>Customer:</b> '+esc(o.customerName)+(o.customerPhone?'<br><b>Phone:</b> '+esc(o.customerPhone):'')+(o.customerEmail?'<br><b>Email:</b> '+esc(o.customerEmail):'')+'<br><b>Placed:</b> '+esc(when(o.createdAt))+' &nbsp; <b>Fulfillment:</b> '+esc(o.fulfillment)+(o.checkoutUrl?'<br><b>Checkout:</b> <a href="'+esc(o.checkoutUrl)+'" target="_blank" rel="noopener">Stripe checkout link</a>':'<br><b>Checkout:</b> none was created (Stripe was not configured when this order was placed)');
+  document.getElementById('omItems').innerHTML='<table><thead><tr><th>Item</th><th>Qty</th><th>Price</th></tr></thead><tbody>'+(o.items||[]).map(function(i){ return '<tr><td>'+esc(i.title)+'</td><td>'+i.qty+'</td><td class="num">'+money(i.priceCents)+'</td></tr>'; }).join('')+'</tbody></table><p class="kv" style="margin-top:8px;"><b>Subtotal:</b> '+money(o.subtotalCents)+' &nbsp; <b>Total:</b> '+money(o.totalCents)+' (total = subtotal — no tax or fee is added)</p>';
+  document.getElementById('omStatus').value=o.status;
+  document.getElementById('omPayStatus').value=o.paymentStatus;
+  document.getElementById('omStripeRef').value=o.stripeRef||'';
+  document.getElementById('omNotes').value=o.notes||'';
+  document.getElementById('omMsg').textContent='';
+  openModal('orderModalBack');
+}
+document.getElementById('omSave').addEventListener('click',function(){
+  if(!ORDER_ID) return;
+  var body={
+    status:document.getElementById('omStatus').value,
+    paymentStatus:document.getElementById('omPayStatus').value,
+    stripeRef:document.getElementById('omStripeRef').value.trim()||null,
+    notes:document.getElementById('omNotes').value.trim()||null
+  };
+  apiFetch('/sales-os/orders/'+ORDER_ID,{method:'PATCH',body:JSON.stringify(body)}).then(function(){
+    closeModal('orderModalBack'); loadAll();
+  }).catch(function(e){ var m=document.getElementById('omMsg'); m.className='msg err'; m.textContent='Could not save: '+e.message; });
+});
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(e){ if(e && e.message==='session expired') return; try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(err){} try{ localStorage.removeItem('tsos_token'); }catch(err){} document.getElementById('gatePanel').style.display='block'; });
+}else{
+  document.getElementById('gatePanel').style.display='block';
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Rajdhani',Inter,Arial,sans-serif}</style>
+<script src="/layer2.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
+<script src="/shared/pepper-chat.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>

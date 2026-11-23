@@ -196,8 +196,8 @@ try {
   check('section counts 1 LIVE stream surface overall', data(section).metrics.streamSurfacesLive, 1);
   checkTrue('section latestAdPostedAt is stamped', Boolean(data(section).metrics.latestAdPostedAt));
   const all = await req(B, 'GET', '/integrations/ads-os/platforms', undefined, null, { 'x-ads-os-key': SERVICE_KEY });
-  check('unified feed order ends with ads-stream', data(all).order[data(all).order.length - 1], 'ads-stream');
-  check('unified feed order has 7 platforms', data(all).order.length, 7);
+  check('unified feed order ends with sales-os', data(all).order[data(all).order.length - 1], 'sales-os');
+  check('unified feed order has 8 platforms', data(all).order.length, 8);
 } finally {
   server.child.kill('SIGTERM');
   rmSync(preloadPath, { force: true });

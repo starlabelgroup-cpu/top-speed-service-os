@@ -419,6 +419,20 @@ export const SYSTEM_MAP_AREAS = [
     related: ['finance'],
     keywords: ['payments', 'stripe', 'payment status', 'payments configured', 'diagnostic payment', 'webhook', 'payouts'],
   },
+  {
+    id: 'sales-os',
+    name: 'Top Speed Sales OS',
+    group: 'Money',
+    location: 'topspeedserviceos.com/sales-os',
+    url: '/sales-os',
+    purpose: 'The FIRST Top Speed Sales OS platform — the OS platform for everything sales inside the Service OS. Its first sales vendor is Top Speed Appliances, the used-appliance shop at topspeedappliances.com: staff enter real used units (category, brand, model, condition grade LIKE_NEW/EXCELLENT/GOOD/FAIR, price, stock, photos, warranty) as DRAFTS and activate them; the public storefront catalog serves ACTIVE products only. Customers order on the spot (no account, no office approval); totals are computed server-side from the stored prices (total = subtotal, no invented tax or fees) and checkout runs through the platform Stripe pattern, saving as PENDING_PAYMENT with checkout null when Stripe is not configured. The catalog launches empty — no product, price, or stock is seeded or invented.',
+    access: 'Sales staff (Company Owner, Company Admin, Platform Admin, Marketing Manager); the storefront catalog + order placement are public',
+    accessLabel: 'STAFF ONLY',
+    accessRoles: ['COMPANY_OWNER', 'COMPANY_ADMIN', 'PLATFORM_ADMIN', 'MARKETING_MANAGER'],
+    actions: ['Read the sales overview (product + order counts by status, vendor)', 'Create and edit catalog products (all fields, DRAFT → ACTIVE/SOLD/ARCHIVED)', 'Read storefront orders and move them through fulfillment (PAID / FULFILLING / COMPLETED / CANCELLED)', 'Record payment status and the Stripe reference on an order'],
+    related: ['payments', 'finance'],
+    keywords: ['sales os', 'sales', 'used appliances', 'topspeedappliances', 'storefront', 'catalog', 'shop', 'orders', 'vendor'],
+  },
 
   /* ------------------------- Marketing, Media & Ads ------------------------- */
   {

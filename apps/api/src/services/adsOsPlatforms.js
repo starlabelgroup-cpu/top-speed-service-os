@@ -7,6 +7,7 @@ import { getReferralFunnel } from './referrals.js';
 import { seoConfigured } from './googleSeo.js';
 import { mediaFacebookConnectionState } from './mediaFacebook.js';
 import { adsStreamCounts, queueSummary as facebookOsQueueSummary } from './facebookOs.js';
+import { salesOsMetrics } from './salesOs.js';
 
 /**
  * Top Speed Ads OS — the UNIFIED advertising feed (2026-11-22,
@@ -44,6 +45,12 @@ import { adsStreamCounts, queueSummary as facebookOsQueueSummary } from './faceb
  *                  stream's counts: POSTED ads-style posts and the
  *                  surfaces carrying them LIVE (added 2026-11-23
  *                  with the social + ads streaming build).
+ *   sales-os       Top Speed Sales OS — the sales platform: its
+ *                  first vendor (Top Speed Appliances, the
+ *                  used-appliance shop at topspeedappliances.com),
+ *                  the ACTIVE catalog count, and an honest
+ *                  LIVE/BUILT status from the catalog itself
+ *                  (added 2026-11-23 with the Sales OS build).
  *
  * The two faces are grouped in the payload (group
  * "local-marketing-os") and share one SOCIAL element: the social
@@ -131,6 +138,13 @@ export const ADS_OS_PLATFORMS = [
     console: 'Facebook OS Manager',
     role: 'The customer-attraction streaming system: the POSTED ads-style posts (AD_IDEA + CUSTOM — the formats the console records ads under) and the standing offer cards (the published rate card + referral terms), streamed from the public /ads-os/stream endpoint onto the fleet surfaces that carry the shared ads-stream include. Organic only — nothing here enables or funds an ad.',
     consoleUrl: 'https://topspeedserviceos.com/facebook-os',
+  },
+  {
+    key: 'sales-os',
+    name: 'Top Speed Sales OS',
+    console: 'Sales OS',
+    role: 'The sales platform inside the Service OS: Top Speed Appliances — the used-appliance shop at topspeedappliances.com — as its first vendor, with a staff-entered catalog and Stripe-checkout orders. Status is read from the catalog itself: LIVE once a real product is ACTIVE, BUILT while the catalog is still empty.',
+    consoleUrl: 'https://topspeedserviceos.com/sales-os',
   },
 ];
 
@@ -312,6 +326,14 @@ async function adsStreamMetrics() {
   return adsStreamCounts();
 }
 
+// ─── Top Speed Sales OS ───────────────────────────────────────────
+// The sales platform's own metrics (services/salesOs.js): vendor
+// identity, ACTIVE product count, the storefront domain, and the
+// honest LIVE/BUILT status the catalog itself supports.
+async function salesOsSectionMetrics() {
+  return salesOsMetrics();
+}
+
 const METRIC_BUILDERS = {
   'top-speed-ads': topSpeedAdsMetrics,
   'ads-console': adsConsoleMetrics,
@@ -320,6 +342,7 @@ const METRIC_BUILDERS = {
   flywheel: flywheelMetrics,
   'facebook-os': facebookOsMetrics,
   'ads-stream': adsStreamMetrics,
+  'sales-os': salesOsSectionMetrics,
 };
 
 /**
