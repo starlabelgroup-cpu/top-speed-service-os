@@ -4,6 +4,7 @@ import {
   facebookOsSyndicationRepo,
 } from '../db/facebookOsRepo.js';
 import { MEDIA_FACEBOOK_PAGE, mediaFacebookConnectionState } from './mediaFacebook.js';
+import { claimCheckError, findClaimViolations } from './claimCheck.js';
 
 /**
  * Top Speed Facebook OS Manager (2026-11-23) — the streaming posts +
@@ -124,6 +125,13 @@ export function isRealFacebookUrl(value) {
 export async function createStreamPost(input, actorId) {
   if (!input?.title?.trim()) throw fail(400, 'TITLE_REQUIRED', 'A stream post needs a title');
   if (!input?.copy?.trim()) throw fail(400, 'COPY_REQUIRED', 'A stream post needs copy');
+  // Claim-check gate (Flywheel Item 6): hand-written queue copy
+  // passes the same gate the Campaign Engine's factory enforces.
+  const claimViolations = findClaimViolations([
+    ['title', input.title],
+    ['copy', input.copy],
+  ]);
+  if (claimViolations.length) throw claimCheckError(claimViolations);
   if (input.format && !POST_FORMATS.includes(input.format)) {
     throw fail(400, 'FORMAT_INVALID', `Unknown post format: ${input.format}`);
   }
@@ -489,5 +497,15 @@ export async function createAdDraft(input, actorId) {
   if (input.status === 'ACTIVE') {
     throw fail(400, 'STATUS_INVALID', 'Ad drafts can never be ACTIVE here — enabling happens only in Ads Manager');
   }
+  // Claim-check gate (Flywheel Item 6): same gate as the stream.
+  const adClaimViolations = findClaimViolations([
+    ['name', input.name],
+    ['objective', input.objective],
+    ['headline', input.headline],
+    ['copy', input.copy],
+    ['description', input.description],
+    ['text', input.text],
+  ]);
+  if (adClaimViolations.length) throw claimCheckError(adClaimViolations);
   return facebookOsAdsRepo.create({ ...input, status: input.status || 'DRAFT' }, actorId);
 }

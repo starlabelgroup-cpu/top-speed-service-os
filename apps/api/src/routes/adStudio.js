@@ -21,6 +21,34 @@ import {
 import { POSTER_IMAGE_NAMES, SCENARIO_IMAGE_NAMES } from './app.js';
 import { publicAccess, publicPlan, requirePlanFeature, resolveAccess } from '../services/adPlans.js';
 import { campaignOutcomeReport, flywheelLoopStages, recordedCostCents } from '../services/adOutcomes.js';
+import { findClaimViolations } from '../services/claimCheck.js';
+
+/** Claim-check gate (Flywheel Item 6, 2026-11-23): hand-written
+ *  campaign copy passes the same gate the Campaign Engine's
+ *  factory enforces on generated copy. Returns true when the
+ *  response has been sent (violations found). */
+function claimGate(res, fields) {
+  const violations = findClaimViolations(fields);
+  if (!violations.length) return false;
+  res.status(400).json({
+    error: 'Copy failed the claim check — fix the flagged claims and try again',
+    code: 'CLAIM_CHECK_FAILED',
+    violations,
+  });
+  return true;
+}
+
+/** The copy-bearing fields of a campaign payload, as [field, text]. */
+function campaignCopyFields(data) {
+  return [
+    ['name', data.name],
+    ['objective', data.objective],
+    ['offering', data.offering],
+    ['headline', data.headline],
+    ['copy', data.copy],
+    ['ctaText', data.ctaText],
+  ];
+}
 
 /**
  * Ad Studio — the console of TOP SPEED ADS, the Flywheel AI
@@ -619,6 +647,16 @@ router.post('/ad-studio/draft-copy', ...staffOnly, async (req, res) => {
     createdAt: now,
     updatedAt: now,
   };
+  // Claim-check gate (Flywheel Item 6): Speedy's drafted copy is
+  // gated before the draft record exists — a violating draft is
+  // rejected with the reasons, never stored.
+  if (claimGate(res, [
+    ['headlines', headlines.join('\n')],
+    ['descriptions', descriptions.join('\n')],
+    ['headline', headline],
+    ['copy', copy],
+    ['longHeadline', longHeadline],
+  ])) return;
   const streamErr = streamingError(record);
   if (streamErr) return res.status(400).json({ error: streamErr });
   store.adCampaigns.push(record);
@@ -676,6 +714,7 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
   }
   const streamErr = streamingError({ placement: parsed.data.placement || 'NONE', ...streamingValues(parsed.data) });
   if (streamErr) return res.status(400).json({ error: streamErr });
+  if (claimGate(res, campaignCopyFields(parsed.data))) return;
   const now = new Date().toISOString();
   const record = {
     id: createId(),
@@ -759,6 +798,7 @@ router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
   }
   const streamErr = streamingError({ ...record, ...parsed.data });
   if (streamErr) return res.status(400).json({ error: streamErr });
+  if (claimGate(res, campaignCopyFields(parsed.data))) return;
   const previousSpendCents = record.recordedSpendCents ?? null;
   Object.assign(record, parsed.data, { updatedAt: new Date().toISOString() });
   await persistAdCampaign(record);
@@ -1139,6 +1179,7 @@ function findOwnCreative(req, id) {
 router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('campaigns'), async (req, res) => {
   const parsed = advertiserCreateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign', details: parsed.error.flatten() });
+  if (claimGate(res, campaignCopyFields(parsed.data))) return;
   // Plan campaign cap (Flywheel Advertiser Plans, 2026-11-17): the
   // effective plan's maxCampaigns counts the advertiser's campaigns
   // that have not ended. Grandfathered accounts are unlimited —
@@ -1217,6 +1258,7 @@ router.patch('/ad-studio/my-campaigns/:id', ...advertiserOnly, requirePlanFeatur
   }
   const parsed = advertiserPatchSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign update', details: parsed.error.flatten() });
+  if (claimGate(res, campaignCopyFields(parsed.data))) return;
   // E3: a creative change must reference the advertiser's own upload.
   let patchCreative;
   if (parsed.data.creativeUploadId) {

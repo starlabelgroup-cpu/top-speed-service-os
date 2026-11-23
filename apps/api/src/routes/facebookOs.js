@@ -23,6 +23,7 @@ import {
   transitionStreamPost,
 } from '../services/facebookOs.js';
 import { ingestCityPosts } from '../services/cityPosts.js';
+import { claimCheckError, findClaimViolations } from '../services/claimCheck.js';
 
 /**
  * Top Speed Facebook OS Manager (2026-11-23) — the streaming posts +
@@ -64,6 +65,7 @@ function handleServiceError(error, res, next) {
     return res.status(error.status).json({
       error: error.message,
       ...(error.code ? { code: error.code } : {}),
+      ...(error.violations ? { violations: error.violations } : {}),
     });
   }
   return next(error);
@@ -181,6 +183,15 @@ router.patch('/facebook-os/stream/:id', ...facebookOsStaff, async (req, res, nex
         error: 'A POSTED record is the Page\'s history — it cannot be edited, only archived',
         code: 'POSTED_IMMUTABLE',
       });
+    }
+    // Claim-check gate (Flywheel Item 6): edited copy passes the
+    // same gate as newly created queue posts.
+    if (req.body && (req.body.title !== undefined || req.body.copy !== undefined)) {
+      const violations = findClaimViolations([
+        ['title', req.body.title !== undefined ? req.body.title : existing.title],
+        ['copy', req.body.copy !== undefined ? req.body.copy : existing.copy],
+      ]);
+      if (violations.length) throw claimCheckError(violations);
     }
     const row = await facebookOsPostsRepo.update(req.params.id, req.body || {}, req.user.id);
     return res.json({ data: row });
