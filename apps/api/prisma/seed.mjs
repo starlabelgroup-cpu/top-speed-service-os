@@ -308,6 +308,15 @@ let phase2Corrected = 0;
 //     dropped — the never-published test above is the guard that
 //     matters, and the owner's 2026-11-23 directive is the publish
 //     decision for exactly these seven URLs.)
+//   - v3 (2026-11-23): the e4bc63e production build log showed all
+//     seven records are in fact status IN_REVIEW with publishedAt
+//     ALREADY SET — a review-state leftover, not a human takedown
+//     (a takedown is UNPUBLISHED, still never touched above). v3
+//     flips exactly that state to PUBLISHED, keeping the record's
+//     original publishedAt, and records the flip as a phase3-publish
+//     PageVersion. Every other guard is unchanged: DRAFT with
+//     publishedAt set still skips, UNPUBLISHED still skips, empty
+//     content still skips, no other URL is ever touched.
 //   - If a record does not exist at all, it is created from the current
 //     Phase 2 spec first (same create-only shape as the Phase 2 seed)
 //     and then published in the same step.
@@ -381,21 +390,30 @@ let phase3Published = 0;
       page = { ...page, versions: [{ version: 1, createdBy: 'phase2-seed' }] };
     }
     if (page.status === 'PUBLISHED') continue;
-    const eligible =
-      (page.status === 'DRAFT' || page.status === 'IN_REVIEW') &&
-      !page.publishedAt &&
+    const hasContent =
       typeof page.title === 'string' &&
       page.title.trim().length > 0 &&
       Array.isArray(page.sections) &&
       page.sections.length > 0;
-    if (!eligible) {
-      console.log(`Phase 3 publish: skipping ${url} — record is not a never-published draft with content (status ${page.status}, publishedAt ${page.publishedAt ? 'set' : 'null'}).`);
+    const neverPublished =
+      (page.status === 'DRAFT' || page.status === 'IN_REVIEW') &&
+      !page.publishedAt &&
+      hasContent;
+    // v3: IN_REVIEW with publishedAt already set is the actual
+    // production state of all seven (e4bc63e build log) — flip it,
+    // keeping the original publishedAt.
+    const stuckInReview =
+      page.status === 'IN_REVIEW' && Boolean(page.publishedAt) && hasContent;
+    if (!neverPublished && !stuckInReview) {
+      console.log(`Phase 3 publish: skipping ${url} — record is neither a never-published draft nor a stuck IN_REVIEW record with content (status ${page.status}, publishedAt ${page.publishedAt ? 'set' : 'null'}).`);
       continue;
     }
     const nextVersion = Math.max(0, ...page.versions.map((v) => v.version)) + 1;
     await prisma.landingPage.update({
       where: { id: page.id },
-      data: { status: 'PUBLISHED', publishedAt: new Date(), updatedBy: 'phase3-publish' },
+      data: stuckInReview
+        ? { status: 'PUBLISHED', updatedBy: 'phase3-publish' }
+        : { status: 'PUBLISHED', publishedAt: new Date(), updatedBy: 'phase3-publish' },
     });
     await prisma.pageVersion.create({
       data: {
@@ -413,12 +431,247 @@ let phase3Published = 0;
           status: 'PUBLISHED',
           sections: page.sections,
         },
-        note: 'Published by seed Phase 3 (2026-11-23): one of the seven 2026-11-13 problem pages seeded as drafts and never published — owner directive 2026-11-23 makes the published count the stated 131.',
+        note: stuckInReview
+          ? 'Published by seed Phase 3 v3 (2026-11-23): record was IN_REVIEW with publishedAt already set — status flipped to PUBLISHED, original publishedAt kept. One of the seven 2026-11-13 problem pages; owner directive 2026-11-23 makes the published count the stated 131.'
+          : 'Published by seed Phase 3 (2026-11-23): one of the seven 2026-11-13 problem pages seeded as drafts and never published — owner directive 2026-11-23 makes the published count the stated 131.',
         createdBy: 'phase3-publish',
       },
     });
     phase3Published += 1;
-    console.log(`Phase 3 publish: published ${url}.`);
+    console.log(stuckInReview ? `Phase 3 publish: published ${url} (status flip from IN_REVIEW; publishedAt kept).` : `Phase 3 publish: published ${url}.`);
+  }
+}
+
+// ─── Phase 4 phone correction: the public number on the published pages ──
+// The 2026-11-13 page batches (the tri-county problem pages, the
+// taxonomy service / installation pages and the city pages) were
+// created carrying the
+// private line 954-931-7997 in their CTA and FAQ copy — the CTA
+// block's phone field, the "How do I book?" FAQ answer and the CTA
+// body. The phone-swap waves fixed the SOURCES (phase2DraftPages.js
+// now builds every one of those strings with 844-460-7038, the
+// public platform number), but the create-only seed never rewrites
+// existing records, so the published pages kept the private number.
+// A live scan on 2026-11-23 found '954-931-7997' — that one format
+// only — on all 59 published /services/ pages (169 occurrences) and
+// all 65 published /service-areas/ city pages (136 occurrences).
+//
+// This step repairs ONLY the listed records and ONLY the phone
+// string:
+//   - the URL list is exactly the 59 published /services/ pages plus
+//     the seven Phase 3 problem pages (same 2026-11-13 batch; the
+//     Phase 3 step above publishes their stored content as-is, so
+//     they are corrected here, in the same run, after it) plus the
+//     65 published /service-areas/ city pages — 131 URLs in all,
+//     the full published set (59 + 7 + 65);
+//   - a record is written ONLY when its title, metaDescription or
+//     sections still contain the old string, and the replacement is
+//     a pure substring swap to '844-460-7038' — the exact format
+//     the current source builds — so no other copy can change;
+//   - the correction is recorded as a PageVersion (createdBy
+//     'phase4-phone-correction') in the Studio snapshot shape,
+//     like the Phase 2 correction.
+// Idempotent: once corrected, the old string no longer matches, so
+// re-runs change nothing. (The 65 city pages were added to this list
+// on 2026-11-23: the owner's full live scan showed every one of them
+// carries the same string in the same CTA/FAQ pattern, so the
+// correction covers the entire published set in a single run.)
+const PHASE4_PHONE_URLS = [
+  'https://topspeedappliance.net/services/appliance-installation/',
+  'https://topspeedappliance.net/services/commercial-appliance-installation/',
+  'https://topspeedappliance.net/services/commercial-appliance-repair/',
+  'https://topspeedappliance.net/services/commercial-cooking-equipment-installation/',
+  'https://topspeedappliance.net/services/commercial-cooking-equipment-repair/',
+  'https://topspeedappliance.net/services/commercial-cooking-equipment-repair/error-codes/',
+  'https://topspeedappliance.net/services/commercial-cooking-equipment-repair/not-heating/',
+  'https://topspeedappliance.net/services/commercial-dishwashing-installation/',
+  'https://topspeedappliance.net/services/commercial-dishwashing-repair/',
+  'https://topspeedappliance.net/services/commercial-dishwashing-repair/leaking/',
+  'https://topspeedappliance.net/services/commercial-dishwashing-repair/not-draining/',
+  'https://topspeedappliance.net/services/commercial-laundry-installation/',
+  'https://topspeedappliance.net/services/commercial-laundry-repair/',
+  'https://topspeedappliance.net/services/commercial-laundry-repair/not-draining/',
+  'https://topspeedappliance.net/services/commercial-laundry-repair/not-heating/',
+  'https://topspeedappliance.net/services/commercial-refrigeration-installation/',
+  'https://topspeedappliance.net/services/commercial-refrigeration-repair/',
+  'https://topspeedappliance.net/services/commercial-refrigeration-repair/leaking/',
+  'https://topspeedappliance.net/services/commercial-refrigeration-repair/not-cooling/',
+  'https://topspeedappliance.net/services/commercial-trash-and-beverage-equipment-installation/',
+  'https://topspeedappliance.net/services/commercial-trash-beverage-equipment-repair/',
+  'https://topspeedappliance.net/services/commercial-trash-beverage-equipment-repair/leaking/',
+  'https://topspeedappliance.net/services/commercial-trash-beverage-equipment-repair/not-cooling/',
+  'https://topspeedappliance.net/services/cooktop-installation/',
+  'https://topspeedappliance.net/services/dishwasher-installation/',
+  'https://topspeedappliance.net/services/dishwasher-repair/',
+  'https://topspeedappliance.net/services/dishwasher-repair/error-codes/',
+  'https://topspeedappliance.net/services/dishwasher-repair/leaking/',
+  'https://topspeedappliance.net/services/dishwasher-repair/not-draining/',
+  'https://topspeedappliance.net/services/dishwasher-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/dryer-installation/',
+  'https://topspeedappliance.net/services/dryer-repair/',
+  'https://topspeedappliance.net/services/dryer-repair/error-codes/',
+  'https://topspeedappliance.net/services/dryer-repair/not-heating/',
+  'https://topspeedappliance.net/services/freezer-ice-maker-installation/',
+  'https://topspeedappliance.net/services/freezer-ice-maker-repair/',
+  'https://topspeedappliance.net/services/freezer-ice-maker-repair/leaking/',
+  'https://topspeedappliance.net/services/freezer-ice-maker-repair/no-ice/',
+  'https://topspeedappliance.net/services/freezer-ice-maker-repair/not-cooling/',
+  'https://topspeedappliance.net/services/garbage-disposal-installation/',
+  'https://topspeedappliance.net/services/garbage-disposal-repair/',
+  'https://topspeedappliance.net/services/garbage-disposal-repair/leaking/',
+  'https://topspeedappliance.net/services/garbage-disposal-repair/not-draining/',
+  'https://topspeedappliance.net/services/garbage-disposal-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/microwave-installation/',
+  'https://topspeedappliance.net/services/microwave-repair/',
+  'https://topspeedappliance.net/services/microwave-repair/error-codes/',
+  'https://topspeedappliance.net/services/microwave-repair/not-heating/',
+  'https://topspeedappliance.net/services/microwave-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/oven-range-installation/',
+  'https://topspeedappliance.net/services/oven-range-repair/',
+  'https://topspeedappliance.net/services/oven-range-repair/error-codes/',
+  'https://topspeedappliance.net/services/oven-range-repair/not-heating/',
+  'https://topspeedappliance.net/services/refrigerator-installation/',
+  'https://topspeedappliance.net/services/refrigerator-repair/',
+  'https://topspeedappliance.net/services/refrigerator-repair/not-cooling/',
+  'https://topspeedappliance.net/services/washer-installation/',
+  'https://topspeedappliance.net/services/washer-repair/',
+  'https://topspeedappliance.net/services/washer-repair/not-draining/',
+  'https://topspeedappliance.net/services/refrigerator-repair/leaking/',
+  'https://topspeedappliance.net/services/refrigerator-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/refrigerator-repair/error-codes/',
+  'https://topspeedappliance.net/services/washer-repair/leaking/',
+  'https://topspeedappliance.net/services/washer-repair/unusual-noises/',
+  'https://topspeedappliance.net/services/washer-repair/error-codes/',
+  'https://topspeedappliance.net/services/dryer-repair/unusual-noises/',
+  // — the 65 published city (service-area) pages:
+  'https://topspeedappliance.net/service-areas/fort-lauderdale/',
+  'https://topspeedappliance.net/service-areas/coral-springs/',
+  'https://topspeedappliance.net/service-areas/plantation/',
+  'https://topspeedappliance.net/service-areas/sunrise/',
+  'https://topspeedappliance.net/service-areas/lauderhill/',
+  'https://topspeedappliance.net/service-areas/lauderdale-lakes/',
+  'https://topspeedappliance.net/service-areas/north-lauderdale/',
+  'https://topspeedappliance.net/service-areas/tamarac/',
+  'https://topspeedappliance.net/service-areas/davie/',
+  'https://topspeedappliance.net/service-areas/pompano-beach/',
+  'https://topspeedappliance.net/service-areas/oakland-park/',
+  'https://topspeedappliance.net/service-areas/margate/',
+  'https://topspeedappliance.net/service-areas/hollywood/',
+  'https://topspeedappliance.net/service-areas/pembroke-pines/',
+  'https://topspeedappliance.net/service-areas/miramar/',
+  'https://topspeedappliance.net/service-areas/deerfield-beach/',
+  'https://topspeedappliance.net/service-areas/coconut-creek/',
+  'https://topspeedappliance.net/service-areas/dania-beach/',
+  'https://topspeedappliance.net/service-areas/cooper-city/',
+  'https://topspeedappliance.net/service-areas/weston/',
+  'https://topspeedappliance.net/service-areas/parkland/',
+  'https://topspeedappliance.net/service-areas/hallandale-beach/',
+  'https://topspeedappliance.net/service-areas/wilton-manors/',
+  'https://topspeedappliance.net/service-areas/lighthouse-point/',
+  'https://topspeedappliance.net/service-areas/lauderdale-by-the-sea/',
+  'https://topspeedappliance.net/service-areas/southwest-ranches/',
+  'https://topspeedappliance.net/service-areas/west-park/',
+  'https://topspeedappliance.net/service-areas/pembroke-park/',
+  'https://topspeedappliance.net/service-areas/hillsboro-beach/',
+  'https://topspeedappliance.net/service-areas/sea-ranch-lakes/',
+  'https://topspeedappliance.net/service-areas/lazy-lake/',
+  'https://topspeedappliance.net/service-areas/west-palm-beach/',
+  'https://topspeedappliance.net/service-areas/boca-raton/',
+  'https://topspeedappliance.net/service-areas/boynton-beach/',
+  'https://topspeedappliance.net/service-areas/delray-beach/',
+  'https://topspeedappliance.net/service-areas/wellington/',
+  'https://topspeedappliance.net/service-areas/jupiter/',
+  'https://topspeedappliance.net/service-areas/palm-beach-gardens/',
+  'https://topspeedappliance.net/service-areas/lake-worth-beach/',
+  'https://topspeedappliance.net/service-areas/riviera-beach/',
+  'https://topspeedappliance.net/service-areas/greenacres/',
+  'https://topspeedappliance.net/service-areas/royal-palm-beach/',
+  'https://topspeedappliance.net/service-areas/palm-beach/',
+  'https://topspeedappliance.net/service-areas/belle-glade/',
+  'https://topspeedappliance.net/service-areas/palm-springs/',
+  'https://topspeedappliance.net/service-areas/north-palm-beach/',
+  'https://topspeedappliance.net/service-areas/lake-park/',
+  'https://topspeedappliance.net/service-areas/miami/',
+  'https://topspeedappliance.net/service-areas/hialeah/',
+  'https://topspeedappliance.net/service-areas/miami-gardens/',
+  'https://topspeedappliance.net/service-areas/miami-beach/',
+  'https://topspeedappliance.net/service-areas/north-miami/',
+  'https://topspeedappliance.net/service-areas/homestead/',
+  'https://topspeedappliance.net/service-areas/doral/',
+  'https://topspeedappliance.net/service-areas/coral-gables/',
+  'https://topspeedappliance.net/service-areas/aventura/',
+  'https://topspeedappliance.net/service-areas/cutler-bay/',
+  'https://topspeedappliance.net/service-areas/hialeah-gardens/',
+  'https://topspeedappliance.net/service-areas/sunny-isles-beach/',
+  'https://topspeedappliance.net/service-areas/north-miami-beach/',
+  'https://topspeedappliance.net/service-areas/sweetwater/',
+  'https://topspeedappliance.net/service-areas/florida-city/',
+  'https://topspeedappliance.net/service-areas/key-biscayne/',
+  'https://topspeedappliance.net/service-areas/surfside/',
+  'https://topspeedappliance.net/service-areas/bal-harbour/',
+];
+const PHASE4_OLD_PHONE = '954-931-7997';
+const PHASE4_NEW_PHONE = '844-460-7038';
+let phase4Corrected = 0;
+{
+  const swapPhone = (value, state) => {
+    if (typeof value === 'string') {
+      const parts = value.split(PHASE4_OLD_PHONE);
+      if (parts.length > 1) {
+        state.hits += parts.length - 1;
+        return parts.join(PHASE4_NEW_PHONE);
+      }
+      return value;
+    }
+    if (Array.isArray(value)) return value.map((v) => swapPhone(v, state));
+    if (value && typeof value === 'object') {
+      const out = {};
+      for (const [k, v] of Object.entries(value)) out[k] = swapPhone(v, state);
+      return out;
+    }
+    return value;
+  };
+  for (const url of PHASE4_PHONE_URLS) {
+    const page = await prisma.landingPage.findUnique({
+      where: { canonicalUrl: url },
+      include: { versions: { select: { version: true } } },
+    });
+    if (!page) {
+      console.log(`Phase 4 phone correction: skipping ${url} — no record exists.`);
+      continue;
+    }
+    const state = { hits: 0 };
+    const nextTitle = swapPhone(page.title, state);
+    const nextMeta = swapPhone(page.metaDescription, state);
+    const nextSections = swapPhone(page.sections, state);
+    if (!state.hits) continue;
+    const nextVersion = Math.max(0, ...page.versions.map((v) => v.version)) + 1;
+    await prisma.landingPage.update({
+      where: { id: page.id },
+      data: { title: nextTitle, metaDescription: nextMeta, sections: nextSections, updatedBy: 'phase4-phone-correction' },
+    });
+    await prisma.pageVersion.create({
+      data: {
+        pageId: page.id,
+        version: nextVersion,
+        snapshot: {
+          type: page.type,
+          cityId: page.cityId,
+          brandId: page.brandId,
+          serviceId: page.serviceId,
+          slug: page.slug,
+          canonicalUrl: page.canonicalUrl,
+          title: nextTitle,
+          metaDescription: nextMeta,
+          status: page.status,
+          sections: nextSections,
+        },
+        note: 'Seed correction (2026-11-23): public phone number — CTA/FAQ copy carried the private line 954-931-7997; replaced with the public platform number 844-460-7038 (the format the current Phase 2 source builds). Phone-string replacement only; no other copy changed.',
+        createdBy: 'phase4-phone-correction',
+      },
+    });
+    phase4Corrected += 1;
+    console.log(`Phase 4 phone correction: replaced ${state.hits} phone occurrence(s) on ${url}.`);
   }
 }
 
@@ -471,5 +724,5 @@ const marketingCityCount = await prisma.marketingCity.count();
 const landingPageCount = await prisma.landingPage.count();
 const googleAccountCount = await prisma.googleAccountLink.count();
 const mediaContentCount = await prisma.mediaContent.count();
-console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected, ${phase3Published} Phase 3 pages published), ${googleAccountCount} Google account links, ${mediaContentCount} media content records (${mediaCreated} created).`);
+console.log(`Seed complete: ${companyCount} companies, ${providerCount} providers, ${marketingCityCount} marketing cities, ${landingPageCount} landing pages (${phase2Created} Phase 2 drafts created, ${phase2Skipped} skipped, ${phase2Corrected} Phase 2 drafts corrected, ${phase3Published} Phase 3 pages published, ${phase4Corrected} Phase 4 pages phone-corrected), ${googleAccountCount} Google account links, ${mediaContentCount} media content records (${mediaCreated} created).`);
 await prisma.$disconnect();
