@@ -447,6 +447,7 @@ function bulkSend(){
   if(!prop){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add the property / business location first.'; m.className='msg err'; return; }
   var payload={manager:{name:(window.CUR&&(CUR.firstName||CUR.email))||'Account holder', phone:(window.CUR&&CUR.phone)||document.getElementById('bkPhone').value.trim(), company:window.BIZ||undefined}, property:prop, requests:bulkItems, companyWebsite:document.getElementById('bkWebsite').value};
   if(!payload.manager.phone){ m.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4L21 19.5H3z"/><path d="M12 10v4.2" stroke="#E8322E"/><circle cx="12" cy="16.8" r="1.05" fill="#E8322E" stroke="none"/></svg> Add a callback phone so the setters can confirm.'; m.className='msg err'; return; }
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   api('/commercial/bulk-requests',{method:'POST',body:JSON.stringify(payload)})
     .then(function(j){ m.textContent='Sent \u2014 batch '+j.data.batchReference+'('+j.data.count+'requests). A Service Setter confirms every one by text.'; m.className='msg ok'; bulkItems=[]; bulkRender(); document.getElementById('bkText').value=''; if(window.loadActivity) loadActivity(); })
     .catch(function(e){ m.textContent=''+e.message; m.className='msg err'; });
@@ -653,7 +654,9 @@ function swMaybeBook(){
 function swBookIt(btn){
   var d=window._swBook; if(!d) return;
   btn.disabled=true; btn.textContent='Booking\u2026';
-  fetch(SW_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,via:'connect-pro-app',companyWebsite:document.getElementById('swWebsite').value})})
+  var bkPayload={customer:{name:d.name,phone:d.phone},city:d.city,zip:d.zip,appliance:d.appliance,issue:d.issue,preferredWindow:d.preferred_window||undefined,via:'connect-pro-app',companyWebsite:document.getElementById('swWebsite').value};
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(bkPayload); }catch(e){}
+  fetch(SW_API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(bkPayload)})
     .then(function(r){return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Booking failed'); return j; });})
     .then(function(j){
       window._swBooked=true; window._swRef=j.data.referenceCode;

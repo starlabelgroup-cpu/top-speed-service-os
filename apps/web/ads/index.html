@@ -375,6 +375,7 @@ document.getElementById('advForm').addEventListener('submit',function(ev){
     'Goals: '+(document.getElementById('afGoals').value||'—')].join('\n');
   var body={name:document.getElementById('afName').value.trim(),email:document.getElementById('afEmail').value.trim(),
     phone:document.getElementById('afPhone').value.trim()||undefined,type:'ADVERTISER_CONTACT',source:'ads-page-advanced-form',companyWebsite:document.getElementById('afWebsite').value,message:lines};
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(body); }catch(e){}
   fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){ document.getElementById('afMsg').innerHTML=r.ok?'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg> Sent — the ads team will follow up.':'Something went wrong — call 844-460-7038.'; if(r.ok) ev.target.reset(); })
     .catch(function(){ document.getElementById('afMsg').textContent='Something went wrong — call 844-460-7038.'; });

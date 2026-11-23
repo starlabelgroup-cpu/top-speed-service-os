@@ -680,9 +680,11 @@
         document.getElementById("okRef").textContent = "Sending\u2026";
         var okBox = document.getElementById("formOk");
         okBox.classList.add("show");
+        var payload = { type:"COMMERCIAL_ACCOUNT_REQUEST", name: contact, email: email, phone: phone, source:"flagship-commercial", companyWebsite: document.getElementById("fWebsite").value,
+            message: "Commercial account request \u2014 " + company + " (" + type + ", " + locs + (locs === "1" ? " location" : " locations") + "). Equipment notes: " + (document.getElementById("fNotes").value.trim() || "none given") };
+        try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
         fetch("https://top-speed-service-os.vercel.app/api/v1/connections", { method:"POST", headers:{ "Content-Type":"application/json" },
-          body: JSON.stringify({ type:"COMMERCIAL_ACCOUNT_REQUEST", name: contact, email: email, phone: phone, source:"flagship-commercial", companyWebsite: document.getElementById("fWebsite").value,
-            message: "Commercial account request \u2014 " + company + " (" + type + ", " + locs + (locs === "1" ? " location" : " locations") + "). Equipment notes: " + (document.getElementById("fNotes").value.trim() || "none given") })
+          body: JSON.stringify(payload)
         }).then(function(r){ return r.json().then(function(j){ return { s:r.status, j:j }; }); })
         .then(function(x){
           if (x.s !== 200 && x.s !== 201) throw new Error("send failed");

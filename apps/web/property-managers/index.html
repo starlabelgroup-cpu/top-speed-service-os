@@ -734,9 +734,11 @@
     }
     document.getElementById("okText").textContent = "Sending\u2026";
     ok.style.display = "block";
+    var payload = { type:"PM_WALKTHROUGH_REQUEST", name: name, email: email, phone: phone, source:"flagship-pm", companyWebsite: document.getElementById("f-website").value,
+        message: "Portal walkthrough request \u2014 " + company + " (" + units + " units)" };
+    try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
     fetch("https://top-speed-service-os.vercel.app/api/v1/connections", { method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ type:"PM_WALKTHROUGH_REQUEST", name: name, email: email, phone: phone, source:"flagship-pm", companyWebsite: document.getElementById("f-website").value,
-        message: "Portal walkthrough request \u2014 " + company + " (" + units + " units)" })
+      body: JSON.stringify(payload)
     }).then(function(r){ return r.json().then(function(j){ return { s:r.status, j:j }; }); })
     .then(function(x){
       if (x.s !== 200 && x.s !== 201) throw new Error("send failed");
@@ -803,7 +805,9 @@ function bkSend(){
   if(name.length<2||phone.replace(/\D/g,'').length<7||property.length<3){ msg.textContent='Add your name, a valid phone, and the property before sending.'; return; }
   if(!bkItems.length){ msg.textContent='Sort the requests with Speedy first.'; return; }
   var btn=document.getElementById('bkSendBtn'); btn.disabled=true; btn.textContent='Sending\u2026';
-  fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems,companyWebsite:document.getElementById('bk-website').value})})
+  var payload={manager:{name:name,phone:phone,company:company||undefined},property:property,requests:bkItems,companyWebsite:document.getElementById('bk-website').value};
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
+  fetch(BK_API+'/commercial/bulk-requests',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Send failed'); return j; }); })
     .then(function(j){
       msg.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> <b>Sent!</b> Batch reference <b>'+j.data.batchReference+'</b> — '+j.data.count+' work orders are with the Service Setters. Individual references: '+j.data.references.join(', ')+'.';

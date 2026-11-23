@@ -672,6 +672,7 @@ runTriage();
 function refCode(){return 'TS-'+Math.random().toString(36).slice(2,7).toUpperCase();}
 
 function postConnection(payload, box, okHtml){
+  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
   box.style.display='block'; box.innerHTML='Sending…';
   fetch('https://top-speed-service-os.vercel.app/api/v1/connections',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){return r.json().then(function(j){return {s:r.status,j:j};});})

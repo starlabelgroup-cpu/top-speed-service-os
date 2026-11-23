@@ -271,6 +271,7 @@
     var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
     var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win};
     var em=val('wEmail'); if(em) payload.customer.email=em;
+    try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
     busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Booking…';
     fetch(API+'/bookings',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token()},body:JSON.stringify(payload)})
     .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
@@ -403,6 +404,7 @@
 })();
 </script>
 <script src="/layer2.js" defer></script>
+<script src="/shared/attribution-capture.js" defer></script>
 <script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
