@@ -134,6 +134,7 @@ for (const satelliteOrigin of [
   'https://applianceconnectpro.com',
   'https://www.applianceconnectpro.com',
   'https://appliance-connect.vercel.app',
+  /^https:\/\/top-speed-appliance(-ai)?-[a-z0-9-]+\.vercel\.app$/,
   'https://topspeedrepairs.com',
   'https://www.topspeedrepairs.com',
   'https://fixmyappliancefl.com',
