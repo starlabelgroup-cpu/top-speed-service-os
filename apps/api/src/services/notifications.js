@@ -444,22 +444,100 @@ export function queueBookingPushes(booking, { template, title, body, source = nu
 export const STAFF_ALERT_EMAIL = 'service@topspeedappliance.net';
 export const STAFF_ALERT_PHONE = '+19549317997'; // the owner's cell — pinned on purpose: staff alerts must keep landing on the owner's own phone even though the public platform number (PLATFORM_CONSTANTS.phone) is now the toll-free line, which forwards to this same cell
 
+/* ------------------------------------------------------------------ */
+/* Rule 1 deep links (2026-11-23): a staff alert email's "Review it   */
+/* here" link lands on the record the alert announces — never a bare  */
+/* console home. Each receiving console honors its parameter on load  */
+/* (opens, highlights or scrolls to the record). Kinds whose record   */
+/* has no per-record console view — provider applications and PM      */
+/* leads (their /intake list endpoints have no console consumer),     */
+/* advertiser and agency intakes, account registrations, and PM      */
+/* batch requests (the alert's reference is the batch, not any one    */
+/* unit's record) — link to the alert's management-report twin in     */
+/* the Manager feed, whose detail view carries the full recorded      */
+/* detail for that exact event.                                       */
+/* ------------------------------------------------------------------ */
+const STAFF_LINK_CRM_LEAD_KINDS = new Set([
+  'SERVICE_REQUEST',
+  'COMMERCIAL_ACCOUNT_REQUEST',
+  'COMMERCIAL_WORK_ORDER',
+  'PM_WALKTHROUGH_REQUEST',
+  'PEPPER_LISTS_SCAN',
+  'PEPPER_LISTS_LIVE_VIDEO',
+]);
+const STAFF_LINK_REPORT_KINDS = new Set([
+  'PROVIDER_APPLICATION',
+  'PM_LEAD',
+  'ADVERTISER_CONTACT',
+  'MARKETING_AGENCY_INTAKE',
+  'ACCOUNT_REGISTRATION',
+  'PM_SERVICE_REQUEST',
+]);
+
+export function staffAlertConsoleLink({ kind, reference, consolePath = '/portal', reportId = null, submission = false }) {
+  const ref = reference != null && reference !== '' ? encodeURIComponent(String(reference)) : null;
+  if (ref) {
+    if (kind === 'BOOKING' || kind === 'TERMINAL_PAYMENT') return `/book-os?booking=${ref}`;
+    if (kind === 'AFTER_HOURS_MESSAGE' || kind === 'PEPPER_LISTS_SELL') return `/book-os?intake=${ref}`;
+    if (kind === 'VIDEO_REQUEST') return `/book-os?video=${ref}`;
+    if (kind === 'REFERRAL_REWARD' || kind === 'REFERRAL_REWARD_REJECTED') return `/book-os?ref=${ref}`;
+    if (kind === 'VOICEMAIL') return `/notifications?ref=${ref}`;
+    if (kind === 'COCOCANE_ORDER' || kind === 'COCOCANE_WHOLESALE') return `/cococane-express?order=${ref}`;
+    if (STAFF_LINK_CRM_LEAD_KINDS.has(kind)) return `/crm?ref=${ref}`;
+  }
+  if (reportId && (STAFF_LINK_REPORT_KINDS.has(kind) || !ref)) {
+    return `/manager?report=${encodeURIComponent(String(reportId))}`;
+  }
+  // Any other submission kind is a connection record (the public
+  // intake accepts free-form types); every connection record is
+  // listed, with its reference, in the Book OS intake panel.
+  if (submission && ref) return `/book-os?intake=${ref}`;
+  if (reportId) return `/manager?report=${encodeURIComponent(String(reportId))}`;
+  return consolePath;
+}
+
 /**
  * Alert the business about a submission. Respects the staff toggles:
  * when a channel is off, a GATED (SETTING_DISABLED) entry is recorded
  * instead so the console shows what was suppressed and why.
  */
-export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = null, city = null, lines = [], consolePath = '/portal', source = null, eventKeyBase = null, reportDetail = null, reportTitle = null }) {
+export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = null, city = null, lines = [], consolePath = '/portal', source = null, eventKeyBase = null, reportDetail = null, reportTitle = null, submission = false }) {
   const settings = getNotificationSettings();
   const label = kindLabel || kind;
   const keyBase = eventKeyBase || `submission:${reference || kind}`;
+  // Management reporting (2026-11-14): this staff alert is the central
+  // choke point — EVERY event that alerts staff emits exactly ONE
+  // department report here, routed by kind, carrying the exact facts
+  // staff were told (plus any structured reportDetail the caller had).
+  // Deduped on the same keyBase as the alert entries themselves.
+  // The report is emitted FIRST (2026-11-23) so report-linked alert
+  // emails can carry its id; emitReport never throws and dedupes on
+  // the event key, so a re-fired event reuses the first report and
+  // the link lands on the same record either way.
+  const report = emitReport({
+    department: DEPARTMENT_FOR_STAFF_KIND[kind] || undefined,
+    type: kind,
+    title: reportTitle || `New ${label}${reference ? ` — ${reference}` : ''}`,
+    detail: {
+      kind,
+      reference: reference || null,
+      submitterName: submitterName || null,
+      city: city || null,
+      lines: (lines || []).filter(Boolean),
+      ...(reportDetail || {}),
+    },
+    source,
+    reference: reference || null,
+    eventKey: `${keyBase}:report`,
+  });
+  const consoleLink = staffAlertConsoleLink({ kind, reference, consolePath, reportId: report?.id || null, submission });
   const emailBody =
     `New ${label} submission on the Top Speed platform.\n` +
     `Reference: ${reference || '(none)'}\n` +
     (submitterName ? `From: ${submitterName}\n` : '') +
     (city ? `City: ${city}\n` : '') +
     lines.map((line) => `${line}\n`).join('') +
-    `Review it here: https://topspeedserviceos.com${consolePath}\n` +
+    `Review it here: https://topspeedserviceos.com${consoleLink}\n` +
     `— Top Speed Service OS notifications`;
   const smsBody =
     `Top Speed alert: new ${label} ${reference || ''}`.trimEnd() +
@@ -479,27 +557,6 @@ export function notifyStaffAlert({ kind, kindLabel, reference, submitterName = n
   } else {
     entries.push(queueGated({ channel: 'sms', template: NOTIFICATION_TEMPLATES.STAFF_SUBMISSION_ALERT, to: STAFF_ALERT_PHONE, payload: smsPayload, source, eventKey: `${keyBase}:staff:sms`, eventType: 'SUBMISSION', reason: 'SETTING_DISABLED' }));
   }
-  // Management reporting (2026-11-14): this staff alert is the central
-  // choke point — EVERY event that alerts staff emits exactly ONE
-  // department report here, routed by kind, carrying the exact facts
-  // staff were told (plus any structured reportDetail the caller had).
-  // Deduped on the same keyBase as the alert entries themselves.
-  emitReport({
-    department: DEPARTMENT_FOR_STAFF_KIND[kind] || undefined,
-    type: kind,
-    title: reportTitle || `New ${label}${reference ? ` — ${reference}` : ''}`,
-    detail: {
-      kind,
-      reference: reference || null,
-      submitterName: submitterName || null,
-      city: city || null,
-      lines: (lines || []).filter(Boolean),
-      ...(reportDetail || {}),
-    },
-    source,
-    reference: reference || null,
-    eventKey: `${keyBase}:report`,
-  });
   return entries;
 }
 
@@ -656,6 +713,7 @@ export function notifySubmission({ kind, reference, submitter = {}, lines = [], 
     consolePath: path,
     source,
     eventKeyBase: keyBase,
+    submission: true,
     reportDetail: {
       submitter: { name: submitter.name || null, phone: submitter.phone || null, email: submitter.email || null },
     },

@@ -527,5 +527,38 @@ if(tok()){
   syncSegs();
 })();
 </script>
+<script>
+/* RULE 1 deep link (2026-11-23): CocoCane order staff alert emails
+   link here with ?order=<order reference> — land on that order's
+   card in the Orders tab, not the console home. */
+(function(){
+  var ref=new URLSearchParams(location.search).get('order');
+  if(!ref) return;
+  var opened=false, tries=0;
+  var iv=setInterval(function(){
+    tries++;
+    if(tries>90){ clearInterval(iv); return; }
+    if(typeof board==='undefined'||!board||!board.orders) return;
+    if(!opened){
+      opened=true;
+      var tabBtn=document.querySelector('button[data-tab="orders"]');
+      if(tabBtn) tabBtn.click();
+      var fs=document.getElementById('ordFilterStatus'), fc=document.getElementById('ordFilterChannel');
+      if(fs) fs.value=''; if(fc) fc.value='';
+      if(typeof renderOrders==='function') renderOrders();
+    }
+    var cards=document.querySelectorAll('#orderList .order');
+    for(var i=0;i<cards.length;i++){
+      var strong=cards[i].querySelector('strong');
+      if(strong&&strong.textContent.trim()===ref){
+        clearInterval(iv);
+        cards[i].style.outline='3px solid #E8322E'; cards[i].style.outlineOffset='2px';
+        cards[i].scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+    }
+  },500);
+})();
+</script>
 </body>
 </html>

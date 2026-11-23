@@ -953,5 +953,60 @@ body.mgx-owner .mgx-owner-only{display:inline-block!important}
 })();
 </script>
 
+<script>
+/* RULE 1 deep link (2026-11-23): staff alert emails whose record
+   lives in the management feed link here with ?report=<report id> —
+   open that report's detail (the feed card's own More info view),
+   not the console home. If the card is outside the loaded feed
+   (older than the feed window or department-filtered), the detail
+   is fetched directly into the same modal shell. */
+(function(){
+  var id=new URLSearchParams(location.search).get('report');
+  if(!id) return;
+  var tries=0, tabClicked=false;
+  function fallbackOpen(){
+    get('/management/reports/' + encodeURIComponent(id) + '/detail', true).then(function(res){
+      var titleEl=document.getElementById('mgxTitle'), bodyEl=document.getElementById('mgxBody'), backEl=document.getElementById('mgxBack');
+      if(!bodyEl||!backEl) return;
+      if(titleEl) titleEl.textContent='Report detail';
+      if(!res.ok){ bodyEl.innerHTML='<p class="small" style="color:#b3261e">Could not load the detail' + (res.j && res.j.error ? ' (' + esc(res.j.error) + ')' : '') + '.</p>'; }
+      else {
+        var d=data(res.j)||{}, r=d.report||{};
+        var h='<div class="mgx-kv">';
+        h+='<div class="k">Title</div><div>'+esc(r.title||'')+'</div>';
+        h+='<div class="k">Department</div><div>'+esc(r.department||'')+'</div>';
+        h+='<div class="k">Type</div><div>'+esc(r.type||'')+'</div>';
+        h+='<div class="k">Status</div><div>'+esc(r.status||'')+'</div>';
+        h+='<div class="k">Reference</div><div>'+esc(r.reference||'')+'</div>';
+        h+='<div class="k">Report id</div><div>'+esc(r.id||'')+'</div>';
+        h+='</div><h4>Report detail — everything on the record</h4><div class="mgx-kv">';
+        var det=r.detail||{};
+        Object.keys(det).forEach(function(k){
+          var v=det[k];
+          h+='<div class="k">'+esc(k)+'</div><div>'+(v==null||v===''?'Not recorded':esc(typeof v==='object'?JSON.stringify(v):String(v)))+'</div>';
+        });
+        h+='</div>';
+        if(d.booking) h+='<h4>Linked booking</h4><div class="mgx-kv"><div class="k">Reference</div><div>'+esc(d.booking.referenceCode||d.booking.id||'')+'</div><div class="k">Status</div><div>'+esc(d.booking.status||'')+'</div></div>';
+        bodyEl.innerHTML=h;
+      }
+      backEl.classList.add('open');
+    });
+  }
+  var iv=setInterval(function(){
+    tries++;
+    if(tries>90){ clearInterval(iv); return; }
+    if(typeof token!=='function'||!token()) return;
+    if(!tabClicked){
+      tabClicked=true;
+      var tabBtn=document.querySelector('[data-tab="reports"]');
+      if(tabBtn) tabBtn.click();
+      else if(typeof loadReports==='function') loadReports();
+    }
+    var btn=document.querySelector('[data-mgx-info="' + id + '"]');
+    if(btn){ clearInterval(iv); btn.click(); return; }
+    if(tries===90){ clearInterval(iv); fallbackOpen(); }
+  },500);
+})();
+</script>
 </body>
 </html>

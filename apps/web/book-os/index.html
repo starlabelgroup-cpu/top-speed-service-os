@@ -2225,5 +2225,71 @@ function plchqSynOutcome(i,status){
 }
 </script>
 
+<script>
+/* RULE 1 deep link (2026-11-23): staff alert emails link here with
+   ?booking=<booking ref> / ?ref=<referral booking ref or code> /
+   ?intake=<connection ref> / ?video=<video request id> — land on the
+   record the alert announced, not the console home. Polls the page's
+   own live loaders (the same watcher idiom as the referrals panel)
+   and acts through the page's own open functions. */
+(function(){
+  var qs=new URLSearchParams(location.search);
+  var bookingRef=qs.get('booking'), refRef=qs.get('ref'), intakeRef=qs.get('intake'), videoId=qs.get('video');
+  if(!bookingRef&&!refRef&&!intakeRef&&!videoId) return;
+  function hi(el){ if(!el) return; el.style.outline='3px solid #E8322E'; el.style.outlineOffset='2px'; el.scrollIntoView({behavior:'smooth',block:'center'}); }
+  var tries=0, intakeOpened=false;
+  var iv=setInterval(function(){
+    tries++;
+    if(tries>90){ clearInterval(iv); return; }
+    if(typeof LIVE==='undefined'||!LIVE) return;
+    if(bookingRef){
+      if(typeof liveQueue!=='undefined'){
+        for(var i=0;i<liveQueue.length;i++){
+          if(liveQueue[i]&&liveQueue[i].referenceCode===bookingRef){ clearInterval(iv); jdOpen(null,'queue',i); return; }
+        }
+      }
+      if(typeof liveBoardItems!=='undefined'){
+        for(var k in liveBoardItems){
+          var rec=liveBoardItems[k];
+          if(rec&&rec.item&&rec.item.referenceCode===bookingRef){ clearInterval(iv); jdOpen(null,'board',k); return; }
+        }
+      }
+      if(tries===90&&typeof toast==='function') toast('Booking '+bookingRef+' is not in the live queue or dispatch board — it may already be completed.');
+      return;
+    }
+    if(intakeRef){
+      if(!intakeOpened){ intakeOpened=true; intakeShow(); }
+      if(typeof intakeRecords!=='undefined'&&intakeRecords.length){
+        for(var j=0;j<intakeRecords.length;j++){
+          if(intakeRecords[j]&&intakeRecords[j].reference===intakeRef){
+            clearInterval(iv);
+            var list=document.getElementById('intakeList');
+            hi(list?list.children[j]:null);
+            return;
+          }
+        }
+      }
+      return;
+    }
+    if(videoId){
+      var sel=document.getElementById('vmode-'+videoId);
+      if(sel){ clearInterval(iv); hi(sel.closest('.qcard')||sel); return; }
+      if(tries===90){ var vl=document.getElementById('videoList'); if(vl) vl.scrollIntoView({behavior:'smooth',block:'start'}); }
+      return;
+    }
+    if(refRef){
+      var q=document.getElementById('refQueue');
+      if(q&&q.querySelector('table')){
+        clearInterval(iv);
+        var rows=q.querySelectorAll('tr'), hit=null;
+        for(var r=0;r<rows.length;r++){ if(rows[r].textContent.indexOf(refRef)>-1){ hit=rows[r]; break; } }
+        if(hit){ hit.style.background='#FFF3E0'; hi(hit); }
+        else q.scrollIntoView({behavior:'smooth',block:'start'});
+      }
+      return;
+    }
+  },500);
+})();
+</script>
 </body>
 </html>

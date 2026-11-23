@@ -414,5 +414,32 @@ if(tok()){
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<script>
+/* RULE 1 deep link (2026-11-23): the voicemail staff alert email
+   links here with ?ref=<VM-reference> — land on that outbox entry
+   (highlighted, detail expanded), not the console home. */
+(function(){
+  var ref=new URLSearchParams(location.search).get('ref');
+  if(!ref) return;
+  var tries=0;
+  var iv=setInterval(function(){
+    tries++;
+    if(tries>90){ clearInterval(iv); return; }
+    var rows=document.querySelectorAll('#outboxTable tr[data-row]');
+    for(var i=0;i<rows.length;i++){
+      var cells=rows[i].querySelectorAll('td');
+      var refCell=cells.length>=5?cells[4]:null;
+      if(refCell&&refCell.textContent.trim()===ref){
+        clearInterval(iv);
+        rows[i].style.background='#FFF3E0';
+        rows[i].scrollIntoView({behavior:'smooth',block:'center'});
+        var d=document.getElementById('detail-'+rows[i].getAttribute('data-row'));
+        if(d) d.style.display='table-row';
+        return;
+      }
+    }
+  },500);
+})();
+</script>
 </body>
 </html>

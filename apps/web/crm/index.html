@@ -1317,5 +1317,34 @@ if(window.MutationObserver){ crmWbObserver=new MutationObserver(function(){ crmW
 <script src="/shared/access-badge.js" defer></script>
 <script src="/shared/pepper-chat.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
+<script>
+/* RULE 1 deep link (2026-11-23): staff alert emails for pipeline
+   leads link here with ?ref=<connection reference> — open the
+   Pipeline tab and land on that lead's card (its Open customer
+   record link is the full record view), not the console home. */
+(function(){
+  var ref=new URLSearchParams(location.search).get('ref');
+  if(!ref) return;
+  var opened=false, tries=0;
+  var iv=setInterval(function(){
+    tries++;
+    if(tries>90){ clearInterval(iv); return; }
+    if(!opened){
+      var tok=''; try{ tok=localStorage.getItem('tsos_token')||''; }catch(e){}
+      if(!tok||typeof crmTab!=='function') return;
+      opened=true; crmTab('pipeline');
+    }
+    var cards=document.querySelectorAll('#pipeBoard .pipe-card');
+    for(var i=0;i<cards.length;i++){
+      if(cards[i].textContent.indexOf(ref)>-1){
+        clearInterval(iv);
+        cards[i].style.outline='3px solid #E8322E'; cards[i].style.outlineOffset='2px';
+        cards[i].scrollIntoView({behavior:'smooth',block:'center'});
+        return;
+      }
+    }
+  },500);
+})();
+</script>
 </body>
 </html>
