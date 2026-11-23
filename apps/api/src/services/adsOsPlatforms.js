@@ -6,7 +6,7 @@ import { campaignOutcomeReport, flywheelLoopStages, recordedCostCents } from './
 import { getReferralFunnel } from './referrals.js';
 import { seoConfigured } from './googleSeo.js';
 import { mediaFacebookConnectionState } from './mediaFacebook.js';
-import { queueSummary as facebookOsQueueSummary } from './facebookOs.js';
+import { adsStreamCounts, queueSummary as facebookOsQueueSummary } from './facebookOs.js';
 
 /**
  * Top Speed Ads OS — the UNIFIED advertising feed (2026-11-22,
@@ -37,6 +37,13 @@ import { queueSummary as facebookOsQueueSummary } from './facebookOs.js';
  *                  plans and the referral / review / install
  *                  flywheel serving the network AND outside
  *                  advertisers (under the Advertiser Console).
+ *   facebook-os    Top Speed Facebook OS Manager — the official
+ *                  Page's streaming post queue + recorded activity
+ *                  (added 2026-11-23 with the Facebook OS build).
+ *   ads-stream     Top Speed Ads — Streaming — the attraction
+ *                  stream's counts: POSTED ads-style posts and the
+ *                  surfaces carrying them LIVE (added 2026-11-23
+ *                  with the social + ads streaming build).
  *
  * The two faces are grouped in the payload (group
  * "local-marketing-os") and share one SOCIAL element: the social
@@ -116,6 +123,13 @@ export const ADS_OS_PLATFORMS = [
     name: 'Top Speed Facebook OS Manager',
     console: 'Facebook OS Manager',
     role: 'The official Facebook Page, integrated: the daily streaming post queue (Top Speed Posts by Pepper + daily formats), recorded Page activity, and Facebook Ads drafts — Meta API writes are disabled, so drafts are planning records and enabling happens in Ads Manager.',
+    consoleUrl: 'https://topspeedserviceos.com/facebook-os',
+  },
+  {
+    key: 'ads-stream',
+    name: 'Top Speed Ads — Streaming',
+    console: 'Facebook OS Manager',
+    role: 'The customer-attraction streaming system: the POSTED ads-style posts (AD_IDEA + CUSTOM — the formats the console records ads under) and the standing offer cards (the published rate card + referral terms), streamed from the public /ads-os/stream endpoint onto the fleet surfaces that carry the shared ads-stream include. Organic only — nothing here enables or funds an ad.',
     consoleUrl: 'https://topspeedserviceos.com/facebook-os',
   },
 ];
@@ -289,6 +303,15 @@ async function facebookOsMetrics() {
   };
 }
 
+// ─── Top Speed Ads — Streaming ────────────────────────────────────
+// The attraction stream's own counts (services/facebookOs.js):
+// POSTED ad posts, the latest one's date, and how many fleet
+// surfaces carry the stream LIVE. The public stream itself is
+// GET /api/v1/ads-os/stream (POSTED ad-format posts + offer cards).
+async function adsStreamMetrics() {
+  return adsStreamCounts();
+}
+
 const METRIC_BUILDERS = {
   'top-speed-ads': topSpeedAdsMetrics,
   'ads-console': adsConsoleMetrics,
@@ -296,6 +319,7 @@ const METRIC_BUILDERS = {
   'marketing-os': marketingOsMetrics,
   flywheel: flywheelMetrics,
   'facebook-os': facebookOsMetrics,
+  'ads-stream': adsStreamMetrics,
 };
 
 /**

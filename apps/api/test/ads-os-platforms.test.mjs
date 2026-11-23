@@ -182,10 +182,10 @@ try {
   check('configured, correct key → 200', ok.status === 200, `status ${ok.status}: ${ok.text.slice(0, 200)}`);
   const data = ok.j.data || {};
   const platforms = data.platforms || {};
-  check('order lists all six platforms',
-    JSON.stringify(data.order) === JSON.stringify(['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os']),
+  check('order lists all seven platforms',
+    JSON.stringify(data.order) === JSON.stringify(['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os', 'ads-stream']),
     JSON.stringify(data.order));
-  for (const key of ['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os']) {
+  for (const key of ['top-speed-ads', 'ads-console', 'local-os', 'marketing-os', 'flywheel', 'facebook-os', 'ads-stream']) {
     check(`section ${key}: available`, platforms[key]?.available === true, JSON.stringify(platforms[key]).slice(0, 200));
   }
 
@@ -262,6 +262,21 @@ try {
     fly.funnel?.intakeEvents === 1 && fly.funnel?.appInstalls === 1 && fly.funnel?.reviewRequestsQueued === 1
       && fly.funnel?.codesIssued === 1 && fly.funnel?.linkClicks === 3,
     JSON.stringify(fly.funnel));
+
+  // Top Speed Ads — Streaming (2026-11-23): in skeleton mode no
+  // stream posts exist, so the section must answer honestly with
+  // zero posted ad posts, no latest date, and no LIVE surfaces.
+  const stream = platforms['ads-stream']?.metrics || {};
+  check('ads-stream: 0 posted ad posts in skeleton, latest null',
+    stream.adPostsPosted === 0 && stream.latestAdPostedAt === null,
+    JSON.stringify(stream));
+  check('ads-stream: 0 LIVE surfaces in skeleton, 10 surfaces known',
+    stream.adStreamSurfacesLive === 0 && stream.streamSurfacesLive === 0 && stream.surfacesKnown === 10,
+    JSON.stringify(stream));
+  const oneStream = await get(PORT_B, `${AGGREGATE}/ads-stream`, DUMMY_KEY);
+  check('per-platform ads-stream → 200 with the section',
+    oneStream.status === 200 && oneStream.j.data?.key === 'ads-stream' && oneStream.j.data?.available === true,
+    `status ${oneStream.status}`);
 
   const one = await get(PORT_B, `${AGGREGATE}/local-os`, DUMMY_KEY);
   check('per-platform local-os → 200 with the section',

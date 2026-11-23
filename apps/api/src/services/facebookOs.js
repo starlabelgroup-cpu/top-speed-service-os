@@ -353,6 +353,117 @@ export async function publicFeed(limit = 10) {
   return { generatedAt: new Date().toISOString(), page: { id: FACEBOOK_OS_PAGE.id, name: FACEBOOK_OS_PAGE.name, url: FACEBOOK_OS_PAGE.url }, posts };
 }
 
+// ─── Top Speed Ads streaming (public attraction stream) ─────────────
+
+/**
+ * The standing offers the attraction stream carries as DATA. These
+ * are the platform's own published terms, stated exactly as the
+ * flagship itself publishes them — the rate card from the homepage
+ * flat-pricing block (and the payments configuration's $99
+ * diagnostic) and the referral terms from the /refer page. They are
+ * standing offers, not metrics: no counts, no results, nothing
+ * estimated. If the published terms ever change, this block is
+ * updated in the same change — the stream never advertises a price
+ * or a reward the platform does not actually offer.
+ */
+export const ADS_STREAM_OFFERS = [
+  {
+    key: 'rate-card',
+    kind: 'RATE_CARD',
+    title: 'Flat-rate pricing — no surprises',
+    lines: [
+      '$99 residential diagnostic, collected at booking and credited toward an approved repair',
+      'Repair labor $210 flat · Installation labor $150 flat',
+      'Parts & materials at written quote — no work without your approved written quote',
+      'Commercial service is priced by custom quote',
+    ],
+    cta: { label: 'Book a repair', url: 'https://topspeedserviceos.com/book' },
+  },
+  {
+    key: 'referral-rewards',
+    kind: 'REFERRAL',
+    title: 'Refer & earn — Top Speed referral rewards',
+    lines: [
+      '$25 service credit for each friend whose job is completed and paid',
+      '$35 each from your 5th through 9th completed referral · $50 each from your 10th on',
+      'One-time bonuses: $100 at 10 lifetime referrals · $250 at 25',
+      'Your friend gets $25 off their first repair · Credits expire 12 months after the day they are issued',
+    ],
+    cta: { label: 'Get your referral link', url: 'https://topspeedserviceos.com/refer' },
+  },
+];
+
+/**
+ * Which stream formats count as ads. AD_IDEA is the stream's ad
+ * format, and CUSTOM is what the console actually recorded the
+ * published ads-style posts under (verified against the live feed
+ * on 2026-11-23: Brand Master, Rate Card, 9 Services, Speedy AI
+ * and Referral ads all carry format CUSTOM). POSTED records are
+ * immutable by design, so those posts can never be re-tagged —
+ * the stream serves both formats or it never shows the real ads.
+ */
+const ADS_STREAM_FORMATS = ['AD_IDEA', 'CUSTOM'];
+
+/**
+ * The public advertising stream (Top Speed Ads, 2026-11-23): the
+ * POSTED stream posts in the ad formats (see ADS_STREAM_FORMATS) —
+ * the ads-style posts Pepper published on the official Page behind
+ * Ramone's approval, each carrying its real facebook.com URL
+ * (Rule 1) — plus the standing offer cards above. POSTED only,
+ * exactly like the feed: drafts and queued posts never appear
+ * here, and when no ad post has been posted yet the posts list is
+ * honestly empty (the offer cards still render — they are standing
+ * offers, not posts).
+ */
+export async function adsStream(limit = 10) {
+  const rows = (await facebookOsPostsRepo.listPosted(50)).filter((r) => ADS_STREAM_FORMATS.includes(r.format));
+  const posts = [];
+  for (const row of rows.slice(0, limit)) {
+    const syndication = await facebookOsSyndicationRepo.list({ postId: row.id, status: 'LIVE' });
+    posts.push({
+      id: row.id,
+      title: row.title,
+      copy: row.copy,
+      format: row.format,
+      mediaUrl: row.mediaUrl,
+      mediaKind: row.mediaKind,
+      // Rule 1: the card links to the ad post itself on Facebook.
+      url: row.facebookUrl,
+      postedAt: row.postedAt,
+      page: { name: row.pageName, url: FACEBOOK_OS_PAGE.url },
+      carriedOn: syndication.map((s) => ({ surface: s.surface, deepLink: s.deepLink })),
+    });
+  }
+  return {
+    generatedAt: new Date().toISOString(),
+    page: { id: FACEBOOK_OS_PAGE.id, name: FACEBOOK_OS_PAGE.name, url: FACEBOOK_OS_PAGE.url },
+    offers: ADS_STREAM_OFFERS,
+    posts,
+  };
+}
+
+/**
+ * The Ads OS platforms-feed section for the streaming system:
+ * counts from the same repos the console reads — how many ad-format
+ * posts are POSTED, when the latest went up, and on how many fleet
+ * surfaces the stream is carried LIVE (syndication rows). Counts
+ * and labels only, like every other section of that feed.
+ */
+export async function adsStreamCounts() {
+  const posted = (await facebookOsPostsRepo.listPosted(500)).filter((r) => ADS_STREAM_FORMATS.includes(r.format));
+  const live = await facebookOsSyndicationRepo.list({ status: 'LIVE', limit: 1000 });
+  const postedIds = new Set(posted.map((r) => r.id));
+  const adSurfaces = new Set(live.filter((s) => postedIds.has(s.postId)).map((s) => s.surface));
+  const allSurfaces = new Set(live.map((s) => s.surface));
+  return {
+    adPostsPosted: posted.length,
+    latestAdPostedAt: posted[0]?.postedAt ?? null,
+    adStreamSurfacesLive: adSurfaces.size,
+    streamSurfacesLive: allSurfaces.size,
+    surfacesKnown: SYNDICATION_SURFACES.length,
+  };
+}
+
 // ─── Facebook Ads (drafts + the honest boundary) ────────────────────
 
 export const META_ADS_BOUNDARY = {

@@ -1011,6 +1011,11 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
      until a real post exists — same honesty rule as Recent Repairs
      above. -->
 <div data-tsos-fb-feed data-limit="3"></div>
+<!-- TOP SPEED ADS STREAM (2026-11-23): the attraction stream fed by
+     /api/v1/ads-os/stream — POSTED ads-style posts (each linking to
+     the real Facebook post) plus the standing offer cards. The
+     shared include renders NOTHING until a real ad post exists. -->
+<div data-tsos-ads-stream data-limit="3"></div>
 <script>
 (function(){
   var sec=document.getElementById('recentRepairs');
@@ -2732,6 +2737,7 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
 <script src="/shared/page-slider.js" defer></script>
 <script src="/shared/google-reviews.js" defer></script>
 <script src="/shared/facebook-feed.js" defer></script>
+<script src="/shared/ads-stream.js" defer></script>
 <script src="/shared/language-toggle.js" defer></script>
 </body>
 </html>

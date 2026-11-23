@@ -10,6 +10,7 @@ import {
   AD_DRAFT_STATUSES,
   SYNDICATION_STATUSES,
   SYNDICATION_SURFACES,
+  adsStream,
   createAdDraft,
   createStreamPost,
   ingestSeriesWeek,
@@ -79,6 +80,23 @@ function parseLimit(value, fallback, max) {
 router.get('/facebook-os/feed', async (req, res, next) => {
   try {
     return res.json({ data: await publicFeed(parseLimit(req.query.limit, 10, 50)) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ─── Public Ads stream: POSTED ad posts + standing offers ──────────
+// Top Speed Ads streaming (2026-11-23): the customer-attraction
+// stream — POSTED ad-format posts only, each with its real
+// facebook.com URL, plus the standing offer cards (the published
+// rate card + referral terms) served as data. Read-only and
+// public like the feed above; it lives on this router because the
+// stream is served from the Facebook OS stream tables, and the
+// route is a single exact path — no gate is widened by it.
+
+router.get('/ads-os/stream', async (req, res, next) => {
+  try {
+    return res.json({ data: await adsStream(parseLimit(req.query.limit, 10, 50)) });
   } catch (error) {
     return next(error);
   }
