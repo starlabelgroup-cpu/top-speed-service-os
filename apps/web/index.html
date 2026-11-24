@@ -558,14 +558,14 @@ body:has(#speedyPanel.open) #speedyBtn{opacity:0;visibility:hidden;pointer-event
           <span class="nh-brand-name">APPLIANCE</span>
           <span class="nh-brand-tag">THE FASTER, THE BETTER.</span>
         </div>
-        <a class="nh-book" href="#book">BOOK SERVICE</a>
+        <a class="nh-book" href="/book">BOOK SERVICE</a>
       </div>
       <div class="nh-photo"><img src="/banner-hero-web.jpg" alt="Top Speed Appliance — refrigerator, washer, dryer, oven and microwave service across Broward County"></div>
       <h1 class="nh-h1">Appliance Repair.<br>Smarter. Faster.<br>Connected.</h1>
       <p class="nh-sub">Professional home and commercial appliance service, powered by Speedy AI and Top Speed Service OS.</p>
       <div class="nh-chips"><span class="nh-chip"><i><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.8l5 5L19.5 7"/></svg></i>$99 diagnostic credited toward repair</span><span class="nh-chip"><i><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.8l5 5L19.5 7"/></svg></i>Warranty-backed repairs</span><span class="nh-chip"><i><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.8l5 5L19.5 7"/></svg></i>Residential &amp; Commercial</span></div>
       <div class="nh-grid2">
-        <a class="nh-cta nh-red" href="#book"><span class="nh-ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg></span>Book a Repair</a>
+        <a class="nh-cta nh-red" href="/book"><span class="nh-ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg></span>Book a Repair</a>
         <a class="nh-cta nh-navy" href="/speedy"><span class="nh-ic"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="8.5" width="15" height="11" rx="3"/><path d="M12 8.5V4.8M12 4.8h.01" stroke="#E8322E"/><path d="M8.8 13.4h.01M15.2 13.4h.01" stroke-width="2.6"/><path d="M9.4 16.6h5.2M2.8 12.5v3M21.2 12.5v3"/></svg></span>Ask Speedy AI</a>
       </div>
       <div class="nh-grid3">
@@ -1255,126 +1255,24 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
 <section id="book" style="background:var(--navy-2);">
   <div class="wrap">
     <div class="sec-head reveal">
-      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Smart Booking — Now Live</span>
+      <span class="tag" style="background:rgba(255,255,255,.1);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Book a Home Repair</span>
       <h2 style="color:#fff">Booked in about <em style="color:var(--electric)">60 seconds.</em></h2>
       <p style="color:#B9CFF2">Pick a real window, tell us what's broken, and you're on the board. Service Setters dispatch reviews every request, and we confirm your appointment by phone.</p>
-      <p style="color:#fff; margin-top:10px;"><b>The classic way:</b> most customers book right here with the form below. <b>Prefer the high-tech way?</b> Tap <b><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Ask Speedy</b> (bottom right) and just say what's wrong — Speedy books it right in the chat.</p>
+      <p style="color:#fff; margin-top:10px;"><b>One door:</b> every Book button on this site opens the same dedicated booking page — no scattered forms. <b>Questions first?</b> Ask Speedy (bottom right) for answers and photo diagnosis in the chat.</p>
     </div>
     <div class="book-grid">
-      <div class="card book-form reveal" style="padding:0;overflow:visible;background:transparent;border:none;box-shadow:none">
-        <!-- SMART BOOKING WIZARD — five steps, one coordinated experience with
-             Speedy AI. Submits to the live Service OS (POST /speedy/book,
-             source WEB_FORM): creates the customer + service request in the
-             CRM, queues the Resend/Twilio confirmation, and lands the job in
-             the Service Setters dispatch queue, trackable in Track My Tech. -->
-        <style>
-          #wiz{background:transparent;color:#fff;padding:4px 4px 0}
-          #wiz .wb{color:var(--red);font-weight:800;letter-spacing:1.5px;font-size:13px}
-          #wiz .ws{color:#9db6dd;font-size:13px;margin-top:2px}
-          #wiz h3{font-size:clamp(22px,3.4vw,30px);margin:12px 0 4px;color:#fff}
-          #wiz .wtag{color:#c7d6f2;font-size:14px}
-          #wizSegs{display:flex;gap:6px;margin:18px 0 8px}
-          #wizSegs i{flex:1;height:6px;border-radius:99px;background:#33507e}
-          #wizSegs i.done,#wizSegs i.now{background:var(--red)}
-          #wizSteps{display:flex;gap:6px;padding-bottom:16px}
-          #wizSteps span{flex:1;text-align:center;font-size:12px;color:#8fa8cf;font-weight:600}
-          #wizSteps span.now{color:#fff}
-          #wizBody{background:#fff;color:var(--ink);padding:22px;border-radius:18px;margin-top:16px}
-          #wizBody h4{font-size:21px;color:var(--navy);display:flex;justify-content:space-between;align-items:baseline}
-          #wizBody h4 small{color:#8fa1bb;font-size:13px;font-weight:600}
-.tileGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
-.atile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px;border:1.5px solid #dbe4f0;border-radius:13px;background:#fff;font:inherit;font-size:13.5px;font-weight:700;color:#0A265C;cursor:pointer}
-.atile span{font-size:24px;line-height:1}
-.atile.on{border-color:#E8322E;background:#fdf0ef;box-shadow:0 0 0 1px #E8322E inset}
-.locBtn{margin-top:10px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:10px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
-.locBtn:disabled{opacity:.6;cursor:wait}
-
-          #wizBody label{font-size:13px;font-weight:700;color:#42557a;display:block;margin:14px 0 5px}
-          #wizBody input,#wizBody select,#wizBody textarea{width:100%;padding:13px 16px;border:1.5px solid #ccd8ec;border-radius:999px;font:inherit;font-size:15px;background:#fff;color:var(--ink)}
-          #wizBody textarea{border-radius:16px;min-height:92px;resize:vertical}
-          #wizBody input:focus,#wizBody select:focus,#wizBody textarea:focus{outline:2px solid var(--blue);border-color:var(--blue)}
-          .wizNav{display:flex;justify-content:space-between;gap:12px;margin-top:22px}
-          .wizBack{padding:13px 26px;border-radius:999px;border:1.5px solid #ccd8ec;background:#fff;font:inherit;font-weight:700;cursor:pointer;color:var(--ink)}
-          .wizNext{padding:13px 26px;border-radius:999px;border:none;background:#101828;color:#fff;font:inherit;font-weight:700;cursor:pointer}
-          .wizNext.red{background:var(--red)}
-          .wizNext:disabled{opacity:.55;cursor:wait}
-          #wizErr{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:12px;padding:11px 13px;font-size:14px;margin-top:14px}
-          .winGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:9px;margin-top:6px}
-          .winGrid label{margin:0!important}
-          .winGrid input{position:absolute;opacity:0;pointer-events:none}
-          .winGrid .wc{display:block;text-align:center;padding:12px 6px;border:1.5px solid #ccd8ec;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer;color:#42557a}
-          .winGrid input:checked + .wc{background:var(--navy);color:#fff;border-color:var(--navy)}
-          .winGrid input:disabled + .wc{opacity:.45;cursor:not-allowed;background:#eef2f8}
-          #wizReview{display:grid;gap:8px;font-size:15px}
-          #wizReview .r{display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed #dbe4f0;padding:7px 0}
-          #wizReview .r b{color:var(--navy);text-align:right}
-          #wizReview .r span{color:#5a6b84}
-          #wizPriceLine{background:#f2f6fd;border:1px solid #dbe4f0;border-radius:12px;padding:9px 13px;font-size:13px;color:#42557a;margin-bottom:14px;line-height:1.5}
-          #wizPriceLine b{color:var(--navy)}
-          .wizPrice{border:1.5px solid #dbe4f0;border-radius:14px;padding:4px 14px 8px;margin-top:14px;background:#f8fafd}
-          .wizPrice .ph{font-size:12px;font-weight:800;letter-spacing:1.2px;color:var(--red);padding:10px 0 2px}
-          .wizPrice .pr{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:1px dashed #dbe4f0;font-size:14.5px}
-          .wizPrice .pr:last-child{border-bottom:none}
-          .wizPrice .pr span{color:#5a6b84}
-          .wizPrice .pr b{color:var(--navy);text-align:right;white-space:nowrap}
-          .wphSub{font-size:13px;color:#5a6b84;margin:2px 0 10px;line-height:1.5}
-          .wphRow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-          #wizBody .wphBtn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border:1.5px dashed #b9c8e2;border-radius:999px;background:#fff;font:inherit;font-weight:700;color:var(--navy);cursor:pointer;font-size:14.5px}
-          #wPhotoPrev{width:74px;height:74px;object-fit:cover;border-radius:12px;border:1px solid #dbe4f0}
-          .wphName{font-size:13px;color:#5a6b84;margin-top:8px}
-          .wphRun{margin-top:10px;background:var(--navy);color:#fff;border:none;border-radius:999px;padding:11px 18px;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
-          .wphRun:disabled{opacity:.55;cursor:wait}
-          .wphResult{margin-top:12px;background:#f2f6fd;border:1px solid #dbe4f0;border-radius:14px;padding:13px 15px;font-size:14px;color:#33456b}
-          .wphResult b{color:var(--navy)}
-          .wphResult p{white-space:pre-wrap;margin:6px 0}
-          .wphFine{font-size:12.5px;color:#7c8db0;margin-top:8px}
-          #wizDone{display:none;background:#fff;color:var(--ink);padding:26px 22px;text-align:center;border-radius:18px;margin-top:16px}
-          #wizDone .ref{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;color:var(--navy);letter-spacing:1px}
-          #wizSpeedy{display:flex;align-items:center;gap:12px;background:#123064;color:#fff;border:none;width:100%;padding:16px 22px;font:inherit;font-weight:700;font-size:16px;cursor:pointer;text-align:left;margin-top:14px;border-radius:16px}
-          #wizSpeedy small{display:block;font-weight:500;color:#b9cff2;font-size:13px}
-          #wizSpeedy .bub{margin-left:auto;font-size:22px}
-        </style>
-        <div data-tsos-zip-booking data-photo="1"></div>
-        <button id="wizSpeedy" type="button" onclick="toggleSpeedy()">
-          <span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg> Need help? Ask Speedy AI<small>Rather talk it through? Speedy books it in the chat — same queue, same confirmation.</small></span>
-          <span class="bub"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A1.8 1.8 0 0 1 5.8 3.7h12.4A1.8 1.8 0 0 1 20 5.5v8.3a1.8 1.8 0 0 1-1.8 1.8H13l-4.6 3.9v-3.9H5.8A1.8 1.8 0 0 1 4 13.8z"/><path d="M7.6 9.3h.01M12 9.3h.01M16.4 9.3h.01" stroke-width="2.6" stroke="#E8322E"/></svg></span>
-        </button>
-        <style>
-          .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.55);border-radius:18px;padding:20px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.35),0 0 22px rgba(18,128,255,.18);margin:6px 0 20px;text-align:left}
-          .sbpromo-top{display:flex;gap:15px;align-items:flex-start}
-          .sbpromo-mark{flex:none;width:62px;height:62px}
-          .sbpromo-mark svg{width:62px;height:62px;display:block;filter:drop-shadow(0 0 9px rgba(18,128,255,.65))}
-          .sbpromo-tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.14em;color:#9FD0FF;background:rgba(18,128,255,.16);border:1px solid rgba(25,167,255,.45);padding:3px 9px;border-radius:99px}
-          .sbpromo-h{font-size:22px;line-height:1.2;font-weight:800;margin:8px 0 5px;color:#fff}
-          .sbpromo-p{font-size:14.5px;line-height:1.5;color:#C7D8F5;margin:0}
-          .sbpromo-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
-          .sbpromo-chip{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;color:#EAF3FF}
-          .sbpromo-chip svg{width:17px;height:17px;flex:none;filter:drop-shadow(0 0 3px rgba(25,167,255,.65))}
-          .sbpromo-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:17px}
-          .sbpromo-cta{display:inline-flex;align-items:center;gap:9px;background:var(--red);color:#fff;border:none;border-radius:999px;padding:13px 24px;font:inherit;font-weight:800;font-size:16px;cursor:pointer;box-shadow:0 8px 20px rgba(227,30,36,.35)}
-          .sbpromo-cta svg{width:19px;height:19px;flex:none}
-          .sbpromo-note{font-size:12.5px;color:#9DB6DD;line-height:1.45}
-          @media(max-width:480px){.sbpromo{padding:16px}.sbpromo-h{font-size:19px}.sbpromo-cta{width:100%;justify-content:center}}
-        </style>
-        <div class="sbpromo">
-          <div class="sbpromo-top">
-            <span class="sbpromo-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22" fill="#0A265C"/><circle cx="24" cy="24" r="21" fill="none" stroke="#1280FF" stroke-width="2"/><path d="M24 7l3.7 11.8L39.5 22.5l-11.8 3.7L24 38l-3.7-11.8L8.5 22.5l11.8-3.7z" fill="#fff"/><circle cx="24" cy="22.5" r="2.4" fill="#E8322E"/></svg></span>
-            <div>
-              <span class="sbpromo-tag">SMART BOOKING · SPEEDY AI</span>
-              <h3 class="sbpromo-h">Book the smart way — with Speedy AI</h3>
-              <p class="sbpromo-p">Prefer the high-tech way? Just tell Speedy what's wrong — type it, say it, or snap a photo. Speedy asks a couple of quick questions and books your visit right in the chat.</p>
-            </div>
-          </div>
-          <div class="sbpromo-chips">
-            <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 4.5h16v10.2h-9.2l-4.4 3.9v-3.9H4z"/><circle cx="8.4" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.2" cy="9.6" r="1.2" fill="currentColor" stroke="none"/><circle cx="16" cy="9.6" r="1.2" fill="currentColor" stroke="none"/></svg>Type it, say it, or snap a photo</span>
-            <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M3.5 3.5H11L20.5 13 13 20.5 3.5 11z"/><circle cx="8" cy="8" r="1.2" fill="currentColor" stroke="none"/><path d="M10.4 13.4l1.9 1.9 3.5-3.8"/></svg>$99 diagnostic — credited toward your repair</span>
-            <span class="sbpromo-chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 21L6.6 11.6a5.4 5.4 0 1 1 10.8 0z"/><circle cx="12" cy="10.6" r="1.2" fill="currentColor" stroke="none"/></svg>Live 8-stage tracking after you book</span>
-          </div>
-          <div class="sbpromo-row">
-            <button type="button" class="sbpromo-cta" onclick="toggleSpeedy()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M12 3l1.8 5.7 5.7 1.8-5.7 1.8L12 18l-1.8-5.7L4.5 10.5l5.7-1.8z"/><circle cx="12" cy="10.5" r="1.2" fill="#fff" stroke="none"/></svg>Book with Speedy</button>
-            <span class="sbpromo-note">The classic form above is how most customers book — same queue, same confirmation either way.</span>
-          </div>
-        </div>
+      <div class="card book-form reveal" style="text-align:left">
+        <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">One dedicated booking page</span>
+        <h3 style="margin-top:14px;color:#fff">Book a Home Repair</h3>
+        <p style="color:#B9CFF2;margin-top:8px;line-height:1.55">Every booking on Top Speed starts on one page — the classic form. Start with your ZIP so we confirm your area, pick your appliance, choose a real arrival window, and you’re on the board.</p>
+        <ul style="color:#B9CFF2;line-height:1.6;margin-top:10px">
+          <li><b style="color:#fff">Step 1 — ZIP &amp; area check:</b> 65 cities across Broward, Palm Beach &amp; Miami-Dade.</li>
+          <li><b style="color:#fff">Step 2 — Appliance &amp; details:</b> tell us what’s broken — a photo helps the tech arrive ready.</li>
+          <li><b style="color:#fff">Step 3 — Pick a live window:</b> real availability, confirmed by phone.</li>
+        </ul>
+        <a class="btn" style="background:var(--red);color:#fff;width:100%;margin-top:16px" href="/book">Book a Repair →</a>
+        <a class="btn" style="background:#fff;color:var(--navy);width:100%;margin-top:10px" href="/speedy">Questions first? Ask Speedy AI</a>
+        <p style="color:#9DB6DD;font-size:13px;margin-top:12px">$99 diagnostic collected at booking, credited in full toward your approved repair.</p>
       </div>
       <aside class="card fee-card reveal" id="pricing">
         <span class="tag" style="background:rgba(255,255,255,.12);color:#BFD8FF;border-color:rgba(255,255,255,.25)">Pricing &amp; Warranty</span>
@@ -1438,7 +1336,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           <li>Priority booking windows</li>
         </ul>
         <p class="fine">Pricing shown at signup.</p>
-        <a class="btn btn-ghost" style="width:100%" href="#book">Start with a booking</a>
+        <a class="btn btn-ghost" style="width:100%" href="/book">Start with a booking</a>
       </div>
       <div class="card plan hot">
         <span class="tag red" style="position:absolute;top:-13px;left:20px">Most popular direction</span>
@@ -1452,7 +1350,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
           <li>Service history &amp; warranty tracking</li>
         </ul>
         <p class="fine">Pricing shown at signup.</p>
-        <a class="btn btn-blue" style="width:100%" href="#book">Start with a booking</a>
+        <a class="btn btn-blue" style="width:100%" href="/book">Start with a booking</a>
       </div>
       <div class="card plan">
         <h3>Property &amp; Commercial</h3>
@@ -1678,7 +1576,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
         <h3 style="font-size:17px;margin-bottom:12px">Book service</h3>
         <p><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> <a href="tel:+18444607038"><b>844-460-7038</b></a><br>
         <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.7"/><path d="M3.3 12h17.4M12 3.3c2.6 2.4 3.9 5.3 3.9 8.7s-1.3 6.3-3.9 8.7c-2.6-2.4-3.9-5.3-3.9-8.7S9.4 5.7 12 3.3z" stroke="#E8322E"/></svg> <a href="https://topspeedappliance.net" target="_blank" rel="noopener">topspeedappliance.net</a> (current live site)<br>
-        <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> <a href="#book">Smart Booking</a><br>
+        <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M7.5 3.5v4M16.5 3.5v4" stroke="#E8322E"/><path d="M7.4 14h2.2M11 14h2.2M14.6 14h2.2M7.4 17h2.2M11 17h2.2" stroke-width="2"/></svg> <a href="/book">Smart Booking</a><br>
         <svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8.5V6.8A2.8 2.8 0 0 1 6.8 4h1.7M15.5 4h1.7A2.8 2.8 0 0 1 20 6.8v1.7M20 15.5v1.7a2.8 2.8 0 0 1-2.8 2.8h-1.7M8.5 20H6.8A2.8 2.8 0 0 1 4 17.2v-1.7"/><circle cx="12" cy="12" r="3.4"/><circle cx="12" cy="12" r="1.15" fill="#E8322E" stroke="none"/></svg> <a href="#diagnose">AI Diagnosis</a></p>
       </div>
       <div>
@@ -1728,7 +1626,7 @@ function nhAsk(e){ e.preventDefault(); var t=(document.getElementById('nhAskInpu
       <p style="color:#b9cdf0;margin-top:6px;font-size:15.5px;line-height:1.5;">Your appliance repair starts here — same-day slots across Broward, Palm Beach &amp; Miami-Dade. <b style="color:#fff;">$99 diagnostic, collected at booking and credited toward your repair.</b></p>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <a href="#book" style="background:#e01a22;color:#fff;padding:13px 22px;border-radius:9px;font-weight:800;">Book Service</a>
+      <a href="/book" style="background:#e01a22;color:#fff;padding:13px 22px;border-radius:9px;font-weight:800;">Book Service</a>
       <a href="/speedy" style="background:transparent;color:#fff;padding:13px 22px;border-radius:9px;font-weight:800;border:1.5px solid #5b84c4;">Ask Speedy AI</a>
     </div>
   </div>
@@ -1889,7 +1787,7 @@ function runDiagnosis(){
   var a=document.getElementById('dgAppliance').value;
   var sym=document.getElementById('dgSymptom').value;
   var name=document.querySelector('#dgAppliance option:checked').textContent;
-  if(!dgPhoto){ document.getElementById('dgResult').innerHTML='<span class="tag">Add a photo first</span><p style="margin-top:10px">Speedy\'s diagnosis reads your actual appliance photo — add one above and run the diagnosis for a live AI read. No photo? <a href="#book"><b>Book the $99 diagnostic</b></a> and the technician diagnoses on site.</p>'; return; }
+  if(!dgPhoto){ document.getElementById('dgResult').innerHTML='<span class="tag">Add a photo first</span><p style="margin-top:10px">Speedy\'s diagnosis reads your actual appliance photo — add one above and run the diagnosis for a live AI read. No photo? <a href="/book"><b>Book the $99 diagnostic</b></a> and the technician diagnoses on site.</p>'; return; }
   var box=document.getElementById('dgResult');
   box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Reading your photo\u2026</h3><p>Speedy is reviewing your photo with the symptom: <b>'+esc(sym)+'</b>. This takes a few seconds.</p>';
   fetch(SP_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:dgPhoto,note:name+': '+sym})})
@@ -1901,10 +1799,10 @@ function runDiagnosis(){
         '<h3 style="margin-top:10px">'+esc(name)+' \u2014 Speedy\u2019s preliminary read</h3>'+
         '<p style="white-space:pre-wrap">'+esc(reply)+'</p>'+
         '<p class="fine">Preliminary read from your photo \u2014 a technician confirms the diagnosis in person. Your $99 diagnostic is credited toward the repair.</p>'+
-        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+18444607038">Call 844-460-7038</a></div>';
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="/book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+18444607038">Call 844-460-7038</a></div>';
     })
     .catch(function(){
-      box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Speedy could not read that photo</h3><p>Try a clearer, well-lit photo \u2014 or skip ahead: book the $99 diagnostic (credited toward your repair) and the technician will diagnose it in person.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+18444607038">Call 844-460-7038</a></div>';
+      box.innerHTML='<span class="tag live">\u25cf Speedy AI \u2014 Live</span><h3 style="margin-top:10px">Speedy could not read that photo</h3><p>Try a clearer, well-lit photo \u2014 or skip ahead: book the $99 diagnostic (credited toward your repair) and the technician will diagnose it in person.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="/book">Book the $99 diagnostic</a><a class="btn btn-ghost" style="padding:11px 18px;font-size:15px" href="tel:+18444607038">Call 844-460-7038</a></div>';
     });
 }
 function runEstimate(){
@@ -1930,7 +1828,7 @@ function runEstimate(){
     '<h3 style="margin-top:10px">'+esc(issue)+'</h3><p>'+esc(detail)+'</p>'+
     '<div class="fine">How Top Speed pricing works</div>'+pricing+
     '<p class="fine">No ranges and no invented totals: your exact price is set in a written quote after the in-person diagnostic, and no work starts without your approved written quote. Commercial service is priced by custom quote — call 844-460-7038.</p>'+
-    '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="#book">Lock it in — book now</a>';
+    '<a class="btn btn-red" style="padding:11px 18px;font-size:15px" href="/book">Lock it in — book now</a>';
 }
 
 /* ---------- live tracking (real bookings) ---------- */
@@ -2451,7 +2349,6 @@ function spReceipt(channel){ var ref=window._spRef, d=window._spBook; if(!ref||!
 <script src="/shared/google-reviews.js" defer></script>
 <script src="/shared/facebook-feed.js" defer></script>
 <script src="/shared/ads-stream.js" defer></script>
-<script src="/shared/zip-booking.js" defer></script>
 <script src="/shared/language-toggle.js" defer></script>
 </body>
 </html>
