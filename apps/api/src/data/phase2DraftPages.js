@@ -88,7 +88,7 @@ const CITY_PAGES = [
     hero: 'Coral Springs is a master-planned city of family neighborhoods, and many of its homes are reaching the age where the original washer, dryer, and refrigerator all start asking for attention at once. Our office is right next door in Coconut Creek, so Coral Springs bookings get the full platform: online booking, a Service Setter confirmation call, and live job tracking.',
     faqLocal: {
       q: 'Where is Top Speed Appliance based?',
-      a: 'Our office is at 6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073 — right next door to Coral Springs, which is one of our twelve covered Broward service cities. Technicians are dispatched from the office to your home.',
+      a: 'Top Speed is a service-area business based in the Coconut Creek / Coral Springs area — there is no storefront to visit. Our technicians come to your home or business anywhere across our 65-city South Florida service area.',
     },
   },
   {

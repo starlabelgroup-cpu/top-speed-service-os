@@ -73,7 +73,7 @@ export function buildSitePack() {
       answer:
         `${P.platformName} is run by ${P.platformOwner} ("Top Speed Appliance Network"), an appliance repair and installation company based in Coconut Creek, Florida — slogan: "${P.slogan}" ` +
         `You can reach the team at ${PHONE} or service@topspeedappliance.net, Monday–Friday, 8 AM–7 PM — we're closed on Saturday and Sunday. ` +
-        `The office is at ${P.officeAddress}; technicians are dispatched from there, and repairs happen at your home or business, not at the office.`,
+        `Top Speed is a service-area business — there is no storefront or public office address. Technicians are dispatched to your home or business across our 65-city South Florida service area; repairs happen at your location.`,
       link: `${SITE}/about`,
     },
     {

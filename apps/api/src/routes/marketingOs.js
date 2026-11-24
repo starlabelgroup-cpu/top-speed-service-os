@@ -417,7 +417,7 @@ router.get('/marketing-os/publish-feed', (req, res) => {
       legalName: 'Top Speed Appliance LLC',
       phone: '844-460-7038',
       email: 'service@topspeedappliance.net',
-      address: '6810 N State Rd 7, Suite 341, Coconut Creek, FL 33073',
+      address: 'Service-area business — 65 cities across Broward, Palm Beach & Miami-Dade (no public street address)',
       hours: 'Mon-Fri 8am-7pm',
       website: 'https://topspeedserviceos.com',
     },
