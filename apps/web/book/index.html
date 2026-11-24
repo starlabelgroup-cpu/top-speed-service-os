@@ -157,91 +157,10 @@
   <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="segLabels" id="segLabels"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
 
-  <div class="card" id="formCard">
-    <div class="pane" data-pane="1">
-      <h2>Contact details <small>1 of 5</small></h2>
-      <label for="wName">Full name</label><input id="wName" autocomplete="name" placeholder="Your name">
-      <label for="wPhone">Mobile phone</label><input id="wPhone" type="tel" autocomplete="tel" placeholder="(954) 000-0000">
-      <label for="wEmail">Email (for your confirmation)</label><input id="wEmail" type="email" autocomplete="email" placeholder="you@example.com">
-      <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
-      <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="wWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
-    </div>
-    <div class="pane" data-pane="2" hidden>
-      <h2>Service Location <small>2 of 5</small></h2>
-      <label for="wAddress">Street Address</label><input id="wAddress" autocomplete="street-address" placeholder="Service address">
-      <label for="wCity">City</label>
-      <select id="wCity"><option value="">City</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
-      <label for="wZip">ZIP Code</label><input id="wZip" inputmode="numeric" autocomplete="postal-code" placeholder="ZIP code">
-      <button type="button" class="locBtn" id="wLocBtn"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Use my location</button>
-    </div>
-    <div class="pane" data-pane="3" hidden>
-      <h2>What needs fixing? <small>3 of 5</small></h2>
-      <label for="wAppliance">Appliance</label>
-      <input type="hidden" id="wAppliance" value="">
-            <div class="tileGrid">
-              <button type="button" class="atile" data-v="Refrigerator"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 9.5h14" stroke="#E8322E"/><path d="M8 6.2v1M8 12.6v3.2" stroke-width="2.2"/></svg></span>Refrigerator</button>
-              <button type="button" class="atile" data-v="Washer"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a2 2 0 1 1 2 2 4 4 0 1 1-4-4 6.2 6.2 0 1 1 6.2 6.2" stroke="#E8322E"/><circle cx="12" cy="12" r=".9" fill="#E8322E" stroke="none"/></svg></span>Washer</button>
-              <button type="button" class="atile" data-v="Dryer"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 4L3.8 7l1.7 3.2 2-1v11h9v-11l2 1L20.2 7 15.5 4a3.5 3.5 0 0 1-7 0z"/><path d="M9.8 13.2h4.4" stroke="#E8322E"/></svg></span>Dryer</button>
-              <button type="button" class="atile" data-v="Oven / Range"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5c.8 3-1.6 4.6-2.9 6.1C7.7 11.2 7 12.6 7 14.2A5 5 0 0 0 17 14.2c0-1.2-.5-2.3-1.1-3.3-.5 1-1.2 1.7-2.1 2.1.3-2.7-.4-6.4-1.8-9.5z"/><path d="M12 20.2a2.6 2.6 0 0 1-2.6-2.6c0-1 .5-1.8 1.1-2.5.5-.6 1-1.2 1.5-2 .5.8.9 1.4 1.4 2 .6.7 1.1 1.5 1.1 2.5A2.6 2.6 0 0 1 12 20.2z" stroke="#E8322E"/></svg></span>Oven / Range</button>
-              <button type="button" class="atile" data-v="Dishwasher"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 3.5v6M4.2 3.5v3.4a2.3 2.3 0 0 0 4.6 0V3.5M6.5 9.5V20.5" transform="translate(.4 0)"/><path d="M17.2 3.5c1.8 1.4 2.6 3.8 2.6 6 0 2-1 3-2.6 3v8" stroke="#E8322E"/></svg></span>Dishwasher</button>
-              <button type="button" class="atile" data-v="Freezer / Ice Maker"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9M12 3l-2 2.2M12 3l2 2.2M12 21l-2-2.2M12 21l2-2.2" stroke="#E8322E"/></svg></span>Freezer / Ice Maker</button>
-              <button type="button" class="atile" data-v="Microwave"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 20.5c-1.4-2.3 1.4-3.6 0-5.9M12 20.5c-1.4-2.3 1.4-3.6 0-5.9M17 20.5c-1.4-2.3 1.4-3.6 0-5.9" stroke="#E8322E"/><path d="M8.2 9.6c-1-1.8.8-2.8.4-4.6M12.4 9.6c-1-1.8.8-2.8.4-4.6M16.6 9.6c-1-1.8.8-2.8.4-4.6" opacity=".75"/></svg></span>Microwave</button>
-              <button type="button" class="atile" data-v="Garbage Disposal"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h15M9.5 6V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 6.5l1 13a2 2 0 0 0 2 1.8h5a2 2 0 0 0 2-1.8l1-13"/><path d="M10 10.5v6M14 10.5v6" stroke="#E8322E"/></svg></span>Garbage Disposal</button>
-              <button type="button" class="atile" data-v="Installation"><span><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4.4 4.4 0 0 1 5.9-4L18 4.9l2.3 2.3 2.7-2.6a4.4 4.4 0 0 1-5.9 5.2L8 18.9a2 2 0 0 1-2.9 0l-1.2-1.2a2 2 0 0 1 0-2.9z" transform="translate(-1.2 .6) scale(.94)"/></svg></span>Installation</button>
-            </div>
-      <label for="wIssue">What's it doing (or not doing)?</label><textarea id="wIssue" placeholder="e.g. Fridge is warm and the ice maker stopped, started two days ago…"></textarea>
-    </div>
-    <div class="pane" data-pane="4" hidden>
-      <h2>Pick a window <small>4 of 5</small></h2>
-      <p style="color:var(--mut);font-size:14px;margin-top:10px">Two-hour arrival windows. Your Service Setter confirms the exact appointment by text before dispatch.</p>
-      <label for="wDate">Preferred day</label><input type="date" id="wDate">
-      <p id="wAvailNote" style="color:var(--mut);font-size:13px;margin:6px 0 0"></p>
-      <div class="winGrid">
-        <label><input type="radio" name="wwin" value="08-10"><span class="wc">8–10 AM</span></label>
-        <label><input type="radio" name="wwin" value="10-12"><span class="wc">10 AM–12 PM</span></label>
-        <label><input type="radio" name="wwin" value="12-14"><span class="wc">12–2 PM</span></label>
-        <label><input type="radio" name="wwin" value="14-16"><span class="wc">2–4 PM</span></label>
-        <label><input type="radio" name="wwin" value="16-18"><span class="wc">4–6 PM</span></label>
-      </div>
-      <img src="/api/v1/app/scenario-images/book-calendar-pick.webp" alt="Illustration: a customer picking an appointment day on a calendar while booking an appliance repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
-      <img src="/api/v1/app/scenario-images/book-window-choice.webp" alt="Illustration: a customer choosing their two-hour arrival window while booking an appliance repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
-      <label for="wNote">Anything else? (optional)</label><input id="wNote" placeholder="Gate code, parking, pets…">
-    </div>
-    <div class="pane" data-pane="5" hidden>
-      <h2>Review &amp; book <small>5 of 5</small></h2>
-      <div class="review" id="review" style="margin-top:12px"></div>
-      <p style="font-size:13.5px;color:var(--mut);margin-top:14px">The <b>$99 diagnostic</b> is collected at booking and <b>credited in full toward your repair</b>. A Service Setter reviews every request and confirms by phone/text — then you can follow the visit live in Track My Tech.</p>
-      <p style="font-size:13.5px;color:var(--mut);margin-top:10px">Flat rates, no surprises: <b>repair labor is a flat $210</b> and <b>installation is a flat $150</b>. Parts and materials are priced in your written quote — and no work ever starts without your approved written quote.</p>
-      <img src="/api/v1/app/scenario-images/pay-quote-tablet.webp" alt="Illustration: a customer reviewing the written quote on a tablet before approving the repair — no work starts without an approved quote" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:14px" loading="lazy">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
-        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-approve-tap.webp" alt="Illustration: a customer tapping to approve the written quote before any repair work starts" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Approve the quote</figcaption></figure>
-        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-phone-tap.webp" alt="Illustration: a customer paying for the repair with a tap of their phone" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Tap to pay</figcaption></figure>
-        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-card-reader.webp" alt="Illustration: a customer paying by card on the technician's card reader" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">Or pay by card</figcaption></figure>
-        <figure style="margin:0"><img src="/api/v1/app/scenario-images/pay-no-surprise.webp" alt="Illustration: a customer calmly reviewing the final bill — the approved quote with no surprise charges" style="width:100%;height:auto;border-radius:12px;display:block" loading="lazy"><figcaption style="font-size:12.5px;color:var(--mut);margin-top:5px;line-height:1.4">No surprises — the price you approved</figcaption></figure>
-      </div>
-    </div>
-    <div class="err" id="err"></div>
-    <div class="nav">
-      <button class="back" id="backBtn" type="button" style="visibility:hidden">Back</button>
-      <button class="next" id="nextBtn" type="button">Continue&nbsp;&nbsp;→</button>
-    </div>
-  </div>
-
+  <div data-tsos-zip-booking></div>
   <img src="/api/v1/app/platform-images/booking-form-classic.webp" alt="Illustration: a customer calmly filling in the classic booking form on a tablet at the kitchen table" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:16px" loading="lazy">
 
-  <div class="card doneBox" id="doneCard" hidden>
-    <div style="font-size:42px"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M8 12.4l2.8 2.8L16.4 9.4" stroke="#E8322E"/></svg></div>
-    <h2 style="justify-content:center">You're on the board!</h2>
-    <p style="color:var(--mut);margin-top:8px">Your booking reference:</p>
-    <div class="ref" id="doneRef">TS-XXXXXX</div>
-    <p style="color:var(--mut)">Your request is in the Service Setters dispatch queue and your confirmation is on its way by text/email. A setter confirms your window shortly.</p>
-    <img src="/api/v1/app/platform-images/booking-dispatch.webp" alt="Illustration: a Service Setters dispatcher with a headset handing a job card toward a service van — your request enters the dispatch queue" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
-    <img src="/api/v1/app/scenario-images/book-confirmation.webp" alt="Illustration: a customer receiving their booking confirmation by text and email after booking a repair" style="width:100%;height:auto;border-radius:14px;display:block;margin:10px 0 4px" loading="lazy">
-    <div class="doneBtns">
-      <a href="/track" style="background:var(--red2);color:#fff"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Track this job</a>
-      <a href="/garage" style="background:#0A265C;color:#fff">My Appliances</a>
-    </div>
-  </div>
+
 
   <style>
     .sbpromo{background:linear-gradient(135deg,#071A40 0%,#0A265C 58%,#0E3276 100%);border:1px solid rgba(25,167,255,.5);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(0,0,0,.4),0 0 22px rgba(18,128,255,.16);margin-top:20px;text-align:left;}
@@ -290,151 +209,8 @@
 
 <script>
 (function(){
-  var API='https://top-speed-service-os.vercel.app/api/v1';
-  var step=1, busy=false;
   var $=function(id){return document.getElementById(id)};
-  var panes=[].slice.call(document.querySelectorAll('.pane'));
-  var segs=[].slice.call(document.querySelectorAll('#segs i'));
-  var labels=[].slice.call(document.querySelectorAll('#segLabels span'));
   $('menuBtn').addEventListener('click',function(){var m=$('menu');m.style.display=m.style.display==='block'?'none':'block';});
-  function show(n){
-    step=n;
-    panes.forEach(function(p){p.hidden=(+p.dataset.pane!==n)});
-    segs.forEach(function(s,i){s.className=i<n-1?'done':(i===n-1?'now':'')});
-    var NAMES=['Contact','Location','Appliance','Schedule','Review'];
-    labels.forEach(function(l,i){l.className=i<n-1?'done':(i===n-1?'now':'');l.textContent=(i<n-1?'':'')+NAMES[i];});
-    $('backBtn').style.visibility=n===1?'hidden':'visible';
-    $('nextBtn').innerHTML=n===5?'<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirm booking':'Continue&nbsp;&nbsp;→';
-    $('err').style.display='none';
-    if(n===5) fillReview();
-    window.scrollTo({top:0,behavior:'smooth'});
-  }
-  function err(m){var e=$('err');e.textContent=m;e.style.display='block';}
-  function val(id){return $(id).value.trim()}
-          var atiles=[].slice.call(document.querySelectorAll('.atile'));
-          atiles.forEach(function(t){t.addEventListener('click',function(){atiles.forEach(function(x){x.classList.remove('on')});t.classList.add('on');document.getElementById('wAppliance').value=t.getAttribute('data-v');});});
-
-          var locBtn=document.getElementById('wLocBtn');
-          if(locBtn) locBtn.addEventListener('click',function(){
-            if(!navigator.geolocation){err('Location is not available on this device \u2014 type the ZIP instead.');return;}
-            locBtn.disabled=true; var old=locBtn.innerHTML; locBtn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> Finding you\u2026';
-            function done(){locBtn.disabled=false;locBtn.innerHTML=old;}
-            navigator.geolocation.getCurrentPosition(function(p){
-              fetch('https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat='+p.coords.latitude+'&lon='+p.coords.longitude)
-              .then(function(r){return r.json()}).then(function(j){
-                var a=(j&&j.address)||{}; var zip=(a.postcode||'').slice(0,5);
-                if(/^\d{5}$/.test(zip)) document.getElementById('wZip').value=zip;
-                var city=a.city||a.town||a.village||a.suburb||'';
-                var sel=document.getElementById('wCity');
-                if(city&&sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].text.toLowerCase()===city.toLowerCase()){sel.selectedIndex=i;break;}}}
-                done(); if(!zip) err('We found your location but not a ZIP \u2014 type it in and continue.');
-              }).catch(function(){done();err('Could not read your location \u2014 type the ZIP instead.');});
-            },function(){done();err('Location permission was not given \u2014 type the ZIP instead.');},{timeout:10000});
-          });
-
-  function valid(n){
-    if(n===1){
-      if(val('wName').length<2) return 'Please add your name so the setter knows who to ask for.';
-      if(val('wPhone').replace(/\D/g,'').length<7) return 'Please add a mobile number — your confirmation and updates go there.';
-      var em=val('wEmail'); if(em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return 'That email doesn\'t look complete — fix it or leave it blank.';
-    }
-    if(n===2){
-      if(val('wAddress').length<5) return 'Please add the street address for the visit.';
-      if(!val('wCity')) return 'Please choose your city — we serve 104 cities across Broward, Palm Beach & Miami-Dade.';
-      if(!/^\d{5}$/.test(val('wZip'))) return 'Please add the 5-digit ZIP code.';
-    }
-    if(n===3){
-      if(!val('wAppliance')) return 'Please choose the appliance.';
-      if(val('wIssue').length<3) return 'A sentence about the problem helps the tech bring the right parts.';
-    }
-    if(n===4){
-      if(!document.querySelector('input[name="wwin"]:checked')) return 'Please pick an arrival window.';
-    }
-    return '';
-  }
-  function esc(s){return s.replace(/</g,'&lt;')}
-  /* Live arrival-window picker (2026-11-20, A1): the day's windows
-     come from GET /speedy/availability — a closed window (full, or
-     already past today) renders visibly closed and cannot be picked.
-     If the read fails, every window stays pickable and the office
-     confirms by text as before: the picker never blocks a booking. */
-  function dstr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate());}
-  function dayLabel(v){ try{ return new Date(v+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return v; } }
-  function applyAvail(j){
-    var byId={}; (j.data.windows||[]).forEach(function(w){byId[w.id]=w;});
-    document.querySelectorAll('input[name="wwin"]').forEach(function(inp){
-      var w=byId[inp.value]; if(!w) return;
-      var card=inp.nextElementSibling;
-      if(w.status==='CLOSED'){
-        inp.disabled=true; if(inp.checked) inp.checked=false;
-        card.textContent=w.label+(w.reason==='FULL'?' \u2014 Full':' \u2014 Passed');
-      } else {
-        inp.disabled=false; card.textContent=w.label;
-      }
-    });
-    var note=$('wAvailNote');
-    if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked \u2014 full and passed windows are closed.':'Pick a day and window \u2014 your Service Setter confirms the exact appointment by text.';
-  }
-  function loadAvail(){
-    var d=$('wDate'); if(!d||!d.value) return;
-    fetch(API+'/speedy/availability?date='+encodeURIComponent(d.value))
-      .then(function(r){return r.json();})
-      .then(function(j){ if(j&&j.data&&j.data.windows) applyAvail(j); })
-      .catch(function(){ /* leave every window pickable */ });
-  }
-  (function initAvail(){
-    var d=$('wDate'); if(!d) return;
-    var today=dstr(new Date());
-    d.min=today; if(!d.value) d.value=today;
-    d.addEventListener('change',loadAvail);
-    loadAvail();
-  })();
-  function fillReview(){
-    var win=document.querySelector('input[name="wwin"]:checked');
-    var rows=[['Name',val('wName')],['Phone',val('wPhone')],['Email',val('wEmail')||'—'],['Address',val('wAddress')],['City / ZIP',val('wCity')+' '+val('wZip')],['Appliance',val('wAppliance')],['Issue',val('wIssue')],['Preferred day',dayLabel(val('wDate'))],['Window',win?win.nextElementSibling.textContent:'—']];
-    $('review').innerHTML=rows.map(function(r){return '<div class="r"><span>'+r[0]+'</span><b>'+esc(r[1])+'</b></div>'}).join('');
-  }
-  function submit(){
-    var win=document.querySelector('input[name="wwin"]:checked').value;
-    var issue=val('wIssue'); var note=val('wNote'); if(note) issue+=' (Note: '+note+')';
-    var payload={customer:{name:val('wName'),phone:val('wPhone'),address:val('wAddress')},city:val('wCity'),zip:val('wZip'),appliance:val('wAppliance'),issue:issue,preferredWindow:win,preferredDate:val('wDate')||undefined,source:'WEB_FORM',companyWebsite:val('wWebsite')};
-    try{ var refCode=sessionStorage.getItem('tsos_referral_code'); if(refCode) payload.referralCode=refCode; }catch(e){}
-    try{
-      var q=new URLSearchParams(location.search);
-      var src=q.get('source'); if(src==='FLAGSHIP_NET'||src==='SPEEDY_CHAT') payload.source=src;
-      var via=q.get('via'); if(via) payload.via=via;
-      var sc=q.get('src'); if(sc && !payload.via) payload.via=sc;
-      var pg=q.get('page'); if(pg) payload.page=pg;
-      var us=q.get('utm_source'); if(us) payload.utmSource=us;
-      var um=q.get('utm_medium'); if(um) payload.utmMedium=um;
-      var uc=q.get('utm_campaign'); if(uc) payload.utmCampaign=uc;
-    }catch(e){}
-    try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
-    var em=val('wEmail'); if(em) payload.customer.email=em;
-    busy=true; var btn=$('nextBtn'); btn.disabled=true; btn.textContent='Booking…';
-    fetch(API+'/speedy/book',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
-    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j}})})
-    .then(function(x){
-      if(!x.ok){
-        if(x.j && x.j.serviceCities) throw new Error('That address is outside our current service area. We serve: '+x.j.serviceCities.join(', ')+'. Call 844-460-7038 and we\'ll tell you honestly if we can make an exception.');
-        throw new Error((x.j&&x.j.error)||'The booking did not go through.');
-      }
-      $('doneRef').textContent=x.j.data.referenceCode;
-      try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(x.j.data.referenceCode); }catch(e){}
-      $('formCard').hidden=true; $('doneCard').hidden=false;
-      segs.forEach(function(s){s.className='done'}); labels.forEach(function(l){l.className='done'});
-      window.scrollTo({top:0,behavior:'smooth'});
-    })
-    .catch(function(e){ err(e.message+' You can also book with Speedy below, or call 844-460-7038.'); })
-    .finally(function(){ busy=false; btn.disabled=false; btn.innerHTML='<svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.8l5.2 5.2L20 6.8"/><circle cx="19" cy="17.5" r="1.15" fill="#E8322E" stroke="none"/></svg> Confirm booking'; });
-  }
-  $('backBtn').addEventListener('click',function(){ if(step>1) show(step-1); });
-  $('nextBtn').addEventListener('click',function(){
-    if(busy) return;
-    var v=valid(step); if(v){ err(v); return; }
-    if(step<5) show(step+1); else submit();
-  });
-  show(1);
 })();
 </script>
 <!-- TSE-PANEL v1 -->
@@ -469,6 +245,7 @@
 </footer>
 <script src="/speedy-widget.js" defer></script><script src="/flywheel-banner.js" data-category="APPLIANCE_SERVICE" defer></script>
 <script src="/shared/attribution-capture.js" defer></script>
+<script src="/shared/zip-booking.js" defer></script>
 <script src="/speedy-guide.js" defer></script>
 <script src="/shared/page-slider.js" defer></script>
 <script src="/shared/language-toggle.js" defer></script>

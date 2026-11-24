@@ -359,6 +359,12 @@ router.get('/bookos/setter-queue', ...staffOnly, async (req, res) => {
       area: effectiveArea(booking),
       areaStatus: effectiveAreaStatus(booking),
       needsAreaReview: effectiveAreaStatus(booking) === 'AREA_REVIEW',
+      // Book by Location (2026-11-23): the device-verified location,
+      // present only when the customer used "Use my location".
+      geoCity: booking.geoCity || null,
+      geoTier: booking.geoTier || null,
+      geoLat: booking.geoLat ?? null,
+      geoLng: booking.geoLng ?? null,
       serviceAddress: booking.serviceAddress || booking.customer?.address || null,
       appliance: booking.appliance,
       payment: paymentSummary(booking.id),

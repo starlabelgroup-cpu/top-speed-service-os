@@ -355,6 +355,18 @@ model ServiceRequest {
   area                              String?
   areaStatus                        String        @default("IN_AREA")
   serviceAddress                    String?
+  // Book by Location (2026-11-23): the customer's device-verified
+  // location, captured only when they tapped "Use my location" on a
+  // booking surface and submitted. geoCity/geoTier are the SERVER's
+  // own geo match (services/geoMatch.js — nearest published city +
+  // the area model's tier), never the client's claim; geoLat/geoLng
+  // are the submitted coordinates rounded to 3 decimals (~100 m —
+  // area precision, not a tracked position). All null on every
+  // booking made without the location tap.
+  geoCity                           String?
+  geoTier                           String?
+  geoLat                            Float?
+  geoLng                            Float?
   // Working-state documents the API services operate on. The relational
   // core (customer, status, fee, assignments) stays in columns/tables;
   // these JSON columns carry the booking's event history, its dispatch

@@ -1194,6 +1194,7 @@ export function notifyNewBooking(booking, source = null) {
     city: booking.city || null,
     lines: [
       `Service: ${booking.appliance}${booking.issue ? ` — ${booking.issue}` : ''}`,
+      ...(booking.geoCity ? [`Location-verified: ${booking.geoCity} · ${booking.geoTier}`] : []),
       ...(booking.customer?.phone ? [`Phone: ${booking.customer.phone}`] : []),
       ...(booking.preferredWindow ? [`Preferred window: ${booking.preferredWindow}`] : []),
       `Status: ${booking.status}`,

@@ -4,6 +4,7 @@ import { speedyChat, speedyDiagnose, speedyExtractBooking, speedyExtractBulk, sp
 import { governanceGate } from '../services/speedyPolicy.js';
 import { composeFallbackAnswer } from '../knowledge/index.js';
 import { normalizeCityName, resolveArea } from '../config/serviceAreas.js';
+import { geoFieldsFrom } from '../services/geoMatch.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
@@ -284,6 +285,16 @@ const guestBookingSchema = z.object({
   // the client passes the chat sessionId so the session is marked
   // converted in Chat Insights. Optional; never blocks a booking.
   sessionId: z.string().trim().max(64).optional(),
+  // Book by Location (2026-11-23): the optional device-verified geo
+  // fields the shared location card / ZIP wizard attach when the
+  // customer tapped "Use my location". Every field degrades to
+  // undefined on ANY malformed value (.catch) — geo metadata can
+  // never fail a booking — and the stored values are re-derived
+  // server-side by geoFieldsFrom, never trusted as sent.
+  geoCity: z.string().trim().max(80).optional().catch(undefined),
+  geoTier: z.string().trim().max(24).optional().catch(undefined),
+  geoLat: z.number().min(-90).max(90).optional().catch(undefined),
+  geoLng: z.number().min(-180).max(180).optional().catch(undefined),
   // Finer-grained attribution (Fusion absorb Stage 3): landing page,
   // [via:] surface tag, UTM campaign fields. Optional — see
   // services/attribution.js for the accepted shapes.
@@ -330,6 +341,10 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
   // service terms.
   const resolution = resolveArea({ city, zip });
   const canonicalCity = normalizeCityName(city) || resolution.area || city.trim();
+  // Book by Location: server-derived geo fields (nulls when the
+  // customer never tapped "Use my location"). The area model above
+  // stays authoritative for coverage — geo is dispatch metadata.
+  const geo = geoFieldsFrom(parsed.data);
 
   // Intake shield (2026-11-19): honeypot — a filled hidden field is
   // an automated form-filler. Answer with the same 201 shape a real
@@ -374,6 +389,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     area: resolution.area,
     areaStatus: resolution.areaStatus,
     serviceAddress: customer.address || null,
+    ...geo,
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
@@ -399,6 +415,14 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     areaSource: resolution.areaSource,
     zipAreas: resolution.zipAreas,
   });
+  if (geo.geoCity) {
+    addBookingEvent(booking, 'GEO_VERIFIED', 'book-by-location', {
+      geoCity: geo.geoCity,
+      geoTier: geo.geoTier,
+      geoLat: geo.geoLat,
+      geoLng: geo.geoLng,
+    });
+  }
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);

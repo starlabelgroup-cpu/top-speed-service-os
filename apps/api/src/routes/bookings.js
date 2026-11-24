@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { resolveArea, SERVICE_CITIES } from '../config/serviceAreas.js';
+import { geoFieldsFrom } from '../services/geoMatch.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistAssignment, persistAssignmentsForBooking, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
@@ -41,6 +42,13 @@ const bookingSchema = z.object({
   // customer picked with their window (YYYY-MM-DD) — a stated
   // preference beside preferredWindow, never an appointment.
   preferredDate: z.string().refine(isValidDateString, { message: 'preferredDate must be a valid YYYY-MM-DD date' }).optional(),
+  // Book by Location (2026-11-23): the same optional geo fields the
+  // guest twin accepts — degrade-to-undefined on any malformed value,
+  // re-derived server-side by geoFieldsFrom, never trusted as sent.
+  geoCity: z.string().trim().max(80).optional().catch(undefined),
+  geoTier: z.string().trim().max(24).optional().catch(undefined),
+  geoLat: z.number().min(-90).max(90).optional().catch(undefined),
+  geoLng: z.number().min(-180).max(180).optional().catch(undefined),
   // Top Speed Ads attribution (2026-11-17): the same optional
   // first-touch capture the guest twin (POST /speedy/book) accepts —
   // landing page, UTM fields and the platform click IDs. Absent or
@@ -117,6 +125,9 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   // terms is sent for them).
   const resolution = resolveArea({ city, zip });
   const canonicalCity = SERVICE_CITIES.includes(city) ? city : resolution.area || city;
+  // Book by Location: server-derived geo fields (nulls without the
+  // tap). The area model above stays authoritative for coverage.
+  const geo = geoFieldsFrom(parsed.data);
 
   const customerRecord = {
     id: createId(),
@@ -142,6 +153,7 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     area: resolution.area,
     areaStatus: resolution.areaStatus,
     serviceAddress: customer.address || null,
+    ...geo,
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
@@ -171,6 +183,14 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     areaSource: resolution.areaSource,
     zipAreas: resolution.zipAreas,
   });
+  if (geo.geoCity) {
+    addBookingEvent(booking, 'GEO_VERIFIED', 'book-by-location', {
+      geoCity: geo.geoCity,
+      geoTier: geo.geoTier,
+      geoLat: geo.geoLat,
+      geoLng: geo.geoLng,
+    });
+  }
   store.bookings.set(booking.id, booking);
   await persistCustomer(customerRecord);
   await persistBooking(booking);

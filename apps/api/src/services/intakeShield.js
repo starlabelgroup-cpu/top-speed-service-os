@@ -90,6 +90,11 @@ export const INTAKE_RATE_LIMITS = {
   // in-handler. A generous hourly cap: real conversation is fine,
   // scripted spam is not.
   listingActions: { limit: 30, windowMs: 60 * 60 * 1000 },
+  // Book by Location (POST /geo/match, 2026-11-23): a public coverage
+  // lookup that stores nothing — a customer taps once, maybe retries
+  // after moving; sized like the estimate-approval door rather than
+  // an intake form.
+  geoMatch: { limit: 60, windowMs: 60 * 60 * 1000 },
 };
 
 /** True when the hidden honeypot field arrived filled — a bot tell. */
