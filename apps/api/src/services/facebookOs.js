@@ -5,6 +5,7 @@ import {
 } from '../db/facebookOsRepo.js';
 import { MEDIA_FACEBOOK_PAGE, mediaFacebookConnectionState } from './mediaFacebook.js';
 import { claimCheckError, findClaimViolations } from './claimCheck.js';
+import { offerVisualKey, pepperVisualUrl, postVisualKey } from './pepperVisualUrl.js';
 
 /**
  * Top Speed Facebook OS Manager (2026-11-23) — the streaming posts +
@@ -410,7 +411,7 @@ export const ADS_STREAM_OFFERS = [
  * immutable by design, so those posts can never be re-tagged —
  * the stream serves both formats or it never shows the real ads.
  */
-const ADS_STREAM_FORMATS = ['AD_IDEA', 'CUSTOM'];
+export const ADS_STREAM_FORMATS = ['AD_IDEA', 'CUSTOM'];
 
 /**
  * The public advertising stream (Top Speed Ads, 2026-11-23): the
@@ -435,6 +436,12 @@ export async function adsStream(limit = 10) {
       format: row.format,
       mediaUrl: row.mediaUrl,
       mediaKind: row.mediaKind,
+      // Pepper visual (2026-11-23): every stream item carries the
+      // URL of its designed Pepper graphic. The renderer prefers a
+      // real mediaUrl when the record has one; the visual is the
+      // guaranteed graphic for the records that don't (today, all
+      // of them — the stream rendered text-only before this).
+      visual: pepperVisualUrl(postVisualKey(row), 'landscape'),
       // Rule 1: the card links to the ad post itself on Facebook.
       url: row.facebookUrl,
       postedAt: row.postedAt,
@@ -445,7 +452,12 @@ export async function adsStream(limit = 10) {
   return {
     generatedAt: new Date().toISOString(),
     page: { id: FACEBOOK_OS_PAGE.id, name: FACEBOOK_OS_PAGE.name, url: FACEBOOK_OS_PAGE.url },
-    offers: ADS_STREAM_OFFERS,
+    // Standing offers carry their Pepper visual too — the offer
+    // cards were the stream's other text-only surface.
+    offers: ADS_STREAM_OFFERS.map((offer) => ({
+      ...offer,
+      visual: pepperVisualUrl(offerVisualKey(offer), 'landscape'),
+    })),
     posts,
   };
 }

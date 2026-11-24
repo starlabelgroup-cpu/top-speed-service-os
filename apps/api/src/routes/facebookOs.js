@@ -6,8 +6,21 @@ import {
   facebookOsPostsRepo,
   facebookOsSyndicationRepo,
 } from '../db/facebookOsRepo.js';
+import { campaignEngineRepo } from '../db/campaignEngineRepo.js';
+import { DIVISIONS } from '../services/campaignFactory.js';
+import {
+  composePepperVisual,
+  ctaLabelForLanding,
+  visualLineFromCopy,
+} from '../services/pepperVisual.js';
+import {
+  PEPPER_VISUAL_SIZES,
+  campaignKeyFromVisualKey,
+} from '../services/pepperVisualUrl.js';
 import {
   AD_DRAFT_STATUSES,
+  ADS_STREAM_FORMATS,
+  ADS_STREAM_OFFERS,
   SYNDICATION_STATUSES,
   SYNDICATION_SURFACES,
   adsStream,
@@ -99,6 +112,68 @@ router.get('/facebook-os/feed', async (req, res, next) => {
 router.get('/ads-os/stream', async (req, res, next) => {
   try {
     return res.json({ data: await adsStream(parseLimit(req.query.limit, 10, 50)) });
+  } catch (error) {
+    return next(error);
+  }
+});
+
+// ─── Public Pepper visuals: a designed graphic per in-house ad ────
+// Ramone's directive (2026-11-23): every in-house Flywheel ad
+// carries a Pepper image graphic. The graphic is composed on
+// demand from the ad record's own fields by services/pepperVisual
+// (claim-gated — a record whose strings fail the gate gets NO
+// visual, and this route answers 404). Keys (services/
+// pepperVisualUrl.js): offer-<key> for the standing offers,
+// post-<id> for POSTED ad-format stream posts only (drafts never
+// render publicly), campaign-<base64url(campaignKey)> for Campaign
+// Engine registry records. ?size=landscape|square|story.
+
+router.get('/ads-os/visual/:file', async (req, res, next) => {
+  try {
+    const file = String(req.params.file || '');
+    if (!file.endsWith('.svg')) return res.status(404).type('text/plain').send('Not found');
+    const key = file.slice(0, -'.svg'.length);
+    const size = PEPPER_VISUAL_SIZES[req.query.size] ? req.query.size : 'landscape';
+    let svg = null;
+    if (key.startsWith('offer-')) {
+      const offer = ADS_STREAM_OFFERS.find((o) => o.key === key.slice('offer-'.length));
+      if (offer) {
+        svg = composePepperVisual({
+          kicker: 'Top Speed Offer',
+          headline: offer.title,
+          subline: offer.lines?.[0] || '',
+          ctaLabel: offer.cta?.label || '',
+          size,
+        });
+      }
+    } else if (key.startsWith('post-')) {
+      const post = await facebookOsPostsRepo.findById(key.slice('post-'.length));
+      if (post && post.status === 'POSTED' && ADS_STREAM_FORMATS.includes(post.format)) {
+        svg = composePepperVisual({
+          kicker: 'Top Speed Ads',
+          headline: String(post.title || '').replace(/^Ads:\s*/i, ''),
+          subline: visualLineFromCopy(post.copy, { skipFirstLine: true }),
+          size,
+        });
+      }
+    } else if (key.startsWith('campaign-')) {
+      const campaignKey = campaignKeyFromVisualKey(key);
+      const record = campaignKey ? await campaignEngineRepo.findByKey(campaignKey) : null;
+      if (record) {
+        const divisionName = DIVISIONS.find((d) => d.key === record.division)?.name || 'Top Speed';
+        svg = composePepperVisual({
+          kicker: divisionName,
+          headline: record.subject,
+          subline: visualLineFromCopy(record.copy),
+          ctaLabel: ctaLabelForLanding(record.landingBase),
+          size,
+          divisionKey: record.division,
+        });
+      }
+    }
+    if (!svg) return res.status(404).type('text/plain').send('No visual for this ad');
+    res.set('Cache-Control', 'public, max-age=300');
+    return res.type('image/svg+xml').send(svg);
   } catch (error) {
     return next(error);
   }

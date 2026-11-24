@@ -1,5 +1,11 @@
 import { CITY_SPOTLIGHT_PAGES } from '../data/citySpotlightPages.js';
 import { buildPhase2DraftPages } from '../data/phase2DraftPages.js';
+import {
+  IMAGE_SURFACES,
+  campaignVisualKey,
+  pepperVisualUrl,
+  sizeForSurface,
+} from './pepperVisualUrl.js';
 
 /**
  * Top Speed Campaign Engine — the FACTORY (2026-11-23, Ramone:
@@ -437,7 +443,21 @@ function makeRecord({ batchKey, division, surface, angle, subject, variant, land
     angle,
     subject: subject.label,
     copy,
-    creativeSpec: CREATIVE_SPECS[surface],
+    // Pepper visual (2026-11-23): every record on an image surface
+    // carries the URL of its designed Pepper graphic (rendered on
+    // demand by services/pepperVisual.js, claim-gated there). The
+    // spec is spread per record — CREATIVE_SPECS itself is shared
+    // and never mutated. SMS + SEARCH_AI are text-only surfaces
+    // and get no visual.
+    creativeSpec: {
+      ...CREATIVE_SPECS[surface],
+      ...(IMAGE_SURFACES.includes(surface)
+        ? { visual: pepperVisualUrl(campaignVisualKey(campaignKey), sizeForSurface(surface)) }
+        : {}),
+      ...(surface === 'SOCIAL_IG'
+        ? { visualStory: pepperVisualUrl(campaignVisualKey(campaignKey), 'story') }
+        : {}),
+    },
     landingUrl,
     landingBase,
     sourceTag,

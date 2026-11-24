@@ -33,7 +33,9 @@
     posts = posts.slice(0, Math.max(1, limit));
     var offers = (stream.offers || []).map(function (o) {
       var lines = (o.lines || []).map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('');
-      return '<article class="tsas-offer"><span class="tsas-kicker">Top Speed offer</span>'
+      return '<article class="tsas-offer">'
+        + (o.visual ? '<img class="tsas-visual" src="' + esc(o.visual) + '" alt="" loading="lazy">' : '')
+        + '<span class="tsas-kicker">Top Speed offer</span>'
         + '<h3 class="tsas-title">' + esc(o.title) + '</h3>'
         + '<ul class="tsas-lines">' + lines + '</ul>'
         + (o.cta ? '<a class="tsas-cta" href="' + esc(o.cta.url) + '">' + esc(o.cta.label) + '</a>' : '')
@@ -44,8 +46,12 @@
       if (excerpt.length > 220) excerpt = excerpt.slice(0, 217) + '…';
       var date = '';
       try { date = new Date(p.postedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { /* keep blank */ }
+      // A real recorded graphic (mediaUrl) always wins; the Pepper
+      // visual is the designed fallback so every card carries a
+      // graphic (Pepper visuals on every in-house ad, 2026-11-23).
+      var media = p.mediaUrl || p.visual;
       return '<article class="tsas-card">'
-        + (p.mediaUrl ? '<a class="tsas-media" href="' + esc(p.url) + '" target="_blank" rel="noopener"><img src="' + esc(p.mediaUrl) + '" alt="" loading="lazy"></a>' : '')
+        + (media ? '<a class="tsas-media" href="' + esc(p.url) + '" target="_blank" rel="noopener"><img src="' + esc(media) + '" alt="" loading="lazy"></a>' : '')
         + '<div class="tsas-body"><span class="tsas-kicker">Top Speed Ads' + (date ? ' · ' + esc(date) : '') + '</span>'
         + '<h3 class="tsas-title">' + esc(p.title) + '</h3>'
         + '<p class="tsas-copy">' + esc(excerpt) + '</p>'
@@ -70,6 +76,7 @@
         + '.tsas-card,.tsas-offer{background:#fff;border:1px solid #d8e2f2;border-radius:14px;overflow:hidden;display:flex;flex-direction:column}'
         + '.tsas-offer{border-color:#f0c4c6;background:#fff8f8;padding:16px;gap:8px}'
         + '.tsas-media img{width:100%;height:auto;display:block}'
+        + '.tsas-visual{width:100%;height:auto;display:block;border-radius:10px}'
         + '.tsas-body{padding:16px;display:flex;flex-direction:column;gap:8px}'
         + '.tsas-kicker{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#5a6b82}'
         + '.tsas-offer .tsas-kicker{color:#b02020}'

@@ -8,6 +8,12 @@ import {
   generateDailyBatch,
   generateLaunchBatch,
 } from './campaignFactory.js';
+import { campaignVisualUrl } from './pepperVisualUrl.js';
+import {
+  composePepperVisual,
+  ctaLabelForLanding,
+  visualLineFromCopy,
+} from './pepperVisual.js';
 
 /**
  * Top Speed Campaign Engine — the service (2026-11-23). Persists
@@ -50,11 +56,30 @@ async function queueSocialSelection(records, actorId) {
       await campaignEngineRepo.update(record.id, { linkedRef: existing.id });
       continue;
     }
+    // Pepper visual (2026-11-23): the queued draft carries its
+    // designed Pepper graphic as its media, so the approval-card
+    // preview in the Facebook OS queue shows the graphic, not a
+    // text-only card. The URL is set only when the composer passes
+    // the claim gate for this record's own strings — a gated
+    // record queues without a graphic rather than with a bad one.
+    // (At publish time Pepper's flow records the real post graphic
+    // exactly as today; this media belongs to the DRAFT.)
+    const divisionName = DIVISIONS.find((d) => d.key === record.division)?.name || 'Top Speed';
+    const visualOk = composePepperVisual({
+      kicker: divisionName,
+      headline: record.subject,
+      subline: visualLineFromCopy(record.copy),
+      ctaLabel: ctaLabelForLanding(record.landingBase),
+      size: 'square',
+      divisionKey: record.division,
+    });
     const post = await createStreamPost({
       seriesKey: CAMPAIGN_ENGINE_SERIES_KEY,
       format: record.angle === 'CITY_SPOTLIGHT' ? 'CITY_SPOTLIGHT' : 'CUSTOM',
       title: record.name.slice(0, 120),
       copy: record.copy.slice(0, 1024),
+      mediaUrl: visualOk ? campaignVisualUrl(record) : null,
+      mediaKind: visualOk ? 'PEPPER_VISUAL' : null,
       linkUrl,
       statusNote: `Campaign Engine ${record.batchKey} · ${record.campaignKey} — queued by the factory; publish only through the lifecycle + owner approval.`,
     }, actorId);
@@ -141,7 +166,17 @@ export async function campaignEngineSummary() {
 }
 
 export async function listCampaigns(filters) {
-  return campaignEngineRepo.list(filters);
+  const rows = await campaignEngineRepo.list(filters);
+  // Pepper visual at READ time (2026-11-23): records persisted
+  // before the factory carried visuals in creativeSpec get theirs
+  // computed from their own campaignKey + surface here — the
+  // registry rows themselves are never rewritten for a graphic.
+  return rows.map((row) => {
+    const visual = campaignVisualUrl(row);
+    if (!visual) return row; // text-only surface — no visual, ever
+    if (row.creativeSpec?.visual) return { ...row, visual: row.creativeSpec.visual };
+    return { ...row, visual, creativeSpec: { ...(row.creativeSpec || {}), visual } };
+  });
 }
 
 export async function listBatches(limit) {
