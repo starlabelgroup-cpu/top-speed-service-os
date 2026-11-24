@@ -37,16 +37,22 @@ const LAYOUTS = {
     pad: 64, badge: 78, brandSize: 30, brandSubSize: 14,
     kickerSize: 19, headlineSize: 58, headlineChars: 30, headlineLines: 3, headlineLeading: 70,
     subSize: 27, subChars: 60, subLines: 2, subLeading: 40, pillSize: 23, pillHeight: 54,
+    // CTA (offer) rhythm: tighter than the post rhythm so the
+    // pill always lands above the sign-off bar — see the layout
+    // note in composePepperVisual.
+    headlineLeadingCta: 62, subGapCta: 50, subLeadingCta: 38, pillGapCta: 22,
   },
   square: {
     pad: 72, badge: 88, brandSize: 33, brandSubSize: 15,
     kickerSize: 20, headlineSize: 64, headlineChars: 24, headlineLines: 3, headlineLeading: 78,
     subSize: 29, subChars: 54, subLines: 3, subLeading: 44, pillSize: 24, pillHeight: 58,
+    headlineLeadingCta: 70, subGapCta: 54, subLeadingCta: 42, pillGapCta: 28,
   },
   story: {
     pad: 84, badge: 96, brandSize: 36, brandSubSize: 16,
     kickerSize: 22, headlineSize: 72, headlineChars: 22, headlineLines: 4, headlineLeading: 88,
     subSize: 32, subChars: 48, subLines: 3, subLeading: 48, pillSize: 26, pillHeight: 62,
+    headlineLeadingCta: 80, subGapCta: 58, subLeadingCta: 46, pillGapCta: 30,
   },
 };
 
@@ -193,35 +199,76 @@ export function composePepperVisual({ kicker, headline, subline, ctaLabel, size 
   parts.push(`<text x="${L.pad + L.badge + 24}" y="${L.pad + L.brandSize + 6}" font-family="${FONT}" font-size="${L.brandSize}" font-weight="800" letter-spacing="4" fill="#FFFFFF">PEPPER</text>`);
   parts.push(`<text x="${L.pad + L.badge + 25}" y="${L.pad + L.brandSize + 6 + L.brandSubSize + 12}" font-family="${FONT}" font-size="${L.brandSubSize}" font-weight="700" letter-spacing="3" fill="#8FB0E8">TOP SPEED SERVICE OS</text>`);
 
-  let y = L.pad + L.badge + 26 + 6 + L.kickerSize + 34;
-  parts.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.kickerSize}" font-weight="800" letter-spacing="3" fill="#FF8A7A">${xmlEscape(cleanKicker.toUpperCase())}</text>`);
+  // Layout discipline (fixed 2026-11-23): the sign-off bar owns
+  // the bottom of the card. Its geometry is computed FIRST, the
+  // body (kicker / headline / subline / CTA pill) is composed
+  // into its own group, and if the body's bottom would enter the
+  // footer's zone the whole body shifts up — bounded so it can
+  // never reach the header rule. The first offer build placed
+  // the pill purely in flow after a 2-line headline + 2-line
+  // subline, which put it ON the footer text in landscape; CTA
+  // visuals therefore use a tighter rhythm (the *Cta layout
+  // values) that fits the pill above the footer by construction,
+  // and the shift below is the guarantee for every other case.
+  const footerY = height - L.pad;
+  const footerRuleY = footerY - 40;
+  const hasCta = Boolean(cleanCta);
+  const body = [];
 
-  y += L.headlineSize + 22;
+  let y = L.pad + L.badge + 26 + 6 + L.kickerSize + (hasCta ? 16 : 34);
+  const kickerY = y;
+  body.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.kickerSize}" font-weight="800" letter-spacing="3" fill="#FF8A7A">${xmlEscape(cleanKicker.toUpperCase())}</text>`);
+
+  y += L.headlineSize + (hasCta ? 14 : 22);
+  const headlineLeading = hasCta ? L.headlineLeadingCta : L.headlineLeading;
+  let lastBaseline = y;
   for (const line of headlineLines) {
-    parts.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.headlineSize}" font-weight="800" fill="#FFFFFF">${xmlEscape(line)}</text>`);
-    y += L.headlineLeading;
+    body.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.headlineSize}" font-weight="800" fill="#FFFFFF">${xmlEscape(line)}</text>`);
+    lastBaseline = y;
+    y += headlineLeading;
   }
 
   if (subLines.length) {
-    y += 2;
+    if (hasCta) y = lastBaseline + L.subGapCta;
+    else y += 2;
+    const subLeading = hasCta ? L.subLeadingCta : L.subLeading;
     for (const line of subLines) {
-      parts.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.subSize}" fill="#C9D9F6">${xmlEscape(line)}</text>`);
-      y += L.subLeading;
+      body.push(`<text x="${L.pad}" y="${y}" font-family="${FONT}" font-size="${L.subSize}" fill="#C9D9F6">${xmlEscape(line)}</text>`);
+      lastBaseline = y;
+      y += subLeading;
     }
   }
 
-  if (cleanCta) {
+  let contentBottom;
+  if (hasCta) {
     const pillWidth = Math.round(cleanCta.length * L.pillSize * 0.6) + 52;
-    const pillY = y + 14;
-    parts.push(`<g>
+    const pillY = lastBaseline + L.pillGapCta + (subLines.length ? 0 : 8);
+    body.push(`<g>
       <rect x="${L.pad}" y="${pillY}" width="${pillWidth}" height="${L.pillHeight}" rx="${Math.round(L.pillHeight / 2)}" fill="#E8322E"/>
       <text x="${L.pad + pillWidth / 2}" y="${pillY + L.pillHeight / 2 + L.pillSize * 0.36}" font-family="${FONT}" font-size="${L.pillSize}" font-weight="800" fill="#FFFFFF" text-anchor="middle">${xmlEscape(cleanCta)}</text>
     </g>`);
+    contentBottom = pillY + L.pillHeight;
+  } else {
+    const lastSize = subLines.length ? L.subSize : L.headlineSize;
+    contentBottom = lastBaseline + Math.ceil(lastSize * 0.3);
   }
 
+  // Footer clearance: a CTA pill keeps a 16px gap above the
+  // footer rule; body text keeps 8px. The shift is capped by the
+  // headroom above the kicker, so the body can never collide
+  // with the header rule either.
+  const clearanceLimit = footerRuleY - (hasCta ? 16 : 8);
+  let shift = 0;
+  if (contentBottom > clearanceLimit) {
+    const headerRuleBottom = L.pad + L.badge + 26 + 6;
+    const maxShift = Math.max(0, kickerY - L.kickerSize - (headerRuleBottom + 10));
+    shift = Math.min(contentBottom - clearanceLimit, maxShift);
+  }
+  if (shift > 0) parts.push(`<g transform="translate(0 ${-shift})">`, ...body, '</g>');
+  else parts.push(...body);
+
   // Sign-off bar: Pepper's mark + the slogan, on every graphic.
-  const footerY = height - L.pad;
-  parts.push(`<rect x="${L.pad}" y="${footerY - 40}" width="${width - L.pad * 2}" height="1.5" fill="#FFFFFF" opacity="0.16"/>`);
+  parts.push(`<rect x="${L.pad}" y="${footerRuleY}" width="${width - L.pad * 2}" height="1.5" fill="#FFFFFF" opacity="0.16"/>`);
   parts.push(`<text x="${L.pad}" y="${footerY}" font-family="${FONT}" font-size="${L.brandSubSize + 3}" font-weight="700" letter-spacing="2" fill="#8FB0E8">PEPPER · TOPSPEEDSERVICEOS.COM</text>`);
   parts.push(`<text x="${width - L.pad}" y="${footerY}" font-family="${FONT}" font-size="${L.brandSubSize + 5}" font-weight="800" font-style="italic" fill="#FFFFFF" text-anchor="end">The Faster, The Better.</text>`);
 
