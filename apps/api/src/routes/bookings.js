@@ -3,12 +3,13 @@ import { paymentSummary } from '../db/paymentsRepo.js';
 import { z } from 'zod';
 import { resolveArea, SERVICE_CITIES } from '../config/serviceAreas.js';
 import { geoFieldsFrom } from '../services/geoMatch.js';
+import { enrichGeoFields } from '../services/googleMaps.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, store } from '../data/store.js';
 import { persistAssignment, persistAssignmentsForBooking, persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
-import { computeTracking, photoReportOf } from '../services/tracking.js';
+import { computeTracking, enrichTrackingWithMap, photoReportOf } from '../services/tracking.js';
 import { isValidDateString } from '../services/bookos.js';
 import {
   notifyBookingAssigned,
@@ -127,7 +128,16 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
   const canonicalCity = SERVICE_CITIES.includes(city) ? city : resolution.area || city;
   // Book by Location: server-derived geo fields (nulls without the
   // tap). The area model above stays authoritative for coverage.
-  const geo = geoFieldsFrom(parsed.data);
+  // Google Maps enrichment (2026-11-23): with the Maps key set, the
+  // street address is geocoded and the real coordinates + place id
+  // replace the device-tap ones; with no key (or any Google
+  // failure) geoFinal IS geo, unchanged.
+  const geo = await enrichGeoFields({
+    geo: geoFieldsFrom(parsed.data),
+    address: customer.address,
+    city: canonicalCity,
+    zip,
+  });
 
   const customerRecord = {
     id: createId(),
@@ -183,12 +193,21 @@ router.post('/bookings', authenticate, requireCompany, async (req, res) => {
     areaSource: resolution.areaSource,
     zipAreas: resolution.zipAreas,
   });
-  if (geo.geoCity) {
+  if (geo.geoCity || geo.geoSource === 'GOOGLE_GEOCODE') {
     addBookingEvent(booking, 'GEO_VERIFIED', 'book-by-location', {
       geoCity: geo.geoCity,
       geoTier: geo.geoTier,
       geoLat: geo.geoLat,
       geoLng: geo.geoLng,
+      // Where the stored coordinates came from: GOOGLE_GEOCODE when
+      // the Maps enrichment verified the street address,
+      // CENTROID_MATCH when they are the customer's device position
+      // matched against the internal centroids, STATED when only a
+      // city/tier was stated with no coordinates at all.
+      geoSource:
+        geo.geoSource ||
+        (geo.geoLat != null && geo.geoLng != null ? 'CENTROID_MATCH' : 'STATED'),
+      ...(geo.geoPlaceId ? { geoPlaceId: geo.geoPlaceId } : {}),
     });
   }
   store.bookings.set(booking.id, booking);
@@ -261,7 +280,7 @@ router.get('/bookings/recent-completed', (req, res) => {
  * names, no addresses, no issue details. The phone must match the booking,
  * so a reference alone reveals nothing.
  */
-router.get('/bookings/track/:reference', (req, res) => {
+router.get('/bookings/track/:reference', async (req, res) => {
   const reference = String(req.params.reference || '').trim().toUpperCase();
   const phoneDigits = String(req.query.phone || '').replace(/\D/g, '').slice(-10);
   if (!reference || phoneDigits.length < 10) {
@@ -277,7 +296,10 @@ router.get('/bookings/track/:reference', (req, res) => {
   }
   // Stage math lives in services/tracking.js (shared with the signed-in
   // customer view and the staff console, so every surface agrees).
-  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
+  // The Maps enrichment attaches the Track My Tech map block when
+  // keyed and the tech is live en route; a no-op otherwise.
+  const tracking = await enrichTrackingWithMap(booking, computeTracking(booking));
+  return res.json({ data: { ...tracking, payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
 });
 
 router.get('/bookings/:id', authenticate, requireCompany, (req, res) => {

@@ -201,6 +201,21 @@ export function geoFieldsFrom(body) {
   return empty;
 }
 
+/**
+ * Straight-line distance in miles (0.1 rounding) from a coordinate
+ * to a named published city's centroid — used when a Google
+ * reverse-geocode names the city (POST /geo/match enrichment), so
+ * the reported distance is still measured against the internal
+ * model's own centroid, never a Google-supplied figure. Null when
+ * the coordinate or the city is unknown.
+ */
+export function centroidDistanceMiles(lat, lng, cityName) {
+  if (!isValidCoordinates(lat, lng)) return null;
+  const centroid = CITY_CENTROIDS[cityName];
+  if (!centroid) return null;
+  return Math.round(haversineMiles(lat, lng, centroid[0], centroid[1]) * 10) / 10;
+}
+
 /** Coverage self-check for drills: every published city has a centroid. */
 export function centroidCoverage() {
   const missing = PUBLISHED_CITIES.map(({ name }) => name).filter((name) => !CITY_CENTROIDS[name]);

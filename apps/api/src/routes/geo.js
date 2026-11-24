@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { intakeRateLimit } from '../middleware/intakeShield.js';
-import { matchCoordinates } from '../services/geoMatch.js';
-import { areasForZip, PUBLISHED_CITIES, SERVICE_CITIES } from '../config/serviceAreas.js';
+import { centroidDistanceMiles, matchCoordinates } from '../services/geoMatch.js';
+import { mapsBrowserKey, mapsEnabled, reverseGeocode } from '../services/googleMaps.js';
+import { areasForZip, resolveArea, PUBLISHED_CITIES, SERVICE_CITIES } from '../config/serviceAreas.js';
 
 const router = Router();
 
@@ -37,13 +38,47 @@ router.post('/geo/match', intakeRateLimit('geoMatch'), async (req, res) => {
   if (!match) {
     return res.status(400).json({ error: 'Invalid coordinates' });
   }
-  return res.json({
-    data: {
-      matchedCity: match.matchedCity,
-      tier: match.tier,
-      distanceMiles: match.distanceMiles,
-    },
-  });
+  const data = {
+    matchedCity: match.matchedCity,
+    tier: match.tier,
+    distanceMiles: match.distanceMiles,
+  };
+  // Google Maps enrichment (2026-11-23): with the server key set, a
+  // reverse geocode can identify the point's actual city/ZIP better
+  // than the nearest-centroid guess (a point near a boundary, or in
+  // a city whose centroid sits far away). The identification is the
+  // only thing Google contributes: resolveArea still decides the
+  // tier from that city/ZIP, the distance is still measured against
+  // the internal centroid, and the response names its source. When
+  // Google is off, unreachable, or names somewhere outside the
+  // covered model, the answer is exactly the centroid match above.
+  if (mapsEnabled()) {
+    const rev = await reverseGeocode(parsed.data.lat, parsed.data.lng);
+    if (rev && (rev.city || rev.zip)) {
+      const resolution = resolveArea({ city: rev.city || undefined, zip: rev.zip || undefined });
+      if (resolution.area && resolution.areaStatus !== 'OUT_OF_AREA') {
+        data.matchedCity = resolution.area;
+        data.tier = resolution.areaStatus;
+        const distance = centroidDistanceMiles(parsed.data.lat, parsed.data.lng, resolution.area);
+        if (distance != null) data.distanceMiles = distance;
+        data.source = 'GOOGLE_REVERSE_GEOCODE';
+        if (rev.zip) data.zip = rev.zip;
+        if (rev.formattedAddress) data.formattedAddress = rev.formattedAddress;
+      }
+    }
+  }
+  return res.json({ data });
+});
+
+/**
+ * GET /geo/config — the public Maps browser config for the booking
+ * wizard, the app location step and Track My Tech. Serves ONLY the
+ * browser key (a public, HTTP-referrer-restricted credential by
+ * design) or null; the server key never leaves the API. No key set
+ * → clients load no Google script and render exactly today's UI.
+ */
+router.get('/geo/config', async (req, res) => {
+  return res.json({ data: { mapsBrowserKey: mapsBrowserKey() } });
 });
 
 /**

@@ -5,6 +5,7 @@ import { governanceGate } from '../services/speedyPolicy.js';
 import { composeFallbackAnswer } from '../knowledge/index.js';
 import { normalizeCityName, resolveArea } from '../config/serviceAreas.js';
 import { geoFieldsFrom } from '../services/geoMatch.js';
+import { enrichGeoFields } from '../services/googleMaps.js';
 import { addBookingEvent, appendEvent, createId, createReferenceCode, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { persistBooking, persistCustomer } from '../db/bookingsRepo.js';
 import { notifyBookingConfirmation, notifyBookingReceipt, notifyNewBooking, notifyPhotoDiagnosis } from '../services/notifications.js';
@@ -365,6 +366,19 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     });
   }
 
+  // Google Maps enrichment (2026-11-23): with the Maps key set, the
+  // street address is geocoded and the real coordinates + place id
+  // ride the booking for dispatch and Track My Tech. Runs after the
+  // honeypot check so a discarded bot submission never spends a
+  // Google call; with no key (or any Google failure) geoFinal IS
+  // geo, unchanged.
+  const geoFinal = await enrichGeoFields({
+    geo,
+    address: customer.address,
+    city: canonicalCity,
+    zip,
+  });
+
   const customerRecord = {
     id: createId(),
     companyId: PLATFORM_COMPANY_ID,
@@ -389,7 +403,7 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     area: resolution.area,
     areaStatus: resolution.areaStatus,
     serviceAddress: customer.address || null,
-    ...geo,
+    ...geoFinal,
     appliance,
     issue,
     preferredWindow: preferredWindow || null,
@@ -415,12 +429,19 @@ router.post('/speedy/book', intakeRateLimit('booking'), async (req, res) => {
     areaSource: resolution.areaSource,
     zipAreas: resolution.zipAreas,
   });
-  if (geo.geoCity) {
+  if (geoFinal.geoCity || geoFinal.geoSource === 'GOOGLE_GEOCODE') {
     addBookingEvent(booking, 'GEO_VERIFIED', 'book-by-location', {
-      geoCity: geo.geoCity,
-      geoTier: geo.geoTier,
-      geoLat: geo.geoLat,
-      geoLng: geo.geoLng,
+      geoCity: geoFinal.geoCity,
+      geoTier: geoFinal.geoTier,
+      geoLat: geoFinal.geoLat,
+      geoLng: geoFinal.geoLng,
+      // Coordinate provenance: GOOGLE_GEOCODE (Maps verified the
+      // street address) vs CENTROID_MATCH (device position matched
+      // to the internal centroids) vs STATED (city/tier only).
+      geoSource:
+        geoFinal.geoSource ||
+        (geoFinal.geoLat != null && geoFinal.geoLng != null ? 'CENTROID_MATCH' : 'STATED'),
+      ...(geoFinal.geoPlaceId ? { geoPlaceId: geoFinal.geoPlaceId } : {}),
     });
   }
   store.bookings.set(booking.id, booking);

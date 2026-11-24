@@ -128,6 +128,8 @@ function bookingToRow(booking) {
     geoTier: booking.geoTier ?? null,
     geoLat: booking.geoLat ?? null,
     geoLng: booking.geoLng ?? null,
+    geoPlaceId: booking.geoPlaceId ?? null,
+    geoSource: booking.geoSource ?? null,
     history: booking.history ?? [],
     dispatch: booking.dispatch ?? null,
     appointment: booking.appointment ?? null,
@@ -164,6 +166,10 @@ function bookingFromRow(row, customerRecord) {
     geoTier: row.geoTier ?? null,
     geoLat: row.geoLat ?? null,
     geoLng: row.geoLng ?? null,
+    // Google Maps enrichment: null unless the Maps geocode verified
+    // the service address at intake (geoSource = 'GOOGLE_GEOCODE').
+    geoPlaceId: row.geoPlaceId ?? null,
+    geoSource: row.geoSource ?? null,
     city: row.city,
     zip: row.zip,
     appliance: row.appliance,

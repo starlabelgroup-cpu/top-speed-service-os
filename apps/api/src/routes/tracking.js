@@ -6,7 +6,7 @@ import { persistAssignment, persistAssignmentsForBooking, persistBooking } from 
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES, STAFF_ROLES } from '../config/security.js';
 import { approveDispatch, matchProviders } from '../services/dispatch.js';
-import { activeAssignmentFor, computeTracking, photoReportOf, providerById, techPhotoFor } from '../services/tracking.js';
+import { activeAssignmentFor, computeTracking, enrichTrackingWithMap, photoReportOf, providerById, techPhotoFor } from '../services/tracking.js';
 import { priorityTierOf } from '../services/dispatchOps.js';
 import { notifyBookingAssigned, notifyDispatchApproved, notifyTechEnRoute, notifyTrackingUpdate } from '../services/notifications.js';
 import { emitReport } from '../services/managementReports.js';
@@ -54,20 +54,27 @@ function bookingsForUser(user) {
 }
 
 /** The signed-in customer's own jobs, with full tracking state. */
-router.get('/tracking/mine', authenticate, (req, res) => {
-  const jobs = bookingsForUser(req.user)
-    .map((b) => ({
-      ...computeTracking(b),
+router.get('/tracking/mine', authenticate, async (req, res) => {
+  const jobs = [];
+  for (const b of bookingsForUser(req.user)) {
+    // Google Maps enrichment (2026-11-23): attaches the Track My
+    // Tech map block (tech GPS + job pin + labeled drive-time ETA)
+    // only when the Maps key is set and the tech is live en route;
+    // a no-op otherwise, so the payload is unchanged.
+    const tracking = await enrichTrackingWithMap(b, computeTracking(b));
+    jobs.push({
+      ...tracking,
       id: b.id,
       issue: b.issue ?? null,
       zip: b.zip ?? null,
       createdAt: b.createdAt,
       photoReport: photoReportOf(b),
-    }))
-    .sort((a, b) => {
-      const rank = (j) => (j.stageIndex >= 7 ? 1 : 0);
-      return rank(a) - rank(b) || String(b.createdAt).localeCompare(String(a.createdAt));
     });
+  }
+  jobs.sort((a, b) => {
+    const rank = (j) => (j.stageIndex >= 7 ? 1 : 0);
+    return rank(a) - rank(b) || String(b.createdAt).localeCompare(String(a.createdAt));
+  });
   return res.json({ data: jobs });
 });
 
@@ -99,7 +106,7 @@ function staffCanSee(req, booking) {
 const staffOnly = [authenticate, requireRole(...STAFF_ROLES)];
 
 /** The staff board: every active job with its tracking state. */
-router.get('/tracking/console', ...staffOnly, (req, res) => {
+router.get('/tracking/console', ...staffOnly, async (req, res) => {
   const jobs = [...store.bookings.values()]
     .filter((b) => staffCanSee(req, b))
     .map(consoleJob)
@@ -108,6 +115,14 @@ router.get('/tracking/console', ...staffOnly, (req, res) => {
       return rank(a) - rank(b) || String(b.createdAt).localeCompare(String(a.createdAt));
     })
     .slice(0, 100);
+  // Google Maps enrichment (2026-11-23): the board consumes the
+  // same map data the customer sees (tech GPS + job pin + labeled
+  // drive-time ETA) on en-route jobs — data wiring only; the
+  // console's own rendering is unchanged. No-op without the key.
+  for (const job of jobs) {
+    const booking = store.bookings.get(job.id);
+    if (booking) await enrichTrackingWithMap(booking, job);
+  }
   const providers = (Array.isArray(store.providers) ? store.providers : [])
     .filter((p) => p.active)
     .map((p) => ({ id: p.id, businessName: p.businessName, type: p.type }));
@@ -225,7 +240,8 @@ router.get('/tracking/console/:reference/detail', ...staffOnly, async (req, res)
   const booking = findBookingByReference(req.params.reference);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
   if (!staffCanSee(req, booking)) return res.status(403).json({ error: 'Cannot manage another company booking' });
-  return res.json({ data: { job: consoleJob(booking), booking: bookingDetailOf(booking) } });
+  const job = await enrichTrackingWithMap(booking, consoleJob(booking));
+  return res.json({ data: { job, booking: bookingDetailOf(booking) } });
 });
 
 /**
@@ -484,10 +500,11 @@ function serveTechPhoto(req, res, booking) {
 }
 
 /** Public tracking via a secure per-job token — no phone number needed. */
-router.get('/tracking/by-token/:token', (req, res) => {
+router.get('/tracking/by-token/:token', async (req, res) => {
   const booking = bookingForTrackingToken(req, res);
   if (!booking) return undefined;
-  return res.json({ data: { ...computeTracking(booking), payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
+  const tracking = await enrichTrackingWithMap(booking, computeTracking(booking));
+  return res.json({ data: { ...tracking, payment: paymentSummary(booking.id), photoReport: photoReportOf(booking) } });
 });
 
 /** The tech's real profile photo for a token-tracked job (A3) — the

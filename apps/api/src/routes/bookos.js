@@ -14,7 +14,7 @@ import {
   rankAssignmentCandidates,
 } from '../services/dispatchOps.js';
 import { loadDispatchSettings, saveDispatchSettings } from '../db/dispatchOpsRepo.js';
-import { DISTANCE_NOTE, byDistanceAsc, jobPosition, providerPosition } from '../services/dispatchMap.js';
+import { DISTANCE_NOTE, DISTANCE_NOTE_WITH_DRIVE_TIME, byDistanceAsc, enrichCandidatesWithDriveTime, jobPosition, providerPosition } from '../services/dispatchMap.js';
 import { listReviewComments, listReviews } from '../db/reviewsRepo.js';
 import { db, DATABASE_ENABLED } from '../db/client.js';
 import { stripeConfigured } from '../services/stripe.js';
@@ -1131,10 +1131,16 @@ router.post('/bookos/bookings/:id/cancel', ...staffOnly, async (req, res) => {
  * still picks the provider and confirms through the normal approval
  * step. Nothing here dispatches, ever.
  */
-router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, res) => {
+router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, async (req, res) => {
   const booking = store.bookings.get(req.params.id);
   if (!booking) return res.status(404).json({ error: 'Booking not found' });
   const candidates = rankAssignmentCandidates(booking);
+  // Google Maps enrichment (2026-11-23): with the Maps key set, a
+  // candidate on live GPS gets a real drive distance/duration to
+  // the job's Google-verified address, labeled drive time (Google);
+  // everyone else keeps the straight-line figure. No key (or any
+  // Google failure) leaves the response exactly as before.
+  const { enriched } = await enrichCandidatesWithDriveTime(booking, candidates);
   return res.json({
     data: {
       bookingId: booking.id,
@@ -1143,12 +1149,14 @@ router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, re
       area: booking.area || booking.city,
       priorityTier: priorityTierOf(booking),
       candidates,
-      // D7 (2026-11-20): the same candidates ordered by straight-line
-      // distance instead of score — a second lens for the setter, not
-      // a second ranking of record. Candidates with no position
-      // evidence sort last. Still advice only.
+      // D7 (2026-11-20): the same candidates ordered by distance
+      // instead of score — a second lens for the setter, not a
+      // second ranking of record. Sorted AFTER the drive-time
+      // enrichment so the lens orders by the figures it shows.
+      // Candidates with no position evidence sort last. Still
+      // advice only.
       candidatesByDistance: [...candidates].sort(byDistanceAsc),
-      distanceNote: DISTANCE_NOTE,
+      distanceNote: enriched ? DISTANCE_NOTE_WITH_DRIVE_TIME : DISTANCE_NOTE,
       note: 'Suggestions only — a Service Setter still picks the provider and confirms the assignment. Nothing here dispatches on its own.',
     },
   });
@@ -1156,8 +1164,9 @@ router.get('/bookos/bookings/:id/assignment-suggestions', ...staffOnly, (req, re
 
 /**
  * Dispatch map (2026-11-20, D7): today's board as positions. Jobs are
- * placed at their service-area center (jobs carry no coordinates —
- * the area is the honest placement, and the response says so); techs
+ * placed at their Google-verified address when the Maps enrichment
+ * geocoded one at intake, else at their service-area center (the
+ * area is the honest placement then, and the response says so); techs
  * are placed at their latest device-reported GPS when one exists,
  * else at the area of the job they are on, else listed as
  * unpositioned. Jobs whose area is unresolved are listed as
@@ -1214,7 +1223,7 @@ router.get('/bookos/dispatch-map', ...staffOnly, (req, res) => {
       techs,
       positionedTechs: techs.filter((t) => t.position).length,
       note:
-        'Jobs are placed at their service-area center, not the customer\u2019s address \u2014 jobs carry no stored coordinates. Verified centers exist for the 12 core crew areas; jobs in the other published cities (auto-match widened 2026-11-20, A6) are listed below the map until a verified center is recorded for their city \u2014 never pinned at a guessed point. Tech pins show live GPS only when a device has reported a position; otherwise the area of the job the tech is on. Distances on this board are straight-line miles, not drive time.',
+        'Jobs are placed at their Google-verified service address when one was geocoded at intake (position basis GOOGLE_GEOCODE); otherwise at their service-area center, not the customer\u2019s address. Verified centers exist for the 12 core crew areas; jobs in the other published cities (auto-match widened 2026-11-20, A6) are listed below the map until a verified center is recorded for their city \u2014 never pinned at a guessed point. Tech pins show live GPS only when a device has reported a position; otherwise the area of the job the tech is on. Distances on this board are straight-line miles, not drive time, except assignment suggestions labeled drive time (Google).',
     },
   });
 });

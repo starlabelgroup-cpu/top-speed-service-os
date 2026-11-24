@@ -1,4 +1,6 @@
 import { store } from '../data/store.js';
+import { jobPosition } from './dispatchMap.js';
+import { distanceMatrix, mapsEnabled } from './googleMaps.js';
 
 /**
  * Track My Tech — the single source of truth for a booking's customer-
@@ -132,6 +134,49 @@ export function computeTracking(booking) {
     city: booking.city,
     preferredWindow: booking.preferredWindow ?? null,
   };
+}
+
+/**
+ * Google Maps enrichment for Track My Tech (2026-11-23): when the
+ * Maps server key is set AND the tracking state carries a live
+ * technician position, attach a `map` block — the technician's real
+ * GPS point, the job's pin (its Google-verified address when one
+ * was geocoded at intake, otherwise the service-area center with
+ * approximate: true, the same honesty the dispatch board uses), and
+ * a drive-time ETA from the Distance Matrix adapter labeled
+ * 'drive time (Google)'. The technician's OWN etaMinutes above is
+ * never touched — the Google figure is a separate, labeled signal,
+ * and when Google cannot answer the map ships without an eta
+ * rather than an invented one. With no key set the tracking object
+ * is returned untouched (no `map` key at all), so every tracking
+ * payload stays byte-for-byte what it was.
+ */
+export async function enrichTrackingWithMap(booking, tracking) {
+  if (!mapsEnabled() || !booking || !tracking || !tracking.technicianLocation) return tracking;
+  const job = jobPosition(booking);
+  if (!job) return tracking;
+  const map = {
+    technician: { lat: tracking.technicianLocation.lat, lng: tracking.technicianLocation.lng },
+    job: {
+      lat: job.lat,
+      lng: job.lng,
+      basis: job.basis,
+      approximate: job.basis !== 'GOOGLE_GEOCODE',
+    },
+  };
+  const legs = await distanceMatrix([map.technician], job);
+  const leg = legs && legs[0];
+  if (leg) {
+    map.eta = {
+      minutes: leg.durationMinutes,
+      distanceMiles: leg.distanceMiles,
+      label: 'drive time (Google)',
+      source: 'GOOGLE_DISTANCE_MATRIX',
+      jobApproximate: job.basis !== 'GOOGLE_GEOCODE',
+    };
+  }
+  tracking.map = map;
+  return tracking;
 }
 
 /**

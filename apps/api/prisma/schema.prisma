@@ -367,6 +367,16 @@ model ServiceRequest {
   geoTier                           String?
   geoLat                            Float?
   geoLng                            Float?
+  // Google Maps enrichment (2026-11-23): when GOOGLE_MAPS_API_KEY is
+  // set, the booking's street address is geocoded at intake and the
+  // real coordinates replace the device-tap ones in geoLat/geoLng,
+  // stamped geoSource = 'GOOGLE_GEOCODE' with Google's place id in
+  // geoPlaceId (dispatch + Track My Tech read the verified position
+  // from these). Null on every booking the enrichment did not touch
+  // — the internal area model stays authoritative for coverage
+  // either way; Google never decides a tier.
+  geoPlaceId                        String?
+  geoSource                         String?
   // Working-state documents the API services operate on. The relational
   // core (customer, status, fee, assignments) stays in columns/tables;
   // these JSON columns carry the booking's event history, its dispatch

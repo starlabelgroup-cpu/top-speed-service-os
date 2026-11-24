@@ -155,6 +155,13 @@
     '.zbw .zb-photores{display:none;margin-top:10px;background:#f2f6fd;border:1px solid #dbe4f0;border-radius:12px;padding:11px 13px;font-size:14px}',
     '.zbw .zb-photores p{margin:4px 0 0;color:#33465e}',
     '.zbw .zb-fine{font-size:12.5px;color:#8fa1bb;margin-top:6px;line-height:1.45}',
+    /* Google Maps preview (key-gated; the wrap stays hidden without
+       a browser key, so the step renders exactly as before). */
+    '.zbw .zb-mapwrap{margin-top:14px}',
+    '.zbw .zb-mapwrap[hidden]{display:none}',
+    '.zbw .zb-map{width:100%;height:190px;border-radius:12px;border:1px solid #dbe4f0;background:#eef2f8}',
+    '.pac-container{font:inherit;z-index:10000;border-radius:12px;box-shadow:0 12px 32px rgba(10,38,92,.18)}',
+    '.pac-item{padding:8px 12px;cursor:pointer;font-size:14.5px}',
     /* App mode additions: issue/day/window chips, photo first-look,
        the $99 remind box, account-block controls. */
     '.zbw .zb-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}',
@@ -181,6 +188,50 @@
     document.head.appendChild(st);
   }
   function round3(n) { return Math.round(n * 1000) / 1000; }
+
+  /* ---------- Google Maps Platform, browser side (2026-11-23) ----------
+   * The browser key comes from GET /geo/config (the API's
+   * GOOGLE_MAPS_BROWSER_KEY). No key -> nothing in this section ever
+   * runs: no config-driven script tag, no map, no autocomplete, and
+   * every surface renders exactly as before. The Maps script loads
+   * lazily, only when a wizard step actually enhances, and any
+   * Google failure quietly leaves the designed UI in place — the
+   * map never blocks or gates the form. */
+  var mapsCfgPromise = null;
+  var mapsApiPromise = null;
+  function mapsConfig() {
+    if (!mapsCfgPromise) {
+      mapsCfgPromise = fetch(API + '/geo/config')
+        .then(function (r) { return r.json(); })
+        .then(function (j) { return (j && j.data && j.data.mapsBrowserKey) || null; })
+        .catch(function () { return null; });
+    }
+    return mapsCfgPromise;
+  }
+  function loadMapsApi() {
+    if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
+    if (!mapsApiPromise) {
+      mapsApiPromise = mapsConfig().then(function (key) {
+        if (!key) return null;
+        return new Promise(function (resolve) {
+          var done = false;
+          var finish = function () {
+            if (done) return;
+            done = true;
+            resolve(window.google && window.google.maps ? window.google.maps : null);
+          };
+          var s = document.createElement('script');
+          s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&libraries=places&v=weekly';
+          s.async = true;
+          s.onload = finish;
+          s.onerror = finish;
+          document.head.appendChild(s);
+          setTimeout(finish, 8000);
+        });
+      });
+    }
+    return mapsApiPromise;
+  }
   function dstr(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
   function dayLabel(v) { try { return new Date(v + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }); } catch (e) { return v; } }
 
@@ -210,6 +261,8 @@
     if (appMode) state.date = ''; /* the app flow starts with no day picked */
     var cities = null; /* [{name, county, core}] from /geo/cities */
     var photoData = null, photoBusy = false, zipTimer = null, busy = false;
+    /* Google Maps preview state (key-gated; inert without a key). */
+    var mapObj = null, mapMarker = null, mapTargetKey = '', cityGeoCache = {};
 
     function q(sel) { return root.querySelector(sel); }
     function qa(sel) { return [].slice.call(root.querySelectorAll(sel)); }
@@ -255,6 +308,7 @@
         '<div><button type="button" class="zb-locbtn" data-act="locate">' + PIN + ' Use my location</button></div>' +
         '<div class="zb-note" data-note></div>' +
         '<div data-cityslot></div>' +
+        '<div class="zb-mapwrap" data-mapwrap hidden><div class="zb-map" data-gmap></div><p class="zb-fine" data-mapnote></p></div>' +
         '<button type="button" class="zb-skip" data-act="skip">Continue without ZIP</button>';
       return h;
     }
@@ -303,6 +357,136 @@
       } else if (state.areaMode === 'MANUAL') {
         setNote('', '');
       }
+      enhanceStep1Map();
+    }
+
+    /* ---------- Google Maps: Step 1 preview + address autocomplete ----------
+     * Everything here is key-gated through loadMapsApi() and fails
+     * silently: no key, no script, no map — the wizard is unchanged. */
+
+    /* What the Step 1 preview should show: the device-verified
+       position when the customer used "Use my location", else the
+       matched city's center (geocoded client-side, labeled
+       approximate). Nothing outside a matched area is ever pinned. */
+    function mapTarget() {
+      if (state.geo && state.geo.geoLat != null && state.geo.geoLng != null) {
+        return {
+          lat: state.geo.geoLat, lng: state.geo.geoLng,
+          key: 'geo:' + state.geo.geoLat + ',' + state.geo.geoLng,
+          label: state.city ? 'your location, in the ' + state.city + ' area' : 'your location'
+        };
+      }
+      if (state.city && !state.outside && (state.areaMode === 'IN' || state.areaMode === 'EDGE')) {
+        return { city: state.city, key: 'city:' + state.city, label: 'the ' + state.city + ' service-area center (approximate)' };
+      }
+      return null;
+    }
+
+    function enhanceStep1Map() {
+      var wrap = q('[data-mapwrap]');
+      if (!wrap) return;
+      var target = mapTarget();
+      if (!target) { wrap.hidden = true; return; }
+      loadMapsApi().then(function (maps) {
+        if (!maps || !maps.Map) { var w0 = q('[data-mapwrap]'); if (w0) w0.hidden = true; return; }
+        var wrapNow = q('[data-mapwrap]');
+        if (!wrapNow || state.step !== 1) return;
+        var t2 = mapTarget();
+        if (!t2) { wrapNow.hidden = true; return; }
+        var renderAt = function (lat, lng) {
+          var div = q('[data-gmap]');
+          var w = q('[data-mapwrap]');
+          if (!div || !w) return;
+          w.hidden = false;
+          var note = q('[data-mapnote]');
+          if (note) note.textContent = 'Map preview \u2014 ' + t2.label + '. Your exact service address is confirmed on the details step.';
+          var center = { lat: lat, lng: lng };
+          if (mapObj && mapTargetKey === t2.key) {
+            mapObj.setCenter(center);
+            if (mapMarker) mapMarker.setPosition(center);
+            return;
+          }
+          mapObj = new maps.Map(div, { center: center, zoom: 12, disableDefaultUI: true, gestureHandling: 'cooperative', clickableIcons: false });
+          mapMarker = new maps.Marker({ position: center, map: mapObj });
+          mapTargetKey = t2.key;
+        };
+        if (t2.lat != null) { renderAt(t2.lat, t2.lng); return; }
+        if (cityGeoCache[t2.city]) { renderAt(cityGeoCache[t2.city].lat, cityGeoCache[t2.city].lng); return; }
+        new maps.Geocoder().geocode({ address: t2.city + ', FL' }, function (results, status) {
+          if (status !== 'OK' || !results || !results[0] || !results[0].geometry) {
+            var w2 = q('[data-mapwrap]'); if (w2) w2.hidden = true;
+            return;
+          }
+          var loc = results[0].geometry.location;
+          cityGeoCache[t2.city] = { lat: loc.lat(), lng: loc.lng() };
+          if (state.step === 1) renderAt(loc.lat(), loc.lng());
+        });
+      }).catch(function () { /* the designed UI stands on its own */ });
+    }
+
+    /* THE Places adapter (client): the only place the Places
+       Autocomplete widget is constructed — Places API (New)'s
+       element swaps in behind this one function later. */
+    function attachPlacesAutocomplete(maps, input) {
+      var ac = new maps.places.Autocomplete(input, {
+        componentRestrictions: { country: 'us' },
+        fields: ['address_components', 'formatted_address', 'geometry'],
+        types: ['address']
+      });
+      ac.addListener('place_changed', function () {
+        var place = ac.getPlace();
+        if (place) applyPlaceSelection(place);
+      });
+    }
+
+    /* A picked address fills the details fields in place (no
+       re-render, nothing typed is lost) and its coordinates ride
+       the booking exactly like a location tap — the server still
+       re-derives city + tier from them; the area model decides. */
+    function applyPlaceSelection(place) {
+      var comps = place.address_components || [];
+      function comp(type) {
+        for (var i = 0; i < comps.length; i++) {
+          if (comps[i].types && comps[i].types.indexOf(type) !== -1) return comps[i].long_name;
+        }
+        return '';
+      }
+      var street = ((comp('street_number') + ' ' + comp('route')).trim()) || place.formatted_address || '';
+      var city = comp('locality') || comp('postal_town') || comp('sublocality');
+      var zip = comp('postal_code');
+      if (street) {
+        state.address = street;
+        var ai = q('[data-f="address"]'); if (ai) ai.value = street;
+      }
+      if (zip && /^\d{5}$/.test(zip)) {
+        state.zip = zip;
+        var zi = q('[data-f="zip"]'); if (zi) zi.value = zip;
+      }
+      if (city) {
+        state.city = city;
+        var sel = q('[data-f="citySel"]');
+        if (sel) {
+          for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value === city || sel.options[i].text === city) { sel.selectedIndex = i; break; }
+          }
+        }
+      }
+      if (place.geometry && place.geometry.location) {
+        state.geo = { geoLat: round3(place.geometry.location.lat()), geoLng: round3(place.geometry.location.lng()) };
+        window.TSOSGeo = state.geo;
+      }
+    }
+
+    function attachAddressAutocomplete() {
+      var input = q('[data-f="address"]');
+      if (!input || input.getAttribute('data-places') === '1') return;
+      loadMapsApi().then(function (maps) {
+        if (!maps || !maps.places || !maps.places.Autocomplete) return;
+        var el = q('[data-f="address"]');
+        if (!el || el.getAttribute('data-places') === '1' || state.step !== 3) return;
+        el.setAttribute('data-places', '1');
+        try { attachPlacesAutocomplete(maps, el); } catch (e) { /* typing the address always works */ }
+      }).catch(function () { /* typing the address always works */ });
     }
 
     function checkZip() {
@@ -1036,7 +1220,14 @@
         (state.step > 1 ? '<button type="button" class="zb-back" data-act="back">Back</button>' : '') +
         '<button type="button" class="zb-next" data-act="next">' +
         (state.step === 4 ? CHECK + ' Confirm booking' : 'Continue') + '</button></div></div>';
-      if (state.step === 1) refreshAreaUI();
+      if (state.step === 1) {
+        /* The render just rebuilt the DOM, so any live Google Map
+           instance points at a detached node — drop it; the area UI
+           refresh re-creates the preview when a key is present. */
+        mapObj = null; mapMarker = null; mapTargetKey = '';
+        refreshAreaUI();
+      }
+      if (state.step === 3) attachAddressAutocomplete();
       if (state.step === 4 && !appMode) loadAvail();
       if (appMode && state.step === 3) {
         if (window.cUser) {

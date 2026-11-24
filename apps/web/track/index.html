@@ -60,6 +60,8 @@
   .timeline li.now{color:var(--navy);font-weight:700}
   .timeline li.now .n{background:var(--blue);color:#fff}
   .techline{margin-top:10px;font-size:14.5px;color:#2a3c58}
+  .gmap{width:100%;height:240px;border-radius:12px;margin-top:8px;border:1px solid #dbe4f0;background:#eef2f8}
+  .mapfine{font-size:12.5px;color:#8fa1bb;margin-top:6px;line-height:1.45}
   .photoreport{margin-top:16px;border-top:1px solid var(--line);padding-top:14px}
   .photoreport h3{font-family:'Poppins',sans-serif;font-weight:600;font-size:16px;color:var(--navy);margin-bottom:4px}
   .photoreport .pr-sub{color:var(--mut);font-size:13.5px;margin-bottom:10px}
@@ -222,6 +224,23 @@ function locLine(t) {
   if (!L) return '';
   const ago = L.ageSeconds < 90 ? 'just now' : (L.ageSeconds < 3600 ? Math.round(L.ageSeconds / 60) + ' min ago' : Math.round(L.ageSeconds / 3600) + ' hr ago');
   const stale = L.stale ? ' <span class="pill">GPS may be stale</span>' : '';
+  /* Google Maps Platform (2026-11-23): when the API attached a map
+     block (server key set + tech live en route), render a real
+     Maps JavaScript API map with BOTH pins — the technician's live
+     GPS and the job (its Google-verified address, or the
+     service-area center labeled approximate) — plus the labeled
+     drive-time ETA. hydrateGoogleMaps() builds it after render.
+     Without a map block, the original config-gated embed below is
+     unchanged. */
+  const M = t.map;
+  if (M && M.technician && M.job) {
+    const eta = M.eta
+      ? `<div class="techline"><span class="pill pill-eta">~${M.eta.minutes} min drive time (Google)</span> <span>${M.eta.distanceMiles} mi by road${M.eta.jobApproximate ? ' to your service-area center' : ''}</span></div>`
+      : '';
+    const gmap = `<div class="gmap" data-gmap data-tech-lat="${M.technician.lat}" data-tech-lng="${M.technician.lng}" data-job-lat="${M.job.lat}" data-job-lng="${M.job.lng}" data-job-approx="${M.job.approximate ? '1' : ''}"></div>` +
+      `<p class="mapfine">${M.job.approximate ? 'Home pin shows your service-area center \u2014 approximate. ' : 'Home pin is your service address. '}Technician pin is their live GPS.</p>`;
+    return `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>${eta}${gmap}`;
+  }
   /* Config-gated Maps Platform embed: renders only when a real Maps Embed
      API key is set in /google-tag.js (TSOS_GOOGLE.MAPS_EMBED_API_KEY).
      No key = exactly the original outbound-link behavior below. */
@@ -230,6 +249,62 @@ function locLine(t) {
     ? `<div class="mapembed"><iframe title="Technician live location map" src="https://www.google.com/maps/embed/v1/place?key=${encodeURIComponent(mapsKey)}&q=${L.lat},${L.lng}&zoom=14" style="width:100%;height:220px;border:0;border-radius:12px;margin-top:8px;display:block" loading="lazy" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe></div>`
     : '';
   return `<div class="techline"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21.2S5 15.6 5 9.9a7 7 0 0 1 14 0c0 5.7-7 11.3-7 11.3z"/><circle cx="12" cy="9.9" r="2.6" stroke="#E8322E"/><circle cx="12" cy="9.9" r=".9" fill="#E8322E" stroke="none"/></svg> <a href="https://www.google.com/maps?q=${L.lat},${L.lng}" target="_blank" rel="noopener">See your technician on the map</a> · location updated ${ago}${stale}</div>${embed}`;
+}
+
+/* Builds the real Google Map into each rendered [data-gmap] slot.
+   The browser key comes from GET /geo/config (the API's
+   GOOGLE_MAPS_BROWSER_KEY), falling back to the page's existing
+   TSOS_MAPS_EMBED_KEY config. No key or any Google failure removes
+   the slot — the text tracking above it is complete without it. */
+let trackMapsPromise = null;
+function loadTrackMapsApi() {
+  if (window.google && window.google.maps) return Promise.resolve(window.google.maps);
+  if (!trackMapsPromise) {
+    trackMapsPromise = (async () => {
+      let key = window.TSOS_MAPS_EMBED_KEY || '';
+      if (!key) {
+        try {
+          const r = await fetch(API + '/geo/config');
+          const j = await r.json();
+          key = (j && j.data && j.data.mapsBrowserKey) || '';
+        } catch (e) { /* no key, no map */ }
+      }
+      if (!key) return null;
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => { if (done) return; done = true; resolve(window.google && window.google.maps ? window.google.maps : null); };
+        const s = document.createElement('script');
+        s.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(key) + '&v=weekly';
+        s.async = true;
+        s.onload = finish;
+        s.onerror = finish;
+        document.head.appendChild(s);
+        setTimeout(finish, 8000);
+      });
+    })();
+  }
+  return trackMapsPromise;
+}
+
+async function hydrateGoogleMaps() {
+  const divs = document.querySelectorAll('[data-gmap]:not([data-gmap-done])');
+  if (!divs.length) return;
+  const maps = await loadTrackMapsApi();
+  divs.forEach((div) => {
+    div.setAttribute('data-gmap-done', '1');
+    if (!maps || !maps.Map || !maps.Marker || !maps.LatLngBounds) { div.remove(); return; }
+    try {
+      const tech = { lat: parseFloat(div.dataset.techLat), lng: parseFloat(div.dataset.techLng) };
+      const job = { lat: parseFloat(div.dataset.jobLat), lng: parseFloat(div.dataset.jobLng) };
+      const map = new maps.Map(div, { zoom: 13, center: tech, disableDefaultUI: true, gestureHandling: 'cooperative', clickableIcons: false });
+      new maps.Marker({ position: tech, map, title: 'Your technician' });
+      new maps.Marker({ position: job, map, title: div.dataset.jobApprox === '1' ? 'Your service area (approximate)' : 'Your service address' });
+      const bounds = new maps.LatLngBounds();
+      bounds.extend(tech);
+      bounds.extend(job);
+      map.fitBounds(bounds, 48);
+    } catch (e) { div.remove(); }
+  });
 }
 
 function escText(s) {
@@ -265,6 +340,7 @@ async function loadMine() {
     ? jobs.map((j) => jobCard(j, j.issue ? `<div class="techline">Issue: ${j.issue}</div>` : '')).join('')
     : '<p class="empty">No jobs on this account yet. When you book a repair, its live tracking shows up here automatically.</p>';
   hydrateTechPhotos();
+  hydrateGoogleMaps();
 }
 
 async function showAccount() {
@@ -326,6 +402,7 @@ $('guestForm').addEventListener('submit', async (e) => {
     guestCtx = { ref, phone };
     $('guestResult').innerHTML = jobCard(body.data);
     hydrateTechPhotos();
+  hydrateGoogleMaps();
   } catch (ex) {
     err.textContent = ex.message;
     err.style.display = 'block';
@@ -342,6 +419,7 @@ async function loadByToken() {
     if (!res.ok) throw new Error(body.error || 'This tracking link is not valid');
     $('guestResult').innerHTML = jobCard(body.data) + '<p class="empty">This page refreshes itself every 30 seconds while your job is live.</p>';
     hydrateTechPhotos();
+  hydrateGoogleMaps();
   } catch (ex) {
     const err = $('guestErr');
     err.textContent = ex.message;
