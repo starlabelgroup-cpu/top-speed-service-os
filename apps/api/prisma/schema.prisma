@@ -3938,3 +3938,174 @@ model SalesOrderItem {
   @@index([orderId])
   @@index([productId])
 }
+
+// ─── OS Systems Updating System (2026-11-23) ──────────────────────
+// Ramone's directive: a database registry that keeps the WHOLE OS
+// current — every platform, the tech packs each platform runs (with
+// the version actually installed), the latest available version of
+// each pack, and a 6-MONTH UPDATE CYCLE that computes drift and
+// generates a per-platform update plan. The system PREPARES, TRACKS
+// and VERIFIES updates; it never rewrites production code itself —
+// updates are applied by Pepper through the normal build + push +
+// owner-approval flow and then marked APPLIED / VERIFIED here.
+
+enum OsPlatformKind {
+  CONSOLE
+  CUSTOMER_APP
+  WEBSITE
+  SATELLITE_SITE
+  MOBILE_APP
+  SERVICE
+}
+
+// The corporate division structure (Ramone, 2026-11-23): Top Speed
+// OS is the MAIN division — the parent of everything and the home
+// of new platforms; Top Speed Service OS is the SERVICE side
+// (repair / installation services); Top Speed Sales OS is the
+// RETAIL side (the used-appliance shop). FUTURE is reserved for
+// divisions the owner defines later.
+enum DivisionRole {
+  MAIN
+  SERVICE
+  RETAIL
+  FUTURE
+}
+
+model Division {
+  id          String       @id @default(uuid()) @db.Uuid
+  key         String       @unique
+  name        String
+  role        DivisionRole
+  parentKey   String?
+  description String?      @db.Text
+  homeUrl     String?
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+enum TechPackEcosystem {
+  NPM
+  RUNTIME
+  PLATFORM
+  SDK
+}
+
+enum UpdateCycleStatus {
+  OPEN
+  COMPLETED
+  SUPERSEDED
+}
+
+enum UpdateTaskStatus {
+  PENDING
+  PLANNED
+  APPLIED
+  VERIFIED
+  SKIPPED
+  BLOCKED
+}
+
+model OsPlatform {
+  id          String         @id @default(uuid()) @db.Uuid
+  key         String         @unique
+  name        String
+  kind        OsPlatformKind
+  divisionKey String         @default("TOP_SPEED_OS")
+  surface     String?
+  ownerNote   String?        @db.Text
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  packs PlatformTechPack[]
+  tasks UpdateTask[]
+
+  @@index([kind])
+  @@index([divisionKey])
+}
+
+model TechPack {
+  id                  String            @id @default(uuid()) @db.Uuid
+  key                 String            @unique
+  name                String
+  ecosystem           TechPackEcosystem
+  registryUrl         String?
+  currentLatestVersion String?
+  latestCheckedAt     DateTime?
+  latestNote          String?           @db.Text
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  platforms PlatformTechPack[]
+  tasks     UpdateTask[]
+
+  @@index([ecosystem])
+}
+
+// The version of one tech pack actually installed on one platform,
+// as read from that platform's own package files (sourceNote says
+// exactly where it was read). No row = the platform's versions have
+// not been read yet; the cycle treats that as UNKNOWN drift and
+// generates a verify task — a version is never guessed.
+model PlatformTechPack {
+  id              String     @id @default(uuid()) @db.Uuid
+  platformId      String     @db.Uuid
+  platform        OsPlatform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  techPackId      String     @db.Uuid
+  techPack        TechPack   @relation(fields: [techPackId], references: [id], onDelete: Cascade)
+  installedVersion String
+  sourceNote      String?    @db.Text
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@unique([platformId, techPackId])
+  @@index([techPackId])
+}
+
+// One 6-month update cycle. key is unique (e.g. "2026-11-baseline",
+// "2027-05"), so opening the same cycle twice — a redeploy's seed
+// plus the scheduler — can never duplicate it or its tasks.
+model UpdateCycle {
+  id        String            @id @default(uuid()) @db.Uuid
+  key       String            @unique
+  openedAt  DateTime          @default(now())
+  dueAt     DateTime
+  status    UpdateCycleStatus @default(OPEN)
+  note      String?           @db.Text
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  tasks UpdateTask[]
+
+  @@index([status, openedAt])
+}
+
+// One planned update inside a cycle: bring one pack on one platform
+// from fromVersion to toVersion. Tasks are born PENDING (update) or
+// PLANNED (verify, when either side's version is unknown and
+// toVersion is null) — nothing auto-applies; a person moves them
+// through APPLIED → VERIFIED as the real work lands.
+model UpdateTask {
+  id          String           @id @default(uuid()) @db.Uuid
+  cycleId     String           @db.Uuid
+  cycle       UpdateCycle      @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  platformId  String           @db.Uuid
+  platform    OsPlatform       @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  techPackId  String           @db.Uuid
+  techPack    TechPack         @relation(fields: [techPackId], references: [id], onDelete: Cascade)
+  kind        String
+  drift       String
+  fromVersion String?
+  toVersion   String?
+  status      UpdateTaskStatus @default(PENDING)
+  note        String?          @db.Text
+  appliedAt   DateTime?
+  verifiedAt  DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([cycleId, platformId, techPackId])
+  @@index([cycleId, status])
+  @@index([platformId])
+}

@@ -436,6 +436,20 @@ export const SYSTEM_MAP_AREAS = [
 
   /* ------------------------- Marketing, Media & Ads ------------------------- */
   {
+    id: 'os-updates',
+    name: 'OS Systems — Updates',
+    group: 'Command & Consoles',
+    location: 'topspeedserviceos.com/os-updates',
+    url: '/os-updates',
+    purpose: 'The OS Systems Updating System (2026-11-23, Ramone\'s directive): the database registry of every OS platform and the tech packs each platform runs — installed versions read from the platforms\' own package files, latest versions refreshed from the npm registry — and the 6-month update cycle that computes drift (CURRENT / MINOR_BEHIND / MAJOR_BEHIND / UNKNOWN) and generates a per-platform update plan as tasks born PENDING or PLANNED. The system prepares, tracks and verifies updates; it never rewrites production code — updates ship through the normal build, push and owner-approval flow and are then marked APPLIED / VERIFIED here. The baseline cycle (2026-11-baseline) is due 2027-05-23; the semiannual scheduler door accepts the CRON_SECRET like the campaign engine.',
+    access: 'Master and managers (COMPANY_OWNER, COMPANY_ADMIN, PLATFORM_ADMIN)',
+    accessLabel: 'MANAGER ONLY',
+    accessRoles: ['COMPANY_ADMIN', 'COMPANY_OWNER', 'PLATFORM_ADMIN'],
+    actions: ['Read the registry summary (platforms, tech packs, drift counts, open cycle)', 'Refresh latest tech-pack versions from the npm registry', 'Open the next 6-month update cycle and work its task plan', 'Move update tasks through APPLIED and VERIFIED as real updates land'],
+    related: ['sales-os', 'applianceman'],
+    keywords: ['os updates', 'systems updating', 'tech packs', 'update cycle', 'version drift', 'platform registry', 'semiannual updates'],
+  },
+  {
     id: 'marketing-os',
     name: 'Marketing OS',
     group: 'Marketing, Media & Ads',

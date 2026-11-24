@@ -24,6 +24,12 @@ import {
   generateDailyBatch,
   generateLaunchBatch,
 } from '../src/services/campaignFactory.js';
+import {
+  BASELINE_CYCLE_DUE,
+  BASELINE_CYCLE_KEY,
+  openCycle as openUpdateCycle,
+  seedOsUpdatesRegistry,
+} from '../src/services/osUpdates.js';
 
 const prisma = new PrismaClient();
 
@@ -814,6 +820,28 @@ const campaignLaunch = await seedCampaignBatch(LAUNCH_BATCH_KEY, 'LAUNCH', gener
 const todayKey = dailyBatchKey(new Date());
 const campaignDaily = await seedCampaignBatch(todayKey, 'DAILY', generateDailyBatch(new Date()));
 const campaignRecordCount = await prisma.campaignRecord.count();
+
+// ─── Phase 6: the OS Systems Updating System registry (2026-11-23) ─
+// Ramone's directive: a database registry of EVERY OS platform and
+// the tech packs each platform runs, with a 6-month update cycle.
+// The inventory + installed versions live in src/services/
+// osUpdates.js (read from the repos' own package files — platforms
+// whose versions could not be read carry no installed rows, never a
+// guess). Registration runs through the service's own repo (the
+// deploy build carries DATABASE_URL, like the migrate step before
+// this seed), so the seed and the API share one write path.
+// Idempotent twice over: every registration is an upsert by key,
+// and the baseline cycle opens by its unique key exactly once.
+// The seed does NOT call the npm registry: at baseline, latest
+// versions are unknown, so the cycle's tasks are born as verify /
+// pending tasks with toVersion null — Refresh fills them in later.
+const osRegistry = await seedOsUpdatesRegistry();
+const osBaseline = await openUpdateCycle(BASELINE_CYCLE_KEY, {
+  openedAt: new Date(),
+  dueAt: new Date(BASELINE_CYCLE_DUE),
+  note: 'Baseline cycle opened by the deploy seed (Phase 6, 2026-11-23). Latest versions were unknown at seed time; run Refresh latest versions in the OS Systems — Updates console, then work the plan. Due 2027-05-23 — the semiannual cycle cadence.',
+});
+console.log(`OS Updates: registry seeded — ${osRegistry.divisions} divisions, ${osRegistry.platforms} platforms, ${osRegistry.packs} tech packs, ${osRegistry.installed} installed rows; baseline cycle ${BASELINE_CYCLE_KEY} ${osBaseline.alreadyOpen ? 'already open' : `opened with ${osBaseline.created} tasks`}.`);
 
 const companyCount = await prisma.company.count();
 const providerCount = await prisma.provider.count();

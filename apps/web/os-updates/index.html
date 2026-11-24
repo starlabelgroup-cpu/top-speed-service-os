@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><style>.fxi{width:1.12em;height:1.12em;vertical-align:-.16em;flex:none;filter:drop-shadow(0 0 2.5px rgba(18,128,255,.45))}</style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OS Systems — Updates · Top Speed Service OS</title>
+<meta name="description" content="OS Systems Updating System: the registry of every Top Speed OS platform and its tech packs, with the 6-month update cycle that computes version drift and plans the updates.">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0A265C">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<style>
+:root{--navy:#071f4f;--navy2:#0a265c;--blue:#1473ff;--red:#e01a22;--light:#f2f6fb;--ink:#12233d;--muted:#5a6b82;--green:#0f7a3d;--line:#d8e2f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Inter,Arial,Helvetica,sans-serif;color:var(--ink);background:#eef3fa}
+a{text-decoration:none}
+header{background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:12px 28px;flex-wrap:wrap}
+header nav{margin-left:auto;display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+header nav a{color:#cfe0f5;font-size:15px}
+.btn{background:var(--red);color:#fff;padding:11px 20px;border-radius:8px;font-weight:700;display:inline-block;border:none;cursor:pointer;font-size:15px;font-family:inherit}
+.btn.blue{background:var(--blue)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d8ec}
+.btn.small{padding:7px 12px;font-size:13.5px;border-radius:7px}
+.btn[disabled]{opacity:.55;cursor:wait}
+.wrap{max-width:1120px;margin:0 auto;padding:26px 20px 54px}
+h1{font-size:30px;color:var(--navy)}
+.sub{color:var(--muted);margin:6px 0 20px;line-height:1.55;max-width:860px}
+.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.panel h2{font-size:20px;color:var(--navy);margin-bottom:6px}
+.panel p.note{color:var(--muted);font-size:14.5px;line-height:1.55}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.stat small{display:block;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.stat b{font-family:'Space Mono',monospace;font-size:21px;color:var(--navy)}
+.num{font-family:'Space Mono',monospace}
+.tag{display:inline-block;background:#dcebfd;color:var(--navy2);font-weight:800;font-size:11.5px;border-radius:99px;padding:3px 9px}
+.tag.green{background:#dcf2e4;color:#0b5c2d}
+.tag.red{background:#fde3e3;color:#8c1216}
+.tag.amber{background:#fdf0d5;color:#7a5200}
+.tag.grey{background:#e8edf4;color:#43536b}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;color:var(--muted);font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:8px 8px;border-bottom:2px solid var(--line)}
+td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+form.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;font-family:inherit;font-size:15px;background:#fff}
+label{font-size:12.5px;font-weight:700;color:var(--muted);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.msg{margin-top:12px;font-size:14.5px;min-height:20px}
+.msg.err{color:var(--red);font-weight:700}
+.msg.ok{color:var(--green);font-weight:700}
+.empty{color:var(--muted);padding:14px 4px;font-size:15px;line-height:1.55}
+.cta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:end}
+.taskgroup{margin-top:14px}
+.taskgroup h3{font-size:16px;color:var(--navy);margin-bottom:4px}
+select.statusSel{width:auto;padding:6px 9px;font-size:13.5px}
+footer{background:#04122e;color:#9db6d8;padding:30px 24px;text-align:center;font-size:14px;line-height:1.7}
+footer strong{color:#fff}
+@media(max-width:640px){table{font-size:13.5px}th,td{padding:7px 5px}}
+</style>
+<style data-tse="hdr">/*TSE-HDR*/header.site,header.topbar,header.main,body>header:not(.hero),div.topbar{background:#000!important;border-color:#262626!important}header nav a:not(.btn):not(.tse-call),div.topbar nav a:not(.btn):not(.tse-call),header .navlinks a:not(.tse-call),header .header-nav a:not(.tse-call){color:#fff!important}header a[href^="tel:"],div.topbar a[href^="tel:"]{background:#E8322E!important;color:#fff!important;border-radius:999px;padding:9px 16px!important;font-weight:800;text-decoration:none!important;display:inline-block}.tse-brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;flex:0 1 auto;min-width:0}.tse-brand img{height:44px;width:auto;border-radius:7px;display:block;flex:none}.tse-lock{display:flex;flex-direction:column;line-height:1.15;min-width:0}.tse-lock b{color:#fff;font-size:16.5px;letter-spacing:.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.tse-lock small{color:#B9CFF2;font-size:12px;white-space:nowrap}.tse-call{background:#E8322E;color:#fff!important;border-radius:999px;padding:10px 18px;font-weight:800;text-decoration:none!important;display:inline-block;white-space:nowrap}.tse-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;background:#000;padding:10px 20px;border-bottom:3px solid #E8322E}@media(max-width:640px){.tse-lock b{font-size:14px;max-width:150px}.tse-lock small{display:none}.tse-brand img{height:38px}.tse-call{padding:9px 13px;font-size:14px}}</style>
+<script src="/google-tag.js"></script><link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+<header>
+  <a class="tse-brand" href="/" aria-label="Top Speed Appliance Repair — home"><img src="/logo-header.jpg" alt="Top Speed Appliance Repair — The Faster, The Better." width="500" height="217"><span class="tse-lock"><b>Top Speed Appliance Repair</b><small>Serving South Florida</small></span></a>
+  <nav>
+    <a href="/applianceman">ApplianceMan</a>
+    <a href="/sales-os">Sales OS</a>
+    <a href="/facebook-os">Facebook OS</a>
+    <a href="/portal">Portal</a>
+    <a class="tse-call" href="tel:+18444607038"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.2 4h3.4l1.4 4.2-2.1 1.7a13.5 13.5 0 0 0 6.2 6.2l1.7-2.1L20 15.4v3.4a2 2 0 0 1-2.1 2A16.5 16.5 0 0 1 3.2 6.1 2 2 0 0 1 5.2 4z"/><path d="M15.5 3.5a7 7 0 0 1 5 5M15.5 6.8a3.8 3.8 0 0 1 1.7 1.7" stroke="#E8322E"/></svg> Call</a>
+  </nav>
+</header>
+
+<div class="wrap">
+  <h1>OS Systems — Updates</h1>
+  <p class="sub">The Updating System for the whole Top Speed Service OS: every platform, the tech packs each platform runs and the version actually installed, and the <b>6-month update cycle</b> that computes drift and turns it into a per-platform update plan. This console <b>prepares, tracks and verifies</b> updates — it never rewrites production code. Updates are applied through the normal build, push and owner-approval flow, then marked APPLIED and VERIFIED here.</p>
+
+  <div class="panel" id="gatePanel" style="display:none;">
+    <h2>Staff sign-in</h2>
+    <p class="note">OS Systems — Updates is a systems workstation (Master and managers). Sign in with your Service OS account — or sign in on another workstation in this browser and refresh.</p>
+    <form class="grid" id="loginForm" style="max-width:560px;">
+      <div><label for="liEmail">Email</label><input id="liEmail" type="email" autocomplete="username" required></div>
+      <div><label for="liPw">Password</label><input id="liPw" type="password" autocomplete="current-password" required></div>
+      <div id="svRow" style="display:none;"><label for="svCode">Speedy Verify access code</label><input id="svCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office"></div>
+      <div id="svBtnRow" style="display:none;align-self:end;"><button class="btn" type="button" id="svVerifyBtn">Verify &amp; sign in</button></div>
+      <div style="align-self:end;"><button class="btn" type="submit">Sign in</button></div>
+    </form>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="console" style="display:none;">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+      <span class="note" id="asOf" style="color:var(--muted);font-size:14px;"></span>
+      <span><button class="btn ghost small" id="signOutBtn">Sign out</button></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><small>Platforms</small><b id="stPlatforms">—</b></div>
+      <div class="stat"><small>Tech packs</small><b id="stPacks">—</b></div>
+      <div class="stat"><small>Current</small><b id="stCurrent">—</b></div>
+      <div class="stat"><small>Minor behind</small><b id="stMinor">—</b></div>
+      <div class="stat"><small>Major behind</small><b id="stMajor">—</b></div>
+      <div class="stat"><small>Unknown — verify</small><b id="stUnknown">—</b></div>
+    </div>
+
+    <div class="panel">
+      <h2>Update cycle</h2>
+      <div id="cycleBody"><p class="note">Loading the cycle…</p></div>
+      <div class="cta-row">
+        <button class="btn blue" type="button" id="refreshBtn">Refresh latest versions</button>
+        <span style="min-width:210px;flex:0 1 260px;"><label for="cycleKey">New cycle key (e.g. 2027-05)</label><input id="cycleKey" placeholder="YYYY-MM"></span>
+        <button class="btn" type="button" id="openCycleBtn">Open new cycle</button>
+      </div>
+      <div class="msg" id="cycleMsg"></div>
+      <div id="tasksBody"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Platforms — every OS surface in the registry, by division</h2>
+      <p class="note">Grouped by the corporate divisions: <b>Top Speed OS</b> (main), <b>Top Speed Service OS</b> (the service side) and <b>Top Speed Sales OS</b> (the retailing side). Drift is computed from the version actually recorded for each platform against the latest known version of the same pack. A platform marked <b>UNKNOWN</b> has versions that have not been read yet — the open cycle carries a verify task for it. No version is ever guessed.</p>
+      <div id="platformsBody"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Tech packs — latest known versions</h2>
+      <p class="note">Latest versions come from the npm registry when <b>Refresh latest versions</b> runs. A pack with no latest recorded yet shows “not checked” — its platforms read as UNKNOWN drift until the first refresh lands.</p>
+      <div id="packsBody"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Top Speed Appliance Repair</strong> — The Faster, The Better.<br>
+  OS Systems — Updates · part of Top Speed Service OS
+</footer>
+
+<script>
+var API='https://top-speed-service-os.vercel.app/api/v1';
+var ALLOWED=['COMPANY_OWNER','COMPANY_ADMIN','PLATFORM_ADMIN'];
+var TASK_STATUSES=['PENDING','PLANNED','APPLIED','VERIFIED','SKIPPED','BLOCKED'];
+var OPEN_CYCLE_KEY=null;
+var DIVISIONS=[];
+var DIVISION_FALLBACK=[
+  {key:'TOP_SPEED_OS',name:'Top Speed OS',role:'MAIN'},
+  {key:'SERVICE_OS',name:'Top Speed Service OS',role:'SERVICE'},
+  {key:'SALES_OS',name:'Top Speed Sales OS',role:'RETAIL'}
+];
+function divisionLabel(d){
+  var side=({MAIN:'main',SERVICE:'service side',RETAIL:'retailing side',FUTURE:'future division'})[d.role]||'';
+  return d.name+(side?' — '+side:'');
+}
+function tok(){ try{ return localStorage.getItem('tsos_token')||''; }catch(e){ return ''; } }
+function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function when(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleString(); }catch(e){ return iso; } }
+function day(iso){ if(!iso) return '—'; try{ return new Date(iso).toLocaleDateString(); }catch(e){ return iso; } }
+function sessionExpired(){
+  try { if (window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); } catch(e){}
+  try { localStorage.removeItem('tsos_token'); }catch(e){}
+  location.reload();
+}
+function apiFetch(path,opts){
+  opts=opts||{}; opts.headers=Object.assign({'Content-Type':'application/json','Authorization':'Bearer '+tok()},opts.headers||{});
+  return fetch(API+path,opts).then(function(r){ if(r.status===401){ sessionExpired(); throw new Error('session expired'); } if(r.status===403 && window.TSOSAccess){ window.TSOSAccess.showRestricted('MANAGER ONLY'); } return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok) throw new Error(j.error||('Request failed ('+r.status+')')); return j; }); });
+}
+function driftTag(d){
+  if(d==='CURRENT') return '<span class="tag green">CURRENT</span>';
+  if(d==='MINOR_BEHIND') return '<span class="tag amber">MINOR BEHIND</span>';
+  if(d==='MAJOR_BEHIND') return '<span class="tag red">MAJOR BEHIND</span>';
+  return '<span class="tag grey">UNKNOWN</span>';
+}
+function statusTag(s){
+  if(s==='VERIFIED') return '<span class="tag green">VERIFIED</span>';
+  if(s==='APPLIED') return '<span class="tag">APPLIED</span>';
+  if(s==='BLOCKED') return '<span class="tag red">BLOCKED</span>';
+  if(s==='SKIPPED') return '<span class="tag grey">SKIPPED</span>';
+  if(s==='PLANNED') return '<span class="tag amber">PLANNED</span>';
+  return '<span class="tag amber">PENDING</span>';
+}
+
+document.getElementById('loginForm').addEventListener('submit',function(ev){
+  ev.preventDefault();
+  fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('liEmail').value.trim(),password:document.getElementById('liPw').value})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Sign-in failed'); return j; }); })
+    .then(function(j){
+      if(j && j.verifyRequired && j.challenge){ svStart(j.challenge); return; }
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in cancelled — the 2-step code is required to finish.'; }}); return; }
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user); })
+    .catch(function(e){ var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='Sign-in failed: '+e.message; });
+});
+var svChallenge=null;
+function svShowMsg(text,isErr){ var m=document.getElementById('loginMsg'); if(!m) return; m.className='msg'+(isErr?' err':''); m.textContent=text; }
+function svStart(challenge){ svChallenge=challenge; document.getElementById('svRow').style.display=''; document.getElementById('svBtnRow').style.display=''; svShowMsg('Speedy Verify — enter the access code the office issued you, then tap Verify & sign in.',false); var ci=document.getElementById('svCode'); if(ci) ci.focus(); }
+document.getElementById('svVerifyBtn').addEventListener('click',function(){
+  var code=document.getElementById('svCode').value.trim();
+  if(!svChallenge){ svShowMsg('Sign in with your password first, then enter your code.',true); return; }
+  if(!code){ svShowMsg('Enter your access code.',true); return; }
+  fetch(API+'/speedy-verify/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({challenge:svChallenge,code:code})})
+    .then(function(r){ return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||'Verification failed'); return j; }); })
+    .then(function(j){
+      if(j && j.layer2Required && j.challenge && window.TSOSLayer2){ svChallenge=null; document.getElementById('svRow').style.display='none'; document.getElementById('svBtnRow').style.display='none'; TSOSLayer2.run(j,{api:API,onSession:function(s){ try{ localStorage.setItem('tsos_token',s.token); }catch(e){} boot(s.user); },onCancel:function(){ svShowMsg('Sign-in cancelled — the 2-step code is required to finish.',true); }}); return; }
+      svChallenge=null;
+      try{ try{if(window.TSOSVault&&j.user&&j.token)window.TSOSVault.add(j.user,j.token);}catch(e){} localStorage.setItem('tsos_token',j.token); }catch(e){} boot(j.user);
+    })
+    .catch(function(e){ svShowMsg('Speedy Verify: '+e.message,true); });
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){ try{ localStorage.removeItem('tsos_token'); }catch(e){} location.reload(); });
+
+function boot(user){
+  var roles=(user&&user.roles)||[];
+  if(!roles.some(function(r){ return ALLOWED.indexOf(r)>-1; })){
+    if(window.TSOSAccess){ window.TSOSAccess.showRestricted('MANAGER ONLY'); return; }
+    document.getElementById('gatePanel').style.display='block';
+    var m=document.getElementById('loginMsg'); m.className='msg err'; m.textContent='That account does not carry a systems role for this workstation.';
+    try{ localStorage.removeItem('tsos_token'); }catch(e){}
+    return;
+  }
+  document.getElementById('gatePanel').style.display='none';
+  document.getElementById('console').style.display='block';
+  loadAll();
+}
+
+function loadAll(){
+  document.getElementById('asOf').textContent='As of '+new Date().toLocaleString();
+  apiFetch('/os-updates/summary').then(function(j){ renderSummary(j.data||{}); }).catch(showErr);
+  apiFetch('/os-updates/divisions').then(function(j){ DIVISIONS=(j.data&&j.data.length)?j.data:DIVISION_FALLBACK; apiFetch('/os-updates/platforms').then(function(k){ renderPlatforms(k.data||[]); }).catch(showErr); }).catch(function(){ DIVISIONS=DIVISION_FALLBACK; apiFetch('/os-updates/platforms').then(function(k){ renderPlatforms(k.data||[]); }).catch(showErr); });
+  apiFetch('/os-updates/packs').then(function(j){ renderPacks(j.data||[]); }).catch(showErr);
+  apiFetch('/os-updates/cycles').then(function(j){ renderCycles(j.data||[]); }).catch(showErr);
+}
+function showErr(e){ if(e && e.message==='session expired') return; var m=document.getElementById('cycleMsg'); if(m){ m.className='msg err'; m.textContent='Could not load: '+e.message; } }
+
+function renderSummary(d){
+  document.getElementById('stPlatforms').textContent=d.platforms!=null?d.platforms:'—';
+  document.getElementById('stPacks').textContent=d.packs!=null?d.packs:'—';
+  var drift=d.drift||{};
+  document.getElementById('stCurrent').textContent=drift.CURRENT||0;
+  document.getElementById('stMinor').textContent=drift.MINOR_BEHIND||0;
+  document.getElementById('stMajor').textContent=drift.MAJOR_BEHIND||0;
+  document.getElementById('stUnknown').textContent=drift.UNKNOWN||0;
+}
+
+function renderCycles(cycles){
+  var body=document.getElementById('cycleBody');
+  var open=null;
+  for(var i=0;i<cycles.length;i++){ if(cycles[i].status==='OPEN'){ open=cycles[i]; break; } }
+  if(!open){ body.innerHTML='<p class="note">No cycle is open. Open the next 6-month cycle below — it computes drift across every platform and generates the update plan.</p>'; document.getElementById('tasksBody').innerHTML=''; OPEN_CYCLE_KEY=null; return; }
+  OPEN_CYCLE_KEY=open.key;
+  var counts=open.tasksByStatus||{};
+  var parts=[];
+  for(var s in counts){ if(Object.prototype.hasOwnProperty.call(counts,s)) parts.push(esc(s)+': '+counts[s]); }
+  body.innerHTML='<p class="note"><span class="tag green">OPEN</span> <b>'+esc(open.key)+'</b> · opened '+esc(day(open.openedAt))+' · <b>due '+esc(day(open.dueAt))+'</b> · '+esc(open.taskCount||0)+' tasks'+(parts.length?' · '+parts.join(' · '):'')+'</p>'
+    +(open.note?'<p class="note">'+esc(open.note)+'</p>':'');
+  loadTasks(open.key);
+}
+
+function loadTasks(key){
+  apiFetch('/os-updates/cycles/'+encodeURIComponent(key)+'/tasks').then(function(j){ renderTasks(j.data||[]); }).catch(showErr);
+}
+
+function renderTasks(tasks){
+  var body=document.getElementById('tasksBody');
+  if(!tasks.length){ body.innerHTML='<p class="empty">This cycle has no tasks — every recorded version is current.</p>'; return; }
+  var groups={}; var order=[];
+  tasks.forEach(function(t){ var k=t.platformKey||'—'; if(!groups[k]){ groups[k]={name:t.platformName||k,rows:[]}; order.push(k); } groups[k].rows.push(t); });
+  var html='';
+  order.forEach(function(k){
+    var g=groups[k];
+    html+='<div class="taskgroup"><h3>'+esc(g.name)+'</h3><table><thead><tr><th>Tech pack</th><th>Kind</th><th>From</th><th>To</th><th>Drift</th><th>Status</th></tr></thead><tbody>';
+    g.rows.forEach(function(t){
+      var opts=TASK_STATUSES.map(function(s){ return '<option value="'+s+'"'+(s===t.status?' selected':'')+'>'+s+'</option>'; }).join('');
+      html+='<tr><td><b>'+esc(t.packName||t.packKey||'')+'</b>'+(t.note?'<br><span style="color:var(--muted);font-size:13px;">'+esc(t.note)+'</span>':'')+'</td><td>'+esc(t.kind)+'</td><td class="num">'+esc(t.fromVersion||'—')+'</td><td class="num">'+esc(t.toVersion||'—')+'</td><td>'+driftTag(t.drift)+'</td><td>'+statusTag(t.status)+' <select class="statusSel" data-task="'+esc(t.id)+'" aria-label="Set task status">'+opts+'</select></td></tr>';
+    });
+    html+='</tbody></table></div>';
+  });
+  body.innerHTML=html;
+  var sels=body.querySelectorAll('select.statusSel');
+  for(var i=0;i<sels.length;i++){ sels[i].addEventListener('change',onStatusChange); }
+}
+
+function onStatusChange(ev){
+  var sel=ev.target; var id=sel.getAttribute('data-task'); var status=sel.value;
+  sel.disabled=true;
+  apiFetch('/os-updates/tasks/'+encodeURIComponent(id)+'/status',{method:'POST',body:JSON.stringify({status:status})})
+    .then(function(){ var m=document.getElementById('cycleMsg'); m.className='msg ok'; m.textContent='Task marked '+status+'.'; if(OPEN_CYCLE_KEY) loadTasks(OPEN_CYCLE_KEY); apiFetch('/os-updates/cycles').then(function(j){ renderCycles(j.data||[]); }); })
+    .catch(function(e){ var m=document.getElementById('cycleMsg'); m.className='msg err'; m.textContent='Could not update the task: '+e.message; })
+    .then(function(){ sel.disabled=false; });
+}
+
+function renderPlatforms(rows){
+  var body=document.getElementById('platformsBody');
+  if(!rows.length){ body.innerHTML='<p class="empty">No platforms registered yet.</p>'; return; }
+  var divs=DIVISIONS.length?DIVISIONS:DIVISION_FALLBACK;
+  var known={};
+  divs.forEach(function(d){ known[d.key]=true; });
+  var html='';
+  function groupHtml(list){
+    var out='<table><thead><tr><th>Platform</th><th>Kind</th><th>Packs recorded</th><th>Behind</th><th>Drift</th></tr></thead><tbody>';
+    list.forEach(function(p){
+      out+='<tr><td><b>'+esc(p.name)+'</b>'+(p.surface?'<br><span style="color:var(--muted);font-size:13px;">'+esc(p.surface)+'</span>':'')+'</td><td>'+esc(p.kind)+'</td><td class="num">'+esc((p.packs||[]).length)+'</td><td class="num">'+esc(p.packsBehind||0)+'</td><td>'+driftTag(p.drift)+'</td></tr>';
+    });
+    return out+'</tbody></table>';
+  }
+  divs.forEach(function(d){
+    var list=rows.filter(function(p){ return p.divisionKey===d.key; });
+    if(!list.length) return;
+    html+='<div class="taskgroup"><h3>'+esc(divisionLabel(d))+'</h3>'+(d.description?'<p class="note">'+esc(d.description)+'</p>':'')+groupHtml(list)+'</div>';
+  });
+  var rest=rows.filter(function(p){ return !known[p.divisionKey]; });
+  if(rest.length){ html+='<div class="taskgroup"><h3>Unassigned</h3>'+groupHtml(rest)+'</div>'; }
+  body.innerHTML=html;
+}
+
+function renderPacks(rows){
+  var body=document.getElementById('packsBody');
+  if(!rows.length){ body.innerHTML='<p class="empty">No tech packs registered yet.</p>'; return; }
+  var html='<table><thead><tr><th>Tech pack</th><th>Ecosystem</th><th>Latest known</th><th>Checked</th></tr></thead><tbody>';
+  rows.forEach(function(p){
+    html+='<tr><td><b>'+esc(p.name)+'</b><br><span style="color:var(--muted);font-size:13px;">'+esc(p.key)+'</span></td><td>'+esc(p.ecosystem)+'</td><td class="num">'+esc(p.currentLatestVersion||'not checked')+'</td><td>'+esc(p.latestCheckedAt?when(p.latestCheckedAt):'—')+'</td></tr>';
+  });
+  html+='</tbody></table>';
+  body.innerHTML=html;
+}
+
+document.getElementById('refreshBtn').addEventListener('click',function(){
+  var btn=this; btn.disabled=true;
+  var m=document.getElementById('cycleMsg'); m.className='msg'; m.textContent='Reading the npm registry for every pack…';
+  apiFetch('/os-updates/refresh-latest',{method:'POST',body:JSON.stringify({})})
+    .then(function(j){
+      var results=(j.data&&j.data.results)||[];
+      var ok=results.filter(function(r){ return r.refreshed; }).length;
+      m.className='msg ok'; m.textContent='Refresh complete: '+ok+' of '+results.length+' packs updated from the registry. Drift above now reflects the new latest versions.';
+      loadAll();
+    })
+    .catch(function(e){ m.className='msg err'; m.textContent='Refresh failed: '+e.message; })
+    .then(function(){ btn.disabled=false; });
+});
+
+document.getElementById('openCycleBtn').addEventListener('click',function(){
+  var key=document.getElementById('cycleKey').value.trim();
+  var m=document.getElementById('cycleMsg');
+  if(!key){ m.className='msg err'; m.textContent='Enter a cycle key first (e.g. 2027-05).'; return; }
+  var btn=this; btn.disabled=true;
+  apiFetch('/os-updates/cycles/open',{method:'POST',body:JSON.stringify({key:key})})
+    .then(function(j){
+      var d=j.data||{};
+      m.className='msg ok';
+      m.textContent=d.alreadyOpen?('Cycle '+key+' is already open — nothing was duplicated.'):('Cycle '+key+' opened: '+(d.created||0)+' update tasks generated, due in 6 months.');
+      loadAll();
+    })
+    .catch(function(e){ m.className='msg err'; m.textContent='Could not open the cycle: '+e.message; })
+    .then(function(){ btn.disabled=false; });
+});
+
+if(tok()){
+  apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(e){ if(e && e.message==='session expired') return; try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(err){} try{ localStorage.removeItem('tsos_token'); }catch(err){} document.getElementById('gatePanel').style.display='block'; });
+}else{
+  document.getElementById('gatePanel').style.display='block';
+}
+</script>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@500;700&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>body{font-family:'Inter',Inter,Arial,sans-serif} h1,h2,h3{font-family:'Rajdhani',Inter,Arial,sans-serif}</style>
+<script src="/layer2.js" defer></script>
+<script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script>
+<script src="/shared/access-badge.js" defer></script>
+<script src="/shared/pepper-chat.js" defer></script>
+<script src="/shared/page-slider.js" defer></script>
+</body>
+</html>
