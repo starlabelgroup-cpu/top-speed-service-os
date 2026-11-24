@@ -25,13 +25,6 @@
   .menu a:hover{background:rgba(255,255,255,.08);color:#fff}
   h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:31px;line-height:1.16;margin:26px 0 8px}
   .tagline{text-align:center;color:#aebfe0;font-size:15px;font-weight:500}
-  .segs{display:flex;gap:7px;margin:24px 0 7px}
-  .segs i{flex:1;height:6px;border-radius:99px;background:#33475f}
-  .segs i.done,.segs i.now{background:var(--red2)}
-  .segLabels{display:flex;gap:7px}
-  .segLabels span{flex:1;text-align:center;font-size:12.5px;color:#7e93b5;font-weight:600}
-  .segLabels span.now{color:#fff}
-  .segLabels span.done{color:#c7d6f2}
   .card{background:#fff;color:var(--ink);border-radius:22px;padding:26px 24px;margin-top:22px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
   .card h2{font-size:24px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;color:var(--ink)}
   .card h2 small{color:#98a2b3;font-size:13.5px;font-weight:600}
@@ -77,11 +70,6 @@
 /* ===== RACING THEME — Figma "Top Speed — Racing Theme" eZ9grAHH4Kmm1M5bDSSiDV, applied 2026-11-16 ===== */
 .rt-kicker{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.34em;text-transform:uppercase;color:#FF6B77;text-align:center;margin-top:24px}
 .rt-checker{height:10px;margin:16px 0 2px;background:repeating-conic-gradient(#fff 0 25%,transparent 0 50%);background-size:16px 16px;opacity:.85;border-radius:2px}
-.segLabels{counter-reset:cp;margin-top:12px}
-.segLabels span{counter-increment:cp;display:flex;flex-direction:column;align-items:center;gap:6px}
-.segLabels span::before{content:counter(cp);width:27px;height:27px;border-radius:50%;border:2px solid #7e93b5;color:#7e93b5;background:#0A1628;font-family:'Orbitron',sans-serif;font-weight:800;font-size:12.5px;display:flex;align-items:center;justify-content:center;flex:none}
-.segLabels span.now::before{background:#E8322E;border-color:#E8322E;color:#fff;box-shadow:0 0 12px rgba(232,50,46,.55)}
-.segLabels span.done::before{content:"✓";background:#22C55E;border-color:#22C55E;color:#fff}
 .rt-lights{display:inline-flex;gap:6px;align-items:center;background:#081226;border:1.5px solid #33507E;border-radius:999px;padding:6px 10px;vertical-align:middle;margin-right:9px}
 .rt-lights i{width:11px;height:11px;border-radius:50%;background:#40202B;display:block}
 .rt-lights i.on-r{background:#E94E5C;box-shadow:0 0 8px rgba(233,78,92,.85)}
@@ -154,8 +142,6 @@
   <div class="tagline">Fast • Reliable • Local Service</div>
   <div class="rt-checker" aria-hidden="true"></div>
 
-  <div class="segs" id="segs"><i></i><i></i><i></i><i></i><i></i></div>
-  <div class="segLabels" id="segLabels"><span>Contact</span><span>Location</span><span>Appliance</span><span>Schedule</span><span>Review</span></div>
 
   <div data-tsos-zip-booking></div>
   <img src="/api/v1/app/platform-images/booking-form-classic.webp" alt="Illustration: a customer calmly filling in the classic booking form on a tablet at the kitchen table" style="width:100%;height:auto;border-radius:14px;display:block;margin-top:16px" loading="lazy">
