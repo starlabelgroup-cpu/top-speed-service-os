@@ -12,7 +12,19 @@
  * ratings, no warranty-plan question (Top Speed has no such program).
  * Form-first: the wizard IS the form; the pages' Ask Speedy option
  * stays below it as the secondary path. Mounts: [data-tsos-zip-booking]
- * (data-photo="1" adds the homepage's Speedy photo read to Step 2). */
+ * (data-photo="1" adds the homepage's Speedy photo read to Step 2).
+ *
+ * App mode (data-mode="app", the /app Book tab, 2026-11-23): the same
+ * wizard presents the customer app's booking flow and submits the
+ * app's own contract — POST /bookings through the page's cFetch when
+ * signed in; guests first POST /auth/register with the termsAcceptance
+ * object (TSOSLegal prefix 'cd'), then book. The app-only machinery is
+ * preserved verbatim: the app's appliance names, issue chips, photo
+ * first-look (diagnose only — the photo never enters the payload),
+ * buildDays day labels, live window availability, the cd* element IDs
+ * (so custApplyUser / custLoginFromBook / custVerify keep working),
+ * and the post-booking page state (booking.ref, stageIdx, FEED,
+ * renderActiveJob) that feeds stage tracking. */
 (function () {
   'use strict';
   var API = 'https://top-speed-service-os.vercel.app/api/v1';
@@ -24,6 +36,23 @@
     { v: '12-14', label: '12\u20132 PM' }, { v: '14-16', label: '2\u20134 PM' },
     { v: '16-18', label: '4\u20136 PM' }
   ];
+  /* App mode: the customer app's own appliance set — its names are
+     the values the /app booking payload has always carried (they
+     differ from the canonical web list: "Oven & Range", "Freezer",
+     "Ice Maker", "Cooktop"), with the app's own icon paths. */
+  var APP_APPLIANCES = [
+    { v: 'Refrigerator', icon: '<path d="M8 3h8l2 2v16H6V5z"/><path d="M6 10h12M9 6.5v2M9 13v3"/>' },
+    { v: 'Washer', icon: '<path d="M6 3h12l2 2v14l-2 2H6L4 19V5z"/><path d="M16.16 14.72L13.72 17.16L10.28 17.16L7.84 14.72L7.84 11.28L10.28 8.84L13.72 8.84L16.16 11.28z"/><path d="M7 6h.01M10 6h4"/>' },
+    { v: 'Dryer', icon: '<path d="M6 3h12l2 2v14l-2 2H6L4 19V5z"/><path d="M16.16 14.72L13.72 17.16L10.28 17.16L7.84 14.72L7.84 11.28L10.28 8.84L13.72 8.84L16.16 11.28z"/><path d="M9.5 11.8l1.6 2 1.7-2 1.7 2M7 6h.01"/>' },
+    { v: 'Oven & Range', icon: '<path d="M6 5h12l2 2v14H4V7z"/><circle cx="8.5" cy="8.5" r="1.3"/><circle cx="15.5" cy="8.5" r="1.3"/><path d="M7 12.5h10v5.5H7z"/>' },
+    { v: 'Dishwasher', icon: '<path d="M6 3h12l2 2v16H4V5z"/><path d="M4 8h16M8 12v3M12 11v4M16 12v3M7 5.5h3"/>' },
+    { v: 'Freezer', icon: '<path d="M8 3h8l2 2v16H6V5z"/><path d="M12 9v7M9 10.5l6 4M15 10.5l-6 4M9 6.5h.01"/><circle cx="12" cy="12.5" r="1.1" fill="currentColor" stroke="none"/>' },
+    { v: 'Ice Maker', icon: '<rect x="5" y="8" width="9" height="9" rx="1.5" transform="rotate(-8 9.5 12.5)"/><rect x="12" y="5" width="8" height="8" rx="1.5" transform="rotate(10 16 9)"/>' },
+    { v: 'Microwave', icon: '<path d="M5 6h14l2 2v10H3V8z"/><path d="M6 9h9v6H6z"/><path d="M18 9.5h.01M18 13h.01"/>' },
+    { v: 'Cooktop', icon: '<path d="M5 7h14l2 2v9H3V9z"/><path d="M10.72 13.42L9.42 14.72L7.58 14.72L6.28 13.42L6.28 11.58L7.58 10.28L9.42 10.28L10.72 11.58z"/><path d="M17.72 13.42L16.42 14.72L14.58 14.72L13.28 13.42L13.28 11.58L14.58 10.28L16.42 10.28L17.72 11.58z"/><path d="M6 20h.01M18 20h.01"/>' }
+  ];
+  var ISSUE_CHIPS = ['Not cooling / not heating', 'Making noise', 'Leaking water', 'Won\u2019t start / no power', 'Error code on display', 'Something else'];
+  var APP_WIN_LABELS = { '08-10': '8\u201310 AM', '10-12': '10 AM\u201312 PM', '12-14': '12\u20132 PM', '14-16': '2\u20134 PM', '16-18': '4\u20136 PM' };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -66,7 +95,7 @@
     '.zbw h3{font-size:21px;margin:12px 0 4px;color:#0A265C;line-height:1.25}',
     '.zbw .sub{color:#5b6b87;margin:0 0 14px;font-size:14.5px}',
     '.zbw label{display:block;font-weight:700;font-size:13.5px;color:#0A265C;margin:14px 0 6px}',
-    '.zbw input[type="text"],.zbw input[type="tel"],.zbw input[type="email"],.zbw input[type="date"],.zbw select,.zbw textarea{width:100%;padding:12px 13px;border:1.5px solid #dbe4f0;border-radius:12px;font:inherit;font-size:15px;background:#fff;color:#0d1b2e}',
+    '.zbw input[type="text"],.zbw input[type="tel"],.zbw input[type="email"],.zbw input[type="password"],.zbw input[type="date"],.zbw select,.zbw textarea{width:100%;padding:12px 13px;border:1.5px solid #dbe4f0;border-radius:12px;font:inherit;font-size:15px;background:#fff;color:#0d1b2e}',
     '.zbw textarea{min-height:84px;resize:vertical}',
     '.zbw input:focus,.zbw select:focus,.zbw textarea:focus{outline:2px solid #19A7FF;outline-offset:1px;border-color:#19A7FF}',
     '.zbw .zb-locbtn{display:inline-flex;align-items:center;gap:8px;margin-top:12px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:11px 18px;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer}',
@@ -125,7 +154,23 @@
     '.zbw .zb-photorun{display:none;margin-top:10px;background:#0A265C;color:#fff;border:none;border-radius:999px;padding:10px 16px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}',
     '.zbw .zb-photores{display:none;margin-top:10px;background:#f2f6fd;border:1px solid #dbe4f0;border-radius:12px;padding:11px 13px;font-size:14px}',
     '.zbw .zb-photores p{margin:4px 0 0;color:#33465e}',
-    '.zbw .zb-fine{font-size:12.5px;color:#8fa1bb;margin-top:6px;line-height:1.45}'
+    '.zbw .zb-fine{font-size:12.5px;color:#8fa1bb;margin-top:6px;line-height:1.45}',
+    /* App mode additions: issue/day/window chips, photo first-look,
+       the $99 remind box, account-block controls. */
+    '.zbw .zb-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}',
+    '.zbw .zb-chip{border:1.5px solid #dbe4f0;background:#fff;border-radius:999px;padding:9px 14px;font:inherit;font-size:14px;font-weight:600;color:#0A265C;cursor:pointer}',
+    '.zbw .zb-chip.on{border-color:#E8322E;background:#fdf0ef;box-shadow:0 0 0 1px #E8322E inset}',
+    '.zbw .zb-chip[disabled]{cursor:not-allowed}',
+    '.zbw .zb-photobox{border:1.5px dashed #c4d2e6;border-radius:12px;padding:16px 14px;cursor:pointer;text-align:center;color:#0A265C}',
+    '.zbw .zb-photobox b{display:block;font-size:15px}',
+    '.zbw .zb-photobox span{display:block;font-size:13px;color:#5b6b87;margin-top:3px}',
+    '.zbw .zb-photoprev{display:none;margin-top:10px;position:relative}',
+    '.zbw .zb-photoprev img{width:100%;height:auto;border-radius:12px;display:block}',
+    '.zbw .zb-photoprev .pp-tag{position:absolute;left:10px;bottom:10px;background:#0A265C;color:#fff;font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}',
+    '.zbw .zb-ainote{display:none;margin-top:10px;background:#f2f6fd;border:1px solid #dbe4f0;border-radius:12px;padding:11px 13px;font-size:14px;color:#33465e}',
+    '.zbw .zb-remind{background:#fdf6e3;border:1px solid #ecd9a0;border-radius:12px;padding:12px 14px;font-size:13.5px;color:#5f4b00;margin-top:12px;line-height:1.55}',
+    '.zbw .zb-tlink{color:#0A265C;font-weight:700}',
+    '.zbw .zb-donebtns button{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:12px 20px;font:inherit;font-weight:800;font-size:14.5px;cursor:pointer;border:none}'
   ].join('');
 
   function ensureStyle() {
@@ -144,6 +189,8 @@
   function createWizard(root) {
     var uid = 'zb' + (++uidSeq);
     var withPhoto = root.getAttribute('data-photo') === '1';
+    var appMode = root.getAttribute('data-mode') === 'app';
+    var TILESET = appMode ? APP_APPLIANCES : APPLIANCES;
     var state = {
       step: 1,
       zip: '', city: '', cityOther: '', areaMode: '', zipAreas: [],
@@ -152,8 +199,15 @@
       appliance: '', issue: '', photoDiag: null,
       name: '', phone: '', email: '', address: '', note: '', website: '',
       date: dstr(new Date()), win: '',
-      done: null
+      done: null,
+      /* App mode only: */
+      issueChip: '', photoSrc: '', photoNote: '',
+      dayText: '', winLabel: '', winId: '', password: '',
+      acctMode: 'create',
+      legal: { os: false, connect: false, sig: '' },
+      details: null, acceptance: null
     };
+    if (appMode) state.date = ''; /* the app flow starts with no day picked */
     var cities = null; /* [{name, county, core}] from /geo/cities */
     var photoData = null, photoBusy = false, zipTimer = null, busy = false;
 
@@ -433,6 +487,15 @@
 
     function doneHtml() {
       var d = state.done;
+      if (d.app) {
+        return '<div class="zb-done"><div class="dic">' + CHECK + '</div>' +
+          '<h3 style="text-align:center">You\u2019re booked</h3>' +
+          '<p class="sub" style="text-align:center;margin-bottom:0">Your reference code</p>' +
+          '<div class="zb-ref" id="refCode">' + esc(d.ref) + '</div>' +
+          '<p class="sub" style="text-align:center"><b style="color:#0A265C;">A Service Setter will confirm by text</b> shortly, and your tech\u2019s details land in the Track tab once matched.</p>' +
+          '<div class="zb-donebtns"><button type="button" data-act="track" style="background:#0A265C;color:#fff">' + PIN + ' Track my job</button>' +
+          '<button type="button" data-act="again" style="background:#fff;color:#0A265C;border:1.5px solid #dbe4f0">Book another repair</button></div></div>';
+      }
       if (d.areaStatus === 'OUT_OF_AREA') {
         return '<div class="zb-done"><div class="dic out">' + PIN + '</div>' +
           '<h3 style="text-align:center">Thanks \u2014 we\u2019ve recorded your request</h3>' +
@@ -447,6 +510,378 @@
         '<p class="sub" style="text-align:center">Your request is in the Service Setters dispatch queue and your confirmation is on its way by text/email. A setter confirms your window shortly.</p>' +
         '<div class="zb-donebtns"><a href="/track" style="background:#0A265C;color:#fff">' + PIN + ' Track this job</a>' +
         '<a href="tel:+18444607038" style="background:#E8322E;color:#fff">' + PHONE + ' Call (844) 460-7038</a></div></div>';
+    }
+
+    /* ================= App mode =================
+       The /app Book contract, step by step. Validations, toasts,
+       endpoints and payload are the app's own (see CONTRACT notes in
+       the page surgery): the wizard is a presentation swap only. */
+    function appToast(msg) {
+      if (window.toast) { window.toast(msg); return; }
+      setErr(msg);
+    }
+    function snapshotLegal() {
+      var os = document.getElementById('cdTermsOs'), cn = document.getElementById('cdTermsConnect'), sig = document.getElementById('cdSignature');
+      if (os) state.legal.os = os.checked;
+      if (cn) state.legal.connect = cn.checked;
+      if (sig) state.legal.sig = sig.value;
+    }
+    function mountLegal() {
+      if (!window.TSOSLegal) return;
+      if (!document.getElementById('cdLegal')) return;
+      window.TSOSLegal.mountSigning('cdLegal', 'cd', {});
+      var os = document.getElementById('cdTermsOs'), cn = document.getElementById('cdTermsConnect'), sig = document.getElementById('cdSignature');
+      if (os) os.checked = !!state.legal.os;
+      if (cn) cn.checked = !!state.legal.connect;
+      if (sig && state.legal.sig) sig.value = state.legal.sig;
+      try { if (window.TSOSIntakeShield && window.TSOSIntakeShield.render) window.TSOSIntakeShield.render(); } catch (e) { /* shield is best-effort */ }
+    }
+
+    /* Step 2 (app): appliance tiles + issue chips + photo first-look. */
+    function step2AppHtml() {
+      var h = '<h3>What needs repair?</h3>' +
+        '<p class="sub">First, choose your appliance.</p>' +
+        '<div class="zb-tiles" role="radiogroup" aria-label="Appliance">';
+      TILESET.forEach(function (a) {
+        h += '<button type="button" class="zb-tile' + (state.appliance === a.v ? ' on' : '') + '" data-appliance="' + esc(a.v) + '" role="radio" aria-checked="' + (state.appliance === a.v) + '">' + svgIcon(a.icon) + esc(a.v) + '</button>';
+      });
+      h += '</div>' +
+        '<label>What\u2019s it doing?</label>' +
+        '<div class="zb-chips">';
+      ISSUE_CHIPS.forEach(function (c) {
+        h += '<button type="button" class="zb-chip' + (state.issueChip === c ? ' on' : '') + '" data-chip="' + esc(c) + '">' + esc(c) + '</button>';
+      });
+      h += '</div>' +
+        '<label for="' + uid + '-issue">Add details (optional)</label>' +
+        '<textarea id="' + uid + '-issue" data-f="issue" rows="2" placeholder="e.g. Fridge is warm, freezer still cold. Started Tuesday.">' + esc(state.issue) + '</textarea>' +
+        '<label>Photo helps us triage faster</label>' +
+        (state.photoSrc ? '' : '<div class="zb-photobox" data-act="appphotopick"><b>Attach a photo</b><span>Model tag, error code, or the problem itself \u2014 Speedy AI takes a first look.</span></div>') +
+        '<input type="file" data-f="appphoto" accept="image/*" hidden>' +
+        '<div class="zb-photoprev" data-photoprev' + (state.photoSrc ? ' style="display:block"' : '') + '><img data-photoimg alt="Your attached appliance photo"' + (state.photoSrc ? ' src="' + state.photoSrc + '"' : '') + '><span class="pp-tag">Photo attached</span></div>' +
+        '<div class="zb-ainote" data-ainote' + (state.photoNote ? ' style="display:block"' : '') + '>' + (state.photoNote || '') + '</div>';
+      return h;
+    }
+
+    /* The app's real photo first look: preview + a live Speedy read.
+       The photo itself never enters the booking payload — exactly as
+       the app's showPhoto has always behaved. */
+    function appShowPhoto(src) {
+      state.photoSrc = src;
+      try { if (window.booking) window.booking.photo = true; } catch (e) { /* page state is best-effort here */ }
+      var pv = q('[data-photoprev]'); if (pv) pv.style.display = 'block';
+      var img = q('[data-photoimg]'); if (img) img.src = src;
+      var box = q('[data-act="appphotopick"]'); if (box) box.style.display = 'none';
+      var note = q('[data-ainote]'); if (!note) return;
+      note.style.display = 'block';
+      function setNote(html) {
+        state.photoNote = html;
+        var n = q('[data-ainote]'); if (n) { n.style.display = 'block'; n.innerHTML = html; }
+      }
+      if (src.indexOf('data:image/svg') === 0) {
+        setNote('<b>Speedy AI first look:</b> This is the sample photo \u2014 attach a real photo of your appliance and Speedy will read it live.');
+        return;
+      }
+      setNote('<b>Speedy AI first look:</b> Photo received \u2014 Speedy is taking a look\u2026');
+      function fire() {
+        try {
+          var mx = 1280, w = img.naturalWidth, h = img.naturalHeight, sc = Math.min(1, mx / Math.max(w, h));
+          var cv = document.createElement('canvas'); cv.width = Math.round(w * sc); cv.height = Math.round(h * sc);
+          cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+          var dataUrl = cv.toDataURL('image/jpeg', 0.82);
+          fetch(API + '/speedy/diagnose', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ imageDataUrl: dataUrl, note: (state.appliance || 'Appliance') + ': ' + (state.issueChip || state.issue || 'customer photo') }) })
+            .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
+            .then(function (j) {
+              var rep = (j.data && j.data.reply) || '';
+              if (!rep) throw new Error('empty');
+              setNote('<b>Speedy AI first look:</b> ' + esc(rep.slice(0, 320)) + (rep.length > 320 ? '\u2026' : ''));
+            })
+            .catch(function () { setNote('<b>Speedy AI first look:</b> Photo attached. Speedy could not read this one \u2014 your setter will review it, and the tech confirms the diagnosis in person.'); });
+        } catch (e) { setNote('<b>Speedy AI first look:</b> Photo attached \u2014 a setter will review it with your booking.'); }
+      }
+      if (img.complete && img.naturalWidth) fire();
+      else img.onload = fire;
+    }
+
+    /* Step 3 (app): the confirm-step details card, with the page's
+       own element IDs so every surrounding behavior (custApplyUser
+       prefill + signed-in note, custLoginFromBook, custVerify,
+       TSOSLegal 'cd' signing) works on it verbatim. */
+    function step3AppHtml() {
+      var user = window.cUser || null;
+      var h = '<h3>Your details</h3>' +
+        '<p class="sub">Where the tech is going, and how we reach you.</p>' +
+        '<b style="font-size:15px;">Your details</b>';
+      if (!user) h += '<p class="sub" style="margin:4px 0 10px;">Create your free account to book \u2014 it keeps your bookings, appliances and warranty in one place.</p>';
+      h += '<label for="cdName">Full name</label>' +
+        '<input id="cdName" type="text" data-f="name" autocomplete="name" placeholder="Your name" value="' + esc(state.name) + '">' +
+        '<label for="cdPhone">Mobile phone</label>' +
+        '<input id="cdPhone" type="tel" data-f="phone" autocomplete="tel" placeholder="(954) 555-0123" value="' + esc(state.phone) + '">' +
+        '<label for="cdCity">City</label>' +
+        '<select id="cdCity" data-f="citySel">' + cityOptions(state.city === '__other__' ? '__other__' : state.city, true) + '</select>' +
+        (state.city === '__other__'
+          ? '<label for="' + uid + '-cityo">City name</label><input type="text" id="' + uid + '-cityo" data-f="cityOther" placeholder="Your city" value="' + esc(state.cityOther) + '">'
+          : '') +
+        '<label for="cdZip">ZIP code</label>' +
+        '<input id="cdZip" type="text" data-f="zip" inputmode="numeric" autocomplete="postal-code" placeholder="33311" value="' + esc(state.zip) + '">' +
+        '<label for="cdAddr">Street address (optional)</label>' +
+        '<input id="cdAddr" type="text" data-f="address" autocomplete="street-address" placeholder="123 Main St, Apt 4" value="' + esc(state.address) + '">';
+      if (user) {
+        h += '<p class="sub" id="cdSignedIn" style="display:none; margin:8px 0 0;"></p>';
+      } else {
+        h += '<div id="cdNewAcct"' + (state.acctMode === 'login' ? ' style="display:none"' : '') + '>' +
+          '<label for="cdEmail">Email</label>' +
+          '<input id="cdEmail" type="email" data-f="email" autocomplete="email" placeholder="you@email.com" value="' + esc(state.email) + '">' +
+          '<label for="cdPw">Create a password (10+ characters)</label>' +
+          '<input id="cdPw" type="password" data-f="password" autocomplete="new-password" placeholder="Password" value="' + esc(state.password) + '">' +
+          '<div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="cdWebsite" type="text" data-f="website" name="companyWebsite" tabindex="-1" autocomplete="off" value="' + esc(state.website) + '"></label></div>' +
+          '<div id="cdLegal"></div>' +
+          '<div class="tsos-turnstile-slot"></div>' +
+          '<p class="sub" style="margin:8px 0 0;">Already have an account? <a href="#" class="zb-tlink" data-act="acct-login">Sign in instead</a></p></div>' +
+          '<div id="cdLogin"' + (state.acctMode === 'login' ? '' : ' style="display:none"') + '>' +
+          '<label for="cdEmail2">Email</label>' +
+          '<input id="cdEmail2" type="email" autocomplete="email" placeholder="you@email.com">' +
+          '<label for="cdPw2">Password</label>' +
+          '<input id="cdPw2" type="password" autocomplete="current-password" placeholder="Password">' +
+          '<button type="button" class="zb-locbtn" data-act="cust-login">Sign in</button>' +
+          '<div id="cdSvRow" style="display:none;margin-top:10px;"><label for="cdSvCode">Speedy Verify access code</label>' +
+          '<input id="cdSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office">' +
+          '<button type="button" class="zb-locbtn" data-act="cust-verify">Verify &amp; sign in</button></div>' +
+          '<p class="sub" style="margin:8px 0 0;">New here? <a href="#" class="zb-tlink" data-act="acct-create">Create an account</a></p></div>' +
+          '<p class="sub" id="cdSignedIn" style="display:none; margin:8px 0 0;"></p>';
+      }
+      return h;
+    }
+
+    /* Leaving Details (app): snapshot the cd* fields and — for guests —
+       run confirmBooking's exact account validations, capturing the
+       termsAcceptance object while the signing block is in the DOM.
+       Nothing advances (and nothing can submit) without it. */
+    function captureDetails() {
+      function domVal(id, fallback) {
+        var el = document.getElementById(id);
+        return el ? el.value.trim() : (fallback || '');
+      }
+      var name = domVal('cdName', state.name);
+      var phone = domVal('cdPhone', state.phone);
+      var zip = domVal('cdZip', state.zip);
+      var addr = domVal('cdAddr', state.address);
+      var city = finalCity();
+      if (name.length < 2) { appToast('Please add your full name'); return false; }
+      if (phone.replace(/\D/g, '').length < 10) { appToast('Please add a valid mobile number'); return false; }
+      if (!city) { appToast('Please choose your city'); return false; }
+      if (!/^\d{5}$/.test(zip)) { appToast('Please add your 5-digit ZIP'); return false; }
+      state.name = name; state.phone = phone; state.zip = zip; state.address = addr;
+      state.details = { name: name, phone: phone, city: city, zip: zip, addr: addr };
+      if (window.cUser) { state.acceptance = null; return true; }
+      var email = domVal('cdEmail', state.email);
+      var pwEl = document.getElementById('cdPw');
+      var pw = pwEl ? pwEl.value : state.password;
+      if (!/.+@.+\..+/.test(email)) { appToast('Please add your email to create your account'); return false; }
+      if (pw.length < 10) { appToast('Password needs 10+ characters'); return false; }
+      var acceptance = window.TSOSLegal ? window.TSOSLegal.acceptance('cd') : null;
+      if (!acceptance) { appToast('Please review both legal documents, check both agreement boxes, and type your full name as your signature.'); return false; }
+      state.details.email = email;
+      state.details.password = pw;
+      state.details.website = domVal('cdWebsite', state.website);
+      state.acceptance = acceptance;
+      return true;
+    }
+
+    /* Step 4 (app): the app's day/window chips + confirm summary. */
+    function appDays() {
+      var days = [], names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var now = new Date();
+      for (var i = 0; i < 5; i++) {
+        var d = new Date(now.getTime() + (i + 1) * 864e5);
+        var iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        days.push({ label: (i === 0 ? 'Tomorrow \u00b7 ' : '') + names[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate(), iso: iso });
+      }
+      return days;
+    }
+    function step4AppHtml() {
+      var h = '<h3>Pick a day</h3>' +
+        '<p class="sub">Pick a day and a window \u2014 your tech texts when they\u2019re on the way, no waiting around all day.</p>' +
+        '<label>Pick a day</label><div class="zb-chips">';
+      appDays().forEach(function (dy) {
+        h += '<button type="button" class="zb-chip' + (state.date === dy.iso ? ' on' : '') + '" data-daypick="' + dy.iso + '" data-daylabel="' + esc(dy.label) + '">' + esc(dy.label) + '</button>';
+      });
+      h += '</div><label>Pick a window</label><div class="zb-chips">';
+      WINDOWS.forEach(function (w) {
+        h += '<button type="button" class="zb-chip' + (state.winId === w.v ? ' on' : '') + '" data-winpick="' + w.v + '" data-winlabel="' + esc(w.label) + '">' + esc(w.label) + '</button>';
+      });
+      h += '</div><p class="sub" data-availnote style="margin-top:8px;"></p>' +
+        '<div class="zb-review">';
+      var rows = [
+        ['Appliance', state.appliance || 'Not selected'],
+        ['Issue', state.issueChip || state.issue || 'General diagnosis'],
+        ['When', (state.dayText || '\u2014') + (state.winLabel ? ' \u00b7 ' + state.winLabel : '')],
+        ['Photo', state.photoSrc ? 'Attached \u2014 AI triage queued' : 'None']
+      ];
+      if (state.geo && state.geo.geoCity) rows.push(['Location-verified', state.geo.geoCity + ' \u00b7 ' + state.geo.geoTier]);
+      rows.push(['Diagnostic due today', '$99.00']);
+      rows.push(['Credited toward repair', '\u2212$99.00']);
+      rows.forEach(function (r) {
+        h += '<div class="rrow"><span class="rk">' + esc(r[0]) + '</span><span class="rv">' + esc(r[1]) + '</span></div>';
+      });
+      h += '</div>' +
+        '<div class="zb-remind"><b>How the $99 works:</b> it\u2019s collected when our Service Setters confirm your booking \u2014 no card is charged in the app \u2014 then credited in full toward the repair when you approve the fix. If you decline the repair, the $99 covers the diagnosis visit. 90-day warranty on parts &amp; labor.</div>';
+      return h;
+    }
+
+    /* Live arrival-window availability — the app's loadAppAvail
+       semantics: closed windows disabled + labeled, a picked window
+       that closes is unpicked, and the read never blocks booking. */
+    function loadAppAvail() {
+      if (!state.date) return;
+      fetch(API + '/speedy/availability?date=' + encodeURIComponent(state.date))
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (!j || !j.data || !j.data.windows) return;
+          var byId = {};
+          j.data.windows.forEach(function (w) { byId[w.id] = w; });
+          qa('[data-winpick]').forEach(function (chip) {
+            var id = chip.getAttribute('data-winpick');
+            var w = byId[id];
+            if (!w) return;
+            var base = APP_WIN_LABELS[id] || chip.getAttribute('data-winlabel');
+            if (w.status === 'CLOSED') {
+              chip.disabled = true;
+              chip.style.opacity = '.45';
+              chip.textContent = base + (w.reason === 'FULL' ? ' \u00b7 Full' : ' \u00b7 Passed');
+              if (state.winId === id) { chip.classList.remove('on'); state.winLabel = ''; state.winId = ''; state.win = ''; }
+            } else {
+              chip.disabled = false;
+              chip.style.opacity = '';
+              chip.textContent = base;
+            }
+          });
+          var note = q('[data-availnote]');
+          if (note) note.textContent = j.data.capacityConfigured ? 'Live availability for the day you picked \u2014 full and passed windows are closed.' : '';
+        })
+        .catch(function () { /* leave every window pickable */ });
+    }
+
+    /* The /bookings payload — field-for-field the app's
+       confirmBooking body (+ geo, as wired in b014b7db). */
+    function buildAppPayload() {
+      var d = state.details || { name: state.name, phone: state.phone, city: finalCity(), zip: state.zip, addr: state.address };
+      var issue = state.issueChip || state.issue.trim() || 'General diagnosis';
+      var payload = {
+        customer: { name: d.name, phone: d.phone, address: d.addr || undefined },
+        city: d.city,
+        zip: d.zip,
+        appliance: state.appliance || 'Refrigerator',
+        issue: issue,
+        preferredWindow: ((state.dayText || '') + ' \u00b7 ' + (state.winLabel || '')).trim() || undefined,
+        preferredDate: state.date || undefined
+      };
+      try { if (window.TSOSAttribution) window.TSOSAttribution.attach(payload); } catch (e) { /* attribution is best-effort */ }
+      try { if (window.TSOSGeo) Object.assign(payload, window.TSOSGeo); } catch (e) { /* geo is best-effort */ }
+      if (state.geo) {
+        payload.geoCity = state.geo.geoCity;
+        payload.geoTier = state.geo.geoTier;
+        payload.geoLat = state.geo.geoLat;
+        payload.geoLng = state.geo.geoLng;
+      }
+      return payload;
+    }
+
+    function buildRegisterBody() {
+      var d = state.details || {};
+      var parts = (d.name || '').split(' ');
+      return Object.assign({
+        email: d.email, password: d.password,
+        firstName: parts[0], lastName: parts.slice(1).join(' ') || undefined,
+        phone: d.phone, termsAcceptance: state.acceptance,
+        companyWebsite: d.website || ''
+      }, window.TSOSIntakeShield ? window.TSOSIntakeShield.fields() : {});
+    }
+
+    /* The app's confirm flow, verbatim: signed-in books directly;
+       guests register first (Layer 2 challenge included), then book
+       through the page's cFetch; success feeds stage tracking. */
+    function submitApp() {
+      if (busy) return;
+      busy = true;
+      var btn = q('[data-act="next"]');
+      function setBtn(t, en) { if (btn) { btn.textContent = t; btn.disabled = !en; } }
+      setBtn('Booking\u2026', false);
+      var payload = buildAppPayload();
+      var d = state.details || {};
+      function doBook() {
+        payload.customer.email = window.cUser ? window.cUser.email : payload.customer.email;
+        window.cFetch('/bookings', { method: 'POST', body: JSON.stringify(payload) })
+          .then(function (j) {
+            var bk = window.booking || {};
+            bk.ref = j.data.referenceCode;
+            bk.id = j.data.id;
+            bk.payment = j.data.payment || null;
+            bk.appliance = state.appliance;
+            bk.issue = payload.issue;
+            bk.day = state.dayText;
+            bk.window = state.winLabel;
+            bk.date = state.date;
+            bk.photo = !!state.photoSrc;
+            try { if (window.TSOSBookingSubmitted) window.TSOSBookingSubmitted(bk.ref); } catch (e) { /* tracking is best-effort */ }
+            if (window.stageForBooking) window.stageIdx = window.stageForBooking(j.data);
+            if (window.FEED) window.FEED.push({ time: 'Now', text: '<b>Top Speed:</b> New booking ' + bk.ref + ' received. A Service Setter will confirm by text shortly.' });
+            setBtn('Confirm booking', true);
+            busy = false;
+            state.done = { ref: bk.ref, app: true };
+            render();
+            if (window.renderActiveJob) window.renderActiveJob();
+          })
+          .catch(function (e) { busy = false; setBtn('Confirm booking', true); appToast('Booking failed: ' + e.message); });
+      }
+      if (window.cUser) { doBook(); return; }
+      var email = d.email;
+      var regCtrl = window.AbortController ? new AbortController() : null;
+      var regHard = regCtrl ? setTimeout(function () { regCtrl.abort(); }, 25000) : null;
+      var regSlow = setTimeout(function () { setBtn('Still working \u2014 slow connection\u2026', false); }, 10000);
+      fetch(API + '/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: regCtrl ? regCtrl.signal : undefined, body: JSON.stringify(buildRegisterBody()) })
+        .then(function (r) {
+          clearTimeout(regSlow);
+          if (regHard) clearTimeout(regHard);
+          return r.json().then(function (j) {
+            if (!r.ok) throw new Error(r.status === 409 ? 'That email already has an account \u2014 use Sign in instead above.' : ((j.details && j.details.fieldErrors && j.details.fieldErrors.password) ? 'Password must be at least 10 characters.' : (j.error || 'Could not create your account')));
+            return j;
+          });
+        })
+        .then(function (j) {
+          if (window.TSOSLayer2 && window.TSOSLayer2.isChallenge(j)) {
+            window.TSOSLayer2.run(j, {
+              onSession: function (s) { window.setCustSession(s); payload.customer.email = email; doBook(); },
+              onCancel: function () { busy = false; setBtn('Confirm booking', true); appToast('Account created \u2014 sign in above and complete the 2-step code, then confirm your booking.'); }
+            });
+            return;
+          }
+          window.setCustSession(j);
+          payload.customer.email = email;
+          doBook();
+        })
+        .catch(function (e) {
+          clearTimeout(regSlow);
+          if (regHard) clearTimeout(regHard);
+          busy = false;
+          setBtn('Confirm booking', true);
+          appToast(e && e.name === 'AbortError' ? 'This is taking too long \u2014 your connection may have stalled. Check your signal and try again. If your account was created, sign in above, then confirm your booking.' : e.message);
+        });
+    }
+
+    function resetApp() {
+      state.step = 1;
+      state.appliance = ''; state.issue = ''; state.issueChip = '';
+      state.photoSrc = ''; state.photoNote = '';
+      state.date = ''; state.dayText = ''; state.winLabel = ''; state.winId = ''; state.win = '';
+      state.done = null; state.details = null; state.acceptance = null;
+      render();
+    }
+
+    function presetAppliance(name) {
+      if (name) state.appliance = name;
+      if (state.done) state.done = null;
+      state.step = 1;
+      render();
     }
 
     /* ---------- Validation (the classic form's rules + messages) ---------- */
@@ -589,8 +1024,12 @@
 
     /* ---------- Render + events ---------- */
     function render() {
+      if (appMode) snapshotLegal();
       if (state.done) { root.innerHTML = '<div class="zbw">' + doneHtml() + '</div>'; return; }
-      var pane = state.step === 1 ? step1Html() : state.step === 2 ? step2Html() : state.step === 3 ? step3Html() : step4Html();
+      var pane = state.step === 1 ? step1Html()
+        : state.step === 2 ? (appMode ? step2AppHtml() : step2Html())
+        : state.step === 3 ? (appMode ? step3AppHtml() : step3Html())
+        : (appMode ? step4AppHtml() : step4Html());
       root.innerHTML = '<div class="zbw">' + stepperHtml() + pane +
         '<div class="zb-err" data-err></div>' +
         '<div class="zb-nav">' +
@@ -598,7 +1037,15 @@
         '<button type="button" class="zb-next" data-act="next">' +
         (state.step === 4 ? CHECK + ' Confirm booking' : 'Continue') + '</button></div></div>';
       if (state.step === 1) refreshAreaUI();
-      if (state.step === 4) loadAvail();
+      if (state.step === 4 && !appMode) loadAvail();
+      if (appMode && state.step === 3) {
+        if (window.cUser) {
+          try { if (window.custApplyUser) window.custApplyUser(window.cUser); } catch (e) { /* page hook is best-effort */ }
+        } else {
+          mountLegal();
+        }
+      }
+      if (appMode && state.step === 4) loadAppAvail();
       if (state.step === 2 && state.photoDiag) {
         var box = q('[data-photores]');
         if (box) { box.style.display = 'block'; box.innerHTML = '<b>Speedy\u2019s preliminary read</b><p>' + esc(state.photoDiag) + '</p>'; }
@@ -607,6 +1054,7 @@
     }
 
     root.addEventListener('input', function (ev) {
+      if (appMode) snapshotLegal();
       var f = ev.target.getAttribute && ev.target.getAttribute('data-f');
       if (!f) return;
       if (f === 'zip') {
@@ -624,7 +1072,13 @@
 
     root.addEventListener('change', function (ev) {
       var t = ev.target;
+      if (appMode) snapshotLegal();
       var f = t.getAttribute && t.getAttribute('data-f');
+      if (f === 'appphoto') {
+        var pfile = t.files && t.files[0];
+        if (pfile && window.URL && URL.createObjectURL) appShowPhoto(URL.createObjectURL(pfile));
+        return;
+      }
       if (f === 'citySel') {
         state.city = t.value;
         if (state.city === '__other__') state.outside = true;
@@ -658,8 +1112,27 @@
     });
 
     root.addEventListener('click', function (ev) {
-      var t = ev.target.closest ? ev.target.closest('[data-act],[data-pick],[data-appliance]') : null;
+      var t = ev.target.closest ? ev.target.closest('[data-act],[data-pick],[data-appliance],[data-chip],[data-daypick],[data-winpick]') : null;
       if (!t) return;
+      if (t.hasAttribute('data-chip')) {
+        state.issueChip = t.getAttribute('data-chip');
+        qa('[data-chip]').forEach(function (c) { c.classList.toggle('on', c.getAttribute('data-chip') === state.issueChip); });
+        return;
+      }
+      if (t.hasAttribute('data-daypick')) {
+        state.date = t.getAttribute('data-daypick');
+        state.dayText = t.getAttribute('data-daylabel');
+        qa('[data-daypick]').forEach(function (c) { c.classList.toggle('on', c === t); });
+        loadAppAvail();
+        return;
+      }
+      if (t.hasAttribute('data-winpick')) {
+        state.winId = t.getAttribute('data-winpick');
+        state.winLabel = t.getAttribute('data-winlabel');
+        state.win = state.winId;
+        qa('[data-winpick]').forEach(function (c) { c.classList.toggle('on', c === t); });
+        return;
+      }
       if (t.hasAttribute('data-appliance')) {
         state.appliance = t.getAttribute('data-appliance');
         qa('[data-appliance]').forEach(function (b) {
@@ -681,9 +1154,29 @@
       else if (act === 'skip') { state.areaMode = 'MANUAL'; refreshAreaUI(); }
       else if (act === 'photopick') { var fi = q('[data-f="photo"]'); if (fi) fi.click(); }
       else if (act === 'photorun') runPhoto();
+      else if (act === 'appphotopick') { var afi = q('[data-f="appphoto"]'); if (afi) afi.click(); }
+      else if (act === 'acct-login' || act === 'acct-create') {
+        ev.preventDefault();
+        state.acctMode = act === 'acct-login' ? 'login' : 'create';
+        var nA = document.getElementById('cdNewAcct'), lA = document.getElementById('cdLogin');
+        if (nA) nA.style.display = state.acctMode === 'login' ? 'none' : '';
+        if (lA) lA.style.display = state.acctMode === 'login' ? '' : 'none';
+      }
+      else if (act === 'cust-login') { if (window.custLoginFromBook) window.custLoginFromBook(); }
+      else if (act === 'cust-verify') { if (window.custVerify) window.custVerify('cd'); }
+      else if (act === 'track') { if (window.showTab) window.showTab('track'); }
+      else if (act === 'again') { resetApp(); }
       else if (act === 'back') { if (state.step > 1) { state.step -= 1; render(); } }
       else if (act === 'next') {
-        if (state.step < 4) {
+        if (appMode && state.step === 3) {
+          if (!captureDetails()) return;
+          state.step = 4;
+          render();
+        } else if (appMode && state.step === 4) {
+          var av = validateStep(4);
+          if (av) { setErr(av); return; }
+          submitApp();
+        } else if (state.step < 4) {
           var v = validateStep(state.step);
           if (v) { setErr(v); return; }
           state.step += 1;
@@ -705,7 +1198,15 @@
       .catch(function () { /* the 12-city fallback stays */ });
 
     render();
-    return { root: root, getState: function () { return state; }, buildPayload: buildPayload };
+    var handle = { root: root, getState: function () { return state; }, buildPayload: buildPayload };
+    if (appMode) {
+      handle.buildAppPayload = buildAppPayload;
+      handle.buildRegisterBody = buildRegisterBody;
+      handle.captureDetails = captureDetails;
+      handle.presetAppliance = presetAppliance;
+      window.TSOSAppWizard = handle;
+    }
+    return handle;
   }
 
   function boot() {

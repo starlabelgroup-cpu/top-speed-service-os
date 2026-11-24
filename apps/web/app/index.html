@@ -587,119 +587,9 @@ h3.sec::before{content:""; width:17px; height:12px; flex:none; background:repeat
         <!-- ================= BOOK ================= -->
         <section class="screen" id="scr-book">
           <h2 class="greet">Book a repair</h2>
-          <p class="sub">Four quick steps. Under a minute. The classic booking form — how most of our customers book.</p>
-          <div class="steps-bar" id="stepsBar"><i class="done"></i><i></i><i></i><i></i></div>
-          <div data-tsos-location-booking></div>
-
-          <div class="bstep on" id="bstep-1">
-            <label class="fl" style="margin-top:0;">1 · Which appliance?</label>
-            <div class="grid9" id="bookGrid"></div>
-          </div>
-
-          <div class="bstep" id="bstep-2">
-            <label class="fl" style="margin-top:0;">2 · What's it doing?</label>
-            <div class="chips" id="issueChips">
-              <button class="chip" onclick="pickIssue(this)">Not cooling / not heating</button>
-              <button class="chip" onclick="pickIssue(this)">Making noise</button>
-              <button class="chip" onclick="pickIssue(this)">Leaking water</button>
-              <button class="chip" onclick="pickIssue(this)">Won't start / no power</button>
-              <button class="chip" onclick="pickIssue(this)">Error code on display</button>
-              <button class="chip" onclick="pickIssue(this)">Something else</button>
-            </div>
-            <label class="fl">Add details (optional)</label>
-            <textarea id="issueText" rows="2" placeholder="e.g. Fridge is warm, freezer still cold. Started Tuesday."></textarea>
-            <label class="fl">Photo helps us triage faster</label>
-            <div class="photo-box" id="photoBox" onclick="document.getElementById('photoInput').click()">
-              <b>Attach a photo</b><span>Model tag, error code, or the problem itself — Speedy AI takes a first look.</span>
-            </div>
-            <input type="file" id="photoInput" accept="image/*" hidden>
-            <div class="photo-preview" id="photoPreview">
-              <img id="photoImg" alt="Your attached appliance photo">
-              <span class="pp-tag">Photo attached</span>
-            </div>
-            
-            <div class="ai-note" id="aiNote"><b>Speedy AI first look:</b> Photo received. Likely a cooling/airflow issue — a setter will confirm the diagnosis and the tech will bring the common parts for this model.</div>
-            <div class="btnrow" style="margin-top:16px;">
-              <button class="btn ghost" onclick="bookGo(1)">Back</button>
-              <button class="btn blue" onclick="bookGo(3)">Continue</button>
-            </div>
-          </div>
-
-          <div class="bstep" id="bstep-3">
-            <label class="fl" style="margin-top:0;">3 · Pick a day</label>
-            <div class="chips" id="dayChips"></div>
-            <label class="fl">Pick a window</label>
-            <div class="chips" id="windowChips">
-              <button class="chip" data-win="08-10" onclick="pickWindow(this)">8–10 AM</button>
-              <button class="chip" data-win="10-12" onclick="pickWindow(this)">10 AM–12 PM</button>
-              <button class="chip" data-win="12-14" onclick="pickWindow(this)">12–2 PM</button>
-              <button class="chip" data-win="14-16" onclick="pickWindow(this)">2–4 PM</button>
-              <button class="chip" data-win="16-18" onclick="pickWindow(this)">4–6 PM</button>
-            </div>
-            <p class="sub" id="winAvailNote" style="margin-top:8px;"></p>
-            <p class="sub" style="margin-top:12px;">Your tech texts when they're on the way — no waiting around all day.</p>
-            <div class="btnrow">
-              <button class="btn ghost" onclick="bookGo(2)">Back</button>
-              <button class="btn blue" id="toConfirm" onclick="bookGo(4)" disabled>Continue</button>
-            </div>
-          </div>
-
-          <div class="bstep" id="bstep-4">
-            <label class="fl" style="margin-top:0;">4 · Confirm booking</label>
-            <div class="card">
-              <div class="sumrow"><span>Appliance</span><b id="sumAppliance">—</b></div>
-              <div class="sumrow"><span>Issue</span><b id="sumIssue">—</b></div>
-              <div class="sumrow"><span>When</span><b id="sumWhen">—</b></div>
-              <div class="sumrow"><span>Photo</span><b id="sumPhoto">None</b></div>
-              <div class="sumrow"><span>Diagnostic due today</span><b>$99.00</b></div>
-              <div class="sumrow"><span>Credited toward repair</span><b style="color:var(--green);">−$99.00</b></div>
-            </div>
-            <div class="remind" style="margin-top:12px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A6A00" stroke-width="2" style="flex:none;margin-top:1px;"><path d="M20.31 15.44L15.44 20.31L8.56 20.31L3.69 15.44L3.69 8.56L8.56 3.69L15.44 3.69L20.31 8.56z"/><path d="M12 8h.01M12 11v5"/></svg><div><b>How the $99 works:</b> it's collected when our Service Setters confirm your booking — no card is charged in the app — then credited in full toward the repair when you approve the fix. If you decline the repair, the $99 covers the diagnosis visit. 90-day warranty on parts &amp; labor.</div></div>
-            <div class="card" id="custDetails" style="margin-top:12px;">
-              <b style="font-size:15px;">Your details</b>
-              <p class="sub" style="margin:4px 0 10px;" id="custAcctNote">Create your free account to book — it keeps your bookings, appliances and warranty in one place.</p>
-              <label class="fl">Full name</label><input id="cdName" type="text" autocomplete="name" placeholder="Your name" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-              <label class="fl">Mobile phone</label><input id="cdPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0123" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-              <label class="fl">City</label><select id="cdCity" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px"><option value="">Choose your city…</option><option>Lauderhill</option><option>Plantation</option><option>Sunrise</option><option>Tamarac</option><option>Fort Lauderdale</option><option>Lauderdale Lakes</option><option>North Lauderdale</option><option>Davie</option><option>Coral Springs</option><option>Pompano Beach</option><option>Oakland Park</option><option>Margate</option></select>
-              <label class="fl">ZIP code</label><input id="cdZip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="33311" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-              <label class="fl">Street address (optional)</label><input id="cdAddr" type="text" autocomplete="street-address" placeholder="123 Main St, Apt 4" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-              <div id="cdNewAcct">
-                <label class="fl">Email</label><input id="cdEmail" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-                <label class="fl">Create a password (10+ characters)</label><input id="cdPw" type="password" autocomplete="new-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-                <!-- Intake shield honeypot: invisible to humans; automated form-fillers fill it and are silently discarded server-side. -->
-                <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden"><label>Company website<input id="cdWebsite" type="text" name="companyWebsite" tabindex="-1" autocomplete="off"></label></div>
-                <div id="cdLegal"></div>
-                <div class="tsos-turnstile-slot"></div>
-                <p class="sub" style="margin:8px 0 0;">Already have an account? <a href="#" onclick="custToggleLogin(event)">Sign in instead</a></p>
-              </div>
-              <div id="cdLogin" style="display:none;">
-                <label class="fl">Email</label><input id="cdEmail2" type="email" autocomplete="email" placeholder="you@email.com" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-                <label class="fl">Password</label><input id="cdPw2" type="password" autocomplete="current-password" placeholder="Password" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-                <button class="btn blue" style="margin-top:10px;" onclick="custLoginFromBook()">Sign in</button>
-                <div id="cdSvRow" style="display:none;margin-top:10px;"><label class="fl">Speedy Verify access code</label><input id="cdSvCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="8-digit code from the office" style="width:100%;padding:10px;border:1px solid #D8E1EE;border-radius:10px;font-size:15px">
-                <button class="btn blue" style="margin-top:10px;" onclick="custVerify('cd')">Verify &amp; sign in</button></div>
-                <p class="sub" style="margin:8px 0 0;">New here? <a href="#" onclick="custToggleLogin(event)">Create an account</a></p>
-              </div>
-              <p class="sub" id="cdSignedIn" style="display:none; margin:8px 0 0;"></p>
-            </div>
-            <div class="btnrow" style="margin-top:16px;">
-              <button class="btn ghost" onclick="bookGo(3)">Back</button>
-              <button class="btn primary" id="confirmBtn" onclick="confirmBooking()">Confirm booking</button>
-            </div>
-          </div>
-
-          <div class="bstep" id="bstep-5">
-            <div class="success-hero">
-              <div class="ok"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#12805C" stroke-width="3"><path d="M3.5 13.2l4.7 4.7L20.5 6"/></svg></div>
-              <h2 class="greet" style="text-align:center;">You're booked</h2>
-              <p class="sub" style="text-align:center;">Your reference code</p>
-              <div class="refcode" id="refCode">TS-000000</div>
-              <p class="sub" style="text-align:center;"><b style="color:var(--navy);">A Service Setter will confirm by text</b> shortly, and your tech's details land in the Track tab once matched.</p>
-            </div>
-            <button class="btn blue" onclick="showTab('track')">Track my job</button>
-            <button class="btn ghost" style="margin-top:9px;" onclick="resetBooking()">Book another repair</button>
-          </div>
-<img src="/api/v1/app/scenario-images/book-form-phone.webp" alt="Illustration: a customer filling in the classic booking form on a phone — the four-step form most Top Speed customers book with" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
+          <p class="sub">Four quick steps. Under a minute. Start with your ZIP — we confirm your area as you go.</p>
+          <div data-tsos-zip-booking data-mode="app"></div>
+          <img src="/api/v1/app/scenario-images/book-form-phone.webp" alt="Illustration: a customer filling in the classic booking form on a phone — the four-step form most Top Speed customers book with" style="width:100%;height:auto;border-radius:14px;display:block;margin:14px 0 4px" loading="lazy">
           <div class="divider-or"><span>Prefer the high-tech way?</span></div>
           <style>
             .sbpromo{background:linear-gradient(150deg,#0C162B 0%,#060D1A 100%);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:18px;color:#fff;box-shadow:0 14px 34px rgba(4,16,40,.35);margin:4px 0 14px;}
@@ -1204,18 +1094,12 @@ function buildGrids(){
     return '<button class="appl" onclick="startBooking('+i+')">'+svgIcon(a.icon)+'<span>'+a.name+'</span></button>';
   }).join('');
   document.getElementById('applianceGrid').innerHTML = html;
-  document.getElementById('bookGrid').innerHTML = html;
+  var bgEl = document.getElementById('bookGrid'); if (bgEl) bgEl.innerHTML = html;
 }
 function buildGarage(){
   document.getElementById('garageList').innerHTML = GARAGE.map(function(g,i){
     return '<div class="appl-row"><div class="a-ic">'+svgIcon(APPLIANCES[g.icon].icon,24)+'</div><div><b>'+g.name+'</b><span>'+g.detail+'</span><span class="pill '+g.wpill+'" style="margin-top:4px;">'+g.warranty+'</span></div><button class="mini-btn" onclick="bookAgain('+i+')">Book again</button></div>';
   }).join('');
-}
-function buildDays(){
-  var days = [], names = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  var now = new Date();
-  for(var i=0;i<5;i++){ var d = new Date(now.getTime() + (i+1)*864e5); var iso = d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); days.push({ label: (i===0?"Tomorrow · ":"")+names[d.getDay()]+" "+months[d.getMonth()]+" "+d.getDate(), iso: iso }); }
-  document.getElementById('dayChips').innerHTML = days.map(function(d){ return '<button class="chip" data-date="'+d.iso+'" onclick="pickDay(this)">'+d.label+'</button>'; }).join('');
 }
 
 /* ============ home active job ============ */
@@ -1262,102 +1146,24 @@ function showTab(tab){
 /* ============ booking flow ============ */
 function startBooking(i){
   booking.appliance = APPLIANCES[i].name;
-  showTab('book'); bookGo(2); syncBookGrid();
+  showTab('book'); if(window.TSOSAppWizard) TSOSAppWizard.presetAppliance(APPLIANCES[i].name);
   toast(APPLIANCES[i].name+" selected");
 }
+
 function bookAgain(gi){
   booking.appliance = GARAGE[gi].name;
-  showTab('book'); bookGo(2); syncBookGrid();
-  toast("Rebooking your "+GARAGE[gi].name+" — same details on file");
-}
-function syncBookGrid(){
-  document.querySelectorAll('#bookGrid .appl').forEach(function(el,i){
-    el.style.borderColor = APPLIANCES[i].name === booking.appliance ? "var(--red)" : "";
-    el.style.background = APPLIANCES[i].name === booking.appliance ? "#FDECEC" : "";
-  });
-}
-function bookGo(step){
-  document.querySelectorAll('.bstep').forEach(function(s){ s.classList.remove('on'); });
-  document.getElementById('bstep-'+step).classList.add('on');
-  document.querySelectorAll('#stepsBar i').forEach(function(bar,i){ bar.classList.toggle('done', i < Math.min(step,4)); });
-  if(step === 4){
-    document.getElementById('sumAppliance').textContent = booking.appliance || "Not selected";
-    document.getElementById('sumIssue').textContent = booking.issue || document.getElementById('issueText').value.trim() || "General diagnosis";
-    document.getElementById('sumWhen').textContent = (booking.day || "—") + (booking.window ? " · " + booking.window : "");
-    document.getElementById('sumPhoto').textContent = booking.photo ? "Attached — AI triage queued" : "None";
-  }
-  document.getElementById('screens').scrollTop = 0;
-}
-function pickIssue(el){
-  document.querySelectorAll('#issueChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  el.classList.add('on'); booking.issue = el.textContent.trim();
-}
-function pickDay(el){
-  document.querySelectorAll('#dayChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  el.classList.add('on'); booking.day = el.textContent.trim(); booking.date = el.getAttribute('data-date'); validateTime(); loadAppAvail();
-}
-function pickWindow(el){
-  document.querySelectorAll('#windowChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  el.classList.add('on'); booking.window = el.textContent.trim(); booking.windowId = el.getAttribute('data-win'); validateTime();
-}
-/* Live arrival-window picker (2026-11-20, A1): when a day is picked,
-   its windows come from GET /speedy/availability — a closed window
-   (full, or already past) is disabled and labeled, and a picked
-   window that closes is unpicked. If the read fails, every window
-   stays pickable: the picker never blocks a booking. */
-var APP_WIN_LABELS = { '08-10': '8–10 AM', '10-12': '10 AM–12 PM', '12-14': '12–2 PM', '14-16': '2–4 PM', '16-18': '4–6 PM' };
-function loadAppAvail(){
-  if(!booking.date) return;
-  fetch(C_API+'/speedy/availability?date='+encodeURIComponent(booking.date))
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j || !j.data || !j.data.windows) return;
-      var byId={}; j.data.windows.forEach(function(w){ byId[w.id]=w; });
-      document.querySelectorAll('#windowChips .chip').forEach(function(chip){
-        var id=chip.getAttribute('data-win'); var w=byId[id]; if(!w) return;
-        var base=APP_WIN_LABELS[id]||chip.textContent;
-        if(w.status==='CLOSED'){
-          chip.disabled=true; chip.style.opacity='.45'; chip.textContent=base+(w.reason==='FULL'?' · Full':' · Passed');
-          if(booking.windowId===id){ chip.classList.remove('on'); booking.window=null; booking.windowId=null; }
-        } else {
-          chip.disabled=false; chip.style.opacity=''; chip.textContent=base;
-        }
-      });
-      var note=document.getElementById('winAvailNote');
-      if(note) note.textContent=j.data.capacityConfigured?'Live availability for the day you picked — full and passed windows are closed.':'';
-      validateTime();
-    })
-    .catch(function(){ /* leave every window pickable */ });
-}
-function validateTime(){ document.getElementById('toConfirm').disabled = !(booking.day && booking.window); }
-function showPhoto(src){
-  booking.photo = true;
-  document.getElementById('photoBox').style.display = 'none';
-  var pv = document.getElementById('photoPreview'); pv.style.display = 'block';
-  document.getElementById('photoImg').src = src;
-  document.getElementById('aiNote').style.display = 'block';
+  showTab('book'); if(window.TSOSAppWizard) TSOSAppWizard.presetAppliance(GARAGE[gi].name);
+  toast("Rebooking your "+GARAGE[gi].name+" \u2014 same details on file");
 }
 
-document.getElementById('photoInput').addEventListener('change', function(e){
-  if(e.target.files && e.target.files[0]) showPhoto(URL.createObjectURL(e.target.files[0]));
-});
-function confirmBooking(){
-  var chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", code = "TS-";
-  for(var i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
-  booking.ref = code;
-  document.getElementById('refCode').textContent = code;
-  stageIdx = 1;
-  FEED.push({time:"Now", text:"<b>Top Speed:</b> New booking "+code+" received. A Service Setter will confirm by text shortly."});
-  bookGo(5); renderActiveJob();
-}
-function resetBooking(){
-  booking = {appliance:null, issue:null, day:null, window:null, photo:false, ref:booking.ref};
-  document.getElementById('photoBox').style.display = 'block';
-  document.getElementById('photoPreview').style.display = 'none';
-  document.getElementById('aiNote').style.display = 'none';
-  document.querySelectorAll('#issueChips .chip, #windowChips .chip, #dayChips .chip').forEach(function(c){ c.classList.remove('on'); });
-  syncBookGrid(); validateTime(); bookGo(1);
-}
+/* Book flow (2026-11-23 swap, Ramone-approved): the Book by ZIP
+   wizard (shared/zip-booking.js, app mode) renders the Book tab and
+   submits the app contract; it drives the page state (booking,
+   stageIdx, FEED) and the cd* details contract. Home/Garage entries
+   preset its appliance via TSOSAppWizard.presetAppliance. */
+
+
+
 
 /* ============ more ============ */
 function copyRef(){
@@ -1408,7 +1214,7 @@ window.addEventListener('beforeinstallprompt', function(e){ e.preventDefault(); 
 })();
 
 /* ============ init ============ */
-buildGrids(); buildGarage(); buildDays(); renderActiveJob(); renderTrack();
+buildGrids(); buildGarage(); renderActiveJob(); renderTrack();
 </script>
 
 <script>
@@ -1541,78 +1347,7 @@ function refreshMyBooking(){
   }).catch(function(){});
 }
 /* --- real photo first look (overrides the preview's canned note) --- */
-function showPhoto(src){
-  booking.photo=true;
-  document.getElementById('photoBox').style.display='none';
-  var pv=document.getElementById('photoPreview'); pv.style.display='block';
-  var img=document.getElementById('photoImg'); img.src=src;
-  var note=document.getElementById('aiNote'); note.style.display='block';
-  if(src.indexOf('data:image/svg')===0){ note.innerHTML='<b>Speedy AI first look:</b> This is the sample photo \u2014 attach a real photo of your appliance and Speedy will read it live.'; return; }
-  note.innerHTML='<b>Speedy AI first look:</b> Photo received \u2014 Speedy is taking a look\u2026';
-  img.onload=function(){
-    try{
-      var mx=1280,w=img.naturalWidth,h=img.naturalHeight,sc=Math.min(1,mx/Math.max(w,h));
-      var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
-      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
-      var dataUrl=cv.toDataURL('image/jpeg',0.82);
-      fetch(C_API+'/speedy/diagnose',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({imageDataUrl:dataUrl,note:(booking.appliance||'Appliance')+': '+(booking.issue||document.getElementById('issueText').value.trim()||'customer photo')})})
-        .then(function(r){ if(!r.ok) throw new Error('status '+r.status); return r.json(); })
-        .then(function(j){ var rep=(j.data&&j.data.reply)||''; if(!rep) throw new Error('empty'); note.innerHTML='<b>Speedy AI first look:</b> '+escC(rep.slice(0,320))+(rep.length>320?'\u2026':''); })
-        .catch(function(){ note.innerHTML='<b>Speedy AI first look:</b> Photo attached. Speedy could not read this one \u2014 your setter will review it, and the tech confirms the diagnosis in person.'; });
-    }catch(e){ note.innerHTML='<b>Speedy AI first look:</b> Photo attached \u2014 a setter will review it with your booking.'; }
-  };
-}
 /* --- real booking confirm (overrides the preview's random code) --- */
-function confirmBooking(){
-  var name=cVal('cdName'), phone=cVal('cdPhone'), city=cVal('cdCity'), zip=cVal('cdZip'), addr=cVal('cdAddr');
-  if(name.length<2) return toast('Please add your full name');
-  if(phone.replace(/\D/g,'').length<10) return toast('Please add a valid mobile number');
-  if(!city) return toast('Please choose your city');
-  if(!/^\d{5}$/.test(zip)) return toast('Please add your 5-digit ZIP');
-  var issue=booking.issue||document.getElementById('issueText').value.trim()||'General diagnosis';
-  var btn=document.getElementById('confirmBtn');
-  function setBtn(t,en){ if(btn){ btn.textContent=t; btn.disabled=!en; } }
-  setBtn('Booking\u2026',false);
-  var payload={customer:{name:name,phone:phone,address:addr||undefined},city:city,zip:zip,appliance:booking.appliance||'Refrigerator',issue:issue,preferredWindow:((booking.day||'')+' \u00b7 '+(booking.window||'')).trim()||undefined,preferredDate:booking.date||undefined};
-  try{ if(window.TSOSAttribution) TSOSAttribution.attach(payload); }catch(e){}
-  try{ if(window.TSOSGeo) Object.assign(payload, window.TSOSGeo); }catch(e){}
-  function doBook(){
-    payload.customer.email=cUser?cUser.email:payload.customer.email;
-    cFetch('/bookings',{method:'POST',body:JSON.stringify(payload)})
-      .then(function(j){
-        booking.ref=j.data.referenceCode; booking.id=j.data.id; booking.payment=j.data.payment||null;
-        try{ if(window.TSOSBookingSubmitted) TSOSBookingSubmitted(booking.ref); }catch(e){}
-        document.getElementById('refCode').textContent=booking.ref;
-        stageIdx=stageForBooking(j.data);
-        FEED.push({time:'Now',text:'<b>Top Speed:</b> New booking '+booking.ref+' received. A Service Setter will confirm by text shortly.'});
-        setBtn('Confirm booking',true);
-        bookGo(5); renderActiveJob();
-      })
-      .catch(function(e){ setBtn('Confirm booking',true); toast('Booking failed: '+e.message); });
-  }
-  if(cUser){ doBook(); return; }
-  var email=cVal('cdEmail'), pw=cVal('cdPw');
-  if(!/.+@.+\..+/.test(email)){ setBtn('Confirm booking',true); return toast('Please add your email to create your account'); }
-  if(pw.length<10){ setBtn('Confirm booking',true); return toast('Password needs 10+ characters'); }
-  var acceptance=window.TSOSLegal?TSOSLegal.acceptance('cd'):null;
-  if(!acceptance){ setBtn('Confirm booking',true); return toast('Please review both legal documents, check both agreement boxes, and type your full name as your signature.'); }
-  var parts=name.split(' ');
-  /* 25s hard timeout on the account-creation leg: a stalled
-     connection must end in an honest message, never in a Confirm
-     button that spins forever. */
-  var regCtrl=window.AbortController?new AbortController():null;
-  var regHard=regCtrl?setTimeout(function(){ regCtrl.abort(); },25000):null;
-  var regSlow=setTimeout(function(){ setBtn('Still working — slow connection…',false); },10000);
-  fetch(C_API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},signal:regCtrl?regCtrl.signal:undefined,body:JSON.stringify(Object.assign({email:email,password:pw,firstName:parts[0],lastName:parts.slice(1).join(' ')||undefined,phone:phone,termsAcceptance:acceptance,companyWebsite:document.getElementById('cdWebsite').value},window.TSOSIntakeShield?TSOSIntakeShield.fields():{}))})
-    .then(function(r){ clearTimeout(regSlow); if(regHard)clearTimeout(regHard); return r.json().then(function(j){ if(!r.ok) throw new Error(r.status===409?'That email already has an account \u2014 use Sign in instead above.':((j.details&&j.details.fieldErrors&&j.details.fieldErrors.password)?'Password must be at least 10 characters.':(j.error||'Could not create your account'))); return j; }); })
-    .then(function(j){
-      if(window.TSOSLayer2 && TSOSLayer2.isChallenge(j)){
-        TSOSLayer2.run(j,{onSession:function(s){ setCustSession(s); payload.customer.email=email; doBook(); },onCancel:function(){ setBtn('Confirm booking',true); toast('Account created — sign in above and complete the 2-step code, then confirm your booking.'); }});
-        return;
-      }
-      setCustSession(j); payload.customer.email=email; doBook(); })
-    .catch(function(e){ clearTimeout(regSlow); if(regHard)clearTimeout(regHard); setBtn('Confirm booking',true); toast(e&&e.name==='AbortError'?'This is taking too long — your connection may have stalled. Check your signal and try again. If your account was created, sign in above, then confirm your booking.':e.message); });
-}
 /* Auto-resume a customer session */
 if(cTok()){
   cFetch('/auth/me').then(function(j){
@@ -2734,7 +2469,7 @@ try {
   load();
 })();
 </script>
-<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script><script src="/shared/passkey.js" defer></script><script src="/shared/pepper-master-gate.js" defer></script><script src="/shared/intake-form-shield.js" defer></script><script src="/shared/facebook-feed.js" defer></script><script src="/shared/location-booking.js" defer></script>
+<script>window.TSOS_LOGIN_SURFACE=true;</script><script src="/shared/session-vault.js" defer></script><script src="/shared/account-switcher.js" defer></script><script src="/shared/attribution-capture.js" defer></script><script src="/shared/passkey.js" defer></script><script src="/shared/pepper-master-gate.js" defer></script><script src="/shared/intake-form-shield.js" defer></script><script src="/shared/facebook-feed.js" defer></script><script src="/shared/zip-booking.js" defer></script>
 <script>
 /* MASTER PEPPER PRESENCE (2026-11-20, Ramone's directive: "every time
    I'm logged in app you must be there to assist me always"): /app is
