@@ -16,7 +16,7 @@ import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
-import { assertImageDataUrl, pepperDiagnoseChat, plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyParsePartsQuery, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { assertImageDataUrl, pepperDiagnoseChat, plateDraft, speedyAnalyzeDevicePhoto, speedyDraftDiagnosis, speedyExtractModelPlate, speedyParsePartsQuery, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
 import {
   authorizeEstimateForJob,
   authorizeSchema,
@@ -1293,6 +1293,63 @@ router.post('/provider/assignments/:id/plate-read', ...providerOnly, async (req,
     return res.json({ data: { plate, draft: plateDraft(plate) } });
   } catch (error) {
     return res.status(502).json({ error: 'Speedy could not read that plate — retake the photo or enter the details by hand', detail: String(error?.message || error) });
+  }
+});
+
+/* Device Camera (2026-11-25): the work order's high-tech camera. The
+ * tech photographs any appliance or part — the photo is the connection,
+ * no pairing — and Speedy vision either reads the fault evidence
+ * (diagnose) or identifies the part and matches it to the live Parts OS
+ * catalog (identify). Analysis only; saving the photo to the job's
+ * library stays the photos route's job. */
+const photoDiagnoseSchema = z.object({
+  imageDataUrl: z.string().trim().min(32).max(12000000),
+  mode: z.enum(['diagnose', 'identify']).default('diagnose'),
+  appliance: z
+    .object({
+      brand: z.string().trim().max(60).optional(),
+      model: z.string().trim().max(80).optional(),
+      serial: z.string().trim().max(80).optional(),
+      applianceType: z.string().trim().max(60).optional(),
+    })
+    .optional(),
+});
+
+router.post('/provider/assignments/:id/photo-diagnose', ...providerOnly, async (req, res) => {
+  const loaded = loadMyAssignment(req, res);
+  if (!loaded) return;
+  if (!requireAccepted(res, loaded.assignment)) return;
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy is not configured yet — the device camera needs Speedy on the server' });
+  }
+  const parsed = photoDiagnoseSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid device photo', details: parsed.error.flatten() });
+  }
+  try {
+    const applianceIn = parsed.data.appliance || {};
+    const appliance = {
+      brand: applianceIn.brand || null,
+      model: applianceIn.model || null,
+      serial: applianceIn.serial || null,
+      applianceType: applianceIn.applianceType || loaded.booking.appliance || null,
+    };
+    const slice = catalogSliceFor({ applianceType: appliance.applianceType, brand: appliance.brand });
+    const analysis = await speedyAnalyzeDevicePhoto({
+      imageUrl: parsed.data.imageDataUrl,
+      mode: parsed.data.mode,
+      appliance,
+      catalog: slice,
+    });
+    const bySku = new Map(store.parts.map((p) => [String(p.sku).toLowerCase(), p]));
+    const parts = [];
+    for (const sku of Array.isArray(analysis.part_skus) ? analysis.part_skus : []) {
+      const part = bySku.get(String(sku).toLowerCase());
+      if (part && part.active !== false) parts.push(catalogProjection(part));
+    }
+    return res.json({ data: { analysis, parts } });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy could not read that photo — retake it or describe the fault instead', detail: String(error?.message || error) });
   }
 });
 

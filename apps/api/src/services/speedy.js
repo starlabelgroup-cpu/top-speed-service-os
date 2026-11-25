@@ -1097,6 +1097,73 @@ export async function speedyExtractModelPlate(imageUrl) {
   return JSON.parse(extractText(body));
 }
 
+/* ---------------- Device Camera: photo diagnosis + part ID ----------------
+ * The high-tech camera for the work order and Appliance Plug Pro: the
+ * technician points the camera at ANY appliance or part — no pairing,
+ * no device account — and Speedy vision reads what the photo shows.
+ * DIAGNOSE mode reports the visible fault evidence; IDENTIFY mode
+ * names the part the way a catalog names it and matches it against
+ * the live Parts OS catalog slice. Only what is visible is reported;
+ * nothing here certifies a fault or a repair.
+ */
+
+const DEVICE_PHOTO_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_device_photo',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      appliance_seen: { type: ['string', 'null'], description: 'The appliance or device in the photo, as specific as the photo honestly allows (brand and type), or null when it cannot be told.' },
+      findings: { type: 'string', description: 'What the photo shows, in plain field language: fault evidence, damage, wear, leaks, error codes, part condition. Only what is visible — never invent what the photo does not show.' },
+      likely_part: { type: ['string', 'null'], description: 'The part shown or implicated, named the way a parts catalog names it (e.g. "Drain pump"), or null.' },
+      part_skus: { type: 'array', items: { type: 'string' }, description: 'SKUs from the supplied Parts OS catalog that match the part in the photo — exact SKUs copied from the list only; empty when none fit.' },
+      next_step: { type: 'string', description: 'The single most useful next step for the technician.' },
+    },
+    required: ['appliance_seen', 'findings', 'likely_part', 'part_skus', 'next_step'],
+  },
+};
+
+export async function speedyAnalyzeDevicePhoto({ imageUrl, mode, appliance = {}, catalog = [] }) {
+  assertImageDataUrl(imageUrl);
+  const catalogLines = (Array.isArray(catalog) ? catalog : []).map((p) =>
+    `- ${p.sku} · ${`${p.brand || ''} ${p.name}`.trim()} · ${p.category || ''}`.replace(/\s+/g, ' '),
+  );
+  const instructions = [
+    'You are Speedy AI running the Device Camera for Top Speed Appliance field technicians (Field Pro app — the work order and Appliance Plug Pro). The camera connects the technician to any appliance in front of them: no pairing or device account exists, so the photo itself is the connection.',
+    mode === 'identify'
+      ? 'IDENTIFY mode: name the part in this photo the way a parts catalog names it, describe its visible condition, and match it to the supplied Parts OS catalog.'
+      : 'DIAGNOSE mode: read the fault evidence in this photo — damage, wear, leaks, burn marks, error codes, broken or disconnected parts — and say what it points to.',
+    appliance.brand || appliance.model || appliance.applianceType
+      ? `Appliance on this job: ${[appliance.brand, appliance.model, appliance.applianceType].filter(Boolean).join(' · ')}${appliance.serial ? ` · serial ${appliance.serial}` : ''}.`
+      : 'No appliance identity was supplied — say what the photo itself shows.',
+    catalogLines.length > 0
+      ? `Parts OS catalog for this appliance (the only parts you may name by SKU):\n${catalogLines.join('\n')}`
+      : 'No Parts OS catalog slice was supplied — name part categories only, never a SKU.',
+    'Describe ONLY what is visible in the photo. Never invent a reading, a code, or a fault the photo does not show, never state a price, and never certify that a repair is safe. If the photo shows a hazard (damaged gas line, sparking, active flooding), lead the findings with making it safe.',
+  ].join('\n');
+  const body = await responsesRequest({
+    model: process.env.OPENAI_DIAGNOSIS_MODEL || 'gpt-4o',
+    instructions,
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: mode === 'identify' ? 'Identify the part in this photo and match it to the Parts OS catalog.' : 'Analyze this appliance photo for the technician.',
+          },
+          { type: 'input_image', image_url: imageUrl },
+        ],
+      },
+    ],
+    text: { format: DEVICE_PHOTO_FORMAT },
+    max_output_tokens: 700,
+  });
+  return JSON.parse(extractText(body));
+}
+
 /**
  * The normalized plate DRAFT envelope (camera upgrade, 2026-11-20):
  * the same transcription speedyExtractModelPlate returns, reshaped
