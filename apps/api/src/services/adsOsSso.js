@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { createId, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
 import { ROLES } from '../config/security.js';
@@ -234,4 +234,123 @@ export async function exchangeAdsOsConnectCode(code, { ip = null } = {}) {
   // Any other outstanding connect codes for this account die too.
   await supersedeOutstanding(user.id);
   return { user, identity: adsOsIdentity(user) };
+}
+
+// ---------------------------------------------------------------------------
+// Ads OS app token (2026-11-25, the Manager app rebuild Ramone
+// directed after the service-key paste failed him twice): the
+// exchange above also mints the signed-in account a scoped app
+// token, and the read doors in routes/adsOsIntegration.js accept
+// it as an alternative to the service key — so the app signs in
+// ONCE with a connect code and never asks anyone to copy a
+// 48-character key out of a dashboard again.
+//
+// The token is an HS256 JWT in the exact shape services/tokens.js
+// issues, signed with JWT_SECRET, with two deliberate differences:
+//   - it carries purpose: 'ads-os-app'. middleware/auth.js refuses
+//     ANY token with a purpose claim as a session, so this token
+//     can never open a workstation, an account page, or any other
+//     authenticated endpoint — the Ads OS read doors are the only
+//     place in the system that accepts it.
+//   - it lives 30 days: a personal manager app the owner opens
+//     daily, re-armed in one step (a fresh connect code) when it
+//     expires.
+// Verification re-loads the LIVE account on every call and
+// requires an Ads OS role on it, so deactivating the account or
+// removing its role cuts the app off immediately — the token
+// alone is never enough. The service key stays as the machine
+// door; nothing about it changes.
+// ---------------------------------------------------------------------------
+
+export const ADS_OS_APP_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+export const ADS_OS_APP_TOKEN_PURPOSE = 'ads-os-app';
+export const ADS_OS_FEED_ROLES = [
+  ROLES.COMPANY_OWNER,
+  ROLES.COMPANY_ADMIN,
+  ROLES.PLATFORM_ADMIN,
+  ROLES.MARKETING_MANAGER,
+  ROLES.AD_SPECIALIST,
+];
+
+/** True when the account may read the Ads OS feeds via the app token. */
+export function adsOsFeedAuthorized(user) {
+  if (!user || user.active === false) return false;
+  const roles = Array.isArray(user.roles) ? user.roles : [];
+  return roles.some((role) => ADS_OS_FEED_ROLES.includes(role));
+}
+
+function base64UrlJson(value) {
+  return Buffer.from(JSON.stringify(value)).toString('base64url');
+}
+
+/**
+ * Mint the app token for an exchanged account. Returns null when
+ * JWT_SECRET is not configured (the exchange then answers identity
+ * only, exactly as it did before this door existed).
+ */
+export function mintAdsOsAppToken(user) {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) return null;
+  const now = Math.floor(Date.now() / 1000);
+  const exp = now + ADS_OS_APP_TOKEN_TTL_SECONDS;
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    sub: user.id,
+    companyId: user.companyId,
+    email: user.email,
+    roles: Array.isArray(user.roles) ? user.roles : [],
+    purpose: ADS_OS_APP_TOKEN_PURPOSE,
+    iat: now,
+    exp,
+  };
+  const unsigned = `${base64UrlJson(header)}.${base64UrlJson(payload)}`;
+  const signature = createHmac('sha256', secret).update(unsigned).digest('base64url');
+  return {
+    token: `${unsigned}.${signature}`,
+    expiresAt: new Date(exp * 1000).toISOString(),
+    expiresInSeconds: ADS_OS_APP_TOKEN_TTL_SECONDS,
+  };
+}
+
+/**
+ * Verify an app token's signature, expiry and purpose. Returns the
+ * payload, or null for anything malformed, forged, expired, or not
+ * an Ads OS app token (a real session token included — sessions
+ * are not app tokens and app tokens are not sessions).
+ */
+export function verifyAdsOsAppToken(token) {
+  const secret = process.env.JWT_SECRET;
+  if (!secret || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const [headerPart, payloadPart, signaturePart] = parts;
+  let header;
+  let payload;
+  try {
+    header = JSON.parse(Buffer.from(headerPart, 'base64url').toString('utf8'));
+    payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8'));
+  } catch {
+    return null;
+  }
+  if (header.alg !== 'HS256') return null;
+  const expected = createHmac('sha256', secret).update(`${headerPart}.${payloadPart}`).digest();
+  const actual = Buffer.from(signaturePart, 'base64url');
+  if (expected.length !== actual.length || !timingSafeEqual(expected, actual)) return null;
+  if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+  if (payload.purpose !== ADS_OS_APP_TOKEN_PURPOSE) return null;
+  if (typeof payload.sub !== 'string' || !payload.sub) return null;
+  return payload;
+}
+
+/**
+ * Resolve an app token to its live account, or null. The account
+ * is re-read on every call and must still be active with an Ads
+ * OS role — see the section header for why.
+ */
+export async function loadAdsOsTokenUser(token) {
+  const payload = verifyAdsOsAppToken(token);
+  if (!payload) return null;
+  const user = await findUserById(payload.sub);
+  if (!adsOsFeedAuthorized(user)) return null;
+  return user;
 }

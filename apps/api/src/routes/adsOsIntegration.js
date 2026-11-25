@@ -9,7 +9,10 @@ import {
   buildAdsOsSummary,
 } from '../services/adsOsSummary.js';
 import {
+  adsOsFeedAuthorized,
   exchangeAdsOsConnectCode,
+  loadAdsOsTokenUser,
+  mintAdsOsAppToken,
   mintAdsOsConnectCode,
 } from '../services/adsOsSso.js';
 import { buildAdsOsPlatform, buildAdsOsPlatforms } from '../services/adsOsPlatforms.js';
@@ -31,17 +34,63 @@ import { buildAdsOsPlatform, buildAdsOsPlatforms } from '../services/adsOsPlatfo
  * "not set up yet" from "set up and refusing" (401). The key value
  * itself is set in the host environment by the owner; it never
  * appears in code.
+ *
+ * Since the 2026-11-25 Manager app rebuild the same doors ALSO
+ * accept the app's Service OS sign-in token (Authorization: Bearer,
+ * purpose 'ads-os-app' — see services/adsOsSso.js): the app signs
+ * in once with a connect code and the feeds ride on that sign-in,
+ * so nobody copies a service key out of a dashboard by hand. The
+ * key remains the machine door, with its answers unchanged.
  */
 
 const router = Router();
 
 /**
- * The one service-key gate every Ads OS read door shares — the
- * summary below and the unified platforms feed under it answer
- * the identical 503 / 401 shapes, so a caller can never tell the
- * doors apart by their refusals.
+ * The one gate every Ads OS read door shares — the summary below
+ * and the unified platforms feed under it answer the identical
+ * refusal shapes, so a caller can never tell the doors apart by
+ * their refusals. Two credentials open it:
+ *
+ *   1. The service key in the x-ads-os-key header (machine
+ *      callers) — the original door, its 503 / 401 answers
+ *      unchanged: 503 while the key is unset in the environment,
+ *      401 when the presented key does not match.
+ *   2. The Manager app's sign-in token (Authorization: Bearer) —
+ *      minted by the connect-code exchange for accounts holding
+ *      an Ads OS role, verified against the LIVE account on every
+ *      call (services/adsOsSso.js). Any failure is the same 401.
+ *
+ * A request carrying neither credential keeps the historical
+ * answers: 503 while the integration is unconfigured, else 401.
  */
-function adsOsGate(req, res) {
+async function adsOsGate(req, res) {
+  if (req.get(ADS_OS_KEY_HEADER) !== undefined) {
+    if (!adsOsConfigured()) {
+      res.status(503).json({
+        error: 'Ads OS integration is not configured (the service key environment variable is not set)',
+        code: 'ADS_OS_NOT_CONFIGURED',
+      });
+      return false;
+    }
+    if (!adsOsKeyMatches(req.get(ADS_OS_KEY_HEADER))) {
+      res.status(401).json({ error: 'Invalid Ads OS service key', code: 'ADS_OS_UNAUTHORIZED' });
+      return false;
+    }
+    return true;
+  }
+  const authorization = req.get('authorization');
+  if (authorization && authorization.startsWith('Bearer ')) {
+    const user = await loadAdsOsTokenUser(authorization.slice('Bearer '.length).trim());
+    if (user) {
+      req.adsOsUser = user;
+      return true;
+    }
+    res.status(401).json({
+      error: 'Service OS sign-in expired or not authorized for Ads OS',
+      code: 'ADS_OS_UNAUTHORIZED',
+    });
+    return false;
+  }
   if (!adsOsConfigured()) {
     res.status(503).json({
       error: 'Ads OS integration is not configured (the service key environment variable is not set)',
@@ -49,15 +98,12 @@ function adsOsGate(req, res) {
     });
     return false;
   }
-  if (!adsOsKeyMatches(req.get(ADS_OS_KEY_HEADER))) {
-    res.status(401).json({ error: 'Invalid Ads OS service key', code: 'ADS_OS_UNAUTHORIZED' });
-    return false;
-  }
-  return true;
+  res.status(401).json({ error: 'Invalid Ads OS service key', code: 'ADS_OS_UNAUTHORIZED' });
+  return false;
 }
 
-router.get('/integrations/ads-os/summary', (req, res) => {
-  if (!adsOsGate(req, res)) return undefined;
+router.get('/integrations/ads-os/summary', async (req, res) => {
+  if (!(await adsOsGate(req, res))) return undefined;
   return res.json({ data: buildAdsOsSummary([...store.bookings.values()]) });
 });
 
@@ -74,7 +120,7 @@ router.get('/integrations/ads-os/summary', (req, res) => {
 // ---------------------------------------------------------------------------
 
 router.get('/integrations/ads-os/platforms', async (req, res, next) => {
-  if (!adsOsGate(req, res)) return undefined;
+  if (!(await adsOsGate(req, res))) return undefined;
   try {
     return res.json({ data: await buildAdsOsPlatforms() });
   } catch (error) {
@@ -83,7 +129,7 @@ router.get('/integrations/ads-os/platforms', async (req, res, next) => {
 });
 
 router.get('/integrations/ads-os/platforms/:key', async (req, res, next) => {
-  if (!adsOsGate(req, res)) return undefined;
+  if (!(await adsOsGate(req, res))) return undefined;
   try {
     const section = await buildAdsOsPlatform(req.params.key);
     if (!section) {
@@ -139,8 +185,26 @@ router.post('/integrations/ads-os/sso/code', authenticate, async (req, res, next
 router.post('/integrations/ads-os/sso/exchange', async (req, res, next) => {
   try {
     const presented = typeof req.body?.code === 'string' ? req.body.code : '';
-    const { identity } = await exchangeAdsOsConnectCode(presented, { ip: req.ip });
-    return res.json({ data: identity });
+    const { user, identity } = await exchangeAdsOsConnectCode(presented, { ip: req.ip });
+    // Manager app rebuild (2026-11-25): an account with an Ads OS
+    // role also receives its scoped app token, so the app's feeds
+    // ride on this sign-in. Accounts without the role get the
+    // identity alone, exactly as before — the app tells them the
+    // account has no Ads OS access.
+    const appToken = adsOsFeedAuthorized(user) ? mintAdsOsAppToken(user) : null;
+    return res.json({
+      data: {
+        ...identity,
+        ...(appToken
+          ? {
+              appToken: appToken.token,
+              tokenType: 'Bearer',
+              tokenExpiresAt: appToken.expiresAt,
+              tokenExpiresInSeconds: appToken.expiresInSeconds,
+            }
+          : {}),
+      },
+    });
   } catch (error) {
     if (error?.status) {
       return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
