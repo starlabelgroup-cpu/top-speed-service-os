@@ -1,5 +1,6 @@
 import { PARTNER_VENDOR_SUPPLIERS } from '../data/partsPartners.js';
 import { DISTRIBUTOR_SUPPLIERS } from '../data/distributors.js';
+import { CATALOG_PARTS } from '../data/partsCatalog.js';
 import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
 
@@ -229,6 +230,20 @@ async function ensurePartnerVendors(prisma) {
   }
 }
 
+/**
+ * The stocked parts supply list (src/data/partsCatalog.js) is ensured
+ * the same create-only way: rows land by id if missing and are never
+ * updated by a redeploy, so staff pricing/stock edits survive. Only
+ * Part-model fields are written (the catalog's `source` tag is
+ * documentation, not a column).
+ */
+async function ensureCatalogParts(prisma) {
+  for (const part of CATALOG_PARTS) {
+    const { source, ...row } = part;
+    await prisma.part.upsert({ where: { id: row.id }, update: {}, create: row });
+  }
+}
+
 export async function hydrateParts() {
   if (!DATABASE_ENABLED) return 0;
   const prisma = db();
@@ -236,6 +251,11 @@ export async function hydrateParts() {
     await ensurePartnerVendors(prisma);
   } catch (error) {
     console.error('ensurePartnerVendors failed (partner vendors degraded, parts hydration continues)', error?.message || error);
+  }
+  try {
+    await ensureCatalogParts(prisma);
+  } catch (error) {
+    console.error('ensureCatalogParts failed (parts catalog degraded, parts hydration continues)', error?.message || error);
   }
   const [supplierRows, partRows, poRows, lineRows, usageRows, vanStockRows] = await Promise.all([
     prisma.supplier.findMany({ orderBy: { createdAt: 'asc' } }),

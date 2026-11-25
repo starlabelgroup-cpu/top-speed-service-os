@@ -1206,7 +1206,47 @@ router.post('/provider/assignments/:id/notes', ...providerOnly, async (req, res)
  * exact part and price at order time.
  */
 const PLUG_ORDER_FLOW = ['DRAFT', 'SENT_TO_PARTS_SUPPLY_OS', 'ORDERED', 'RECEIVED'];
-const PLUG_VENDORS = ['APPLIANCE_PLUS_PARTS_SUPPLY', 'OTHER_DISTRIBUTOR'];
+const PLUG_VENDORS = [
+  'APPLIANCE_PLUS_PARTS_SUPPLY',
+  'OTHER_DISTRIBUTOR',
+  'MARCONE',
+  'ENCOMPASS',
+  'PARTS_TOWN',
+  'APPLIANCE_PARTS_DEPOT',
+];
+
+/**
+ * Distributor snapshot for a direct-distributor Plug order
+ * (2026-11-25): the order carries the distributor's honest account /
+ * integration state at order time, so Parts Supply OS sees exactly
+ * what the tech saw. The order still lands in the Parts Supply OS
+ * queue — it is placed on the distributor account by Parts Supply
+ * staff until a live distributor integration answers from this
+ * backend. Appliance Parts Depot is a Parts Supply OS supplier
+ * without a status-feed entry, so its snapshot is stated plainly.
+ */
+const PLUG_DISTRIBUTOR_KEYS = {
+  MARCONE: 'marcone',
+  ENCOMPASS: 'encompass',
+  PARTS_TOWN: 'parts_town',
+};
+
+function plugDistributorSnapshot(vendor) {
+  if (vendor === 'APPLIANCE_PARTS_DEPOT') {
+    return { key: 'appliance_parts_depot', name: 'Appliance Parts Depot', accountState: 'SUPPLIER', integrationState: 'NOT_CONNECTED' };
+  }
+  const key = PLUG_DISTRIBUTOR_KEYS[vendor];
+  if (!key) return null;
+  const entry = distributorStatus().find((d) => d.key === key);
+  if (!entry) return null;
+  return {
+    key: entry.key,
+    name: entry.name,
+    accountState: entry.accountState,
+    accountNumberOnFile: entry.accountNumberOnFile,
+    integrationState: entry.integrationState,
+  };
+}
 
 function plugOrders(booking) {
   const byId = new Map();
@@ -1299,6 +1339,8 @@ const partsOrderSchema = z.object({
     category: z.string().trim().min(2).max(120),
     qty: z.number().int().min(1).max(999),
     fitmentNotes: z.string().trim().max(300).nullable().optional(),
+    partId: z.string().uuid().nullable().optional(),
+    sku: z.string().trim().max(60).nullable().optional(),
   })).min(1).max(20),
 });
 
@@ -1318,6 +1360,7 @@ router.post('/provider/assignments/:id/parts-orders', ...providerOnly, async (re
     bookingReference: booking.referenceCode || null,
     assignmentId: assignment.id,
     vendor: parsed.data.vendor,
+    ...(plugDistributorSnapshot(parsed.data.vendor) ? { distributor: plugDistributorSnapshot(parsed.data.vendor) } : {}),
     urgency: parsed.data.urgency || 'STANDARD',
     status: 'DRAFT',
     appliance: {
@@ -1330,6 +1373,8 @@ router.post('/provider/assignments/:id/parts-orders', ...providerOnly, async (re
       category: line.category,
       qty: line.qty,
       fitmentNotes: line.fitmentNotes || null,
+      partId: line.partId || null,
+      sku: line.sku || null,
     })),
     createdBy: req.user.email,
     createdAt: t,
@@ -1405,7 +1450,7 @@ router.post('/provider/assignments/:id/parts-orders/:orderId/status', ...provide
         bookingReference: booking.referenceCode || null,
         vendor: order.vendor,
         urgency: order.urgency,
-        lines: order.lines.map((line) => ({ category: line.category, qty: line.qty })),
+        lines: order.lines.map((line) => ({ category: line.category, sku: line.sku || null, qty: line.qty })),
         appliance: order.appliance,
         sentBy: req.user.email,
       },
@@ -1438,6 +1483,41 @@ router.get('/provider/parts-orders', ...providerBoard, (req, res) => {
   }
   mine.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
   return res.json({ data: { orders: mine, ...(provider ? {} : { oversight: true }) } });
+});
+
+/* Tech parts catalog (2026-11-25): the Top Speed parts supply list
+ * (Parts Supply OS inventory) searchable from Field Pro under the
+ * tech's own provider login — by keyword, appliance category or
+ * brand. Returns real OEM SKUs and live on-hand counts only; prices
+ * are never served here because they are set by the distributor at
+ * order time. Ordering happens through the parts-orders flow above,
+ * with the catalog partId/SKU carried on the order line. */
+router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const q = String(req.query.q || '').trim().toLowerCase();
+  const category = String(req.query.category || '').trim().toLowerCase();
+  const brand = String(req.query.brand || '').trim().toLowerCase();
+  const matches = store.parts.filter((part) => {
+    if (part.active === false) return false;
+    if (category && String(part.category || '').toLowerCase() !== category) return false;
+    if (brand && String(part.brand || '').toLowerCase() !== brand) return false;
+    if (q) {
+      const hay = `${part.sku} ${part.name} ${part.brand || ''} ${part.category || ''}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const parts = matches.slice(0, 200).map((part) => ({
+    id: part.id,
+    sku: part.sku,
+    name: part.name,
+    brand: part.brand || null,
+    category: part.category || null,
+    stockOnHand: part.stockOnHand || 0,
+    inStock: (part.stockOnHand || 0) > 0,
+  }));
+  return res.json({ data: { parts, total: matches.length } });
 });
 
 /* Distributor connections for the Field Pro Plug card (2026-11-25):
