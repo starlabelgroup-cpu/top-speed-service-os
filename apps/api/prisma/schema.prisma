@@ -2201,6 +2201,54 @@ model AdvertiserCreative {
   @@index([ownerId, createdAt])
 }
 
+enum AdCreativeKind {
+  IMAGE
+  TEXT
+}
+
+enum AdCreativeStatus {
+  ACTIVE
+  PAUSED
+}
+
+// Ads Library (2026-11-24): the managed creative registry behind
+// the Flywheel streaming system — the house image + text ads every
+// Top Speed surface streams from (routes/adLibrary.js). Seeded once
+// from data/adCreativeSeeds.js with the real, claim-checked house
+// creative set; image bytes ride in src/assets/adCreativeImagesNN.js
+// (assetKind MODULE, assetRef = the creative key) or are rendered by
+// the Pepper visual service (assetKind VISUAL, assetRef = the visual
+// key). served/clicked are the creative's own raw counters — the
+// same numbers the Ads OS Manager library view and the unified Ads
+// OS metrics feed read. claimStatus records the claim-gate result;
+// the serve path re-runs the gate on every candidate regardless.
+model AdCreative {
+  id             String           @id @default(uuid()) @db.Uuid
+  key            String           @unique
+  kind           AdCreativeKind
+  title          String
+  headline       String?
+  subline        String?
+  ctaText        String?
+  serviceTag     String?
+  cityTag        String?
+  assetKind      String           @default("NONE")
+  assetRef       String?
+  formats        String[]         @default([])
+  destinationUrl String
+  claimStatus    String           @default("CLEAN")
+  status         AdCreativeStatus @default(ACTIVE)
+  served         Int              @default(0)
+  clicked        Int              @default(0)
+  sortOrder      Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([status, kind])
+  @@index([serviceTag])
+  @@index([cityTag])
+}
+
 // Flywheel Advertiser Plans (2026-11-17): the paid-plan layer of the
 // Flywheel AI Advertising ecosystem. AdPlan rows are STRUCTURE — tiers
 // with a feature matrix and limits. monthlyPriceCents stays NULL until

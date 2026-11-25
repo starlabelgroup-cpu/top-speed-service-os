@@ -1,6 +1,7 @@
 import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
 import { hydrateAdvertiserCreatives } from './advertiserCreativesRepo.js';
+import { hydrateAdCreatives } from './adCreativesRepo.js';
 
 /**
  * Ad Studio persistence (2026-11-14) — same pattern as the Media OS
@@ -62,6 +63,8 @@ export async function hydrateAdCampaigns() {
     store.adCampaigns = rows.map(toStoreCampaign);
     // Advertiser creative uploads (E3) ride the same cold start.
     await hydrateAdvertiserCreatives();
+    // Ads Library creatives (2026-11-24) ride the same cold start.
+    await hydrateAdCreatives();
     return rows.length;
   } catch (error) {
     // A missing table mid-deploy degrades to an empty studio, exactly

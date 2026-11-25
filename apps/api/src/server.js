@@ -53,6 +53,7 @@ import geoRouter from './routes/geo.js';
 import videoFactoryRouter from './routes/videoFactory.js';
 import creatorSignupRouter from './routes/creatorSignup.js';
 import adStudioRouter from './routes/adStudio.js';
+import adLibraryRouter from './routes/adLibrary.js';
 import adProvidersRouter from './routes/adProviders.js';
 import adPlansRouter from './routes/adPlans.js';
 import carePlansRouter from './routes/carePlans.js';
@@ -147,6 +148,14 @@ for (const satelliteOrigin of [
   'https://www.browardappliancepros.com',
   'https://topspeedappliances.com',
   'https://www.topspeedappliances.com',
+  // Ads Library streaming surfaces (2026-11-24): the Total Home
+  // satellite and the Appliance Pro portal stream house creatives
+  // from their own origins — the slot fetch is a browser read, so
+  // their origins belong on this same closed list.
+  'https://totalhomeappliance.com',
+  'https://www.totalhomeappliance.com',
+  'https://appliancepro.net',
+  'https://www.appliancepro.net',
 ]) {
   if (!corsOrigin.includes(satelliteOrigin)) corsOrigin.push(satelliteOrigin);
 }
@@ -304,6 +313,7 @@ app.use('/api/v1', geoRouter);
 app.use('/api/v1', videoFactoryRouter);
 app.use('/api/v1', creatorSignupRouter);
 app.use('/api/v1', adStudioRouter);
+app.use('/api/v1', adLibraryRouter);
 app.use('/api/v1', adProvidersRouter);
 app.use('/api/v1', adPlansRouter);
 app.use('/api/v1', carePlansRouter);

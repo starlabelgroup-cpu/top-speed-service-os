@@ -238,6 +238,12 @@ export const store = {
   // (bytes are fetched through the repo, never held in the list rows);
   // degrades to an empty list like the rest.
   advertiserCreatives: [],
+  // Ads Library (2026-11-24): the managed creative registry behind
+  // the Flywheel streaming system — house image + text ads, seeded
+  // from the real claim-checked creative set. Hydrated from the
+  // AdCreative table via db/adCreativesRepo; degrades to an empty
+  // list like the rest (the stream then answers honest empty slots).
+  adCreatives: [],
   // Management department reports (2026-11-14): every feature request
   // on every platform, routed to its head department for management to
   // read + acknowledge. Hydrated from the DepartmentReport table via

@@ -197,8 +197,27 @@ function topSpeedAdsMetrics() {
     outcomes.won += row.won || 0;
     outcomes.wonCollectedCents += row.wonCollectedCents || 0;
   }
+  // Ads Library (2026-11-24): the streaming creative registry's own
+  // counters — raw slot serves and click-throughs counted on the
+  // AdCreative records themselves (routes/adLibrary.js). Read from
+  // the working set like the campaign counts above.
+  const creatives = store.adCreatives || [];
+  const library = {
+    creatives: {
+      total: creatives.length,
+      active: creatives.filter((c) => c.status === 'ACTIVE').length,
+      byKind: {
+        IMAGE: creatives.filter((c) => c.kind === 'IMAGE').length,
+        TEXT: creatives.filter((c) => c.kind === 'TEXT').length,
+      },
+    },
+    served: creatives.reduce((n, c) => n + (c.served || 0), 0),
+    clicked: creatives.reduce((n, c) => n + (c.clicked || 0), 0),
+    note: 'Raw impressions and clicks counted by the streaming endpoints on the library creatives themselves — never estimated.',
+  };
   return {
     campaigns: { total: house.length, byStatus, pendingApproval: byStatus.PENDING_APPROVAL },
+    library,
     recordedSpend: {
       totalCents: recordedTotalCents,
       campaignsWithRecordedSpend,
