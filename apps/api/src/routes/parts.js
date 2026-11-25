@@ -353,6 +353,43 @@ router.post('/parts/usage', ...staff, async (req, res) => {
   return res.status(201).json({ data: usage });
 });
 
+/* ------------------- Tech orders (Appliance Plug Pro) ------------------
+ * Every parts order a tech places in Field Pro (Appliance Plug Pro) is
+ * recorded on its booking (PLUG_ORDER_CREATED / PLUG_ORDER_STATUS events,
+ * persisted with the booking in the Service OS database). This is the
+ * management-side view of that same record inside Parts Supply OS — one
+ * source of truth, no second copy. Filter with ?status= to work the
+ * queue (e.g. ?status=SENT_TO_PARTS_SUPPLY_OS for orders techs sent in).
+ */
+function plugOrdersOf(booking) {
+  const byId = new Map();
+  for (const event of booking.history || []) {
+    if (event.type === 'PLUG_ORDER_CREATED' && event.order && event.order.id) {
+      byId.set(event.order.id, { ...event.order });
+    }
+    if (event.type === 'PLUG_ORDER_STATUS' && event.orderId && byId.has(event.orderId)) {
+      const order = byId.get(event.orderId);
+      order.status = event.status;
+      order.updatedAt = event.at || order.updatedAt;
+    }
+  }
+  return [...byId.values()];
+}
+
+router.get('/parts/tech-orders', ...staff, (req, res) => {
+  const status = String(req.query.status || '').trim();
+  const bookings = store.bookings instanceof Map ? [...store.bookings.values()] : store.bookings || [];
+  const orders = [];
+  for (const booking of bookings) {
+    for (const order of plugOrdersOf(booking)) {
+      if (status && order.status !== status) continue;
+      orders.push({ ...order, bookingId: booking.id, bookingReference: booking.referenceCode || null });
+    }
+  }
+  orders.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
+  return res.json({ data: orders });
+});
+
 /* ------------------------------ Low stock ------------------------------- */
 
 router.get('/parts/low-stock', ...staff, (req, res) => {
