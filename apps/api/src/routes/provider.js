@@ -1516,6 +1516,7 @@ router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
     category: part.category || null,
     stockOnHand: part.stockOnHand || 0,
     inStock: (part.stockOnHand || 0) > 0,
+    sellPriceCents: typeof part.sellPriceCents === 'number' ? part.sellPriceCents : null,
   }));
   return res.json({ data: { parts, total: matches.length } });
 });
