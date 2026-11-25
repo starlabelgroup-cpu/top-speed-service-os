@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { addBookingEvent, appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
+import { distributorStatus } from '../data/distributors.js';
 import { persistAssignment, persistBooking, persistCustomer, persistProvider } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
@@ -1437,6 +1438,18 @@ router.get('/provider/parts-orders', ...providerBoard, (req, res) => {
   }
   mine.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
   return res.json({ data: { orders: mine, ...(provider ? {} : { oversight: true }) } });
+});
+
+/* Distributor connections for the Field Pro Plug card (2026-11-25):
+ * the honest per-distributor state behind "Distributor pricing &
+ * stock" — account state and integration state for Marcone,
+ * Encompass and Parts Town. integrationState stays NOT_CONNECTED
+ * until a distributor's own system answers a live call from this
+ * backend; no prices or stock are ever served from anywhere else. */
+router.get('/provider/parts-supply/distributors', ...providerBoard, (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  return res.json({ data: { distributors: distributorStatus() } });
 });
 
 /* ================= Tech Pro field workflow (2026-11-17) =================

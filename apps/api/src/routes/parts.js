@@ -10,6 +10,7 @@ import {
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { STAFF_ROLES } from '../config/security.js';
 import { emitReport } from '../services/managementReports.js';
+import { distributorStatus } from '../data/distributors.js';
 
 /**
  * Parts Supply OS — suppliers, parts inventory, purchase orders and
@@ -424,6 +425,13 @@ export function partsSummary() {
     usageRecords: store.partUsages.length,
   };
 }
+
+/* Distributor connections (2026-11-25): honest per-distributor state
+ * for Marcone / Encompass / Parts Town — account state, integration
+ * state, and the next step. Booleans only; never account numbers. */
+router.get('/parts/distributors', ...staff, (req, res) => {
+  return res.json({ data: { distributors: distributorStatus() } });
+});
 
 router.get('/parts/summary', ...staff, (req, res) => {
   return res.json({ data: partsSummary() });

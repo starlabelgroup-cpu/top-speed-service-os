@@ -1,4 +1,5 @@
 import { PARTNER_VENDOR_SUPPLIERS } from '../data/partsPartners.js';
+import { DISTRIBUTOR_SUPPLIERS } from '../data/distributors.js';
 import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
 
@@ -223,7 +224,7 @@ export async function persistPartUsage(usage) {
  * the rest of parts hydration.
  */
 async function ensurePartnerVendors(prisma) {
-  for (const supplier of PARTNER_VENDOR_SUPPLIERS) {
+  for (const supplier of [...PARTNER_VENDOR_SUPPLIERS, ...DISTRIBUTOR_SUPPLIERS]) {
     await prisma.supplier.upsert({ where: { id: supplier.id }, update: {}, create: supplier });
   }
 }
