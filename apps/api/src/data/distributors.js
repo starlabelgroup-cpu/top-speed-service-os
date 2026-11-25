@@ -21,7 +21,8 @@
  *   the account exists. No account yet (2026-11-25).
  * - Parts Town: a real API exists, but API keys are issued by Parts
  *   Town only to approved integration partners, and its catalog is
- *   primarily commercial foodservice. No account yet (2026-11-25).
+ *   primarily commercial foodservice. Account created by the owner
+ *   on 2026-11-25; its number has not been supplied yet.
  *
  * Appliance Parts Depot: added 2026-11-25 as a Parts Supply OS
  * supplier at the owner's direction (he confirmed it is a supplier
@@ -124,11 +125,11 @@ const DISTRIBUTORS = [
     supplierId: PARTS_TOWN_SUPPLIER_ID,
     name: 'Parts Town',
     accountEnv: 'PARTSTOWN_ACCOUNT_NUMBER',
-    accountState: 'NOT_STARTED',
-    accountLabel: 'No account yet',
+    accountState: 'OWNER_CONFIRMED',
+    accountLabel: 'Account created (owner-confirmed 2026-11-25); account number not yet supplied',
     integrationMode: 'API',
     integrationLabel: 'API keys are issued by Parts Town only to approved integration partners',
-    nextStep: 'Open a Parts Town account, then apply for partner API access',
+    nextStep: 'Supply the Parts Town account number, then apply for partner API access (keys are issued to approved partners)',
   },
 ];
 
