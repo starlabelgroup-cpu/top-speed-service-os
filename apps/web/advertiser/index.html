@@ -171,6 +171,7 @@ footer strong{color:#fff}
         <button class="g-nav on" data-nav="overview" onclick="showView('overview')">Overview</button>
         <button class="g-nav" data-nav="campaigns" id="navCampaigns" onclick="showView('campaigns')">My Campaigns</button>
         <button class="g-nav" data-nav="results" id="navResults" onclick="showView('results')">Results</button>
+        <button class="g-nav" data-nav="links" id="navLinks" onclick="showView('links')">My Page &amp; Links</button>
         <button class="g-nav" data-nav="editor" id="navEditor" onclick="newCampaign()">Create Campaign</button>
         <button class="g-nav" data-nav="channels" onclick="showView('channels')">Channel Connections</button>
         <button class="g-nav" data-nav="plans" id="navPlans" onclick="showView('plans')">Plans &amp; Billing</button>
@@ -243,6 +244,39 @@ footer strong{color:#fff}
           <div class="g-card">
             <h3>How counting works</h3>
             <div id="resCounting" class="g-sub" style="margin-top:6px;line-height:1.7"></div>
+          </div>
+        </section>
+
+        <!-- MY PAGE & LINKS -->
+        <section class="g-view hidden" id="view-links">
+          <div class="g-card">
+            <h3>Your advertiser page</h3>
+            <p class="g-sub">Every click on your ads and tracked links lands here first — your business details and links, on the Top Speed platform — before heading onward to your own website.</p>
+            <div id="lkPageRow" style="margin-top:10px"><p class="g-sub">Loading your page…</p></div>
+          </div>
+          <div class="g-card">
+            <h3>Your business details</h3>
+            <p class="g-sub">This is what your page shows. Anything you leave blank simply does not appear — nothing is filled in for you. Public pages show your service area only, never a street address.</p>
+            <div class="g-grid">
+              <div><label>Business name</label><input id="pfName"></div>
+              <div><label>Phone</label><input id="pfPhone"></div>
+              <div><label>Website</label><input id="pfWebsite" placeholder="https://yourbusiness.com"></div>
+              <div><label>Service area (cities / area)</label><input id="pfArea" placeholder="Fort Lauderdale and nearby cities"></div>
+            </div>
+            <label style="margin-top:10px">About your business</label>
+            <textarea id="pfAbout" rows="3" style="width:100%"></textarea>
+            <label style="margin-top:10px">Services (one per line)</label>
+            <textarea id="pfServices" rows="3" style="width:100%"></textarea>
+            <label style="margin-top:10px">Other links (one per line: Label | https://…)</label>
+            <textarea id="pfLinks" rows="2" style="width:100%"></textarea>
+            <div style="margin-top:14px"><button class="g-btn" onclick="saveProfile()">Save details</button></div>
+            <div id="pfMsg" class="g-msg"></div>
+          </div>
+          <div class="g-card">
+            <h3>Your tracked links</h3>
+            <p class="g-sub">Share these anywhere — every click is counted and lands on your page above. Counts are real recorded clicks; zero means no clicks yet.</p>
+            <div class="g-stats" id="lkStats"></div>
+            <div id="lkTable" style="margin-top:8px"><p class="g-sub">Loading your links…</p></div>
           </div>
         </section>
 
@@ -458,9 +492,9 @@ function roleLabel(r){ return {ADVERTISER:'Advertiser',MARKETING_MANAGER:'Market
 function isAdvertiser(){ return !!currentUser&&(currentUser.roles||[]).indexOf('ADVERTISER')>=0; }
 
 /* ── Console shell ── */
-var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],results:['Results','Your recorded impressions, clicks and leads — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],plans:['Plans & Billing','Your Flywheel plan — what it opens, what it costs, when it renews'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard']};
+var VIEW_TITLES={overview:['Overview','Your advertising at a glance'],campaigns:['My Campaigns','Drafts, reviews and live campaigns — only yours'],results:['Results','Your recorded impressions, clicks and leads — only yours'],editor:['Create Campaign','Build your mini banner ad — submit it for approval when ready'],channels:['Channel Connections','Your ad channels, linked by the Top Speed team'],plans:['Plans & Billing','Your Flywheel plan — what it opens, what it costs, when it renews'],tools:['Tools','Planner, copy builder, tracking links and the optimization scorecard'],links:['My Page & Links','Your public advertiser page and the tracked links that point to it']};
 function showView(name){
-  ['overview','campaigns','results','editor','channels','plans','tools'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
+  ['overview','campaigns','results','editor','channels','plans','tools','links'].forEach(function(v){ document.getElementById('view-'+v).classList.toggle('hidden', v!==name); });
   document.querySelectorAll('.g-nav').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-nav')===name); });
   var t=VIEW_TITLES[name]; document.getElementById('topTitle').textContent=t[0]; document.getElementById('topSub').textContent=t[1];
   document.getElementById('topNewBtn').style.display=(name==='editor'||!isAdvertiser())?'none':'';
@@ -468,6 +502,7 @@ function showView(name){
   if(name==='results') renderResults();
   if(name==='overview') renderOverview();
   if(name==='plans') loadPlans();
+  if(name==='links') loadLinks();
 }
 function showConsole(user){
   if(user) currentUser=user;
@@ -483,6 +518,7 @@ function showConsole(user){
   document.getElementById('navCampaigns').style.display=adv?'':'none';
   document.getElementById('navResults').style.display=adv?'':'none';
   document.getElementById('navEditor').style.display=adv?'':'none';
+  document.getElementById('navLinks').style.display=adv?'':'none';
   document.getElementById('topNewBtn').style.display=adv?'':'none';
   loadChannels();
   loadPlans();
@@ -847,6 +883,57 @@ function planCancel(){
   if(q==='success') setTimeout(function(){ msg('planMsg','Payment received — your plan activates as soon as Stripe confirms (seconds). Refresh Plans & Billing if it does not update.',true); loadPlans(); },600);
   if(q==='cancelled') setTimeout(function(){ msg('planMsg','Checkout cancelled — nothing was charged and your plan is unchanged.'); },600);
 })();
+
+/* ── My Page & Links (advertiser tracked links, 2026-11-24) ── */
+function loadLinks(){
+  api('/ad-studio/my-links').then(function(x){
+    var box=document.getElementById('lkTable'), stats=document.getElementById('lkStats'), pageRow=document.getElementById('lkPageRow');
+    if(x.status!==200||!x.j.data){ box.innerHTML='<p class="g-sub">Your links could not be loaded right now.</p>'; return; }
+    var d=x.j.data;
+    pageRow.innerHTML='<div class="copyrow"><span style="word-break:break-all"><b>'+esc(d.profile.pageUrl)+'</b></span>'
+      +'<span style="white-space:nowrap"><button class="g-btn small" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+d.profile.pageUrl+'\')">Copy</button> '
+      +'<a class="g-btn small" href="'+esc(d.profile.pageUrl)+'" target="_blank" rel="noopener">View page</a></span></div>';
+    stats.innerHTML=[['LINK CLICKS',d.totals.clicks,'Recorded on your tracked links'],['CLICKS ONWARD TO YOU',d.totals.clickOuts,'Website visits + calls from your page'],['TRACKED LINKS',d.totals.linkCount,'Main link + one per campaign']].map(function(s){ return '<div class="g-stat"><div class="k">'+s[0]+'</div><div class="v">'+s[1]+'</div><div class="d">'+s[2]+'</div></div>'; }).join('');
+    box.innerHTML=d.links.map(function(l){
+      var what=l.kind==='MASTER'?'Main link — your page':('Campaign: '+esc(l.campaignName||l.label));
+      var state=l.campaignStatus?' · '+esc(l.campaignStatus):'';
+      return '<div class="copyrow"><span style="word-break:break-all"><b>'+what+'</b>'+state+'<br>'+esc(l.url)+'</span>'
+        +'<span style="white-space:nowrap"><b>'+l.clicks+'</b> clicks <button class="g-btn small" onclick="navigator.clipboard&&navigator.clipboard.writeText(\''+l.url+'\')">Copy</button></span></div>';
+    }).join('');
+  });
+  api('/ad-studio/my-profile').then(function(x){
+    if(x.status!==200||!x.j.data) return;
+    var p=x.j.data;
+    document.getElementById('pfName').value=p.businessName||'';
+    document.getElementById('pfPhone').value=p.phone||'';
+    document.getElementById('pfWebsite').value=p.websiteUrl||'';
+    document.getElementById('pfArea').value=p.serviceArea||'';
+    document.getElementById('pfAbout').value=p.about||'';
+    document.getElementById('pfServices').value=(p.services||[]).join('\n');
+    document.getElementById('pfLinks').value=(p.links||[]).map(function(l){ return l.label+' | '+l.url; }).join('\n');
+  });
+}
+function saveProfile(){
+  var links=document.getElementById('pfLinks').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean).map(function(s){
+    var i=s.indexOf('|'); return i>0?{label:s.slice(0,i).trim(),url:s.slice(i+1).trim()}:null;
+  }).filter(Boolean);
+  var body={
+    businessName:document.getElementById('pfName').value.trim(),
+    phone:document.getElementById('pfPhone').value.trim()||null,
+    websiteUrl:document.getElementById('pfWebsite').value.trim()||null,
+    serviceArea:document.getElementById('pfArea').value.trim()||null,
+    about:document.getElementById('pfAbout').value.trim()||null,
+    services:document.getElementById('pfServices').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
+    links:links
+  };
+  api('/ad-studio/my-profile',{method:'PATCH',body:JSON.stringify(body)}).then(function(x){
+    if(x.status===200){ msg('pfMsg','Saved — your page now shows these details.',true); loadLinks(); }
+    else{
+      var v=(x.j&&x.j.violations&&x.j.violations[0])?(' Claim check: '+x.j.violations[0].why):'';
+      msg('pfMsg',((x.j&&(x.j.error||x.j.message))||'Save failed.')+v);
+    }
+  });
+}
 
 /* ── Tools (existing Advertiser Console system) ── */
 function money(n){ return '$'+Math.round(n).toLocaleString(); }

@@ -244,6 +244,16 @@ export const store = {
   // AdCreative table via db/adCreativesRepo; degrades to an empty
   // list like the rest (the stream then answers honest empty slots).
   adCreatives: [],
+  // Advertiser tracked links + public advertiser pages (2026-11-24):
+  // one AdvertiserProfile per advertiser account, one MASTER tracked
+  // link per account plus one per campaign they own, and the
+  // per-click event rows behind the links' aggregate counters.
+  // Hydrated from their tables via db/advertiserLinksRepo (which also
+  // backfills every existing advertiser); degrades to empty lists
+  // like the rest — the go-links then answer an honest 404.
+  advertiserProfiles: [],
+  advertiserLinks: [],
+  advertiserLinkClicks: [],
   // Management department reports (2026-11-14): every feature request
   // on every platform, routed to its head department for management to
   // read + acknowledge. Hydrated from the DepartmentReport table via

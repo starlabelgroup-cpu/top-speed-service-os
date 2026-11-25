@@ -213,6 +213,10 @@ model User {
   pepperReports PepperReport[]
 
   advertiserSubscription AdvertiserSubscription?
+
+  advertiserProfile     AdvertiserProfile?
+  advertiserLinks       AdvertiserLink[]
+  advertiserLinkClicks  AdvertiserLinkClick[]
   careSubscription CareSubscription?
 
   sellerSubscription SellerSubscription?
@@ -2247,6 +2251,108 @@ model AdCreative {
   @@index([status, kind])
   @@index([serviceTag])
   @@index([cityTag])
+}
+
+// ─── Advertiser tracked links + public advertiser pages (2026-11-24) ───
+// Ramone's directive: "For advertisers create links and tracking for
+// every ad account made by advertisers. When customers click ad link
+// it goes to advertiser's page with tracking and advertiser details
+// and links."
+//
+// AdvertiserProfile is the ONE public business profile per advertiser
+// account (an ADVERTISER-role User). It did not exist before: the
+// business identity rode per-campaign on AdCampaign (advertiserName /
+// offering). The profile is backfilled from the advertiser's own real
+// records (newest campaign's advertiserName, their account phone,
+// their campaign destination) and maintained by the advertiser in the
+// Advertiser Console — fields nobody has provided stay NULL and the
+// public page omits them; nothing is ever invented. `slug` is the
+// public page's address (/advertiser/<slug>), assigned once at
+// creation. `serviceArea` is a free-text AREA label only — the public
+// address rule (2026-11-23) forbids street addresses on public pages.
+// `links` is a JSON array of { label, url } the advertiser provided.
+model AdvertiserProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  slug           String   @unique
+  businessName   String?
+  about          String?
+  services       String[] @default([])
+  serviceArea    String?
+  phone          String?
+  websiteUrl     String?
+  links          Json     @default("[]")
+  logoCreativeId String?  @db.Uuid
+  isPublic       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+}
+
+enum AdvertiserLinkKind {
+  MASTER
+  CAMPAIGN
+}
+
+enum AdvertiserLinkDirection {
+  IN
+  OUT
+}
+
+// One tracked link per advertiser account (MASTER) plus one per
+// campaign the account owns (CAMPAIGN). `code` is the unguessable
+// short token in /api/v1/ads-os/go/<code>. clicks / clickOuts are the
+// link's own aggregate counters (the AdCreative discipline: the store
+// moves immediately, the table takes an atomic increment); the
+// per-click truth lives in AdvertiserLinkClick rows. clickOuts is
+// only meaningful on the MASTER link (the advertiser page's outbound
+// website / call actions count against the account, not a campaign).
+model AdvertiserLink {
+  id               String             @id @default(uuid()) @db.Uuid
+  code             String             @unique
+  advertiserUserId String             @db.Uuid
+  kind             AdvertiserLinkKind
+  campaignId       String?            @db.Uuid
+  label            String
+  clicks           Int                @default(0)
+  clickOuts        Int                @default(0)
+  active           Boolean            @default(true)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  advertiser User                @relation(fields: [advertiserUserId], references: [id], onDelete: Cascade)
+  events     AdvertiserLinkClick[]
+
+  // One MASTER (campaignId NULL) + one link per campaign per account
+  // is enforced by the repo's ensure functions (a unique index over a
+  // nullable column cannot express it in Postgres — NULLs are
+  // distinct there); `code` stays the hard uniqueness guarantee.
+  @@index([advertiserUserId])
+  @@index([campaignId])
+}
+
+// Per-click event rows for advertiser tracked links — the row-level
+// record behind the aggregate counters (which surface, when, and for
+// OUT rows which onward action: 'website' | 'call'). No IP, no user
+// agent, no visitor identity is stored — counts and context only,
+// the same no-PII discipline as the Ads OS summary feed.
+model AdvertiserLinkClick {
+  id               String                  @id @default(uuid()) @db.Uuid
+  linkId           String                  @db.Uuid
+  advertiserUserId String                  @db.Uuid
+  direction        AdvertiserLinkDirection @default(IN)
+  target           String?
+  surface          String?
+  createdAt        DateTime                @default(now())
+
+  link       AdvertiserLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  advertiser User           @relation(fields: [advertiserUserId], references: [id], onDelete: Cascade)
+
+  @@index([linkId, createdAt])
+  @@index([advertiserUserId, createdAt])
 }
 
 // Flywheel Advertiser Plans (2026-11-17): the paid-plan layer of the

@@ -2,6 +2,7 @@ import { store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from './client.js';
 import { hydrateAdvertiserCreatives } from './advertiserCreativesRepo.js';
 import { hydrateAdCreatives } from './adCreativesRepo.js';
+import { hydrateAdvertiserLinks } from './advertiserLinksRepo.js';
 
 /**
  * Ad Studio persistence (2026-11-14) — same pattern as the Media OS
@@ -65,6 +66,9 @@ export async function hydrateAdCampaigns() {
     await hydrateAdvertiserCreatives();
     // Ads Library creatives (2026-11-24) ride the same cold start.
     await hydrateAdCreatives();
+    // Advertiser profiles + tracked links (2026-11-24) ride the same
+    // cold start — hydration also backfills every advertiser account.
+    await hydrateAdvertiserLinks();
     return rows.length;
   } catch (error) {
     // A missing table mid-deploy degrades to an empty studio, exactly

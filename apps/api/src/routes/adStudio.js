@@ -5,6 +5,12 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
 import { persistAdCampaign, refreshAdCampaigns } from '../db/adStudioRepo.js';
+import {
+  ensureAdvertiserTracking,
+  ensureCampaignLink,
+  findProfileByUserId,
+  recordCampaignLinkClick,
+} from '../db/advertiserLinksRepo.js';
 import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS } from '../data/streamingPack.js';
 import { emitReport } from '../services/managementReports.js';
 import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
@@ -1118,12 +1124,38 @@ router.get('/ad-studio/display', (req, res) => {
  * id redirects to the platform home; nothing here can be aimed at
  * an arbitrary URL (the destination comes from the campaign record,
  * never from the request).
+ *
+ * Advertiser campaigns (2026-11-24, Ramone's directive): for an
+ * EXTERNAL campaign the click ALSO records on the campaign's own
+ * tracked link, and the visitor lands on the advertiser's page on
+ * the platform — business details, links, and the counted onward
+ * door to their website — instead of leaving straight away. House
+ * campaigns redirect exactly as they always have; an advertiser
+ * with no public profile falls back to the destination redirect.
  */
 router.get('/ad-studio/click/:id', async (req, res) => {
   const campaign = findCampaign(req.params.id);
   if (!campaign) return res.redirect(302, 'https://topspeedserviceos.com/');
   if (campaign.status === 'ACTIVE' && campaign.placement === 'BANNER' && campaign.bannerId) {
     await bumpBannerCounter(campaign.bannerId, 'clicks');
+  }
+  if (campaign.businessLine === 'EXTERNAL' && campaign.createdById) {
+    try {
+      const link = await recordCampaignLinkClick(campaign, { surface: 'display-feed' });
+      const profile = findProfileByUserId(campaign.createdById);
+      if (link && profile && profile.isPublic) {
+        const web = process.env.PUBLIC_WEB_BASE || 'https://topspeedserviceos.com';
+        const target = new URL(`${web}/advertiser/${profile.slug}`);
+        target.searchParams.set('utm_source', 'top-speed-display');
+        target.searchParams.set('utm_medium', 'advertiser-link');
+        target.searchParams.set('utm_campaign', campaign.sourceTag);
+        target.searchParams.set('ts_link', link.code);
+        target.searchParams.set('ts_via', 'display');
+        return res.redirect(302, target.toString());
+      }
+    } catch (error) {
+      console.error('advertiser click routing failed', error?.message || error);
+    }
   }
   return res.redirect(302, taggedUrl(campaign.destinationUrl, campaign.sourceTag));
 });
@@ -1266,6 +1298,17 @@ router.post('/ad-studio/my-campaigns', ...advertiserOnly, requirePlanFeature('ca
   };
   store.adCampaigns.push(record);
   await persistAdCampaign(record);
+  // Advertiser tracked links (2026-11-24): the new campaign gets its
+  // tracked link, and the account its public profile + master link,
+  // from the moment it exists. Best-effort by design — link
+  // generation must never fail a campaign creation; the hydration
+  // backfill in db/advertiserLinksRepo.js repairs any miss.
+  try {
+    await ensureCampaignLink(record);
+    await ensureAdvertiserTracking({ id: record.createdById, email: req.user?.email || null });
+  } catch (error) {
+    console.error('advertiser tracking ensure failed', error?.message || error);
+  }
   await appendEvent('AD_CAMPAIGN_CREATED', {
     source: 'advertiser-console',
     actor: actorOf(req),
