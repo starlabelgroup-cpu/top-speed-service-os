@@ -23,6 +23,11 @@
  *   Town only to approved integration partners, and its catalog is
  *   primarily commercial foodservice. No account yet (2026-11-25).
  *
+ * Appliance Parts Depot: added 2026-11-25 as a Parts Supply OS
+ * supplier at the owner's direction (he confirmed it is a supplier
+ * to set up, alongside the three national distributors). Name-only
+ * record — no contact details supplied yet, so they stay null.
+ *
  * Account numbers are NEVER stored in code. They reach the API only
  * through environment variables (MARCONE_ACCOUNT_NUMBER,
  * ENCOMPASS_ACCOUNT_NUMBER, PARTSTOWN_ACCOUNT_NUMBER); this module
@@ -37,6 +42,7 @@
 export const MARCONE_SUPPLIER_ID = '40000000-0000-4000-8000-000000000002';
 export const ENCOMPASS_SUPPLIER_ID = '40000000-0000-4000-8000-000000000003';
 export const PARTS_TOWN_SUPPLIER_ID = '40000000-0000-4000-8000-000000000004';
+export const APPLIANCE_PARTS_DEPOT_ID = '40000000-0000-4000-8000-000000000005';
 
 /**
  * Supplier directory rows for the three distributors, ensured at boot
@@ -67,6 +73,16 @@ export const DISTRIBUTOR_SUPPLIERS = [
   {
     id: PARTS_TOWN_SUPPLIER_ID,
     name: 'Parts Town',
+    contact: null,
+    phone: null,
+    email: null,
+    terms: null,
+    vendorType: 'STANDARD',
+    active: true,
+  },
+  {
+    id: APPLIANCE_PARTS_DEPOT_ID,
+    name: 'Appliance Parts Depot',
     contact: null,
     phone: null,
     email: null,
