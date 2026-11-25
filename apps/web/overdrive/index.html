@@ -51,10 +51,11 @@ h3{font-size:19px;margin:0}
 .btn-ghost{background:transparent;color:#fff;border:1.5px solid #3d4c74}
 .btn-navy{background:var(--navy);color:#fff;border:1px solid #2c4f96}
 .cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
-/* --- Motion poster film panel (animated SVG/CSS scene, not a video) --- */
+/* --- Film panel: real <video> layered over the animated SVG scene (the scene is the fallback if the film file is unavailable) --- */
 .od-film{margin-top:30px;background:linear-gradient(180deg,#0b0e14,#05070b);border:1px solid var(--line);border-radius:18px;overflow:hidden}
 .od-film-frame{position:relative;padding:10px 10px 0}
 .od-film svg{width:100%;height:auto;display:block}
+.od-film video{position:absolute;top:10px;left:10px;width:calc(100% - 20px);height:calc(100% - 10px);object-fit:cover;background:#05070b;border-radius:8px;display:block}
 .od-needle{transform-origin:300px 190px;animation:od-rev 5s ease-in-out infinite}
 .od-light-r{animation:od-lr 6s infinite}
 .od-light-y{animation:od-ly 6s infinite}
@@ -104,8 +105,8 @@ footer a{color:#cfe0ff;text-decoration:none;font-weight:600}
     <h1>Service, in <span>Overdrive.</span></h1>
     <p class="lede">This is the story of how one booking moves through the whole Top Speed network — from the moment you tap Book to a finished repair backed by a 90-day parts &amp; labor warranty, across 65 cities in Broward, Palm Beach and Miami-Dade counties.</p>
 
-    <!-- FUTURE VIDEO SLOT: when the Overdrive film is produced at Media OS, place the real hosted <video> element inside the .od-film-frame container below, replacing the motion-poster SVG scene. Do not add a play button or player chrome until a real video file exists. -->
-    <div class="od-film" role="img" aria-label="Animated motion poster: a gauge needle sweeps into the red, a stoplight runs red to green, light streaks race down a road, and a route line connects a dispatch pin to a home pin">
+    <!-- OVERDRIVE FILM: the real film plays in the <video> layered over the animated SVG scene inside .od-film-frame. The scene stays as the fallback — if the video file is missing or fails to load, the video hides itself (onerror) and the scene shows through, never a black box. No autoplay: the visitor presses play. -->
+    <div class="od-film">
       <div class="od-film-frame">
         <svg viewBox="0 0 640 300" aria-hidden="true">
           <rect x="0" y="0" width="640" height="300" fill="#0b0e14"/>
@@ -131,8 +132,9 @@ footer a{color:#cfe0ff;text-decoration:none;font-weight:600}
           <rect x="0" y="284" width="640" height="3" fill="#23262c"/>
           <g fill="#ff3030"><rect class="od-streak" x="0" y="282" width="150" height="3"/><rect class="od-streak od-streak2" x="0" y="290" width="110" height="3" fill="#ffffff"/></g>
         </svg>
+        <video src="/overdrive/overdrive-film.mp4" controls playsinline preload="metadata" aria-label="The Overdrive film — how the Top Speed Appliance network works" onerror="this.style.display='none'"></video>
       </div>
-      <p class="od-film-cap"><b>Motion poster.</b> The Overdrive film is in production at Media OS — the story plays out below.</p>
+      <p class="od-film-cap"><b>The Overdrive film.</b> The short film above shows how the Top Speed network works — produced for Media OS, the Top Speed video platform. The full story plays out in the sections below.</p>
     </div>
 
     <div class="cta-row">
