@@ -1187,20 +1187,39 @@
       ],
       "destination": "https://www.pepperlists.com/pepper-lists-robots.txt",
       "permanent": true
-    },
+    }
+  ],
+  "rewrites": [
     {
-      "source": "/:path*",
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "www.appliancereferral.com"
         }
       ],
-      "destination": "https://appliancereferral.com/:path*",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
+      "destination": "/appliance-referral"
+    },
+    {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.appliancereferral.com"
+        }
+      ],
+      "destination": "/appliance-referral/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.appliancereferral.com"
+        }
+      ],
+      "destination": "/appliance-referral/sitemap.xml"
+    },
     {
       "source": "/",
       "has": [
