@@ -857,9 +857,11 @@ router.post('/provider/assignments/:id/location', ...providerOnly, async (req, r
 const FIELD_CHECKLIST_TEMPLATE = [
   { id: 'confirm_details', label: 'Confirm customer and appliance details' },
   { id: 'symptoms_safety', label: 'Document symptoms and safety checks' },
+  { id: 'before_photos', label: 'Take BEFORE photos of the appliance and work area' },
   { id: 'diagnostic_testing', label: 'Complete diagnostic testing' },
   { id: 'quote_authorization', label: 'Present written quote and obtain authorization' },
   { id: 'test_document', label: 'Test operation and document results' },
+  { id: 'after_photos', label: 'Take AFTER photos and leave the work area clean' },
 ];
 const FIELD_CHECKLIST_IDS = FIELD_CHECKLIST_TEMPLATE.map((item) => item.id);
 const STAGE_EVENT_TYPES = [
@@ -1028,9 +1030,11 @@ function workspaceView(assignment, booking) {
   const estimateTotalCents = estimate ? estimate.totalCents : null;
   const authorized = history.some((event) => event.type === 'ESTIMATE_APPROVED');
   const diagDone = diagnosisComplete(booking);
+  const checklistState = fieldChecklist(booking);
+  const checklistComplete = checklistState.every((item) => item.done);
   return {
     assignment: publicAssignment(assignment),
-    checklist: fieldChecklist(booking),
+    checklist: checklistState,
     notes: workspaceNotes(booking),
     stageEvents: history
       .filter((event) => STAGE_EVENT_TYPES.includes(event.type))
@@ -1073,7 +1077,8 @@ function workspaceView(assignment, booking) {
       diagnosisRecorded: Boolean(latestDiagnosis(booking)),
       diagnosisComplete: diagDone,
       estimateAuthorized: authorized,
-      canComplete: diagDone && authorized && booking.status !== 'COMPLETED',
+      checklistComplete,
+      canComplete: diagDone && authorized && checklistComplete && booking.status !== 'COMPLETED',
     },
     activity: history
       .slice(-60)
