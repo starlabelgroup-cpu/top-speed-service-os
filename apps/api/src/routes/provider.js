@@ -1568,6 +1568,7 @@ function catalogProjection(part) {
     stockOnHand: part.stockOnHand || 0,
     inStock: (part.stockOnHand || 0) > 0,
     sellPriceCents: typeof part.sellPriceCents === 'number' ? part.sellPriceCents : null,
+    source: part.source || null,
   };
 }
 
@@ -1597,10 +1598,12 @@ router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
   const q = String(req.query.q || '').trim().toLowerCase();
   const category = String(req.query.category || '').trim().toLowerCase();
   const brand = String(req.query.brand || '').trim().toLowerCase();
+  const source = String(req.query.source || '').trim().toUpperCase();
   const matches = store.parts.filter((part) => {
     if (part.active === false) return false;
     if (category && String(part.category || '').toLowerCase() !== category) return false;
     if (brand && String(part.brand || '').toLowerCase() !== brand) return false;
+    if (source && String(part.source || '').toUpperCase() !== source) return false;
     if (q) {
       const hay = `${part.sku} ${part.name} ${part.brand || ''} ${part.category || ''}`.toLowerCase();
       if (!hay.includes(q)) return false;
