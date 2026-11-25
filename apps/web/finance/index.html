@@ -110,6 +110,19 @@ footer strong{color:#fff}
       <h2>Invoices (QuickBooks mirror)</h2>
       <div id="invBody"></div>
     </div>
+
+    <style>
+#qbSyncPayload{width:100%;min-height:180px;padding:10px 12px;border:1px solid #c9d8ec;border-radius:8px;background:#fff;font-family:'Space Mono',monospace;font-size:13px;line-height:1.5;resize:vertical}
+#qbSyncResult.ok{color:var(--green);font-weight:700}
+    </style>
+    <div class="panel" id="qbSyncPanel" style="display:none;">
+      <h2>QuickBooks sync</h2>
+      <p class="note">Pepper prepares a sync payload from your connected QuickBooks. Paste it here and tap Run sync — it posts with your owner sign-in.</p>
+      <label for="qbSyncPayload" style="margin-top:14px;">Sync payload (JSON)</label>
+      <textarea id="qbSyncPayload" rows="10" spellcheck="false" placeholder='{"connection":{"companyName":"…"},"snapshots":[…],"invoices":[…]}'></textarea>
+      <div style="margin-top:12px;"><button class="btn blue" type="button" id="qbSyncBtn">Run sync</button></div>
+      <div class="msg" id="qbSyncResult" aria-live="polite"></div>
+    </div>
   </div>
 </div>
 
@@ -240,6 +253,7 @@ function boot(user){
   }
   document.getElementById('gatePanel').style.display='none';
   document.getElementById('console').style.display='block';
+  if(roles.indexOf('COMPANY_OWNER')>-1||roles.indexOf('PLATFORM_ADMIN')>-1){ document.getElementById('qbSyncPanel').style.display='block'; }
   loadOverview();
 }
 
@@ -277,6 +291,43 @@ function loadOverview(){
     document.getElementById('asOf').textContent='Could not load the finance overview: '+e.message;
   });
 }
+
+/* QuickBooks sync (owner-only): posts a Pepper-prepared payload to
+   POST /finance/sync with this page's own API base + bearer token.
+   Neither the token nor the payload is stored or logged anywhere. */
+document.getElementById('qbSyncBtn').addEventListener('click',function(){
+  var btn=document.getElementById('qbSyncBtn');
+  var out=document.getElementById('qbSyncResult');
+  var payload;
+  try{ payload=JSON.parse(document.getElementById('qbSyncPayload').value); }
+  catch(e){ out.className='msg err'; out.textContent='That payload is not valid JSON — nothing was sent.'; return; }
+  btn.disabled=true; btn.textContent='Syncing…';
+  out.className='msg'; out.textContent='Posting the sync with your owner sign-in…';
+  fetch(API+'/finance/sync',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok()},body:JSON.stringify(payload)})
+    .then(function(r){
+      if(r.status===401){ sessionExpired(); throw new Error('session expired'); }
+      return r.json().catch(function(){ return {}; }).then(function(j){
+        if(!r.ok){ var err=new Error(j.error||('Request failed ('+r.status+')')); err.status=r.status; throw err; }
+        return j;
+      });
+    })
+    .then(function(j){
+      var d=j.data||{};
+      var parts=['Status: '+(d.status||'connected')];
+      if(d.companyName) parts.push('Company: '+d.companyName);
+      parts.push('Last sync: '+when(d.lastSyncAt));
+      if(d.snapshotsStored!=null) parts.push('Snapshots stored: '+d.snapshotsStored);
+      if(d.invoicesStored!=null) parts.push('Invoices stored: '+d.invoicesStored);
+      out.className='msg ok'; out.textContent='Sync complete. '+parts.join(' · ');
+      loadOverview();
+    })
+    .catch(function(e){
+      if(e && e.message==='session expired') return;
+      out.className='msg err';
+      out.textContent='Sync failed'+(e.status?(' (HTTP '+e.status+')'):'')+': '+e.message;
+    })
+    .then(function(){ btn.disabled=false; btn.textContent='Run sync'; });
+});
 
 if(tok()){
   apiFetch('/auth/me').then(function(j){ boot(j.user); }).catch(function(e){ if(e && e.message==='session expired') return; try{ if(window.TSOSVault && TSOSVault.expireActive) TSOSVault.expireActive(); }catch(err){} try{ localStorage.removeItem('tsos_token'); }catch(err){} document.getElementById('gatePanel').style.display='block'; });
