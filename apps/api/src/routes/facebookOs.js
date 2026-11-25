@@ -173,6 +173,9 @@ router.get('/ads-os/visual/:file', async (req, res, next) => {
     }
     if (!svg) return res.status(404).type('text/plain').send('No visual for this ad');
     res.set('Cache-Control', 'public, max-age=300');
+    // Embedded by <img> on every customer origin — see adLibrary.js
+    // (2026-11-25 CORP fix): same-origin CORP blocks the render.
+    res.set('Cross-Origin-Resource-Policy', 'cross-origin');
     return res.type('image/svg+xml').send(svg);
   } catch (error) {
     return next(error);

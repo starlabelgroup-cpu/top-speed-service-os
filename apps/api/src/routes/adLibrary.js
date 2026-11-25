@@ -138,6 +138,12 @@ router.get('/ads-os/img/:file', (req, res) => {
   if (!buffer) return res.status(404).json({ error: 'Unknown creative image', code: 'AD_IMAGE_NOT_FOUND' });
   res.set('Content-Type', 'image/jpeg');
   res.set('Cache-Control', 'public, max-age=86400');
+  // These bytes exist to be embedded by <img> tags on every Top Speed
+  // customer origin (flagship, .net, repairs, satellites, apps) — all
+  // cross-origin to this API host. Helmet's default CORP (same-origin)
+  // silently blocked every display ad image in real browsers while
+  // curl checks passed (found 2026-11-25: ads served, never rendered).
+  res.set('Cross-Origin-Resource-Policy', 'cross-origin');
   return res.send(buffer);
 });
 

@@ -107,6 +107,7 @@ router.get('/app/icons/:name', (req, res) => {
     'Content-Type': 'image/png',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(Buffer.from(encoded, 'base64'));
 });
@@ -136,6 +137,7 @@ router.get('/app/service-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(Buffer.from(encoded, 'base64'));
 });
@@ -152,6 +154,7 @@ router.get('/app/pepper-lists-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -169,6 +172,7 @@ router.get('/app/mascot-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -197,6 +201,7 @@ router.get('/app/logo-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -222,6 +227,7 @@ router.get('/app/masterpiece-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -333,6 +339,7 @@ router.get('/app/platform-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -509,6 +516,7 @@ router.get('/app/scenario-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
@@ -539,6 +547,7 @@ router.get('/app/poster-images/:name', (req, res) => {
     'Content-Type': 'image/webp',
     'Cache-Control': 'public, max-age=86400',
     'Access-Control-Allow-Origin': '*',
+    'Cross-Origin-Resource-Policy': 'cross-origin',
   });
   return res.send(bytes);
 });
