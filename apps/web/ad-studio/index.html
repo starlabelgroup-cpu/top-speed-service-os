@@ -117,6 +117,12 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
 .cform .checks{display:flex;gap:7px;flex-wrap:wrap}
 .cform .checks label{display:inline-flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0;font-size:12.5px;color:var(--txt);font-weight:500;margin:0;cursor:pointer}
 .cform .checks input{width:auto}
+.lib-table{width:100%;border-collapse:collapse;font-size:13px}
+.lib-table th{text-align:left;color:var(--mut);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--line)}
+.lib-table td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.lib-table img{width:64px;height:auto;border-radius:8px;display:block}
+.lib-kind{font-size:11px;font-weight:700;letter-spacing:.04em}
+.lib-off{opacity:.55}
 </style>
 <link rel="stylesheet" href="/fonts.css">
 </head>
@@ -190,6 +196,14 @@ footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
       <div style="margin-top:12px;display:none" id="packLoadWrap"><button class="btn" type="button" id="packLoadBtn">Load Flywheel Streaming Pack</button>
       <span class="small mut" style="margin-left:8px">Owner-only. Already-loaded ads are skipped — loading twice changes nothing.</span></div>
       <div class="msg" id="packMsg"></div>
+    </div>
+
+    <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5" stroke="#E8322E"/><path d="M20 18H6.5A2.5 2.5 0 0 0 4 20.5" /></svg>Ads Library — streaming creatives</h2>
+    <div class="card">
+      <p class="small">The one managed library of Top Speed image + text ads — Pepper's real-image batch, the Flywheel display + text pack, and the standing offer cards. Every Top Speed surface (flagship pages, the /app, topspeedrepairs.com, the satellite sites) streams from this library through the slot system: service/city matched, fairly rotated, impressions and clicks counted on each creative. Pausing a creative here stops it on every surface at once. Copy is claim-gated — nothing with an unapproved claim can serve.</p>
+      <div id="libStats" class="small" style="margin:8px 0"></div>
+      <div id="libBody"><p class="small">Loading the library…</p></div>
+      <div style="margin-top:10px"><button class="btn ghost" id="libRefresh">↻ Refresh library</button></div>
     </div>
 
     <h2 class="sec"><svg class="fxi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="#E8322E"/><rect x="3.5" y="3.5" width="17" height="17" rx="3"/></svg>Campaign builder</h2>
@@ -467,6 +481,46 @@ function renderCampaigns(){
       '<div class="acts">' + actionButtons(c) + '</div></div>';
   }).join('');
 }
+var libFailed=false;
+async function loadAdsLibrary(){
+  const body=document.getElementById('libBody'); if(!body) return;
+  try{
+    const r=await authFetch('/ad-studio/library'); const j=await r.json().catch(()=>({}));
+    if(!r.ok||!j.data) throw new Error(j.error||('HTTP '+r.status));
+    libFailed=false;
+    const rows=j.data.creatives||[];
+    document.getElementById('libStats').textContent='Library: '+rows.length+' creatives · '+rows.filter(c=>c.status==='ACTIVE').length+' active · '+(j.data.totals?j.data.totals.served:0)+' served · '+(j.data.totals?j.data.totals.clicked:0)+' clicked (all surfaces, counted by the streaming endpoints).';
+    if(!rows.length){ body.innerHTML='<p class="small">The library is empty — nothing is streaming.</p>'; return; }
+    body.innerHTML='<div style="overflow-x:auto"><table class="lib-table"><thead><tr><th>Creative</th><th>Kind</th><th>Tags</th><th>Destination</th><th>Served</th><th>Clicked</th><th>CTR</th><th>Status</th><th></th></tr></thead><tbody>'+
+      rows.map(c=>{
+        const thumb=c.imageUrl?'<img src="'+esc(c.imageUrl)+'" alt="" loading="lazy">':'<span class="small">text ad</span>';
+        const tags=[c.service?('svc: '+c.service):'',c.city?('city: '+c.city):''].filter(Boolean).join(' · ')||'general';
+        const claim=(c.violations&&c.violations.length)?' <span class="pill bad">claim: '+esc(c.violations.join(', '))+'</span>':'';
+        return '<tr class="'+(c.status==='ACTIVE'?'':'lib-off')+'"><td>'+thumb+'<div style="margin-top:4px;font-weight:600">'+esc(c.title)+'</div>'+(c.headline&&c.headline!==c.title?'<div class="small">'+esc(c.headline)+'</div>':'')+claim+'</td>'+
+        '<td><span class="lib-kind">'+esc(c.kind)+'</span><div class="small">'+esc(c.assetKind||'')+'</div></td>'+
+        '<td>'+esc(tags)+'</td>'+
+        '<td class="small" style="word-break:break-all">'+esc(c.destinationUrl)+'</td>'+
+        '<td>'+(c.served||0)+'</td><td>'+(c.clicked||0)+'</td><td>'+(c.ctr==null?'—':(Math.round(c.ctr*1000)/10)+'%')+'</td>'+
+        '<td>'+(c.status==='ACTIVE'?'<span class="pill ok">ACTIVE</span>':'<span class="pill warn">PAUSED</span>')+'</td>'+
+        '<td><button class="btn '+(c.status==='ACTIVE'?'warn':'ok')+'" data-lib-toggle="'+esc(c.key)+'" data-lib-next="'+(c.status==='ACTIVE'?'PAUSED':'ACTIVE')+'">'+(c.status==='ACTIVE'?'Pause':'Resume')+'</button></td></tr>';
+      }).join('')+'</tbody></table></div>';
+    body.querySelectorAll('[data-lib-toggle]').forEach(b=>b.addEventListener('click',()=>libSetStatus(b.getAttribute('data-lib-toggle'),b.getAttribute('data-lib-next'))));
+  }catch(e){
+    libFailed=true;
+    body.innerHTML='<p class="small">The library could not be loaded ('+esc(e.message||'error')+') — no list is shown rather than a stale one. <button class="btn ghost" id="libRetry">Retry</button></p>';
+    const rt=document.getElementById('libRetry'); if(rt) rt.addEventListener('click',loadAdsLibrary);
+  }
+}
+async function libSetStatus(key,status){
+  try{
+    const r=await authFetch('/ad-studio/library/'+encodeURIComponent(key)+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(j.error||('HTTP '+r.status));
+    loadAdsLibrary();
+  }catch(e){ const st=document.getElementById('libStats'); if(st) st.textContent='Library update failed: '+(e.message||'error'); }
+}
+document.getElementById('libRefresh').addEventListener('click',loadAdsLibrary);
+
 function loadAll(){
   return Promise.all([
     authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
@@ -1272,7 +1326,7 @@ function enterStudio(){
   document.getElementById('signinZone').style.display = 'none';
   document.getElementById('staffZone').style.display = '';
   loadAll(); loadCreatives(); loadDestinations(); loadPack();
-  loadCreativeLibrary(); loadAttribution(); loadCostPerWon(); loadLoop(); loadExternal(); loadProviders(); loadPlansAdmin(); loadSellerPlansAdmin();
+  loadCreativeLibrary(); loadAttribution(); loadCostPerWon(); loadLoop(); loadExternal(); loadProviders(); loadPlansAdmin(); loadSellerPlansAdmin(); loadAdsLibrary();
 }
 document.getElementById('signinForm').addEventListener('submit', function(ev){
   ev.preventDefault();
