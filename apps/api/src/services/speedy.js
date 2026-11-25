@@ -841,9 +841,11 @@ const DIAGNOSIS_DRAFT_FORMAT = {
       symptoms: { type: 'string', description: 'What the customer reported and the tech observed, rewritten cleanly — facts only, nothing added.' },
       confirmed_fault: { type: ['string', 'null'], description: 'The fault the technician says they confirmed by testing, or null if they did not state one. Never invent a confirmed fault.' },
       recommended_repair: { type: ['string', 'null'], description: 'The repair the technician recommends in their words, or null if not stated.' },
-      parts_suggested: { type: 'array', items: { type: 'string' }, description: 'Part CATEGORIES the technician named or the fault plainly calls for (e.g. "Drain pump"). Categories only — never an OEM part number, never a price.' },
+      parts_suggested: { type: 'array', items: { type: 'string' }, description: 'Part CATEGORIES the fault plainly calls for (e.g. "Drain pump") — plain category names, no part numbers, no prices.' },
+      likely_causes: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { cause: { type: 'string' }, check: { type: 'string' } }, required: ['cause', 'check'] }, description: 'Most likely causes for the symptoms on THIS appliance, ranked most likely first (max 5). Each carries the quick field test that confirms or rules it out.' },
+      parts_from_catalog: { type: 'array', items: { type: 'object', additionalProperties: false, properties: { sku: { type: 'string' }, name: { type: 'string' }, why: { type: 'string' } }, required: ['sku', 'name', 'why'] }, description: 'Parts chosen ONLY from the Parts OS catalog list supplied in the input — exact SKU and name copied from that list, with a one-line reason. Empty when the catalog has no fitting part. Never invent a SKU.' },
     },
-    required: ['brand', 'model', 'serial', 'symptoms', 'confirmed_fault', 'recommended_repair', 'parts_suggested'],
+    required: ['brand', 'model', 'serial', 'symptoms', 'confirmed_fault', 'recommended_repair', 'parts_suggested', 'likely_causes', 'parts_from_catalog'],
   },
 };
 
@@ -856,14 +858,126 @@ const DIAGNOSIS_DRAFT_FORMAT = {
  * exist in this schema: estimate money is computed by the server
  * pricing rules, never by the model.
  */
-export async function speedyDraftDiagnosis(text) {
+export async function speedyDraftDiagnosis(text, context = {}) {
+  const appliance = context.appliance || {};
+  const catalog = Array.isArray(context.catalog) ? context.catalog : [];
+  const contextLines = [];
+  if (appliance.brand || appliance.model || appliance.applianceType) {
+    contextLines.push(
+      `Appliance: ${[appliance.brand, appliance.model, appliance.applianceType].filter(Boolean).join(' · ')}${appliance.serial ? ` · serial ${appliance.serial}` : ''}`,
+    );
+  }
+  if (catalog.length > 0) {
+    contextLines.push('Parts OS catalog for this appliance (the ONLY parts you may pick by SKU):');
+    for (const p of catalog) {
+      contextLines.push(`- ${p.sku} · ${`${p.brand || ''} ${p.name}`.trim()} · ${p.category || ''}`.replace(/\s+/g, ' '));
+    }
+  }
+  const body = await responsesRequest({
+    model: process.env.OPENAI_DIAGNOSIS_MODEL || 'gpt-4o',
+    instructions: [
+      'You are Speedy AI running the full-package technician diagnosis for Top Speed Appliance field technicians inside Appliance Plug Pro (Field Pro app). You are ChatGPT with the Top Speed Parts OS catalog as your parts database.',
+      'Work like a master appliance technician: from the appliance identity and the technician\'s notes, rank the most likely causes for the symptoms and give the quick field test for each. Use model-specific knowledge where you have it — error codes, known failure points for the model family, service bulletins you know.',
+      'Parts: when the supplied Parts OS catalog carries a part that fits this appliance and fault, pick it in parts_from_catalog with its EXACT SKU and name copied from the list — never invent or alter a SKU, and never state a price. parts_suggested stays as plain part categories for anything the catalog does not cover.',
+      'Facts discipline: brand, model and serial come from the appliance identity when one is supplied. symptoms rewrites what the customer reported and the tech observed — facts only. A confirmed fault is NEVER invented: confirmed_fault is only what the technician says they confirmed by testing. Never certify that a repair is safe. This is a draft the technician reviews and confirms before anything is saved.',
+    ].join('\n'),
+    input: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'input_text',
+            text: [...contextLines, '', 'Technician notes:', String(text || '').slice(0, 4000)].join('\n'),
+          },
+        ],
+      },
+    ],
+    text: { format: DIAGNOSIS_DRAFT_FORMAT },
+    max_output_tokens: 1400,
+  });
+  return JSON.parse(extractText(body));
+}
+
+/* ---------------- Pepper Chat diagnostics + Speedy AI parts search ----------------
+ * Pepper is the staff-facing assistant (owner rule: Ask Pepper serves
+ * staff surfaces and the Tech App; Ask Speedy serves customers). Pepper
+ * Chat inside Appliance Plug Pro helps the assigned technician think a
+ * diagnosis through conversationally, grounded in the live Parts OS
+ * catalog slice for the appliance in front of them. Pepper advises;
+ * the technician decides — nothing here certifies a repair or a fault.
+ */
+
+const PEPPER_CHAT_FORMAT = {
+  type: 'json_schema',
+  name: 'pepper_chat_diagnosis',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      reply: { type: 'string', description: "Pepper's reply to the technician: plain, direct, practical. One question at a time when a test result is needed." },
+      part_skus: { type: 'array', items: { type: 'string' }, description: 'SKUs from the supplied Parts OS catalog that fit the diagnosis so far — exact SKUs copied from the list only; empty until a part is actually called for.' },
+    },
+    required: ['reply', 'part_skus'],
+  },
+};
+
+export async function pepperDiagnoseChat({ messages, appliance = {}, catalog = [] }) {
+  const history = (Array.isArray(messages) ? messages : []).slice(-12);
+  const catalogLines = (Array.isArray(catalog) ? catalog : []).map((p) =>
+    `- ${p.sku} · ${`${p.brand || ''} ${p.name}`.trim()} · ${p.category || ''}`.replace(/\s+/g, ' '),
+  );
+  const instructions = [
+    'You are Pepper, the Top Speed Appliance systems operations manager, chatting with one of our field technicians inside Appliance Plug Pro (the Field Pro tech app). This is Pepper Chat — diagnostics.',
+    'Help the technician diagnose the appliance in front of them like a master tech riding along: ask the next right question, name the most likely causes in order, give the exact field test for each (what to measure, what reading rules it in or out), and interpret the results they report back.',
+    appliance.brand || appliance.model || appliance.applianceType
+      ? `Appliance on this job: ${[appliance.brand, appliance.model, appliance.applianceType].filter(Boolean).join(' · ')}${appliance.serial ? ` · serial ${appliance.serial}` : ''}.`
+      : 'The appliance identity was not supplied — ask for the brand and model early; diagnosis quality depends on it.',
+    catalogLines.length > 0
+      ? `Parts OS catalog for this appliance (the only parts you may name by SKU):\n${catalogLines.join('\n')}`
+      : 'No Parts OS catalog slice was supplied — suggest part categories only, never a SKU.',
+    'When a part is actually called for, list its SKU in part_skus (exact, copied from the catalog list) so the app can offer the one-tap order. Never invent a SKU, a price, or a stock count.',
+    'Never certify that a repair is safe, and never declare a confirmed fault the technician has not tested — you advise, the technician confirms. If something sounds unsafe (gas smell, sparking, flooding), lead with making it safe.',
+    'Keep replies tight and field-practical — the tech is standing in front of the machine. No customer-facing language, no prices, no booking talk.',
+  ].join('\n');
+  const input = history.map((m) => ({
+    role: m.role === 'assistant' ? 'assistant' : 'user',
+    content: [{ type: m.role === 'assistant' ? 'output_text' : 'input_text', text: String(m.content || '').slice(0, 2000) }],
+  }));
+  const body = await responsesRequest({
+    model: process.env.OPENAI_DIAGNOSIS_MODEL || 'gpt-4o',
+    instructions,
+    input,
+    text: { format: PEPPER_CHAT_FORMAT },
+    max_output_tokens: 900,
+  });
+  return JSON.parse(extractText(body));
+}
+
+const PARTS_QUERY_FORMAT = {
+  type: 'json_schema',
+  name: 'speedy_parts_query',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      terms: { type: 'array', items: { type: 'string' }, description: 'The part-name search terms in the request, e.g. ["drain pump"]. Keep the words a parts catalog would use.' },
+      brand: { type: ['string', 'null'], description: 'Appliance or part brand named in the request, or null.' },
+      sku: { type: ['string', 'null'], description: 'An exact OEM part number / SKU when the request contains one, or null.' },
+      category: { type: ['string', 'null'], description: 'Appliance category named or implied (Washer, Dryer, Refrigerator, Dishwasher, Oven / Range, Microwave, Ice Maker, Freezer), or null.' },
+    },
+    required: ['terms', 'brand', 'sku', 'category'],
+  },
+};
+
+export async function speedyParsePartsQuery(text) {
   const body = await responsesRequest({
     instructions:
-      speedySystemPrompt() +
-      '\nDiagnosis draft mode: a field technician described a job in free text or dictation. Draft the diagnosis form fields in the required structured format. Preserve every fact; add none — a field the tech did not state stays null, and a confirmed fault is NEVER invented. Never certify that a repair is safe. Part suggestions are categories only, with no part numbers and no prices.',
-    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 4000) }] }],
-    text: { format: DIAGNOSIS_DRAFT_FORMAT },
-    max_output_tokens: 700,
+      "Parse a technician's natural-language parts request into catalog search intent. The request may describe a symptom or a whole job (\"drain pump for a Samsung top loader that won't drain\") — extract the part they need, its brand, any exact SKU written in the request, and the appliance category. Never invent a SKU that is not written in the request.",
+    input: [{ role: 'user', content: [{ type: 'input_text', text: String(text || '').slice(0, 500) }] }],
+    text: { format: PARTS_QUERY_FORMAT },
+    max_output_tokens: 200,
   });
   return JSON.parse(extractText(body));
 }

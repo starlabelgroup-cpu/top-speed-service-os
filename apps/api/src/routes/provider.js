@@ -16,7 +16,7 @@ import { issueReferralForBooking } from '../services/flywheel.js';
 import { advanceReferralOnCompletion } from '../services/referrals.js';
 import { emitReport } from '../services/managementReports.js';
 import { computeTracking } from '../services/tracking.js';
-import { assertImageDataUrl, plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
+import { assertImageDataUrl, pepperDiagnoseChat, plateDraft, speedyDraftDiagnosis, speedyExtractModelPlate, speedyParsePartsQuery, speedyPartsFinder, speedyStatus, speedyStructureNote } from '../services/speedy.js';
 import {
   authorizeEstimateForJob,
   authorizeSchema,
@@ -1488,10 +1488,47 @@ router.get('/provider/parts-orders', ...providerBoard, (req, res) => {
 /* Tech parts catalog (2026-11-25): the Top Speed parts supply list
  * (Parts Supply OS inventory) searchable from Field Pro under the
  * tech's own provider login — by keyword, appliance category or
- * brand. Returns real OEM SKUs and live on-hand counts only; prices
- * are never served here because they are set by the distributor at
- * order time. Ordering happens through the parts-orders flow above,
- * with the catalog partId/SKU carried on the order line. */
+ * brand. Returns real OEM SKUs and live on-hand counts; the sell
+ * price is served when Parts Supply OS has one set on the part
+ * (owner direction, 2026-11-25), otherwise the app shows the part
+ * as priced at order time by the distributor. Ordering happens
+ * through the parts-orders flow, with the catalog partId/SKU
+ * carried on the order line. */
+
+/* The one catalog projection every tech-facing parts surface uses. */
+function catalogProjection(part) {
+  return {
+    id: part.id,
+    sku: part.sku,
+    name: part.name,
+    brand: part.brand || null,
+    category: part.category || null,
+    stockOnHand: part.stockOnHand || 0,
+    inStock: (part.stockOnHand || 0) > 0,
+    sellPriceCents: typeof part.sellPriceCents === 'number' ? part.sellPriceCents : null,
+  };
+}
+
+/* A Parts OS catalog slice for one appliance — the "database" the AI
+ * diagnosis, Pepper Chat and AI search ground themselves in. Filtered
+ * to the appliance category when the catalog carries it, brand-matched
+ * parts first, capped so prompts stay lean. */
+function catalogSliceFor({ applianceType, brand, limit = 48 } = {}) {
+  const type = String(applianceType || '').trim().toLowerCase();
+  const br = String(brand || '').trim().toLowerCase();
+  let pool = store.parts.filter((p) => p.active !== false);
+  if (type) {
+    const typed = pool.filter((p) => String(p.category || '').toLowerCase() === type);
+    if (typed.length > 0) pool = typed;
+  }
+  const sorted = [...pool].sort((a, b) => {
+    const am = br && String(a.brand || '').toLowerCase() === br ? 0 : 1;
+    const bm = br && String(b.brand || '').toLowerCase() === br ? 0 : 1;
+    return am - bm;
+  });
+  return sorted.slice(0, limit);
+}
+
 router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
   const provider = myProvider(req);
   if (!provider && !isOversightViewer(req)) return noProvider(res);
@@ -1508,17 +1545,98 @@ router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
     }
     return true;
   });
-  const parts = matches.slice(0, 200).map((part) => ({
-    id: part.id,
-    sku: part.sku,
-    name: part.name,
-    brand: part.brand || null,
-    category: part.category || null,
-    stockOnHand: part.stockOnHand || 0,
-    inStock: (part.stockOnHand || 0) > 0,
-    sellPriceCents: typeof part.sellPriceCents === 'number' ? part.sellPriceCents : null,
-  }));
+  const ranked = brand
+    ? [...matches].sort((a, b) => {
+        const am = String(a.brand || '').toLowerCase() === brand ? 0 : 1;
+        const bm = String(b.brand || '').toLowerCase() === brand ? 0 : 1;
+        return am - bm;
+      })
+    : matches;
+  const parts = ranked.slice(0, 200).map(catalogProjection);
   return res.json({ data: { parts, total: matches.length } });
+});
+
+/* Speedy AI parts search (2026-11-25): the tech describes the job or
+ * the part in plain words; ChatGPT parses the intent (part terms,
+ * brand, exact SKU, appliance category) and the live Parts OS catalog
+ * is searched and ranked — exact SKU first, then parts matching every
+ * term, brand and category boosts. Real catalog rows only. */
+router.post('/provider/parts-search/ai', ...providerBoard, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Speedy AI search is not configured yet — use the keyword search' });
+  }
+  const query = String(req.body?.query || '').trim().slice(0, 500);
+  if (query.length < 3) return res.status(400).json({ error: 'Describe the part you need' });
+  try {
+    const intent = await speedyParsePartsQuery(query);
+    const sku = intent.sku ? String(intent.sku).toLowerCase() : '';
+    const terms = (Array.isArray(intent.terms) ? intent.terms : [])
+      .map((t) => String(t).toLowerCase().trim())
+      .filter(Boolean);
+    const brandWanted = String(intent.brand || req.body?.brand || '').toLowerCase();
+    const categoryWanted = String(intent.category || req.body?.applianceType || '').toLowerCase();
+    const scored = [];
+    for (const part of store.parts) {
+      if (part.active === false) continue;
+      const hay = `${part.sku} ${part.name} ${part.brand || ''} ${part.category || ''}`.toLowerCase();
+      let score = 0;
+      let matchedTerms = 0;
+      if (sku && String(part.sku).toLowerCase() === sku) score += 100;
+      for (const t of terms) {
+        if (hay.includes(t)) {
+          score += 10;
+          matchedTerms += 1;
+        }
+      }
+      if (brandWanted && String(part.brand || '').toLowerCase() === brandWanted) score += 5;
+      if (categoryWanted && String(part.category || '').toLowerCase() === categoryWanted) score += 3;
+      if (score > 0) scored.push({ part, score, matchedTerms });
+    }
+    const allTerms = scored.filter((s) => terms.length > 0 && s.matchedTerms === terms.length);
+    const pool = allTerms.length > 0 ? allTerms : scored;
+    pool.sort((a, b) => b.score - a.score);
+    return res.json({ data: { parts: pool.slice(0, 25).map((s) => catalogProjection(s.part)), intent } });
+  } catch (error) {
+    return res.status(502).json({ error: 'Speedy AI search could not answer just now — use the keyword search', detail: String(error?.message || error) });
+  }
+});
+
+/* Pepper Chat — diagnostics (2026-11-25): the staff-facing chat for
+ * Field Pro techs. Multi-turn: the app sends the running history and
+ * the appliance context (job + plate read); Pepper answers grounded
+ * in the Parts OS catalog slice for that appliance, and any catalog
+ * SKUs Pepper calls for come back as orderable part rows. Pepper
+ * advises — the technician confirms on the machine. */
+router.post('/provider/pepper-chat/diagnose', ...providerBoard, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  if (!speedyStatus().configured) {
+    return res.status(503).json({ error: 'Pepper Chat is not configured yet' });
+  }
+  const rawMessages = Array.isArray(req.body?.messages) ? req.body.messages : [];
+  const clean = rawMessages
+    .filter((m) => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-12)
+    .map((m) => ({ role: m.role, content: m.content.trim().slice(0, 2000) }));
+  if (clean.length === 0 || clean[clean.length - 1].role !== 'user') {
+    return res.status(400).json({ error: 'Send a message for Pepper' });
+  }
+  const appliance = req.body?.appliance && typeof req.body.appliance === 'object' ? req.body.appliance : {};
+  try {
+    const slice = catalogSliceFor({ applianceType: appliance.applianceType, brand: appliance.brand });
+    const result = await pepperDiagnoseChat({ messages: clean, appliance, catalog: slice });
+    const bySku = new Map(store.parts.map((p) => [String(p.sku).toLowerCase(), p]));
+    const parts = [];
+    for (const sku of Array.isArray(result.part_skus) ? result.part_skus : []) {
+      const part = bySku.get(String(sku).toLowerCase());
+      if (part && part.active !== false) parts.push(catalogProjection(part));
+    }
+    return res.json({ data: { reply: String(result.reply || ''), parts } });
+  } catch (error) {
+    return res.status(502).json({ error: 'Pepper Chat could not answer just now — try again', detail: String(error?.message || error) });
+  }
 });
 
 /* Distributor connections for the Field Pro Plug card (2026-11-25):
@@ -3164,6 +3282,14 @@ router.post('/provider/assignments/:id/review-request', ...providerOnly, async (
  */
 const aiDiagnosisPreviewSchema = z.object({
   text: z.string().trim().min(3).max(4000),
+  appliance: z
+    .object({
+      brand: z.string().trim().max(60).optional(),
+      model: z.string().trim().max(80).optional(),
+      serial: z.string().trim().max(80).optional(),
+      applianceType: z.string().trim().max(60).optional(),
+    })
+    .optional(),
 });
 
 router.post('/provider/assignments/:id/ai-diagnosis/preview', ...providerOnly, async (req, res) => {
@@ -3184,7 +3310,18 @@ router.post('/provider/assignments/:id/ai-diagnosis/preview', ...providerOnly, a
     return res.status(400).json({ error: 'Invalid description text' });
   }
   try {
-    const draft = await speedyDraftDiagnosis(parsed.data.text);
+    const applianceIn = parsed.data.appliance || {};
+    const appliance = {
+      brand: applianceIn.brand || null,
+      model: applianceIn.model || null,
+      serial: applianceIn.serial || null,
+      applianceType: applianceIn.applianceType || null,
+    };
+    const slice = catalogSliceFor({ applianceType: appliance.applianceType, brand: appliance.brand });
+    const draft = await speedyDraftDiagnosis(parsed.data.text, {
+      appliance,
+      catalog: slice.map((p) => ({ sku: p.sku, name: p.name, brand: p.brand || null, category: p.category || null })),
+    });
     return res.json({ data: { draft, persisted: false } });
   } catch (error) {
     return res.status(502).json({

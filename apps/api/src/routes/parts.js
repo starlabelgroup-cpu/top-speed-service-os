@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { createId, store } from '../data/store.js';
+import { addBookingEvent, appendEvent, createId, store } from '../data/store.js';
+import { persistBooking } from '../db/bookingsRepo.js';
 import {
   persistPart,
   persistPartUsage,
@@ -388,6 +389,53 @@ router.get('/parts/tech-orders', ...staff, (req, res) => {
   }
   orders.sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
   return res.json({ data: orders });
+});
+
+/* Management quick-order (2026-11-25): staff work the tech-order queue
+ * from Parts Supply OS — when management has placed the order with the
+ * distributor (the manual process), they advance the SAME booking
+ * record the tech sees: SENT_TO_PARTS_SUPPLY_OS → ORDERED → RECEIVED.
+ * One flow, one record; the step order is enforced exactly like the
+ * tech-side route, and the event is stamped confirmedBy MANAGEMENT. */
+const PLUG_ORDER_FLOW = ['DRAFT', 'SENT_TO_PARTS_SUPPLY_OS', 'ORDERED', 'RECEIVED'];
+const techOrderStatusSchema = z.object({ status: z.enum(PLUG_ORDER_FLOW) });
+
+router.post('/parts/tech-orders/:bookingId/:orderId/status', ...staff, async (req, res) => {
+  const parsed = techOrderStatusSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid order status', details: parsed.error.flatten() });
+  }
+  const bookings = store.bookings instanceof Map ? [...store.bookings.values()] : store.bookings || [];
+  const booking = bookings.find((b) => b.id === req.params.bookingId);
+  if (!booking) return res.status(404).json({ error: 'Booking not found' });
+  const order = plugOrdersOf(booking).find((o) => o.id === req.params.orderId);
+  if (!order) return res.status(404).json({ error: 'Parts order not found' });
+  const next = PLUG_ORDER_FLOW[PLUG_ORDER_FLOW.indexOf(order.status) + 1];
+  if (parsed.data.status !== next) {
+    return res.status(409).json({
+      error: next
+        ? `Order is ${order.status}; the next step is ${next}`
+        : `Order is ${order.status} — the flow is complete`,
+    });
+  }
+  addBookingEvent(booking, 'PLUG_ORDER_STATUS', req.user.email, {
+    orderId: order.id,
+    status: parsed.data.status,
+    confirmedBy: 'MANAGEMENT',
+  });
+  booking.updatedAt = now();
+  await persistBooking(booking);
+  await appendEvent('PLUG_ORDER_STATUS', {
+    source: 'PARTS_SUPPLY_OS',
+    actor: req.user.email,
+    entityType: 'BOOKING',
+    entityId: booking.id,
+    referenceCode: booking.referenceCode,
+    details: { orderId: order.id, status: parsed.data.status },
+  });
+  return res.json({
+    data: { ...order, status: parsed.data.status, bookingId: booking.id, bookingReference: booking.referenceCode || null },
+  });
 });
 
 /* ------------------------------ Low stock ------------------------------- */

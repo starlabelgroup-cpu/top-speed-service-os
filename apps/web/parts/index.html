@@ -116,6 +116,7 @@ footer strong{color:#fff}
       <button data-tab="pos">Purchase Orders</button>
       <button data-tab="usage">Job Usage</button>
       <button data-tab="low">Low Stock</button>
+      <button data-tab="tech">Tech Orders</button>
     </div>
 
     <section class="panel" id="tab-inventory">
@@ -188,6 +189,13 @@ footer strong{color:#fff}
       <h2 style="margin-top:22px;">Reorder list — tied to job usage</h2>
       <p class="note">Every low part with the jobs that actually consumed it. The suggested quantity restocks the part to its reorder point plus the last 30 days of job usage — a starting point from real usage; the actual purchase order is still yours to place.</p>
       <div id="reorderTable"></div>
+    </section>
+
+    <section class="panel" id="tab-tech" style="display:none;">
+      <h2>Tech Orders — Appliance Plug Pro</h2>
+      <p class="note">Parts orders technicians place in Field Pro (Appliance Plug Pro, under SpeedStock Pro) land here in Parts Supply OS the moment they send them. Ordering from the distributor is a manual process for now: place the order on the order's route, then mark it <strong>Ordered</strong> here — the tech sees the same status on the job. Mark <strong>Received</strong> when the part arrives.</p>
+      <div id="techOrdersTable"></div>
+      <div class="msg" id="techMsg"></div>
     </section>
   </div>
 </div>
@@ -313,7 +321,8 @@ function loadAll(){
     apiFetch('/parts/parts').then(function(j){ parts=j.data||[]; renderParts(); renderLow(); fillPartSelects(); }),
     apiFetch('/parts/purchase-orders').then(function(j){ pos=j.data||[]; renderPOs(); }),
     apiFetch('/parts/usage').then(function(j){ usages=j.data||[]; renderUsage(); }),
-    apiFetch('/parts/reorder-list').then(function(j){ renderReorder(j.data||[]); }).catch(function(){ var el=document.getElementById('reorderTable'); if(el) el.innerHTML='<div class="empty">The reorder list could not be loaded.</div>'; })
+    apiFetch('/parts/reorder-list').then(function(j){ renderReorder(j.data||[]); }).catch(function(){ var el=document.getElementById('reorderTable'); if(el) el.innerHTML='<div class="empty">The reorder list could not be loaded.</div>'; }),
+    apiFetch('/parts/tech-orders').then(function(j){ renderTechOrders(j.data||[]); }).catch(function(){ var el=document.getElementById('techOrdersTable'); if(el) el.innerHTML='<div class="empty">Tech orders could not be loaded.</div>'; })
   ]).catch(function(e){ toast('Load failed: '+e.message); });
 }
 
@@ -366,6 +375,30 @@ function renderReorder(rows){
     return '<tr class="low"><td class="num">'+esc(p.sku)+'</td><td>'+esc(p.name)+'</td><td class="num">'+p.stockOnHand+'</td><td class="num">'+p.reorderPoint+'</td><td class="num">'+p.usedLast30Days+'</td><td class="num">'+p.usedLast90Days+'</td><td>'+(jobs||'—')+'</td><td class="num"><b>'+p.suggestedReorderQty+'</b></td><td>'+esc(p.supplierName||'—')+'</td></tr>';
   }).join('')+'</tbody></table>';
 }
+var TECH_VENDOR_LABELS={APPLIANCE_PLUS_PARTS_SUPPLY:'Appliance Plus Parts Supply',MARCONE:'Marcone',ENCOMPASS:'Encompass',PARTS_TOWN:'Parts Town',APPLIANCE_PARTS_DEPOT:'Appliance Parts Depot',OTHER_DISTRIBUTOR:'Other distributor'};
+var TECH_FLOW=['DRAFT','SENT_TO_PARTS_SUPPLY_OS','ORDERED','RECEIVED'];
+var TECH_NEXT_LABEL={SENT_TO_PARTS_SUPPLY_OS:'Mark sent to Parts OS',ORDERED:'Mark ordered',RECEIVED:'Mark received'};
+function renderTechOrders(rows){
+  var el=document.getElementById('techOrdersTable');
+  if(!el) return;
+  if(!rows.length){ el.innerHTML='<div class="empty">No tech orders yet. Orders placed in Appliance Plug Pro appear here the moment a tech sends them.</div>'; return; }
+  el.innerHTML='<table><thead><tr><th>Order</th><th>Job</th><th>Appliance</th><th>Lines</th><th>Route</th><th>Ordered by</th><th>Placed</th><th>Status</th><th></th></tr></thead><tbody>'+rows.map(function(o){
+    var lines=(o.lines||[]).map(function(l){ return esc(l.sku||l.category||'Part')+' ×'+(l.qty||1); }).join('<br>');
+    var ap=o.appliance||{};
+    var apText=[ap.brand,ap.model,ap.applianceType].filter(Boolean).join(' · ')||'—';
+    var next=TECH_FLOW[TECH_FLOW.indexOf(o.status)+1];
+    var action=next?'<button class="btn blue small" data-tech-next="'+esc(o.bookingId)+'|'+esc(o.id)+'|'+next+'">'+esc(TECH_NEXT_LABEL[next]||next)+'</button>':'<span class="tag green">COMPLETE</span>';
+    return '<tr><td class="num">'+esc(o.reference||'')+'</td><td class="num">'+esc(o.bookingReference||'—')+'</td><td>'+esc(apText)+'</td><td>'+lines+'</td><td>'+esc(TECH_VENDOR_LABELS[o.vendor]||o.vendor||'—')+'</td><td>'+esc(o.createdBy||'—')+'</td><td>'+esc(String(o.createdAt||'').slice(0,10))+'</td><td>'+esc(o.status||'')+'</td><td>'+action+'</td></tr>';
+  }).join('')+'</tbody></table>';
+  el.querySelectorAll('[data-tech-next]').forEach(function(b){ b.addEventListener('click',function(){ techOrderAdvance(b.getAttribute('data-tech-next')); }); });
+}
+function techOrderAdvance(key){
+  var parts=String(key||'').split('|');
+  if(parts.length!==3) return;
+  apiFetch('/parts/tech-orders/'+encodeURIComponent(parts[0])+'/'+encodeURIComponent(parts[1])+'/status',{method:'POST',body:JSON.stringify({status:parts[2]})})
+    .then(function(){ setMsg('techMsg',true,'Order advanced to '+parts[2]+'.'); loadAll(); })
+    .catch(function(e){ setMsg('techMsg',false,'Could not advance the order: '+e.message); });
+}
 function renderSuppliers(){
   var el=document.getElementById('suppliersTable');
   if(!suppliers.length){ el.innerHTML='<div class="empty">No suppliers yet. Add the first vendor below.</div>'; return; }
@@ -407,7 +440,7 @@ function fillPartSelects(){
 document.getElementById('tabs').addEventListener('click',function(ev){
   var b=ev.target.closest('button'); if(!b) return;
   document.querySelectorAll('#tabs button').forEach(function(x){ x.classList.toggle('on',x===b); });
-  ['inventory','suppliers','pos','usage','low'].forEach(function(t){ document.getElementById('tab-'+t).style.display=(t===b.getAttribute('data-tab'))?'block':'none'; });
+  ['inventory','suppliers','pos','usage','low','tech'].forEach(function(t){ document.getElementById('tab-'+t).style.display=(t===b.getAttribute('data-tab'))?'block':'none'; });
 });
 
 document.getElementById('supplierForm').addEventListener('submit',function(ev){
