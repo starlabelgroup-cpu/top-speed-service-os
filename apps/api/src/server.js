@@ -157,6 +157,14 @@ for (const satelliteOrigin of [
   'https://www.totalhomeappliance.com',
   'https://appliancepro.net',
   'https://www.appliancepro.net',
+  // Booking-load fix (2026-11-24): topspeedappliancerepair.com was
+  // missing from this list, so its booking form could not call the API
+  // directly and had to post through its own domain's Vercel rewrite
+  // proxy — measured 4-15s per submit vs ~0.5s direct. With these
+  // origins allowed, its form posts to the API at its absolute origin
+  // like the other satellites.
+  'https://topspeedappliancerepair.com',
+  'https://www.topspeedappliancerepair.com',
 ]) {
   if (!corsOrigin.includes(satelliteOrigin)) corsOrigin.push(satelliteOrigin);
 }
