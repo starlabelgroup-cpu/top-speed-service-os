@@ -14,10 +14,22 @@
  *     a refrigerator ad.
  *   - Priority: service+city match → service match → city match →
  *     general.
- *   - Fair rotation inside the winning tier: the least-served
- *     creatives go first; among the three least-served, the pick
- *     is random, so no single creative can dominate a surface and
- *     reloads visibly rotate.
+ *   - Kind alternation (2026-11-24, Ramone: "Both display ads and
+ *     text ads streaming access all platforms"): the library holds
+ *     far more IMAGE creatives than TEXT ones, so a plain fair
+ *     rotation crowds the text ads out of most surfaces. Every
+ *     serve bumps exactly one creative's served counter (the route
+ *     counts the impression synchronously in the working set), so
+ *     the parity of the eligible pool's total served flips on
+ *     every serve — the slot deals IMAGE and TEXT in strict
+ *     alternation whenever both kinds are eligible for it. On a
+ *     kind's turn, its own best tier wins: a service slot still
+ *     shows its service-matched photo on IMAGE turns, and the
+ *     general text ads (untagged, eligible everywhere) take the
+ *     TEXT turns. Inside the winning kind+tier, rotation stays
+ *     fair: the least-served creatives go first and the pick is
+ *     random among the three least-served, so no single creative
+ *     can dominate a surface and reloads visibly rotate.
  */
 
 function norm(value) {
@@ -41,6 +53,12 @@ export function creativeTier(creative, service, city) {
   return -1;
 }
 
+function leastServedPick(pool, random) {
+  const sorted = pool.slice().sort((a, b) => (a.served || 0) - (b.served || 0));
+  const finalists = sorted.slice(0, Math.min(3, sorted.length));
+  return finalists[Math.floor(random() * finalists.length)] || null;
+}
+
 export function selectCreative(creatives, { service = '', city = '', format = '' } = {}, random = Math.random) {
   const eligible = (creatives || []).filter(
     (c) => c.status === 'ACTIVE' && (c.claimStatus || 'CLEAN') === 'CLEAN',
@@ -52,11 +70,18 @@ export function selectCreative(creatives, { service = '', city = '', format = ''
     if (!tiers.has(tier)) tiers.set(tier, []);
     tiers.get(tier).push(creative);
   }
-  const bestTier = [...tiers.keys()].sort((a, b) => a - b)[0];
-  if (bestTier === undefined) return null;
-  const pool = tiers.get(bestTier).slice().sort((a, b) => (a.served || 0) - (b.served || 0));
-  const finalists = pool.slice(0, Math.min(3, pool.length));
-  return finalists[Math.floor(random() * finalists.length)] || null;
+  const tierNums = [...tiers.keys()].sort((a, b) => a - b);
+  if (!tierNums.length) return null;
+  const union = tierNums.flatMap((tier) => tiers.get(tier));
+  const totalServed = union.reduce((sum, c) => sum + (c.served || 0), 0);
+  const preferredKind = totalServed % 2 === 0 ? 'TEXT' : 'IMAGE';
+  for (const tier of tierNums) {
+    const kindPool = tiers.get(tier).filter((c) => c.kind === preferredKind);
+    if (kindPool.length) return leastServedPick(kindPool, random);
+  }
+  // The preferred kind is not eligible in any tier for this slot
+  // (single-kind pool): fair rotation in the winning tier.
+  return leastServedPick(tiers.get(tierNums[0]), random);
 }
 
 /**
