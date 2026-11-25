@@ -34,6 +34,7 @@ const BOOK = 'https://topspeedserviceos.com/book';
 const APP = 'https://topspeedserviceos.com/app';
 const REFER = 'https://topspeedserviceos.com/refer';
 const SPEEDY = 'https://topspeedserviceos.com/speedy';
+const SIGNUP = 'https://topspeedserviceos.com/signup';
 
 const DIAG_LABOR = '$99 diagnostic, credited toward repair · $210 flat labor';
 const DIAG_CREDIT = '$99 diagnostic, credited toward your repair';
@@ -132,5 +133,45 @@ export const AD_CREATIVE_SEEDS = [
     ctaText: 'Get your referral link', serviceTag: null, cityTag: null,
     assetKind: 'VISUAL', assetRef: 'offer-referral-rewards',
     formats: ['1200x628', '1080x1080', '1080x1920'], destinationUrl: REFER,
+  },
+
+  // ── Accounts + rewards (2026-11-25 — Ramone: promote creating
+  // accounts, the benefits, and earning rewards across platforms;
+  // display pair generated for this push, text pair in the pack's
+  // search format; referral figures are the approved 2026-11-12
+  // economics, the account is free to create and use) ─────────────
+  {
+    key: 'display-free-account', kind: 'IMAGE',
+    title: 'Your Home Service Account — Free',
+    headline: 'Your Home Service Account — Free',
+    subline: 'Book repairs, track your tech live, and manage every appliance in your home — one free account for homeowners and property managers.',
+    ctaText: 'Create free account', serviceTag: null, cityTag: null,
+    assetKind: 'MODULE', assetRef: 'display-free-account',
+    formats: ['1600x1600', '1200x628'], destinationUrl: SIGNUP,
+  },
+  {
+    key: 'display-refer-earn-rewards', kind: 'IMAGE',
+    title: 'Refer & Earn',
+    headline: 'Refer & Earn',
+    subline: '$25 credit for every completed referral — credits grow to $50 each, with milestone rewards up to $250. Your friend gets $25 off their first repair.',
+    ctaText: 'Start earning', serviceTag: null, cityTag: null,
+    assetKind: 'MODULE', assetRef: 'display-refer-earn-rewards',
+    formats: ['1600x1600', '1200x628'], destinationUrl: REFER,
+  },
+  {
+    key: 'text-free-account', kind: 'TEXT',
+    title: 'Create Your Free Top Speed Account',
+    headline: 'Create Your Free Top Speed Account',
+    subline: 'One free account for your home, your rentals and every appliance in them. Book repairs, track your tech live, keep your service history in one place. Pay only for the work you book.',
+    ctaText: 'Create Free Account', serviceTag: null, cityTag: null,
+    assetKind: 'NONE', assetRef: null, formats: [], destinationUrl: SIGNUP,
+  },
+  {
+    key: 'text-refer-earn-rewards', kind: 'TEXT',
+    title: 'Refer a Friend, Earn $25',
+    headline: 'Refer a Friend, Earn $25',
+    subline: 'Earn $25 credit per completed referral — $35 each at 5–9, $50 each at 10+, plus $100 at 10 referrals and $250 at 25. Friends get $25 off their first repair. Credits good for 12 months.',
+    ctaText: 'Get Your Link', serviceTag: null, cityTag: null,
+    assetKind: 'NONE', assetRef: null, formats: [], destinationUrl: REFER,
   },
 ];

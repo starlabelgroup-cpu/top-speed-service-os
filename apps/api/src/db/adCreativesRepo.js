@@ -10,13 +10,15 @@ import { AD_CREATIVE_SEEDS } from '../data/adCreativeSeeds.js';
  * with an upsert, and hydrateAdCreatives() loads everything at cold
  * start (it rides the Ad Studio hydration in db/adStudioRepo.js).
  *
- * Seeding: the first time the table is found EMPTY, the real house
- * creative set (data/adCreativeSeeds.js — Pepper's claim-checked
- * photo batch, the Flywheel display + text pack, and the standing
- * Pepper-visual offer cards) is registered. Seeding is by key
- * upsert, so it can never duplicate a creative, and it never touches
- * a row that already exists — a creative staff paused in the Ads OS
- * Manager stays paused across every cold start.
+ * Seeding: whenever the table is missing any key from the real
+ * house creative set (data/adCreativeSeeds.js — Pepper's
+ * claim-checked photo batch, the Flywheel display + text pack,
+ * the standing Pepper-visual offer cards, and later additions
+ * like the 2026-11-25 accounts + rewards set), the missing seeds
+ * are registered. Seeding is by key upsert, so it can never
+ * duplicate a creative, and it never touches a row that already
+ * exists — a creative staff paused in the Ads OS Manager stays
+ * paused across every cold start.
  */
 
 function iso(value) {
@@ -102,7 +104,12 @@ export async function hydrateAdCreatives() {
   if (!DATABASE_ENABLED) return store.adCreatives.length;
   try {
     let rows = await db().adCreative.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] });
-    if (!rows.length) {
+    const haveKeys = new Set(rows.map((row) => row.key));
+    if (AD_CREATIVE_SEEDS.some((seed) => !haveKeys.has(seed.key))) {
+      // Upsert-by-key with an empty update: registers any seed the
+      // table is missing (new house creatives — e.g. the 2026-11-25
+      // accounts + rewards set — land on the next cold start) and
+      // never touches a row that already exists.
       await seedAdCreatives();
       rows = await db().adCreative.findMany({ orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }] });
     }
