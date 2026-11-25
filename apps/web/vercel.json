@@ -726,28 +726,6 @@
       "has": [
         {
           "type": "host",
-          "value": "appliancereferral.com"
-        }
-      ],
-      "destination": "/refer",
-      "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.appliancereferral.com"
-        }
-      ],
-      "destination": "/refer",
-      "permanent": false
-    },
-    {
-      "source": "/",
-      "has": [
-        {
-          "type": "host",
           "value": "fixmyappliancefl.com"
         }
       ],
@@ -1209,9 +1187,50 @@
       ],
       "destination": "https://www.pepperlists.com/pepper-lists-robots.txt",
       "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.appliancereferral.com"
+        }
+      ],
+      "destination": "https://appliancereferral.com/:path*",
+      "permanent": true
     }
   ],
   "rewrites": [
+    {
+      "source": "/",
+      "has": [
+        {
+          "type": "host",
+          "value": "appliancereferral.com"
+        }
+      ],
+      "destination": "/appliance-referral"
+    },
+    {
+      "source": "/robots.txt",
+      "has": [
+        {
+          "type": "host",
+          "value": "appliancereferral.com"
+        }
+      ],
+      "destination": "/appliance-referral/robots.txt"
+    },
+    {
+      "source": "/sitemap.xml",
+      "has": [
+        {
+          "type": "host",
+          "value": "appliancereferral.com"
+        }
+      ],
+      "destination": "/appliance-referral/sitemap.xml"
+    },
     {
       "source": "/advertiser/:slug",
       "destination": "/advertiser-profile"
