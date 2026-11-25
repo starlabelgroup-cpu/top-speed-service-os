@@ -87,7 +87,12 @@
       '.tsw-on{margin-left:auto;flex:0 0 auto;color:#1E9E6A;display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700}.tsw-on svg{width:14px;height:14px}' +
       '.tsw-act{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:none;border:0;border-top:1px solid #EDF1F7;padding:12px 14px;cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:#0C162B;box-sizing:border-box;text-decoration:none}' +
       '.tsw-act:hover{background:#F4F7FB}.tsw-act svg{width:18px;height:18px;flex:0 0 18px}' +
-      '.tsw-act.danger{color:#B3261E}';
+      '.tsw-act.danger{color:#B3261E}' +
+      /* Narrow widths (floating-stack fix, 2026-11-24): collapse the chip to
+         its avatar so the bottom-left dock column can never collide with the
+         Speedy pill in the same band at 320-480px. Name/role remain one tap
+         away in the chip's own menu. */
+      '@media(max-width:480px){#' + ROOT_ID + ' .tsw-who,#' + ROOT_ID + ' .tsw-chev{display:none}#' + ROOT_ID + ' .tsw-chip{padding:6px}}';
     var style = document.createElement('style');
     style.id = STYLE_ID;
     style.textContent = css;

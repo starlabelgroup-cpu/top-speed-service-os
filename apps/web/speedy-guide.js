@@ -381,17 +381,110 @@
   root.appendChild(tour);
   document.body.appendChild(root);
 
-  /* ---- Raise above bottom bars/navs (homepage sticky bar, app bottom nav) ---- */
-  function detectRaise() {
-    var up = false;
-    if (document.querySelector('.bnav')) up = true;
+  /* ---- Bottom dock coordinator (2026-11-24 floating-stack fix) ----
+     One measured geometry for every fixed bottom control on the page:
+     the bar (.stickybar fixed / .bnav in-flow), the account chip
+     (#tsosAccountSwitcher), this Guide, and the Speedy button
+     (#speedyBtn inline or .tsw-btn widget). Before this, each layer
+     hard-coded its own bottom offset: the chip rendered on top of the
+     Guide in the same corner, both rendered over the bars, and pages
+     reserved little or no end-of-scroll space, so the stack hid page
+     content (Ramone's tablet screenshots, 2026-11-24). Now the left
+     column stacks bar -> chip -> Guide, the Speedy button docks above
+     the bar on the right, and the page (or the app shell's .screens
+     scroller) receives exactly the end clearance the measured stack
+     needs. No control's action or destination changes. */
+  var dockSpacer = null, dockQueued = false;
+  function dockH(el) { return (el && el.offsetHeight) ? el.offsetHeight : 0; }
+  function dockLayout() {
+    if (!document.body) return;
+    var GAP = 8;
+    /* Bar clearance = distance from the viewport bottom to the bar's top
+       edge (not just its height): the /app shell centers its column at
+       wide viewports, so its in-flow .bnav can float above the viewport
+       bottom, and the dock must align to where the bar actually is. */
+    var bar = 0;
     var sb = document.querySelector('.stickybar');
-    if (sb && window.getComputedStyle(sb).display !== 'none') up = true;
-    root.classList.toggle('sg-up', up);
+    if (sb && dockH(sb) && window.getComputedStyle(sb).display !== 'none') {
+      bar = Math.max(0, window.innerHeight - Math.round(sb.getBoundingClientRect().top));
+    }
+    if (!bar) {
+      var bn = document.querySelector('.bnav');
+      if (bn && dockH(bn)) bar = Math.max(0, window.innerHeight - Math.round(bn.getBoundingClientRect().top));
+    }
+    /* left column: chip above the bar, Guide above the chip */
+    var chip = document.getElementById('tsosAccountSwitcher');
+    var chipH = dockH(chip);
+    if (chip && chipH) chip.style.bottom = (bar + GAP) + 'px';
+    var chipTop = chipH ? bar + GAP + chipH : 0;
+    var guideBottom = chipH ? chipTop + GAP : bar + 12;
+    btn.style.bottom = 'calc(' + guideBottom + 'px + env(safe-area-inset-bottom,0px))';
+    var btnH = dockH(btn) || 45;
+    var cards = root.querySelectorAll('.sg-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].style.bottom = 'calc(' + (guideBottom + btnH + 10) + 'px + env(safe-area-inset-bottom,0px))';
+    }
+    root.classList.toggle('sg-up', bar > 0 || chipH > 0);
+    /* right column: Speedy button above the bar; widget panel above it */
+    var sBtn = document.getElementById('speedyBtn') || document.querySelector('.tsw-btn');
+    var rightTop = 0;
+    if (sBtn && dockH(sBtn)) {
+      var sBottom = Math.max(14, bar + 12);
+      sBtn.style.bottom = 'calc(' + sBottom + 'px + env(safe-area-inset-bottom,0px))';
+      rightTop = sBottom + dockH(sBtn);
+      var panel2 = document.querySelector('.tsw-panel');
+      if (panel2 && window.innerWidth > 640) {
+        panel2.style.bottom = 'calc(' + (sBottom + dockH(sBtn) + GAP) + 'px + env(safe-area-inset-bottom,0px))';
+      }
+    }
+    var dockTop = Math.max(guideBottom + btnH, rightTop);
+    var clear = dockTop + 12;
+    /* end-of-scroll clearance: app scroller, else a measured page spacer */
+    var screens = document.querySelector('.screens');
+    if (screens && dockH(screens)) {
+      var want = Math.max(0, dockTop - bar) + GAP;
+      var cur = parseFloat(window.getComputedStyle(screens).paddingBottom) || 0;
+      if (cur < want) screens.style.paddingBottom = want + 'px';
+    } else {
+      var reserve = 0, kids = document.body.children;
+      for (var k = kids.length - 1; k >= 0; k--) {
+        var el = kids[k];
+        if (el === root || el === dockSpacer) continue;
+        if (el.id === 'tsosAccountSwitcher' || el.id === 'sg-root') continue;
+        if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'LINK') continue;
+        var cs = window.getComputedStyle(el);
+        if (cs.position === 'fixed' || cs.position === 'absolute') continue;
+        reserve = (parseFloat(cs.paddingBottom) || 0) + (parseFloat(cs.marginBottom) || 0);
+        break;
+      }
+      var need = Math.max(0, Math.round(clear - reserve));
+      if (need > 0) {
+        if (!dockSpacer) {
+          dockSpacer = document.createElement('div');
+          dockSpacer.id = 'tsDockSpacer';
+          dockSpacer.setAttribute('aria-hidden', 'true');
+          document.body.appendChild(dockSpacer);
+        }
+        dockSpacer.style.height = need + 'px';
+      } else if (dockSpacer) { dockSpacer.style.height = '0px'; }
+    }
+  }
+  function detectRaise() {
+    if (dockQueued) return;
+    dockQueued = true;
+    var run = function () { dockQueued = false; dockLayout(); };
+    if (window.requestAnimationFrame) window.requestAnimationFrame(run); else run();
   }
   detectRaise();
   var rzT;
   window.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(detectRaise, 150); });
+  window.addEventListener('load', detectRaise);
+  [300, 900, 2000, 4000].forEach(function (ms) { setTimeout(detectRaise, ms); });
+  if (window.MutationObserver && document.body) {
+    var dockObs = new MutationObserver(detectRaise);
+    dockObs.observe(document.body, { childList: true });
+    setTimeout(function () { dockObs.disconnect(); }, 15000);
+  }
 
   /* ---- Activity tracking: pops only ever appear in a natural pause ---- */
   var lastAct = Date.now();
