@@ -574,6 +574,18 @@ export const SYSTEM_MAP_AREAS = [
     keywords: ['top speed ads', 'attribution', 'gclid', 'fbclid', 'msclkid', 'utm', 'click tracking', 'impressions', 'ctr', 'external platforms', 'readiness board', 'draft with speedy', 'creative picker', 'flywheel loop'],
   },
   {
+    id: 'ads-streaming',
+    name: 'Display Ads Streaming \u2014 Ads Library',
+    group: 'Marketing, Media & Ads',
+    location: 'Ads OS (topspeedserviceos.com/ads) \u2014 streaming on every customer platform',
+    url: '/ads',
+    purpose: 'The Ads Library streaming system: the house display and text creatives stream into ad slots across every Top Speed customer platform \u2014 the flagship, topspeedappliance.net, topspeedrepairs.com, the satellite sites and the customer apps. Display (IMAGE) and TEXT creatives alternate in each slot, served one at a time by the slot endpoint (GET /api/v1/ads-os/slot) and counted as they serve. The library lives in Ads OS: the free-account and refer-and-earn creatives (added 2026-11-25) run in the same rotation as the house offers. Outside businesses reach the same audience through the Advertiser Console. The stream is a customer-platform surface only \u2014 it never runs inside a workstation.',
+    access: 'Public stream on customer platforms; the library is managed by staff in Ads OS',
+    actions: ['See the stream live on any customer platform', 'Manage the creative library in Ads OS (staff)', 'Advertise on Top Speed \u2014 Advertiser Console'],
+    related: ['top-speed-ads', 'ad-studio', 'advertiser-console', 'streaming-ads'],
+    keywords: ['display ads', 'ads library', 'ad streaming', 'display ads streaming', 'house ads', 'ad slot', 'creatives', 'free account ad', 'refer and earn ad', 'ads os'],
+  },
+  {
     id: 'adstream-providers',
     name: 'AdStream Providers (Top Speed Ads)',
     group: 'Marketing, Media & Ads',
@@ -1306,9 +1318,20 @@ function directoryAccessLabel(area) {
   return null;
 }
 
+// Portal Directory exclusions (Ramone, 2026-11-25): the PUBLIC Portal
+// directory never lists the external dashboards (Vercel, GitHub,
+// Stripe, the registrars, Resend, Meta Business Suite, Google), the
+// payments status area, or Finance OS. They stay on the staff map
+// above \u2014 the public projection simply never carries them.
+const PORTAL_DIRECTORY_HIDDEN_IDS = new Set([
+  'ext-vercel', 'ext-github', 'ext-stripe', 'ext-porkbun', 'ext-nsol',
+  'ext-resend', 'ext-meta', 'ext-google', 'payments', 'finance',
+]);
+
 export function portalDirectoryPayload() {
+  const visible = SYSTEM_MAP_AREAS.filter((area) => !PORTAL_DIRECTORY_HIDDEN_IDS.has(area.id));
   return {
-    areas: SYSTEM_MAP_AREAS.map((area) => ({
+    areas: visible.map((area) => ({
       id: area.id,
       name: area.name,
       group: area.group,
@@ -1316,7 +1339,7 @@ export function portalDirectoryPayload() {
       url: area.url,
       accessLabel: directoryAccessLabel(area),
     })),
-    counts: { areas: SYSTEM_MAP_AREAS.length },
+    counts: { areas: visible.length },
   };
 }
 
