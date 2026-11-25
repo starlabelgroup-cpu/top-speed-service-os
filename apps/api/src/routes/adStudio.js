@@ -4,7 +4,7 @@ import { appendEvent, createId, store } from '../data/store.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
 import { slugify } from '../data/marketingTaxonomy.js';
-import { persistAdCampaign } from '../db/adStudioRepo.js';
+import { persistAdCampaign, refreshAdCampaigns } from '../db/adStudioRepo.js';
 import { DISPLAY_SIZES, STREAMING_FORMATS, STREAMING_PACK, STREAMING_PROVIDERS } from '../data/streamingPack.js';
 import { emitReport } from '../services/managementReports.js';
 import { bumpBannerCounter, persistBanner } from '../db/bannersRepo.js';
@@ -150,6 +150,30 @@ function actorIdOf(req) {
 
 function findCampaign(id) {
   return store.adCampaigns.find((c) => c.id === id) || null;
+}
+
+/**
+ * Snapshot fix (2026-11-24): the store is hydrated once per
+ * serverless instance at cold start, so without a re-read the
+ * console's campaign state is whatever snapshot the serving instance
+ * happened to start with — the list alternated between the real
+ * state and a pre-change snapshot across reloads. Every console read
+ * (and every campaign action, so a status change is always evaluated
+ * against the campaign's real current status) awaits a strict
+ * refresh from the AdCampaign table first. On a database failure the
+ * handler answers 503 — an honest load error — instead of presenting
+ * the instance snapshot as live data. Returns false when the 503 has
+ * been sent.
+ */
+async function freshCampaigns(res) {
+  try {
+    await refreshAdCampaigns();
+    return true;
+  } catch (error) {
+    console.error('ad-studio campaign refresh failed', error?.message || error);
+    res.status(503).json({ error: 'Campaign data could not be loaded from the database — try again.' });
+    return false;
+  }
 }
 
 function findCreative(id) {
@@ -336,7 +360,8 @@ function publicCampaign(record) {
 
 // ─── campaigns ──────────────────────────────────────────────────────
 
-router.get('/ad-studio/campaigns', ...staffOnly, (req, res) => {
+router.get('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const status = String(req.query.status || '').trim().toUpperCase();
   const line = String(req.query.businessLine || '').trim().toUpperCase();
   const placement = String(req.query.placement || '').trim().toUpperCase();
@@ -351,7 +376,8 @@ router.get('/ad-studio/campaigns', ...staffOnly, (req, res) => {
   });
 });
 
-router.get('/ad-studio/results', ...staffOnly, (req, res) => {
+router.get('/ad-studio/results', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const data = store.adCampaigns.map((c) => ({
     campaignId: c.id,
     name: c.name,
@@ -373,7 +399,8 @@ router.get('/ad-studio/results', ...staffOnly, (req, res) => {
  * NO_COST_RECORDED instead of dividing by a budget label or an
  * external platform's numbers.
  */
-router.get('/ad-studio/cost-per-won', ...staffOnly, (req, res) => {
+router.get('/ad-studio/cost-per-won', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const days = Math.min(365, Math.max(1, Number(req.query.days) || 30));
   return res.json({ data: campaignOutcomeReport({ days }) });
 });
@@ -441,6 +468,7 @@ router.get('/ad-studio/attribution', ...staffOnly, (req, res) => {
  * behind it reads an honest 0 — never an invented number.
  */
 router.get('/ad-studio/loop', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   let impressions = 0;
   let clicks = 0;
   for (const campaign of store.adCampaigns) {
@@ -707,6 +735,7 @@ const campaignCreateSchema = z.object({
 });
 
 router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const parsed = campaignCreateSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: 'Invalid campaign', details: parsed.error.flatten() });
   if (parsed.data.creativeId && !findCreative(parsed.data.creativeId)) {
@@ -755,7 +784,8 @@ router.post('/ad-studio/campaigns', ...staffOnly, async (req, res) => {
   return res.status(201).json({ data: publicCampaign(record) });
 });
 
-router.get('/ad-studio/campaigns/:id', ...staffOnly, (req, res) => {
+router.get('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const record = findCampaign(req.params.id);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   return res.json({ data: { ...publicCampaign(record), results: attributedCounts(record.sourceTag) } });
@@ -780,6 +810,7 @@ const campaignPatchSchema = z.object({
 });
 
 router.patch('/ad-studio/campaigns/:id', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const record = findCampaign(req.params.id);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   if (req.body && 'sourceTag' in req.body) {
@@ -844,6 +875,7 @@ const spendPatchSchema = z.object({
  * edit has no spend field.
  */
 router.patch('/ad-studio/campaigns/:id/spend', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const record = findCampaign(req.params.id);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   const parsed = spendPatchSchema.safeParse(req.body);
@@ -861,6 +893,7 @@ router.patch('/ad-studio/campaigns/:id/spend', ...staffOnly, async (req, res) =>
 // ─── status actions ─────────────────────────────────────────────────
 
 async function transition(req, res, target, { owner = false } = {}) {
+  if (!(await freshCampaigns(res))) return;
   const record = findCampaign(req.params.id);
   if (!record) return res.status(404).json({ error: 'Campaign not found' });
   if (target === record.status) return res.json({ data: publicCampaign(record) });
@@ -1489,7 +1522,8 @@ router.get('/ad-studio/my-overview', ...advertiserOnly, async (req, res, next) =
  * approve route (PENDING_APPROVAL → ACTIVE); there is no other path
  * from an advertiser submission to a live campaign.
  */
-router.get('/ad-studio/approval-queue', ...staffOnly, (req, res) => {
+router.get('/ad-studio/approval-queue', ...staffOnly, async (req, res) => {
+  if (!(await freshCampaigns(res))) return;
   const items = store.adCampaigns
     .filter((c) => c.status === 'PENDING_APPROVAL')
     .sort((a, b) => String(a.updatedAt).localeCompare(String(b.updatedAt)))

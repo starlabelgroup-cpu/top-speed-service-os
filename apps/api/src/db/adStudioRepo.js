@@ -71,6 +71,35 @@ export async function hydrateAdCampaigns() {
   }
 }
 
+/**
+ * Console-read refresh (snapshot fix, 2026-11-24): serverless
+ * instances hydrate the store ONCE at cold start and then serve
+ * their in-memory snapshot indefinitely — an instance that started
+ * before a campaign change kept serving the old campaign list while
+ * fresher instances served the new one, so the Ad Studio list
+ * alternated between two snapshots across reloads (a paused campaign
+ * reading ACTIVE again, newer campaigns missing). The AdCampaign
+ * table is the durable record: refreshAdCampaigns() re-reads it and
+ * replaces the working set, so any read that awaits it reflects
+ * every persisted campaign change, on every instance. Unlike boot
+ * hydration it does NOT degrade silently — a failed read rejects, so
+ * callers answer an honest error instead of presenting a stale
+ * snapshot as the live state. Concurrent refreshes coalesce into a
+ * single table read.
+ */
+let refreshInFlight = null;
+export async function refreshAdCampaigns() {
+  if (!DATABASE_ENABLED) return store.adCampaigns.length;
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      const rows = await db().adCampaign.findMany({ orderBy: [{ createdAt: 'asc' }] });
+      store.adCampaigns = rows.map(toStoreCampaign);
+      return rows.length;
+    })().finally(() => { refreshInFlight = null; });
+  }
+  return refreshInFlight;
+}
+
 export async function persistAdCampaign(record) {
   if (!DATABASE_ENABLED || !record?.id) return;
   try {

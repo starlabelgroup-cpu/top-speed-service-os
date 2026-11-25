@@ -380,6 +380,7 @@ function slugify(v){
 
 var isOwner = false;
 var campaigns = [];
+var campLoadFailed = false;
 var resultsById = {};
 var creatives = [];
 
@@ -440,6 +441,7 @@ function campaignMeta(c){
 }
 function renderQueue(){
   var rows = document.getElementById('queueRows');
+  if (campLoadFailed && !campaigns.length){ rows.innerHTML = '<span class="mut small">The approval queue could not be loaded from the server — a load failure is not an empty queue. Retry from the campaigns list below.</span>'; return; }
   var pending = campaigns.filter(function(c){ return c.status === 'PENDING_APPROVAL'; });
   if (!pending.length){ rows.innerHTML = '<span class="mut small">Nothing is waiting. Drafts submitted for approval will appear here for the MASTER decision.</span>'; return; }
   rows.innerHTML = pending.map(function(c){
@@ -452,6 +454,11 @@ function renderCampaigns(){
   var countsEl = document.getElementById('campCounts');
   var by = {};
   campaigns.forEach(function(c){ by[c.status] = (by[c.status] || 0) + 1; });
+  if (campLoadFailed && !campaigns.length){
+    countsEl.textContent = 'Campaigns could not be loaded.';
+    rows.innerHTML = '<span class="mut small">The campaign list could not be loaded from the server. This is a load failure, not an empty studio — no list is shown rather than a wrong one. </span><button class="btn sm" type="button" data-retry="1">Retry</button>';
+    return;
+  }
   countsEl.textContent = campaigns.length + ' campaign(s) · ' + (by.DRAFT || 0) + ' draft · ' + (by.PENDING_APPROVAL || 0) + ' pending approval · ' +
     (by.ACTIVE || 0) + ' active · ' + (by.PAUSED || 0) + ' paused · ' + (by.ENDED || 0) + ' ended';
   if (!campaigns.length){ rows.innerHTML = '<span class="mut small">No campaigns yet — build the first draft above.</span>'; return; }
@@ -462,14 +469,19 @@ function renderCampaigns(){
 }
 function loadAll(){
   return Promise.all([
-    authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }),
-    authFetch('/ad-studio/results').then(function(r){ return r.ok ? r.json() : null; })
+    authFetch('/ad-studio/campaigns').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+    authFetch('/ad-studio/results').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
   ]).then(function(res){
+    campLoadFailed = !res[0];
     if (res[0]) campaigns = res[0].data || [];
     resultsById = {};
     ((res[1] && res[1].data) || []).forEach(function(r){ resultsById[r.campaignId] = r; });
     renderQueue(); renderCampaigns();
-  }).catch(function(){});
+    if (campLoadFailed && campaigns.length) setMsg('campMsg', 'Campaigns could not be refreshed — showing the last list this page loaded.', false);
+  }).catch(function(){
+    campLoadFailed = true;
+    renderQueue(); renderCampaigns();
+  });
 }
 function doAction(act, id, btn){
   btn.disabled = true;
@@ -488,6 +500,7 @@ function doAction(act, id, btn){
     .catch(function(){ setMsg('campMsg', 'Action failed — connection error.', false); btn.disabled = false; });
 }
 document.addEventListener('click', function(ev){
+  var rbtn = ev.target.closest('button[data-retry]'); if (rbtn){ loadAll(); return; }
   var btn = ev.target.closest('button[data-act]'); if (!btn) return;
   doAction(btn.getAttribute('data-act'), btn.getAttribute('data-id'), btn);
 });
