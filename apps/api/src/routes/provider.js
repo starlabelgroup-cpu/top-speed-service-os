@@ -1610,13 +1610,25 @@ router.get('/provider/parts-catalog', ...providerBoard, (req, res) => {
     }
     return true;
   });
-  const ranked = brand
-    ? [...matches].sort((a, b) => {
-        const am = String(a.brand || '').toLowerCase() === brand ? 0 : 1;
-        const bm = String(b.brand || '').toLowerCase() === brand ? 0 : 1;
-        return am - bm;
-      })
-    : matches;
+  const preferBrand = String(req.query.preferBrand || '').trim().toLowerCase();
+  const preferCategory = String(req.query.preferCategory || '').trim().toLowerCase();
+  let ranked = matches;
+  if (brand) {
+    ranked = [...matches].sort((a, b) => {
+      const am = String(a.brand || '').toLowerCase() === brand ? 0 : 1;
+      const bm = String(b.brand || '').toLowerCase() === brand ? 0 : 1;
+      return am - bm;
+    });
+  }
+  if (preferBrand || preferCategory) {
+    // Soft ranking for the parts search engine: the job appliance's own
+    // brand first, then its category. Never a filter — a tech can still
+    // find any brand's part — but the right one leads the list.
+    const score = (p) =>
+      (preferBrand && String(p.brand || '').toLowerCase() === preferBrand ? 0 : 2) +
+      (preferCategory && String(p.category || '').toLowerCase() === preferCategory ? 0 : 1);
+    ranked = [...ranked].sort((a, b) => score(a) - score(b));
+  }
   const parts = ranked.slice(0, 200).map(catalogProjection);
   return res.json({ data: { parts, total: matches.length } });
 });
