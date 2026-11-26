@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Reviews Console — Top Speed Service OS</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Poppins:wght@600;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--navy:#0A265C;--navy2:#071f4f;--red:#E8322E;--blue:#1280FF;--ink:#12233f;--mut:#5a6b84;--line:#dbe4f0;--bg:#f4f7fc;--ok:#0e9f6e;--amber:#e8a13a}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+  header{background:var(--navy);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  header .brand{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;color:#fff;text-decoration:none}
+  header .brand span{color:var(--red)}
+  header nav{margin-left:auto;display:flex;gap:16px;flex-wrap:wrap}
+  header nav a{color:#dce8fb;text-decoration:none;font-weight:600;font-size:14px}
+  header nav a:hover{color:#fff}
+  main{max-width:960px;margin:0 auto;padding:28px 18px 60px;display:grid;gap:20px}
+  h1{font-family:'Poppins',sans-serif;font-weight:800;font-size:clamp(24px,4vw,34px);color:var(--navy)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(10,38,92,.05)}
+  .card h2{font-family:'Poppins',sans-serif;font-weight:600;font-size:19px;color:var(--navy);margin-bottom:6px}
+  .card .sub{color:var(--mut);font-size:14.5px;margin-bottom:14px}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .stat{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fbfcfe;text-align:center}
+  .stat .big{font-family:'Poppins',sans-serif;font-weight:800;font-size:26px;color:var(--navy)}
+  .stat .lbl{font-size:12px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--mut);margin-top:2px}
+  .ready{display:grid;gap:10px}
+  .ritem{display:flex;gap:12px;border:1px solid var(--line);border-radius:12px;padding:13px 15px;background:#fbfcfe;align-items:flex-start}
+  .dot{width:12px;height:12px;border-radius:50%;flex:none;margin-top:5px}
+  .dot.ok{background:var(--ok)}
+  .dot.no{background:var(--amber)}
+  .ritem .rl{font-weight:700;color:var(--navy);font-size:15px}
+  .ritem .rn{color:var(--mut);font-size:13.5px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+  th{color:var(--navy);font-size:12.5px;text-transform:uppercase;letter-spacing:.4px}
+  .err{display:none;background:#fdecec;border:1px solid #f5c2c0;color:#8f1d1a;border-radius:10px;padding:12px 14px;font-size:14.5px}
+  .empty{color:var(--mut);font-size:14.5px}
+  footer{background:var(--navy);color:#c7d6f2;text-align:center;padding:24px 18px;font-size:14px}
+  footer a{color:#fff;font-weight:600;text-decoration:none}
+  .hidden{display:none!important}
+</style>
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/overdrive.css">
+</head>
+<body>
+<header>
+  <a class="brand" href="/">TOP <span>SPEED</span> SERVICE OS</a>
+  <nav>
+    <a href="/top-reviews">Public Top Reviews</a><a href="/track-console">Track Console</a><a href="/applianceman">ApplianceMan</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Top Reviews and Rewards — Console</h1>
+  <div class="err" id="err"></div>
+
+  <section class="card">
+    <h2>The funnel</h2>
+    <p class="sub">Every completed job is asked, one reminder at 3 days, private feedback alongside. All counts are live.</p>
+    <div class="stats">
+      <div class="stat"><div class="big" id="fAsked">—</div><div class="lbl">Jobs asked</div></div>
+      <div class="stat"><div class="big" id="fReminded">—</div><div class="lbl">Reminders sent</div></div>
+      <div class="stat"><div class="big" id="fRecorded">—</div><div class="lbl">Reviews recorded</div></div>
+      <div class="stat"><div class="big" id="fPublished">—</div><div class="lbl">Published</div></div>
+      <div class="stat"><div class="big" id="fAvg">—</div><div class="lbl">Average rating</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Rewards ledger</h2>
+    <p class="sub">$25 thank-you credit per verified review of a completed repair — any rating, once per booking. The office applies issued credits to the customer's next invoice.</p>
+    <div class="stats" style="margin-bottom:14px">
+      <div class="stat"><div class="big" id="rCount">—</div><div class="lbl">Credits issued</div></div>
+      <div class="stat"><div class="big" id="rTotal">—</div><div class="lbl">Total issued</div></div>
+    </div>
+    <div id="ledgerWrap"><p class="empty">No credits issued yet.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Google Map Pack readiness</h2>
+    <p class="sub">The Top Reviews engine behind the Google map pack: profile, review link, Maps platform, funnel, published proof.</p>
+    <div class="ready" id="mapPack"></div>
+  </section>
+
+  <section class="card">
+    <h2>Local Services Ads readiness</h2>
+    <p class="sub" id="lsaNote">—</p>
+    <div class="ready" id="lsaList"></div>
+  </section>
+</main>
+
+<footer>Top Speed Service OS — staff surface. <a href="/top-reviews">Public Top Reviews page</a></footer>
+
+<script>
+const API = '/api/v1';
+const esc = (s) => String(s == null ? '' : s).replace(/</g, '&lt;');
+const money = (c) => '$' + (Number(c || 0) / 100).toFixed(2);
+const token = () => localStorage.getItem('tsos_token');
+async function load() {
+  const err = document.getElementById('err');
+  if (!token()) {
+    err.textContent = 'Sign in on any staff surface first (same account), then reload this page.';
+    err.style.display = 'block';
+    return;
+  }
+  try {
+    const res = await fetch(API + '/top-reviews/console', { headers: { Authorization: 'Bearer ' + token() } });
+    if (res.status === 401 || res.status === 403) throw new Error('This console needs a staff sign-in.');
+    const body = await res.json();
+    const d = body.data || {};
+    const f = d.funnel || {};
+    document.getElementById('fAsked').textContent = f.asked != null ? f.asked : '—';
+    document.getElementById('fReminded').textContent = f.reminded != null ? f.reminded : '—';
+    document.getElementById('fRecorded').textContent = f.reviewsRecorded != null ? f.reviewsRecorded : '—';
+    document.getElementById('fPublished').textContent = d.platformReviews ? d.platformReviews.count : '—';
+    document.getElementById('fAvg').textContent = d.platformReviews && d.platformReviews.average != null ? d.platformReviews.average.toFixed(1) : '—';
+    const rw = d.rewards || {};
+    document.getElementById('rCount').textContent = rw.issuedCount != null ? rw.issuedCount : '—';
+    document.getElementById('rTotal').textContent = rw.issuedTotalCents != null ? money(rw.issuedTotalCents) : '—';
+    const ledger = Array.isArray(d.rewardsLedger) ? d.rewardsLedger : [];
+    if (ledger.length) {
+      document.getElementById('ledgerWrap').innerHTML =
+        '<table><thead><tr><th>Issued</th><th>Booking</th><th>Credit</th><th>Status</th></tr></thead><tbody>' +
+        ledger.map((e) => '<tr><td>' + esc(e.at ? String(e.at).slice(0, 16).replace('T', ' ') : '') + '</td><td>' +
+          esc(e.referenceCode || '—') + '</td><td>' + money(e.amountCents) + '</td><td>' + esc(e.status) + '</td></tr>').join('') +
+        '</tbody></table>';
+    }
+    const mp = Array.isArray(d.mapPackReadiness) ? d.mapPackReadiness : [];
+    document.getElementById('mapPack').innerHTML = mp.map((i) =>
+      '<div class="ritem"><span class="dot ' + (i.ok ? 'ok' : 'no') + '"></span><div><div class="rl">' +
+      esc(i.label) + '</div><div class="rn">' + esc(i.note) + '</div></div></div>').join('');
+    const lsa = d.lsaReadiness || {};
+    document.getElementById('lsaNote').textContent = lsa.note || '';
+    const checks = Array.isArray(lsa.checklist) ? lsa.checklist : [];
+    document.getElementById('lsaList').innerHTML = checks.map((c) =>
+      '<div class="ritem"><span class="dot ' + (c.done ? 'ok' : 'no') + '"></span><div><div class="rl">' +
+      esc(c.label) + '</div></div></div>').join('') +
+      (lsa.signupUrl ? '<p style="margin-top:12px"><a href="' + esc(lsa.signupUrl) + '" target="_blank" rel="noopener">Open Google Local Services Ads enrollment</a></p>' : '');
+  } catch (e) {
+    err.textContent = e.message || 'Could not load the console.';
+    err.style.display = 'block';
+  }
+}
+load();
+</script>
+</body>
+</html>

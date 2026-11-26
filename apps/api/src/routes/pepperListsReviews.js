@@ -17,6 +17,7 @@ import { authenticate, requireCompany, requireRole } from '../middleware/auth.js
 import { STAFF_ROLES } from '../config/security.js';
 import { assertImageDataUrl } from '../services/speedy.js';
 import { respondToComment, respondToReview } from '../services/reviewResponder.js';
+import { maybeIssueReviewReward } from '../services/topReviews.js';
 
 /**
  * Pepper Lists Reviews (2026-11-16) — reviews of repairs, posted from
@@ -369,6 +370,17 @@ router.post('/pepper-lists/reviews', authenticate, async (req, res) => {
       withBooking: Boolean(data.bookingId),
     },
   });
+  // Top Reviews and Rewards (2026-11-25): a verified review of a
+  // completed repair earns the standard thank-you credit — any
+  // rating, once per booking. Fail-soft: a reward hiccup never
+  // fails the customer's post.
+  if (verifiedRepair && booking) {
+    try {
+      await maybeIssueReviewReward(final || created, booking);
+    } catch (error) {
+      console.error('review reward issue failed', error?.message || error);
+    }
+  }
   return res.status(201).json({ data: await serializeReview(final, { audience: 'owner' }) });
 });
 
