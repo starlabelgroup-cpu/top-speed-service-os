@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { addBookingEvent, appendEvent, createId, PLATFORM_COMPANY_ID, store } from '../data/store.js';
 import { distributorStatus } from '../data/distributors.js';
+import { platformEventsRepo } from '../db/platformEventsRepo.js';
 import { persistAssignment, persistBooking, persistCustomer, persistProvider } from '../db/bookingsRepo.js';
 import { authenticate, requireCompany, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../config/security.js';
@@ -3131,6 +3132,86 @@ router.get('/provider/knowledge', ...providerBoard, (req, res) => {
     score: Math.round(hit.score * 100) / 100,
   }));
   return res.json({ data: { results } });
+});
+
+/* ---------------- Muse Image Library + technician ideas ---------------
+ * The shared visual library for the field team (2026-11-25): every job
+ * photo on every booking is already durable on the booking record
+ * (JOB_PHOTO_ADDED events, folded by jobPhotos) — this endpoint serves
+ * the latest of them as one team library, with no customer details.
+ * Ideas are the "work smarter" layer on top: a technician's trick,
+ * check or shortcut, optionally illustrated by one library photo.
+ * Ideas persist as TECH_IDEA_CREATED platform events (appendEvent is
+ * awaited and write-through durable); the event details carry only
+ * the idea text plus the photo REFERENCE — the image bytes stay on
+ * the booking where they already live, and are resolved back into
+ * the idea here at read time. */
+router.get('/provider/image-library', ...providerBoard, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider && !isOversightViewer(req)) return noProvider(res);
+  const photoIndex = new Map();
+  const photos = [];
+  for (const booking of store.bookings.values()) {
+    for (const photo of jobPhotos(booking)) {
+      const item = {
+        id: photo.id,
+        bookingId: booking.id,
+        reference: booking.referenceCode || null,
+        appliance: booking.appliance || null,
+        category: photo.category || 'DURING',
+        caption: photo.caption || null,
+        at: photo.at || null,
+        dataUrl: photo.dataUrl,
+      };
+      photoIndex.set(`${booking.id}:${photo.id}`, item);
+      photos.push(item);
+    }
+  }
+  photos.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+  const events = await platformEventsRepo.listRecent({ type: 'TECH_IDEA_CREATED', limit: 100 }).catch(() => []);
+  const ideas = events.map((event) => {
+    const d = event.details || {};
+    const ref = d.photoBookingId && d.photoId ? photoIndex.get(`${d.photoBookingId}:${d.photoId}`) : null;
+    return {
+      id: event.entityId || event.id,
+      title: d.title || 'Untitled idea',
+      tip: d.tip || '',
+      category: d.category || 'TRICK',
+      brand: d.brand || null,
+      applianceType: d.applianceType || null,
+      byName: event.actor || null,
+      at: event.at || null,
+      photoDataUrl: ref ? ref.dataUrl : null,
+      photoReference: ref ? ref.reference : null,
+    };
+  });
+  return res.json({ data: { photos: photos.slice(0, 36), ideas } });
+});
+
+const techIdeaSchema = z.object({
+  title: z.string().trim().min(3).max(140),
+  tip: z.string().trim().min(3).max(2000),
+  category: z.enum(['TRICK', 'SAFETY', 'DIAGNOSIS', 'PARTS', 'TOOLS', 'CUSTOMER', 'GENERAL']).default('TRICK'),
+  brand: z.string().trim().max(60).optional(),
+  applianceType: z.string().trim().max(60).optional(),
+  photoBookingId: z.string().trim().max(80).optional(),
+  photoId: z.string().trim().max(80).optional(),
+});
+
+router.post('/provider/ideas', ...providerBoard, async (req, res) => {
+  const provider = myProvider(req);
+  if (!provider) return noProvider(res);
+  const parsed = techIdeaSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: 'Give the idea a title and the tip itself' });
+  const id = createId();
+  await appendEvent('TECH_IDEA_CREATED', {
+    source: 'field-pro',
+    actor: provider.businessName || req.user?.email || 'Technician',
+    entityType: 'TECH_IDEA',
+    entityId: id,
+    details: parsed.data,
+  });
+  return res.status(201).json({ data: { id } });
 });
 
 /* ---------------- Unified job-details editing (NO SILO) ----------------
