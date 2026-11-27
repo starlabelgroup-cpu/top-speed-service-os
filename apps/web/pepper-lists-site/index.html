@@ -1201,32 +1201,32 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <p class="plb-note" style="margin-top:16px">The switch on each channel is your grant for <b style="color:var(--ink)">Pepper — the Muse AI agent</b> behind Pepper Lists — to manage that channel for you. It is off unless you turn it on, you can revoke it any time, and every agent action on your channels is logged on your account.</p>
   </div>
 </section>
-<header>
-  <a class="brand" href="/" aria-label="Pepper Lists It — home"><span class="mark">P</span><span><b>Pepper <span class="lime">Lists It</span></b><small>by Top Speed OS</small></span></a>
-  <nav>
-    <a href="#how">How It Works</a>
-    <a href="#channels">Channels</a>
-    <a href="#platforms">Platforms</a>
-    <a href="#catalog">Catalog Regulars</a>
-    <a href="#faq">FAQ</a>
-    <a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
-    <a href="tel:+18444607038" aria-label="Call Top Speed Appliance">(844) 460-7038</a>
-  </nav>
+<header class="plt-appbar">
+  <a class="plt-brand" href="/" aria-label="Pepperlists — home"><svg viewBox="0 0 24 24" width="36" height="36" aria-hidden="true"><path d="M16.9 2.4c1.6-.5 3.2.1 4.1 1.5-.9.2-1.6.7-2.1 1.3-.3-.9-1-1.8-2-2.8z" fill="#43A047"/><path d="M18.7 4.8c.8 3.2.1 6.8-2 9.7-3 4-7.5 6-12.3 5.6-.5 0-.8-.6-.4-1C7.7 15.2 10.3 11.3 12.2 7.9c1-1.9 2.9-3 5.5-3.6.5-.1 1 .2 1 .5z" fill="#E8322E"/></svg><span class="plt-brandtxt"><b>pepperlists.</b><small>Discover. List. Shop. Sell.</small></span></a>
+  <div class="plt-appicons">
+    <button type="button" aria-label="Search Pepperlists" onclick="pltAppSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"><circle cx="11" cy="11" r="6.5"/><path d="M16 16 L21 21"/></svg></button>
+    <button type="button" aria-label="Notifications — open the Pepper Lists app" onclick="return plOpenApp(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"><path d="M6 16 L6 10 A6 6 0 0 1 18 10 L18 16 L20 18 L4 18 Z M10 20 A2.2 2.2 0 0 0 14 20"/></svg></button>
+    <button type="button" aria-label="Saved items and your bag — open the Pepper Lists app" onclick="return plOpenApp(event)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"><path d="M5 8 L19 8 L18.2 20 L5.8 20 Z M9 10 L9 6 A3 3 0 0 1 15 6 L15 10"/></svg></button>
+  </div>
 </header>
+<style>
+.plt-appbar{justify-content:space-between}
+.plt-brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink)}
+.plt-brandtxt{display:flex;flex-direction:column;line-height:1.15}
+.plt-brandtxt b{font-size:23px;font-weight:800;letter-spacing:-.01em;color:#fff}
+.plt-brandtxt small{font-size:12.5px;color:var(--muted)}
+.plt-appicons{display:flex;gap:6px}
+.plt-appicons button{background:transparent;border:0;color:#fff;padding:9px;cursor:pointer;display:flex;border-radius:10px}
+.plt-appicons button svg{width:23px;height:23px}
+.plt-appicons button:hover{background:rgba(255,255,255,.08)}
+</style>
 
 <div class="hero">
   <div class="herocard plt-hero2">
-    <span class="plg-herobadge plt-hbadge">Pepperlists Commerce OS</span>
+    <span class="plg-herobadge plt-hbadge">PEPPERLISTS AI COMMERCE</span>
     <h1>Everything you want. All in one place.</h1>
-    <p>Buy, sell, book and discover products and local services — one account, every listing format, and Pepper AI working for buyers and sellers. Snap a photo and Pepper drafts the listing; nothing goes live without your yes.</p>
-    <form class="plt-hsearch" onsubmit="return pltHeroSearch(event)"><input id="pltHeroQ" type="search" placeholder="Search products, services and stores…" aria-label="Search Pepperlists"><button type="submit">Search</button></form>
-    <div class="cta">
-      <a class="btn" href="https://pepperlists.com/#create-account" onclick="return plOpenSignup(event)">Create account</a>
-      <a class="btn alt" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
-      <a class="btn alt" href="https://topspeedserviceos.com/book">Book a Repair</a>
-      <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
-    </div>
-    <p class="note plt-hnote">Built for Fort Lauderdale and Broward — local pickup, local services, and Top Speed repairs booked right here.</p>
+    <p>Shop local businesses, discover new deals and sell with AI.</p>
+    <form class="plt-hsearch" onsubmit="return pltHeroSearch(event)"><button class="plt-hicon" type="submit" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"><circle cx="11" cy="11" r="6.5"/><path d="M16 16 L21 21"/></svg></button><input id="pltHeroQ" type="search" placeholder="Search products, stores and services..." aria-label="Search Pepperlists"><button class="plt-hicon" type="submit" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 7 L9 7 M15 7 L20 7 M4 17 L11 17 M17 17 L20 17"/><circle cx="12" cy="7" r="2.4"/><circle cx="14" cy="17" r="2.4"/></svg></button></form>
   </div>
   <div class="plt-tiles" role="navigation" aria-label="Shop by lane">
     <button type="button" class="plt-tile" onclick="pltTile('shop')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 7 L6 3 L18 3 L20 7 M4 7 L20 7 L19 20 L5 20 Z M9 10 L9 12 A3 3 0 0 0 15 12 L15 10"/></svg><span>Shop</span></button>
@@ -1236,9 +1236,40 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
     <button type="button" class="plt-tile" onclick="pltTile('resale')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 9 A8 8 0 0 1 19 6 L20 9 M20 15 A8 8 0 0 1 5 18 L4 15 M20 4 L20 9 L15 9 M4 20 L4 15 L9 15"/></svg><span>Resale</span></button>
     <button type="button" class="plt-tile" onclick="pltTile('services')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14.5 6.5 A4.5 4.5 0 0 1 19 3 L17.5 6.5 L20.5 8 L21 5.5 A7 7 0 1 1 14.5 6.5 Z M14.5 6.5 L5 16 L8 19 L16.5 10"/></svg><span>Services</span></button>
     <button type="button" class="plt-tile" onclick="pltTile('live')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="13" height="12"/><path d="M16 10 L21 7 L21 17 L16 14"/></svg><span>Live</span></button>
-    <button type="button" class="plt-tile" onclick="pltTile('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg><span>AI Assistant</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg><span>AI</span></button>
+  </div>
+  <div class="plt-ctarow">
+    <a class="btn" href="https://pepperlists.com/#create-account" onclick="return plOpenSignup(event)">Create account</a>
+    <a class="btn alt" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
+    <a class="btn alt" href="https://topspeedserviceos.com/book">Book a Repair</a>
+    <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
+  </div>
+  <div class="plt-trend">
+    <h2>Trending on Pepperlists</h2>
+    <div class="plt-trendrow">
+      <button type="button" class="plt-tcard" onclick="pltSetFilter({q:'Electronics'})"><img src="https://top-speed-service-os.vercel.app/api/v1/pepper-lists/images/electronics.jpg" alt="Electronics on Pepperlists" loading="lazy"><span class="plt-tbody"><b>Electronics</b><i>Discover new arrivals</i></span></button>
+      <button type="button" class="plt-tcard" onclick="pltSetFilter({q:'Produce'})"><img src="https://top-speed-service-os.vercel.app/api/v1/pepper-lists/images/fresh-market.jpg" alt="Fresh Market produce on Pepperlists" loading="lazy"><span class="plt-tbody"><b>Fresh Market</b><i>Shop local produce</i></span></button>
+    </div>
   </div>
 </div>
+<style>
+.plt-hsearch{border-radius:18px;padding:6px 8px;align-items:center;max-width:660px}
+.plt-hsearch .plt-hicon{background:transparent;border:0;color:#6B7280;padding:9px;cursor:pointer;display:flex;flex:none}
+.plt-hsearch .plt-hicon svg{width:22px;height:22px}
+.plt-tile{background:#1F2124;border-color:#2E3134}
+.plt-tile svg{color:#fff}
+.plt-ctarow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;max-width:1020px;margin:20px auto 0}
+.plt-ctarow .btn.alt{background:transparent;color:var(--ink);border:2px solid #3d5222}
+.plt-trend{max-width:1020px;margin:30px auto 0}
+.plt-trend h2{font-size:clamp(22px,3.4vw,30px);margin:0 0 14px;color:var(--ink)}
+.plt-trendrow{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.plt-tcard{background:#fff;border:0;border-radius:20px;padding:0;overflow:hidden;text-align:left;cursor:pointer;font:inherit;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.plt-tcard img{width:100%;height:170px;object-fit:cover;display:block}
+.plt-tbody{display:block;padding:14px 16px 16px}
+.plt-tbody b{display:block;font-size:17px;color:#111}
+.plt-tbody i{font-style:normal;font-size:14px;color:#6B7280}
+@media(max-width:640px){.plt-tcard img{height:120px}}
+</style>
 <style>
 .herocard.plt-hero2{background:linear-gradient(135deg,#F04438,#C81E1E 55%,#8F1414);color:#fff}
 .plt-hbadge{border-color:rgba(255,255,255,.75);color:#fff}
@@ -1736,7 +1767,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <footer>
   <strong>Pepper Lists It</strong> · A Top Speed OS Consumer App · A Top Speed Appliance LLC product · Fort Lauderdale, FL<br>
   Snap it. Pepper lists it — everywhere.<br>
-  <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="#safety">Safety &amp; Security</a> · <a href="#listings">Listings</a> · <a href="https://pepperlists.com/privacy">Privacy Policy</a> · <a href="https://pepperlists.com/data-deletion">Data Deletion</a> · <a href="tel:+18444607038" aria-label="Call Top Speed Appliance">(844) 460-7038</a>
+  <a href="https://topspeedserviceos.com/">Top Speed Service OS</a> · <a href="#how">How It Works</a> · <a href="#channels">Channels</a> · <a href="#platforms">Platforms</a> · <a href="#catalog">Catalog Regulars</a> · <a href="#faq">FAQ</a> · <a href="#safety">Safety &amp; Security</a> · <a href="#listings">Listings</a> · <a href="https://pepperlists.com/privacy">Privacy Policy</a> · <a href="https://pepperlists.com/data-deletion">Data Deletion</a> · <a href="tel:+18444607038" aria-label="Call Top Speed Appliance">(844) 460-7038</a>
   <br>Workstation: <a href="https://topspeedserviceos.com/crm">Top Speed CRM — Customers &amp; Bookings</a> · <a href="https://topspeedserviceos.com/book-os">Service Setters — Book OS</a> · <a href="https://topspeedserviceos.com/dispatch-dashboard">Dispatch Dashboard</a> · <a href="https://topspeedserviceos.com/applianceman">ApplianceMan</a> · <a href="https://topspeedserviceos.com/finance">Finance</a> · <a href="https://topspeedserviceos.com/tech">Tech App — Service Providers</a> · <a href="https://top-speed-field-pro.vercel.app">Field Pro — Tech App</a> · <a href="https://topspeedserviceos.com/network">Service Network</a> · <a href="https://topspeedserviceos.com/parts">Parts Supply</a> · <a href="https://topspeedserviceos.com/advertiser">Advertiser Console</a> · <a href="https://topspeedserviceos.com/ad-studio">Top Speed Ads — Ad Studio</a> · <a href="https://topspeedserviceos.com/flywheel">Flywheel Advertising</a> · <a href="https://topspeedserviceos.com/local">Top Speed Local OS</a> · <a href="https://topspeedserviceos.com/marketing-os">Top Speed Marketing OS</a> · <a href="https://topspeedserviceos.com/marketing-os/studio">Page Studio</a> · <a href="https://topspeedserviceos.com/media">Media OS</a> · <a href="/">Pepper Lists — Marketplace</a> · <a href="https://topspeedserviceos.com/refer">Referrals &amp; Rewards</a> · <a href="https://topspeedserviceos.com/portal">Service OS Portal</a> · <a href="https://topspeedserviceos.com/academy">Training Academy</a> · <a href="https://topspeedserviceos.com/work-time-access">Work Time Access</a> · <a href="https://topspeedserviceos.com/navigator">Workstation — Team Consoles</a>
 </footer>
 </div><!-- /plApp -->
@@ -3824,6 +3855,11 @@ function pltHeroSearch(e){
   var q=(pltEl('pltHeroQ')||{}).value||'';
   pltSetFilter({q:q.trim()});
   return false;
+}
+function pltAppSearch(){
+  var h=pltEl('pltHeroQ'); if(!h) return;
+  h.scrollIntoView({block:'center'});
+  h.focus({preventScroll:true});
 }
 function pltTile(k){
   if(k==='ai'){ var a=pltEl('pepper-ai'); if(a) a.scrollIntoView({behavior:'smooth',block:'start'}); return; }
