@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>SkyRush Mini — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/skyrush-mini">
+<meta name="description" content="SkyRush Mini: thread a flying car through the sky gates of South Florida. A Top Speed Gaming OS arcade flyer.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;font-family:"Rajdhani";pointer-events:none}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 11px;text-align:center}
+.hud .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:19px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.78);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:17px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Aerial · Game 006</div>
+  <h1>SKYRUSH <span>MINI</span></h1>
+  <p class="sub">A flying car over the South Florida sky. Hold to climb, release to dive — thread every gate clean or the run ends on a pylon.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="640"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">GATES</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">SPEED</div><div class="val" id="hudSpeed">0</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>SKYRUSH <span>MINI</span></h2>
+      <p>Hold anywhere (or hold SPACE / &#8593;) to climb. Let go to fall. Fly through the glowing gap in every gate.</p>
+      <button class="bigbtn" id="btnStart" type="button">Take off</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>DOWN<span>.</span></h2>
+      <p id="overText">Run over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Fly again</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnHold" type="button">HOLD TO CLIMB</button>
+  </div>
+  <p class="help">Touch: hold the button or the sky itself &nbsp;·&nbsp; Keyboard: hold SPACE or &#8593; &nbsp;·&nbsp; Best run is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 640;
+  var hudScore = document.getElementById('hudScore'), hudSpeed = document.getElementById('hudSpeed'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText');
+  var best = 0; try { best = parseInt(localStorage.getItem('skyrushBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready', holding = false;
+  var car, gates, score, speed, spawnX, lastTs = 0, rafId = null, clouds = [];
+
+  function reset(){
+    car = { x: 110, y: H / 2, vy: 0 };
+    gates = []; score = 0; speed = 235; spawnX = W + 160;
+    clouds = [];
+    for (var i = 0; i < 7; i++) clouds.push({ x: Math.random() * W, y: Math.random() * H, s: 0.5 + Math.random() * 0.9 });
+    hudScore.textContent = '0'; hudSpeed.textContent = '0';
+  }
+  function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function draw(){
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#081226'); g.addColorStop(0.7, '#0B1E3E'); g.addColorStop(1, '#123058');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    clouds.forEach(function(c){ ctx.beginPath(); ctx.ellipse(c.x, c.y, 30 * c.s, 10 * c.s, 0, 0, 7); ctx.fill(); });
+    // sea + city silhouette
+    ctx.fillStyle = '#07182F'; ctx.fillRect(0, H - 54, W, 54);
+    ctx.fillStyle = '#0A2447';
+    for (var x = 0; x < W; x += 34) { var bh = 18 + ((x * 37) % 40); ctx.fillRect(x, H - 54 - bh + 20, 26, bh); }
+    // gates
+    gates.forEach(function(gt){
+      ctx.fillStyle = '#E8322E';
+      ctx.fillRect(gt.x - 5, 0, 10, gt.gapY - gt.gapH / 2);
+      ctx.fillRect(gt.x - 5, gt.gapY + gt.gapH / 2, 10, H - (gt.gapY + gt.gapH / 2));
+      ctx.fillStyle = 'rgba(34,197,94,.28)';
+      ctx.fillRect(gt.x - 5, gt.gapY - gt.gapH / 2, 10, gt.gapH);
+      ctx.fillStyle = '#FFD75E';
+      ctx.beginPath(); ctx.arc(gt.x, gt.gapY - gt.gapH / 2, 5, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(gt.x, gt.gapY + gt.gapH / 2, 5, 0, 7); ctx.fill();
+    });
+    // flying car
+    ctx.save(); ctx.translate(car.x, car.y); ctx.rotate(Math.max(-0.4, Math.min(0.5, car.vy * 0.0011)));
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; rr(-30, -8, 66, 26, 10); ctx.fill();
+    ctx.fillStyle = '#E8322E'; rr(-34, -13, 68, 26, 11); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-6, -10, 24, 12, 5); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-34, -3, 68, 5);
+    ctx.fillStyle = '#FFD75E'; ctx.beginPath(); ctx.arc(31, 0, 4, 0, 7); ctx.fill();
+    // thruster flame
+    ctx.fillStyle = holding ? '#FF9A3E' : '#3E7CB1';
+    ctx.beginPath(); ctx.moveTo(-34, -4); ctx.lineTo(-34 - (holding ? 22 : 12), 0); ctx.lineTo(-34, 4); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    speed = 235 + score * 7;
+    car.vy += (holding ? -1500 : 1250) * dt;
+    car.vy = Math.max(-430, Math.min(480, car.vy));
+    car.y += car.vy * dt;
+    clouds.forEach(function(c){ c.x -= speed * dt * 0.25 * c.s; if (c.x < -40) { c.x = W + 40; c.y = Math.random() * H * 0.7; } });
+    spawnX -= speed * dt;
+    if (spawnX <= 0) {
+      gates.push({ x: W + 30, gapY: 120 + Math.random() * (H - 260), gapH: Math.max(148, 196 - score * 2.2), passed: false });
+      spawnX = 300 + Math.random() * 60;
+    }
+    for (var i = gates.length - 1; i >= 0; i--) {
+      var gt = gates[i];
+      gt.x -= speed * dt;
+      if (!gt.passed && gt.x < car.x - 20) { gt.passed = true; score++; hudScore.textContent = score; }
+      if (gt.x < -20) { gates.splice(i, 1); continue; }
+      if (Math.abs(gt.x - car.x) < 26) {
+        if (car.y < gt.gapY - gt.gapH / 2 + 10 || car.y > gt.gapY + gt.gapH / 2 - 10) { gameOver(); return; }
+      }
+    }
+    hudSpeed.textContent = Math.round(speed / 6);
+    if (car.y < 12 || car.y > H - 66) { gameOver(); return; }
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('skyrushBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    overText.textContent = 'You threaded ' + score + (score === 1 ? ' gate' : ' gates') + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function setHold(v){ holding = v; }
+  var hb = document.getElementById('btnHold');
+  hb.addEventListener('pointerdown', function(e){ setHold(true); e.preventDefault(); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ hb.addEventListener(ev, function(){ setHold(false); }); });
+  cv.addEventListener('pointerdown', function(){ setHold(true); });
+  document.addEventListener('pointerup', function(){ setHold(false); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') { setHold(true); e.preventDefault(); }
+    if (e.key === 'Enter' && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){ if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') setHold(false); });
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

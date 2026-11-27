@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Top Speed Gaming OS — Top Speed Appliance</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games">
+<meta name="description" content="Top Speed Gaming OS: the gaming division of the Top Speed ecosystem. Play Nitro Rush now — more titles in development. No limits. Just Overdrive.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0C1B31;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--grn:#22C55E;--yel:#FFB02E;--rad:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+header{position:sticky;top:0;z-index:40;background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:44px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:17px;line-height:1.15;color:#fff}
+.hsub{font-size:11.5px;color:#B9CFF2}
+.hright{margin-left:auto;display:flex;align-items:center;gap:8px}
+.callbtn{background:var(--red);color:#fff;font-weight:800;border-radius:999px;padding:10px 18px;font-size:14px;white-space:nowrap}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 8px}
+.kicker{color:var(--red);font-weight:700;font-size:12px;letter-spacing:.16em;text-transform:uppercase}
+.hero{padding:16px 2px 4px}
+.hero h1{font-family:"Rajdhani";font-size:clamp(30px,6.4vw,48px);line-height:1.04;font-weight:700;margin-top:8px}
+.hero h1 span{color:var(--red)}
+.hero p{color:var(--mut);font-size:15px;margin-top:10px;max-width:700px;line-height:1.6}
+.gnav{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.gnav a{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:8px 15px;font-size:13px;font-weight:700;color:var(--txt)}
+.gnav a.on{border-color:var(--red);color:#fff;background:rgba(232,50,46,.16)}
+.feat{margin-top:20px;border-radius:18px;overflow:hidden;border:1px solid #1D3A5F;border-top:4px solid var(--red);background:linear-gradient(135deg,#050D1A,#0A1B33 60%,#0D2140);padding:24px 20px}
+.feat .kick{color:#FF6B5E;font-weight:800;font-size:11.5px;letter-spacing:.18em;text-transform:uppercase}
+.feat h2{font-family:Rajdhani;font-size:clamp(26px,5vw,38px);line-height:1.06;margin-top:6px}
+.feat h2 span{color:var(--red)}
+.feat p{color:#B9CDF5;font-size:14px;line-height:1.6;max-width:640px;margin-top:8px}
+.playbtn{display:inline-block;margin-top:16px;background:var(--red);color:#fff;font-weight:800;font-size:15px;padding:13px 26px;border-radius:999px}
+.playbtn:hover{filter:brightness(1.12)}
+.pcard{margin-top:20px;background:var(--panel);border:1px solid var(--line);border-top:4px solid var(--red);border-radius:18px;padding:20px}
+.pcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px}
+.pcbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.pcbox .lab{font-size:10px;letter-spacing:.14em;color:var(--mut);font-weight:700;text-transform:uppercase}
+.pcbox .val{font-family:Rajdhani;font-size:23px;font-weight:700;margin-top:2px}
+.pcbox .val.gold{color:#FFD75E}
+.shelf{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px;margin-top:12px}
+.shelf div{background:#081226;border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12.5px}
+.shelf b{display:block;font-family:Rajdhani;font-size:13.5px}
+.shelf span{color:var(--mut)}
+.daily{margin-top:14px;border:1px solid rgba(255,176,46,.45);background:rgba(255,176,46,.07);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6}
+.daily b{font-family:Rajdhani;font-size:16px;color:#FFD75E}
+.daily a{color:#fff;font-weight:800;text-decoration:underline}
+h2.sec{font-family:"Rajdhani";font-size:20px;margin:28px 0 6px}
+.sub{color:var(--mut);font-size:13.5px;line-height:1.55;max-width:760px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-top:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--rad);padding:16px;display:flex;flex-direction:column;gap:7px}
+.card h3{font-family:"Rajdhani";font-size:16.5px;line-height:1.25}
+.card p{color:var(--mut);font-size:13px;line-height:1.55}
+.card .go{margin-top:auto;font-size:13px;font-weight:700;color:#1280FF}
+.pill{align-self:flex-start;font-size:10.5px;font-weight:700;letter-spacing:.06em;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--mut);text-transform:uppercase}
+.pill.live{color:var(--grn);border-color:rgba(34,197,94,.45)}
+.pill.soon{color:var(--yel);border-color:rgba(255,176,46,.45)}
+.pill.dev{color:#8EA3C4}
+.band{margin-top:14px;border:1px solid var(--line);border-radius:var(--rad);padding:18px;background:#081226}
+.band b{font-family:Rajdhani;font-size:17px;display:block;margin-bottom:4px}
+.band p{color:var(--mut);font-size:13.5px;line-height:1.6}
+footer{max-width:1060px;margin:30px auto 0;padding:18px 16px 30px;color:var(--mut);font-size:12.5px;line-height:1.7;border-top:1px solid var(--line)}
+footer a{color:#B9CFF2;font-weight:600;margin-right:14px}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Appliance Repair</div>
+      <div class="hsub">Serving South Florida</div>
+    </div>
+    <div class="hright">
+      <a class="callbtn" href="tel:+18444607038">Call 844-460-7038</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="hero">
+    <div class="kicker">Top Speed Interactive</div>
+    <h1>Gaming <span>OS</span></h1>
+    <p>The gaming division of the Top Speed ecosystem — original games in the red, black and white. One player identity across every title, connected to Engage Overdrive TV and Top Speed Media OS. <b style="color:#EAF0FF">No limits. Just Overdrive.</b></p>
+    <nav class="gnav" aria-label="Gaming OS">
+      <a class="on" href="/games">Home</a>
+      <a href="#library">Games</a>
+      <a href="#rankings">Rankings</a>
+      <a href="/breakroom">Break Room</a>
+      <a href="/overdrive">Overdrive TV</a>
+      <a href="/media">Media OS</a>
+    </nav>
+  </div>
+
+  <section class="feat" aria-label="Featured game">
+    <div class="kick">Featured · Playable now</div>
+    <h2>NITRO <span>RUSH</span></h2>
+    <p>The arcade racer that starts the universe. Three lanes, rising speed, traffic everywhere — dodge it all, chase the score, and don't kiss a bumper. Touch or arrow keys; your best score is kept on this device.</p>
+    <a class="playbtn" href="/games/nitro-rush">Play Nitro Rush</a>
+  </section>
+
+  <section class="pcard" aria-label="Your player card">
+    <div class="kicker">Your Player Card — this device</div>
+    <div class="pcgrid">
+      <div class="pcbox"><div class="lab">SpeedPoints</div><div class="val gold" id="pcPoints">0</div></div>
+      <div class="pcbox"><div class="lab">Rank</div><div class="val" id="pcRank">Rookie</div></div>
+      <div class="pcbox"><div class="lab">Games played</div><div class="val" id="pcPlayed">0 / 16</div></div>
+      <div class="pcbox"><div class="lab">Next rank</div><div class="val" id="pcNext" style="font-size:16px;line-height:1.35">500 pts → Street Racer</div></div>
+    </div>
+    <div class="daily" id="pcDaily"></div>
+    <div class="shelf" id="pcShelf"></div>
+    <p style="color:var(--mut);font-size:12.5px;margin-top:12px;line-height:1.6">SpeedPoints are earned from your best score in every game and live on this device today. When Gamer ID accounts launch, this card becomes your universal profile across Gaming OS, Overdrive TV and Top Speed Live.</p>
+  </section>
+
+  <h2 class="sec" id="library">Game library</h2>
+  <p class="sub">Sixteen titles from the Gaming OS blueprint are playable right now, free in your browser. The big franchise worlds are honestly marked in development — nothing here pretends to be playable before it is.</p>
+  <div class="grid">
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Nitro Rush</h3>
+      <p>The safe-driving racer: signal your lane changes, move over for ambulances, respect work zones. Drive safe. Get home fast.</p>
+      <a class="go" href="/games/nitro-rush">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Turbo Drift</h3>
+      <p>Hold the slide on a road that never stops bending — drift for points, stay on the asphalt.</p>
+      <a class="go" href="/games/turbo-drift">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Turbo Kart</h3>
+      <p>Three laps of the Top Speed oval against three rival karts. Take the flag.</p>
+      <a class="go" href="/games/turbo-kart">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Appliance Rescue</h3>
+      <p>Real repair steps in the right order, against the customer's patience clock.</p>
+      <a class="go" href="/games/appliance-rescue">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Pit Stop Pro</h3>
+      <p>Four tires and a fuel needle — your stopwatch time is the score. Lower wins.</p>
+      <a class="go" href="/games/pit-stop-pro">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>SkyRush Mini</h3>
+      <p>A flying car over South Florida — thread the sky gates, don't kiss a pylon.</p>
+      <a class="go" href="/games/skyrush-mini">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Battle Circuit</h3>
+      <p>Armored arena combat — blast and ram rival machines, wave after wave.</p>
+      <a class="go" href="/games/battle-circuit">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Speed Tycoon</h3>
+      <p>One van, $500, a ringing phone. Build the appliance empire to $5,000 net worth.</p>
+      <a class="go" href="/games/speed-tycoon">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Mechanic Master</h3>
+      <p>Read the symptom, name the failed part. Ten real faults, one clock, streak scoring.</p>
+      <a class="go" href="/games/mechanic-master">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Monster Overdrive</h3>
+      <p>Endless hills and big air — backflip the monster truck, crush the little cars.</p>
+      <a class="go" href="/games/monster-overdrive">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Redline Drag</h3>
+      <p>Reaction off the tree, three perfect shifts at the redline. Beat the 6.40.</p>
+      <a class="go" href="/games/redline-drag">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Ocean Rush</h3>
+      <p>Speedboat up the channel — thread the buoy gates, keep the hull off the rocks.</p>
+      <a class="go" href="/games/ocean-rush">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>HyperLoop Racer</h3>
+      <p>A neon velocity tunnel — thread the glowing gate segment, protect three shields.</p>
+      <a class="go" href="/games/hyperloop-racer">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Turbo Hoops</h3>
+      <p>A 60-second shootout — release in the green, build the streak, beat the moving hoop.</p>
+      <a class="go" href="/games/turbo-hoops">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Speed Strikers</h3>
+      <p>Five penalty kicks against a keeper who learns. Corners pay double.</p>
+      <a class="go" href="/games/speed-strikers">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill live">Playable now</span>
+      <h3>Roadside Rescue</h3>
+      <p>Run the rescue truck: hook the stranded driver, haul them to the garage.</p>
+      <a class="go" href="/games/roadside-rescue">Play now</a>
+    </div>
+    <div class="card">
+      <span class="pill dev">In development</span>
+      <h3>Overdrive</h3>
+      <p>The flagship: open-world street and circuit racing, championships and Top Speed Live multiplayer.</p>
+    </div>
+    <div class="card">
+      <span class="pill dev">In development</span>
+      <h3>SkyRush: Hyper Velocity</h3>
+      <p>The full flying-car franchise — aerial cities, vertical racing and sky highways.</p>
+    </div>
+    <div class="card">
+      <span class="pill dev">In development</span>
+      <h3>Vice World</h3>
+      <p>A neon open-world story universe in the Top Speed Life line — a later phase of the blueprint.</p>
+    </div>
+  </div>
+
+  <h2 class="sec" id="rankings">Rankings</h2>
+  <div class="band">
+    <b>Gamer ID rankings arrive with player accounts</b>
+    <p>Phase 1 of Gaming OS is the foundation: this launcher, the first playable title, and local best scores. Universal Gamer ID accounts — with cross-game rankings, friends and cloud saves — are the next layer, and the leaderboard opens the day accounts do. No fake rankings, ever: every score on this platform will be a real player's.</p>
+  </div>
+
+  <div class="band" style="margin-top:12px">
+    <b>Waiting on your tech? Play while you wait.</b>
+    <p>Booked a repair with Top Speed? Pass the wait in Nitro Rush, or watch <a href="/overdrive" style="color:#B9CDF5;font-weight:600">Engage Overdrive TV</a> — and when your tech is on the way, track them live from your booking.</p>
+  </div>
+</main>
+
+<footer>
+  <a href="/">Top Speed Appliance</a>
+  <a href="/book">Book a repair</a>
+  <a href="/overdrive">Engage Overdrive TV</a>
+  <a href="/media">Media OS</a>
+  <br>Top Speed Gaming OS — a Top Speed Interactive concept line. Titles in development are proposals until released.
+</footer>
+<script>
+(function(){
+  var GAMES = [
+    { name: 'Nitro Rush', key: 'nitroRushBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Turbo Drift', key: 'turboDriftBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Turbo Kart', key: 'turboKartBest', unit: 's win', pts: function(v){ return v ? 150 : 0; } },
+    { name: 'Appliance Rescue', key: 'applianceRescueBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Pit Stop Pro', key: 'pitStopBest', unit: 's stop', pts: function(v){ return v ? 120 : 0; } },
+    { name: 'SkyRush Mini', key: 'skyrushBest', unit: ' gates', pts: function(v){ return v * 20; } },
+    { name: 'Battle Circuit', key: 'battleCircuitBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Speed Tycoon', key: 'speedTycoonBest', unit: ' net worth', pts: function(v){ return Math.round(v / 10); } },
+    { name: 'Mechanic Master', key: 'mechanicMasterBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Monster Overdrive', key: 'monsterBest', unit: 'm', pts: function(v){ return v; } },
+    { name: 'Redline Drag', key: 'redlineBest', unit: 's ET', pts: function(v){ return v ? 150 : 0; } },
+    { name: 'Ocean Rush', key: 'oceanRushBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'HyperLoop Racer', key: 'hyperloopBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Turbo Hoops', key: 'turboHoopsBest', unit: ' pts', pts: function(v){ return v * 5; } },
+    { name: 'Speed Strikers', key: 'speedStrikersBest', unit: ' pts', pts: function(v){ return v; } },
+    { name: 'Roadside Rescue', key: 'roadsideBest', unit: ' pts', pts: function(v){ return v; } }
+  ];
+  var RANKS = [
+    { at: 0, name: 'Rookie' }, { at: 500, name: 'Street Racer' }, { at: 1500, name: 'Pro Driver' },
+    { at: 3000, name: 'Master Tech' }, { at: 6000, name: 'Top Speed Legend' }
+  ];
+  function get(k){ try { var v = localStorage.getItem(k); return v === null ? 0 : parseFloat(v) || 0; } catch (e) { return 0; } }
+  var total = 0, played = 0, shelf = document.getElementById('pcShelf');
+  GAMES.forEach(function(g){
+    var v = get(g.key);
+    if (v > 0) { played++; total += g.pts(v); }
+    var d = document.createElement('div');
+    var b = document.createElement('b'); b.textContent = g.name;
+    var s = document.createElement('span');
+    s.textContent = v > 0 ? ('Best: ' + (g.key === 'turboKartBest' || g.key === 'redlineBest' || g.key === 'pitStopBest' ? v.toFixed(2) : Math.round(v)) + g.unit) : 'Not played yet';
+    d.appendChild(b); d.appendChild(s);
+    shelf.appendChild(d);
+  });
+  document.getElementById('pcPoints').textContent = total.toLocaleString();
+  document.getElementById('pcPlayed').textContent = played + ' / 16';
+  var rank = RANKS[0], next = null;
+  RANKS.forEach(function(r, i){ if (total >= r.at) { rank = r; next = RANKS[i + 1] || null; } });
+  document.getElementById('pcRank').textContent = rank.name;
+  document.getElementById('pcNext').textContent = next ? (next.at.toLocaleString() + ' pts → ' + next.name) : 'Top rank — legend status';
+  // Daily challenge: one game, one target, seeded by the date
+  var CH = [
+    { name: 'Nitro Rush', key: 'nitroRushBest', target: 900, label: 'Score 900+ in Nitro Rush', href: '/games/nitro-rush' },
+    { name: 'Turbo Drift', key: 'turboDriftBest', target: 700, label: 'Score 700+ in Turbo Drift', href: '/games/turbo-drift' },
+    { name: 'SkyRush Mini', key: 'skyrushBest', target: 12, label: 'Thread 12 gates in SkyRush Mini', href: '/games/skyrush-mini' },
+    { name: 'Mechanic Master', key: 'mechanicMasterBest', target: 800, label: 'Score 800+ in Mechanic Master', href: '/games/mechanic-master' },
+    { name: 'Ocean Rush', key: 'oceanRushBest', target: 900, label: 'Score 900+ in Ocean Rush', href: '/games/ocean-rush' },
+    { name: 'Battle Circuit', key: 'battleCircuitBest', target: 1200, label: 'Score 1,200+ in Battle Circuit', href: '/games/battle-circuit' },
+    { name: 'Monster Overdrive', key: 'monsterBest', target: 400, label: 'Cover 400m in Monster Overdrive', href: '/games/monster-overdrive' },
+    { name: 'Turbo Hoops', key: 'turboHoopsBest', target: 24, label: 'Score 24+ in Turbo Hoops', href: '/games/turbo-hoops' },
+    { name: 'Roadside Rescue', key: 'roadsideBest', target: 600, label: 'Score 600+ in Roadside Rescue', href: '/games/roadside-rescue' },
+    { name: 'HyperLoop Racer', key: 'hyperloopBest', target: 1000, label: 'Score 1,000+ in HyperLoop Racer', href: '/games/hyperloop-racer' },
+    { name: 'Appliance Rescue', key: 'applianceRescueBest', target: 700, label: 'Score 700+ in Appliance Rescue', href: '/games/appliance-rescue' },
+    { name: 'Speed Strikers', key: 'speedStrikersBest', target: 300, label: 'Score 300+ in Speed Strikers', href: '/games/speed-strikers' }
+  ];
+  var now = new Date();
+  var seedStr = now.getFullYear() + '-' + (now.getMonth() + 1) + '-' + now.getDate();
+  var seed = 0; for (var i = 0; i < seedStr.length; i++) seed += seedStr.charCodeAt(i) * (i + 3);
+  var ch = CH[seed % CH.length];
+  var cur = get(ch.key);
+  var done = cur >= ch.target;
+  var el = document.getElementById('pcDaily');
+  el.innerHTML = done
+    ? '<b>Daily Challenge — COMPLETED.</b> ' + ch.label + '. Done for today, champion. A new one lands tomorrow.'
+    : '<b>Daily Challenge:</b> ' + ch.label + ' <span style="color:var(--mut)">(your best so far: ' + Math.round(cur) + ')</span> — <a href="' + ch.href + '">Take the challenge</a>';
+})();
+</script>
+</body>
+</html>

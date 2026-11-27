@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Ocean Rush — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/ocean-rush">
+<meta name="description" content="Ocean Rush: a speedboat run through the channel — dodge the rocks, thread the buoy gates. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 12px;font-family:"Rajdhani";pointer-events:none;gap:6px}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 9px;text-align:center;flex:1}
+.hud .lab{font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:18px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.8);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:17px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Speedboat · Game 012</div>
+  <h1>OCEAN <span>RUSH</span></h1>
+  <p class="sub">Full throttle up the channel. Thread the buoy gates for bonus points, keep off the rocks — your hull takes three hits, and the water only gets busier.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="720"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">GATES</div><div class="val" id="hudGates">0</div></div>
+      <div class="box"><div class="lab">HULL</div><div class="val" id="hudHull">♥♥♥</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>OCEAN <span>RUSH</span></h2>
+      <p>Steer with &#8592; &#8594;, A / D, swipe, or the rudder buttons. Pass between each pair of orange buoys for +100. Rocks cost hull.</p>
+      <button class="bigbtn" id="btnStart" type="button">Throttle up</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>SUNK<span>.</span></h2>
+      <p id="overText">Run over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Launch again</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnLeft" type="button">&#8592; Port</button>
+    <button class="tbtn" id="btnRight" type="button">Starboard &#8594;</button>
+  </div>
+  <p class="help">Keyboard: &#8592; / &#8594; or A / D (hold) &nbsp;·&nbsp; Touch: hold the rudder buttons or swipe &nbsp;·&nbsp; Best score is kept on this device.</p>
+  <p class="help" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#081226"><b style="color:#FFD75E">Real water rule:</b> life jackets for everyone aboard, respect no-wake zones near docks and swimmers, and never run a channel you can't read. Get home safe — on water too.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 720;
+  var hudScore = document.getElementById('hudScore'), hudGates = document.getElementById('hudGates'), hudHull = document.getElementById('hudHull'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText');
+  var best = 0; try { best = parseInt(localStorage.getItem('oceanRushBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready', keys = { l: false, r: false };
+  var boat, rocks, gates, score, gateCount, hull, speed, dist, rockTimer, lastTs = 0, rafId = null, wake = [];
+
+  function reset(){
+    boat = { x: W / 2, tilt: 0 };
+    rocks = []; gates = []; wake = [];
+    score = 0; gateCount = 0; hull = 3; speed = 330; dist = 0; rockTimer = 0.5;
+    gates.push({ y: -300, cx: W / 2, half: 86, passed: false });
+    hudScore.textContent = '0'; hudGates.textContent = '0'; hudHull.textContent = '♥♥♥';
+  }
+  function drawBoat(){
+    ctx.save(); ctx.translate(boat.x, H - 130); ctx.rotate(boat.tilt);
+    ctx.fillStyle = 'rgba(0,0,0,.35)';
+    ctx.beginPath(); ctx.ellipse(3, 6, 26, 52, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#E8322E';
+    ctx.beginPath(); ctx.moveTo(0, -52); ctx.quadraticCurveTo(24, -18, 20, 30); ctx.quadraticCurveTo(16, 50, 0, 52); ctx.quadraticCurveTo(-16, 50, -20, 30); ctx.quadraticCurveTo(-24, -18, 0, -52); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-4, -40, 8, 74);
+    ctx.fillStyle = '#0D1626';
+    ctx.beginPath(); ctx.ellipse(0, -16, 10, 14, 0, 0, 7); ctx.fill();
+    ctx.restore();
+    // wake
+    wake.forEach(function(w){
+      ctx.strokeStyle = 'rgba(190,225,255,' + (w.life * 0.5) + ')';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(boat.x - 12 - (1 - w.life) * 14, w.y); ctx.lineTo(boat.x - 20 - (1 - w.life) * 22, w.y + 22); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(boat.x + 12 + (1 - w.life) * 14, w.y); ctx.lineTo(boat.x + 20 + (1 - w.life) * 22, w.y + 22); ctx.stroke();
+    });
+  }
+  function draw(){
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#062A4A'); g.addColorStop(1, '#0A3D66');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(160,210,255,.13)';
+    for (var i = 0; i < 22; i++) {
+      var wy = ((i * 137 + dist * 0.9) % H);
+      ctx.fillRect((i * 89) % W, wy, 26, 2);
+    }
+    // gates
+    gates.forEach(function(gt){
+      [-1, 1].forEach(function(s){
+        var bx = gt.cx + s * gt.half;
+        ctx.fillStyle = '#FF7A1A';
+        ctx.beginPath(); ctx.arc(bx, gt.y, 13, 0, 7); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.fillRect(bx - 13, gt.y - 4, 26, 6);
+        ctx.fillStyle = 'rgba(255,255,255,.35)';
+        ctx.beginPath(); ctx.ellipse(bx, gt.y + 15, 18, 5, 0, 0, 7); ctx.fill();
+      });
+      ctx.strokeStyle = 'rgba(34,197,94,.35)'; ctx.setLineDash([8, 8]);
+      ctx.beginPath(); ctx.moveTo(gt.cx - gt.half, gt.y); ctx.lineTo(gt.cx + gt.half, gt.y); ctx.stroke();
+      ctx.setLineDash([]);
+    });
+    // rocks
+    rocks.forEach(function(r){
+      ctx.fillStyle = '#2C3644';
+      ctx.beginPath();
+      ctx.moveTo(r.x - r.r, r.y + r.r * 0.7);
+      ctx.lineTo(r.x - r.r * 0.4, r.y - r.r * 0.8);
+      ctx.lineTo(r.x + r.r * 0.5, r.y - r.r);
+      ctx.lineTo(r.x + r.r, r.y + r.r * 0.5);
+      ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.25)';
+      ctx.beginPath(); ctx.ellipse(r.x, r.y + r.r + 5, r.r * 1.15, 5, 0, 0, 7); ctx.fill();
+    });
+    drawBoat();
+  }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    speed = 330 + Math.min(300, dist * 0.028);
+    dist += speed * dt;
+    score += Math.round(speed * dt * 0.05);
+    var dir = (keys.r ? 1 : 0) - (keys.l ? 1 : 0);
+    boat.x += dir * 315 * dt;
+    boat.x = Math.max(34, Math.min(W - 34, boat.x));
+    boat.tilt += ((dir * 0.24) - boat.tilt) * Math.min(1, dt * 10);
+    if (Math.random() < 0.5) wake.push({ y: H - 84, life: 1 });
+    wake.forEach(function(w){ w.y += speed * dt; w.life -= dt * 1.1; });
+    wake = wake.filter(function(w){ return w.life > 0 && w.y < H + 30; });
+    // rocks
+    rockTimer -= dt;
+    if (rockTimer <= 0) {
+      rocks.push({ x: 40 + Math.random() * (W - 80), y: -40, r: 17 + Math.random() * 13 });
+      rockTimer = Math.max(0.5, 1.15 - dist * 0.00005) * (0.7 + Math.random() * 0.6);
+    }
+    var by = H - 130;
+    for (var i = rocks.length - 1; i >= 0; i--) {
+      var r = rocks[i];
+      r.y += speed * dt;
+      if (r.y > H + 50) { rocks.splice(i, 1); continue; }
+      if (Math.hypot(r.x - boat.x, r.y - by) < r.r + 30) {
+        rocks.splice(i, 1);
+        hull--;
+        hudHull.textContent = hull === 3 ? '♥♥♥' : hull === 2 ? '♥♥' : hull === 1 ? '♥' : '—';
+        if (hull <= 0) { gameOver(); return; }
+      }
+    }
+    // gates
+    for (var j = gates.length - 1; j >= 0; j--) {
+      var gt = gates[j];
+      gt.y += speed * dt;
+      if (!gt.passed && gt.y > by) {
+        gt.passed = true;
+        if (Math.abs(boat.x - gt.cx) < gt.half - 8) { gateCount++; score += 100; hudGates.textContent = gateCount; }
+        gates.push({ y: gt.y - 430 - Math.random() * 120, cx: 110 + Math.random() * (W - 220), half: Math.max(64, 88 - gateCount * 1.2), passed: false });
+      }
+      if (gt.y > H + 40) gates.splice(j, 1);
+    }
+    hudScore.textContent = score;
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('oceanRushBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    overText.textContent = 'You scored ' + score + ' and threaded ' + gateCount + (gateCount === 1 ? ' gate' : ' gates') + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function bindHold(id, key){
+    var el = document.getElementById(id);
+    el.addEventListener('pointerdown', function(e){ keys[key] = true; e.preventDefault(); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ el.addEventListener(ev, function(){ keys[key] = false; }); });
+  }
+  bindHold('btnLeft', 'l'); bindHold('btnRight', 'r');
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.l = true;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.r = true;
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.l = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.r = false;
+  });
+  var tx = null;
+  cv.addEventListener('touchstart', function(e){ tx = e.changedTouches[0].clientX; }, { passive: true });
+  cv.addEventListener('touchmove', function(e){
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    keys.l = dx < -14; keys.r = dx > 14;
+  }, { passive: true });
+  cv.addEventListener('touchend', function(){ tx = null; keys.l = keys.r = false; }, { passive: true });
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

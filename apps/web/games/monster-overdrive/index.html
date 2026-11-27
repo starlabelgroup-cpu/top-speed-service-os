@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Monster Overdrive — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/monster-overdrive">
+<meta name="description" content="Monster Overdrive: a monster truck over endless hills — big air, backflips and crushed cars. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:640px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;font-family:"Rajdhani";pointer-events:none}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 11px;text-align:center}
+.hud .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:19px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.78);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:360px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:640px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:17px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Monster Truck · Game 010</div>
+  <h1>MONSTER <span>OVERDRIVE</span></h1>
+  <p class="sub">Endless hills, one enormous truck. Hold the gas to climb and fly — in the air, gas pitches you back, brake pitches you forward. Land on your wheels or eat dirt.</p>
+  <div class="stage">
+    <canvas id="cv" width="640" height="420"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">DISTANCE</div><div class="val" id="hudScore">0m</div></div>
+      <div class="box"><div class="lab">FLIPS</div><div class="val" id="hudFlips">0</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0m</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>MONSTER <span>OVERDRIVE</span></h2>
+      <p>Hold GAS (or &#8594;) to drive. Airborne: GAS leans back, BRAKE leans forward. A full backflip is +250. Crush the little cars for +50.</p>
+      <button class="bigbtn" id="btnStart" type="button">Fire it up</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>WRECKED<span>.</span></h2>
+      <p id="overText">Run over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Roll it back over</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnBrake" type="button">&#8592; BRAKE / LEAN FWD</button>
+    <button class="tbtn" id="btnGas" type="button">GAS / LEAN BACK &#8594;</button>
+  </div>
+  <p class="help">Keyboard: &#8594; / D gas, &#8592; / A brake &nbsp;·&nbsp; Touch: hold the pedals &nbsp;·&nbsp; Best distance is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 640, H = 420;
+  var hudScore = document.getElementById('hudScore'), hudFlips = document.getElementById('hudFlips'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText');
+  var best = 0; try { best = parseInt(localStorage.getItem('monsterBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best + 'm';
+  var state = 'ready', keys = { gas: false, brake: false };
+  var truck, dist, camX, flips, rotAccum, cars, lastTs = 0, rafId = null;
+
+  function groundY(x){
+    return H - 96 - Math.sin(x * 0.006) * 34 - Math.sin(x * 0.0016 + 2) * 46 - Math.sin(x * 0.017) * 7;
+  }
+  function reset(){
+    dist = 0; camX = 0; flips = 0; rotAccum = 0;
+    truck = { x: 120, y: groundY(120) - 30, vx: 0, vy: 0, a: 0, va: 0, grounded: true };
+    cars = [];
+    for (var i = 0; i < 5; i++) cars.push({ x: 700 + i * 620 + Math.random() * 220, crushed: false });
+    hudScore.textContent = '0m'; hudFlips.textContent = '0';
+  }
+  function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawTruck(){
+    ctx.save(); ctx.translate(truck.x - camX, truck.y); ctx.rotate(truck.a);
+    // wheels
+    ctx.fillStyle = '#0A0A0C';
+    [[-30, 16], [30, 16]].forEach(function(w){
+      ctx.beginPath(); ctx.arc(w[0], w[1], 17, 0, 7); ctx.fill();
+      ctx.fillStyle = '#3A3F4C'; ctx.beginPath(); ctx.arc(w[0], w[1], 8, 0, 7); ctx.fill();
+      ctx.fillStyle = '#0A0A0C';
+    });
+    // suspension
+    ctx.strokeStyle = '#8E99AD'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(-30, 14); ctx.lineTo(-16, -6); ctx.moveTo(30, 14); ctx.lineTo(16, -6); ctx.stroke();
+    // body
+    ctx.fillStyle = '#E8322E'; rr(-40, -26, 80, 24, 7); ctx.fill();
+    ctx.fillStyle = '#B30D18'; rr(-16, -40, 36, 16, 6); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-11, -38, 26, 11, 4); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-40, -14, 80, 5);
+    ctx.fillStyle = '#FFD75E'; ctx.fillRect(34, -22, 6, 6);
+    ctx.restore();
+  }
+  function draw(){
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#081226'); g.addColorStop(1, '#0D2140');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    for (var s = 0; s < 26; s++) { var sx = ((s * 173) - camX * 0.3) % W; if (sx < 0) sx += W; ctx.fillRect(sx, (s * 61) % 150, 2, 2); }
+    // terrain
+    ctx.beginPath(); ctx.moveTo(0, H);
+    for (var x = 0; x <= W; x += 8) ctx.lineTo(x, groundY(camX + x));
+    ctx.lineTo(W, H); ctx.closePath();
+    ctx.fillStyle = '#14263F'; ctx.fill();
+    ctx.beginPath();
+    for (var x2 = 0; x2 <= W; x2 += 8) { var y = groundY(camX + x2); if (x2 === 0) ctx.moveTo(x2, y); else ctx.lineTo(x2, y); }
+    ctx.strokeStyle = '#E8322E'; ctx.lineWidth = 3; ctx.stroke();
+    // crush cars
+    cars.forEach(function(c){
+      var sx = c.x - camX;
+      if (sx < -60 || sx > W + 60) return;
+      var gy = groundY(c.x);
+      ctx.save(); ctx.translate(sx, gy - (c.crushed ? 2 : 10)); if (c.crushed) ctx.scale(1, 0.35);
+      ctx.fillStyle = '#5A6B84'; rr(-20, -10, 40, 14, 4); ctx.fill();
+      ctx.fillStyle = '#0D1626'; rr(-9, -16, 19, 8, 3); ctx.fill();
+      ctx.restore();
+    });
+    drawTruck();
+  }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.04, (ts - lastTs) / 1000); lastTs = ts;
+    var gy = groundY(truck.x + 26) ;
+    var gyBack = groundY(truck.x - 26);
+    var slope = Math.atan2(gy - gyBack, 52);
+    if (truck.grounded) {
+      if (keys.gas) truck.vx += 300 * dt;
+      if (keys.brake) truck.vx -= 260 * dt;
+      truck.vx *= (1 - dt * 0.55);
+      truck.vx = Math.max(-60, Math.min(430, truck.vx));
+      truck.x += truck.vx * dt * Math.cos(slope);
+      truck.y = groundY(truck.x) - 30 + Math.sin(slope) * 0;
+      truck.a += (slope - truck.a) * Math.min(1, dt * 9);
+      // launch off crests
+      var newGy = groundY(truck.x);
+      if (truck.vx > 240 && slope < -0.34) { truck.grounded = false; truck.vy = -truck.vx * 0.52; truck.va = 0; }
+      if (newGy - 30 > truck.y + 26) { truck.grounded = false; truck.vy = 0; }
+    } else {
+      truck.vy += 900 * dt;
+      truck.x += truck.vx * dt;
+      truck.y += truck.vy * dt;
+      if (keys.gas) truck.va -= 3.4 * dt;
+      if (keys.brake) truck.va += 3.4 * dt;
+      truck.va *= (1 - dt * 0.4);
+      truck.a += truck.va * dt;
+      rotAccum += truck.va * dt;
+      if (rotAccum <= -Math.PI * 2) { flips++; rotAccum += Math.PI * 2; hudFlips.textContent = flips; }
+      if (rotAccum >= Math.PI * 2) { rotAccum -= Math.PI * 2; }
+      var land = groundY(truck.x) - 30;
+      if (truck.y >= land) {
+        var na = Math.atan2(groundY(truck.x + 26) - groundY(truck.x - 26), 52);
+        var diff = Math.abs(((truck.a - na) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI);
+        if (diff > 1.15) { gameOver(); return; }
+        truck.y = land; truck.grounded = true; truck.a = na; truck.va = 0; rotAccum = 0;
+        truck.vy = 0;
+      }
+    }
+    // crush check
+    cars.forEach(function(c){
+      if (!c.crushed && Math.abs(c.x - truck.x) < 42 && truck.grounded) {
+        c.crushed = true;
+      }
+    });
+    if (cars.length && cars[0].x < camX - 200) { cars.shift(); cars.push({ x: cars[cars.length - 1].x + 560 + Math.random() * 300, crushed: false }); }
+    dist = Math.max(dist, Math.floor(truck.x / 10));
+    camX = truck.x - 150;
+    hudScore.textContent = dist + 'm';
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var total = dist + flips * 250;
+    var isBest = dist > best;
+    if (isBest) { best = dist; try { localStorage.setItem('monsterBest', String(best)); } catch (e) {} hudBest.textContent = best + 'm'; }
+    overText.textContent = 'You covered ' + dist + 'm with ' + flips + ' backflip' + (flips === 1 ? '' : 's') + (isBest ? ' — a new best distance on this device.' : '. Best: ' + best + 'm.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function bindHold(id, key){
+    var el = document.getElementById(id);
+    el.addEventListener('pointerdown', function(e){ keys[key] = true; e.preventDefault(); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ el.addEventListener(ev, function(){ keys[key] = false; }); });
+  }
+  bindHold('btnGas', 'gas'); bindHold('btnBrake', 'brake');
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.gas = true;
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.brake = true;
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.gas = false;
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.brake = false;
+  });
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

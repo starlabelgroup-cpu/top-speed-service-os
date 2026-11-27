@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Mechanic Master — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/mechanic-master">
+<meta name="description" content="Mechanic Master: read the symptom, name the failed part. A Top Speed Gaming OS diagnostic challenge.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0C1B31;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--grn:#22C55E;--yel:#FFB02E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:640px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px}
+.hudrow{display:flex;gap:10px;flex-wrap:wrap}
+.hudbox{flex:1;min-width:92px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center}
+.hudbox .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-weight:700}
+.hudbox .val{font-family:"Rajdhani";font-size:21px;font-weight:700}
+.clockbar{height:10px;border-radius:99px;background:#10182C;margin-top:14px;overflow:hidden}
+.clockbar i{display:block;height:100%;background:linear-gradient(90deg,var(--red2),var(--red));width:100%}
+.case{margin-top:16px;text-align:center}
+.case .app{font-family:"Rajdhani";font-size:23px}
+.case .sym{color:#FFB02E;font-weight:600;margin-top:6px;line-height:1.6;font-size:15px}
+.case .prompt{color:var(--mut);font-size:13px;margin-top:8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.opt{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:15px 10px;color:#fff;font-family:Inter;font-size:14px;font-weight:600;cursor:pointer}
+.opt.right{border-color:var(--grn);background:rgba(34,197,94,.15)}
+.opt.wrong{border-color:var(--red);background:rgba(232,50,46,.15)}
+.opt:disabled{cursor:default}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter;display:block;margin:18px auto 0}
+.msg{text-align:center;margin-top:12px;font-size:14px;min-height:20px;line-height:1.55}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:14px;line-height:1.6}
+.hidden{display:none !important}
+@media(max-width:480px){.opts{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Diagnostic Challenge · Game 009</div>
+  <h1>MECHANIC <span>MASTER</span></h1>
+  <p class="sub">A real tech reads symptoms like a story. Ten calls, one clock — name the failed part. Streaks multiply your score.</p>
+  <div class="panel">
+    <div class="hudrow">
+      <div class="hudbox"><div class="lab">CALL</div><div class="val" id="hudCall">–/10</div></div>
+      <div class="hudbox"><div class="lab">STREAK</div><div class="val" id="hudStreak">0</div></div>
+      <div class="hudbox"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="hudbox"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="clockbar"><i id="clockFill"></i></div>
+    <div class="case">
+      <div class="app" id="caseApp">The exam bay is ready</div>
+      <div class="sym" id="caseSym">Ten real-world faults. Ninety seconds. No guessing games — symptoms tell the truth.</div>
+      <div class="prompt" id="casePrompt">Press Start diagnosis, then tap the failed part.</div>
+    </div>
+    <div class="opts" id="opts"></div>
+    <div class="msg" id="msg"></div>
+    <button class="bigbtn" id="btnStart" type="button">Start diagnosis</button>
+    <button class="bigbtn hidden" id="btnRetry" type="button">Run it again</button>
+  </div>
+  <p class="help">Correct: 100 points × your streak. Wrong: streak resets and 3 seconds burn. Finish all ten before the clock dies.</p>
+  <p class="help" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#081226">Got a real symptom at home you can't name? Our real techs diagnose it in person: <a href="/book" style="color:#fff;font-weight:700">Book a Top Speed diagnostic</a> · $99, credited toward the repair.</p>
+</main>
+<script>
+(function(){
+  var BANK = [
+    { app: 'Refrigerator', sym: 'Freezer is cold, fresh-food side is warm, and no fan sound when the door switch is pressed.', ans: 'Evaporator fan motor', why: 'The freezer coil gets cold — without the fan, that cold air never reaches the fresh-food side.', wrong: ['Compressor', 'Defrost timer', 'Door gasket'] },
+    { app: 'Dryer', sym: 'Drum tumbles fine but there is zero heat, and the vent line is clear.', ans: 'Heating element', why: 'Tumbling with zero heat and a clear vent points at the element — the classic dryer failure.', wrong: ['Drive belt', 'Door switch', 'Drum roller'] },
+    { app: 'Washer', sym: 'Fills and agitates, then stops full of water with a faint humming from the bottom.', ans: 'Drain pump', why: 'A full tub, a hum, and no drain: the pump has power but is not moving water.', wrong: ['Water inlet valve', 'Lid switch', 'Agitator dogs'] },
+    { app: 'Oven', sym: 'Bake never starts; the igniter glows dull orange but the burner never lights.', ans: 'Igniter (weak, low amp draw)', why: 'A weak igniter glows yet draws too few amps to open the gas valve. Glow alone does not mean good.', wrong: ['Thermostat', 'Control board relay', 'Gas regulator'] },
+    { app: 'Dishwasher', sym: 'Puddle at the front-left corner every cycle; spray arms and hoses check out dry.', ans: 'Door gasket', why: 'A leak at one front corner with dry hoses is the door seal losing its grip.', wrong: ['Drain pump', 'Float switch', 'Spray arm'] },
+    { app: 'Refrigerator', sym: 'Clicking every few minutes, compressor tries to start and gives up, food warming.', ans: 'Start relay', why: 'Click, brief hum, silence — the relay cannot hold the compressor start winding in.', wrong: ['Evaporator coils', 'Ice maker', 'Thermistor'] },
+    { app: 'Washer', sym: 'Violent shaking and walking across the floor on spin, loads are balanced.', ans: 'Suspension rods', why: 'Balanced loads rule out the laundry; worn rods let the tub swing free on spin.', wrong: ['Drain pump', 'Drive motor', 'Water valve'] },
+    { app: 'Dryer', sym: 'Squealing that gets louder as it runs, drum turns rough by hand.', ans: 'Drum support roller', why: 'A squeal that grows with run time, and rough turning by hand, is a flat-spotted roller.', wrong: ['Thermal fuse', 'Heating element', 'Moisture sensor'] },
+    { app: 'AC Unit', sym: 'Fan and compressor both dead silent outside, but the indoor blower runs and the breaker is fine.', ans: 'Capacitor', why: 'Both outdoor motors silent with power present means no starting kick. The capacitor provides it.', wrong: ['Refrigerant charge', 'Air filter', 'Thermostat batteries'] },
+    { app: 'Dishwasher', sym: 'Dishes come out gritty and the bottom tub holds cloudy water after the cycle.', ans: 'Clogged pump filter', why: 'Gritty dishes plus standing cloudy water: the filter is choking the drain path.', wrong: ['Heating element', 'Rinse aid cap', 'Upper rack'] },
+    { app: 'Oven', sym: 'Temperature swings 75 degrees either way; preheat takes forever.', ans: 'Temperature sensor', why: 'Wild temperature swings mean the board is flying blind — the sensor is lying about the heat.', wrong: ['Igniter', 'Broil element', 'Door hinge'] },
+    { app: 'Refrigerator', sym: 'Heavy frost wall on the freezer back panel and temps slowly climbing for days.', ans: 'Defrost heater', why: 'Frost chokes airflow slowly over days when the defrost cycle stops clearing the coil.', wrong: ['Compressor', 'Condenser fan', 'Water filter'] }
+  ];
+  var hudCall = document.getElementById('hudCall'), hudStreak = document.getElementById('hudStreak'), hudScore = document.getElementById('hudScore'), hudBest = document.getElementById('hudBest');
+  var clockFill = document.getElementById('clockFill'), caseApp = document.getElementById('caseApp'), caseSym = document.getElementById('caseSym'), casePrompt = document.getElementById('casePrompt');
+  var optsEl = document.getElementById('opts'), msg = document.getElementById('msg');
+  var btnStart = document.getElementById('btnStart'), btnRetry = document.getElementById('btnRetry');
+  var best = 0; try { best = parseInt(localStorage.getItem('mechanicMasterBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var TOTAL = 10, TIME = 90;
+  var state = 'ready', score = 0, streak = 0, idx = 0, timeLeft = TIME, queue = [], cur = null, lastTs = 0, rafId = null;
+
+
+  var AC = null;
+  function audio(){ if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } return AC; }
+  function tone(freq, at, dur, type, vol){
+    var ac = audio(); if (!ac) return;
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    var t = ac.currentTime + (at || 0);
+    g.gain.setValueAtTime(vol || 0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function sfx(kind){
+    if (kind === 'right') { tone(740, 0, 0.1); tone(1180, 0.08, 0.14); }
+    else if (kind === 'wrong') { tone(140, 0, 0.16, 'square', 0.07); }
+    else if (kind === 'start') { tone(440, 0, 0.1); tone(660, 0.09, 0.14); }
+  }
+  function buzz(pattern){ if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function next(){
+    if (idx >= TOTAL) { finish(true); return; }
+    cur = queue[idx];
+    hudCall.textContent = (idx + 1) + '/' + TOTAL;
+    caseApp.textContent = cur.app;
+    caseSym.textContent = '\u201C' + cur.sym + '\u201D';
+    casePrompt.textContent = 'Which part has failed?';
+    optsEl.innerHTML = '';
+    shuffle([cur.ans].concat(cur.wrong)).forEach(function(name){
+      var b = document.createElement('button');
+      b.className = 'opt'; b.type = 'button'; b.textContent = name;
+      b.addEventListener('click', function(){ pick(name, b); });
+      optsEl.appendChild(b);
+    });
+  }
+  function pick(name, btn){
+    if (state !== 'running') return;
+    var buttons = optsEl.querySelectorAll('.opt');
+    if (name === cur.ans) {
+      streak++;
+      var pts = 100 * streak;
+      score += pts;
+      btn.classList.add('right');
+      msg.textContent = 'Correct — ' + cur.ans + '. +' + pts + ' (streak ×' + streak + ') ' + (cur.why || ''); sfx('right'); buzz(30);
+      buttons.forEach(function(b){ b.disabled = true; });
+      idx++;
+      hudScore.textContent = score; hudStreak.textContent = streak;
+      setTimeout(function(){ if (state === 'running') { msg.textContent = ''; next(); } }, 750);
+    } else {
+      streak = 0;
+      timeLeft = Math.max(0, timeLeft - 3);
+      btn.classList.add('wrong'); btn.disabled = true;
+      hudStreak.textContent = '0';
+      msg.textContent = 'Not it — that part checks out. −3s. Read the symptom again.'; sfx('wrong'); buzz(70);
+    }
+  }
+  function loop(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    timeLeft -= dt;
+    clockFill.style.width = Math.max(0, (timeLeft / TIME) * 100) + '%';
+    if (timeLeft <= 0) { finish(false); return; }
+    rafId = requestAnimationFrame(loop);
+  }
+  function finish(allDone){
+    state = 'over';
+    if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('mechanicMasterBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    caseApp.textContent = allDone ? 'Master Tech status' : 'Clock wins this round';
+    caseSym.textContent = allDone ? 'All ten faults diagnosed. Score ' + score + (isBest ? ' — a new best on this device.' : '. Best: ' + best + '.') : 'You diagnosed ' + idx + ' of ' + TOTAL + ' before time ran out. Score ' + score + '.';
+    casePrompt.textContent = 'Real diagnosis is the same skill: symptoms first, parts second.';
+    optsEl.innerHTML = ''; msg.textContent = '';
+    btnRetry.classList.remove('hidden');
+  }
+  function start(){
+    score = 0; streak = 0; idx = 0; timeLeft = TIME;
+    queue = shuffle(BANK.slice()).slice(0, TOTAL);
+    hudScore.textContent = '0'; hudStreak.textContent = '0';
+    state = 'running';
+    sfx('start');
+    btnStart.classList.add('hidden'); btnRetry.classList.add('hidden');
+    next();
+    lastTs = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  btnStart.addEventListener('click', start);
+  btnRetry.addEventListener('click', start);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Roadside Rescue — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/roadside-rescue">
+<meta name="description" content="Roadside Rescue: run the Top Speed tow truck — reach stranded drivers, hook up, and deliver before their patience runs out. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 12px;font-family:"Rajdhani";pointer-events:none;gap:6px}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 9px;text-align:center;flex:1}
+.hud .lab{font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:17px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.8);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:10px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;flex-wrap:wrap}
+.tbtn{flex:1;min-width:64px;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:15px 0;font-family:"Rajdhani";font-size:16px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Tow Truck Missions · Game 016</div>
+  <h1>ROADSIDE <span>RESCUE</span></h1>
+  <p class="sub">You run the Top Speed rescue truck. A driver is stranded ahead — reach them, ease up alongside to hook the cable, then haul them to the drop zone before their patience meter empties.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="720"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">RESCUES</div><div class="val" id="hudRescues">0</div></div>
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">STATUS</div><div class="val" id="hudStatus">TO PICKUP</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>ROADSIDE <span>RESCUE</span></h2>
+      <p>Steer with &#8592; &#8594;, speed with &#8593; &#8595; (or the pedals). Pull up right behind the flashing stranded car to hook it — then follow the arrows to the drop zone. Traffic is not your friend.</p>
+      <button class="bigbtn" id="btnStart" type="button">Roll out</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2 id="overTitle">SHIFT OVER<span>.</span></h2>
+      <p id="overText">Shift over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Next shift</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnLeft" type="button">&#8592;</button>
+    <button class="tbtn" id="btnUp" type="button">&#8593; GAS</button>
+    <button class="tbtn" id="btnDown" type="button">&#8595; BRAKE</button>
+    <button class="tbtn" id="btnRight" type="button">&#8594;</button>
+  </div>
+  <p class="help">Keyboard: arrows or WASD &nbsp;·&nbsp; Touch: the pedals &nbsp;·&nbsp; Best score is kept on this device.</p>
+  <p class="help" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#081226"><b style="color:#FFD75E">Real roadside rule:</b> if you ever stop on a shoulder — hazards on, stay in the vehicle with your belt on, and call for help from inside. Passing drivers: move over or slow down for anyone stopped with lights flashing. Drive safe. Get home fast.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 720;
+  var LANES = [96, 240, 384];
+  var hudRescues = document.getElementById('hudRescues'), hudScore = document.getElementById('hudScore'), hudStatus = document.getElementById('hudStatus'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText'), overTitle = document.getElementById('overTitle');
+  var best = 0; try { best = parseInt(localStorage.getItem('roadsideBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready', keys = { l: false, r: false, u: false, d: false };
+  var truck, traffic, target, dropZone, phase, patience, score, rescues, roadOff, spawnTimer, lastTs = 0, rafId = null, flashT = 0;
+
+  function reset(){
+    truck = { lane: 1, x: LANES[1], speed: 300 };
+    traffic = []; score = 0; rescues = 0; roadOff = 0; spawnTimer = 1;
+    phase = 'pickup';
+    target = { lane: Math.floor(Math.random() * 3), y: -420, hooked: false };
+    target.x = LANES[target.lane];
+    dropZone = null;
+    patience = 34;
+    hudRescues.textContent = '0'; hudScore.textContent = '0'; hudStatus.textContent = 'TO PICKUP';
+  }
+  function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawCar(x, y, color, h){
+    var hh = h || 112, hw = 35;
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(-hw + 3, -hh / 2 + 5, 70, hh, 14); ctx.fill();
+    ctx.fillStyle = color; rr(-hw, -hh / 2, 70, hh, 14); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-24, -hh / 2 + 26, 48, 20, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(10,16,30,.85)'; rr(-26, -hh / 2 + 50, 52, 38, 7); ctx.fill();
+    ctx.fillStyle = '#05070C';
+    rr(-hw - 3, -hh / 2 + 12, 9, 24, 4); ctx.fill(); rr(hw - 6, -hh / 2 + 12, 9, 24, 4); ctx.fill();
+    rr(-hw - 3, hh / 2 - 36, 9, 24, 4); ctx.fill(); rr(hw - 6, hh / 2 - 36, 9, 24, 4); ctx.fill();
+    ctx.restore();
+  }
+  function drawTruck(){
+    var x = truck.x, y = H - 140;
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(-37, -58, 78, 124, 14); ctx.fill();
+    ctx.fillStyle = '#E8322E'; rr(-38, -62, 76, 124, 14); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-26, -52, 52, 22, 6); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.fillRect(-38, -24, 76, 7);
+    // flatbed + crane arm
+    ctx.fillStyle = '#1A2438'; ctx.fillRect(-34, 4, 68, 44);
+    ctx.strokeStyle = '#FFB02E'; ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(0, 4); ctx.lineTo(0, 34); ctx.stroke();
+    ctx.fillStyle = '#05070C';
+    rr(-41, -44, 9, 24, 4); ctx.fill(); rr(32, -44, 9, 24, 4); ctx.fill();
+    rr(-41, 22, 9, 24, 4); ctx.fill(); rr(32, 22, 9, 24, 4); ctx.fill();
+    // beacon
+    var on = Math.floor(flashT * 6) % 2 === 0;
+    ctx.fillStyle = on ? '#FFB02E' : '#FF3B30';
+    ctx.beginPath(); ctx.arc(0, -64, 6, 0, 7); ctx.fill();
+    ctx.restore();
+    // tow cable when hooked
+    if (phase === 'deliver' && target) {
+      ctx.strokeStyle = '#C7CEDA'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x, y + 52); ctx.lineTo(target.x, target.y - 52); ctx.stroke();
+    }
+  }
+  function draw(){
+    ctx.fillStyle = '#0A0E18'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#11182A'; ctx.fillRect(0, 0, 26, H); ctx.fillRect(W - 26, 0, 26, H);
+    ctx.fillStyle = '#E8322E'; ctx.fillRect(26, 0, 4, H); ctx.fillRect(W - 30, 0, 4, H);
+    ctx.fillStyle = 'rgba(230,238,255,.5)';
+    var dashH = 46, gap = 34;
+    for (var l = 0; l < 2; l++) {
+      var x = (LANES[l] + LANES[l + 1]) / 2 - 3;
+      for (var y = -dashH + (roadOff % (dashH + gap)); y < H; y += dashH + gap) ctx.fillRect(x, y, 6, dashH);
+    }
+    // drop zone
+    if (dropZone) {
+      ctx.fillStyle = 'rgba(34,197,94,.2)';
+      ctx.fillRect(30, dropZone.y - 60, W - 60, 120);
+      ctx.strokeStyle = '#22C55E'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]);
+      ctx.strokeRect(30, dropZone.y - 60, W - 60, 120);
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#22C55E'; ctx.font = '700 17px Rajdhani, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('DROP ZONE — GARAGE', W / 2, dropZone.y + 6);
+    }
+    // stranded target
+    if (target) {
+      drawCar(target.x, target.y, '#7A8699', 112);
+      if (phase === 'pickup') {
+        var pulse = 0.6 + 0.4 * Math.sin(flashT * 8);
+        ctx.fillStyle = 'rgba(255,176,46,' + pulse + ')';
+        ctx.beginPath(); ctx.moveTo(target.x, target.y - 92); ctx.lineTo(target.x - 11, target.y - 112); ctx.lineTo(target.x + 11, target.y - 112); ctx.closePath(); ctx.fill();
+        ctx.font = '800 15px Inter, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('!', target.x, target.y - 96);
+        // patience bar
+        ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(target.x - 34, target.y - 128, 68, 6);
+        ctx.fillStyle = patience > 10 ? '#22C55E' : '#E8322E';
+        ctx.fillRect(target.x - 34, target.y - 128, 68 * Math.max(0, patience / 34), 6);
+      }
+    }
+    traffic.forEach(function(t){ drawCar(t.x, t.y, t.color, 112); });
+    drawTruck();
+    // direction arrow to objective
+    var objY = phase === 'pickup' ? (target ? target.y : -100) : (dropZone ? dropZone.y : -100);
+    if (objY < -40) {
+      ctx.fillStyle = '#FFD75E';
+      ctx.beginPath(); ctx.moveTo(truck.x, 64); ctx.lineTo(truck.x - 10, 84); ctx.lineTo(truck.x + 10, 84); ctx.closePath(); ctx.fill();
+    }
+  }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    flashT += dt;
+    // truck controls
+    if (keys.l) truck.lane = Math.max(0, truck.lane - 1), keys.l = false;
+    if (keys.r) truck.lane = Math.min(2, truck.lane + 1), keys.r = false;
+    truck.x += (LANES[truck.lane] - truck.x) * Math.min(1, dt * 10);
+    var targetSpeed = keys.u ? 470 : keys.d ? 130 : 300;
+    truck.speed += (targetSpeed - truck.speed) * Math.min(1, dt * 3);
+    var rel = truck.speed;
+    roadOff += rel * dt;
+    // traffic
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) {
+      var lane = Math.floor(Math.random() * 3);
+      traffic.push({ lane: lane, x: LANES[lane], y: -140, v: 0.36 + Math.random() * 0.2, color: ['#3E5C8F', '#5A6B84', '#8F4A3E', '#C7CEDA'][Math.floor(Math.random() * 4)] });
+      spawnTimer = 1.1 + Math.random() * 0.9;
+    }
+    var ty = H - 140;
+    for (var i = traffic.length - 1; i >= 0; i--) {
+      var t = traffic[i];
+      t.y += (rel * (1 - t.v)) * dt + 40 * dt;
+      if (t.y > H + 130) { traffic.splice(i, 1); continue; }
+      if (Math.abs(t.x - truck.x) < 62 && Math.abs(t.y - ty) < 100) { crash(); return; }
+      if (target && phase === 'deliver' && Math.abs(t.x - target.x) < 58 && Math.abs(t.y - target.y) < 96) { crash(); return; }
+    }
+    // objective movement: the world scrolls relative to truck speed; target crawls slowly
+    if (phase === 'pickup' && target) {
+      target.y += rel * dt * 0.92;
+      patience -= dt;
+      if (patience <= 0) { gameOver(false); return; }
+      // hook check: truck just behind target, same lane, gentle speed
+      if (Math.abs(target.x - truck.x) < 30 && target.y < ty - 90 && target.y > ty - 190) {
+        phase = 'deliver';
+        hudStatus.textContent = 'TO GARAGE';
+        dropZone = { y: -700 };
+        score += 60;
+      }
+      if (target.y > H + 160) { gameOver(false); return; }
+    } else if (phase === 'deliver' && target && dropZone) {
+      // towed car follows behind the truck
+      target.x += (truck.x - target.x) * Math.min(1, dt * 6);
+      target.y += ((ty + 128) - target.y) * Math.min(1, dt * 6);
+      dropZone.y += rel * dt * 0.92;
+      patience -= dt * 0.55;
+      if (patience <= 0) { gameOver(false); return; }
+      if (dropZone.y > ty - 40 && dropZone.y < ty + 190) {
+        // delivered
+        rescues++;
+        score += 200 + Math.round(patience * 6);
+        hudRescues.textContent = rescues; hudScore.textContent = score;
+        phase = 'pickup';
+        hudStatus.textContent = 'TO PICKUP';
+        dropZone = null;
+        target = { lane: Math.floor(Math.random() * 3), y: -520, hooked: false };
+        target.x = LANES[target.lane];
+        patience = Math.max(24, 34 - rescues * 1.2);
+      }
+      if (dropZone.y > H + 200) { dropZone.y = -500; }
+    }
+    hudScore.textContent = score;
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function crash(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    gameOver(true);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(hit){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('roadsideBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    overTitle.innerHTML = hit ? 'CRASHED<span>.</span>' : 'PATIENCE GONE<span>.</span>';
+    overText.textContent = (hit ? 'The truck is wrecked. ' : 'The stranded driver gave up and called someone else. ') + 'You completed ' + rescues + (rescues === 1 ? ' rescue' : ' rescues') + ' for ' + score + ' points' + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function bindHold(id, key, tap){
+    var el = document.getElementById(id);
+    el.addEventListener('pointerdown', function(e){ keys[key] = true; e.preventDefault(); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ el.addEventListener(ev, function(){ if (!tap) keys[key] = false; }); });
+  }
+  bindHold('btnLeft', 'l', true); bindHold('btnRight', 'r', true);
+  bindHold('btnUp', 'u', false); bindHold('btnDown', 'd', false);
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  var held = {};
+  document.addEventListener('keydown', function(e){
+    var k = e.key.toLowerCase();
+    if ((k === 'arrowleft' || k === 'a') && !held.l) { keys.l = true; held.l = true; }
+    if ((k === 'arrowright' || k === 'd') && !held.r) { keys.r = true; held.r = true; }
+    if (k === 'arrowup' || k === 'w') keys.u = true;
+    if (k === 'arrowdown' || k === 's') keys.d = true;
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    var k = e.key.toLowerCase();
+    if (k === 'arrowleft' || k === 'a') held.l = false;
+    if (k === 'arrowright' || k === 'd') held.r = false;
+    if (k === 'arrowup' || k === 'w') keys.u = false;
+    if (k === 'arrowdown' || k === 's') keys.d = false;
+  });
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

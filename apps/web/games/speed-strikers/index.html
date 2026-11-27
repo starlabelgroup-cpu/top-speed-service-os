@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Speed Strikers — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/speed-strikers">
+<meta name="description" content="Speed Strikers: five penalty kicks against a live keeper — pick your corner and beat the dive. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none;cursor:crosshair}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 12px;font-family:"Rajdhani";pointer-events:none;gap:6px}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 9px;text-align:center;flex:1}
+.hud .lab{font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:18px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.8);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Penalty Shootout · Game 015</div>
+  <h1>SPEED <span>STRIKERS</span></h1>
+  <p class="sub">Five kicks from the spot. Tap anywhere in the goal to place your shot — corners are gold but risky, and the keeper reads more of them every round.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="600"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">KICK</div><div class="val" id="hudKick">1/5</div></div>
+      <div class="box"><div class="lab">GOALS</div><div class="val" id="hudGoals">0</div></div>
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>SPEED <span>STRIKERS</span></h2>
+      <p>Tap a spot inside the goal frame to shoot there. Top corners pay double — if you find them. Sky it or drag it wide and it's gone.</p>
+      <button class="bigbtn" id="btnStart" type="button">Step up</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2 id="overTitle">FULL TIME<span>.</span></h2>
+      <p id="overText">Shootout over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Another shootout</button>
+    </div>
+  </div>
+  <p class="help">Tap / click inside the goal to shoot &nbsp;·&nbsp; Center shots are safe but the keeper loves them &nbsp;·&nbsp; Best score is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 600;
+  var GOAL = { x: 70, y: 120, w: 340, h: 210 };
+  var hudKick = document.getElementById('hudKick'), hudGoals = document.getElementById('hudGoals'), hudScore = document.getElementById('hudScore'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText'), overTitle = document.getElementById('overTitle');
+  var best = 0; try { best = parseInt(localStorage.getItem('speedStrikersBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready';
+  var kick, goals, score, ball, keeper, anim, msgText, msgT, lastTs = 0, rafId = null;
+
+  function reset(){
+    kick = 1; goals = 0; score = 0;
+    ball = { x: W / 2, y: 500, r: 17, tx: null, ty: null, t: 1 };
+    keeper = { x: W / 2, y: GOAL.y + GOAL.h - 26, dive: 0, tx: W / 2 };
+    anim = false; msgText = ''; msgT = 0;
+    hudKick.textContent = '1/5'; hudGoals.textContent = '0'; hudScore.textContent = '0';
+  }
+  function draw(){
+    // pitch
+    ctx.fillStyle = '#0A2417'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#0D2E1E'; for (var s = 0; s < 6; s++) ctx.fillRect(0, s * 100, W, 50);
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2;
+    ctx.strokeRect(30, 400, W - 60, 170);
+    ctx.beginPath(); ctx.arc(W / 2, 500, 52, Math.PI, 0); ctx.stroke();
+    // goal frame + net
+    ctx.fillStyle = 'rgba(200,220,255,.10)';
+    ctx.fillRect(GOAL.x, GOAL.y, GOAL.w, GOAL.h);
+    ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1;
+    for (var gx = GOAL.x; gx <= GOAL.x + GOAL.w; gx += 22) { ctx.beginPath(); ctx.moveTo(gx, GOAL.y); ctx.lineTo(gx, GOAL.y + GOAL.h); ctx.stroke(); }
+    for (var gy = GOAL.y; gy <= GOAL.y + GOAL.h; gy += 22) { ctx.beginPath(); ctx.moveTo(GOAL.x, gy); ctx.lineTo(GOAL.x + GOAL.w, gy); ctx.stroke(); }
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 6;
+    ctx.strokeRect(GOAL.x, GOAL.y, GOAL.w, GOAL.h);
+    // keeper
+    ctx.save(); ctx.translate(keeper.x, keeper.y); ctx.rotate(keeper.dive * 0.9);
+    ctx.fillStyle = '#FFB02E';
+    ctx.beginPath(); ctx.arc(0, -34, 12, 0, 7); ctx.fill();
+    ctx.fillRect(-6, -24, 12, 30);
+    ctx.strokeStyle = '#FFB02E'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(-4, -18); ctx.lineTo(-26, -6); ctx.moveTo(4, -18); ctx.lineTo(26, -6); ctx.stroke();
+    ctx.strokeStyle = '#0D1626'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(-3, 6); ctx.lineTo(-10, 24); ctx.moveTo(3, 6); ctx.lineTo(10, 24); ctx.stroke();
+    ctx.restore();
+    // ball
+    ctx.fillStyle = '#F4F7FB';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.fill();
+    ctx.fillStyle = '#0D1626';
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r * 0.36, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(13,22,38,.4)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(ball.x, ball.y, ball.r, 0, 7); ctx.stroke();
+    // message
+    if (msgText && msgT > 0) {
+      ctx.fillStyle = '#FFD75E';
+      ctx.font = '700 24px Rajdhani, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(msgText, W / 2, 84);
+    }
+    if (state === 'running' && !anim) {
+      ctx.fillStyle = 'rgba(255,255,255,.65)';
+      ctx.font = '600 13px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('TAP INSIDE THE GOAL TO SHOOT', W / 2, 386);
+    }
+  }
+  function shoot(tx, ty){
+    if (state !== 'running' || anim) return;
+    anim = true;
+    ball.tx = tx; ball.ty = ty; ball.t = 0;
+    // keeper reads: chance grows with kick number; corners are harder to read
+    var cornerness = Math.max(Math.abs(tx - W / 2) / (GOAL.w / 2), Math.abs(ty - (GOAL.y + GOAL.h / 2)) / (GOAL.h / 2));
+    var readChance = 0.30 + kick * 0.05 - cornerness * 0.16;
+    var reads = Math.random() < readChance;
+    var kx = reads ? tx : W / 2 + (Math.random() * 2 - 1) * GOAL.w * 0.38;
+    keeper.tx = Math.max(GOAL.x + 26, Math.min(GOAL.x + GOAL.w - 26, kx));
+    keeper.dive = keeper.tx < W / 2 - 20 ? -1 : keeper.tx > W / 2 + 20 ? 1 : 0;
+    // outcome
+    var inGoal = tx > GOAL.x + 6 && tx < GOAL.x + GOAL.w - 6 && ty > GOAL.y + 6 && ty < GOAL.y + GOAL.h - 6;
+    var saved = inGoal && Math.abs(keeper.tx - tx) < 52 && Math.abs(ty - keeper.y) < 62;
+    ball.outcome = !inGoal ? 'miss' : saved ? 'saved' : 'goal';
+    ball.corner = cornerness;
+  }
+  function resolve(){
+    anim = false;
+    if (ball.outcome === 'goal') {
+      goals++;
+      var pts = ball.corner > 0.72 ? 200 : 100;
+      score += pts;
+      msgText = ball.corner > 0.72 ? 'TOP BIN! +200' : 'GOAL! +100';
+      hudGoals.textContent = goals; hudScore.textContent = score;
+    } else if (ball.outcome === 'saved') {
+      msgText = 'SAVED!';
+    } else {
+      msgText = 'OFF TARGET!';
+    }
+    msgT = 1.15;
+    if (kick >= 5) { setTimeout(function(){ if (state === 'running') finish(); }, 800); }
+    else {
+      kick++;
+      hudKick.textContent = kick + '/5';
+      setTimeout(function(){
+        if (state !== 'running') return;
+        ball = { x: W / 2, y: 500, r: 17, tx: null, ty: null, t: 1 };
+        keeper.x = W / 2; keeper.tx = W / 2; keeper.dive = 0;
+      }, 700);
+    }
+  }
+  function step(ts){
+    if (state !== 'running') { draw(); return; }
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    if (msgT > 0) msgT -= dt;
+    if (anim && ball.tx !== null) {
+      ball.t += dt * 2.6;
+      var t = Math.min(1, ball.t);
+      ball.x += (ball.tx - ball.x) * Math.min(1, dt * 11);
+      ball.y += (ball.ty - ball.y) * Math.min(1, dt * 11);
+      ball.r = 17 - t * 6;
+      keeper.x += (keeper.tx - keeper.x) * Math.min(1, dt * 7);
+      if (t >= 1) resolve();
+    }
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){
+    reset(); state = 'running';
+    ovStart.classList.add('hidden'); ovOver.classList.add('hidden');
+    lastTs = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(step);
+  }
+  function finish(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('speedStrikersBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    overTitle.innerHTML = goals >= 4 ? 'CLINICAL<span>.</span>' : goals >= 2 ? 'FULL TIME<span>.</span>' : 'ROUGH DAY<span>.</span>';
+    overText.textContent = 'You scored ' + goals + ' of 5 for ' + score + ' points' + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  cv.addEventListener('pointerdown', function(e){
+    var rect = cv.getBoundingClientRect();
+    var x = (e.clientX - rect.left) * (W / rect.width);
+    var y = (e.clientY - rect.top) * (H / rect.height);
+    shoot(x, y);
+  });
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

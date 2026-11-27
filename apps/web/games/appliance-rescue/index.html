@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Appliance Rescue — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/appliance-rescue">
+<meta name="description" content="Appliance Rescue: diagnose and fix broken appliances against the clock. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0C1B31;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--grn:#22C55E;--yel:#FFB02E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:640px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:14px}
+.hudrow{display:flex;gap:10px;flex-wrap:wrap}
+.hudbox{flex:1;min-width:96px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center}
+.hudbox .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-weight:700}
+.hudbox .val{font-family:"Rajdhani";font-size:21px;font-weight:700}
+.clockbar{height:10px;border-radius:99px;background:#10182C;margin-top:14px;overflow:hidden}
+.clockbar i{display:block;height:100%;background:linear-gradient(90deg,var(--red2),var(--red));width:100%}
+.case{margin-top:16px;text-align:center}
+.case .app{font-family:"Rajdhani";font-size:24px}
+.case .fault{color:#FFB02E;font-weight:700;margin-top:2px}
+.case .prompt{color:var(--mut);font-size:13.5px;margin-top:8px;line-height:1.55}
+.steps{display:flex;gap:6px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+.stepdot{width:30px;height:30px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--mut)}
+.stepdot.done{border-color:var(--grn);color:var(--grn)}
+.stepdot.now{border-color:var(--red);color:#fff;background:rgba(232,50,46,.2)}
+.tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:16px}
+.tool{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:13px 10px;color:#fff;font-family:Inter;font-size:13.5px;font-weight:600;cursor:pointer;text-align:center}
+.tool:active{transform:scale(.97)}
+.tool.hinted{border-color:#FFD75E !important;box-shadow:0 0 0 2px rgba(255,215,94,.45),0 0 18px rgba(255,215,94,.35)}
+.tool.right{border-color:var(--grn);background:rgba(34,197,94,.15)}
+.tool.wrong{border-color:var(--red);background:rgba(232,50,46,.15)}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter;display:block;margin:18px auto 0}
+.msg{text-align:center;margin-top:12px;font-size:14px;min-height:20px}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:14px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Simulation · Game 004</div>
+  <h1>APPLIANCE <span>RESCUE</span></h1>
+  <p class="sub">Real tech work, arcade clock. Each call shows a fault — run the right repair steps in order before the customer's patience runs out. Replacement steps carry <b style="color:#EAF0FF">genuine OEM part numbers from the Top Speed parts catalog</b>, and Speedy is on call if you need a hint.</p>
+  <div class="panel">
+    <div class="hudrow">
+      <div class="hudbox"><div class="lab">FIXED</div><div class="val" id="hudFixed">0</div></div>
+      <div class="hudbox"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="hudbox"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="clockbar"><i id="clockFill"></i></div>
+    <div id="playArea">
+      <div class="case">
+        <div class="app" id="caseApp">Ready when you are</div>
+        <div class="fault" id="caseFault">The van is loaded. The clock is not kind.</div>
+        <div class="prompt" id="casePrompt">Press Start shift, then tap the repair steps in the right order.</div>
+      </div>
+      <div class="steps" id="stepDots"></div>
+      <div class="tray" id="tray"></div>
+      <div class="msg" id="msg"></div>
+      <button class="bigbtn hidden" id="btnHint" type="button" style="background:#0C1B31;border:1px solid #FFD75E;color:#FFD75E;font-size:13.5px;padding:11px 22px">Ask Speedy — hint (−25 pts, 1 per call)</button>
+      <button class="bigbtn" id="btnStart" type="button">Start shift</button>
+      <button class="bigbtn hidden" id="btnRetry" type="button">Next shift</button>
+    </div>
+  </div>
+  <p class="help">Wrong step = time penalty and a shaken customer. Finish a repair to bank its points and roll to the next call.</p>
+  <p class="help" style="border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#081226">Real appliance down at home? This is the game version — the real fix is one tap away: <a href="/book" style="color:#fff;font-weight:700">Book a real Top Speed tech</a> · $99 diagnostic, credited toward your repair.</p>
+</main>
+<script>
+(function(){
+  var CASES = [
+    { app: 'Refrigerator', fault: 'Not cooling', steps: ['Test the temperature', 'Clean the condenser coils', 'Check the evaporator fan', 'Replace the start relay', 'Verify cooling'] },
+    { app: 'Washer', fault: 'Won\u2019t drain', steps: ['Check the drain hose', 'Clean the pump filter', 'Test the drain pump', 'Replace the drain pump \u00B7 W10536347 Whirlpool', 'Run a test cycle'] },
+    { app: 'Dryer', fault: 'No heat', steps: ['Check the vent line', 'Test the thermal fuse \u00B7 WP3392519 Whirlpool', 'Test the heating element', 'Replace the heating element \u00B7 279838 Whirlpool', 'Verify heat'] },
+    { app: 'Oven', fault: 'Won\u2019t ignite', steps: ['Test the igniter draw', 'Check the gas valve', 'Replace the igniter \u00B7 5303935066 Frigidaire', 'Test the flame', 'Verify temperature'] },
+    { app: 'Dishwasher', fault: 'Leaking at the door', steps: ['Inspect the door gasket', 'Check the float switch', 'Tighten the inlet valve', 'Replace the gasket', 'Run a leak test'] },
+    { app: 'Refrigerator', fault: 'Ice maker dead', steps: ['Check the water line', 'Test the inlet valve \u00B7 MJX41869208 LG', 'Replace the ice maker \u00B7 WPW10300024 Whirlpool', 'Cycle the maker', 'Verify ice'] },
+    { app: 'Washer', fault: 'Shakes violently', steps: ['Level the machine', 'Inspect the shocks', 'Check the suspension rods', 'Replace the suspension rods \u00B7 W10780045 Whirlpool', 'Run a spin test'] },
+    { app: 'AC Unit', fault: 'Blowing warm air', steps: ['Check the filter', 'Test the capacitor', 'Clean the condenser', 'Check refrigerant', 'Verify cooling'] }
+  ];
+  var DECOYS = ['Polish the badge', 'Reboot the house', 'Add more stickers', 'Shake it twice', 'Read the horoscope', 'Tighten every screw', 'Paint it red'];
+  var hudFixed = document.getElementById('hudFixed'), hudScore = document.getElementById('hudScore'), hudBest = document.getElementById('hudBest');
+  var clockFill = document.getElementById('clockFill'), caseApp = document.getElementById('caseApp'), caseFault = document.getElementById('caseFault'), casePrompt = document.getElementById('casePrompt');
+  var stepDots = document.getElementById('stepDots'), tray = document.getElementById('tray'), msg = document.getElementById('msg');
+  var btnStart = document.getElementById('btnStart'), btnRetry = document.getElementById('btnRetry');
+  var best = 0; try { best = parseInt(localStorage.getItem('applianceRescueBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready', score = 0, fixed = 0, timeLeft = 0, timeMax = 0, cur = null, stepIdx = 0, lastTs = 0, rafId = null, order = [];
+  var btnHint = document.getElementById('btnHint'), hintUsed = false;
+  // WebAudio synth — no audio files, tones generated in the browser
+  var AC = null;
+  function audio(){ if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } return AC; }
+  function tone(freq, at, dur, type, vol){
+    var ac = audio(); if (!ac) return;
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || 'sine'; o.frequency.value = freq;
+    var t = ac.currentTime + (at || 0);
+    g.gain.setValueAtTime(vol || 0.12, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function sfx(kind){
+    if (kind === 'right') { tone(740, 0, 0.1); tone(1180, 0.08, 0.14); }
+    else if (kind === 'wrong') { tone(140, 0, 0.16, 'square', 0.07); }
+    else if (kind === 'fixed') { [523, 659, 784, 1047].forEach(function(f, i){ tone(f, i * 0.09, 0.16); }); }
+    else if (kind === 'start') { tone(440, 0, 0.1); tone(660, 0.09, 0.14); }
+  }
+  function buzz(pattern){ if (navigator.vibrate) { try { navigator.vibrate(pattern); } catch (e) {} } }
+
+  function shuffle(a){ for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function newCase(){
+    cur = CASES[Math.floor(Math.random() * CASES.length)];
+    stepIdx = 0;
+    hintUsed = false;
+    btnHint.classList.remove('hidden');
+    timeMax = Math.max(14, 26 - fixed * 1.2);
+    timeLeft = timeMax;
+    caseApp.textContent = cur.app;
+    caseFault.textContent = 'Fault: ' + cur.fault;
+    casePrompt.textContent = 'Run the repair in order. Next step is highlighted above.';
+    var tools = cur.steps.slice();
+    var decoys = shuffle(DECOYS.slice()).slice(0, 2);
+    order = shuffle(tools.concat(decoys));
+    tray.innerHTML = '';
+    order.forEach(function(name){
+      var b = document.createElement('button');
+      b.className = 'tool'; b.type = 'button'; b.textContent = name;
+      b.addEventListener('click', function(){ pick(name, b); });
+      tray.appendChild(b);
+    });
+    renderDots();
+    msg.textContent = '';
+  }
+  function renderDots(){
+    stepDots.innerHTML = '';
+    cur.steps.forEach(function(s, i){
+      var d = document.createElement('div');
+      d.className = 'stepdot' + (i < stepIdx ? ' done' : i === stepIdx ? ' now' : '');
+      d.textContent = i + 1;
+      stepDots.appendChild(d);
+    });
+  }
+  function pick(name, btn){
+    if (state !== 'running') return;
+    if (name === cur.steps[stepIdx]) {
+      btn.classList.add('right');
+      btn.classList.remove('hinted');
+      btn.disabled = true;
+      stepIdx++;
+      score += 40;
+      hudScore.textContent = score;
+      sfx('right');
+      if (stepIdx >= cur.steps.length) {
+        fixed++;
+        sfx('fixed'); buzz([40, 60, 40]);
+        score += Math.round(timeLeft * 6);
+        hudFixed.textContent = fixed;
+        hudScore.textContent = score;
+        msg.textContent = 'Fixed! Customer thrilled. Rolling to the next call…';
+        setTimeout(function(){ if (state === 'running') newCase(); }, 900);
+        stepDots.innerHTML = '';
+        tray.innerHTML = '';
+        return;
+      }
+      renderDots();
+    } else {
+      btn.classList.add('wrong');
+      sfx('wrong'); buzz(70);
+      timeLeft = Math.max(0, timeLeft - 2.5);
+      msg.textContent = 'Wrong step — the customer winces. −2.5s';
+      setTimeout(function(){ btn.classList.remove('wrong'); }, 350);
+    }
+  }
+  function loop(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    timeLeft -= dt;
+    clockFill.style.width = Math.max(0, (timeLeft / timeMax) * 100) + '%';
+    if (timeLeft <= 0) { gameOver(); return; }
+    rafId = requestAnimationFrame(loop);
+  }
+  btnHint.addEventListener('click', function(){
+    if (state !== 'running' || hintUsed || !cur) return;
+    hintUsed = true;
+    score = Math.max(0, score - 25);
+    hudScore.textContent = score;
+    btnHint.classList.add('hidden');
+    var want = cur.steps[stepIdx];
+    var buttons = tray.querySelectorAll('.tool');
+    buttons.forEach(function(b){ if (b.textContent === want && !b.disabled) b.classList.add('hinted'); });
+    msg.textContent = 'Speedy: \u201CNext step is glowing. Trust the sequence \u2014 diagnosis before parts.\u201D';
+    tone(980, 0, 0.1); tone(1240, 0.08, 0.12);
+  });
+  function start(){
+    score = 0; fixed = 0; hudScore.textContent = '0'; hudFixed.textContent = '0';
+    state = 'running';
+    sfx('start');
+    btnStart.classList.add('hidden'); btnRetry.classList.add('hidden');
+    newCase();
+    lastTs = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(loop);
+  }
+  function gameOver(){
+    state = 'over';
+    if (rafId) cancelAnimationFrame(rafId);
+    btnHint.classList.add('hidden');
+    clockFill.style.width = '0%';
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('applianceRescueBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    caseApp.textContent = 'Shift over';
+    caseFault.textContent = 'You fixed ' + fixed + (fixed === 1 ? ' appliance' : ' appliances') + ' · Score ' + score + (isBest ? ' · New best!' : '');
+    casePrompt.textContent = 'The customers of Broward thank you. Ready for another shift?';
+    stepDots.innerHTML = ''; tray.innerHTML = ''; msg.textContent = '';
+    btnRetry.classList.remove('hidden');
+  }
+  btnStart.addEventListener('click', start);
+  btnRetry.addEventListener('click', start);
+})();
+</script>
+</body>
+</html>

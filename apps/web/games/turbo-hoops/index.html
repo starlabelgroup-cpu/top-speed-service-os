@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Turbo Hoops — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/turbo-hoops">
+<meta name="description" content="Turbo Hoops: a 60-second arcade shootout — time the power bar, drain the shot, build the streak. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 12px;font-family:"Rajdhani";pointer-events:none;gap:6px}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 9px;text-align:center;flex:1}
+.hud .lab{font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:18px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.8);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--red);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:17px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Arcade Basketball · Game 014</div>
+  <h1>TURBO <span>HOOPS</span></h1>
+  <p class="sub">Sixty seconds on the clock. The power bar sweeps — release your shot inside the green window to drain it. Streaks multiply, and late in the round the hoop starts moving.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="600"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">TIME</div><div class="val" id="hudTime">60</div></div>
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">STREAK</div><div class="val" id="hudStreak">0</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>TURBO <span>HOOPS</span></h2>
+      <p>Press and hold SHOOT to charge, release inside the green zone. Too soft or too strong and it clangs out. Swishes are worth more.</p>
+      <button class="bigbtn" id="btnStart" type="button">Tip off</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>BUZZER<span>.</span></h2>
+      <p id="overText">Game over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Run it back</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnShoot" type="button">HOLD TO CHARGE — RELEASE TO SHOOT</button>
+  </div>
+  <p class="help">Touch: hold and release the big button &nbsp;·&nbsp; Keyboard: hold and release SPACE &nbsp;·&nbsp; Best score is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 600;
+  var hudTime = document.getElementById('hudTime'), hudScore = document.getElementById('hudScore'), hudStreak = document.getElementById('hudStreak'), hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText');
+  var best = 0; try { best = parseInt(localStorage.getItem('turboHoopsBest') || '0', 10) || 0; } catch (e) {}
+  hudBest.textContent = best;
+  var state = 'ready';
+  var PX = 92, PY = 470; // shooter
+  var hoop, ball, power, charging, chargeDir, score, streak, timeLeft, zoneC, zoneW, lastTs = 0, rafId = null, makes, shots;
+
+  function reset(){
+    hoop = { x: 372, y: 168, baseX: 372, t: 0 };
+    ball = null; power = 0; charging = false; chargeDir = 1;
+    score = 0; streak = 0; timeLeft = 60; makes = 0; shots = 0;
+    zoneC = 62; zoneW = 17;
+    hudScore.textContent = '0'; hudStreak.textContent = '0'; hudTime.textContent = '60';
+  }
+  function draw(){
+    // court
+    ctx.fillStyle = '#0B1428'; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#10203C'; ctx.fillRect(0, PY + 58, W, H - PY - 58);
+    ctx.strokeStyle = 'rgba(234,240,255,.25)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, PY + 58); ctx.lineTo(W, PY + 58); ctx.stroke();
+    ctx.beginPath(); ctx.arc(W / 2, PY + 58, 90, Math.PI, 0); ctx.stroke();
+    // backboard + rim
+    ctx.fillStyle = 'rgba(234,240,255,.9)';
+    ctx.fillRect(hoop.x - 6, hoop.y - 64, 8, 74);
+    ctx.strokeStyle = '#E8322E'; ctx.lineWidth = 3;
+    ctx.strokeRect(hoop.x - 4, hoop.y - 56, 44, 34);
+    ctx.strokeStyle = '#FF7A1A';
+    ctx.beginPath(); ctx.ellipse(hoop.x + 26, hoop.y, 21, 6, 0, 0, 7); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.65)'; ctx.lineWidth = 1.5;
+    for (var n = -2; n <= 2; n++) {
+      ctx.beginPath(); ctx.moveTo(hoop.x + 26 + n * 9, hoop.y + 3); ctx.lineTo(hoop.x + 26 + n * 5, hoop.y + 26); ctx.stroke();
+    }
+    ctx.beginPath(); ctx.moveTo(hoop.x + 6, hoop.y + 4); ctx.lineTo(hoop.x + 46, hoop.y + 4); ctx.lineTo(hoop.x + 38, hoop.y + 27); ctx.lineTo(hoop.x + 14, hoop.y + 27); ctx.closePath(); ctx.stroke();
+    // shooter
+    ctx.fillStyle = '#E8322E';
+    ctx.beginPath(); ctx.arc(PX, PY - 44, 13, 0, 7); ctx.fill();
+    ctx.fillRect(PX - 5, PY - 32, 10, 30);
+    ctx.fillRect(PX - 5, PY - 2, 4, 22); ctx.fillRect(PX + 3, PY - 2, 4, 22);
+    ctx.strokeStyle = '#E8322E'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(PX + 2, PY - 26); ctx.lineTo(PX + 22, PY - 44); ctx.stroke();
+    // ball (in hand or flying)
+    var bx = ball ? ball.x : PX + 26, by = ball ? ball.y : PY - 48;
+    ctx.fillStyle = '#FF7A1A';
+    ctx.beginPath(); ctx.arc(bx, by, 13, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(60,20,0,.55)'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(bx, by, 13, 0, 7); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx - 13, by); ctx.lineTo(bx + 13, by); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(bx, by - 13); ctx.lineTo(bx, by + 13); ctx.stroke();
+    // power bar
+    if (state === 'running') {
+      var bw = 300, bx0 = (W - bw) / 2, by0 = H - 44;
+      ctx.fillStyle = '#10182C'; ctx.fillRect(bx0, by0, bw, 16);
+      var zl = bx0 + bw * (zoneC - zoneW / 2) / 100, zw = bw * zoneW / 100;
+      ctx.fillStyle = 'rgba(34,197,94,.55)'; ctx.fillRect(zl, by0, zw, 16);
+      ctx.fillStyle = '#E8322E'; ctx.fillRect(bx0, by0, bw * power / 100, 16);
+      ctx.fillStyle = '#fff'; ctx.fillRect(bx0 + bw * power / 100 - 2, by0 - 3, 4, 22);
+      ctx.fillStyle = '#93A5CC'; ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('SHOT POWER — RELEASE IN THE GREEN', W / 2, by0 - 8);
+    }
+  }
+  function shoot(){
+    if (ball || state !== 'running') return;
+    shots++;
+    var dx = (hoop.x + 26) - (PX + 26);
+    var dy = hoop.y - (PY - 48);
+    var dist = Math.hypot(dx, dy);
+    var flight = 0.78;
+    var ideal = 62 + (dist - 330) * 0.05;
+    var err = power - ideal;
+    var vx = dx / flight;
+    var vy = (dy - 0.5 * 1500 * flight * flight) / flight;
+    ball = { x: PX + 26, y: PY - 48, vx: vx * (1 + err * 0.006), vy: vy * (1 + err * 0.004), t: 0, scored: false, dead: false };
+  }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    timeLeft -= dt;
+    hudTime.textContent = Math.max(0, Math.ceil(timeLeft));
+    if (timeLeft <= 0) { gameOver(); return; }
+    // hoop movement in the final stretch
+    if (timeLeft < 25) {
+      hoop.t += dt;
+      hoop.x = hoop.baseX + Math.sin(hoop.t * 1.7) * 42;
+    }
+    if (charging) {
+      power += chargeDir * dt * 95;
+      if (power >= 100) { power = 100; chargeDir = -1; }
+      if (power <= 0) { power = 0; chargeDir = 1; }
+    }
+    if (ball) {
+      ball.t += dt;
+      ball.vy += 1500 * dt;
+      ball.x += ball.vx * dt;
+      ball.y += ball.vy * dt;
+      if (!ball.scored && ball.vy > 0 && Math.abs(ball.x - (hoop.x + 26)) < 15 && Math.abs(ball.y - hoop.y) < 10) {
+        ball.scored = true;
+        makes++;
+        streak++;
+        var pts = 2 + Math.min(3, streak - 1) + (Math.abs(ball.x - (hoop.x + 26)) < 6 ? 1 : 0);
+        score += pts;
+        hudScore.textContent = score; hudStreak.textContent = streak;
+      }
+      if (ball.y > PY + 44 || ball.x > W + 30 || ball.t > 1.6) {
+        if (!ball.scored) { streak = 0; hudStreak.textContent = '0'; }
+        ball = null;
+        power = 0;
+        zoneC = 54 + Math.random() * 20;
+      }
+    }
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('turboHoopsBest', String(best)); } catch (e) {} hudBest.textContent = best; }
+    overText.textContent = 'You scored ' + score + ' on ' + makes + ' of ' + shots + ' shots' + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  var bs = document.getElementById('btnShoot');
+  bs.addEventListener('pointerdown', function(e){ if (state === 'running' && !ball) { charging = true; chargeDir = 1; power = 0; } e.preventDefault(); });
+  bs.addEventListener('pointerup', function(){ if (charging) { charging = false; shoot(); } });
+  bs.addEventListener('pointerleave', function(){ if (charging) { charging = false; shoot(); } });
+  document.addEventListener('keydown', function(e){
+    if (e.key === ' ' && state === 'running' && !ball && !charging) { charging = true; chargeDir = 1; power = 0; e.preventDefault(); }
+    if (e.key === 'Enter' && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key === ' ' && charging) { charging = false; shoot(); }
+  });
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

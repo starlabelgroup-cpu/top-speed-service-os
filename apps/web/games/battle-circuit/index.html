@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Battle Circuit — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/battle-circuit">
+<meta name="description" content="Battle Circuit: armored arena combat — ram and blast rival machines wave after wave. A Top Speed Gaming OS game.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;font-family:"Rajdhani";pointer-events:none}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 11px;text-align:center}
+.hud .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:19px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.78);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:10px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;flex-wrap:wrap}
+.tbtn{flex:1;min-width:70px;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:15px 0;font-family:"Rajdhani";font-size:16px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn.fire{border-color:rgba(232,50,46,.6)}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Arena Combat · Game 007</div>
+  <h1>BATTLE <span>CIRCUIT</span></h1>
+  <p class="sub">Your armored machine against wave after wave of rivals. Blast them or ram them — just don't let them take your hull to zero.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="600"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">WAVE</div><div class="val" id="hudWave">1</div></div>
+      <div class="box"><div class="lab">HULL</div><div class="val" id="hudHull">100</div></div>
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>BATTLE <span>CIRCUIT</span></h2>
+      <p>Drive with WASD or the arrow keys — your cannon aims where you face. FIRE with space or the red button. Survive the waves.</p>
+      <button class="bigbtn" id="btnStart" type="button">Enter the arena</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>HULL <span>BREACH.</span></h2>
+      <p id="overText">Run over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Rebuild &amp; return</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnUp" type="button">&#8593;</button>
+    <button class="tbtn" id="btnLeft" type="button">&#8592;</button>
+    <button class="tbtn fire" id="btnFire" type="button">FIRE</button>
+    <button class="tbtn" id="btnRight" type="button">&#8594;</button>
+    <button class="tbtn" id="btnDown" type="button">&#8595;</button>
+  </div>
+  <p class="help">Keyboard: WASD / arrows to drive, SPACE to fire &nbsp;·&nbsp; Touch: pad + FIRE &nbsp;·&nbsp; Best score is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 600;
+  var hudWave = document.getElementById('hudWave'), hudHull = document.getElementById('hudHull'), hudScore = document.getElementById('hudScore');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText');
+  var best = 0; try { best = parseInt(localStorage.getItem('battleCircuitBest') || '0', 10) || 0; } catch (e) {}
+  var state = 'ready', keys = { u: false, d: false, l: false, r: false, f: false };
+  var player, foes, shots, parts, wave, score, fireCd, spawnQueue, spawnTimer, lastTs = 0, rafId = null;
+
+  function reset(){
+    player = { x: W / 2, y: H - 110, a: -Math.PI / 2, hull: 100, r: 20 };
+    foes = []; shots = []; parts = [];
+    wave = 0; score = 0; fireCd = 0;
+    hudScore.textContent = '0'; hudHull.textContent = '100'; hudWave.textContent = '1';
+    nextWave();
+  }
+  function nextWave(){
+    wave++;
+    hudWave.textContent = wave;
+    spawnQueue = 2 + wave;
+    spawnTimer = 0.5;
+    player.hull = Math.min(100, player.hull + 22);
+    hudHull.textContent = Math.ceil(player.hull);
+  }
+  function spawnFoe(){
+    var edge = Math.floor(Math.random() * 4);
+    var x = edge === 0 ? 30 : edge === 1 ? W - 30 : 40 + Math.random() * (W - 80);
+    var y = edge === 2 ? 30 : edge === 3 ? H - 30 : 40 + Math.random() * (H - 80);
+    if (edge < 2) y = 40 + Math.random() * (H - 80);
+    var colors = ['#3E7CB1', '#E8B33E', '#4CAF7D', '#8E5CB8'];
+    foes.push({ x: x, y: y, a: 0, hull: 30 + wave * 6, r: 18, color: colors[Math.floor(Math.random() * colors.length)], hitCd: 0 });
+  }
+  function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawMachine(m, color, isPlayer){
+    ctx.save(); ctx.translate(m.x, m.y); ctx.rotate(m.a + Math.PI / 2);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(-17, -21, 38, 48, 9); ctx.fill();
+    ctx.fillStyle = color; rr(-19, -24, 38, 48, 9); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-11, -8, 22, 18, 5); ctx.fill();
+    ctx.fillStyle = '#1A2438'; ctx.fillRect(-3, -34, 6, 16);
+    ctx.fillStyle = '#05070C'; rr(-23, -20, 7, 13, 3); ctx.fill(); rr(16, -20, 7, 13, 3); ctx.fill(); rr(-23, 8, 7, 13, 3); ctx.fill(); rr(16, 8, 7, 13, 3); ctx.fill();
+    if (isPlayer) { ctx.fillStyle = '#fff'; ctx.fillRect(-3, -24, 6, 48); }
+    ctx.restore();
+    // hull bar
+    var pct = Math.max(0, m.hull / (isPlayer ? 100 : 30 + wave * 6));
+    ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.fillRect(m.x - 18, m.y - 36, 36, 4);
+    ctx.fillStyle = pct > 0.35 ? '#22C55E' : '#E8322E'; ctx.fillRect(m.x - 18, m.y - 36, 36 * pct, 4);
+  }
+  function draw(){
+    ctx.fillStyle = '#0A0E18'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(120,150,200,.14)'; ctx.lineWidth = 1;
+    for (var x = 0; x <= W; x += 48) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (var y = 0; y <= H; y += 48) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.strokeStyle = '#E8322E'; ctx.lineWidth = 3; ctx.strokeRect(3, 3, W - 6, H - 6);
+    parts.forEach(function(p){ ctx.fillStyle = 'rgba(255,' + Math.floor(120 + p.life * 100) + ',60,' + p.life + ')'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * p.life, 0, 7); ctx.fill(); });
+    shots.forEach(function(s){ ctx.fillStyle = '#FFD75E'; ctx.beginPath(); ctx.arc(s.x, s.y, 3.5, 0, 7); ctx.fill(); });
+    foes.forEach(function(f){ drawMachine(f, f.color, false); });
+    drawMachine(player, '#E8322E', true);
+  }
+  function boom(x, y){ for (var i = 0; i < 12; i++) parts.push({ x: x, y: y, r: 16 + Math.random() * 16, life: 0.9 }); }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    // spawning
+    if (spawnQueue > 0) { spawnTimer -= dt; if (spawnTimer <= 0) { spawnFoe(); spawnQueue--; spawnTimer = 0.9; } }
+    else if (foes.length === 0) nextWave();
+    // player drive
+    var mx = (keys.r ? 1 : 0) - (keys.l ? 1 : 0), my = (keys.d ? 1 : 0) - (keys.u ? 1 : 0);
+    if (mx || my) {
+      player.a = Math.atan2(my, mx);
+      var sp = 205;
+      player.x = Math.max(26, Math.min(W - 26, player.x + Math.cos(player.a) * sp * dt));
+      player.y = Math.max(26, Math.min(H - 26, player.y + Math.sin(player.a) * sp * dt));
+    }
+    // fire
+    fireCd -= dt;
+    if (keys.f && fireCd <= 0) {
+      fireCd = 0.22;
+      shots.push({ x: player.x + Math.cos(player.a) * 26, y: player.y + Math.sin(player.a) * 26, vx: Math.cos(player.a) * 520, vy: Math.sin(player.a) * 520, life: 0.85 });
+    }
+    // shots
+    for (var i = shots.length - 1; i >= 0; i--) {
+      var s = shots[i];
+      s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+      if (s.life <= 0 || s.x < 0 || s.x > W || s.y < 0 || s.y > H) { shots.splice(i, 1); continue; }
+      for (var j = foes.length - 1; j >= 0; j--) {
+        var f = foes[j];
+        if (Math.hypot(s.x - f.x, s.y - f.y) < f.r + 5) {
+          f.hull -= 16; shots.splice(i, 1);
+          if (f.hull <= 0) { boom(f.x, f.y); foes.splice(j, 1); score += 100 + wave * 10; hudScore.textContent = score; }
+          break;
+        }
+      }
+    }
+    // foes chase + ram
+    foes.forEach(function(f){
+      var dx = player.x - f.x, dy = player.y - f.y, d = Math.hypot(dx, dy) || 1;
+      f.a = Math.atan2(dy, dx);
+      var sp = 92 + wave * 7;
+      f.x += (dx / d) * sp * dt; f.y += (dy / d) * sp * dt;
+      f.hitCd -= dt;
+      if (d < f.r + player.r + 2) {
+        // ram exchange
+        f.x -= (dx / d) * 26 * dt * 4; f.y -= (dy / d) * 26 * dt * 4;
+        if (f.hitCd <= 0) {
+          f.hitCd = 0.5;
+          f.hull -= 9; player.hull -= 7;
+          hudHull.textContent = Math.max(0, Math.ceil(player.hull));
+          if (f.hull <= 0) { boom(f.x, f.y); foes.splice(foes.indexOf(f), 1); score += 60; hudScore.textContent = score; }
+        }
+      }
+    });
+    parts.forEach(function(p){ p.life -= dt * 1.6; });
+    parts = parts.filter(function(p){ return p.life > 0; });
+    if (player.hull <= 0) { gameOver(); return; }
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function gameOver(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    boom(player.x, player.y);
+    var isBest = score > best;
+    if (isBest) { best = score; try { localStorage.setItem('battleCircuitBest', String(best)); } catch (e) {} }
+    overText.textContent = 'You reached wave ' + wave + ' with ' + score + ' points' + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function bindHold(id, key){
+    var el = document.getElementById(id);
+    el.addEventListener('pointerdown', function(e){ keys[key] = true; e.preventDefault(); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ el.addEventListener(ev, function(){ keys[key] = false; }); });
+  }
+  bindHold('btnUp', 'u'); bindHold('btnDown', 'd'); bindHold('btnLeft', 'l'); bindHold('btnRight', 'r'); bindHold('btnFire', 'f');
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  document.addEventListener('keydown', function(e){
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') keys.u = true;
+    if (k === 'arrowdown' || k === 's') keys.d = true;
+    if (k === 'arrowleft' || k === 'a') keys.l = true;
+    if (k === 'arrowright' || k === 'd') keys.r = true;
+    if (k === ' ') { keys.f = true; e.preventDefault(); }
+    if (k === 'enter' && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    var k = e.key.toLowerCase();
+    if (k === 'arrowup' || k === 'w') keys.u = false;
+    if (k === 'arrowdown' || k === 's') keys.d = false;
+    if (k === 'arrowleft' || k === 'a') keys.l = false;
+    if (k === 'arrowright' || k === 'd') keys.r = false;
+    if (k === ' ') keys.f = false;
+  });
+  reset(); state = 'ready'; draw();
+})();
+</script>
+</body>
+</html>

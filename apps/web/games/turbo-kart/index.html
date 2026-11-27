@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Turbo Kart — Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/turbo-kart">
+<meta name="description" content="Turbo Kart: 3 laps against 3 rival karts on the Top Speed oval. A Gaming OS arcade racer.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:640px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 14px;font-family:"Rajdhani";pointer-events:none}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 11px;text-align:center}
+.hud .lab{font-size:9.5px;letter-spacing:.14em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:19px;font-weight:700;line-height:1.1}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.78);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:340px}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:17px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div><div class="htitle">Top Speed Gaming OS</div><div class="hsub">Top Speed Interactive</div></div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+<main>
+  <div class="kicker">Arcade · Game 003</div>
+  <h1>TURBO <span>KART</span></h1>
+  <p class="sub">Three laps of the Top Speed oval against three rival karts. Hold the gas, pick your line, and take the flag.</p>
+  <div class="stage">
+    <canvas id="cv" width="480" height="600"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">LAP</div><div class="val" id="hudLap">1/3</div></div>
+      <div class="box"><div class="lab">PLACE</div><div class="val" id="hudPlace">4th</div></div>
+      <div class="box"><div class="lab">TIME</div><div class="val" id="hudTime">0.0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>TURBO <span>KART</span></h2>
+      <p>Hold GAS to race. Steer with the buttons or arrow keys. Off-track grass slows you down — the racing line is everything.</p>
+      <button class="bigbtn" id="btnStart" type="button">Start race</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2 id="overTitle">FINISH<span>.</span></h2>
+      <p id="overText">Race over.</p>
+      <button class="bigbtn" id="btnRetry" type="button">Race again</button>
+    </div>
+  </div>
+  <div class="touchrow">
+    <button class="tbtn" id="btnLeft" type="button">&#8592;</button>
+    <button class="tbtn" id="btnGas" type="button">GAS</button>
+    <button class="tbtn" id="btnRight" type="button">&#8594;</button>
+  </div>
+  <p class="help">Keyboard: hold &#8593; / W for gas, &#8592; &#8594; or A / D to steer &nbsp;·&nbsp; Touch: hold the buttons &nbsp;·&nbsp; Best finish is kept on this device.</p>
+</main>
+<script>
+(function(){
+  var cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  var W = 480, H = 600;
+  var CX = 240, CY = 300, RX = 168, RY = 218, TRACKW = 92;
+  var hudLap = document.getElementById('hudLap'), hudPlace = document.getElementById('hudPlace'), hudTime = document.getElementById('hudTime');
+  var ovStart = document.getElementById('ovStart'), ovOver = document.getElementById('ovOver'), overText = document.getElementById('overText'), overTitle = document.getElementById('overTitle');
+  var best = ''; try { best = localStorage.getItem('turboKartBest') || ''; } catch (e) {}
+  var state = 'ready', lastTs = 0, rafId = null, raceTime = 0;
+  var keys = { l: false, r: false, gas: false };
+  var LAPS = 3;
+  var player, rivals;
+
+  function makeKart(color, isPlayer, skill, laneOff){
+    return { color: color, isPlayer: isPlayer, skill: skill, laneOff: laneOff, ang: -Math.PI / 2, prog: 0, speed: 0, x: 0, y: 0, finished: false, finishTime: 0 };
+  }
+  function reset(){
+    raceTime = 0;
+    player = makeKart('#E8322E', true, 1, 0);
+    player.ang = Math.PI * 0.5; player.prog = 0;
+    rivals = [
+      makeKart('#3E7CB1', false, 0.86 + Math.random() * 0.05, -22),
+      makeKart('#E8B33E', false, 0.90 + Math.random() * 0.05, 20),
+      makeKart('#4CAF7D', false, 0.94 + Math.random() * 0.05, 0)
+    ];
+    rivals.forEach(function(rv, i){ rv.ang = Math.PI * 0.5 + (i + 1) * 0.13; rv.prog = -(i + 1) * 0.13; });
+    hudLap.textContent = '1/3'; hudPlace.textContent = '4th'; hudTime.textContent = '0.0';
+    placeAll();
+  }
+  function posAt(ang, laneOff){
+    var rx = RX + laneOff, ry = RY + laneOff * 0.9;
+    return { x: CX + Math.cos(ang) * rx, y: CY + Math.sin(ang) * ry };
+  }
+  function placeAll(){
+    [player].concat(rivals).forEach(function(k){
+      var p = posAt(k.ang, k.laneOff);
+      k.x = p.x; k.y = p.y;
+    });
+  }
+  function onTrack(k){
+    var dx = (k.x - CX) / RX, dy = (k.y - CY) / RY;
+    var d = Math.sqrt(dx * dx + dy * dy);
+    return Math.abs(d - 1) < (TRACKW / 2 + 12) / RX;
+  }
+  function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function drawKart(k){
+    var heading = Math.atan2(Math.cos(k.ang) * RY, -Math.sin(k.ang) * RX);
+    ctx.save(); ctx.translate(k.x, k.y); ctx.rotate(heading + Math.PI / 2);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; rr(-15, -21, 34, 48, 9); ctx.fill();
+    ctx.fillStyle = k.color; rr(-17, -24, 34, 48, 9); ctx.fill();
+    ctx.fillStyle = '#0D1626'; rr(-11, -6, 22, 16, 5); ctx.fill();
+    ctx.fillStyle = '#05070C'; rr(-20, -20, 7, 13, 3); ctx.fill(); rr(13, -20, 7, 13, 3); ctx.fill(); rr(-20, 8, 7, 13, 3); ctx.fill(); rr(13, 8, 7, 13, 3); ctx.fill();
+    if (k.isPlayer) { ctx.fillStyle = '#fff'; ctx.fillRect(-3, -24, 6, 48); }
+    ctx.restore();
+  }
+  function draw(){
+    ctx.fillStyle = '#0A1410'; ctx.fillRect(0, 0, W, H);
+    // track ring
+    ctx.beginPath(); ctx.ellipse(CX, CY, RX + TRACKW / 2, RY + TRACKW / 2, 0, 0, 7); ctx.ellipse(CX, CY, RX - TRACKW / 2, RY - TRACKW / 2, 0, 0, 7, true); ctx.fillStyle = '#0A0E18'; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(CX, CY, RX + TRACKW / 2, RY + TRACKW / 2, 0, 0, 7); ctx.strokeStyle = '#E8322E'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(CX, CY, RX - TRACKW / 2, RY - TRACKW / 2, 0, 0, 7); ctx.stroke();
+    // start line
+    ctx.save(); ctx.translate(CX, CY + RY); ctx.fillStyle = '#EAF0FF';
+    for (var i = 0; i < 6; i++) for (var j = 0; j < 2; j++) { if ((i + j) % 2 === 0) ctx.fillRect(-TRACKW / 2 + i * (TRACKW / 6), -4 + j * 5, TRACKW / 6, 5); }
+    ctx.restore();
+    ctx.fillStyle = 'rgba(234,240,255,.16)'; ctx.font = '700 26px Rajdhani, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('TOP SPEED OVAL', CX, CY + 8);
+    rivals.forEach(drawKart);
+    drawKart(player);
+  }
+  function place(){
+    var all = [player].concat(rivals).slice().sort(function(a, b){ return b.prog - a.prog; });
+    return all.indexOf(player) + 1;
+  }
+  function ordinal(n){ return n + (n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'); }
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000); lastTs = ts;
+    raceTime += dt;
+    // player physics
+    var steer = (keys.r ? 1 : 0) - (keys.l ? 1 : 0);
+    var target = keys.gas ? 0.62 : 0;
+    player.speed += (target - player.speed) * Math.min(1, dt * 1.6);
+    if (!onTrack(player)) player.speed *= (1 - dt * 1.7);
+    player.ang += player.speed * dt * (1 + steer * 0.0); // base progression
+    player.laneOff += steer * 130 * dt;
+    player.laneOff = Math.max(-TRACKW / 2 - 26, Math.min(TRACKW / 2 + 26, player.laneOff));
+    player.prog = player.ang - Math.PI * 0.5;
+    // steering also slightly changes pace on the oval (line choice)
+    player.prog += 0; // prog derived from ang
+    // rivals
+    rivals.forEach(function(rv){
+      if (rv.finished) return;
+      var wobble = Math.sin(raceTime * 0.7 + rv.laneOff) * 6;
+      rv.laneOff += ((rv.skill * 40 - 20 + wobble) - rv.laneOff) * dt * 0.4;
+      rv.ang += 0.60 * rv.skill * dt * (1 + 0.03 * Math.sin(raceTime + rv.laneOff));
+      rv.prog = rv.ang - Math.PI * 0.5;
+      if (rv.prog >= LAPS * Math.PI * 2 && !rv.finished) { rv.finished = true; rv.finishTime = raceTime; }
+    });
+    placeAll();
+    hudLap.textContent = Math.min(LAPS, Math.floor(player.prog / (Math.PI * 2)) + 1) + '/' + LAPS;
+    hudPlace.textContent = ordinal(place());
+    hudTime.textContent = raceTime.toFixed(1);
+    if (player.prog >= LAPS * Math.PI * 2) { finish(); return; }
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+  function finish(){
+    state = 'over'; if (rafId) cancelAnimationFrame(rafId);
+    var p = place();
+    overTitle.innerHTML = p === 1 ? 'VICTORY<span>!</span>' : 'FINISH — ' + ordinal(p).toUpperCase() + '<span>.</span>';
+    var t = raceTime.toFixed(1) + 's';
+    var note = '';
+    if (p === 1 && (!best || raceTime < parseFloat(best))) { try { localStorage.setItem('turboKartBest', String(raceTime)); } catch (e) {} note = ' Fastest win on this device: ' + t + '.'; }
+    else if (best) note = ' Fastest win on this device: ' + parseFloat(best).toFixed(1) + 's.';
+    overText.textContent = 'You finished ' + ordinal(p) + ' in ' + t + '.' + note;
+    ovOver.classList.remove('hidden'); draw();
+  }
+  function start(){ reset(); state = 'running'; ovStart.classList.add('hidden'); ovOver.classList.add('hidden'); lastTs = 0; if (rafId) cancelAnimationFrame(rafId); rafId = requestAnimationFrame(step); }
+  function bindHold(id, key){
+    var el = document.getElementById(id);
+    el.addEventListener('pointerdown', function(e){ keys[key] = true; e.preventDefault(); });
+    ['pointerup', 'pointerleave', 'pointercancel'].forEach(function(ev){ el.addEventListener(ev, function(){ keys[key] = false; }); });
+  }
+  bindHold('btnLeft', 'l'); bindHold('btnRight', 'r'); bindHold('btnGas', 'gas');
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.l = true;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.r = true;
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.gas = true;
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'running') start();
+  });
+  document.addEventListener('keyup', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.l = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.r = false;
+    if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.gas = false;
+  });
+  reset(); draw();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Nitro Rush — Drive Safe. Get Home Fast. | Top Speed Gaming OS</title>
+<link rel="canonical" href="https://topspeedserviceos.com/games/nitro-rush">
+<meta name="description" content="Nitro Rush: the Top Speed arcade racer that teaches real road safety — signal your lane changes, move over for emergency vehicles, respect work zones. Drive safe. Get home fast.">
+<link rel="icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+:root{--bg:#060B18;--panel:#0B1428;--panel2:#0C1B31;--line:#1C2C52;--txt:#EAF0FF;--mut:#93A5CC;--red:#E8322E;--red2:#D10817;--grn:#22C55E;--yel:#FFB02E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+a{color:inherit;text-decoration:none}
+header{background:#000;border-bottom:3px solid var(--red2)}
+.hwrap{max-width:1060px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.hwrap img{height:40px;width:auto;border-radius:7px;display:block}
+.htitle{font-family:"Rajdhani";font-weight:700;font-size:16px;color:#fff;line-height:1.15}
+.hsub{font-size:11px;color:#B9CFF2}
+.back{margin-left:auto;font-size:13px;font-weight:700;color:#B9CFF2;border:1px solid var(--line);padding:8px 14px;border-radius:999px}
+main{max-width:1060px;margin:0 auto;padding:16px 16px 26px}
+.kicker{color:var(--red);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+h1{font-family:"Rajdhani";font-size:clamp(26px,5.4vw,38px);line-height:1.05;margin-top:6px}
+h1 span{color:var(--red)}
+.slogan{font-family:"Rajdhani";font-size:17px;font-weight:700;color:#FFD75E;margin-top:6px;letter-spacing:.02em}
+.sub{color:var(--mut);font-size:13.5px;margin-top:6px;line-height:1.55;max-width:680px}
+.stage{position:relative;margin-top:14px;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#05080F;max-width:520px;margin-left:auto;margin-right:auto}
+canvas{display:block;width:100%;height:auto;touch-action:none}
+.hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;padding:10px 12px;font-family:"Rajdhani";pointer-events:none;gap:6px}
+.hud .box{background:rgba(3,6,14,.72);border:1px solid rgba(120,150,200,.25);border-radius:10px;padding:5px 9px;text-align:center;flex:1}
+.hud .lab{font-size:9px;letter-spacing:.13em;color:var(--mut);font-family:Inter;font-weight:700}
+.hud .val{font-size:18px;font-weight:700;line-height:1.1}
+.hud .val.safe{color:var(--grn)}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:22px;background:rgba(3,6,14,.8);gap:10px}
+.overlay h2{font-family:"Rajdhani";font-size:clamp(26px,6vw,36px);line-height:1.05}
+.overlay h2 span{color:var(--red)}
+.overlay p{color:#C7D5F2;font-size:14px;line-height:1.6;max-width:350px}
+.overlay .tip{background:rgba(255,183,46,.12);border:1px solid rgba(255,183,46,.4);border-radius:12px;padding:10px 14px;font-size:13px;color:#FFE1A1;max-width:350px;line-height:1.55}
+.overlay .tip b{color:#FFB02E}
+.bigbtn{background:var(--red);color:#fff;font-weight:800;font-size:16px;padding:14px 30px;border-radius:999px;border:0;cursor:pointer;font-family:Inter}
+.touchrow{display:flex;gap:12px;justify-content:center;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto}
+.tbtn{flex:1;background:var(--panel);border:1px solid var(--line);color:#fff;border-radius:14px;padding:16px 0;font-family:"Rajdhani";font-size:16px;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tbtn small{display:block;font-family:Inter;font-size:10.5px;font-weight:600;color:var(--mut);letter-spacing:.06em}
+.tbtn:active{border-color:var(--red);background:rgba(232,50,46,.18)}
+.help{color:var(--mut);font-size:12.5px;text-align:center;margin-top:12px;line-height:1.6}
+.tips{max-width:1060px;margin:26px auto 0}
+.tips h2{font-family:"Rajdhani";font-size:21px}
+.tips h2 span{color:var(--red)}
+.tipgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
+.tipcard{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}
+.tipcard b{font-family:"Rajdhani";font-size:15.5px;display:block;margin-bottom:4px;color:#FFD75E}
+.tipcard p{color:var(--mut);font-size:13px;line-height:1.6}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<header>
+  <div class="hwrap">
+    <img src="/logo-header.jpg" alt="Top Speed Appliance Repair">
+    <div>
+      <div class="htitle">Top Speed Gaming OS</div>
+      <div class="hsub">Top Speed Interactive</div>
+    </div>
+    <a class="back" href="/games">All games</a>
+  </div>
+</header>
+
+<main>
+  <div class="kicker">Arcade · Game 001 · Safe Driving Edition</div>
+  <h1>NITRO <span>RUSH</span></h1>
+  <div class="slogan">Drive safe. Get home fast.</div>
+  <p class="sub">A real South Florida road: traffic, trucks, work zones, wet patches and ambulances. Signal every lane change, move over for emergency lights, and build your Safe Driver multiplier. At Top Speed Appliance we believe in helping people drive safe and get home fast — this game teaches the habits that do it.</p>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" width="480" height="720"></canvas>
+    <div class="hud">
+      <div class="box"><div class="lab">SCORE</div><div class="val" id="hudScore">0</div></div>
+      <div class="box"><div class="lab">SPEED</div><div class="val" id="hudSpeed">0</div></div>
+      <div class="box"><div class="lab">SAFE ×</div><div class="val safe" id="hudSafe">1</div></div>
+      <div class="box"><div class="lab">BEST</div><div class="val" id="hudBest">0</div></div>
+    </div>
+    <div class="overlay" id="ovStart">
+      <h2>NITRO <span>RUSH</span></h2>
+      <p>Every lane button is your turn signal — signal, then move, and earn Safe points. Watch for the ambulance: pull to the right lane and let it pass. Cones mean a work zone. Dark patches are wet road — the car slides.</p>
+      <p style="color:#FFD75E;font-family:Rajdhani;font-weight:700">Drive safe. Get home fast.</p>
+      <button class="bigbtn" id="btnStart" type="button">Start engine</button>
+    </div>
+    <div class="overlay hidden" id="ovOver">
+      <h2>WRECKED<span>.</span></h2>
+      <p id="overText">Run over.</p>
+      <div class="tip" id="overTip"></div>
+      <button class="bigbtn" id="btnRetry" type="button">Run it again</button>
+    </div>
+  </div>
+
+  <div class="touchrow">
+    <button class="tbtn" id="btnLeft" type="button">&#8592; Left lane<small>SIGNAL + MOVE</small></button>
+    <button class="tbtn" id="btnRight" type="button">Right lane &#8594;<small>SIGNAL + MOVE</small></button>
+  </div>
+  <div style="max-width:520px;margin:14px auto 0">
+    <div style="font-family:Rajdhani;font-weight:700;font-size:14px;letter-spacing:.08em;color:#93A5CC">THE GARAGE — YOUR PAINT</div>
+    <div id="garage" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"></div>
+    <p style="color:#93A5CC;font-size:12px;margin-top:7px;line-height:1.55">Paint unlocks with your best score. Signal Red is yours from day one — the rest you earn on the road.</p>
+  </div>
+  <p class="help">Keyboard: &#8592; / &#8594; or A / D (your signal fires first, just like the real road) &nbsp;·&nbsp; Touch: swipe or use the lane buttons &nbsp;·&nbsp; Best score is kept on this device.</p>
+
+  <section class="tips">
+    <h2>TOP SPEED SAFETY — <span>REAL TIPS FOR THE REAL ROAD</span></h2>
+    <div class="tipgrid">
+      <div class="tipcard"><b>Signal every move</b><p>Your blinker is how you talk to the road. Signal before every lane change and turn — it gives everyone around you time to react.</p></div>
+      <div class="tipcard"><b>Move over for lights</b><p>Florida law: when an emergency or service vehicle is stopped or passing with lights on, move over a lane or slow down. It protects the people working roadside — including our techs.</p></div>
+      <div class="tipcard"><b>Keep a 3-second gap</b><p>Pick a roadside marker; if you pass it less than 3 seconds after the car ahead, you're too close. Double it in rain.</p></div>
+      <div class="tipcard"><b>Work zones: slow down</b><p>Cones mean people. Fines double in Florida work zones, and the crew has no crumple zone. Slow down and merge early.</p></div>
+      <div class="tipcard"><b>Wet roads slide</b><p>South Florida rain makes roads slick, especially in the first minutes. Slow down, brake gently, and never use cruise control on wet pavement.</p></div>
+      <div class="tipcard"><b>Phones down, eyes up</b><p>At 55 mph, five seconds of looking at a phone is a football field of blind driving. Park the phone until you're parked.</p></div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  var cv = document.getElementById('cv');
+  var ctx = cv.getContext('2d');
+  var W = 480, H = 720;
+  var LANES = [96, 240, 384];
+  var CARW = 74, CARH = 118;
+  var hudScore = document.getElementById('hudScore');
+  var hudSpeed = document.getElementById('hudSpeed');
+  var hudSafe = document.getElementById('hudSafe');
+  var hudBest = document.getElementById('hudBest');
+  var ovStart = document.getElementById('ovStart');
+  var ovOver = document.getElementById('ovOver');
+  var overText = document.getElementById('overText');
+  var overTip = document.getElementById('overTip');
+
+  var TIPS = [
+    'Keep a 3-second following gap — double it when the road is wet.',
+    'Signal before you move. Every time. It is the cheapest safety device ever made.',
+    'Move over for flashing lights — Florida law, and it protects roadside workers like our own techs.',
+    'In a work zone, merge early and slow down. Fines double and crews are unprotected.',
+    'The first minutes of rain are the slickest — oil lifts off the asphalt. Slow down early.',
+    'A near-miss is a warning, not a win. Give the car ahead real room.',
+    'Check your blind spot with your eyes, not just the mirror, before every lane change.',
+    'Tired is impaired. If your eyes are heavy, pull somewhere safe and rest.',
+    'Tailgating a truck means you cannot see around it. Back off and see the road.',
+    'Getting home fast means getting home. The safest driver wins every trip.'
+  ];
+  var SIGNS = ['SIGNAL BEFORE YOU SWITCH', 'KEEP A 3-SECOND GAP', 'PHONES DOWN, EYES UP', 'MOVE OVER FOR LIGHTS', 'SLOW DOWN — WORK ZONE', 'CHECK YOUR BLIND SPOT', 'WET ROAD? SLOW DOWN', 'DRIVE SAFE. GET HOME FAST.'];
+
+  var best = 0;
+  try { best = parseInt(localStorage.getItem('nitroRushBest') || '0', 10) || 0; } catch (e) { best = 0; }
+  hudBest.textContent = best;
+
+  // The Garage: paint jobs unlocked by best score
+  var PAINTS = [
+    { id: 'red', name: 'Signal Red', color: '#E8322E', stripe: '#FFFFFF', need: 0 },
+    { id: 'black', name: 'Blackout', color: '#14161C', stripe: '#E8322E', need: 500 },
+    { id: 'white', name: 'White Knight', color: '#EDF1F7', stripe: '#E8322E', need: 1000 },
+    { id: 'gold', name: 'Gold Standard', color: '#C9A227', stripe: '#14161C', need: 2000 }
+  ];
+  var paintId = 'red';
+  try { paintId = localStorage.getItem('nitroPaint') || 'red'; } catch (e) {}
+  function currentPaint(){
+    for (var i = 0; i < PAINTS.length; i++) if (PAINTS[i].id === paintId) return PAINTS[i];
+    return PAINTS[0];
+  }
+  function renderGarage(){
+    var g = document.getElementById('garage');
+    g.innerHTML = '';
+    PAINTS.forEach(function(p){
+      var unlocked = best >= p.need;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.style.cssText = 'flex:1;min-width:104px;border-radius:12px;padding:10px 8px;cursor:pointer;font-family:Inter;font-size:12px;font-weight:700;color:#fff;background:' + (unlocked ? '#0C1B31' : '#0A0F1E') + ';border:2px solid ' + (paintId === p.id && unlocked ? '#22C55E' : '#1C2C52') + ';opacity:' + (unlocked ? '1' : '.55');
+      var sw = document.createElement('span');
+      sw.style.cssText = 'display:block;height:16px;border-radius:6px;background:' + p.color + ';border:1px solid rgba(255,255,255,.25);margin-bottom:6px';
+      b.appendChild(sw);
+      b.appendChild(document.createTextNode(p.name + (unlocked ? '' : ' · best ' + p.need)));
+      if (unlocked) b.addEventListener('click', function(){
+        paintId = p.id;
+        try { localStorage.setItem('nitroPaint', paintId); } catch (e) {}
+        renderGarage(); draw();
+      });
+      g.appendChild(b);
+    });
+  }
+
+  var state = 'ready';
+  var player, traffic, cones, patches, floats, ambulance;
+  var score, speed, baseSpeed, dist, roadOff, safeStreak, safeMult;
+  var spawnTimer, ambTimer, coneTimer, patchTimer, signTimer, signText, signY;
+  var lastTs = 0, rafId = null, signalT = 0, changing = false, wet = false;
+
+  function reset(){
+    player = { lane: 1, x: LANES[1] };
+    traffic = []; cones = []; patches = []; floats = [];
+    ambulance = null;
+    score = 0; dist = 0; roadOff = 0;
+    baseSpeed = 340; speed = baseSpeed;
+    safeStreak = 0; safeMult = 1;
+    spawnTimer = 0.4; ambTimer = 16; coneTimer = 11; patchTimer = 7; signTimer = 2; signText = SIGNS[0]; signY = -60;
+    signalT = 0; changing = false; wet = false;
+    hudScore.textContent = '0'; hudSpeed.textContent = '0'; hudSafe.textContent = '1';
+  }
+
+  function addFloat(x, y, text, color){
+    floats.push({ x: x, y: y, text: text, color: color, life: 1.15 });
+  }
+  function safeEvent(points, label){
+    safeStreak++;
+    safeMult = 1 + Math.min(4, Math.floor(safeStreak / 4));
+    hudSafe.textContent = safeMult;
+    score += points * safeMult;
+    if (label) addFloat(player.x, H - 235, label + ' +' + (points * safeMult), '#22C55E');
+  }
+  function closeCall(x, y){
+    if (safeStreak >= 3) addFloat(x, y, 'CLOSE CALL — SAFE × RESET', '#FFB02E');
+    safeStreak = 0; safeMult = 1;
+    hudSafe.textContent = '1';
+  }
+
+  function spawn(){
+    var lane = Math.floor(Math.random() * 3);
+    for (var i = 0; i < traffic.length; i++) {
+      if (traffic[i].y < CARH * 1.7 && traffic[i].lane === lane) return;
+    }
+    if (cones.length && cones[0].lane === lane && cones[0].y < 200) return;
+    var isTruck = Math.random() < 0.18;
+    var colors = ['#3E5C8F', '#5A6B84', '#7A8699', '#274156', '#8F4A3E', '#C7CEDA'];
+    traffic.push({
+      lane: lane, x: LANES[lane], y: -CARH - 10,
+      v: isTruck ? 0.26 + Math.random() * 0.08 : 0.32 + Math.random() * 0.22,
+      color: isTruck ? '#6B7B8F' : colors[Math.floor(Math.random() * colors.length)],
+      truck: isTruck, h: isTruck ? 168 : CARH, passed: false
+    });
+  }
+  function spawnCones(){
+    var lane = Math.floor(Math.random() * 3);
+    for (var i = 0; i < 5; i++) cones.push({ lane: lane, x: LANES[lane], y: -60 - i * 92 });
+    addFloat(W / 2, 120, 'WORK ZONE AHEAD', '#FFB02E');
+  }
+  function spawnPatch(){
+    var lane = Math.floor(Math.random() * 3);
+    patches.push({ lane: lane, x: LANES[lane], y: -190, h: 300, warned: false });
+  }
+  function spawnAmbulance(){
+    ambulance = { x: LANES[player.lane], y: H + 160, v: 1.55, rewarded: false, flash: 0 };
+    addFloat(W / 2, H - 300, 'EMERGENCY VEHICLE — MOVE OVER', '#FF6B5E');
+  }
+
+  function roundRect(x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function drawCar(x, y, color, isPlayer, h){
+    var hh = (h || CARH), hw = CARW / 2, hhalf = hh / 2;
+    ctx.save(); ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(0,0,0,.45)';
+    roundRect(-hw + 4, -hhalf + 6, CARW, hh, 16); ctx.fill();
+    ctx.fillStyle = color;
+    roundRect(-hw, -hhalf, CARW, hh, 16); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.10)';
+    roundRect(-hw + 6, -hhalf + 6, CARW - 12, 26, 10); ctx.fill();
+    ctx.fillStyle = '#0D1626';
+    roundRect(-hw + 11, -hhalf + 30, CARW - 22, 24, 7); ctx.fill();
+    roundRect(-hw + 11, hhalf - 46, CARW - 22, 18, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(10,16,30,.85)';
+    roundRect(-hw + 9, -hhalf + 56, CARW - 18, Math.max(24, hh - 100), 8); ctx.fill();
+    ctx.fillStyle = '#05070C';
+    roundRect(-hw - 3, -hhalf + 14, 10, 26, 4); ctx.fill();
+    roundRect(hw - 7, -hhalf + 14, 10, 26, 4); ctx.fill();
+    roundRect(-hw - 3, hhalf - 40, 10, 26, 4); ctx.fill();
+    roundRect(hw - 7, hhalf - 40, 10, 26, 4); ctx.fill();
+    if (isPlayer) {
+      ctx.fillStyle = currentPaint().stripe;
+      ctx.fillRect(-7, -hhalf, 14, hh);
+      ctx.fillStyle = '#0A0A0C';
+      roundRect(-hw - 2, hhalf - 14, CARW + 4, 10, 4); ctx.fill();
+      ctx.fillStyle = 'rgba(255,240,180,.9)';
+      roundRect(-hw + 8, -hhalf + 2, 14, 6, 3); ctx.fill();
+      roundRect(hw - 22, -hhalf + 2, 14, 6, 3); ctx.fill();
+      // turn signal blinkers while changing lanes
+      if (signalT > 0 && Math.floor(signalT * 9) % 2 === 0) {
+        ctx.fillStyle = '#FFB02E';
+        var sx = changing < 0 ? -hw + 2 : hw - 16;
+        roundRect(sx, -hhalf + 12, 14, 8, 3); ctx.fill();
+        roundRect(sx, hhalf - 22, 14, 8, 3); ctx.fill();
+      }
+    } else {
+      ctx.fillStyle = 'rgba(255,70,60,.85)';
+      roundRect(-hw + 8, hhalf - 8, 14, 6, 3); ctx.fill();
+      roundRect(hw - 22, hhalf - 8, 14, 6, 3); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function drawAmbulance(a){
+    ctx.save(); ctx.translate(a.x, a.y);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; roundRect(-36, -56, 76, 122, 12); ctx.fill();
+    ctx.fillStyle = '#EDF1F7'; roundRect(-38, -60, 76, 122, 12); ctx.fill();
+    ctx.fillStyle = '#E8322E'; ctx.fillRect(-38, -18, 76, 15);
+    ctx.fillStyle = '#0D1626'; roundRect(-27, -50, 54, 22, 6); ctx.fill();
+    // light bar flashing
+    var on = Math.floor(a.flash * 10) % 2 === 0;
+    ctx.fillStyle = on ? '#FF3B30' : '#3E7CB1';
+    roundRect(-24, -64, 22, 8, 3); ctx.fill();
+    ctx.fillStyle = on ? '#3E7CB1' : '#FF3B30';
+    roundRect(2, -64, 22, 8, 3); ctx.fill();
+    ctx.fillStyle = '#E8322E';
+    ctx.font = '800 17px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('+', 0, 22);
+    ctx.restore();
+  }
+  function drawSign(){
+    if (signY < -70 || signY > H + 10) return;
+    ctx.save();
+    ctx.fillStyle = '#0C1B31';
+    ctx.strokeStyle = '#FFB02E'; ctx.lineWidth = 2;
+    var tw = 196;
+    roundRect(W - tw - 8, signY, tw, 44, 8); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#FFD75E';
+    ctx.font = '700 12.5px Inter, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText(signText, W - tw / 2 - 8, signY + 27);
+    ctx.restore();
+  }
+
+  function draw(){
+    ctx.fillStyle = '#0A0E18'; ctx.fillRect(0, 0, W, H);
+    // wet patches under everything else
+    patches.forEach(function(p){
+      ctx.fillStyle = 'rgba(38,64,110,.55)';
+      ctx.beginPath(); ctx.ellipse(p.x, p.y, 62, p.h / 2, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(140,180,240,.16)';
+      ctx.beginPath(); ctx.ellipse(p.x - 12, p.y - 20, 34, p.h / 3, 0, 0, 7); ctx.fill();
+    });
+    ctx.fillStyle = '#11182A';
+    ctx.fillRect(0, 0, 26, H); ctx.fillRect(W - 26, 0, 26, H);
+    ctx.fillStyle = '#E8322E';
+    ctx.fillRect(26, 0, 4, H); ctx.fillRect(W - 30, 0, 4, H);
+    ctx.fillStyle = 'rgba(230,238,255,.55)';
+    var dashH = 46, gap = 34;
+    for (var l = 0; l < 2; l++) {
+      var x = (LANES[l] + LANES[l + 1]) / 2 - 3;
+      for (var y = -dashH + (roadOff % (dashH + gap)); y < H; y += dashH + gap) ctx.fillRect(x, y, 6, dashH);
+    }
+    drawSign();
+    traffic.forEach(function(t){ drawCar(t.x, t.y, t.color, false, t.h); });
+    // cones
+    cones.forEach(function(c){
+      ctx.save(); ctx.translate(c.x, c.y);
+      ctx.fillStyle = '#FF7A1A';
+      ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(11, 12); ctx.lineTo(-11, 12); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.fillRect(-6.5, -2, 13, 5);
+      ctx.fillStyle = '#C75B0D'; ctx.fillRect(-13, 12, 26, 5);
+      ctx.restore();
+    });
+    if (ambulance) drawAmbulance(ambulance);
+    drawCar(player.x, H - 130, currentPaint().color, true, CARH);
+    // floating score text
+    floats.forEach(function(f){
+      ctx.fillStyle = f.color;
+      ctx.globalAlpha = Math.max(0, Math.min(1, f.life));
+      ctx.font = '800 15px Inter, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(f.text, f.x, f.y);
+      ctx.globalAlpha = 1;
+    });
+    if (state === 'running' && speed > 700) {
+      ctx.strokeStyle = 'rgba(200,220,255,.13)'; ctx.lineWidth = 2;
+      for (var s = 0; s < 6; s++) {
+        var sx = Math.random() * W;
+        ctx.beginPath(); ctx.moveTo(sx, Math.random() * H); ctx.lineTo(sx, Math.random() * H + 40); ctx.stroke();
+      }
+    }
+  }
+
+  function step(ts){
+    if (state !== 'running') return;
+    if (!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+
+    baseSpeed = 340 + Math.min(560, dist * 0.055);
+    speed = baseSpeed;
+    dist += speed * dt;
+    score += Math.round(speed * dt * 0.06);
+    roadOff += speed * dt;
+
+    // wet check
+    wet = patches.some(function(p){ return p.lane === player.lane && Math.abs(p.y - (H - 130)) < p.h / 2; });
+    // signal + lane movement (slower, slidey on wet road)
+    var targetX = LANES[player.lane];
+    var ease = wet ? 5.5 : 14;
+    var prevX = player.x;
+    player.x += (targetX - player.x) * Math.min(1, dt * ease);
+    if (signalT > 0) {
+      signalT -= dt;
+      if (Math.abs(targetX - player.x) < 6 && changing !== 0) {
+        safeEvent(15, 'SIGNAL');
+        changing = 0; signalT = 0;
+      }
+    }
+
+    // timers
+    spawnTimer -= dt;
+    if (spawnTimer <= 0) { spawn(); spawnTimer = Math.max(0.42, 1.05 - dist * 0.00006) * (0.75 + Math.random() * 0.5); }
+    signTimer -= dt;
+    if (signTimer <= 0) { signText = SIGNS[Math.floor(Math.random() * SIGNS.length)]; signY = -60; signTimer = 7 + Math.random() * 4; }
+    signY += speed * dt;
+    ambTimer -= dt;
+    if (ambTimer <= 0 && !ambulance) { spawnAmbulance(); ambTimer = 26 + Math.random() * 16; }
+    coneTimer -= dt;
+    if (coneTimer <= 0) { spawnCones(); coneTimer = 30 + Math.random() * 18; }
+    patchTimer -= dt;
+    if (patchTimer <= 0) { spawnPatch(); patchTimer = 17 + Math.random() * 12; }
+
+    // traffic
+    var py = H - 130;
+    for (var i = traffic.length - 1; i >= 0; i--) {
+      var t = traffic[i];
+      t.y += speed * t.v * dt + speed * dt * 0.42;
+      if (t.y - t.h / 2 > H + 20) { traffic.splice(i, 1); continue; }
+      if (!t.passed && t.y > py + CARH) {
+        t.passed = true;
+        if (Math.abs(t.x - player.x) < CARW * 1.25) closeCall(t.x, t.y - 60);
+      }
+      if (Math.abs(t.x - player.x) < CARW * 0.82 && Math.abs(t.y - py) < (t.h + CARH) / 2 * 0.86) { gameOver('traffic'); return; }
+    }
+    // cones
+    for (var ci = cones.length - 1; ci >= 0; ci--) {
+      var c = cones[ci];
+      c.y += speed * dt;
+      if (c.y > H + 30) { cones.splice(ci, 1); continue; }
+      if (Math.abs(c.x - player.x) < 44 && Math.abs(c.y - py) < 62) { gameOver('cone'); return; }
+    }
+    // patches
+    for (var pi = patches.length - 1; pi >= 0; pi--) {
+      var p = patches[pi];
+      p.y += speed * dt;
+      if (!p.warned && p.lane === player.lane && Math.abs(p.y - py) < p.h / 2) { p.warned = true; addFloat(player.x, py - 110, 'WET ROAD — EASY DOES IT', '#8FB6F5'); }
+      if (p.y - p.h / 2 > H + 20) patches.splice(pi, 1);
+    }
+    // ambulance
+    if (ambulance) {
+      ambulance.flash += dt;
+      ambulance.y -= speed * (ambulance.v - 1) * dt + 120 * dt;
+      ambulance.x = LANES[player.lane] === ambulance.x ? ambulance.x : ambulance.x; // holds its lane
+      if (!ambulance.rewarded && ambulance.y < py) {
+        ambulance.rewarded = true;
+        if (player.lane === 2) safeEvent(150, 'MOVE OVER');
+        else addFloat(W / 2, py - 150, 'NEXT TIME: MOVE RIGHT FOR LIGHTS', '#FFB02E');
+      }
+      if (Math.abs(ambulance.x - player.x) < 60 && Math.abs(ambulance.y - py) < 105) { gameOver('ambulance'); return; }
+      if (ambulance.y < -160) ambulance = null;
+    }
+    // floats
+    for (var fi = floats.length - 1; fi >= 0; fi--) {
+      floats[fi].y -= 44 * dt; floats[fi].life -= dt;
+      if (floats[fi].life <= 0) floats.splice(fi, 1);
+    }
+
+    hudScore.textContent = score;
+    hudSpeed.textContent = Math.round(speed / 9);
+    draw();
+    rafId = requestAnimationFrame(step);
+  }
+
+  function start(){
+    reset();
+    state = 'running';
+    ovStart.classList.add('hidden');
+    ovOver.classList.add('hidden');
+    lastTs = 0;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(step);
+  }
+
+  function gameOver(kind){
+    state = 'over';
+    if (rafId) cancelAnimationFrame(rafId);
+    var isBest = score > best;
+    if (isBest) {
+      best = score;
+      try { localStorage.setItem('nitroRushBest', String(best)); } catch (e) {}
+      hudBest.textContent = best;
+      renderGarage();
+    }
+    overText.textContent = 'You scored ' + score + ' with a Safe ×' + safeMult + ' multiplier' + (isBest ? ' — a new best on this device.' : '. Best on this device: ' + best + '.');
+    var tip = TIPS[Math.floor(Math.random() * TIPS.length)];
+    if (kind === 'cone') tip = 'Work zones: slow down and merge early — cones mark people at work, not obstacles to dodge at speed.';
+    if (kind === 'ambulance') tip = 'When you hear sirens, check your mirrors and move right early — never block an emergency vehicle.';
+    overTip.innerHTML = '<b>Top Speed Safety Tip:</b> ' + tip;
+    ovOver.classList.remove('hidden');
+    draw();
+  }
+
+  function move(dir){
+    if (state !== 'running') return;
+    var nl = Math.max(0, Math.min(2, player.lane + dir));
+    if (nl !== player.lane) {
+      player.lane = nl;
+      changing = dir;
+      signalT = 0.85; // signal blinks while the change completes
+    }
+  }
+
+  document.getElementById('btnStart').addEventListener('click', start);
+  document.getElementById('btnRetry').addEventListener('click', start);
+  document.getElementById('btnLeft').addEventListener('click', function(){ move(-1); });
+  document.getElementById('btnRight').addEventListener('click', function(){ move(1); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') { move(-1); e.preventDefault(); }
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') { move(1); e.preventDefault(); }
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'running') start();
+  });
+  var touchX = null;
+  cv.addEventListener('touchstart', function(e){ touchX = e.changedTouches[0].clientX; }, { passive: true });
+  cv.addEventListener('touchend', function(e){
+    if (touchX === null) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 24) move(dx > 0 ? 1 : -1);
+    else move(e.changedTouches[0].clientX < cv.getBoundingClientRect().left + cv.clientWidth / 2 ? -1 : 1);
+    touchX = null;
+  }, { passive: true });
+  document.addEventListener('visibilitychange', function(){
+    if (document.hidden && state === 'running') { state = 'ready'; if (rafId) cancelAnimationFrame(rafId); ovStart.classList.remove('hidden'); }
+  });
+
+  renderGarage();
+  reset();
+  draw();
+})();
+</script>
+</body>
+</html>
