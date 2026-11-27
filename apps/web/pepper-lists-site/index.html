@@ -644,9 +644,26 @@ footer a{color:var(--lime)}
           </label>
         </div>
         <div class="plb-row">
+          <label class="plb-lab">Listing format
+            <select id="plSellFormat" onchange="pltFormatNote()">
+              <option>Retail product</option>
+              <option>Used goods</option>
+              <option>Wholesale</option>
+              <option>Local service</option>
+              <option>Rental</option>
+              <option>Auction</option>
+              <option>Digital product</option>
+              <option>Live sale</option>
+              <option>Subscription</option>
+              <option>Wanted</option>
+              <option>Business for sale</option>
+              <option>Mobile vendor</option>
+            </select>
+          </label>
           <label class="plb-lab">Your price ($)<input id="plSellPrice" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></label>
           <label class="plb-lab">Phone for the office<input id="plSellPhone" type="tel" autocomplete="tel" placeholder="(954) 555-0100"></label>
         </div>
+        <p class="plb-msg" id="plSellFormatNote" style="margin:0 0 10px"></p>
         <label class="plb-lab">Description<textarea id="plSellDesc" rows="3" maxlength="2000" placeholder="What it is, how many, pickup details — in your words"></textarea></label>
         <div class="plb-btnrow"><button class="btn" type="button" onclick="plsReview()">Review &amp; confirm listing</button></div>
       </div>
@@ -1198,19 +1215,65 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 </header>
 
 <div class="hero">
-  <div class="herocard">
-    <span class="plg-herobadge">Top Speed OS · Consumer App</span>
-    <h1>Sell it. Post it. Book it. One app, three purposes.</h1>
-    <p>Pepper Lists It is the Top Speed customer app, built for three purposes. <b>Selling?</b> Snap a photo of anything you sell — Pepper's AI drafts the listing and posts it for you, nothing live without your yes. <b>Posting?</b> Connect your social accounts and your search-directory listings, and be found where customers look. <b>Need a repair?</b> Book appliance service right here — send Speedy a photo of the problem, track your tech on the day, and review the job when it's done.</p>
+  <div class="herocard plt-hero2">
+    <span class="plg-herobadge plt-hbadge">Pepperlists Commerce OS</span>
+    <h1>Everything you want. All in one place.</h1>
+    <p>Buy, sell, book and discover products and local services — one account, every listing format, and Pepper AI working for buyers and sellers. Snap a photo and Pepper drafts the listing; nothing goes live without your yes.</p>
+    <form class="plt-hsearch" onsubmit="return pltHeroSearch(event)"><input id="pltHeroQ" type="search" placeholder="Search products, services and stores…" aria-label="Search Pepperlists"><button type="submit">Search</button></form>
     <div class="cta">
       <a class="btn" href="https://pepperlists.com/#create-account" onclick="return plOpenSignup(event)">Create account</a>
       <a class="btn alt" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Open Pepper Lists It</a>
       <a class="btn alt" href="https://topspeedserviceos.com/book">Book a Repair</a>
       <button class="btn alt" type="button" onclick="if(window.TSOpenSpeedy){window.TSOpenSpeedy();}">Talk to Speedy</button>
     </div>
-    <p class="note">Built for Fort Lauderdale — sell produce, trees, and whatever's in the yard today, or book a repair and let Top Speed come to you.</p>
+    <p class="note plt-hnote">Built for Fort Lauderdale and Broward — local pickup, local services, and Top Speed repairs booked right here.</p>
+  </div>
+  <div class="plt-tiles" role="navigation" aria-label="Shop by lane">
+    <button type="button" class="plt-tile" onclick="pltTile('shop')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 7 L6 3 L18 3 L20 7 M4 7 L20 7 L19 20 L5 20 Z M9 10 L9 12 A3 3 0 0 0 15 12 L15 10"/></svg><span>Shop</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('local')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 21 C12 21 5 14.5 5 9.5 A7 7 0 0 1 19 9.5 C19 14.5 12 21 12 21 Z"/><circle cx="12" cy="9.5" r="2.6"/></svg><span>Local</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('deals')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 4 L11 4 L20 13 L13 20 L4 11 Z"/><circle cx="8.5" cy="8.5" r="1.2" fill="currentColor" stroke="none"/></svg><span>Deals</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('wholesale')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M3 8 L12 4 L21 8 L21 16 L12 20 L3 16 Z M3 8 L12 12 L21 8 M12 12 L12 20"/></svg><span>Wholesale</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('resale')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M4 9 A8 8 0 0 1 19 6 L20 9 M20 15 A8 8 0 0 1 5 18 L4 15 M20 4 L20 9 L15 9 M4 20 L4 15 L9 15"/></svg><span>Resale</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('services')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M14.5 6.5 A4.5 4.5 0 0 1 19 3 L17.5 6.5 L20.5 8 L21 5.5 A7 7 0 1 1 14.5 6.5 Z M14.5 6.5 L5 16 L8 19 L16.5 10"/></svg><span>Services</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('live')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><rect x="3" y="6" width="13" height="12"/><path d="M16 10 L21 7 L21 17 L16 14"/></svg><span>Live</span></button>
+    <button type="button" class="plt-tile" onclick="pltTile('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter"><path d="M12 3 L14.2 9.8 L21 12 L14.2 14.2 L12 21 L9.8 14.2 L3 12 L9.8 9.8 Z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg><span>AI Assistant</span></button>
   </div>
 </div>
+<style>
+.herocard.plt-hero2{background:linear-gradient(135deg,#F04438,#C81E1E 55%,#8F1414);color:#fff}
+.plt-hbadge{border-color:rgba(255,255,255,.75);color:#fff}
+.herocard.plt-hero2 p{color:#FFE9E7}
+.herocard.plt-hero2 .note{color:#FFD9D6}
+.herocard.plt-hero2 .btn{background:#0C130E;color:#fff}
+.herocard.plt-hero2 .btn.alt{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.85)}
+.plt-hsearch{display:flex;gap:10px;max-width:640px;margin:24px auto 4px;background:#fff;border-radius:999px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.plt-hsearch input{flex:1;border:0;outline:0;background:transparent;color:#0C130E;font-size:16px;padding:10px 16px;min-width:0}
+.plt-hsearch button{border:0;border-radius:999px;background:#E8322E;color:#fff;font-weight:800;font-size:15px;padding:10px 22px;cursor:pointer}
+.plt-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:1020px;margin:18px auto 0}
+.plt-tile{background:var(--panel);border:1px solid #22301f;border-radius:16px;color:var(--ink);padding:16px 8px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;font:inherit}
+.plt-tile svg{width:26px;height:26px;color:var(--lime)}
+.plt-tile span{font-size:13.5px;font-weight:700}
+.plt-tile:hover{border-color:var(--lime)}
+@media(max-width:640px){.plt-tiles{grid-template-columns:repeat(4,1fr);gap:8px}.plt-tile span{font-size:12px}}
+.plt-fpill{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#0C130E;background:var(--lime);border-radius:5px;padding:2.5px 7px;margin-bottom:8px}
+.plt-fmtgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.plt-fmt{background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:18px}
+.plt-fmt h3{font-size:16px;margin:0 0 6px}
+.plt-fmt p{color:var(--muted);font-size:13.5px;line-height:1.55;margin:0}
+.plt-chan{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.plt-chancard{background:var(--panel);border:1px solid #22301f;border-radius:16px;padding:20px}
+.plt-chancard h3{font-size:16.5px;margin:0 0 8px}
+.plt-chancard p{color:var(--muted);font-size:14px;line-height:1.6;margin:10px 0 0}
+.plt-state{display:inline-block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border-radius:5px;padding:3px 8px}
+.plt-state.live{color:#0C130E;background:var(--lime)}
+.plt-state.setup{color:#0C130E;background:var(--amber)}
+.plt-state.owner{color:var(--ink);border:1px solid #3d5222}
+.plt-state.na{color:#FF9D94;border:1px solid rgba(240,68,56,.5)}
+.plt-divchips{display:flex;flex-wrap:wrap;gap:9px}
+.plt-divchip{border:1px solid #22301f;background:var(--panel);border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:700;color:var(--ink)}
+.plt-divchip i{font-style:normal;font-weight:800;font-size:10px;letter-spacing:.08em;text-transform:uppercase;margin-left:7px}
+.plt-divchip i.live{color:var(--lime)} .plt-divchip i.new{color:var(--amber)} .plt-divchip i.plan{color:var(--muted)}
+</style>
 
 <style>
 .pl-laneimg{width:100%;border-radius:18px;border:1px solid #22301f;display:block;margin:16px 0 20px}
@@ -1341,6 +1404,24 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <a class="btn dark" href="https://pepperlists.com/how-it-works" style="margin-left:10px">The full walkthrough</a>
 </section>
 
+<section id="formats">
+  <h2>One listing. <span class="lime">Every format.</span></h2>
+  <p class="sub">The Pepperlists universal listing engine — one listing record carries all twelve commerce formats, so a seller posts once and the same listing can sell in the feed, on Facebook Marketplace through Pepper, and in the Google Shopping feed.</p>
+  <div class="plt-fmtgrid">
+    <div class="plt-fmt"><h3>Retail product</h3><p>Physical products with price, photos and fulfillment arranged in chat.</p></div>
+    <div class="plt-fmt"><h3>Used goods</h3><p>Pre-owned items with an honest condition grade, inspection and local pickup.</p></div>
+    <div class="plt-fmt"><h3>Wholesale</h3><p>Bulk pricing, minimum quantities and repeat ordering for businesses.</p></div>
+    <div class="plt-fmt"><h3>Local service</h3><p>Appointments, estimates and service booking — Top Speed repairs run on the Service OS.</p></div>
+    <div class="plt-fmt"><h3>Rental</h3><p>Availability, deposit and rental terms, arranged with the seller in chat.</p></div>
+    <div class="plt-fmt"><h3>Auction</h3><p>Sellers set a starting price today; offers run through listing chat while the full bidding engine is built.</p></div>
+    <div class="plt-fmt"><h3>Digital product</h3><p>Downloads, access and license delivery arranged with the seller.</p></div>
+    <div class="plt-fmt"><h3>Live sale</h3><p>Sellers announce live selling sessions — the listing carries the time and place.</p></div>
+    <div class="plt-fmt"><h3>Subscription</h3><p>Recurring products and memberships, arranged with the seller.</p></div>
+    <div class="plt-fmt"><h3>Wanted</h3><p>Buyers post what they're looking for; sellers answer with offers.</p></div>
+    <div class="plt-fmt"><h3>Business for sale</h3><p>Business listings with revenue, inventory and transfer details in the description.</p></div>
+    <div class="plt-fmt"><h3>Mobile vendor</h3><p>Food trucks and mobile services with location and schedule in the listing.</p></div>
+  </div>
+</section>
 <section style="padding-top:0" id="advertise">
   <h2>Advertise with <span class="lime">Pepper Lists</span></h2>
   <p class="sub">For local businesses and service pros: three clean placements where Pepper Lists shoppers already look. Submitting is free — every ad is reviewed by the Top Speed office before it runs, and nothing is charged or shown without approval.</p>
@@ -1487,10 +1568,55 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
      panel. Cards and detail render ONLY from the live listings API —
      real titles, real seller-set prices, real comment counts, real
      seller badges. An empty feed says so plainly. -->
+<section id="channels">
+  <h2>Sell everywhere. <span class="lime">One dashboard.</span></h2>
+  <p class="sub">Pepperlists connects your listings to the places shoppers already look. Every channel shows its real state — nothing is marked connected until that platform's own system answers.</p>
+  <div class="plt-chan">
+    <div class="plt-chancard"><h3>Facebook Marketplace</h3><span class="plt-state live">Connected via Pepper</span><p>You confirm the listing and Pepper posts it from the Top Speed account — the real post URL is logged on your record, and the post can be taken down the same way.</p></div>
+    <div class="plt-chancard"><h3>Facebook Commerce</h3><span class="plt-state setup">In setup</span><p>Full Meta catalog sync waits on Meta's app review — an owner step inside Meta Business Settings. Marketplace posting above already works today.</p></div>
+    <div class="plt-chancard"><h3>Google Shopping</h3><span class="plt-state setup">Feed ready</span><p>Your live listings already flow into a standard Google product feed, rebuilt from the live feed every hour. It appears in Google Shopping when the Merchant Center account is created and claims the feed — an owner signup. <a href="https://top-speed-service-os.vercel.app/api/v1/pepper-lists/feeds/google.xml">See the live feed</a></p></div>
+    <div class="plt-chancard"><h3>eBay</h3><span class="plt-state owner">Needs your account</span><p>eBay's developer and seller approval comes first. The connector gets built the moment that approval lands.</p></div>
+    <div class="plt-chancard"><h3>Amazon</h3><span class="plt-state owner">Needs your account</span><p>Amazon Selling Partner access needs a Professional seller account and Amazon's own approval process.</p></div>
+    <div class="plt-chancard"><h3>TikTok Shop</h3><span class="plt-state owner">Needs your account</span><p>TikTok Shop seller registration and partner approval come first — then listings sync like the other channels.</p></div>
+    <div class="plt-chancard"><h3>OfferUp</h3><span class="plt-state na">No public API</span><p>OfferUp offers no listing API for third-party platforms, so cross-posting there stays manual. We won't pretend otherwise.</p></div>
+  </div>
+</section>
+<section id="commerce-os" style="padding-top:0">
+  <h2>The Commerce OS <span class="lime">divisions</span></h2>
+  <p class="sub">Fourteen divisions, one platform. <b style="color:var(--ink)">New</b> means launched with this upgrade; <b style="color:var(--ink)">Planned</b> is on the blueprint and labeled honestly until it's built.</p>
+  <div class="plt-divchips">
+    <span class="plt-divchip">Pepperlists Shop<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Local<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Pro<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Wholesale<i class="new">New</i></span>
+    <span class="plt-divchip">Pepperlists Stores<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Express<i class="plan">Planned</i></span>
+    <span class="plt-divchip">Pepperlists Pay<i class="plan">Planned</i></span>
+    <span class="plt-divchip">Pepperlists Ads<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Live<i class="plan">Planned</i></span>
+    <span class="plt-divchip">Pepperlists Deals<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Auctions<i class="new">New</i></span>
+    <span class="plt-divchip">Pepperlists Services<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists AI<i class="live">Live</i></span>
+    <span class="plt-divchip">Pepperlists Commerce OS<i class="live">Live</i></span>
+  </div>
+</section>
+<section id="pepper-ai" style="padding-top:0">
+  <h2>Pepper AI <span class="lime">at work</span></h2>
+  <p class="sub">A network of agents behind the marketplace — each one labeled with what it really does today.</p>
+  <div class="plt-chan">
+    <div class="plt-chancard"><h3>Listing AI</h3><span class="plt-state live">Live</span><p>Drafts your listing from a photo — title, category, condition and description, with a confidence score. You confirm before anything posts.</p></div>
+    <div class="plt-chancard"><h3>Trust AI</h3><span class="plt-state live">Live</span><p>Verification badges, review checks and report review behind every seller card — a badge appears only when the underlying fact is true.</p></div>
+    <div class="plt-chancard"><h3>Search AI</h3><span class="plt-state setup">Building</span><p>Natural-language and photo search across every format — the hero search above already filters the live feed by words today.</p></div>
+    <div class="plt-chancard"><h3>Pricing AI</h3><span class="plt-state setup">Building</span><p>Will suggest prices from real comparable listings. It never invents a number — your price is always yours to set.</p></div>
+    <div class="plt-chancard"><h3>Sales AI</h3><span class="plt-state setup">Building</span><p>Will help sellers answer buyer questions and follow up — always with the seller's approval before anything sends.</p></div>
+  </div>
+</section>
 <section style="padding-top:0;" id="listings">
   <h2>Listings on <span class="lime">Pepper Lists</span></h2>
   <p class="sub">Real items from real local sellers, posted through Pepper Lists. Every seller signs in with a verified account, comments are public, and anything that looks wrong can be reported to the Top Speed office from the listing itself. New here? Read <a href="#safety">Safety &amp; Security</a> first — it takes a minute and it is worth it.</p>
   <div class="plt-sponsors" id="pltSponsors"></div>
+  <div id="pltFilterNote" style="display:none;margin:0 0 14px" role="status"></div>
   <div class="plt-grid" id="pltFeed"></div>
   <div class="plw-empty" id="pltFeedEmpty" style="display:none">
     <p>No listings are live right now. When a neighbor posts something for sale it appears here — or be the first: sign in, snap a photo, and Pepper drafts your listing.</p>
@@ -2767,7 +2893,8 @@ function plsValues(){
     condition:plsEl('plSellCondition').value,
     priceCents: priceRaw===''? NaN : Math.round(parseFloat(priceRaw)*100),
     description:plsEl('plSellDesc').value.trim(),
-    phone:plsEl('plSellPhone').value.trim()
+    phone:plsEl('plSellPhone').value.trim(),
+    format:(plsEl('plSellFormat')||{}).value||'Retail product'
   };
 }
 function plsReview(){
@@ -2775,7 +2902,7 @@ function plsReview(){
   if(v.title.length<3){ plsMsg('Give your listing a title first.',true); return; }
   if(!(v.priceCents>0)){ plsMsg('Set your price — Pepper never invents one, so the listing needs your number.',true); return; }
   if(v.phone.length<7){ plsMsg('Add the phone number the office should reach you at.',true); return; }
-  var rows=[['Posting to','Facebook Marketplace (via Pepper, after your confirm)'],['Title',v.title],['Category',v.category],['Condition',v.condition],['Price','$'+(v.priceCents/100).toFixed(2)+' — your number'],['Phone',v.phone],['Photo', plsPhotoBlob?('Attached ('+Math.max(1,Math.round(plsPhotoBlob.size/1024))+' KB)'):'None attached']];
+  var rows=[['Posting to','Facebook Marketplace (via Pepper, after your confirm)'],['Title',v.title],['Category',v.category],['Condition',v.condition],['Format',v.format||'Retail product'],['Price','$'+(v.priceCents/100).toFixed(2)+' — your number'],['Phone',v.phone],['Photo', plsPhotoBlob?('Attached ('+Math.max(1,Math.round(plsPhotoBlob.size/1024))+' KB)'):'None attached']];
   if(v.description) rows.push(['Description',v.description]);
   var ul=plsEl('plSellSummaryList'); ul.innerHTML='';
   rows.forEach(function(r){ var li=document.createElement('li'); var b=document.createElement('b'); b.textContent=r[0]+': '; li.appendChild(b); li.appendChild(document.createTextNode(r[1])); ul.appendChild(li); });
@@ -2792,7 +2919,7 @@ function plsConfirm(){
   plbMsg('plSellSummaryMsg','Posting your listing…');
   var mediaJob=plsPhotoBlob? plbBlobToB64(plsPhotoBlob).then(function(b64){ return [{kind:'photo',mime:(plsPhotoBlob.type||'image/jpeg').split(';')[0]||'image/jpeg',dataBase64:b64}]; }) : Promise.resolve([]);
   mediaJob.then(function(media){
-    return plApi('/pepper-lists/listings',{method:'POST',body:JSON.stringify(plAttachAttribution({title:v.title,description:v.description||undefined,category:v.category,condition:v.condition,priceCents:v.priceCents,phone:v.phone,media:media}))});
+    return plApi('/pepper-lists/listings',{method:'POST',body:JSON.stringify(plAttachAttribution({title:v.title,description:v.description||undefined,category:v.category,condition:v.condition,format:v.format,priceCents:v.priceCents,phone:v.phone,media:media}))});
   }).then(function(j){
     plsEl('plSellSummary').style.display='none';
     var d=j.data||{};
@@ -3632,7 +3759,7 @@ function pltCardHtml(c){
   if(c.featured) h+='<div style="padding:12px 15px 0"><span class="plt-feat">Sponsored</span></div>';
   if(c.photoUrl) h+='<img src="'+pltEsc(PL_API+c.photoUrl)+'" alt="Photo of '+pltEsc(c.title)+'" loading="lazy">';
   else h+='<div class="plt-nophoto">No photo yet — ask the seller in the comments</div>';
-  h+='<div class="plt-cardbody"><h3>'+pltEsc(c.title)+'</h3><span class="plt-price">'+pltEsc(pltMoney(c.priceCents))+'</span>';
+  h+='<div class="plt-cardbody">'+(c.format?'<span class="plt-fpill">'+pltEsc(c.format)+'</span>':'')+'<h3>'+pltEsc(c.title)+'</h3><span class="plt-price">'+pltEsc(pltMoney(c.priceCents))+'</span>';
   h+='<div class="plt-meta">'+pltEsc(c.category||'')+(c.condition?' · '+pltEsc(c.condition):'')+'<br>by '+pltEsc(c.sellerName||'Pepper Lists seller')+' · '+c.commentCount+' comment'+(c.commentCount===1?'':'s')+'</div></div></button>';
   return h;
 }
@@ -3652,21 +3779,60 @@ var PLT_SPONSORS=[
     return '<div class="plt-spon"><span class="spill">SPONSOR</span><div class="cat">'+pltEsc(s.cat)+'</div><h3>'+pltEsc(s.name)+'</h3><p>'+pltEsc(s.line)+'</p><a class="btn small dark" href="'+pltEsc(s.url)+'">'+pltEsc(s.cta)+'</a></div>';
   }).join('');
 })();
-function pltLoadFeed(){
+window.PLT_ITEMS=[]; window.PLT_FILTER={q:'',format:'',featuredOnly:false};
+var PLT_FORMAT_NOTES={'Retail product':'A regular product listing — price, photos and pickup or delivery arranged in chat.','Used goods':'Pre-owned item — your condition choice above tells buyers exactly what to expect.','Wholesale':'Bulk listing for businesses — put minimum quantities and repeat-order terms in the description.','Local service':'A service listing — appointments and estimates are arranged in chat; Top Speed repairs book on the Service OS.','Rental':'A rental listing — put availability, deposit and rental terms in the description.','Auction':'Set your starting price as the price — offers come in through the listing chat while the full bidding engine is built.','Digital product':'A download or access listing — delivery is arranged with the buyer in chat.','Live sale':'Announce a live selling session — put the date, time and where to watch in the description.','Subscription':'A recurring product or membership — put the billing rhythm and terms in the description.','Wanted':'You are looking to buy — describe what you want; sellers answer with offers.','Business for sale':'A business listing — put revenue, inventory and transfer details in the description.','Mobile vendor':'A food truck or mobile service — put your location and schedule in the description.'};
+function pltFormatNote(){ var s=pltEl('plSellFormat'), n=pltEl('plSellFormatNote'); if(!s||!n) return; n.textContent=PLT_FORMAT_NOTES[s.value]||''; }
+function pltRenderFeed(){
   var feed=pltEl('pltFeed'); if(!feed) return;
-  plApi('/pepper-lists/listings/public?limit=30').then(function(j){
-    var items=(j&&j.data)||[];
-    var cards=items.map(pltCardHtml);
+  var f=window.PLT_FILTER||{};
+  var items=(window.PLT_ITEMS||[]).slice();
+  if(f.format) items=items.filter(function(c){ return c.format===f.format; });
+  if(f.featuredOnly) items=items.filter(function(c){ return c.featured; });
+  if(f.q){ var q=String(f.q).toLowerCase(); items=items.filter(function(c){ return (String(c.title||'')+' '+(c.category||'')+' '+(c.sellerName||'')).toLowerCase().indexOf(q)>=0; }); }
+  var cards=items.map(pltCardHtml);
     /* One in-feed sponsored slot (Phase 1): a single Top Speed house
        card woven into the feed after the fourth listing \u2014 never a
        banner, never stacked. */
-    if(cards.length>=2){
+    if(cards.length>=2 && !f.q && !f.format && !f.featuredOnly){
       var slot='<div class="plt-adcard"><span class="plad-pill">Sponsored</span><h3>Top Speed Appliance</h3><p>Broken appliance? $99 diagnostic credited toward the repair, $210 flat labor. The Faster, The Better.</p><div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair</a></div></div>';
       cards.splice(Math.min(4,cards.length),0,slot);
     }
     feed.innerHTML=cards.join('');
     var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=items.length?'none':'';
+    var note=pltEl('pltFilterNote');
+    if(note){
+      if(f.q||f.format||f.featuredOnly){
+        note.style.display='';
+        note.innerHTML='Showing '+items.length+' listing'+(items.length===1?'':'s')+(f.format?' · Format: <b>'+pltEsc(f.format)+'</b>':'')+(f.q?' · Search: <b>'+pltEsc(f.q)+'</b>':'')+(f.featuredOnly?' · <b>Deals &amp; boosted</b>':'')+' &nbsp;<button type="button" class="btn small dark" onclick="pltSetFilter({})">Clear filter</button>';
+      } else { note.style.display='none'; note.innerHTML=''; }
+    }
+}
+function pltLoadFeed(){
+  var feed=pltEl('pltFeed'); if(!feed) return;
+  plApi('/pepper-lists/listings/public?limit=30').then(function(j){
+    window.PLT_ITEMS=(j&&j.data)||[];
+    pltRenderFeed();
   }).catch(function(){ var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=''; });
+}
+function pltSetFilter(f){
+  window.PLT_FILTER={q:(f&&f.q)||'',format:(f&&f.format)||'',featuredOnly:!!(f&&f.featuredOnly)};
+  pltRenderFeed();
+  var l=pltEl('listings'); if(l) l.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function pltHeroSearch(e){
+  if(e) e.preventDefault();
+  var q=(pltEl('pltHeroQ')||{}).value||'';
+  pltSetFilter({q:q.trim()});
+  return false;
+}
+function pltTile(k){
+  if(k==='ai'){ var a=pltEl('pepper-ai'); if(a) a.scrollIntoView({behavior:'smooth',block:'start'}); return; }
+  if(k==='deals') pltSetFilter({featuredOnly:true});
+  else if(k==='wholesale') pltSetFilter({format:'Wholesale'});
+  else if(k==='resale') pltSetFilter({format:'Used goods'});
+  else if(k==='services') pltSetFilter({format:'Local service'});
+  else if(k==='live') pltSetFilter({format:'Live sale'});
+  else pltSetFilter({});
 }
 
 /* ----------------------------- detail ----------------------------- */
@@ -3688,7 +3854,7 @@ function pltOpenListing(id){
     if(d.featured) h+='<span class="plt-feat">Sponsored listing</span>';
     if(d.status==='SOLD') h+='<span class="plt-sold">Sold</span>';
     h+='<h3>'+pltEsc(d.title)+'</h3><span class="plt-price" style="font-size:19px">'+pltEsc(pltMoney(d.priceCents))+'</span>';
-    h+='<p class="plt-meta">'+pltEsc(d.category||'')+(d.condition?' · '+pltEsc(d.condition):'')+' · Listed '+pltEsc(pltDate(d.createdAt))+' · '+d.viewCount+' view'+(d.viewCount===1?'':'s')+'</p>';
+    h+='<p class="plt-meta">'+pltEsc(d.category||'')+(d.condition?' · '+pltEsc(d.condition):'')+(d.format?' · '+pltEsc(d.format):'')+' · Listed '+pltEsc(pltDate(d.createdAt))+' · '+d.viewCount+' view'+(d.viewCount===1?'':'s')+'</p>';
     /* Saved listings (launch package, 2026-11-21): a real save
        toggle for signed-in shoppers, riding GET/POST/DELETE
        /pepper-lists/saved + /listings/:id/save. Signed-out shoppers

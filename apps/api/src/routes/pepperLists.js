@@ -268,11 +268,18 @@ router.post('/pepper-lists/submissions', authenticate, async (req, res) => {
   });
 });
 
+const LISTING_FORMATS = [
+  'Retail product', 'Used goods', 'Wholesale', 'Local service', 'Rental',
+  'Auction', 'Digital product', 'Live sale', 'Subscription', 'Wanted',
+  'Business for sale', 'Mobile vendor',
+];
+
 const listingSchema = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().max(2000).optional(),
   category: z.enum(LISTING_CATEGORIES),
   condition: z.enum(LISTING_CONDITIONS),
+  format: z.enum(LISTING_FORMATS).optional(),
   // The seller's own number, always — the draft never carries a
   // price, and this route rejects a listing without one.
   priceCents: z.number().int().min(1).max(100_000_000),
@@ -330,6 +337,7 @@ router.post('/pepper-lists/listings', authenticate, async (req, res) => {
     `Listing title: ${data.title}`,
     `Category: ${data.category}`,
     `Condition: ${data.condition}`,
+    ...(data.format ? [`Format: ${data.format}`] : []),
     `Price: $${(data.priceCents / 100).toFixed(2)} (set by the seller)`,
     ...(data.description ? [`Description: ${data.description}`] : []),
     mediaLine,

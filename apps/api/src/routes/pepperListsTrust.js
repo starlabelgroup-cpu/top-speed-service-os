@@ -109,6 +109,7 @@ export function parseListingFacts(connection) {
     title,
     category: grab('Category'),
     condition: grab('Condition'),
+    format: grab('Format'),
     priceCents: priceMatch ? Math.round(Number(priceMatch[1].replace(/,/g, '')) * 100) : null,
     description,
   };
@@ -236,6 +237,7 @@ async function serializeCard(listing, profile, commentCounts) {
     priceCents: facts.priceCents,
     category: facts.category,
     condition: facts.condition,
+    format: facts.format,
     status: profile?.status || 'ACTIVE',
     featured: Boolean(profile?.featured),
     photoUrl: photos[0] || null,
@@ -289,6 +291,51 @@ router.get('/pepper-lists/listings/public', async (req, res) => {
   return res.json({ data: page.map((e) => e.card), pagination: { limit, offset, total: entries.length } });
 });
 
+/* Google Shopping product feed (Commerce OS Phase 2, 2026-11-27):
+   a standard RSS 2.0 / g: feed generated from the same live listings
+   the public feed serves — ACTIVE profiles only, real prices and real
+   photo URLs, nothing invented. Merchant Center claims this URL once
+   the owner creates that account. */
+function xmlEsc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+router.get('/pepper-lists/feeds/google.xml', async (req, res) => {
+  const profiles = await listListingProfiles();
+  const byConn = new Map(profiles.map((p) => [p.connectionId, p]));
+  const listings = allListings().filter((l) => (byConn.get(l.id)?.status || 'ACTIVE') === 'ACTIVE');
+  const items = [];
+  for (const listing of listings) {
+    const facts = parseListingFacts(listing);
+    if (!facts || !facts.title || !facts.priceCents) continue;
+    const photos = await photoUrlsFor(listing);
+    const cond = /^new/i.test(facts.condition || '') ? 'new' : 'used';
+    items.push('<item>'
+      + '<g:id>' + xmlEsc(listing.reference || listing.id) + '</g:id>'
+      + '<g:title>' + xmlEsc(facts.title.slice(0, 150)) + '</g:title>'
+      + '<g:description>' + xmlEsc((facts.description || facts.title).slice(0, 5000)) + '</g:description>'
+      + '<g:link>https://pepperlists.com/pepper-lists-site</g:link>'
+      + (photos[0] ? '<g:image_link>' + xmlEsc('https://top-speed-service-os.vercel.app' + photos[0]) + '</g:image_link>' : '')
+      + '<g:price>' + (facts.priceCents / 100).toFixed(2) + ' USD</g:price>'
+      + '<g:availability>in_stock</g:availability>'
+      + '<g:condition>' + cond + '</g:condition>'
+      + (cond === 'used' ? '<g:identifier_exists>no</g:identifier_exists>' : '')
+      + '</item>');
+  }
+  const xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    + '<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0"><channel>'
+    + '<title>Pepperlists — Pepper Lists It</title>'
+    + '<link>https://pepperlists.com/</link>'
+    + '<description>Live Pepperlists listings</description>'
+    + items.join('')
+    + '</channel></rss>';
+  res.set('Content-Type', 'application/xml; charset=utf-8');
+  res.set('Cache-Control', 'public, max-age=3600');
+  return res.send(xml);
+});
+
 router.get('/pepper-lists/listings/public/:id', optionalAuthenticate, async (req, res) => {
   const listing = findListing(req.params.id);
   if (!listing) return res.status(404).json({ error: 'Listing not found' });
@@ -328,6 +375,7 @@ router.get('/pepper-lists/listings/public/:id', optionalAuthenticate, async (req
       priceCents: facts.priceCents,
       category: facts.category,
       condition: facts.condition,
+      format: facts.format,
       description: facts.description,
       status,
       featured: Boolean(profile?.featured),
