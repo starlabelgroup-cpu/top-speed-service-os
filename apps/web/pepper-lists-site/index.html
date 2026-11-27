@@ -3757,7 +3757,7 @@ function pltBadges(b, salesCount){
 function pltCardHtml(c){
   var h='<button type="button" class="plt-card" onclick="pltOpenListing(\''+pltEsc(c.id)+'\')">';
   if(c.featured) h+='<div style="padding:12px 15px 0"><span class="plt-feat">Sponsored</span></div>';
-  if(c.photoUrl) h+='<img src="'+pltEsc(PL_API+c.photoUrl)+'" alt="Photo of '+pltEsc(c.title)+'" loading="lazy">';
+  if(c.photoUrl) h+='<img src="'+pltEsc(PL_ORIGIN+c.photoUrl)+'" alt="Photo of '+pltEsc(c.title)+'" loading="lazy">';
   else h+='<div class="plt-nophoto">No photo yet — ask the seller in the comments</div>';
   h+='<div class="plt-cardbody">'+(c.format?'<span class="plt-fpill">'+pltEsc(c.format)+'</span>':'')+'<h3>'+pltEsc(c.title)+'</h3><span class="plt-price">'+pltEsc(pltMoney(c.priceCents))+'</span>';
   h+='<div class="plt-meta">'+pltEsc(c.category||'')+(c.condition?' · '+pltEsc(c.condition):'')+'<br>by '+pltEsc(c.sellerName||'Pepper Lists seller')+' · '+c.commentCount+' comment'+(c.commentCount===1?'':'s')+'</div></div></button>';
@@ -3866,7 +3866,7 @@ function pltOpenListing(id){
     } else {
       h+='<div class="plb-btnrow" style="margin-top:10px"><button class="btn small dark" type="button" onclick="return plOpenApp(event)">Sign in to save this listing</button></div>';
     }
-    if(d.photos && d.photos.length){ h+='<div class="plt-photos">'+d.photos.map(function(p){ return '<img src="'+pltEsc(PL_API+p)+'" alt="Photo of '+pltEsc(d.title)+'" loading="lazy">'; }).join('')+'</div>'; }
+    if(d.photos && d.photos.length){ h+='<div class="plt-photos">'+d.photos.map(function(p){ return '<img src="'+pltEsc(PL_ORIGIN+p)+'" alt="Photo of '+pltEsc(d.title)+'" loading="lazy">'; }).join('')+'</div>'; }
     if(d.description) h+='<p style="font-size:15px;line-height:1.65;white-space:pre-line">'+pltEsc(d.description)+'</p>';
     /* Seller trust card — badges only when the facts are true. */
     h+='<div class="plt-sellercard"><h4>Sold by '+pltEsc(d.seller.name)+'</h4><div>'+pltBadges(d.seller.badges, d.seller.salesCount)+'</div>';
