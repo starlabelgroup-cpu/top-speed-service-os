@@ -29,6 +29,15 @@
  * to set up, alongside the three national distributors). Name-only
  * record — no contact details supplied yet, so they stay null.
  *
+ * SpeedStock Pro Parts: added 2026-11-27 at the owner's direction as
+ * the HOUSE parts division of Parts Supply OS — the Top Speed brand
+ * over the existing 186-part genuine OEM catalog and this distributor
+ * network. It is a division/brand record, not a new parts list, and it
+ * carries no prices or stock of its own: real prices and stock come
+ * from the distributor at order time. Its integrationState stays
+ * NOT_CONNECTED like every entry here until a distributor's own
+ * system answers a live call.
+ *
  * Account numbers are NEVER stored in code. They reach the API only
  * through environment variables (MARCONE_ACCOUNT_NUMBER,
  * ENCOMPASS_ACCOUNT_NUMBER, PARTSTOWN_ACCOUNT_NUMBER); this module
@@ -44,6 +53,7 @@ export const MARCONE_SUPPLIER_ID = '40000000-0000-4000-8000-000000000002';
 export const ENCOMPASS_SUPPLIER_ID = '40000000-0000-4000-8000-000000000003';
 export const PARTS_TOWN_SUPPLIER_ID = '40000000-0000-4000-8000-000000000004';
 export const APPLIANCE_PARTS_DEPOT_ID = '40000000-0000-4000-8000-000000000005';
+export const SPEEDSTOCK_PRO_SUPPLIER_ID = '40000000-0000-4000-8000-000000000006';
 
 /**
  * Supplier directory rows for the three distributors, ensured at boot
@@ -91,7 +101,34 @@ export const DISTRIBUTOR_SUPPLIERS = [
     vendorType: 'STANDARD',
     active: true,
   },
+  {
+    id: SPEEDSTOCK_PRO_SUPPLIER_ID,
+    name: 'SpeedStock Pro Parts',
+    contact: null,
+    phone: null,
+    email: null,
+    terms: null,
+    vendorType: 'STANDARD',
+    active: true,
+  },
 ];
+
+/**
+ * SpeedStock Pro Parts — the house parts division of Parts Supply OS
+ * (owner-directed 2026-11-27). The division brands the existing
+ * 186-part genuine OEM catalog and the distributor network above;
+ * Plug order lines can carry this division tag. It holds no prices
+ * or stock of its own — figures come from the distributor at order
+ * time — and it is not an external distributor account, so it has no
+ * entry in DISTRIBUTORS and no account environment variable.
+ */
+export const SPEEDSTOCK_PRO_PARTS = {
+  supplierId: SPEEDSTOCK_PRO_SUPPLIER_ID,
+  name: 'SpeedStock Pro Parts',
+  kind: 'HOUSE_DIVISION',
+  parent: 'Parts Supply OS',
+  integrationState: 'NOT_CONNECTED',
+};
 
 const DISTRIBUTORS = [
   {
