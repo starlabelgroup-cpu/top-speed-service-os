@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Speed Enterprise Hub — Top Speed OS</title>
+<meta name="description" content="Top Speed Enterprise Hub: every Top Speed operating system, department and consumer service in one headquarters.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E91E2B'/%3E%3Cpath d='M14 22h36l-6 8H20zM10 34h36l-6 8H16z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#071222;--panel:#10274F;--panel2:#0C1D3D;--line:#1D3A66;--text:#FFFFFF;--muted:#9FB4D8;--red:#E91E2B;--blue:#3478DB}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:880px;margin:0 auto;padding:28px 18px 40px}
+.logoblock{background:linear-gradient(180deg,#0A1B36,var(--panel2));border:1px solid var(--line);border-radius:22px;padding:30px 28px 26px}
+.logoline{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.mark{flex:0 0 auto}
+.wordmark{font-family:Rajdhani,sans-serif;font-style:italic;line-height:.95}
+.wordmark .l1{font-size:42px;font-weight:700;letter-spacing:.01em}
+.wordmark .l1 em{font-style:italic;color:var(--red)}
+.wordmark .l2{font-size:15px;font-weight:600;font-style:normal;letter-spacing:.42em;color:var(--text);margin-top:5px}
+.redrule{height:3px;background:var(--red);border-radius:2px;margin:20px 0 18px}
+.slogan{font-family:Rajdhani,sans-serif;font-size:30px;font-weight:700;letter-spacing:.02em}
+.tagline{color:var(--muted);font-size:16.5px;margin-top:8px;line-height:1.5}
+.searchbox{margin:22px 0 4px;position:relative}
+.searchbox input{width:100%;padding:14px 18px 14px 44px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-size:15.5px;outline:none}
+.searchbox input:focus{border-color:var(--blue)}
+.searchbox svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--muted)}
+h2.sect{font-family:Rajdhani,sans-serif;font-size:24px;font-weight:700;letter-spacing:.03em;margin:34px 0 4px}
+.sectsub{color:var(--muted);font-size:13px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:12px}
+.panel{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:20px}
+.mc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.mc-title{font-family:Rajdhani,sans-serif;font-style:italic;font-size:29px;font-weight:700;line-height:1}
+.mc-title em{font-style:italic;color:var(--red)}
+.mc-sub{color:var(--muted);font-size:12.5px;letter-spacing:.24em;margin-top:5px}
+.regionpill{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:12px;padding:9px 14px;font-size:14px;font-weight:600}
+.chips{display:flex;gap:9px;flex-wrap:wrap;margin:16px 0 4px}
+.chip{padding:9px 18px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-size:14.5px;font-weight:600;text-decoration:none}
+.chip.on{background:var(--red);border-color:var(--red)}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.metric{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.metric .mlabel{color:var(--muted);font-size:13.5px}
+.metric .mvalue{font-size:34px;font-weight:800;margin-top:5px}
+.bar{height:8px;background:#0A1830;border-radius:99px;overflow:hidden;margin:8px 0 14px}
+.barfill{height:100%;background:var(--blue);border-radius:99px}
+.rows{border-top:1px solid var(--line)}
+.row{display:flex;align-items:center;gap:12px;padding:15px 4px;border-bottom:1px solid var(--line);text-decoration:none;color:var(--text)}
+a.row:hover .rowname{color:var(--red)}
+.rowname{font-family:Rajdhani,sans-serif;font-size:21px;font-weight:700;letter-spacing:.02em}
+.rowdesc{color:var(--muted);font-size:14.5px;margin-top:1px}
+.chev{margin-left:auto;color:var(--red);font-size:30px;font-weight:700;line-height:1}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 10px 14px;display:flex;flex-direction:column;align-items:center;gap:9px;text-decoration:none;color:var(--text);font-size:14.5px;font-weight:600;text-align:center}
+.tile svg{width:27px;height:27px}
+.division{margin-top:26px}
+.divtitle{font-family:Rajdhani,sans-serif;font-size:23px;font-weight:700}
+.divcount{color:var(--muted);font-size:13px;font-family:Inter,sans-serif;font-weight:600;letter-spacing:.06em}
+.phases{display:grid;gap:0}
+.phase{display:flex;gap:16px;padding:14px 2px;border-bottom:1px solid var(--line)}
+.phase .num{flex:0 0 auto;width:52px;height:52px;border-radius:14px;background:var(--panel);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;font-size:21px;font-weight:700}
+.phase .pname{font-size:17.5px;font-weight:700}
+.phase .pdesc{color:var(--muted);font-size:14.5px;line-height:1.5;margin-top:2px}
+.askbtn{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:20px;background:var(--red);color:#fff;font-weight:700;font-size:16.5px;padding:15px;border-radius:14px;text-decoration:none}
+.askbtn:hover{background:#C8151F}
+.regions{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.region{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.region .rname{font-family:Rajdhani,sans-serif;font-size:19px;font-weight:700}
+.region .rdesc{color:var(--muted);font-size:13.5px;line-height:1.5;margin-top:4px}
+.fineprint{color:var(--muted);font-size:12.5px;margin-top:10px}
+.get{text-align:center;margin-top:38px}
+.get .g1{font-family:Rajdhani,sans-serif;font-size:27px;font-weight:700;letter-spacing:.05em}
+.get .g2{color:var(--muted);margin-top:5px;font-size:15px}
+.hidden-by-search{display:none!important}
+@media (max-width:640px){.wordmark .l1{font-size:33px}.tiles{grid-template-columns:repeat(3,1fr)}.regions{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="logoblock">
+    <div class="logoline">
+      <svg class="mark" width="58" height="46" viewBox="0 0 58 46" aria-hidden="true"><path d="M6 4h40l-7 11H0z" fill="#E91E2B"/><path d="M12 19h40l-7 11H5z" fill="#E91E2B"/><path d="M18 34h34l-6 9H12z" fill="#E91E2B"/></svg>
+      <div class="wordmark">
+        <div class="l1">TOP SPEED <em>OS</em></div>
+        <div class="l2">ENTERPRISE HUB</div>
+      </div>
+    </div>
+    <div class="redrule"></div>
+    <div class="slogan">THE FASTER. THE BETTER.</div>
+    <p class="tagline">Connected services. Intelligent operations. Enterprise performance.</p>
+    <div class="searchbox">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3a7.5 7.5 0 1 0 4.6 13.5l4.7 4.7 1.7-1.7-4.7-4.7A7.5 7.5 0 0 0 10.5 3zm0 2.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" fill="currentColor"/></svg>
+      <input id="search" type="search" placeholder="Search enterprise applications" aria-label="Search enterprise applications">
+    </div>
+  </div>
+
+  <h2 class="sect">Mission Control</h2>
+  <div class="panel">
+    <div class="mc-head">
+      <div>
+        <div class="mc-title">TOP SPEED <em>ONE</em></div>
+        <div class="mc-sub">ENTERPRISE MISSION CONTROL</div>
+      </div>
+      <span class="regionpill">All regions &#9662;</span>
+    </div>
+    <div class="chips">
+      <a class="chip on" href="#family">Executive</a>
+      <a class="chip" href="#divisions">Operations</a>
+      <a class="chip" href="#division-intelligence">AI Agents</a>
+      <a class="chip" href="#division-enterprise">Approvals</a>
+      <a class="chip" href="#developer">Systems</a>
+    </div>
+    <div class="metrics">
+      <div class="metric"><div class="mlabel">Divisions</div><div class="mvalue">17</div></div>
+      <div class="metric"><div class="mlabel">Applications</div><div class="mvalue">64</div></div>
+      <div class="metric"><div class="mlabel">Cities served</div><div class="mvalue">65</div></div>
+      <div class="metric"><div class="mlabel">Videos on Overdrive TV</div><div class="mvalue">148</div></div>
+    </div>
+  </div>
+
+  <h2 class="sect">Enterprise applications</h2>
+  <div class="tiles"><a class="tile" data-search="service" href="#division-service"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1"/></svg><span>Service</span></a>
+<a class="tile" data-search="sales" href="#division-sales"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Sales</span></a>
+<a class="tile" data-search="marketing" href="#division-marketing"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M21 20H3"/></svg><span>Marketing</span></a>
+<a class="tile" data-search="media" href="#division-media"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4.8v14.4L19 12z"/></svg><span>Media</span></a>
+<a class="tile" data-search="finance" href="#division-finance"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M16.5 6.5c-.8-1-2.4-1.6-4.5-1.6-2.8 0-4.7 1.4-4.7 3.4 0 4.9 9.4 2.6 9.4 7.4 0 2-1.9 3.4-4.7 3.4-2.1 0-3.9-.7-4.8-1.9"/></svg><span>Finance</span></a>
+<a class="tile" data-search="speedy ai" href="https://topspeedserviceos.com/" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/><path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg><span>Speedy AI</span></a>
+<a class="tile" data-search="office os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M9 7.5V6a3 3 0 0 1 6 0v1.5M3.5 13h17"/></svg><span>Office OS</span></a>
+<a class="tile" data-search="equipment" href="https://top-speed-equipment-os.vercel.app" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 6.5a4 4 0 0 1 5.2-3.8l-2.6 2.6.5 2.4 2.4.5 2.6-2.6a4 4 0 0 1-5.3 5.2L8 20.2a2 2 0 0 1-2.8 0l-.7-.7a2 2 0 0 1 0-2.8z"/></svg><span>Equipment</span></a>
+<a class="tile" data-search="gaming" href="/games"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8h10a5 5 0 0 1 5 5c0 2.8-2.2 5-5 5-1.2 0-2.3-.4-3.1-1.1L12.6 15h-1.2l-1.3 1.9C9.3 17.6 8.2 18 7 18c-2.8 0-5-2.2-5-5a5 5 0 0 1 5-5z"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="16" cy="11.5" r=".4"/><circle cx="18" cy="14" r=".4"/></svg><span>Gaming</span></a></div>
+  <a class="askbtn" href="https://topspeedserviceos.com/manager"><svg width="17" height="17" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 3l1.9 5.6 5.6 1.9-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/></svg> Ask Pepper</a>
+
+  <h2 class="sect" id="family">Top Speed Enterprise</h2>
+  <p class="sectsub">Connected Business Technology</p>
+  <div class="rows"><a class="row" data-search="top speed one enterprise management" href="/enterprise"><div class="rowtext"><div class="rowname">TOP SPEED ONE</div><div class="rowdesc">Enterprise management</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed cloud infrastructure and data" href="#developer"><div class="rowtext"><div class="rowname">TOP SPEED CLOUD</div><div class="rowdesc">Infrastructure and data</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed id universal identity" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED ID</div><div class="rowdesc">Universal identity</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed link application integration" href="/interconnect"><div class="rowtext"><div class="rowname">TOP SPEED LINK</div><div class="rowdesc">Application integration</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed flow workflow automation" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED FLOW</div><div class="rowdesc">Workflow automation</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed pulse real-time monitoring" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED PULSE</div><div class="rowdesc">Real-time monitoring</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed vault security and records" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED VAULT</div><div class="rowdesc">Security and records</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed nexus provider and partner network" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED NEXUS</div><div class="rowdesc">Provider and partner network</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed intelligence speedy ai orchestration" href="https://topspeedserviceos.com/" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">TOP SPEED INTELLIGENCE</div><div class="rowdesc">Speedy AI orchestration</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed studio application development" href="#developer"><div class="rowtext"><div class="rowname">TOP SPEED STUDIO</div><div class="rowdesc">Application development</div></div><span class="chev">&rsaquo;</span></a></div>
+
+  <h2 class="sect" id="divisions">Departments &amp; Operating Systems</h2>
+  <p class="sectsub">Every division, one headquarters</p>
+  <section class="division" id="division-service" data-division="service os">
+<h3 class="divtitle">Service OS <span class="divcount">7 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:100%"></div></div>
+<div class="rows"><a class="row" data-search="crm service os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">CRM</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="service setters service os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Service Setters</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="book os service os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Book OS</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="dispatch service os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Dispatch</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="field pro service os" href="https://topspeedserviceos.com/applianceman" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Field Pro</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="applianceman service os" href="https://topspeedserviceos.com/applianceman" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">ApplianceMan</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="provider network service os" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Provider Network</div><div class="rowdesc">Service OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-sales" data-division="sales os">
+<h3 class="divtitle">Sales OS <span class="divcount">5 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:71%"></div></div>
+<div class="rows"><a class="row" data-search="appliance inventory sales os" href="/sales-os"><div class="rowtext"><div class="rowname">Appliance Inventory</div><div class="rowdesc">Sales OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="sales console sales os" href="/sales-os"><div class="rowtext"><div class="rowname">Sales Console</div><div class="rowdesc">Sales OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="pepper lists sales os" href="https://topspeedappliances.com" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Pepper Lists</div><div class="rowdesc">Sales OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="orders sales os" href="/sales-os"><div class="rowtext"><div class="rowname">Orders</div><div class="rowdesc">Sales OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="speedstock pro sales os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">SpeedStock Pro</div><div class="rowdesc">Sales OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-marketing" data-division="marketing os">
+<h3 class="divtitle">Marketing OS <span class="divcount">5 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:71%"></div></div>
+<div class="rows"><a class="row" data-search="ads expo marketing os" href="/flywheel"><div class="rowtext"><div class="rowname">Ads Expo</div><div class="rowdesc">Marketing OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="flywheel adstream marketing os" href="/flywheel"><div class="rowtext"><div class="rowname">Flywheel AdStream</div><div class="rowdesc">Marketing OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="speed local marketing os" href="/local"><div class="rowtext"><div class="rowname">Speed Local</div><div class="rowdesc">Marketing OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="city pages marketing os" href="/local"><div class="rowtext"><div class="rowname">City Pages</div><div class="rowdesc">Marketing OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="campaign analytics marketing os" href="/flywheel"><div class="rowtext"><div class="rowname">Campaign Analytics</div><div class="rowdesc">Marketing OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-media" data-division="media os">
+<h3 class="divtitle">Media OS <span class="divcount">4 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:57%"></div></div>
+<div class="rows"><a class="row" data-search="top speed 360 media os" href="/media"><div class="rowtext"><div class="rowname">Top Speed 360</div><div class="rowdesc">Media OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="engage overdrive tv media os" href="https://overdrive-tv.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Engage Overdrive TV</div><div class="rowdesc">Media OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="video library media os" href="/appliance-videos"><div class="rowtext"><div class="rowname">Video Library</div><div class="rowdesc">Media OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="content studio media os" href="/media"><div class="rowtext"><div class="rowname">Content Studio</div><div class="rowdesc">Media OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="customer os">
+<h3 class="divtitle">Customer OS <span class="divcount">4 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:57%"></div></div>
+<div class="rows"><a class="row" data-search="appliance connect customer os" href="https://topspeedappliance.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Connect</div><div class="rowdesc">Customer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="my garage customer os" href="https://topspeedappliance.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">My Garage</div><div class="rowdesc">Customer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="appliancereferral customer os" href="/app"><div class="rowtext"><div class="rowname">ApplianceReferral</div><div class="rowdesc">Customer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="service history customer os" href="https://topspeedappliance.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Service History</div><div class="rowdesc">Customer OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="property os">
+<h3 class="divtitle">Property OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="appliance connect pro property os" href="https://topspeedappliance.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Connect Pro</div><div class="rowdesc">Property OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="appliance pro property os" href="https://appliancepro.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Pro</div><div class="rowdesc">Property OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="maintenance contracts property os" href="/commercial"><div class="rowtext"><div class="rowname">Maintenance Contracts</div><div class="rowdesc">Property OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-finance" data-division="finance os">
+<h3 class="divtitle">Finance OS <span class="divcount">4 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:57%"></div></div>
+<div class="rows"><a class="row" data-search="invoices finance os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Invoices</div><div class="rowdesc">Finance OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="payments finance os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Payments</div><div class="rowdesc">Finance OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="provider payouts finance os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Provider Payouts</div><div class="rowdesc">Finance OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="expenses finance os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Expenses</div><div class="rowdesc">Finance OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="logistics os">
+<h3 class="divtitle">Logistics OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="delivery logistics os" href="/sales-os"><div class="rowtext"><div class="rowname">Delivery</div><div class="rowdesc">Logistics OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="routes logistics os" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Routes</div><div class="rowdesc">Logistics OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="fleet logistics os" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Fleet</div><div class="rowdesc">Logistics OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="supply os">
+<h3 class="divtitle">Supply OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="suppliers supply os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Suppliers</div><div class="rowdesc">Supply OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="procurement supply os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Procurement</div><div class="rowdesc">Supply OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="parts supply os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Parts</div><div class="rowdesc">Supply OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="workforce os">
+<h3 class="divtitle">Workforce OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="employees workforce os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Employees</div><div class="rowdesc">Workforce OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="contractors workforce os" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Contractors</div><div class="rowdesc">Workforce OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="training workforce os" href="https://overdrive-tv.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Training</div><div class="rowdesc">Workforce OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="compliance os">
+<h3 class="divtitle">Compliance OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="insurance compliance os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Insurance</div><div class="rowdesc">Compliance OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="licensing compliance os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Licensing</div><div class="rowdesc">Compliance OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="audit reviews compliance os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Audit Reviews</div><div class="rowdesc">Compliance OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="academy os">
+<h3 class="divtitle">Academy OS <span class="divcount">2 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:29%"></div></div>
+<div class="rows"><a class="row" data-search="courses academy os" href="https://overdrive-tv.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Courses</div><div class="rowdesc">Academy OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="certifications academy os" href="https://overdrive-tv.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Certifications</div><div class="rowdesc">Academy OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="gaming os">
+<h3 class="divtitle">Gaming OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="game library gaming os" href="/games"><div class="rowtext"><div class="rowname">Game Library</div><div class="rowdesc">Gaming OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="gaming hub gaming os" href="https://speedy-ai-games.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Gaming Hub</div><div class="rowdesc">Gaming OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="break room gaming os" href="/breakroom"><div class="rowtext"><div class="rowname">Break Room</div><div class="rowdesc">Gaming OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-intelligence" data-division="intelligence os">
+<h3 class="divtitle">Intelligence OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="speedy ai intelligence os" href="https://topspeedserviceos.com/" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Speedy AI</div><div class="rowdesc">Intelligence OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="appliance master ai intelligence os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Master AI</div><div class="rowdesc">Intelligence OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="agent registry intelligence os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Agent Registry</div><div class="rowdesc">Intelligence OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="developer os">
+<h3 class="divtitle">Developer OS <span class="divcount">4 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:57%"></div></div>
+<div class="rows"><a class="row" data-search="repositories developer os" href="#developer"><div class="rowtext"><div class="rowname">Repositories</div><div class="rowdesc">Developer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="api registry developer os" href="#developer"><div class="rowtext"><div class="rowname">API Registry</div><div class="rowdesc">Developer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="integrations developer os" href="/interconnect"><div class="rowtext"><div class="rowname">Integrations</div><div class="rowdesc">Developer OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="system health developer os" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">System Health</div><div class="rowdesc">Developer OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" data-division="data os">
+<h3 class="divtitle">Data OS <span class="divcount">3 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:43%"></div></div>
+<div class="rows"><a class="row" data-search="data catalog data os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Data Catalog</div><div class="rowdesc">Data OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="reports data os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Reports</div><div class="rowdesc">Data OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="audit vault data os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Audit Vault</div><div class="rowdesc">Data OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+<section class="division" id="division-enterprise" data-division="enterprise os">
+<h3 class="divtitle">Enterprise OS <span class="divcount">5 applications</span></h3>
+<div class="bar"><div class="barfill" style="width:71%"></div></div>
+<div class="rows"><a class="row" data-search="approvals enterprise os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Approvals</div><div class="rowdesc">Enterprise OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="executive reports enterprise os" href="https://topspeedserviceos.com/manager" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Executive Reports</div><div class="rowdesc">Enterprise OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="regional operations enterprise os" href="#regions"><div class="rowtext"><div class="rowname">Regional Operations</div><div class="rowdesc">Enterprise OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="office os suite enterprise os" href="https://top-speed-office-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Office OS Suite</div><div class="rowdesc">Enterprise OS</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="equipment os enterprise os" href="https://top-speed-equipment-os.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Equipment OS</div><div class="rowdesc">Enterprise OS</div></div><span class="chev">&rsaquo;</span></a></div>
+</section>
+
+
+  <h2 class="sect" id="developer">Developer Center</h2>
+  <p class="sectsub">Build, integrate, monitor</p>
+  <div class="tiles"><a class="tile" data-search="repository center" href="https://github.com/starlabelgroup-cpu" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></svg><span>Repository Center</span></a>
+<div class="tile" data-search="api playground"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6l-5 6 5 6M16 6l5 6-5 6"/></svg><span>API Playground</span></div>
+<div class="tile" data-search="api key manager"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="14" r="4.5"/><path d="M11.5 10.5L20 2M16 6l3 3M13.5 8.5l2.5 2.5"/></svg><span>API Key Manager</span></div>
+<div class="tile" data-search="webhook center"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v6M12 9a3 3 0 1 1-3 3"/><circle cx="12" cy="3" r="1.4"/><path d="M9 21c-2 0-3.5-1.3-3.5-3M15 21c2 0 3.5-1.3 3.5-3"/></svg><span>Webhook Center</span></div>
+<div class="tile" data-search="database manager"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8v-13M4.5 12c0 1.6 3.4 2.8 7.5 2.8s7.5-1.2 7.5-2.8"/></svg><span>Database Manager</span></div>
+<div class="tile" data-search="cloud deployments"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 18.5a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18.3 11 3.8 3.8 0 0 1 17.5 18.5z"/></svg><span>Cloud Deployments</span></div>
+<div class="tile" data-search="issue tracker"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="5.5"/><path d="M12 7.5V4M8 5l2 2.5M16 5l-2 2.5M6.5 13H3M21 13h-3.5M7.5 17.5L4 20M16.5 17.5L20 20"/></svg><span>Issue Tracker</span></div>
+<a class="tile" data-search="version control" href="https://github.com/starlabelgroup-cpu" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6.5" cy="5.5" r="2.3"/><circle cx="6.5" cy="18.5" r="2.3"/><circle cx="17.5" cy="7.5" r="2.3"/><path d="M6.5 7.8v8.4M17.5 9.8c0 4-4.5 4.4-8 5.4"/></svg><span>Version Control</span></a>
+<a class="tile" data-search="system monitoring" href="https://topspeedserviceos.com/navigator" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2.5-6 4 12L16 12h5"/></svg><span>System Monitoring</span></a>
+<div class="tile" data-search="developer console"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M7 9l3.5 3.5L7 16M12.5 16H17"/></svg><span>Developer Console</span></div>
+<a class="tile" data-search="api documentation" href="/interconnect"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z"/><path d="M5 19.5A1.5 1.5 0 0 1 6.5 18H19v3H6.5A1.5 1.5 0 0 1 5 19.5z"/></svg><span>API Documentation</span></a>
+<div class="tile" data-search="testing sandbox"><svg viewBox="0 0 24 24" fill="none" stroke="#3478DB" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3h4M10.5 3v5.2L5 17a2.3 2.3 0 0 0 2 3.5h10a2.3 2.3 0 0 0 2-3.5L13.5 8.2V3"/><path d="M7.5 14h9"/></svg><span>Testing Sandbox</span></div></div>
+
+  <h2 class="sect" id="regions">Regional Operations</h2>
+  <p class="sectsub">South Florida service territories</p>
+  <div class="regions">
+    <div class="region"><div class="rname">Broward County</div><p class="rdesc">Home territory — Fort Lauderdale headquarters coverage, the core of the 65-city service area.</p></div>
+    <div class="region"><div class="rname">Miami-Dade</div><p class="rdesc">Southern territory — service demand, provider coverage and expansion tracking.</p></div>
+    <div class="region"><div class="rname">Palm Beach</div><p class="rdesc">Northern territory — Boca Raton to West Palm Beach coverage and growth.</p></div>
+  </div>
+  <p class="fineprint">Regional management territories shown for organization — not physical office locations. Top Speed is a service-area business: repairs happen at the customer&rsquo;s location.</p>
+
+  <h2 class="sect">Consumer Services</h2>
+  <p class="sectsub">Customer-facing platforms</p>
+  <div class="rows"><a class="row" data-search="book a repair residential service — $99 diagnostic credited toward your repair" href="/book"><div class="rowtext"><div class="rowname">Book a Repair</div><div class="rowdesc">Residential service — $99 diagnostic credited toward your repair</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="appliance connect customer app — bookings, garage and service history" href="https://topspeedappliance.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Connect</div><div class="rowdesc">Customer app — bookings, garage and service history</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="appliance pro property managers and commercial accounts" href="https://appliancepro.net" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Appliance Pro</div><div class="rowdesc">Property managers and commercial accounts</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="shop appliances top speed sales os — appliances and delivery" href="https://topspeedappliances.com" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Shop Appliances</div><div class="rowdesc">Top Speed Sales OS — appliances and delivery</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="top speed repairs premium repair site — 90-day parts &amp; labor warranty" href="https://topspeedrepairs.com" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Top Speed Repairs</div><div class="rowdesc">Premium repair site — 90-day parts &amp; labor warranty</div></div><span class="chev">&rsaquo;</span></a>
+<a class="row" data-search="engage overdrive tv watch repair know-how — free, 148 videos" href="https://overdrive-tv.vercel.app" target="_blank" rel="noopener"><div class="rowtext"><div class="rowname">Engage Overdrive TV</div><div class="rowdesc">Watch repair know-how — free, 148 videos</div></div><span class="chev">&rsaquo;</span></a></div>
+
+  <h2 class="sect">Build Order</h2>
+  <p class="sectsub">Enterprise platform phases</p>
+  <div class="phases">
+    <div class="phase"><div class="num">01</div><div><div class="pname">Enterprise Foundation</div><p class="pdesc">Unified login, database, permissions, application launcher and responsive dashboard.</p></div></div>
+    <div class="phase"><div class="num">02</div><div><div class="pname">Service Operations</div><p class="pdesc">CRM, Service Setters, dispatch, Field Pro, customer booking and payment processing.</p></div></div>
+    <div class="phase"><div class="num">03</div><div><div class="pname">Commerce Infrastructure</div><p class="pdesc">Sales OS, SpeedStock Pro, Pepper Lists, inventory and delivery.</p></div></div>
+    <div class="phase"><div class="num">04</div><div><div class="pname">Marketing and Media</div><p class="pdesc">Ads Expo, Flywheel, Speed Local, Top Speed 360 and Engage Overdrive TV.</p></div></div>
+    <div class="phase"><div class="num">05</div><div><div class="pname">Enterprise Intelligence</div><p class="pdesc">Speedy AI agents, analytics, reporting and approval-controlled automation.</p></div></div>
+    <div class="phase"><div class="num">06</div><div><div class="pname">Enterprise Expansion</div><p class="pdesc">Multi-company accounts, SaaS subscriptions, provider expansion and regional operations.</p></div></div>
+  </div>
+
+  <div class="get">
+    <div class="g1">GET TOP SPEED</div>
+    <div class="g2">The Faster. The Better.</div>
+  </div>
+
+</div>
+<script>
+(function(){
+  var input = document.getElementById("search");
+  var items = Array.prototype.slice.call(document.querySelectorAll("[data-search]"));
+  var sections = Array.prototype.slice.call(document.querySelectorAll(".division"));
+  input.addEventListener("input", function(){
+    var q = input.value.trim().toLowerCase();
+    items.forEach(function(el){ el.classList.toggle("hidden-by-search", !!q && el.getAttribute("data-search").indexOf(q) === -1); });
+    sections.forEach(function(sec){
+      var any = sec.querySelectorAll(".row:not(.hidden-by-search)").length > 0;
+      sec.classList.toggle("hidden-by-search", !!q && !any);
+    });
+  });
+})();
+</script>
+</body>
+</html>
