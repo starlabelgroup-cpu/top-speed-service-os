@@ -251,6 +251,9 @@ function serveMediaBytes(req, res, row) {
   res.set({
     'Content-Type': row.mimeType || 'application/octet-stream',
     'Cache-Control': 'private, no-store',
+    // Review media is embedded cross-origin from the API origin —
+    // helmet's default same-origin CORP would block the render.
+    'Cross-Origin-Resource-Policy': 'cross-origin',
     'Accept-Ranges': 'bytes',
     'Content-Disposition': `inline; filename="review-${row.kind}-${row.id.slice(0, 8)}"`,
   });

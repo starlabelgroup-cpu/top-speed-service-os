@@ -216,6 +216,9 @@ router.get('/pepper-lists/listings/:reference/photo/:index', async (req, res, ne
     res.set({
       'Content-Type': row.mime || match[1] || 'image/jpeg',
       'Cache-Control': 'public, max-age=86400',
+      // Public bytes, embedded cross-origin — helmet's default
+      // same-origin CORP would make browsers refuse the photo.
+      'Cross-Origin-Resource-Policy': 'cross-origin',
       'Content-Length': bytes.length,
     });
     return res.end(bytes);

@@ -406,6 +406,10 @@ router.get('/pepper-lists/listings/public/:id/media/:mediaId', async (req, res) 
   res.set({
     'Content-Type': row.mime || match[1] || 'application/octet-stream',
     'Cache-Control': 'public, max-age=300',
+    // Public listing photos are embedded cross-origin (pepperlists.com
+    // loads them from the API origin) — without this, helmet's default
+    // same-origin CORP makes browsers refuse a perfectly good 200.
+    'Cross-Origin-Resource-Policy': 'cross-origin',
     'Content-Disposition': `inline; filename="listing-photo-${row.id.slice(0, 8)}"`,
     'Content-Length': bytes.length,
   });
