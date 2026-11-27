@@ -1341,6 +1341,18 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
   <a class="btn dark" href="https://pepperlists.com/how-it-works" style="margin-left:10px">The full walkthrough</a>
 </section>
 
+<section style="padding-top:0" id="advertise">
+  <h2>Advertise with <span class="lime">Pepper Lists</span></h2>
+  <p class="sub">For local businesses and service pros: three clean placements where Pepper Lists shoppers already look. Submitting is free — every ad is reviewed by the Top Speed office before it runs, and nothing is charged or shown without approval.</p>
+  <div class="grid">
+    <div class="card"><h3>Customer Ads wall</h3><p>Your card in the Customer Ads section below, beside Top Speed's own house slot — the marketplace's front window.</p></div>
+    <div class="card"><h3>In-feed sponsored slot</h3><p>One sponsored card woven into the listings feed — seen by every shopper browsing live listings.</p></div>
+    <div class="card"><h3>Category sponsorship</h3><p>Own a category: your name at the top of the feed for Appliances, Garden &amp; Plants, Food &amp; Drink, and more.</p></div>
+  </div>
+  <div class="plb-btnrow" style="margin-top:16px"><a class="btn" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a><a class="btn dark" href="https://topspeedserviceos.com/advertise">Larger campaigns — Flywheel Advertising</a></div>
+  <p class="note">Service Network pros: this is your customer shelf. Your trade listing gets you found here the same way customers find Top Speed.</p>
+</section>
+
 <section style="padding-top:0" id="ads">
   <h2>Customer <span class="lime">ads</span></h2>
   <p class="sub">Real ads from Pepper Lists sellers and Top Speed partners. Every ad is reviewed by the Top Speed office before it runs — nothing appears here unapproved.</p>
@@ -1422,6 +1434,17 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 .plt-price{font-weight:800;color:var(--lime);font-size:16px}
 .plt-meta{color:var(--muted);font-size:13px;margin-top:5px;line-height:1.5}
 .plt-feat{display:inline-block;background:var(--lime);color:#0c130d;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;margin-bottom:8px}
+.plt-adcard{background:linear-gradient(160deg,#12260f,#0c130d);border:1px solid var(--lime);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.plt-adcard h3{margin:0;font-size:19px}
+.plt-adcard p{margin:0;font-size:14.5px;line-height:1.55;color:var(--muted)}
+.plt-sponsors{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:0 0 22px}
+.plt-spon{border:1px solid #2c4232;border-radius:14px;padding:15px 17px;background:var(--panel)}
+.plt-spon .cat{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--lime)}
+.plt-spon h3{margin:5px 0 4px;font-size:16.5px}
+.plt-spon p{margin:0 0 10px;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.plt-spon .spill{font-size:10px;font-weight:800;letter-spacing:.12em;color:var(--amber);border:1px solid rgba(245,197,24,.55);border-radius:5px;padding:2px 6px;float:right}
+.plad-house{border-color:rgba(183,227,60,.5)}
+#plHouseCard{transition:opacity .45s ease}
 .plt-sold{display:inline-block;background:#5b2323;color:#ffd9d9;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:3px 9px;margin-bottom:8px}
 .plt-detail{background:var(--panel);border:1px solid #2c4232;border-radius:18px;padding:22px;margin-top:20px}
 .plt-detail h3{font-size:22px;margin:0 0 6px}
@@ -1467,6 +1490,7 @@ input[type=file].plb-file{margin-top:5px;color:var(--muted);font-size:14px}
 <section style="padding-top:0;" id="listings">
   <h2>Listings on <span class="lime">Pepper Lists</span></h2>
   <p class="sub">Real items from real local sellers, posted through Pepper Lists. Every seller signs in with a verified account, comments are public, and anything that looks wrong can be reported to the Top Speed office from the listing itself. New here? Read <a href="#safety">Safety &amp; Security</a> first — it takes a minute and it is worth it.</p>
+  <div class="plt-sponsors" id="pltSponsors"></div>
   <div class="plt-grid" id="pltFeed"></div>
   <div class="plw-empty" id="pltFeedEmpty" style="display:none">
     <p>No listings are live right now. When a neighbor posts something for sale it appears here — or be the first: sign in, snap a photo, and Pepper drafts your listing.</p>
@@ -3162,18 +3186,47 @@ function plAdsEsc(t){return String(t==null?'':t).replace(/</g,'&lt;').replace(/"
   function invite(){
     wall.innerHTML='<div class="plad-card"><img src="/api/v1/app/platform-images/flywheel-display-ad.webp" alt="Illustration: a Top Speed technician waving beside a blank display-ad card — your product could be advertised here" style="width:100%;height:auto;display:block;border-radius:12px;margin-bottom:14px" loading="lazy"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section and across Top Speed sites. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>';
   }
-  fetch(PL_API+'/ad-studio/display?category=PEPPER_LISTS').then(function(r){return r.json();}).then(function(j){
-    var list=(j&&j.data)||[];
-    if(!list.length){ invite(); return; }
-    wall.innerHTML=list.slice(0,3).map(function(ad){
+  /* SPONSORED SLOT SYSTEM (Phase 1, 2026-11-27, Ramone's full phased
+     plan): exactly ONE house slot — the first card — rotating Top
+     Speed's own messages, followed by up to two office-approved
+     customer ads. No banners, no stacked injectors: this wall is the
+     one clean sponsored surface on Pepper Lists. */
+  var PL_HOUSE=[
+    {name:'Top Speed Appliance',offer:'Appliance repair across Broward',copy:'$99 diagnostic, credited toward your repair. $210 flat labor, parts separate. Mon\u2013Fri 8am\u20137pm \u2014 (844) 460-7038.',cta:'Book Service',url:'https://topspeedserviceos.com/book'},
+    {name:'Top Speed Appliance',offer:'Overdrive TV \u2014 watch free',copy:'Real repair videos, live channels and Top Speed shows. Watch what a fix actually looks like before you book.',cta:'Watch Overdrive TV',url:'https://overdrive-tv.vercel.app'},
+    {name:'Top Speed Appliance',offer:'Shop quality used appliances',copy:'Sales and delivery from Top Speed \u2014 see what is in stock today.',cta:'Shop appliances',url:'https://topspeedappliances.com'}
+  ];
+  var plHouseIdx=0;
+  function plHouseCard(){
+    var a=PL_HOUSE[plHouseIdx%PL_HOUSE.length];
+    return '<div class="plad-card plad-house" id="plHouseCard"><span class="plad-pill">AD</span><h3>'+plAdsEsc(a.name)+'</h3><p style="color:var(--ink);font-weight:700">'+plAdsEsc(a.offer)+'</p><p>'+plAdsEsc(a.copy)+'</p><a class="btn small" href="'+plAdsEsc(a.url)+'">'+plAdsEsc(a.cta)+'</a></div>';
+  }
+  function plRenderWall(list){
+    var cards=[plHouseCard()];
+    (list||[]).slice(0,2).forEach(function(ad){
       var offer=ad.offering||ad.headline||'';
       var copy=ad.copy||'';
-      return '<div class="plad-card"><span class="plad-pill">AD</span><h3>'+plAdsEsc(ad.advertiserName||'')+'</h3>'+
+      cards.push('<div class="plad-card"><span class="plad-pill">AD</span><h3>'+plAdsEsc(ad.advertiserName||'')+'</h3>'+
         (offer?'<p style="color:var(--ink);font-weight:700">'+plAdsEsc(offer)+'</p>':'')+
         (copy?'<p>'+plAdsEsc(copy)+'</p>':'')+
-        (ad.ctaText&&ad.ctaUrl?'<a class="btn small" href="'+plAdsEsc(ad.ctaUrl)+'">'+plAdsEsc(ad.ctaText)+'</a>':'')+'</div>';
-    }).join('');
-  }).catch(function(){ invite(); });
+        (ad.ctaText&&ad.ctaUrl?'<a class="btn small" href="'+plAdsEsc(ad.ctaUrl)+'">'+plAdsEsc(ad.ctaText)+'</a>':'')+'</div>');
+    });
+    if(!(list&&list.length)) cards.push('<div class="plad-card"><span class="plad-pill">AD</span><h3>Your product here</h3><p>Sell on Pepper Lists? Advertise it in this section. Sign in, send your ad, and the Top Speed office reviews it before it goes live.</p><a class="btn small" href="https://pepperlists.com/#sign-in" onclick="return plOpenApp(event)">Advertise in Pepper Lists</a></div>');
+    wall.innerHTML=cards.join('');
+  }
+  plRenderWall([]);
+  setInterval(function(){
+    var el=document.getElementById('plHouseCard'); if(!el) return;
+    plHouseIdx=(plHouseIdx+1)%PL_HOUSE.length;
+    el.style.opacity='0';
+    setTimeout(function(){
+      var tmp=document.createElement('div'); tmp.innerHTML=plHouseCard();
+      el.innerHTML=tmp.firstChild.innerHTML; el.style.opacity='1';
+    },460);
+  },7000);
+  fetch(PL_API+'/ad-studio/display?category=PEPPER_LISTS').then(function(r){return r.json();}).then(function(j){
+    plRenderWall((j&&j.data)||[]);
+  }).catch(function(){ /* house slot already rendered */ });
 })();
 function plAdsMsg(t,err){ var m=document.getElementById('plAdMsg'); if(m){ m.textContent=t||''; m.className='plb-msg'+(err?' err':''); } }
 function plAdsSubmit(){
@@ -3491,6 +3544,13 @@ function plmRenderThread(d){
     div.appendChild(when);
     box.appendChild(div);
   });
+  /* Repair handoff (Phase 3): a listing chat about a broken appliance
+     is one tap from a real booking — the classic web form leads. */
+  if(t.listing){
+    var cta=document.createElement('div'); cta.className='plt-xpromo'; cta.style.marginTop='12px';
+    cta.innerHTML='<h4>Need it repaired instead?</h4><p>Top Speed repairs appliances across Broward — book the visit and track your tech here.</p><div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair</a></div>';
+    box.appendChild(cta);
+  }
   var closed=(t.status==='CLOSED');
   var rb=document.getElementById('plmReplyBox'); if(rb) rb.style.display=closed?'none':'';
   var cn=document.getElementById('plmClosedNote'); if(cn) cn.style.display=closed?'':'none';
@@ -3569,18 +3629,42 @@ function pltBadges(b, salesCount){
 /* ------------------------------ feed ------------------------------ */
 function pltCardHtml(c){
   var h='<button type="button" class="plt-card" onclick="pltOpenListing(\''+pltEsc(c.id)+'\')">';
-  if(c.featured) h+='<div style="padding:12px 15px 0"><span class="plt-feat">Featured</span></div>';
+  if(c.featured) h+='<div style="padding:12px 15px 0"><span class="plt-feat">Sponsored</span></div>';
   if(c.photoUrl) h+='<img src="'+pltEsc(PL_API+c.photoUrl)+'" alt="Photo of '+pltEsc(c.title)+'" loading="lazy">';
   else h+='<div class="plt-nophoto">No photo yet — ask the seller in the comments</div>';
   h+='<div class="plt-cardbody"><h3>'+pltEsc(c.title)+'</h3><span class="plt-price">'+pltEsc(pltMoney(c.priceCents))+'</span>';
   h+='<div class="plt-meta">'+pltEsc(c.category||'')+(c.condition?' · '+pltEsc(c.condition):'')+'<br>by '+pltEsc(c.sellerName||'Pepper Lists seller')+' · '+c.commentCount+' comment'+(c.commentCount===1?'':'s')+'</div></div></button>';
   return h;
 }
+/* CATEGORY SPONSORS (Phase 2, 2026-11-27): one sponsor per category,
+   shown above the feed. House sponsors hold the slots today; an
+   office-approved advertiser can take a category over through the
+   Advertise lane — swap the entry here when the office approves it. */
+var PLT_SPONSORS=[
+  {cat:'Appliances',name:'Top Speed Appliance',line:'Repairs, sales and delivery across Broward.',cta:'Book Service',url:'https://topspeedserviceos.com/book'},
+  {cat:'Garden & Plants',name:'Fruitland Tropical Orchard & Nursery',line:'Tropical trees and plants from local growers.',cta:'See the catalog',url:'#catalog'},
+  {cat:'Food & Drink',name:'CocoCane',line:'Fresh coconut and sugarcane juice, made to order.',cta:'Order ahead',url:'https://topspeedserviceos.com/cococane-site'},
+  {cat:'Your category',name:'Your business here',line:'Sponsor a category and be the first name shoppers see.',cta:'Advertise with us',url:'#advertise'}
+];
+(function(){
+  var box=pltEl('pltSponsors'); if(!box) return;
+  box.innerHTML=PLT_SPONSORS.map(function(s){
+    return '<div class="plt-spon"><span class="spill">SPONSOR</span><div class="cat">'+pltEsc(s.cat)+'</div><h3>'+pltEsc(s.name)+'</h3><p>'+pltEsc(s.line)+'</p><a class="btn small dark" href="'+pltEsc(s.url)+'">'+pltEsc(s.cta)+'</a></div>';
+  }).join('');
+})();
 function pltLoadFeed(){
   var feed=pltEl('pltFeed'); if(!feed) return;
   plApi('/pepper-lists/listings/public?limit=30').then(function(j){
     var items=(j&&j.data)||[];
-    feed.innerHTML=items.map(pltCardHtml).join('');
+    var cards=items.map(pltCardHtml);
+    /* One in-feed sponsored slot (Phase 1): a single Top Speed house
+       card woven into the feed after the fourth listing \u2014 never a
+       banner, never stacked. */
+    if(cards.length>=2){
+      var slot='<div class="plt-adcard"><span class="plad-pill">Sponsored</span><h3>Top Speed Appliance</h3><p>Broken appliance? $99 diagnostic credited toward the repair, $210 flat labor. The Faster, The Better.</p><div class="plb-btnrow"><a class="btn small" href="https://topspeedserviceos.com/book">Book a repair</a></div></div>';
+      cards.splice(Math.min(4,cards.length),0,slot);
+    }
+    feed.innerHTML=cards.join('');
     var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=items.length?'none':'';
   }).catch(function(){ var empty=pltEl('pltFeedEmpty'); if(empty) empty.style.display=''; });
 }
@@ -3601,7 +3685,7 @@ function pltOpenListing(id){
     var d=j.data; pltCurrentListing=d;
     var mine=pltMyId() && d.seller && d.seller.userId===pltMyId();
     var h='<div class="plt-detail">';
-    if(d.featured) h+='<span class="plt-feat">Featured listing</span>';
+    if(d.featured) h+='<span class="plt-feat">Sponsored listing</span>';
     if(d.status==='SOLD') h+='<span class="plt-sold">Sold</span>';
     h+='<h3>'+pltEsc(d.title)+'</h3><span class="plt-price" style="font-size:19px">'+pltEsc(pltMoney(d.priceCents))+'</span>';
     h+='<p class="plt-meta">'+pltEsc(d.category||'')+(d.condition?' · '+pltEsc(d.condition):'')+' · Listed '+pltEsc(pltDate(d.createdAt))+' · '+d.viewCount+' view'+(d.viewCount===1?'':'s')+'</p>';
@@ -3660,7 +3744,8 @@ function pltOpenStorefront(userId){
     var s=j.data.seller;
     var h='<div class="plt-detail"><h3>'+pltEsc(s.name)+'’s storefront</h3><div>'+pltBadges(s.badges, s.salesCount)+'</div>';
     h+='<h4 style="margin:18px 0 10px">Live listings</h4>';
-    h+= j.data.listings.length ? '<div class="plt-grid">'+j.data.listings.map(pltCardHtml).join('')+'</div>' : '<p class="plt-mini">No live listings right now.</p>';
+    var sl=j.data.listings.slice().sort(function(a,b){ return (b.featured?1:0)-(a.featured?1:0); });
+    h+= sl.length ? '<div class="plt-grid">'+sl.map(pltCardHtml).join('')+'</div>' : '<p class="plt-mini">No live listings right now.</p>';
     h+='</div>';
     box.innerHTML=h;
   }).catch(function(e){
@@ -3719,14 +3804,14 @@ function pltLoadMine(){
     var items=j.data||[];
     if(!items.length){ box.innerHTML='<p class="plt-mini">You have no listings yet — your first one takes about a minute from the Sell panel above.</p>'; return; }
     box.innerHTML=items.map(function(l){
-      var h='<div class="plt-mine"><h4>'+pltEsc(l.title)+(l.featured?' <span class="plt-feat">Featured</span>':'')+(l.status==='SOLD'?' <span class="plt-sold">Sold</span>':'')+'</h4>';
+      var h='<div class="plt-mine"><h4>'+pltEsc(l.title)+(l.featured?' <span class="plt-feat">Sponsored</span>':'')+(l.status==='SOLD'?' <span class="plt-sold">Sold</span>':'')+'</h4>';
       h+='<p class="plt-mini">'+pltEsc(pltMoney(l.priceCents))+' · '+l.viewCount+' view'+(l.viewCount===1?'':'s')+' · '+l.commentCount+' comment'+(l.commentCount===1?'':'s')+' · ref '+pltEsc(l.reference)+'</p>';
       h+='<div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" onclick="pltOpenListing(\''+pltEsc(l.id)+'\')">View listing</button>';
       if(l.status!=='SOLD'){
         h+='<button class="btn small dark" type="button" onclick="pltToggleSold(\''+pltEsc(l.id)+'\')">Mark sold</button>';
         h+= l.featured
-          ? '<button class="btn small dark" type="button" onclick="pltUnfeature(\''+pltEsc(l.id)+'\')">Unfeature</button>'
-          : '<button class="btn small dark" type="button" onclick="pltFeature(\''+pltEsc(l.id)+'\')">Feature it</button>';
+          ? '<button class="btn small dark" type="button" onclick="pltUnfeature(\''+pltEsc(l.id)+'\')">Remove boost</button>'
+          : '<button class="btn small" type="button" onclick="pltFeature(\''+pltEsc(l.id)+'\')">Boost it</button>';
         h+='<button class="btn small dark" type="button" onclick="pltBump(\''+pltEsc(l.id)+'\')">Bump to top</button>';
       }
       h+='</div><div id="pltSold-'+pltEsc(l.id)+'"></div><p class="plt-msg" id="pltMineMsg-'+pltEsc(l.id)+'" role="status"></p></div>';
@@ -3748,16 +3833,16 @@ function pltMarkSold(id){
 }
 function pltFeature(id){
   plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/featured',{method:'POST',body:JSON.stringify({})})
-    .then(function(){ pltMineMsg(id,'Featured — it now leads the listings feed with a Featured badge.'); pltLoadMine(); pltLoadFeed(); })
+    .then(function(){ pltMineMsg(id,'Boosted — it now leads the listings feed with a Sponsored badge.'); pltLoadMine(); pltLoadFeed(); })
     .catch(function(e){
-      if(e.code==='plan_upgrade_required'||e.status===403){ pltMineMsg(id,'Featured placement is a seller-plan feature — see the upgrade plans below.',true); var p=pltEl('pltPlans'); if(p) p.scrollIntoView({behavior:'smooth',block:'center'}); }
+      if(e.code==='plan_upgrade_required'||e.status===403){ pltMineMsg(id,'Boosting is a seller-plan feature — see the upgrade plans below.',true); var p=pltEl('pltPlans'); if(p) p.scrollIntoView({behavior:'smooth',block:'center'}); }
       else pltMineMsg(id,e.message||'Could not feature that listing.',true);
     });
 }
 function pltUnfeature(id){
   plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/unfeature',{method:'POST',body:JSON.stringify({})})
     .then(function(){ pltLoadMine(); pltLoadFeed(); })
-    .catch(function(e){ pltMineMsg(id,e.message||'Could not unfeature that listing.',true); });
+    .catch(function(e){ pltMineMsg(id,e.message||'Could not remove that boost.',true); });
 }
 function pltBump(id){
   plApi('/pepper-lists/listings/'+encodeURIComponent(id)+'/bump',{method:'POST',body:JSON.stringify({})})
@@ -3808,7 +3893,7 @@ function pltLoadAnalytics(){
   });
 }
 function pltFeatureLabel(f){
-  var map={featured:'Featured placement — badge + top of the feed',bump:'Bump credits — refresh a listing to the top',analytics:'Seller analytics — views & comments per listing',storefront:'Public storefront — your listings & reviews on one page'};
+  var map={featured:'Boost placement — Sponsored badge + top of the feed',bump:'Bump credits — refresh a listing to the top',analytics:'Seller analytics — views & comments per listing',storefront:'Public storefront — your listings & reviews on one page'};
   return map[f]||f;
 }
 function pltLoadPlans(){
@@ -3824,7 +3909,7 @@ function pltLoadPlans(){
         ? '<p class="plt-pricebig">'+pltEsc(p.price.formatted)+'<span style="font-size:13px;color:var(--muted)"> / '+pltEsc(p.price.interval||'month')+'</span></p>'
         : '<p class="plt-mini" style="margin-top:6px">Pricing coming soon — ask us</p>';
       h+='<ul>'+(p.features||[]).map(function(f){ return '<li>'+pltEsc(pltFeatureLabel(f.key))+'</li>'; }).join('');
-      if(p.limits){ if(p.limits.maxPhotos!=null) h+='<li>Up to '+p.limits.maxPhotos+' photos per listing</li>'; if(p.limits.bumpsPerMonth!=null) h+='<li>'+p.limits.bumpsPerMonth+' bump credits a month</li>'; if(p.limits.featuredListings!=null) h+='<li>'+p.limits.featuredListings+' featured listings at a time</li>'; }
+      if(p.limits){ if(p.limits.maxPhotos!=null) h+='<li>Up to '+p.limits.maxPhotos+' photos per listing</li>'; if(p.limits.bumpsPerMonth!=null) h+='<li>'+p.limits.bumpsPerMonth+' bump credits a month</li>'; if(p.limits.featuredListings!=null) h+='<li>'+p.limits.featuredListings+' boosted listings at a time</li>'; }
       h+='</ul>';
       if(!current && p.key!=='free' && p.price){
         h+= (pltAccess && pltAccess.hasActiveSubscription)
@@ -3867,7 +3952,7 @@ function pltCancelPlan(){
     var div=document.createElement('div');
     div.className='plt-upsell';
     div.style.marginTop='12px';
-    div.innerHTML='<b>Want this listing seen first?</b> Featured listings lead the public feed with a Featured badge. See the seller upgrade plans in your dashboard below — free listings never change.<div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" onclick="var s=document.getElementById(\'plSeller\'); if(s) s.scrollIntoView({behavior:\'smooth\',block:\'start\'});">See seller plans</button></div>';
+    div.innerHTML='<b>Want this listing seen first?</b> Boosted listings lead the public feed with a Sponsored badge. See the seller upgrade plans in your dashboard below — free listings never change.<div class="plb-btnrow" style="margin-top:8px"><button class="btn small dark" type="button" onclick="var s=document.getElementById(\'plSeller\'); if(s) s.scrollIntoView({behavior:\'smooth\',block:\'start\'});">See seller plans</button></div>';
     done.appendChild(div);
   });
   obs.observe(done,{childList:true,subtree:true});
