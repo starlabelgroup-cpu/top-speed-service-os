@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { PEPPER_LISTS_IMAGES } from '../assets/pepperListsImages.js';
 import { z } from 'zod';
 import { appendEvent, store } from '../data/store.js';
 import { DATABASE_ENABLED, db } from '../db/client.js';
@@ -302,20 +301,6 @@ function xmlEsc(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-
-/* Pepperlists display images (Commerce OS homepage): public bytes,
-   embedded cross-origin from pepperlists.com, so CORP is set. */
-router.get('/pepper-lists/images/:name', (req, res) => {
-  const img = PEPPER_LISTS_IMAGES[req.params.name];
-  if (!img) return res.status(404).json({ error: 'Image not found' });
-  res.set({
-    'Content-Type': 'image/jpeg',
-    'Cache-Control': 'public, max-age=86400',
-    'Cross-Origin-Resource-Policy': 'cross-origin',
-    'Content-Length': img.length,
-  });
-  return res.end(img);
-});
 
 router.get('/pepper-lists/feeds/google.xml', async (req, res) => {
   const profiles = await listListingProfiles();
